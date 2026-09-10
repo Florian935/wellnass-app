@@ -10,7 +10,7 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { cancelRun, startRun, useActiveRun } from '@/data/repositories/run-repository';
 import { powerSync } from '@/powersync/system';
-import { startTracking } from '@/running/tracker';
+import { startManualClock, startTracking } from '@/running/tracker';
 import { fontFamily } from '@/theme/fonts';
 import { useActionLock } from '@/hooks/useActionLock';
 import { useTheme } from '@/theme/useTheme';
@@ -56,9 +56,16 @@ export default function RunStartScreen() {
       setStarting(true);
       try {
         const id = await startRun(source, plannedSessionId);
+        const startedAtMs = await readStartedAtMs(id);
+
+        if (source === 'manual') {
+          // US CARDIO-UX01 (R1b) — le mode sans GPS démarre son propre chrono. Sans cet appel,
+          // aucun tracker ne tournait : `duration_seconds` restait `null` et les minutes que le
+          // coureur regardait défiler n'étaient enregistrées **nulle part** (constat F15).
+          startManualClock(id, startedAtMs);
+        }
 
         if (source === 'gps') {
-          const startedAtMs = await readStartedAtMs(id);
           const res = await startTracking(id, startedAtMs, { autoPause: true });
 
           // Permission avant-plan refusée : suivi impossible. On propose de
@@ -97,7 +104,8 @@ export default function RunStartScreen() {
           // démarre une nouvelle en mode manuel pour que l'écran actif affiche
           // le chrono sans chercher un signal GPS indisponible.
           await cancelRun(gpsRunId);
-          await startRun('manual', plannedSessionId);
+          const manualId = await startRun('manual', plannedSessionId);
+          startManualClock(manualId, await readStartedAtMs(manualId));
           router.push('/run/active');
         },
       },

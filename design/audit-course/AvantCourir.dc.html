@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f7eede; font-family: 'Hanken Grotesk', system-ui, sans-serif; color: #33291f; -webkit-font-smoothing: antialiased; }
+    a { color: #b14f2b; }
+  </style>
+</helmet>
+
+<div style="width: 390px; min-height: 844px; background: #f7eede; display: flex; flex-direction: column; position: relative;">
+
+  <!-- Bandeau d'annotation : ce n'est pas l'app, c'est un relevé -->
+  <div style="background: #33291f; padding: 9px 20px; display: flex; align-items: center; gap: 8px;">
+    <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: #d9a888;">Aujourd'hui — relevé du code</span>
+    <span style="font-size: 11px; color: #c9b79a;">run/active.tsx</span>
+  </div>
+
+  <!-- topBar : paddingHorizontal 20, paddingVertical 12 -->
+  <div style="padding: 12px 20px; display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <div style="width: 8px; height: 8px; border-radius: 4px; background: #66714b;"></div>
+      <span style="font-family: 'Hanken Grotesk', sans-serif; font-weight: 500; font-size: 12px; color: #786a59;">GPS actif</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#66714b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 0-14-5"/><path d="M4 12.5a8 8 0 0 0 14 5"/><path d="M6 3v3.5h3.5M18 21v-3.5h-3.5"/></svg>
+      <span style="font-weight: 500; font-size: 12px; color: #786a59;">Synchronisé</span>
+    </div>
+  </div>
+
+  <!-- body : flex 1, centré, gap 28, paddingHorizontal 20 -->
+  <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; padding: 0 20px;">
+
+    <!-- hero : distance 72px Bricolage 800, letterSpacing -2, unit 24px -->
+    <div style="display: flex; align-items: flex-end; gap: 8px;">
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 72px; letter-spacing: -2px; line-height: 78px;">3,75</span>
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 24px; color: #786a59; margin-bottom: 12px;">km</span>
+    </div>
+
+    <!-- chrono : label overline + timer Space Mono 700 / 40 -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <span style="font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: #786a59;">Durée</span>
+      <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 40px;">22:55</span>
+    </div>
+
+    <!-- paces : row, gap 40 -->
+    <div style="display: flex; justify-content: center; gap: 40px;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <span style="font-weight: 600; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: #786a59;">Allure moy.</span>
+        <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 24px;">5:31</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <span style="font-weight: 600; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: #786a59;">Allure inst.</span>
+        <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 24px;">4:07</span>
+      </div>
+    </div>
+
+    <!-- targetPaceRow : marginTop 12, valeur mono 18 -->
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; margin-top: 12px;">
+      <span style="font-weight: 600; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: #786a59;">Allure cible</span>
+      <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 18px;">4:05 – 4:10</span>
+    </div>
+  </div>
+
+  <!-- targetWrap : Card objectif -->
+  <div style="padding: 0 20px 4px 20px;">
+    <div style="border-radius: 22px; border: 1px solid #ece0cd; background: #fffaf2; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-weight: 600; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: #786a59;">Objectif</span>
+      <span style="font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 14px; line-height: 19px; color: #786a59;">3,75 km sur 7,00 km — il reste 3,25 km</span>
+    </div>
+  </div>
+
+  <!-- mapCard -->
+  <div style="padding: 12px 20px; ">
+    <div style="border-radius: 22px; border: 1px solid #ece0cd; background: #f3ddd0; height: 110px; overflow: hidden;">
+      <svg width="350" height="110" viewBox="0 0 350 110" fill="none">
+        <path d="M20 88 C 52 88 58 56 88 52 C 118 48 126 78 158 76 C 190 74 196 36 232 30 C 268 24 282 56 316 46" stroke="#b14f2b" stroke-width="3.5" stroke-linecap="round"/>
+        <circle cx="20" cy="88" r="5" fill="#fffaf2" stroke="#786a59" stroke-width="2.5"/>
+        <circle cx="316" cy="46" r="6" fill="#b14f2b" stroke="#fffaf2" stroke-width="2.5"/>
+      </svg>
+    </div>
+  </div>
+
+  <!-- controls : pauseBtn minHeight 52 + Button stop -->
+  <div style="padding: 0 20px 12px 20px; display: flex; align-items: center; gap: 12px;">
+    <div style="min-height: 52px; padding: 0 22px; border-radius: 16px; border: 1px solid #ece0cd; background: #fffaf2; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#b14f2b"><rect x="7" y="5" width="3.6" height="14" rx="1.2"/><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"/></svg>
+      <span style="font-weight: 700; font-size: 16px;">Pause</span>
+    </div>
+    <div style="flex-grow: 1; min-height: 52px; border-radius: 16px; background: #b14f2b; display: flex; align-items: center; justify-content: center;">
+      <span style="font-weight: 700; font-size: 16px; color: #ffffff;">Terminer</span>
+    </div>
+  </div>
+
+  <!-- Les trois défauts, désignés sur l'écran -->
+  <div style="background: #f7ead6; border-top: 1px solid #e9cfa0; padding: 14px 20px; display: flex; flex-direction: column; gap: 8px;">
+    <div style="display: flex; align-items: flex-start; gap: 8px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #8a6419; flex-shrink: 0; padding-top: 1px;">F10</span>
+      <span style="font-size: 12px; line-height: 17px; color: #33291f;">Séance 6 × 400 m en cours — <strong>rien ne dit dans quelle fraction on est.</strong> Le guidage est uniquement vocal.</span>
+    </div>
+    <div style="display: flex; align-items: flex-start; gap: 8px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #8a6419; flex-shrink: 0; padding-top: 1px;">F9</span>
+      <span style="font-size: 12px; line-height: 17px; color: #33291f;">Le chrono <strong>22:55</strong> est l'horloge murale. Avec 2:12 de pause, le résumé affichera <strong>20:43</strong>.</span>
+    </div>
+    <div style="display: flex; align-items: flex-start; gap: 8px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #8a6419; flex-shrink: 0; padding-top: 1px;">F11</span>
+      <span style="font-size: 12px; line-height: 17px; color: #33291f;">« Terminer » <strong>clôture immédiatement</strong> — sans confirmation, sans retour, sans suppression possible.</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

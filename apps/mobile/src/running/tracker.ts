@@ -35,6 +35,7 @@ import { flushTrack } from '@/data/repositories/run-repository';
 import * as Location from 'expo-location';
 import {
   RUN_TASK,
+  advanceNetDuration,
   initialTrackerState,
   lastFlushPromise,
   setLastFlushPromise,
@@ -44,6 +45,74 @@ import {
 
 /** Fréquence cible des mises à jour (ms) côté Android. */
 const TIME_INTERVAL_MS = 1000;
+
+/**
+ * Période du tick d'horloge (ms) — US CARDIO-UX01 (R1a).
+ *
+ * Ce tick est ce qui rend la durée **indépendante du GPS** : il avance `netDurationS` même quand
+ * aucun point n'arrive (tunnel, forêt — constat F16) et il est la **seule** source en mode manuel,
+ * où il n'y a aucun point du tout (constat F15 : une course sans GPS n'enregistrait aucune durée).
+ *
+ * L'avancement se calcule sur `Date.now()`, pas sur « une seconde par tick » : si Android étrangle
+ * le timer en arrière-plan, l'écart réel est rattrapé au tick suivant au lieu d'être perdu.
+ */
+const CLOCK_TICK_MS = 1000;
+
+/**
+ * Nombre de ticks entre deux flushs en base. À 1 s par tick, on persiste donc toutes les 10 s.
+ *
+ * Pourquoi pas à chaque tick : un flush est une écriture SQLite + une entrée de file de synchro.
+ * Pourquoi pas plus rare : c'est la granularité de ce qu'on perd si le processus est tué en
+ * pleine course. Dix secondes est le compromis retenu ; la clôture, elle, flushe toujours la
+ * valeur exacte (voir `stopTracking`).
+ */
+const CLOCK_FLUSH_EVERY_TICKS = 10;
+
+/** Handle du tick d'horloge, ou `null` si aucune course n'est suivie. */
+let clockTimer: ReturnType<typeof setInterval> | null = null;
+
+/** Compteur de ticks depuis le dernier flush. */
+let ticksSinceFlush = 0;
+
+/**
+ * Démarre le tick d'horloge. Idempotent : deux appels ne créent pas deux timers (ce qui
+ * doublerait la vitesse d'avancement — le genre de défaut invisible en test et brutal en course).
+ */
+function startClock(): void {
+  if (clockTimer !== null) {
+    return;
+  }
+  ticksSinceFlush = 0;
+  clockTimer = setInterval(() => {
+    advanceNetDuration(Date.now());
+    ticksSinceFlush += 1;
+    if (ticksSinceFlush >= CLOCK_FLUSH_EVERY_TICKS) {
+      ticksSinceFlush = 0;
+      // Fire-and-forget : le flush est déjà sérialisé côté repository, et une écriture ratée
+      // sera rattrapée au tick suivant. On ne bloque jamais l'horloge sur la base.
+      void persistCurrentState();
+    }
+  }, CLOCK_TICK_MS);
+}
+
+/**
+ * Arrête le tick d'horloge. Idempotent.
+ *
+ * Exporté parce qu'un test qui démarre un suivi sans le clore laisserait sinon un `setInterval`
+ * vivant entre deux cas — un timer fantôme qui avance la durée d'une course déjà finie.
+ */
+export function stopClock(): void {
+  if (clockTimer !== null) {
+    clearInterval(clockTimer);
+    clockTimer = null;
+  }
+  ticksSinceFlush = 0;
+}
+
+/** Exposé pour les tests : le tick d'horloge est-il actif ? */
+export function isClockRunning(): boolean {
+  return clockTimer !== null;
+}
 
 /** Distance minimale (m) entre deux mises à jour retenues. */
 const DISTANCE_INTERVAL_M = 5;
@@ -96,8 +165,16 @@ export async function startTracking(
     runId,
     startedAtMs,
     autoPause,
+    mode: 'gps' as const,
+    // Le repère part de l'instant de DÉPART de la course, pas du premier tick : sinon la
+    // première seconde n'est jamais comptée, et le chrono retarde d'une seconde pour toujours.
+    lastAdvanceAtMs: startedAtMs,
   });
   setLastFlushPromise(Promise.resolve());
+
+  // US CARDIO-UX01 (R1a) — l'horloge démarre AVANT les mises à jour de position : la durée ne
+  // dépend plus de l'arrivée du premier fix.
+  startClock();
 
   // 3. Démarre les mises à jour de position + foreground service Android.
   //    Ne relance pas si déjà démarré (évite un double enregistrement).
@@ -124,6 +201,40 @@ export async function startTracking(
 }
 
 /**
+ * Démarre le suivi d'une course **sans GPS** (US CARDIO-UX01, R1b — constat F15).
+ *
+ * ── Ce que ça corrige ────────────────────────────────────────────────────────────────────────────
+ * `runs.duration_seconds` n'est écrit que par `flushTrack`, appelé seulement par le tracker,
+ * lui-même lancé seulement en mode GPS (`if (source === 'gps')` dans `run/index.tsx`). Une course
+ * manuelle finissait donc à `duration_seconds = null` : le résumé affichait « Durée — » et
+ * « Allure — », et les 45 minutes que le coureur venait de regarder défiler n'étaient **nulle
+ * part**. La roadmap 5.21 annonçait pourtant « suivi à la durée seule » et « couvre aussi le
+ * tapis » — c'est-à-dire exactement ce qui ne marchait pas.
+ *
+ * ── Ce que ça fait ───────────────────────────────────────────────────────────────────────────────
+ * Le même état, le même drapeau de pause, le même chemin de flush que le mode GPS : seule la
+ * source d'avancement change (le tick d'horloge au lieu des points). Pause, reprise, auto-pause
+ * (désactivée, faute de vitesse à observer), clôture et persistance sont donc **identiques**, et
+ * l'écran de suivi n'a pas à savoir dans quel mode il est pour afficher le chrono.
+ *
+ * Aucune permission, aucun service de premier plan, aucune trace.
+ */
+export function startManualClock(runId: string, startedAtMs: number): void {
+  setPaused(false);
+  Object.assign(trackerState, initialTrackerState(), {
+    runId,
+    startedAtMs,
+    // Rien à observer : sans points GPS, aucune vitesse lissée, donc aucune auto-pause possible.
+    autoPause: false,
+    mode: 'manual' as const,
+    // Même repère qu'en GPS : la durée court depuis le départ, pas depuis le premier tick.
+    lastAdvanceAtMs: startedAtMs,
+  });
+  setLastFlushPromise(Promise.resolve());
+  startClock();
+}
+
+/**
  * Arrête le suivi puis DRAINE le dernier flush (voir contrat stop → drain → finish).
  * Résout uniquement quand le dernier flush est persisté : l'appelant peut ensuite
  * appeler `finishRun` sans risque de flush tardif retombant après la clôture.
@@ -133,6 +244,14 @@ export async function stopTracking(): Promise<void> {
   if (started) {
     await Location.stopLocationUpdatesAsync(RUN_TASK);
   }
+
+  // US CARDIO-UX01 (R1a) — l'horloge s'arrête, mais on compte d'abord les secondes écoulées
+  // depuis le dernier tick, puis on les ÉCRIT. Sans ce flush final, la durée enregistrée serait
+  // celle du dernier flush périodique, donc jusqu'à 10 s trop courte — et en mode manuel, la
+  // seule durée jamais écrite.
+  stopClock();
+  advanceNetDuration(Date.now());
+  await persistCurrentState();
   // Drain : attendre le tout dernier flush en vol (déjà « catché » à la source).
   // Un ultime lot livré par l'OS après l'arrêt peut réinstaller `lastFlushPromise`
   // APRÈS notre capture ; on ré-attend donc tant que la poignée change (borné).
@@ -178,6 +297,8 @@ export async function pauseTracking(): Promise<void> {
   if (s.runId === null || s.paused) {
     return;
   }
+  // Compter le temps couru JUSQU'À l'instant de la pause, avant de figer le compteur.
+  advanceNetDuration(Date.now());
   setPaused(true);
   s.lowSpeedSinceT = null;
   await persistCurrentState();
@@ -192,6 +313,9 @@ export function resumeTracking(): void {
   if (s.runId === null || !s.paused) {
     return;
   }
+  // Déplacer le repère jusqu'à maintenant AVANT de sortir de pause : sans ça, le premier
+  // avancement après la reprise compterait toute la durée de la pause d'un seul coup.
+  advanceNetDuration(Date.now());
   setPaused(false);
   s.lowSpeedSinceT = null;
 }
@@ -205,12 +329,16 @@ async function persistCurrentState(): Promise<void> {
   if (s.runId === null) {
     return;
   }
+  // Mode manuel : la durée seule. `null` = « ne pas écrire » (voir `FlushInput`) — écrire
+  // `distance_m: 0` ferait disparaître le champ de saisie de distance du résumé, et « +0 m » de
+  // dénivelé serait un chiffre inventé.
+  const isManual = s.mode === 'manual';
   const p = flushTrack(s.runId, {
     segmentEncoded: '', // aucun nouveau point : appendTo'' est un no-op côté repo
-    distanceM: s.cumulativeDistanceM,
+    distanceM: isManual ? null : s.cumulativeDistanceM,
     durationSeconds: Math.round(s.netDurationS),
-    elevationGainM: Math.round(s.cumulativeElevationGainM),
-    elevationLossM: Math.round(s.cumulativeElevationLossM),
+    elevationGainM: isManual ? null : Math.round(s.cumulativeElevationGainM),
+    elevationLossM: isManual ? null : Math.round(s.cumulativeElevationLossM),
   });
   setLastFlushPromise(p.catch(() => {}));
   await p;

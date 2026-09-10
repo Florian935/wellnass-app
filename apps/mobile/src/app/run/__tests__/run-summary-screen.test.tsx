@@ -28,7 +28,6 @@ import {
   setRunTerrain,
   useRun,
   useRunTarget,
-  useRunIntervals,
 } from '@/data/repositories/run-repository';
 import { detectAndStoreRunRecords } from '@/data/repositories/running-record-repository';
 import { useRouter } from 'expo-router';
@@ -132,7 +131,6 @@ const mockFeedback = setRunFeedback as jest.Mock;
 const mockTerrain = setRunTerrain as jest.Mock;
 const mockManualDistance = setManualRunDistance as jest.Mock;
 const mockDetect = detectAndStoreRunRecords as jest.Mock;
-const mockUseRunIntervals = useRunIntervals as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
 
 const replace = jest.fn();
@@ -285,17 +283,28 @@ describe('détection de records', () => {
 // Feedback
 // ---------------------------------------------------------------------------
 
-describe('feedback', () => {
-  it('la difficulté est persistée dès la sélection', async () => {
+describe('ressenti (US CARDIO-UX01, R6)', () => {
+  /**
+   * ── Ce qui a changé ────────────────────────────────────────────────────────────────────────────
+   * Le ressenti se notait sur une échelle **RPE 1-10** : dix boutons de 36 px, en onzième position
+   * d'un écran de douze sections. Il se note désormais sur les **cinq niveaux nommés** de
+   * `workout-feeling.ts`, ceux que MUSCU-UX01 a posés côté muscu — même question, même échelle des
+   * deux côtés de l'app.
+   *
+   * ⚠️ `runs.rpe` continue de stocker un **RPE 1-10** : les cinq crans ne sont qu'une lecture.
+   * Aucune migration, et un ressenti saisi avant cette US reste lisible.
+   */
+  it('la difficulté est persistée dès la sélection, en RPE', async () => {
     await render(<RunSummaryScreen />);
 
     await act(async () => {
-      fireEvent.press(screen.getByLabelText('7'));
+      fireEvent.press(screen.getByLabelText('workout.summary.feeling.hard'));
     });
 
+    // « Dur » vaut 8 en base (`feelingToStoredRpe`) : la colonne ne change pas de nature.
     // Pas de bouton « enregistrer » : l'écriture immédiate est ce qui évite de perdre la saisie
     // quand on quitte l'écran d'un geste.
-    expect(mockFeedback).toHaveBeenCalledWith('run-1', { rpe: 7 });
+    expect(mockFeedback).toHaveBeenCalledWith('run-1', { rpe: 8 });
   });
 
   it('🔴 un échec d’écriture ne fait pas tomber l’écran', async () => {
@@ -304,7 +313,7 @@ describe('feedback', () => {
 
     await render(<RunSummaryScreen />);
     await act(async () => {
-      fireEvent.press(screen.getByLabelText('7'));
+      fireEvent.press(screen.getByLabelText('workout.summary.feeling.hard'));
     });
 
     // La course est déjà en base ; seul le confort se perd. Planter ici perdrait aussi le reste.
@@ -312,17 +321,7 @@ describe('feedback', () => {
     (console.warn as jest.Mock).mockRestore();
   });
 
-  it('le terrain est persisté au choix', async () => {
-    await render(<RunSummaryScreen />);
-
-    await act(async () => {
-      fireEvent.press(screen.getByText('running.terrain.trail'));
-    });
-
-    expect(mockTerrain).toHaveBeenCalledWith('run-1', 'trail');
-  });
-
-  it('reprend le feedback déjà enregistré', async () => {
+  it('reprend le ressenti déjà enregistré, relu depuis le RPE', async () => {
     mockUseRun.mockReturnValue({
       run: course({ rpe: 8, notes: 'Bonne sortie.', terrain: 'road' }),
       isLoading: false,
@@ -333,7 +332,24 @@ describe('feedback', () => {
     // Réafficher un formulaire vide sur une course déjà commentée donnerait l'impression que la
     // note a été perdue — et inviterait à la ressaisir.
     expect(screen.getByDisplayValue('Bonne sortie.')).toBeTruthy();
-    expect(screen.getByLabelText('8').props.accessibilityState).toMatchObject({ selected: true });
+    expect(
+      screen.getByLabelText('workout.summary.feeling.hard').props.accessibilityState,
+    ).toMatchObject({ selected: true });
+  });
+
+  it('🔴 le terrain n’est PLUS sur cet écran — il est passé à l’analyse', async () => {
+    await render(<RunSummaryScreen />);
+
+    // Constat F17 : le premier temps du résumé ne porte que ce qu'on fait trente secondes après
+    // l'effort. Le terrain est un complément, pas un geste de fin de course.
+    expect(screen.queryByText('running.terrain.trail')).toBeNull();
+  });
+
+  it('🔴 propose Enregistrer ET Analyser — sans défilement', async () => {
+    await render(<RunSummaryScreen />);
+
+    expect(screen.getByText('running.summary.save')).toBeTruthy();
+    expect(screen.getByText('running.summary.analyse')).toBeTruthy();
   });
 });
 
@@ -393,78 +409,3 @@ describe('distance manuelle', () => {
 // ---------------------------------------------------------------------------
 // US RUN-F4 (lot F) — le réalisé par répétition
 // ---------------------------------------------------------------------------
-
-describe('fraction par fraction (US RUN-F4)', () => {
-  /** Une fraction réalisée, avec sa plage prévue. */
-  const fraction = (overrides: Record<string, unknown> = {}) => ({
-    phaseIndex: 0,
-    phaseKind: 'fast',
-    segmentKind: 'work',
-    rep: 1,
-    totalReps: 8,
-    plannedDistanceM: 400,
-    plannedDurationSeconds: null,
-    plannedPaceMinSPerKm: 245,
-    plannedPaceMaxSPerKm: 250,
-    actualDistanceM: 400,
-    actualDurationSeconds: 98,
-    actualPaceSPerKm: 245,
-    ...overrides,
-  });
-
-  beforeEach(() => {
-    mockUseRun.mockReturnValue({ run: course(), isLoading: false });
-  });
-
-  it('🔴 la section est ABSENTE quand la course n’a aucune fraction', async () => {
-    // Une course libre n'a rien à dire ici : on n'affiche pas une section vide, on n'affiche rien.
-    mockUseRunIntervals.mockReturnValue({ intervals: [], isLoading: false });
-
-    await render(<RunSummaryScreen />);
-
-    expect(screen.queryByText('running.realise.title')).toBeNull();
-  });
-
-  it('liste les fractions réalisées', async () => {
-    mockUseRunIntervals.mockReturnValue({
-      intervals: [fraction(), fraction({ phaseIndex: 1, rep: 2, actualPaceSPerKm: 252 })],
-      isLoading: false,
-    });
-
-    await render(<RunSummaryScreen />);
-
-    expect(screen.getByText('running.realise.title')).toBeTruthy();
-    // `formatPaceMMSS` rend l'allure en m:ss — 245 s/km = 4:05. La valeur apparaît PLUSIEURS
-    // fois par ligne : c'est à la fois l'allure prévue (borne basse) et l'allure réalisée de la
-    // 1ʳᵉ fraction, qui l'a tenue pile. D'où `getAllByText`.
-    expect(screen.getAllByText('4:05').length).toBeGreaterThanOrEqual(2);
-    // 252 s/km = 4:12, réalisé de la 2ᵉ fraction : unique, lui.
-    expect(screen.getByText('4:12')).toBeTruthy();
-  });
-
-  it('affiche la régularité et le compte dans la plage', async () => {
-    mockUseRunIntervals.mockReturnValue({
-      intervals: [fraction(), fraction({ phaseIndex: 1, rep: 2, actualPaceSPerKm: 280 })],
-      isLoading: false,
-    });
-
-    await render(<RunSummaryScreen />);
-
-    // 1 fraction sur 2 dans la plage 245–250 : la seconde est à 280.
-    expect(screen.getByText(/running\.realise\.inRange/)).toBeTruthy();
-    expect(screen.getByText(/running\.realise\.avgPace/)).toBeTruthy();
-  });
-
-  it('🔴 une fraction sans allure mesurable affiche un tiret, pas un zéro', async () => {
-    // Cas du rattrapage silencieux : la durée par fraction n'est pas attribuable, on l'écrit
-    // `null`. Afficher « 0:00 » laisserait croire à une mesure.
-    mockUseRunIntervals.mockReturnValue({
-      intervals: [fraction({ actualDurationSeconds: null, actualPaceSPerKm: null })],
-      isLoading: false,
-    });
-
-    await render(<RunSummaryScreen />);
-
-    expect(screen.getAllByText('running.realise.noData').length).toBeGreaterThan(0);
-  });
-});

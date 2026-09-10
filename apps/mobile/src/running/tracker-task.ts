@@ -36,6 +36,7 @@
 
 import {
   MAX_PLAUSIBLE_SPEED_MS,
+  advanceNetSeconds,
   encodeSegment,
   haversineMeters,
   isValidFix,
@@ -85,6 +86,23 @@ export interface TrackerState {
   /** Durée nette cumulée en secondes, hors temps de pause. */
   netDurationS: number;
   /**
+   * Epoch (ms) du dernier avancement de `netDurationS`, ou `null` si aucun n'a eu lieu.
+   *
+   * US CARDIO-UX01 (R1a-2) : c'est ce repère qui **découple la durée du GPS**. Avant, la durée
+   * s'accumulait dans la branche « segment fiable » du filtre de vitesse destiné à la distance —
+   * sous un tunnel, elle n'avançait pas alors que le coureur courait (constat F16). Désormais
+   * deux sources l'avancent, et elles partagent ce repère : les points GPS (à leur propre
+   * horodatage, donc testable sans horloge murale) et le tick d'horloge de `tracker.ts`, qui
+   * comble les trous — et qui est la **seule** source en mode manuel, où il n'y a aucun point.
+   */
+  lastAdvanceAtMs: number | null;
+  /**
+   * Mode de la course suivie. `manual` = aucun GPS, aucune permission, aucune trace : seul le
+   * tick d'horloge avance la durée (US CARDIO-UX01, R1b — le mode sans GPS n'enregistrait
+   * **aucune** durée, constat F15).
+   */
+  mode: 'gps' | 'manual';
+  /**
    * Dénivelé positif/négatif cumulé en mètres (US RUN-F1b, spec R2/R3), source de vérité —
    * jamais recalculé depuis `gps_track` (même patron que `cumulativeDistanceM`).
    */
@@ -129,6 +147,8 @@ export function initialTrackerState(): TrackerState {
     startedAtMs: 0,
     cumulativeDistanceM: 0,
     netDurationS: 0,
+    lastAdvanceAtMs: null,
+    mode: 'gps',
     cumulativeElevationGainM: 0,
     cumulativeElevationLossM: 0,
     pendingElevationDeltaM: 0,
@@ -179,6 +199,53 @@ export function setPaused(next: boolean): void {
 /** État de pause courant (lecture directe de la source de vérité). */
 export function getPaused(): boolean {
   return trackerState.paused;
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Durée nette — US CARDIO-UX01 (R1a)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Avance la durée nette de la course suivie jusqu'à `nowMs`.
+ *
+ * Appelée depuis **deux** endroits, qui partagent le même repère (`lastAdvanceAtMs`) :
+ *  - `handleLocationBatch`, à l'horodatage de chaque point retenu — donc déterministe et testable
+ *    sans horloge murale ;
+ *  - le tick d'horloge de `tracker.ts`, à `Date.now()` — qui comble les trous entre deux points
+ *    (constat F16 : tunnel, forêt) et qui est la seule source en mode manuel (constat F15).
+ *
+ * L'arithmétique vit dans `advanceNetSeconds` (`@wellness/shared`, testée) : ici on ne fait que
+ * l'appliquer à l'état module.
+ */
+export function advanceNetDuration(nowMs: number): void {
+  const s = trackerState;
+  if (s.runId === null) {
+    return;
+  }
+  const next = advanceNetSeconds({
+    netSeconds: s.netDurationS,
+    lastAdvanceAtMs: s.lastAdvanceAtMs,
+    nowMs,
+    paused: s.paused,
+  });
+  s.netDurationS = next.netSeconds;
+  s.lastAdvanceAtMs = next.lastAdvanceAtMs;
+}
+
+/**
+ * Durée nette vivante de `runId`, en secondes — ou `null` si le tracker ne suit pas cette course.
+ *
+ * `null` n'est pas une erreur : l'écran de suivi peut être remonté après un redémarrage du
+ * runtime, avec une course toujours `active` en base et aucun tracker attaché. C'est
+ * `displayedNetSeconds` (`@wellness/shared`) qui décide quoi afficher alors — la valeur persistée,
+ * figée, plutôt que l'horloge murale.
+ */
+export function getLiveNetSeconds(runId: string): number | null {
+  const s = trackerState;
+  if (s.runId !== runId) {
+    return null;
+  }
+  return s.netDurationS;
 }
 
 /**
@@ -307,8 +374,14 @@ export function handleLocationBatch(locations: LocationObject[]): Promise<void> 
       evaluateAutoPause(p);
     }
 
+    // US CARDIO-UX01 (R1a-2) — la durée avance ICI, avant le filtre de vitesse plausible qui,
+    // lui, ne concerne que la distance. Elle utilise l'horodatage du point (et non `Date.now()`),
+    // ce qui garde `handleLocationBatch` déterministe. `advanceNetDuration` est un no-op en pause,
+    // et déplace quand même le repère — sans quoi la reprise compterait toute la pause d'un coup.
+    advanceNetDuration(s.startedAtMs + p.t * 1000);
+
     if (s.paused) {
-      // En pause : ne pas cumuler distance/durée/dénivelé ; le point (et son altitude) sert de
+      // En pause : ne pas cumuler distance/dénivelé ; le point (et son altitude) sert de
       // nouvelle base pour ne pas compter le trajet effectué pendant la pause à la reprise
       // (spec R4 — même traitement que lastPoint/lastPointT).
       s.lastPoint = p;
@@ -325,7 +398,9 @@ export function handleLocationBatch(locations: LocationObject[]): Promise<void> 
         // Filtre glitch GPS (cohérent avec `totalDistance` de @wellness/shared).
         if (speed <= MAX_PLAUSIBLE_SPEED_MS) {
           s.cumulativeDistanceM += dist;
-          s.netDurationS += dt;
+          // ⚠️ `s.netDurationS += dt` VIVAIT ICI. C'était le constat F16 : la durée héritait du
+          // filtre de vitesse destiné à la distance, et n'avançait donc pas quand le GPS
+          // décrochait. Elle est désormais avancée plus haut, hors de cette branche.
           // Dénivelé (US RUN-F1b) : accumulé UNIQUEMENT sur un segment déjà jugé fiable pour la
           // distance (spec R2) — une seule notion de « segment fiable ».
           if (altitudeM != null && s.lastAltitudeM != null) {

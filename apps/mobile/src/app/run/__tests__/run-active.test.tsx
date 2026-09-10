@@ -23,12 +23,19 @@
  * (`compareToTarget`, `averagePace`, `decodeTrack`) tournent pour de vrai, elles sont testées chez elles.
  */
 import React from 'react';
+import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import RunActiveScreen from '../active';
-import { finishRun, useActiveRun, useRunTarget } from '@/data/repositories/run-repository';
+import {
+  deleteRun,
+  finishRun,
+  useActiveRun,
+  useIntervalBlocksForRun,
+  useRunTarget,
+} from '@/data/repositories/run-repository';
 import { stopTracking, pauseTracking, resumeTracking } from '@/running/tracker';
-import { getPaused, subscribePaused } from '@/running/tracker-task';
+import { getLiveNetSeconds, getPaused, subscribePaused } from '@/running/tracker-task';
 import { useRouter } from 'expo-router';
 
 // ---------------------------------------------------------------------------
@@ -40,6 +47,8 @@ jest.mock('@/data/repositories/run-repository', () => ({
   useRunTarget: jest.fn(() => null),
   useIntervalBlocksForRun: jest.fn(() => ({ sessionType: null, blocks: [] })),
   finishRun: jest.fn().mockResolvedValue(undefined),
+  // US CARDIO-UX01 (R1d) — troisième issue de l'arrêt en deux temps.
+  deleteRun: jest.fn().mockResolvedValue(undefined),
 }));
 
 jest.mock('@/data/repositories/running-profile-repository', () => ({
@@ -47,14 +56,25 @@ jest.mock('@/data/repositories/running-profile-repository', () => ({
 }));
 
 // Émetteur de pause du tracker : c'est la source de vérité de l'écran, on la pilote.
+// `getLiveNetSeconds` rend `null` par défaut : l'écran retombe alors sur la durée persistée
+// (`displayedNetSeconds`), ce qui est le cas « aucun tracker attaché » — celui d'un remontage
+// d'écran, et celui de tous les tests qui ne s'intéressent pas au chrono.
 jest.mock('@/running/tracker-task', () => ({
   getPaused: jest.fn(() => false),
   subscribePaused: jest.fn(() => jest.fn()),
+  getLiveNetSeconds: jest.fn(() => null),
 }));
 
 // Voix et vibration : hooks à effets natifs, sans intérêt ici et testés ailleurs.
 jest.mock('@/running/announcements', () => ({ useDistanceAnnouncements: jest.fn() }));
-jest.mock('@/running/interval-guidance', () => ({ useIntervalGuidance: jest.fn() }));
+jest.mock('@/running/interval-guidance', () => ({
+  useIntervalGuidance: jest.fn(),
+  // Utilisé par l'écran pour alimenter le bandeau de segment : identité suffisante ici.
+  toPhaseBlockInput: (block: unknown) => block,
+}));
+
+// Bandeau de segment : rendu testé dans son propre fichier ; ici on isole l'écran.
+jest.mock('@/components/running/SegmentBanner', () => ({ SegmentBanner: () => null }));
 
 // Carte (Mapbox/MapLibre) et bandeau de synchro : rendus natifs, hors sujet.
 jest.mock('@/components/running/RouteMap', () => ({ RouteMap: () => null }));
@@ -100,6 +120,9 @@ jest.mock('@/hooks/useUnits', () => ({
 
 const mockUseActiveRun = useActiveRun as jest.Mock;
 const mockUseRunTarget = useRunTarget as jest.Mock;
+const mockUseIntervalBlocks = useIntervalBlocksForRun as jest.Mock;
+const mockGetLiveNetSeconds = getLiveNetSeconds as jest.Mock;
+const mockDeleteRun = deleteRun as jest.Mock;
 const mockFinishRun = finishRun as jest.Mock;
 const mockStopTracking = stopTracking as jest.Mock;
 const mockPauseTracking = pauseTracking as jest.Mock;
@@ -130,6 +153,9 @@ beforeEach(() => {
   mockUseRouter.mockReturnValue({ replace });
   mockUseActiveRun.mockReturnValue({ run: courseGps(), isLoading: false });
   mockUseRunTarget.mockReturnValue(null);
+  mockUseIntervalBlocks.mockReturnValue({ sessionType: null, blocks: [] });
+  mockGetLiveNetSeconds.mockReturnValue(null);
+  mockDeleteRun.mockResolvedValue(undefined);
   mockGetPaused.mockReturnValue(false);
   mockSubscribePaused.mockReturnValue(jest.fn());
   mockStopTracking.mockResolvedValue(undefined);
@@ -162,21 +188,48 @@ describe('états d’écran', () => {
     expect(screen.getByText('common.back')).toBeTruthy();
   });
 
-  it('en GPS, affiche les deux allures', async () => {
+  it('en GPS et course libre, la DISTANCE est en héros et les autres chiffres en dessous', async () => {
     await render(<RunActiveScreen />);
 
+    // US CARDIO-UX01 (R5-2) : le défaut d'une course libre est la distance. Les deux autres
+    // métriques restent lisibles, en petit — plus l'allure moyenne, propre au GPS.
+    expect(screen.getAllByText('running.hero.distance').length).toBeGreaterThan(0);
+    expect(screen.getByText('running.hero.pace')).toBeTruthy();
+    expect(screen.getByText('running.hero.duration')).toBeTruthy();
     expect(screen.getByText('running.active.avgPace')).toBeTruthy();
-    expect(screen.getByText('running.active.instantPace')).toBeTruthy();
   });
 
-  it('en manuel, n’affiche aucune allure ni bouton de pause', async () => {
+  it('🔴 un fractionné met l’ALLURE en héros, pas la distance', async () => {
+    mockUseIntervalBlocks.mockReturnValue({ sessionType: 'fractionne', blocks: [] });
+
+    await render(<RunActiveScreen />);
+
+    // Sur un fractionné, le chiffre qu'on corrige seconde par seconde est l'allure : c'est lui
+    // qui doit être en 72 px. L'écran affichait la distance quelle que soit la séance (F13).
+    expect(screen.getAllByText('running.hero.pace').length).toBeGreaterThan(0);
+  });
+
+  it('🔴 le tap sur le héros change le chiffre affiché', async () => {
+    await render(<RunActiveScreen />);
+
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('running.hero.cycle'));
+    });
+
+    // Défaut « distance » → un tap passe à « duration » (ordre allure → distance → temps).
+    expect(screen.getAllByText('running.hero.duration').length).toBeGreaterThan(0);
+  });
+
+  it('🔴 en manuel, la pause EXISTE — c’est un vrai mode, pas une absence', async () => {
     mockUseActiveRun.mockReturnValue({ run: courseGps({ source: 'manual' }), isLoading: false });
 
     await render(<RunActiveScreen />);
 
-    // Sans trace GPS, une allure serait inventée — et une pause n'a rien à mettre en pause.
+    // Constat F14 : le mode sans GPS n'avait ni bouton de pause ni aucun champ. Il a désormais
+    // son propre chrono (R1b), donc une pause à mettre en pause.
+    expect(screen.getByText('running.active.pause')).toBeTruthy();
+    // L'allure moyenne, elle, reste absente : sans trace, elle serait inventée.
     expect(screen.queryByText('running.active.avgPace')).toBeNull();
-    expect(screen.queryByText('running.active.pause')).toBeNull();
   });
 
   it('en GPS sans point reçu, annonce la recherche de signal', async () => {
@@ -191,12 +244,50 @@ describe('états d’écran', () => {
 // ---------------------------------------------------------------------------
 
 describe('arrêt de la course', () => {
-  const appuyerSurStop = async () => {
+  /**
+   * US CARDIO-UX01 (R1d / constat F11) — l'arrêt est en **deux temps**.
+   *
+   * Avant, un seul appui enchaînait `stopTracking` → `finishRun` → navigation : un frottement
+   * dans la poche clôturait une course de 90 minutes sans confirmation ni retour arrière. Le
+   * premier geste met désormais en pause et ouvre le choix ; c'est le second qui clôture.
+   */
+  const ouvrirLePanneau = async () => {
     await render(<RunActiveScreen />);
     await act(async () => {
       fireEvent.press(screen.getByText('running.active.stop'));
     });
   };
+
+  const appuyerSurStop = async () => {
+    await ouvrirLePanneau();
+    await act(async () => {
+      fireEvent.press(screen.getByText('running.stop.finish'));
+    });
+  };
+
+  it('🔴 le premier appui ne clôture RIEN — il met en pause et propose le choix', async () => {
+    await ouvrirLePanneau();
+
+    expect(mockPauseTracking).toHaveBeenCalled();
+    expect(mockFinishRun).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
+    // Les trois issues sont offertes.
+    expect(screen.getByText('running.stop.resume')).toBeTruthy();
+    expect(screen.getByText('running.stop.finish')).toBeTruthy();
+    expect(screen.getByText('running.stop.delete')).toBeTruthy();
+  });
+
+  it('🔴 « Reprendre » repart sans rien clôturer', async () => {
+    await ouvrirLePanneau();
+
+    await act(async () => {
+      fireEvent.press(screen.getByText('running.stop.resume'));
+    });
+
+    expect(mockResumeTracking).toHaveBeenCalled();
+    expect(mockFinishRun).not.toHaveBeenCalled();
+    expect(replace).not.toHaveBeenCalled();
+  });
 
   it('arrête le tracker AVANT de clôturer, puis navigue vers le résumé', async () => {
     await appuyerSurStop();
@@ -240,9 +331,14 @@ describe('arrêt de la course', () => {
     );
 
     await render(<RunActiveScreen />);
-    // Le bouton reste monté pendant l'await : rien n'empêche physiquement un second appui.
+    // Premier temps : le panneau d'issues s'ouvre (aucune clôture).
     await act(async () => {
       fireEvent.press(screen.getByText('running.active.stop'));
+    });
+    // Second temps : la clôture part. Le bouton reste monté pendant l'await — rien n'empêche
+    // physiquement un second appui.
+    await act(async () => {
+      fireEvent.press(screen.getByText('running.stop.finish'));
     });
     await act(async () => {
       fireEvent.press(screen.getByLabelText('running.active.finishing'));
@@ -264,10 +360,13 @@ describe('arrêt de la course', () => {
     );
 
     await render(<RunActiveScreen />);
-    // Cas distinct du précédent, et le seul que la garde `if (stopping) return` protège vraiment :
-    // ici React n'a pas re-rendu entre les deux appuis, donc le bouton n'est pas encore désactivé
-    // et les deux gestionnaires partagent la même fermeture. C'est le double-appui rapide réel.
-    const bouton = screen.getByText('running.active.stop');
+    await act(async () => {
+      fireEvent.press(screen.getByText('running.active.stop'));
+    });
+    // Cas distinct du précédent, et le seul que `useActionLock` protège vraiment : ici React n'a
+    // pas re-rendu entre les deux appuis, donc le bouton n'est pas encore désactivé et les deux
+    // gestionnaires partagent la même fermeture. C'est le double-appui rapide réel.
+    const bouton = screen.getByText('running.stop.finish');
     await act(async () => {
       fireEvent.press(bouton);
       fireEvent.press(bouton);
@@ -281,6 +380,8 @@ describe('arrêt de la course', () => {
   });
 
   it('pendant la clôture, le bouton passe en attente et se désactive', async () => {
+    // Le libellé d'attente est celui de `running.active.finishing`, porté par le bouton du
+    // panneau d'issues depuis l'arrêt en deux temps.
     let resoudreStop: (() => void) | undefined;
     mockStopTracking.mockReturnValue(
       new Promise<void>((resolve) => {
@@ -293,6 +394,9 @@ describe('arrêt de la course', () => {
 
     await act(async () => {
       fireEvent.press(screen.getByText('running.active.stop'));
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByText('running.stop.finish'));
     });
 
     // Le libellé disparaît du rendu : `Button` en mode `loading` n'affiche plus qu'un indicateur,
@@ -425,5 +529,125 @@ describe('comparaison à la cible', () => {
     await render(<RunActiveScreen />);
 
     expect(screen.queryByText(/running\.target\.distance/)).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US CARDIO-UX01 — le chrono net, la pause visible, le verrou
+// ---------------------------------------------------------------------------
+
+describe('chrono net (R1a / constat F9)', () => {
+  it('🔴 affiche la durée du TRACKER quand il suit la course', async () => {
+    // Le tracker connaît la seconde courante ; la base est en retard d'un flush.
+    mockGetLiveNetSeconds.mockReturnValue(1_265);
+    mockUseActiveRun.mockReturnValue({
+      run: courseGps({ durationSeconds: 1_260 }),
+      isLoading: false,
+    });
+    mockUseIntervalBlocks.mockReturnValue({ sessionType: 'endurance', blocks: [] });
+
+    await render(<RunActiveScreen />);
+
+    // 1 265 s = 21:05. C'est la durée NETTE, pas `now − startedAt` : l'écran affichait avant
+    // l'horloge murale, donc un chiffre que le résumé contredisait (constat F9).
+    expect(screen.getByText('21:05')).toBeTruthy();
+  });
+
+  it('🔴 retombe sur la durée persistée quand aucun tracker ne suit — figée, pas fausse', async () => {
+    mockGetLiveNetSeconds.mockReturnValue(null);
+    mockUseActiveRun.mockReturnValue({
+      run: courseGps({ durationSeconds: 600 }),
+      isLoading: false,
+    });
+
+    await render(<RunActiveScreen />);
+
+    // Écran remonté après un redémarrage du runtime : 10:00 figé. L'ancien code aurait affiché
+    // l'écart depuis `startedAt`, c'est-à-dire un chiffre faux qui a l'air vivant.
+    expect(screen.getByText('10:00')).toBeTruthy();
+  });
+});
+
+describe('pause visible (R1a)', () => {
+  it('🔴 affiche un bandeau explicite quand la course est en pause', async () => {
+    mockGetPaused.mockReturnValue(true);
+
+    await render(<RunActiveScreen />);
+
+    // Sans ce bandeau, un chrono figé se lit comme un écran gelé — et l'ancien écran, lui,
+    // laissait le chrono défiler pendant la pause, ce qui donnait l'impression inverse : que le
+    // bouton Pause ne servait à rien.
+    expect(screen.getByText('running.active.pausedTitle')).toBeTruthy();
+    expect(screen.getByText('running.active.pausedBody')).toBeTruthy();
+  });
+
+  it('n’affiche aucun bandeau quand la course tourne', async () => {
+    mockGetPaused.mockReturnValue(false);
+
+    await render(<RunActiveScreen />);
+
+    expect(screen.queryByText('running.active.pausedTitle')).toBeNull();
+  });
+});
+
+describe('verrou d’écran (R1d / constat F12)', () => {
+  it('🔴 verrouiller retire les commandes et ne laisse que le déverrouillage', async () => {
+    await render(<RunActiveScreen />);
+
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('running.active.lock'));
+    });
+
+    // `useKeepAwake` garde l'écran allumé ET tactile pendant toute la course : sans verrou, une
+    // main mouillée ou une poche suffit à mettre en pause ou à arrêter.
+    expect(screen.getByText('running.active.lockedTitle')).toBeTruthy();
+    expect(screen.queryByText('running.active.stop')).toBeNull();
+    expect(screen.queryByText('running.active.pause')).toBeNull();
+    expect(screen.getByText('running.active.unlock')).toBeTruthy();
+  });
+
+  it('🔴 le déverrouillage demande un appui LONG', async () => {
+    await render(<RunActiveScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('running.active.lock'));
+    });
+
+    // Un appui simple ne doit pas suffire : sinon le verrou ne protège de rien.
+    await act(async () => {
+      fireEvent.press(screen.getByLabelText('running.active.unlock'));
+    });
+    expect(screen.getByText('running.active.lockedTitle')).toBeTruthy();
+
+    await act(async () => {
+      fireEvent(screen.getByLabelText('running.active.unlock'), 'longPress');
+    });
+    expect(screen.queryByText('running.active.lockedTitle')).toBeNull();
+  });
+});
+
+describe('suppression depuis le panneau d’issues (R1d / constat F18)', () => {
+  it('🔴 demande confirmation, puis supprime et quitte le pilier', async () => {
+    const alerte = jest.spyOn(Alert, 'alert');
+
+    await render(<RunActiveScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByText('running.active.stop'));
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByText('running.stop.delete'));
+    });
+
+    // Une suppression ne se fait jamais d'un geste : elle retire aussi les records portés et
+    // recalcule l'allure de référence (R1d-1).
+    expect(alerte).toHaveBeenCalled();
+    const boutons = alerte.mock.calls[0]![2] as { text: string; onPress?: () => void }[];
+    const confirmer = boutons.find((b) => b.text === 'running.stop.delete');
+    await act(async () => {
+      confirmer?.onPress?.();
+    });
+
+    expect(mockDeleteRun).toHaveBeenCalledWith('run-1');
+    expect(replace).toHaveBeenCalledWith('/(tabs)/running');
+    alerte.mockRestore();
   });
 });

@@ -338,6 +338,13 @@ const sessions = new Table({
   description: column.text,
   instructions: column.text,
   adaptation_criterion: column.text,
+  // US CARDIO-UX01 (R9 / constat F35) — la semaine du programme, 0-based.
+  // Migration : 20260910154350_cardio_ux01_semaines_et_adaptation.sql
+  // `null` = séance de la semaine type, répétée chaque semaine : c'est le comportement d'avant,
+  // et c'est pourquoi aucun programme existant n'a besoin d'être reprisé.
+  // 🔴 Même piège que les 8 colonnes ci-dessus : sans cette ligne l'écriture échoue et l'erreur
+  // est avalée. Couvert par un test d'écriture-relecture.
+  week_index: column.integer,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -526,6 +533,12 @@ const planned_sessions = new Table({
   scheduled_time: column.text,
   status: column.text,
   week_index: column.integer,
+  // US CARDIO-UX01 (R3-3 / constat F36) — l'adaptation acceptée pour CETTE occurrence.
+  // Migration : 20260910154350_cardio_ux01_semaines_et_adaptation.sql
+  // Sur l'occurrence et jamais sur le template : « j'allège aujourd'hui » n'est pas
+  // « je change mon plan ».
+  adapted_reps_pct: column.integer,
+  adapted_pace_delta_s: column.integer,
   completed_at: column.text,
   created_at: column.text,
   updated_at: column.text,

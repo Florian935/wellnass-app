@@ -31,9 +31,12 @@ jest.unmock('@/running/tracker');
 
 import {
   drain,
+  isClockRunning,
   pauseTracking,
   resumeTracking,
+  startManualClock,
   startTracking,
+  stopClock,
   stopTracking,
 } from '../tracker';
 import {
@@ -445,5 +448,142 @@ describe('resumeTracking', () => {
     resumeTracking();
 
     expect(trackerState.lowSpeedSinceT).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US CARDIO-UX01 (R1b) — le mode sans GPS enregistre sa durée (constat F15)
+// ---------------------------------------------------------------------------
+
+/**
+ * ── Ce que ces tests couvrent, et pourquoi ils n'existaient pas ─────────────────────────────────
+ * `runs.duration_seconds` n'était écrit que par `flushTrack`, appelé seulement par le tracker,
+ * lancé seulement en mode GPS. Une course « sans GPS » finissait donc à `duration_seconds = null` :
+ * le résumé affichait « Durée — » et « Allure — », et le tapis — usage cardio revendiqué par la
+ * roadmap 5.21 — ne gardait rien.
+ *
+ * Le test qui couvrait ce chemin **simulait le tracker à la main** :
+ *
+ *     const id = await startRun('manual');
+ *     // La durée d'une course manuelle est posée par le tracker avant la clôture ; …
+ *     await flushTrack(id, { ...segment('a'), durationSeconds: 1800 });
+ *
+ * Le commentaire énonçait une hypothèse fausse en production — en mode manuel, aucun tracker ne
+ * tournait. Le test passait, la fonctionnalité était cassée. Ces tests-ci passent par le **vrai**
+ * chemin : `startManualClock`, le tick d'horloge, puis la clôture.
+ */
+describe('startManualClock — le mode sans GPS (CARDIO-UX01)', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-10T08:00:00.000Z'));
+  });
+
+  afterEach(() => {
+    stopClock();
+    jest.useRealTimers();
+  });
+
+  it('🔴 ne demande AUCUNE permission et ne démarre AUCUN suivi de position', () => {
+    startManualClock('run-manual', Date.now());
+
+    // C'est tout l'intérêt du mode : un chrono, sur un tapis, sans GPS ni notification.
+    expect(mockFg).not.toHaveBeenCalled();
+    expect(mockBg).not.toHaveBeenCalled();
+    expect(mockStartUpdates).not.toHaveBeenCalled();
+    expect(isClockRunning()).toBe(true);
+  });
+
+  it('🔴 la durée avance sans le moindre point GPS', () => {
+    startManualClock('run-manual', Date.now());
+
+    jest.advanceTimersByTime(45_000);
+
+    expect(trackerState.netDurationS).toBeCloseTo(45, 0);
+  });
+
+  it('🔴 flushe la durée périodiquement, et SANS distance ni dénivelé', () => {
+    startManualClock('run-manual', Date.now());
+
+    jest.advanceTimersByTime(10_000);
+
+    // `null` = « ne pas écrire ». Écrire `distance_m: 0` ferait disparaître le champ de saisie de
+    // distance du résumé (il s'affiche sur `distanceM !== null`), et « +0 m » de dénivelé serait
+    // un chiffre inventé.
+    expect(mockFlush).toHaveBeenCalledWith('run-manual', {
+      segmentEncoded: '',
+      distanceM: null,
+      durationSeconds: 10,
+      elevationGainM: null,
+      elevationLossM: null,
+    });
+  });
+
+  it('la pause fige le chrono, la reprise ne rattrape pas le temps perdu', async () => {
+    startManualClock('run-manual', Date.now());
+
+    jest.advanceTimersByTime(20_000); // 20 s courues
+    await pauseTracking();
+    jest.advanceTimersByTime(60_000); // 1 min de pause
+    resumeTracking();
+    jest.advanceTimersByTime(10_000); // 10 s de plus
+
+    expect(trackerState.netDurationS).toBeCloseTo(30, 0);
+  });
+
+  it('l’auto-pause est désactivée : sans vitesse observable, elle n’a rien à observer', () => {
+    startManualClock('run-manual', Date.now());
+
+    expect(trackerState.autoPause).toBe(false);
+    expect(trackerState.mode).toBe('manual');
+  });
+
+  it('🔴 deux démarrages ne créent pas deux horloges', () => {
+    startManualClock('run-manual', Date.now());
+    startManualClock('run-manual', Date.now());
+
+    jest.advanceTimersByTime(10_000);
+
+    // Deux timers feraient avancer la durée DEUX fois plus vite — un défaut invisible en test
+    // unitaire naïf, et brutal en course.
+    expect(trackerState.netDurationS).toBeCloseTo(10, 0);
+  });
+});
+
+describe('stopTracking — la durée exacte est écrite à la clôture (CARDIO-UX01)', () => {
+  beforeEach(() => {
+    jest.useFakeTimers();
+    jest.setSystemTime(new Date('2026-09-10T08:00:00.000Z'));
+  });
+
+  afterEach(() => {
+    stopClock();
+    jest.useRealTimers();
+  });
+
+  it('🔴 compte les secondes écoulées depuis le dernier tick, puis les persiste', async () => {
+    startManualClock('run-manual', Date.now());
+
+    // 25 s : deux flushs périodiques (à 10 s et 20 s) puis 5 s « orphelines ».
+    jest.advanceTimersByTime(25_000);
+    await stopTracking();
+
+    // Sans le flush final, la durée enregistrée serait celle du flush de 20 s — donc 5 s trop
+    // courte. En mode manuel, ce flush est la seule durée jamais écrite.
+    expect(mockFlush).toHaveBeenLastCalledWith('run-manual', {
+      segmentEncoded: '',
+      distanceM: null,
+      durationSeconds: 25,
+      elevationGainM: null,
+      elevationLossM: null,
+    });
+  });
+
+  it('arrête l’horloge', async () => {
+    startManualClock('run-manual', Date.now());
+    expect(isClockRunning()).toBe(true);
+
+    await stopTracking();
+
+    expect(isClockRunning()).toBe(false);
   });
 });

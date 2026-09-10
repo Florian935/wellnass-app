@@ -1,0 +1,162 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f7eede; font-family: 'Hanken Grotesk', system-ui, sans-serif; color: #33291f; -webkit-font-smoothing: antialiased; }
+    a { color: #b14f2b; }
+    .lbl { font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; font-size: 13px; color: #786a59; }
+    .fld { height: 42px; border-radius: 10px; border: 1px solid #90897d; background: #f7eede; display: flex; align-items: center; padding: 0 11px; }
+    .fldv { font-family: 'Space Mono', monospace; font-weight: 400; font-size: 14px; color: #33291f; }
+    .fldp { font-family: 'Hanken Grotesk', sans-serif; font-size: 14px; color: #90897d; }
+    .chip { border-radius: 999px; border: 1px solid #ece0cd; padding: 7px 12px; font-family: 'Hanken Grotesk', sans-serif; font-weight: 500; font-size: 12.5px; }
+    .chipOn { border-radius: 999px; border: 1px solid #b14f2b; background: #b14f2b; color: #ffffff; padding: 7px 12px; font-family: 'Hanken Grotesk', sans-serif; font-weight: 500; font-size: 12.5px; }
+    .tgl { height: 40px; border-radius: 10px; border: 1px solid #ece0cd; background: #f7eede; display: grid; align-items: stretch; }
+    .tglI { display: flex; align-items: center; justify-content: center; font-family: 'Hanken Grotesk', sans-serif; font-weight: 600; font-size: 13px; }
+    .num { width: 18px; height: 18px; border-radius: 9px; background: #33291f; color: #f0e4d0; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .row { display: flex; flex-direction: column; gap: 5px; }
+    .rowh { display: flex; align-items: center; gap: 7px; }
+  </style>
+</helmet>
+
+<div style="width: 390px; min-height: 1420px; background: #f7eede; display: flex; flex-direction: column;">
+
+  <div style="background: #33291f; padding: 9px 20px; display: flex; align-items: center; gap: 8px;">
+    <span style="font-size: 10px; font-weight: 700; letter-spacing: 0.6px; text-transform: uppercase; color: #d9a888;">Aujourd'hui — relevé du code</span>
+    <span style="font-size: 11px; color: #c9b79a;">IntervalBlockEditor.tsx</span>
+  </div>
+
+  <div style="padding: 18px 20px 0 20px; display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.8px;">Un seul segment</div>
+    <div style="font-size: 13px; line-height: 18px; color: #786a59;">14 contrôles, tous dépliés en permanence. Une séance de fractionné en compte 5.</div>
+  </div>
+
+  <div style="padding: 16px 20px 20px 20px;">
+    <div style="border-radius: 16px; border: 1px solid #ece0cd; background: #fffaf2; padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+
+      <!-- headerRow -->
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <span style="font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 15px;">Segment 1</span>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7h15M9 7V4.5h6V7M6.5 7l1 13h9l1-13"/></svg>
+      </div>
+
+      <!-- 1. Nature du segment : 5 puces -->
+      <div class="row">
+        <div class="rowh"><div class="num">1</div><span class="lbl">Nature</span></div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          <span class="chip">Échauffement</span><span class="chip">Gammes</span><span class="chipOn">Corps</span><span class="chip">Récupération</span><span class="chip">Retour au calme</span>
+        </div>
+      </div>
+
+      <!-- 2. Répétitions -->
+      <div class="row">
+        <div class="rowh"><div class="num">2</div><span class="lbl">Répétitions</span></div>
+        <div class="fld"><span class="fldv">6</span></div>
+      </div>
+
+      <!-- 3-4. Phase rapide : bascule + champ -->
+      <div class="row">
+        <div class="rowh"><div class="num">3</div><div class="num">4</div><span class="lbl">Phase rapide</span></div>
+        <div class="tgl" style="grid-template-columns: repeat(2, minmax(0, 1fr));">
+          <div class="tglI" style="background: #b14f2b; color: #ffffff; border-radius: 9px;">Distance (m)</div>
+          <div class="tglI">Durée (min)</div>
+        </div>
+        <div class="fld"><span class="fldv">400</span></div>
+      </div>
+
+      <!-- 5. % VMA -->
+      <div class="row">
+        <div class="rowh"><div class="num">5</div><span class="lbl">% VMA</span></div>
+        <div class="fld"><span class="fldp">ex. 95</span></div>
+      </div>
+
+      <!-- 6-7. Allure de la fraction -->
+      <div class="row">
+        <div class="rowh"><div class="num">6</div><div class="num">7</div><span class="lbl">Allure de la fraction</span></div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="fld" style="flex-grow: 1;"><span class="fldv">4:05</span></div>
+          <span class="lbl">–</span>
+          <div class="fld" style="flex-grow: 1;"><span class="fldv">4:10</span></div>
+        </div>
+      </div>
+
+      <!-- 8. Bascule progressive -->
+      <div class="row">
+        <div class="rowh"><div class="num">8</div><span class="lbl">Allure progressive</span></div>
+        <div style="display: flex;"><span class="chip">Allure progressive</span></div>
+        <span style="font-size: 12px; line-height: 16px; color: #786a59;">Les deux bornes décrivent une rampe (« de 4:35 vers 4:25 »), pas une tolérance.</span>
+      </div>
+
+      <!-- 9-10. Chrono cible -->
+      <div class="row">
+        <div class="rowh"><div class="num">9</div><div class="num">10</div><span class="lbl">Chrono cible de la fraction</span></div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="fld" style="flex-grow: 1;"><span class="fldp">1:38</span></div>
+          <span class="lbl">–</span>
+          <div class="fld" style="flex-grow: 1;"><span class="fldp">1:42</span></div>
+        </div>
+      </div>
+
+      <!-- 11. Nature de la récupération : 4 puces -->
+      <div class="row">
+        <div class="rowh"><div class="num">11</div><span class="lbl">Nature de la récupération</span></div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+          <span class="chipOn">Trot</span><span class="chip">Marche</span><span class="chip">Arrêt</span><span class="chip">Libre</span>
+        </div>
+      </div>
+
+      <!-- 12-13. Groupe : la clé de base de données -->
+      <div class="row" style="padding: 10px; border-radius: 12px; background: #f7ead6; border: 1px solid #e9cfa0; margin: 0 -4px;">
+        <div class="rowh"><div class="num">12</div><div class="num">13</div><span class="lbl" style="color: #8a6419;">Groupe répété</span></div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="fld" style="flex-grow: 1; background: #fffaf2;"><span class="fldp">Aucun</span></div>
+          <div class="fld" style="flex-grow: 1; background: #fffaf2;"><span class="fldp">Répét.</span></div>
+        </div>
+        <span style="font-size: 12px; line-height: 16px; color: #8a6419;">Deux segments qui se suivent avec <strong>la même clé</strong> sont répétés ensemble.</span>
+      </div>
+
+      <!-- 14. Récupération : bascule 3 + champ -->
+      <div class="row">
+        <div class="rowh"><div class="num">14</div><span class="lbl">Récupération</span></div>
+        <div class="tgl" style="grid-template-columns: repeat(3, minmax(0, 1fr));">
+          <div class="tglI">Aucune</div>
+          <div class="tglI" style="background: #b14f2b; color: #ffffff; border-radius: 9px;">Distance (m)</div>
+          <div class="tglI">Durée (min)</div>
+        </div>
+        <div class="fld"><span class="fldv">200</span></div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Le constat, chiffré -->
+  <div style="margin-top: auto; background: #f7ead6; border-top: 1px solid #e9cfa0; padding: 16px 20px; display: flex; flex-direction: column; gap: 9px;">
+    <div style="display: flex; align-items: flex-start; gap: 8px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #8a6419; flex-shrink: 0; padding-top: 1px;">F27</span>
+      <span style="font-size: 12px; line-height: 17px; color: #33291f;">Ce bloc × 5 segments = <strong>60 à 80 contrôles</strong> pour une séance que le coureur décrit à l'oral en huit mots.</span>
+    </div>
+    <div style="display: flex; align-items: flex-start; gap: 8px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #8a6419; flex-shrink: 0; padding-top: 1px;">F28</span>
+      <span style="font-size: 12px; line-height: 17px; color: #33291f;">Le champ « Groupe » est une <strong>clé de base de données</strong> : il faut taper la même chaîne dans deux segments pour écrire 3 × (800 + 400).</span>
+    </div>
+    <div style="display: flex; align-items: flex-start; gap: 8px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #8a6419; flex-shrink: 0; padding-top: 1px;">F29</span>
+      <span style="font-size: 12px; line-height: 17px; color: #33291f;">Trois façons de dire la même intensité — <strong>% VMA, allure, chrono cible</strong> — visibles ensemble, priorité invisible.</span>
+    </div>
+    <div style="display: flex; align-items: flex-start; gap: 8px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #8a6419; flex-shrink: 0; padding-top: 1px;">F30</span>
+      <span style="font-size: 12px; line-height: 17px; color: #33291f;">Les durées courtes se saisissent en <strong>minutes décimales</strong> : une récup de 45 s s'affiche « 0.75 ».</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

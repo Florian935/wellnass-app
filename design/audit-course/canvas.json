@@ -1,0 +1,40 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "Écrans cibles" },
+    { "id": "page-2", "name": "Aujourd'hui" }
+  ],
+  "artboards": [
+    { "file": "Decouvrir.dc.html",   "x": 0,    "y": 0,    "w": 390, "h": 880,  "page": "page-1", "title": "1 · Découvrir" },
+    { "file": "Main.dc.html",        "x": 490,  "y": 0,    "w": 390, "h": 1200, "page": "page-1", "title": "2 · Le hub" },
+    { "file": "Partir.dc.html",      "x": 980,  "y": 0,    "w": 390, "h": 920,  "page": "page-1", "title": "3 · Partir" },
+    { "file": "Courir.dc.html",      "x": 1470, "y": 0,    "w": 390, "h": 890,  "page": "page-1", "title": "4 · Courir" },
+
+    { "file": "CourirPause.dc.html", "x": 0,    "y": 1510, "w": 390, "h": 890,  "page": "page-1", "title": "4 bis · Arrêter" },
+    { "file": "Clore.dc.html",       "x": 490,  "y": 1510, "w": 390, "h": 920,  "page": "page-1", "title": "5 · Clore" },
+    { "file": "Analyser.dc.html",    "x": 980,  "y": 1510, "w": 390, "h": 1200, "page": "page-1", "title": "5 bis · Analyser" },
+    { "file": "Preparer.dc.html",    "x": 1470, "y": 1510, "w": 390, "h": 1280, "page": "page-1", "title": "6 · Préparer" },
+
+    { "file": "Historique.dc.html",  "x": 0,    "y": 3100, "w": 390, "h": 1060, "page": "page-1", "title": "7 · Historique" },
+
+    { "file": "AvantCourir.dc.html",  "x": 0,   "y": 0,    "w": 390, "h": 920,  "page": "page-2", "title": "Aujourd'hui · Courir" },
+    { "file": "AvantSegment.dc.html", "x": 490, "y": 0,    "w": 390, "h": 1520, "page": "page-2", "title": "Aujourd'hui · Un segment" }
+  ],
+  "annotations": [
+    {
+      "id": "intro",
+      "x": 0, "y": -480, "w": 880, "page": "page-1",
+      "text": "AUDIT ERGONOMIE — PILIER COURSE · 09/09/2026\n\nLes écrans cibles de la refonte. Chacun répare des constats numérotés de l'audit\n(docs/product/audit-ergonomie-pilier-course.md, 40 constats F1 → F40).\n\nPalette et typographie = celles de l'app (theme/colors.ts, theme/fonts.ts) : fond #f7eede,\nsurface #fffaf2, accent #b14f2b, panneau #33291f. Bricolage Grotesque + Hanken Grotesk\n+ Space Mono. Cartes r22 / bordure 1 / padding 18. Boutons h52 / r16.\n\nMaquettes statiques. La séance qui sert d'exemple partout est la même :\n2 km échauffement + 4×30 s gammes + 6×400 m @ 4:05–4:10 + R 200 m trot + 1 km calme.\n\nLa page « Aujourd'hui » relève les deux écrans actuels : c'est l'écart qui est l'argument."
+    },
+    { "id": "n-decouvrir", "x": 0,    "y": -200, "w": 390, "page": "page-1", "text": "1 · DÉCOUVRIR\nF2 — quatre portes équivalentes vers l'allure de référence, dont « je ne sais pas encore ». Et les allures déduites s'affichent AVANT de valider." },
+    { "id": "n-hub",       "x": 490,  "y": -200, "w": 390, "page": "page-1", "text": "2 · LE HUB\nF1 le profil entre dans le pilier · F4 le bouton part directement · F36 la carte d'adaptation AGIT · F37 la semaine est visible." },
+    { "id": "n-partir",    "x": 980,  "y": -200, "w": 390, "page": "page-1", "text": "3 · PARTIR\nF6 on attend le fix GPS · F7 la consigne reste visible · F4 le mode est mémorisé · F5 le compte à rebours promis · F26 la porte de la saisie rétroactive." },
+    { "id": "n-courir",    "x": 1470, "y": -200, "w": 390, "page": "page-1", "text": "4 · COURIR — l'écran le plus important\nF10 le bandeau de segment (fraction 3/6, 250 m restants, cible, ce qui suit) · F9 le temps est NET et c'est écrit · F13 l'allure est en héros sur un fractionné." },
+    { "id": "n-pause",     "x": 0,    "y": 1320, "w": 390, "page": "page-1", "text": "4 bis · L'ARRÊT EN DEUX TEMPS\nF11 un appui met en pause et propose trois issues · F18 supprimer devient possible · F9 le chrono est figé et la pause se voit." },
+    { "id": "n-clore",     "x": 490,  "y": 1320, "w": 390, "page": "page-1", "text": "5 · CLORE — un écran, zéro défilement\nF17 les 4 chiffres puis le ressenti puis Enregistrer · F20 la séance planifiée est validée ICI · l'écart pause/réel est expliqué." },
+    { "id": "n-analyser",  "x": 980,  "y": 1320, "w": 390, "page": "page-1", "text": "5 bis · ANALYSER — à la demande\nF21 le tableau fraction par fraction lisible, avec la plage complète · F19 corriger · F18 supprimer." },
+    { "id": "n-preparer",  "x": 1470, "y": 1320, "w": 390, "page": "page-1", "text": "6 · PRÉPARER — de 14 contrôles à 4\nF27 segments repliés, dépli essentiel, réglages fins cachés · F28 « Répéter la sélection » remplace la clé texte · F29 les trois expressions de l'intensité passent au dépli avancé · F30 les durées en secondes · F32 les consignes dans leur section · F34 modèles + saisie en une ligne." },
+    { "id": "n-histo",     "x": 0,    "y": 2910, "w": 390, "page": "page-1", "text": "7 · HISTORIQUE\nF22 trois onglets au lieu de huit analyses empilées · F23 filtres et regroupement par mois · F24 une ligne dit enfin le type, le terrain, le RPE · F18/F19 par balayage · F26 ajouter une course passée." },
+    { "id": "n-avant",     "x": 0,    "y": -220, "w": 880, "page": "page-2", "text": "AUJOURD'HUI — relevé du code, pas une proposition\nCes deux écrans reproduisent l'existant avec ses valeurs réelles (72 px de distance en héros, 14 contrôles par segment). Les défauts sont désignés en pied d'écran.\nÀ comparer avec « 4 · Courir » et « 6 · Préparer » de la page Écrans cibles." }
+  ],
+  "launch": { "view": "canvas", "page": "page-1" }
+}

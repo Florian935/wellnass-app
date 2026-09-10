@@ -1,0 +1,143 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; background: #f7eede; font-family: 'Hanken Grotesk', system-ui, sans-serif; color: #33291f; -webkit-font-smoothing: antialiased; }
+    a { color: #b14f2b; }
+  </style>
+</helmet>
+
+<div style="width: 390px; min-height: 844px; background: #f7eede; display: flex; flex-direction: column;">
+
+  <!-- Barre d'état applicative -->
+  <div style="padding: 26px 20px 10px 20px; display: flex; align-items: center; justify-content: space-between;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <div style="width: 8px; height: 8px; border-radius: 4px; background: #66714b;"></div>
+      <span style="font-weight: 500; font-size: 12px; color: #786a59;">GPS · précision 4 m</span>
+    </div>
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#66714b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 11.5a8 8 0 0 0-14-5"/><path d="M4 12.5a8 8 0 0 0 14 5"/><path d="M6 3v3.5h3.5M18 21v-3.5h-3.5"/></svg>
+      <span style="font-weight: 500; font-size: 12px; color: #786a59;">Synchronisé</span>
+    </div>
+  </div>
+
+  <!-- ══════════ F10 : LE BANDEAU DE SEGMENT — ce qui manque aujourd'hui ══════════ -->
+  <div style="margin: 0 20px; border-radius: 22px; background: #33291f; padding: 16px 18px; display: flex; flex-direction: column; gap: 10px;">
+
+    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <div style="width: 9px; height: 9px; border-radius: 5px; background: #d9a888;"></div>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 19px; letter-spacing: -0.4px; color: #f0e4d0;">Fraction 3</span>
+        <span style="font-family: 'Space Mono', monospace; font-weight: 400; font-size: 15px; color: #c9b79a;">/ 6</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0;">
+        <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 22px; color: #f0e4d0; line-height: 24px;">250 m</span>
+        <span style="font-size: 10px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #c9b79a;">restants</span>
+      </div>
+    </div>
+
+    <!-- Progression DANS le segment -->
+    <div style="height: 8px; border-radius: 4px; background: rgba(240,228,208,0.18); overflow: hidden;">
+      <div style="width: 37.5%; height: 100%; border-radius: 4px; background: #d9a888;"></div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 6px;">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #c9b79a;">Cible</span>
+        <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 14px; color: #f0e4d0;">4:05 – 4:10</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 5.5 15.5 12 6 18.5"/></svg>
+        <span style="font-size: 12px; color: #c9b79a;">Puis récup 200 m trot</span>
+      </div>
+    </div>
+
+    <!-- Progression de la SÉANCE entière : 4 segments -->
+    <div style="display: flex; gap: 3px; padding-top: 2px;">
+      <div style="flex-grow: 1; height: 4px; border-radius: 2px; background: #d9a888;"></div>
+      <div style="flex-grow: 1; height: 4px; border-radius: 2px; background: #d9a888;"></div>
+      <div style="flex-grow: 3; height: 4px; border-radius: 2px; background: linear-gradient(to right, #d9a888 42%, rgba(240,228,208,0.18) 42%);"></div>
+      <div style="flex-grow: 1; height: 4px; border-radius: 2px; background: rgba(240,228,208,0.18);"></div>
+    </div>
+  </div>
+
+  <!-- ══════════ Le chiffre utile du moment ══════════ -->
+  <!-- F13 : en fractionné, c'est l'ALLURE qui est en héros — pas la distance -->
+  <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px 20px 0 20px;">
+
+    <span style="font-size: 12px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #786a59;">Allure instantanée</span>
+    <div style="display: flex; align-items: flex-end; gap: 8px;">
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 76px; letter-spacing: -3px; line-height: 78px; color: #66714b;">4:07</span>
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 600; font-size: 22px; color: #786a59; margin-bottom: 14px;">/km</span>
+    </div>
+
+    <!-- Jauge d'écart à la cible : dans la plage = vert, hors plage = accent, jamais rouge -->
+    <div style="width: 240px; display: flex; flex-direction: column; gap: 5px; padding-top: 6px;">
+      <div style="position: relative; height: 10px; border-radius: 5px; background: #eadcc6;">
+        <div style="position: absolute; left: 25%; width: 25%; top: 0; height: 10px; border-radius: 5px; background: rgba(102,113,75,0.32);"></div>
+        <div style="position: absolute; left: calc(35% - 2px); top: -3px; width: 4px; height: 16px; border-radius: 2px; background: #66714b;"></div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: #786a59;">4:00</span>
+        <span style="font-size: 12px; font-weight: 700; color: #66714b;">Dans la cible</span>
+        <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: #786a59;">4:20</span>
+      </div>
+    </div>
+
+    <!-- Les deux chiffres secondaires. « net » est écrit : F9 -->
+    <div style="width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; padding-top: 26px;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #786a59;">Distance</span>
+        <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 24px;">3,75</span>
+        <span style="font-size: 11px; color: #786a59;">km</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px; border-left: 1px solid #ece0cd; border-right: 1px solid #ece0cd;">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #786a59;">Temps net</span>
+        <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 24px;">20:43</span>
+        <span style="font-size: 11px; color: #786a59;">hors pauses</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+        <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: #786a59;">Moyenne</span>
+        <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 24px;">5:31</span>
+        <span style="font-size: 11px; color: #786a59;">/km</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Carte du parcours -->
+  <div style="margin: 18px 20px 0 20px; height: 118px; border-radius: 22px; border: 1px solid #ece0cd; background: #f3ddd0; overflow: hidden; position: relative;">
+    <svg width="350" height="118" viewBox="0 0 350 118" fill="none">
+      <path d="M20 96 C 52 96 58 62 88 58 C 118 54 126 86 158 84 C 190 82 196 40 232 34 C 268 28 282 62 316 52" stroke="#b14f2b" stroke-width="3.5" stroke-linecap="round"/>
+      <circle cx="20" cy="96" r="5" fill="#fffaf2" stroke="#786a59" stroke-width="2.5"/>
+      <circle cx="316" cy="52" r="6" fill="#b14f2b" stroke="#fffaf2" stroke-width="2.5"/>
+    </svg>
+  </div>
+
+  <!-- ══════════ F11 + F12 : verrouiller, pause, arrêt en deux temps ══════════ -->
+  <div style="padding: 14px 20px 22px 20px; display: flex; align-items: center; gap: 10px;">
+    <div style="width: 60px; height: 56px; border-radius: 16px; border: 1px solid #ece0cd; background: #fffaf2; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;">
+      <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="10.5" width="14" height="10" rx="2"/><path d="M8.5 10.5V7.5a3.5 3.5 0 0 1 7 0v3"/></svg>
+      <span style="font-size: 9px; font-weight: 600; color: #786a59;">Bloquer</span>
+    </div>
+    <div style="flex-grow: 1; height: 56px; border-radius: 16px; border: 1px solid #ece0cd; background: #fffaf2; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#b14f2b"><rect x="7" y="5" width="3.6" height="14" rx="1.2"/><rect x="13.4" y="5" width="3.6" height="14" rx="1.2"/></svg>
+      <span style="font-weight: 700; font-size: 16px;">Pause</span>
+    </div>
+    <div style="flex-grow: 1; height: 56px; border-radius: 16px; background: #b14f2b; display: flex; align-items: center; justify-content: center; gap: 8px;">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      <span style="font-weight: 700; font-size: 16px; color: #ffffff;">Arrêter</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

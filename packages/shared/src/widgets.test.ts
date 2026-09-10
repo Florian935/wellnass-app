@@ -3,6 +3,7 @@ import {
   HOME_WIDGET_IDS,
   LAYOUT_VERSION,
   MAX_HOME_WIDGETS,
+  MAX_RUNNING_WIDGETS,
   MAX_STRENGTH_WIDGETS,
   WIDGET_SCREENS,
   STRENGTH_WIDGET_IDS,
@@ -144,6 +145,13 @@ describe('WIDGET_REGISTRY', () => {
     // Le hub porte deja une zone Agir epinglee au-dessus de la grille : le budget vertical
     // restant ne vaut pas celui de l'accueil, d'ou un plafond plus bas.
     expect(STRENGTH_WIDGET_IDS.length).toBeLessThanOrEqual(MAX_STRENGTH_WIDGETS);
+  });
+
+  it('ne depasse pas le plafond du hub course (US CARDIO-UX01)', () => {
+    // Troisieme et dernier hub a recevoir son cliquet, le 10/09/2026. Le registre course n'avait
+    // pas derive comme celui de la muscu (4 entrees, pas 7) — mais il se rendait **meme vide**,
+    // faute de predicat `isActive` passe a la grille : quatre tuiles a zero sur un compte neuf.
+    expect(RUNNING_WIDGET_IDS.length).toBeLessThanOrEqual(MAX_RUNNING_WIDGETS);
   });
 
   it('declare une garde ET une taille pour chaque widget des TROIS hubs', () => {

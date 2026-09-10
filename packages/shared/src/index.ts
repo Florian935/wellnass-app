@@ -71,6 +71,10 @@ export * from './running';
 export * from './run-target';
 export * from './gpx';
 export * from './running-paces';
+export * from './run-clock';
+export * from './run-segment-banner';
+export * from './running-hub';
+export * from './session-line';
 export * from './running-intervals';
 // US RUN-F4 — seances de course structurees (lots E, F, G/H, J).
 export * from './run-pace-guidance';

@@ -622,6 +622,66 @@ export async function markPlannedSessionDone(id: string): Promise<void> {
   await patch('planned_sessions', id, { status: 'done', completed_at: nowUtc() });
 }
 
+/**
+ * L'écriture d'une variante adaptée est-elle possible ? (US CARDIO-UX01, R3-3 / constat F36)
+ *
+ * ── Pourquoi un drapeau et pas un simple appel ───────────────────────────────────────────────────
+ * `applyAdaptationForToday` écrit `planned_sessions.adapted_reps_pct` et `adapted_pace_delta_s`,
+ * deux colonnes **additives** livrées par la migration de cette US — et **non poussées** sur le
+ * cloud, parce que `npm run db:push` vise la base de production et reste une décision de Florian
+ * ou Damien (spec §7).
+ *
+ * Écrire une colonne que le serveur ne connaît pas ne casse pas l'écriture **locale** : ça casse
+ * l'**upload**, et PowerSync sérialise la file de synchro — donc ça bloquerait la remontée de
+ * **toutes** les tables, pas seulement de celle-ci. Le coût d'un oubli est disproportionné, d'où
+ * ce garde-fou explicite plutôt qu'un `try/catch`.
+ *
+ * ▶️ **Après `npm run db:push`** : passer à `true`, cocher la migration dans
+ * `supabase/MIGRATIONS.md`, et le bouton « Appliquer aujourd'hui » apparaît. Rien d'autre à faire.
+ */
+export const ADAPTATION_WRITE_READY = false;
+
+/** Variante adaptée d'une occurrence : ce que l'utilisateur a accepté pour aujourd'hui. */
+export type TodayAdaptation = {
+  /** Pourcentage de répétitions retirées (0-100), ou `null` si la proposition n'en portait pas. */
+  repsReductionPct: number | null;
+  /** Ralentissement d'allure en s/km, ou `null`. */
+  paceSlowdownSPerKm: number | null;
+};
+
+/**
+ * Applique une adaptation à la séance **du jour seulement** (règle R3-3).
+ *
+ * Écrit sur l'**occurrence** (`planned_sessions`), jamais sur le template (`sessions`) : le
+ * programme des semaines suivantes reste intact. C'est ce qui distingue « j'allège aujourd'hui,
+ * parce que j'ai mal dormi » de « je change mon plan ».
+ *
+ * ⚠️ Appeler seulement quand `ADAPTATION_WRITE_READY` est `true` — voir la note ci-dessus.
+ */
+export async function applyAdaptationForToday(
+  plannedSessionId: string,
+  adaptation: TodayAdaptation,
+): Promise<void> {
+  await patch('planned_sessions', plannedSessionId, {
+    adapted_reps_pct: adaptation.repsReductionPct,
+    adapted_pace_delta_s: adaptation.paceSlowdownSPerKm,
+  });
+}
+
+/**
+ * Remet une séance planifiée en `planned` (US CARDIO-UX01, R1c-2).
+ *
+ * Deux appelants, tous deux côté course :
+ *  - **dé-valider** depuis le résumé, quand le rattachement course ↔ séance était faux ;
+ *  - **supprimer** une course (R1d-1) : la séance qu'elle avait cochée redevient à faire, sinon
+ *    l'utilisateur perdrait la séance en même temps que la course.
+ *
+ * `completed_at` est effacé : le garder ferait mentir tout ce qui date les séances faites.
+ */
+export async function reopenPlannedSession(id: string): Promise<void> {
+  await patch('planned_sessions', id, { status: 'planned', completed_at: null });
+}
+
 // ---------------------------------------------------------------------------
 // usePriorWeekAdherence — garde de progression (US MUSC-F15, roadmap 3.7)
 // ---------------------------------------------------------------------------

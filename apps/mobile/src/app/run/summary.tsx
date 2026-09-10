@@ -1,53 +1,37 @@
 import {
   compareToTarget,
-  computeKmSplits,
-  summarizeIntervalSeries,
-  decodeTrack,
+  feelingFromStoredRpe,
+  feelingToStoredRpe,
   formatDayFull,
-  formatPaceMMSS,
-  isValidCoord,
-  RUN_TERRAINS,
-  RUNNING_RECORD_DISTANCES,
-  simplifyTrack,
+  pausedSeconds,
+  WORKOUT_FEELINGS,
   type RecordDistanceKey,
-  type RunTerrain,
+  type WorkoutFeeling,
+  RUNNING_RECORD_DISTANCES,
 } from '@wellness/shared';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Alert,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
-import { PaceCurveCards } from '@/components/run/PaceCurveCards';
 import { Card } from '@/components/Card';
 import { CelebrationCard } from '@/components/CelebrationCard';
 import { FormScreen } from '@/components/FormScreen';
-import { RouteMap } from '@/components/running/RouteMap';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { ShareCardSheet } from '@/components/share/ShareCardSheet';
 import {
+  deleteRun,
   setManualRunDistance,
+  setManualRunDuration,
   setRunFeedback,
-  setRunTerrain,
+  unlinkPlannedSession,
   useRun,
-  useRunIntervals,
   useRunTarget,
 } from '@/data/repositories/run-repository';
 import { detectAndStoreRunRecords } from '@/data/repositories/running-record-repository';
-import { exportRunAsGpx } from '@/lib/gpx-export';
+import { useActionLock } from '@/hooks/useActionLock';
+import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
-import { useUnits } from '@/hooks/useUnits';
-
-// ---------------------------------------------------------------------------
-// Constantes
-// ---------------------------------------------------------------------------
 
 /** Couleurs de la charte pour le bandeau de célébration (bordeaux + doré). */
 const CELEBRATION_BG = '#6b0028';
@@ -62,12 +46,7 @@ const RECORD_DISTANCE_KEY: Record<RecordDistanceKey, string> = {
   marathon: 'running.records.distanceMarathon',
 };
 
-/** Ordre canonique des clés de distance (pour trier les records battus). */
 const RECORD_ORDER: RecordDistanceKey[] = RUNNING_RECORD_DISTANCES.map((d) => d.key);
-
-// ---------------------------------------------------------------------------
-// Helpers d'affichage
-// ---------------------------------------------------------------------------
 
 /** Formate une durée en secondes → `H h MM min SS s` / `MM min SS s` / `SS s`. */
 function formatDuration(totalSeconds: number | null): string {
@@ -82,111 +61,31 @@ function formatDuration(totalSeconds: number | null): string {
   return parts.join(' ');
 }
 
-// ---------------------------------------------------------------------------
-// Sous-composant : ligne de stat
-// ---------------------------------------------------------------------------
-
-function StatRow({ label, value }: { label: string; value: string }) {
-  const { colors } = useTheme();
-  return (
-    <View style={styles.statRow}>
-      <Text style={[styles.statLabel, { color: colors.textMuted }]}>{label}</Text>
-      <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
-    </View>
-  );
+/** `MM:SS` compact, pour l'écart de pause. */
+function formatMmSs(totalSeconds: number): string {
+  const m = Math.floor(totalSeconds / 60);
+  return `${m}:${String(totalSeconds % 60).padStart(2, '0')}`;
 }
-
-// ---------------------------------------------------------------------------
-// Sous-composant : sélecteur RPE (1-10)
-// ---------------------------------------------------------------------------
-
-function RpeSelector({
-  value,
-  onChange,
-}: {
-  value: number | null;
-  onChange: (rpe: number) => void;
-}) {
-  const { colors } = useTheme();
-  return (
-    <View style={styles.rpeRow}>
-      {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => {
-        const selected = value === n;
-        return (
-          <TouchableOpacity
-            key={n}
-            onPress={() => onChange(n)}
-            accessibilityRole="button"
-            accessibilityLabel={String(n)}
-            accessibilityState={{ selected }}
-            style={[
-              styles.rpeBtn,
-              {
-                backgroundColor: selected ? colors.accent : colors.surface,
-                borderColor: selected ? colors.accent : colors.border,
-              },
-            ]}
-          >
-            <Text
-              style={[
-                styles.rpeBtnLabel,
-                { color: selected ? colors.background : colors.text },
-              ]}
-            >
-              {n}
-            </Text>
-          </TouchableOpacity>
-        );
-      })}
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Sous-composant : bandeau de célébration de nouveau record
-// ---------------------------------------------------------------------------
 
 /**
- * Bandeau in-app affiché en tête du résumé quand la course vient de battre au moins
- * un record. Chips = distances battues (allure non affichée ici, seul le libellé) et
- * ligne dorée « allure de référence mise à jour » quand le 5 km est tombé.
+ * Résumé post-course, **premier temps** (US CARDIO-UX01, R6 / constat F17).
  *
- * L'animation (fondu + léger zoom, respect de « réduire les animations ») vit dans
- * `CelebrationCard`, extrait en composant partagé pour MUSC-F8 — le contenu ci-dessous
- * reste propre à la course.
- */
-function CelebrationBanner({ distances }: { distances: RecordDistanceKey[] }) {
-  const { t } = useTranslation();
-
-  // Distances triées dans l'ordre canonique + libellés i18n.
-  const ordered = RECORD_ORDER.filter((k) => distances.includes(k));
-  const labels = ordered.map((k) => t(RECORD_DISTANCE_KEY[k]));
-  const includes5k = ordered.includes('5k');
-
-  return (
-    <CelebrationCard style={styles.celebration}>
-      <Text style={styles.celebrationSpark}>🏅</Text>
-      <Text style={styles.celebrationTitle}>{t('running.records.newRecordTitle')}</Text>
-      <Text style={styles.celebrationBody}>
-        {t('running.records.newRecordBody', { distances: labels.join(', ') })}
-      </Text>
-      {includes5k ? (
-        <Text style={styles.celebrationRef}>★ {t('running.records.refPaceUpdated')}</Text>
-      ) : null}
-    </CelebrationCard>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Écran principal
-// ---------------------------------------------------------------------------
-
-/**
- * Résumé post-course (Running R1, US 5.24-5.26).
+ * ── Ce que ça remplace ───────────────────────────────────────────────────────────────────────────
+ * Un formulaire de **douze sections** dans un seul défilement : célébration, métriques, objectif,
+ * distance manuelle, carte, splits par km, fraction par fraction, **trois** cartes d'analyse de
+ * courbe d'allure, export GPX, partage, RPE, terrain, notes, puis « Terminé » — tout en bas.
  *
- * La course est **déjà clôturée** (finishRun appelé par active.tsx avant la
- * navigation). Cet écran ne la re-termine pas : il patch uniquement les champs
- * de ressenti (RPE, notes) et, pour une course manuelle, la distance.
+ * Le geste attendu trente secondes après l'effort — noter son ressenti et fermer — exigeait donc
+ * de traverser toute l'analyse. Et le **RPE**, la seule donnée que seul l'utilisateur peut
+ * fournir, était en onzième position.
+ *
+ * ── Ce que cet écran fait maintenant ─────────────────────────────────────────────────────────────
+ * Quatre chiffres, la séance validée, le ressenti, *Enregistrer*. Sans défilement. Tout le reste
+ * — splits, fractions, courbes, carte, export, partage, corriger, supprimer — vit derrière
+ * « Analyser » (`run/analysis.tsx`), à la demande.
+ *
+ * La course est **déjà clôturée** (`finishRun` appelé par `active.tsx` avant la navigation). Cet
+ * écran ne la re-termine pas : il complète le ressenti et, pour une course manuelle, ses chiffres.
  */
 export default function RunSummaryScreen() {
   const { t } = useTranslation();
@@ -196,10 +95,8 @@ export default function RunSummaryScreen() {
   const { id } = useLocalSearchParams<{ id?: string }>();
 
   const { run, isLoading } = useRun(id);
-
-  // US RUN-F3 (5.25) : cible de la séance planifiée réalisée (null si course libre ou lien résolu
-  // à rien) et comparaison pure — aucune clé si la séance ne visait pas cet axe (R1, R3).
   const target = useRunTarget(run?.plannedSessionId ?? null);
+
   const comparison = useMemo(
     () =>
       compareToTarget(
@@ -212,64 +109,27 @@ export default function RunSummaryScreen() {
     [run?.distanceM, run?.durationSeconds, target],
   );
 
-  // État local du formulaire de feedback
-  const [rpe, setRpe] = useState<number | null>(run?.rpe ?? null);
-  const [notes, setNotes] = useState<string>(run?.notes ?? '');
-  // Distance manuelle saisie (texte libre ; dans l'unité d'affichage courante)
-  const [manualDistanceText, setManualDistanceText] = useState<string>('');
-  // Terrain (D3) : facultatif, écrit à tout moment après la clôture.
-  const [terrain, setTerrain] = useState<RunTerrain | null>(run?.terrain ?? null);
+  // ── Ressenti : cinq niveaux nommés, partagés avec la muscu ────────────────────────────────
+  // Réutilisation directe de `workout-feeling.ts` (US MUSCU-UX01) : même question — « c'était
+  // dur ? » — même échelle des deux côtés de l'app. `runs.rpe` continue de stocker un RPE 1-10,
+  // les cinq crans ne sont qu'une lecture. Aucune migration.
+  const [feeling, setFeeling] = useState<WorkoutFeeling | null>(null);
+  const [manualDistanceText, setManualDistanceText] = useState('');
+  const [manualDurationText, setManualDurationText] = useState('');
+  const [notes, setNotes] = useState('');
+  const [validated, setValidated] = useState(true);
 
-  // US PARTAGE-01 : aperçu de la carte partageable.
-  const [shareOpen, setShareOpen] = useState(false);
+  const lockDelete = useActionLock();
 
-  // Décodage + simplification de la trace GPS pour la carte du parcours.
-  const points = useMemo(
-    () => (run?.gpsTrack ? decodeTrack(run.gpsTrack) : []),
-    [run],
-  );
-  const simplified = useMemo(() => simplifyTrack(points, 5), [points]);
-
-  // Nombre de points VALIDES (mêmes règles que buildGpx : null island, hors bornes).
-  // Réutilise le décodage déjà fait pour la carte (pas de re-décodage).
-  const validPointCount = useMemo(
-    () => points.filter((p) => isValidCoord(p.lat, p.lng)).length,
-    [points],
-  );
-
-  // Splits par km plein (course GPS avec trace ≥ 1 km) : durée de chaque km + km le plus rapide.
-  const splits = useMemo(() => computeKmSplits(points), [points]);
-
-  // US RUN-F4 (lot F) — le réalisé par répétition de cette course. Vide (donc section absente)
-  // sur une course libre et sur toute course antérieure à cette US.
-  const { intervals: intervalRows } = useRunIntervals(id);
-  const intervalSummary = useMemo(() => summarizeIntervalSeries(intervalRows), [intervalRows]);
-  const fastestSplitKm = useMemo(() => {
-    if (splits.length === 0) return null;
-    return splits.reduce((best, s) => (s.seconds < best.seconds ? s : best), splits[0]!).km;
-  }, [splits]);
-  const slowestSplitSeconds = useMemo(
-    () => (splits.length > 0 ? Math.max(...splits.map((s) => s.seconds)) : 0),
-    [splits],
-  );
-
-  // État de l'export GPX (bouton en chargement pendant la génération/partage).
-  const [isExporting, setIsExporting] = useState(false);
-
-  // Sync initial des champs depuis la DB quand la course charge (premier rendu).
-  // On utilise un ref pour n'initialiser qu'une fois.
-  const [feedbackInit, setFeedbackInit] = useState(false);
-  if (run && !feedbackInit) {
-    setFeedbackInit(true);
-    if (run.rpe !== null) setRpe(run.rpe);
+  // Sync initial depuis la base au premier rendu où la course est chargée.
+  const [initialised, setInitialised] = useState(false);
+  if (run && !initialised) {
+    setInitialised(true);
+    setFeeling(feelingFromStoredRpe(run.rpe));
     if (run.notes !== null) setNotes(run.notes);
-    if (run.terrain !== null) setTerrain(run.terrain);
   }
 
-  // Détection des records battus par cette course, une seule fois au montage.
-  // GPS + terminée uniquement ; l'idempotence du repo garantit qu'un simple
-  // remontage (revisite du résumé) ne re-célèbre pas (retourne []). Le ref évite
-  // un double appel dans le même montage (StrictMode / re-rendus).
+  // Détection des records battus, une seule fois au montage (idempotente côté repo).
   const [beatenRecords, setBeatenRecords] = useState<RecordDistanceKey[]>([]);
   const detectionRun = useRef(false);
   useEffect(() => {
@@ -281,56 +141,28 @@ export default function RunSummaryScreen() {
       .then((beaten) => {
         if (!cancelled) setBeatenRecords(beaten);
       })
-      .catch((err) => {
-        console.warn('[RunSummary] detectAndStoreRunRecords failed:', err);
-      });
+      .catch((err) => console.warn('[RunSummary] detectAndStoreRunRecords failed:', err));
     return () => {
       cancelled = true;
     };
-    // Déps primitives : `useRun` renvoie un nouvel objet `run` à chaque rendu.
-    // On dépend des seules valeurs lues (status/source) ; le corps lit `run`/`id`
-    // et le ref `detectionRun` garantit l'exécution unique (one-shot).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, run?.status, run?.source]);
 
   const isManual = run?.source === 'manual';
-  const hasDistance = run?.distanceM !== null && run?.distanceM !== undefined;
 
-  // ----- handlers -----
+  // ── Actions ───────────────────────────────────────────────────────────────────────────────
 
-  const onRpeChange = async (value: number) => {
-    setRpe(value);
-    if (id) {
-      try {
-        await setRunFeedback(id, { rpe: value });
-      } catch (err) {
-        console.warn('[RunSummary] setRunFeedback rpe failed:', err);
-      }
+  const onFeeling = async (next: WorkoutFeeling) => {
+    setFeeling(next);
+    if (!id) return;
+    try {
+      await setRunFeedback(id, { rpe: feelingToStoredRpe(next) });
+    } catch (err) {
+      console.warn('[RunSummary] setRunFeedback failed:', err);
     }
   };
 
-  const onNotesBlur = async () => {
-    if (id) {
-      try {
-        await setRunFeedback(id, { notes: notes.trim() || null });
-      } catch (err) {
-        console.warn('[RunSummary] setRunFeedback notes failed:', err);
-      }
-    }
-  };
-
-  const onTerrainChange = async (value: RunTerrain) => {
-    setTerrain(value);
-    if (id) {
-      try {
-        await setRunTerrain(id, value);
-      } catch (err) {
-        console.warn('[RunSummary] setRunTerrain failed:', err);
-      }
-    }
-  };
-
-  const onManualDistanceSubmit = async () => {
+  const onManualDistanceBlur = async () => {
     if (!id) return;
     const km = units.parseDistanceToKm(manualDistanceText);
     if (km == null) return;
@@ -342,31 +174,69 @@ export default function RunSummaryScreen() {
     }
   };
 
-  const onExport = async () => {
-    if (!run || isExporting) return;
-    setIsExporting(true);
+  /**
+   * Durée d'une course manuelle, corrigeable (US CARDIO-UX01, R1b).
+   *
+   * Le tracker la pose désormais à la clôture — mais un chrono lancé en retard, un oubli d'arrêt
+   * ou une saisie d'après-coup restent des cas réels. Saisie en **minutes**, l'unité dans laquelle
+   * on se souvient d'une course.
+   */
+  const onManualDurationBlur = async () => {
+    if (!id) return;
+    const minutes = Number.parseFloat(manualDurationText.trim().replace(',', '.'));
+    if (!Number.isFinite(minutes) || minutes <= 0) return;
     try {
-      const result = await exportRunAsGpx(run, t);
-      if ('error' in result) {
-        // `unavailable` = partage indisponible ; sinon message générique. Le cas
-        // `empty` (< 2 points valides) est défensif et inatteignable ici (le bouton
-        // n'est affiché que si `validPointCount >= 2`) → couvert par `errorFailed`.
-        const message =
-          result.error === 'unavailable'
-            ? t('running.export.errorUnavailable')
-            : t('running.export.errorFailed');
-        Alert.alert(t('running.export.cta'), message);
-      }
-    } finally {
-      setIsExporting(false);
+      await setManualRunDuration(id, Math.round(minutes * 60));
+      setManualDurationText('');
+    } catch (err) {
+      console.warn('[RunSummary] setManualRunDuration failed:', err);
     }
   };
 
-  const onDone = () => {
-    router.replace('/(tabs)/running');
+  const onNotesBlur = async () => {
+    if (!id) return;
+    try {
+      await setRunFeedback(id, { notes: notes.trim() || null });
+    } catch (err) {
+      console.warn('[RunSummary] setRunFeedback notes failed:', err);
+    }
   };
 
-  // ----- render guards -----
+  /** Dé-valider la séance rattachée (R1c-2) : le rattachement pouvait être faux. */
+  const onUnlink = async () => {
+    if (!id) return;
+    setValidated(false);
+    try {
+      await unlinkPlannedSession(id);
+    } catch (err) {
+      console.warn('[RunSummary] unlinkPlannedSession failed:', err);
+      setValidated(true);
+    }
+  };
+
+  const onDelete = () => {
+    if (!id) return;
+    Alert.alert(t('running.stop.deleteConfirmTitle'), t('running.stop.deleteConfirmBody'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('running.stop.delete'),
+        style: 'destructive',
+        onPress: () =>
+          void lockDelete(async () => {
+            try {
+              await deleteRun(id);
+            } catch (err) {
+              console.warn('[RunSummary] deleteRun failed:', err);
+            }
+            router.replace('/(tabs)/running');
+          }),
+      },
+    ]);
+  };
+
+  const onDone = () => router.replace('/(tabs)/running');
+
+  // ── Gardes de rendu ───────────────────────────────────────────────────────────────────────
 
   if (isLoading) {
     return (
@@ -393,332 +263,176 @@ export default function RunSummaryScreen() {
     );
   }
 
-  // ----- affichage des métriques -----
+  const distanceKm = run.distanceM !== null ? run.distanceM / 1000 : null;
 
-  const distanceKm =
-    run.distanceM !== null ? run.distanceM / 1000 : null;
+  /**
+   * L'écart entre le temps écoulé et le temps compté, **expliqué** (US CARDIO-UX01, R1a).
+   *
+   * Sans cette ligne, un coureur qui a fait deux pauses découvre au résumé une durée plus courte
+   * que ce qu'il a vu défiler — et n'a aucun moyen de comprendre pourquoi. C'était la moitié du
+   * constat F9 : l'autre moitié était le chrono lui-même, corrigé sur l'écran de course.
+   */
+  const pauses =
+    run.finishedAt !== null
+      ? pausedSeconds({
+          startedAtMs: Date.parse(run.startedAt),
+          finishedAtMs: Date.parse(run.finishedAt),
+          netSeconds: run.durationSeconds,
+        })
+      : null;
 
-  const durationDisplay = formatDuration(run.durationSeconds);
-
-  // Export GPX : uniquement une course GPS terminée avec ≥ 2 points valides.
-  const canExport =
-    run.status === 'completed' && run.source !== 'manual' && validPointCount >= 2;
-
-  // US RUN-F3 (5.25) : phrases d'écart, une par axe présent — jamais de concaténation, l'ordre
-  // des mots diffère entre FR et EN (R2). `success` pour atteint/dépassé, neutre pour en deçà —
-  // jamais `danger` (R4, ne pas atteindre un objectif de course n'est pas un échec).
   const distanceTarget = comparison.distance;
-  const distanceTargetLabel = distanceTarget
-    ? t(`running.target.distance${distanceTarget.status === 'reached' ? 'Reached' : distanceTarget.status === 'over' ? 'Over' : 'Under'}`, {
-        done: units.formatDistance(distanceTarget.doneValue / 1000),
-        target: units.formatDistance(distanceTarget.targetValue / 1000),
-        diff: units.formatDistance(Math.abs(distanceTarget.diff) / 1000),
-      })
-    : null;
   const durationTarget = comparison.duration;
-  const durationTargetLabel = durationTarget
-    ? t(`running.target.duration${durationTarget.status === 'reached' ? 'Reached' : durationTarget.status === 'over' ? 'Over' : 'Under'}`, {
-        done: formatDuration(durationTarget.doneValue),
-        target: formatDuration(durationTarget.targetValue),
-        diff: formatDuration(Math.abs(durationTarget.diff)),
-      })
-    : null;
-  const hasTarget = distanceTargetLabel !== null || durationTargetLabel !== null;
+  const targetReached =
+    (distanceTarget?.status === 'reached' || distanceTarget?.status === 'over') ||
+    (durationTarget?.status === 'reached' || durationTarget?.status === 'over');
 
   return (
     <FormScreen>
       <ScreenHeader
-        title={t('running.summary.title')}
-        subtitle={t('running.summary.subtitle')}
+        title={t('running.summary.doneTitle')}
+        subtitle={formatDayFull(run.startedAt)}
       />
 
-      {/* Célébration in-app d'un ou plusieurs records battus */}
-      {beatenRecords.length > 0 ? (
-        <CelebrationBanner distances={beatenRecords} />
-      ) : null}
+      {/* Célébration d'un ou plusieurs records battus */}
+      {beatenRecords.length > 0 ? <CelebrationBanner distances={beatenRecords} /> : null}
 
-      {/* Métriques principales */}
+      {/* ── Les quatre chiffres ─────────────────────────────────────────────────────────── */}
       <Card>
-        <StatRow
-          label={t('running.summary.distance')}
-          value={
-            distanceKm !== null
-              ? units.formatDistance(distanceKm)
-              : t('running.active.noData')
-          }
-        />
-        <StatRow label={t('running.summary.duration')} value={durationDisplay} />
-        <StatRow
-          label={t('running.summary.avgPace')}
-          value={units.formatPace(run.avgPaceSPerKm)}
-        />
-        {/* Dénivelé (US RUN-F1b) : absent si non connu (course manuelle ou antérieure à l'US) —
-            jamais une ligne à « 0 m » (spec R5/§0, critère de recette 4-5). */}
-        {run.elevationGainM !== null ? (
-          <>
-            <StatRow
+        <View style={styles.figures}>
+          <Figure
+            label={t('running.summary.distance')}
+            value={distanceKm !== null ? units.formatDistance(distanceKm) : t('running.active.noData')}
+          />
+          <Figure label={t('running.hero.duration')} value={formatDuration(run.durationSeconds)} />
+          <Figure label={t('running.summary.avgPace')} value={units.formatPace(run.avgPaceSPerKm)} />
+          {run.elevationGainM !== null ? (
+            <Figure
               label={t('running.elevation.gainLabel')}
               value={`+${Math.round(run.elevationGainM)} m`}
             />
-            <StatRow
-              label={t('running.elevation.lossLabel')}
-              value={`-${Math.round(run.elevationLossM ?? 0)} m`}
-            />
-          </>
+          ) : null}
+        </View>
+
+        {/* L'écart de pause, dit plutôt que subi. */}
+        {pauses ? (
+          <View style={[styles.pauseNote, { backgroundColor: colors.background }]}>
+            <Text style={[styles.pauseText, { color: colors.textMuted }]}>
+              {t('running.summary.pauseExplained', {
+                paused: formatMmSs(pauses.pausedS),
+                elapsed: formatDuration(pauses.elapsedS),
+              })}
+            </Text>
+          </View>
         ) : null}
       </Card>
 
-      {/* Comparaison à l'objectif (US RUN-F3, 5.25) — montée SEULEMENT si non vide (R1) : une
-          course libre, ou une séance sans cible chiffrée, n'affiche aucun encart, jamais un
-          « — » (spec §2, critère de recette 5). */}
-      {hasTarget ? (
+      {/* ── La séance planifiée validée (R1c / constat F20) ─────────────────────────────── */}
+      {run.plannedSessionId !== null && validated ? (
         <Card>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {t('running.target.title')}
-          </Text>
-          {distanceTargetLabel ? (
-            <Text
-              style={[
-                styles.targetText,
-                {
-                  color:
-                    distanceTarget!.status === 'under' ? colors.textMuted : colors.success,
-                },
-              ]}
+          <View style={styles.validatedRow}>
+            <View style={[styles.validatedIcon, { backgroundColor: colors.success }]}>
+              <Text style={[styles.validatedCheck, { color: colors.accentText }]}>✓</Text>
+            </View>
+            <View style={styles.validatedTexts}>
+              <Text style={[styles.validatedTitle, { color: colors.text }]}>
+                {t('running.summary.sessionValidated')}
+              </Text>
+              <Text style={[styles.validatedBody, { color: colors.textMuted }]}>
+                {targetReached
+                  ? t('running.summary.targetReached')
+                  : t('running.summary.sessionRecorded')}
+              </Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => void onUnlink()}
+              accessibilityRole="button"
+              accessibilityLabel={t('running.summary.unlink')}
+              style={styles.unlinkBtn}
             >
-              {distanceTargetLabel}
-            </Text>
-          ) : null}
-          {durationTargetLabel ? (
-            <Text
-              style={[
-                styles.targetText,
-                {
-                  color:
-                    durationTarget!.status === 'under' ? colors.textMuted : colors.success,
-                },
-              ]}
-            >
-              {durationTargetLabel}
-            </Text>
-          ) : null}
-        </Card>
-      ) : null}
-
-      {/* Saisie de distance manuelle (uniquement si source=manual et distance inconnue) */}
-      {isManual && !hasDistance ? (
-        <Card>
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {t('running.summary.manualDistance')}
-          </Text>
-          <View style={styles.manualDistanceRow}>
-            <TextInput
-              style={[
-                styles.distanceInput,
-                {
-                  color: colors.text,
-                  borderColor: colors.border,
-                  backgroundColor: colors.surface,
-                },
-              ]}
-              keyboardType="decimal-pad"
-              placeholder={t(`running.summary.manualDistancePlaceholder_${units.system}`)}
-              placeholderTextColor={colors.textMuted}
-              value={manualDistanceText}
-              onChangeText={setManualDistanceText}
-              onBlur={onManualDistanceSubmit}
-              onSubmitEditing={onManualDistanceSubmit}
-              returnKeyType="done"
-              accessibilityLabel={t('running.summary.manualDistance')}
-            />
-            <Text style={[styles.distanceUnit, { color: colors.textMuted }]}>
-              {units.distanceSymbol}
-            </Text>
+              <Text style={[styles.unlinkLabel, { color: colors.accent }]}>
+                {t('running.summary.unlink')}
+              </Text>
+            </TouchableOpacity>
           </View>
         </Card>
       ) : null}
 
-      {/* Carte du parcours (GPS → trace ; manuel → état vide) */}
-      <Card>
-        <RouteMap
-          points={simplified}
-          emptyLabel={t('running.map.noTrack')}
-        />
-      </Card>
-
-      {/* Splits par km (course GPS avec trace ≥ 1 km plein) — km le plus rapide en accent */}
-      {splits.length > 0 ? (
+      {/* ── Une course manuelle complète ses chiffres ici (R1b) ─────────────────────────── */}
+      {isManual ? (
         <Card>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {t('running.summary.splits')}
+            {t('running.summary.manualFigures')}
           </Text>
-          {splits.map((s) => {
-            const isFastest = s.km === fastestSplitKm;
-            const barPct =
-              slowestSplitSeconds > 0 ? (s.seconds / slowestSplitSeconds) * 100 : 0;
-            return (
-              <View key={s.km} style={styles.splitRow}>
-                <Text style={[styles.splitKm, { color: colors.textMuted }]}>
-                  {t('running.summary.splitKm', { km: s.km })}
-                </Text>
-                <View style={[styles.splitBarTrack, { backgroundColor: colors.surfaceAlt }]}>
-                  <View
-                    style={{
-                      height: '100%',
-                      width: `${barPct}%`,
-                      backgroundColor: isFastest ? colors.accent : colors.border,
-                      borderRadius: 4,
-                    }}
-                  />
-                </View>
-                <Text
-                  style={[styles.splitPace, { color: isFastest ? colors.accent : colors.text }]}
-                >
-                  {formatPaceMMSS(s.seconds, '—')}
-                </Text>
-              </View>
-            );
-          })}
+          <View style={styles.manualRow}>
+            <View style={styles.manualField}>
+              <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+                {t('running.summary.manualDistance')} ({units.distanceSymbol})
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  { color: colors.text, borderColor: colors.borderStrong, backgroundColor: colors.surface },
+                ]}
+                keyboardType="decimal-pad"
+                placeholder={t(`running.summary.manualDistancePlaceholder_${units.system}`)}
+                placeholderTextColor={colors.textMuted}
+                value={manualDistanceText}
+                onChangeText={setManualDistanceText}
+                onBlur={onManualDistanceBlur}
+                onSubmitEditing={onManualDistanceBlur}
+                returnKeyType="done"
+                accessibilityLabel={t('running.summary.manualDistance')}
+              />
+            </View>
+            <View style={styles.manualField}>
+              <Text style={[styles.fieldLabel, { color: colors.textMuted }]}>
+                {t('running.summary.manualDuration')}
+              </Text>
+              <TextInput
+                style={[
+                  styles.input,
+                  { color: colors.text, borderColor: colors.borderStrong, backgroundColor: colors.surface },
+                ]}
+                keyboardType="decimal-pad"
+                placeholder={t('running.summary.manualDurationPlaceholder')}
+                placeholderTextColor={colors.textMuted}
+                value={manualDurationText}
+                onChangeText={setManualDurationText}
+                onBlur={onManualDurationBlur}
+                onSubmitEditing={onManualDurationBlur}
+                returnKeyType="done"
+                accessibilityLabel={t('running.summary.manualDuration')}
+              />
+            </View>
+          </View>
         </Card>
       ) : null}
 
-      {/*
-        US RUN-F4 (lot F) — fraction par fraction.
-
-        C'est l'équivalent de l'onglet « Détail des tours » d'une montre, et le mur M10 de
-        l'analyse du 04/09/2026 : une séance de fractionné se lit « reps 1 à 5 à 4:01, la 7ᵉ a
-        lâché à 4:40 », pas « j'ai couru 8 km ». La section est absente — pas vide — sur une
-        course libre ou une course antérieure à cette US : il n'y a rien à dire, on ne dit rien.
-      */}
-      {intervalRows.length > 0 ? (
-        <Card>
+      {/* ── Le ressenti : la seule donnée que l'app ne peut pas connaître ───────────────── */}
+      <Card>
+        <View style={styles.feelingHead}>
           <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {t('running.realise.title')}
+            {t('running.summary.feeling')}
           </Text>
-
-          {intervalRows.map((row) => {
-            const isFast = row.phaseKind === 'fast';
-            const range =
-              row.plannedPaceMinSPerKm != null || row.plannedPaceMaxSPerKm != null
-                ? { min: row.plannedPaceMinSPerKm, max: row.plannedPaceMaxSPerKm }
-                : null;
-            // Hors plage se signale en accent, jamais en rouge : une fraction 3 s trop lente
-            // n'est pas une faute (même règle de ton que RUN-F2b R4).
-            const outOfRange =
-              range != null &&
-              row.actualPaceSPerKm != null &&
-              (row.actualPaceSPerKm < (range.min ?? 0) ||
-                row.actualPaceSPerKm > (range.max ?? Number.POSITIVE_INFINITY));
-
-            return (
-              <View key={row.phaseIndex} style={styles.splitRow}>
-                <Text style={[styles.splitKm, { color: colors.textMuted }]}>
-                  {isFast
-                    ? t('running.realise.rep', { defaultValue: 'Fraction' })
-                    : t('running.realise.recoveryRow')}
-                  {isFast ? ` ${row.rep}` : ''}
-                </Text>
-                <Text style={[styles.splitKm, { color: colors.textMuted, flex: 1 }]}>
-                  {range
-                    ? formatPaceMMSS(Math.round(range.min ?? range.max ?? 0), '—')
-                    : t('running.realise.noData')}
-                </Text>
-                <Text
-                  style={[
-                    styles.splitPace,
-                    { color: outOfRange ? colors.accent : colors.text },
-                  ]}
-                >
-                  {row.actualPaceSPerKm != null
-                    ? formatPaceMMSS(Math.round(row.actualPaceSPerKm), '—')
-                    : t('running.realise.noData')}
-                </Text>
-              </View>
-            );
-          })}
-
-          {/* La régularité est LE sujet d'une séance de VMA — plus que la moyenne. */}
-          {intervalSummary.avgFastPaceSPerKm != null ? (
-            <Text style={[styles.splitKm, { color: colors.textMuted, marginTop: 8 }]}>
-              {t('running.realise.avgPace')} :{' '}
-              {formatPaceMMSS(Math.round(intervalSummary.avgFastPaceSPerKm), '—')}
-              {intervalSummary.paceStdDevSPerKm != null
-                ? ` · ${t('running.realise.regularity')} ${t('running.realise.regularityValue', {
-                    value: Math.round(intervalSummary.paceStdDevSPerKm),
-                  })}`
-                : ''}
+          {feeling ? (
+            <Text style={[styles.feelingValue, { color: colors.textMuted }]}>
+              {t(`workout.summary.feeling.${feeling}`)}
             </Text>
           ) : null}
-          {intervalSummary.ratedCount > 0 ? (
-            <Text style={[styles.splitKm, { color: colors.textMuted }]}>
-              {t('running.realise.inRange', {
-                done: intervalSummary.inRangeCount,
-                total: intervalSummary.ratedCount,
-              })}
-            </Text>
-          ) : null}
-        </Card>
-      ) : null}
-
-      {/* US ALLURE-01 — les trois lectures de la courbe d'allure (RUN-11, RUN-20, RUN-17).
-          🔴 `splits` est passé en PROP : cet écran l'a déjà calculé plus haut (l.238), et le
-          recalculer doublerait le coût du plus gros calcul de la page pour un résultat identique.
-          Chaque carte se tait individuellement sous son seuil de données, et le composant entier
-          rend `null` sur une course sans trace (spec R7) — une saisie manuelle n'a rien à analyser,
-          et ce n'est pas une erreur. */}
-      <PaceCurveCards splits={splits} />
-
-      {/* Export GPX (course GPS terminée avec trace ≥ 2 points valides) */}
-      {canExport ? (
-        <Button
-          label={t('running.export.cta')}
-          variant="ghost"
-          loading={isExporting}
-          onPress={onExport}
-        />
-      ) : null}
-
-      {/* Carte partageable (US PARTAGE-01) — proposée sur toute course TERMINÉE, y compris manuelle :
-          sans tracé exploitable la carte s'affiche avec ses chiffres seuls, ce qui reste partageable.
-          C'est la différence avec l'export GPX, qui exige une trace. */}
-      {run.status === 'completed' ? (
-        <Button
-          label={t('share.cta')}
-          variant="ghost"
-          onPress={() => setShareOpen(true)}
-        />
-      ) : null}
-
-      {/* Ressenti : RPE */}
-      <Card>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          {t('running.summary.rpe')}
-        </Text>
-        <RpeSelector value={rpe} onChange={onRpeChange} />
-        {rpe !== null ? (
-          <Text style={[styles.rpeHint, { color: colors.textMuted }]}>
-            {t('running.summary.rpeValue', { value: rpe })}
-          </Text>
-        ) : null}
-      </Card>
-
-      {/* Terrain (US RUN-F3, D3) — facultatif, sans rapport avec le GPS : une course sans
-          terrain choisi reste parfaitement valide. */}
-      <Card>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          {t('running.terrain.title')}
-        </Text>
-        <View style={styles.terrainRow}>
-          {RUN_TERRAINS.map((option) => {
-            const selected = terrain === option;
+        </View>
+        <View style={styles.feelingRow}>
+          {WORKOUT_FEELINGS.map((level) => {
+            const selected = feeling === level;
             return (
               <TouchableOpacity
-                key={option}
-                onPress={() => void onTerrainChange(option)}
-                accessibilityRole="radio"
+                key={level}
+                onPress={() => void onFeeling(level)}
+                accessibilityRole="button"
+                accessibilityLabel={t(`workout.summary.feeling.${level}`)}
                 accessibilityState={{ selected }}
                 style={[
-                  styles.terrainChip,
+                  styles.feelingBtn,
                   {
                     backgroundColor: selected ? colors.accent : colors.surface,
                     borderColor: selected ? colors.accent : colors.border,
@@ -727,34 +441,25 @@ export default function RunSummaryScreen() {
               >
                 <Text
                   style={[
-                    styles.terrainChipLabel,
-                    { color: selected ? colors.background : colors.text },
+                    styles.feelingBtnLabel,
+                    { color: selected ? colors.accentText : colors.text },
                   ]}
+                  numberOfLines={1}
                 >
-                  {t(`running.terrain.${option}`)}
+                  {t(`workout.summary.feeling.${level}`)}
                 </Text>
               </TouchableOpacity>
             );
           })}
         </View>
-      </Card>
 
-      {/* Ressenti : note libre */}
-      <Card>
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          {t('running.summary.notes')}
-        </Text>
         <TextInput
           style={[
             styles.notesInput,
-            {
-              color: colors.text,
-              borderColor: colors.border,
-              backgroundColor: colors.background,
-            },
+            { color: colors.text, borderColor: colors.borderStrong, backgroundColor: colors.background },
           ]}
           multiline
-          numberOfLines={3}
+          numberOfLines={2}
           placeholder={t('running.summary.notesPlaceholder')}
           placeholderTextColor={colors.textMuted}
           value={notes}
@@ -765,145 +470,135 @@ export default function RunSummaryScreen() {
         />
       </Card>
 
-      {/* Bouton Terminé */}
-      <View style={styles.footer}>
-        <Button label={t('running.summary.done')} onPress={onDone} />
+      {/* ── Deux actions, et rien d'autre à ce niveau ───────────────────────────────────── */}
+      <View style={styles.actions}>
+        <View style={styles.actionMain}>
+          <Button label={t('running.summary.save')} onPress={onDone} />
+        </View>
+        <Button
+          label={t('running.summary.analyse')}
+          variant="ghost"
+          onPress={() => router.push({ pathname: '/run/analysis', params: { id } })}
+        />
       </View>
 
-      {/* US PARTAGE-01 — aperçu, puis partage (décision D4 : on voit ce qu'on envoie). */}
-      <ShareCardSheet
-        visible={shareOpen}
-        onClose={() => setShareOpen(false)}
-        data={{
-          kind: 'run',
-          // Le tracé BRUT : `projectTrack` fait sa propre réduction par échantillonnage. Passer
-          // `simplified` (Douglas-Peucker à 5 m) reviendrait à simplifier deux fois.
-          points,
-          startedAtMs: Date.parse(run.startedAt),
-          stats: {
-            distance: units.formatDistance(distanceKm),
-            duration: durationDisplay,
-            pace: units.formatPace(run.avgPaceSPerKm),
-          },
-        }}
-        accessibilityLabel={t('share.run.a11y', {
-          date: formatDayFull(run.startedAt),
-          distance: units.formatDistance(distanceKm),
-          duration: durationDisplay,
-        })}
-      />
+      {/* La suppression reste accessible, en pied et en teinte destructive (constat F18). */}
+      <View style={styles.deleteWrap}>
+        <Button label={t('running.stop.delete')} variant="destructive" onPress={onDelete} />
+      </View>
     </FormScreen>
   );
 }
 
 // ---------------------------------------------------------------------------
-// Styles
+// Sous-composants
 // ---------------------------------------------------------------------------
 
+/** Un des quatre chiffres clés, en grand. */
+function Figure({ label, value }: { label: string; value: string }) {
+  const { colors } = useTheme();
+  return (
+    <View style={styles.figure}>
+      <Text style={[styles.figureLabel, { color: colors.textMuted }]}>{label}</Text>
+      <Text style={[styles.figureValue, { color: colors.text }]}>{value}</Text>
+    </View>
+  );
+}
+
+/**
+ * Bandeau in-app affiché en tête du résumé quand la course vient de battre au moins un record.
+ * L'animation vit dans `CelebrationCard` (partagé avec MUSC-F8).
+ */
+function CelebrationBanner({ distances }: { distances: RecordDistanceKey[] }) {
+  const { t } = useTranslation();
+  const ordered = RECORD_ORDER.filter((k) => distances.includes(k));
+  const labels = ordered.map((k) => t(RECORD_DISTANCE_KEY[k]));
+  const includes5k = ordered.includes('5k');
+
+  return (
+    <CelebrationCard style={styles.celebration}>
+      <Text style={styles.celebrationSpark}>🏅</Text>
+      <Text style={styles.celebrationTitle}>{t('running.records.newRecordTitle')}</Text>
+      <Text style={styles.celebrationBody}>
+        {t('running.records.newRecordBody', { distances: labels.join(', ') })}
+      </Text>
+      {includes5k ? (
+        <Text style={styles.celebrationRef}>★ {t('running.records.refPaceUpdated')}</Text>
+      ) : null}
+    </CelebrationCard>
+  );
+}
+
 const styles = StyleSheet.create({
-  loading: {
-    fontFamily: fontFamily.body,
-    fontSize: 15,
-    textAlign: 'center',
-    marginTop: 32,
+  loading: { fontFamily: fontFamily.body, fontSize: 15, textAlign: 'center', marginTop: 32 },
+  empty: { fontFamily: fontFamily.body, fontSize: 15, textAlign: 'center', marginTop: 32 },
+  sectionTitle: { fontFamily: fontFamily.displaySemi, fontSize: 15 },
+  fieldLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
+
+  // Les quatre chiffres
+  figures: { flexDirection: 'row', flexWrap: 'wrap', rowGap: 14, columnGap: 16 },
+  figure: { minWidth: '44%', gap: 2 },
+  figureLabel: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  empty: {
-    fontFamily: fontFamily.body,
-    fontSize: 15,
-    textAlign: 'center',
-    marginTop: 32,
-  },
-  statRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  statLabel: { fontFamily: fontFamily.body, fontSize: 15 },
-  statValue: { fontFamily: fontFamily.displaySemi, fontSize: 17 },
-  sectionTitle: {
-    fontFamily: fontFamily.displaySemi,
-    fontSize: 15,
-    marginBottom: 4,
-  },
-  // Splits par km
-  splitRow: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 5 },
-  splitKm: { fontFamily: fontFamily.body, fontSize: 13, width: 52 },
-  splitBarTrack: { flex: 1, height: 8, borderRadius: 4, overflow: 'hidden' },
-  splitPace: { fontFamily: fontFamily.monoBold, fontSize: 14, width: 64, textAlign: 'right' },
-  // Distance manuelle
-  manualDistanceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  distanceInput: {
-    flex: 1,
+  figureValue: { fontFamily: fontFamily.displayXBold, fontSize: 28, letterSpacing: -0.8 },
+  pauseNote: { borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8 },
+  pauseText: { fontFamily: fontFamily.body, fontSize: 12, lineHeight: 17 },
+
+  // Séance validée
+  validatedRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  validatedIcon: { width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  validatedCheck: { fontFamily: fontFamily.bodyBold, fontSize: 18 },
+  validatedTexts: { flex: 1, gap: 1 },
+  validatedTitle: { fontFamily: fontFamily.bodyBold, fontSize: 15 },
+  validatedBody: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 17 },
+  unlinkBtn: { minHeight: 44, paddingHorizontal: 8, justifyContent: 'center' },
+  unlinkLabel: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
+
+  // Course manuelle
+  manualRow: { flexDirection: 'row', gap: 10 },
+  manualField: { flex: 1, gap: 5 },
+  input: {
+    minHeight: 48,
     fontFamily: fontFamily.body,
     fontSize: 16,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 12,
-    paddingVertical: 10,
   },
-  distanceUnit: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 15,
-  },
-  // Objectif de la séance (RUN-F3)
-  targetText: {
-    fontFamily: fontFamily.body,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  // Terrain (RUN-F3, D3)
-  terrainRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  terrainChip: {
-    borderWidth: 1,
-    borderRadius: 999,
-    paddingHorizontal: 14,
-    paddingVertical: 8,
-  },
-  terrainChipLabel: {
-    fontFamily: fontFamily.bodyMedium,
-    fontSize: 13,
-  },
-  // RPE
-  rpeRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 6,
-  },
-  rpeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
+
+  // Ressenti
+  feelingHead: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' },
+  feelingValue: { fontFamily: fontFamily.body, fontSize: 13 },
+  feelingRow: { flexDirection: 'row', gap: 5 },
+  feelingBtn: {
+    flex: 1,
+    minHeight: 46,
+    borderRadius: 12,
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    paddingHorizontal: 2,
   },
-  rpeBtnLabel: {
-    fontFamily: fontFamily.displaySemi,
-    fontSize: 14,
-  },
-  rpeHint: {
-    fontFamily: fontFamily.body,
-    fontSize: 13,
-    marginTop: 2,
-  },
-  // Notes
+  feelingBtnLabel: { fontFamily: fontFamily.bodySemi, fontSize: 11.5, textAlign: 'center' },
   notesInput: {
     fontFamily: fontFamily.body,
     fontSize: 15,
     borderWidth: 1,
-    borderRadius: 10,
+    borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
-    minHeight: 80,
+    minHeight: 60,
   },
+
+  actions: { gap: 10 },
+  actionMain: { width: '100%' },
+  deleteWrap: { marginTop: 4 },
+  footer: { marginTop: 'auto' },
+
   // Célébration de record
   celebration: {
     backgroundColor: CELEBRATION_BG,
@@ -912,28 +607,13 @@ const styles = StyleSheet.create({
     gap: 4,
     overflow: 'hidden',
   },
-  celebrationSpark: {
-    fontSize: 30,
-    position: 'absolute',
-    top: 8,
-    right: 14,
-  },
-  celebrationTitle: {
-    fontFamily: fontFamily.displayBold,
-    fontSize: 19,
-    color: '#ffffff',
-  },
-  celebrationBody: {
-    fontFamily: fontFamily.body,
-    fontSize: 14,
-    color: '#ffffff',
-  },
+  celebrationSpark: { fontSize: 30, position: 'absolute', top: 8, right: 14 },
+  celebrationTitle: { fontFamily: fontFamily.displayBold, fontSize: 19, color: '#ffffff' },
+  celebrationBody: { fontFamily: fontFamily.body, fontSize: 14, color: '#ffffff' },
   celebrationRef: {
     fontFamily: fontFamily.bodySemi,
     fontSize: 13,
     color: CELEBRATION_ACCENT,
     marginTop: 6,
   },
-  // Footer
-  footer: { marginTop: 'auto' },
 });

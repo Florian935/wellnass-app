@@ -11,11 +11,18 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **10/09/2026 (ter)** — **58 sections**.
+> Dernière mise à jour : **10/09/2026 (ter)** — **59 sections**.
 >
 > **③ une §58 est arrivée** : NUTRI-UX01, refonte du pilier Nutrition — troisième pilier repris
 > dans la même semaine, après l'accueil et la musculation. 🔴 **Elle a deux prérequis**, dont un
 > geste manuel dans le dashboard PowerSync : lire son encadré avant de commencer.
+>
+> **④ et une §59, le même jour** : CARDIO-UX01, refonte du pilier Course — **quatrième** pilier de
+> la semaine, et le dernier. ⚠️ **Cinq de ses critères ne relèvent pas de l'ergonomie mais de la
+> justesse** : l'app affichait un chrono qui n'était pas celui qu'elle enregistrait, et une course
+> sans GPS ne gardait aucune durée. Ce sont les critères **1, 3, 5, 11 et 12** — à passer en
+> premier. ⚠️ Sa dernière sous-section liste **six chantiers non livrés** : ne pas les chercher
+> dans l'app.
 >
 > *Historique du jour :* Deux mouvements le même jour, en
 > sens inverse :
@@ -2698,3 +2705,182 @@ deux exclusions, toutes deux extérieures à cette US :
       reste-à-faire du pilier, et il ne demande aucun développement**.
 - [ ] 72. La **traduction EN** des aliments importés reste à faire (CIQUAL est monolingue) :
       le script annonce le nombre concerné à chaque import.
+---
+
+## 59. CARDIO-UX01 — Refonte UX du pilier Course (`feature/cardio-refonte-ux`)
+
+> Spec : [cardio-ux01-refonte-pilier-course.md](docs/specs/functional/us/cardio-ux01-refonte-pilier-course.md) ·
+> Plan : [cardio-ux01-refonte-pilier-course.md](docs/plans/cardio-ux01-refonte-pilier-course.md) ·
+> Audit : [audit-ergonomie-pilier-course.md](docs/product/audit-ergonomie-pilier-course.md) (22 pages, 40 constats) ·
+> Maquettes : [design/audit-course/](design/audit-course/) (11 planches, dont 2 relevés de l'existant).
+>
+> **🔴 Une migration est écrite et NON POUSSÉE** —
+> `20260910154350_cardio_ux01_semaines_et_adaptation`. Elle n'est **pas** nécessaire pour recetter
+> cette section : tout ce qui suit fonctionne sans elle. Elle conditionne deux choses seulement, qui
+> ne sont donc **pas** recettables aujourd'hui : les semaines qui progressent (F35) et le bouton
+> « Appliquer aujourd'hui » de la carte d'adaptation (F36). Voir « Ce qui attend la migration » en
+> fin de section.
+>
+> **✅ Aucune sync rule à redéployer** (`sessions` et `planned_sessions` sont déjà lues en
+> `select *`) · **aucune dépendance native neuve** → recettable sur un build de la branche.
+>
+> ⚠️ **Deux critères exigent de courir dehors** (les 7 et 8). Les autres se passent au chaud, y
+> compris le mode sans GPS.
+
+### La justesse — les cinq constats bloquants
+
+C'est la partie qui compte le plus : jusqu'ici l'app **affichait à l'utilisateur des chiffres qui
+n'étaient pas les siens**.
+
+- [ ] 1. **Le chrono affiché est celui qui sera enregistré.** Démarrer une course GPS, laisser
+      tourner 2 min, **mettre en pause 1 min**, reprendre 1 min, terminer. Le résumé doit afficher
+      **≈ 3 min**, pas 4 — et c'est ce que le chrono affichait déjà pendant la course.
+      *Avant : l'écran comptait 4 min (horloge murale) et le résumé en enregistrait 3.*
+- [ ] 2. **La pause se voit.** Pendant la pause : un bandeau « En pause » apparaît, le grand chiffre
+      **se grise** et se **fige**, et le libellé porte « figé ». Aucun chiffre ne continue d'avancer.
+- [ ] 3. **🔴 Le mode sans GPS enregistre sa durée.** Démarrer une course en mode **manuel**,
+      laisser tourner **3 minutes**, terminer. Le résumé doit afficher **≈ 3:00 de durée** et
+      proposer deux champs (distance **et** durée).
+      *Avant : « Durée — », « Allure — », et un seul champ de distance. Les minutes étaient perdues.*
+- [ ] 4. **Le mode sans GPS a une pause.** Sur la même course : le bouton Pause existe, il fige le
+      chrono, la reprise repart sans rattraper le temps de pause.
+- [ ] 5. **🔴 Terminer une course coche la séance planifiée.** Avoir une séance de course planifiée
+      aujourd'hui. La démarrer **depuis le hub**, la terminer. Le résumé affiche « Séance validée ».
+      Revenir au hub : il ne propose **plus** cette séance, et le planning la montre **faite**.
+      *Avant : le lendemain, le hub proposait encore de la faire.*
+- [ ] 6. **La validation est réversible.** Sur le même résumé, taper « Annuler » à côté de
+      « Séance validée » : le bandeau disparaît, et le planning remet la séance **à faire**.
+- [ ] 7. **📍 dehors — L'arrêt se fait en deux temps.** En course, taper « Arrêter » : la course
+      passe **en pause** et trois issues apparaissent — *Reprendre* · *Terminer et enregistrer* ·
+      *Supprimer*. **Rien n'est clôturé à ce stade.**
+      *Avant : un seul appui clôturait, quittait, et il n'y avait aucun retour possible.*
+- [ ] 8. **📍 dehors — « Reprendre » repart vraiment.** Depuis ce panneau, taper « Reprendre » : la
+      course continue, la distance et le chrono repartent, rien n'a été enregistré.
+- [ ] 9. **Supprimer une course en cours.** Depuis le panneau d'issues, « Supprimer » demande
+      confirmation, puis ramène au hub course. La course **n'apparaît pas** dans l'historique.
+- [ ] 10. **L'écran se verrouille.** En course, taper « Bloquer » : les commandes disparaissent, seul
+      le grand chiffre reste. Un **appui simple** sur « Déverrouiller » ne suffit pas ; un **appui
+      long** déverrouille.
+      *Sans ça, `useKeepAwake` laisse l'écran tactile toute la course — poche, pluie, main mouillée.*
+- [ ] 11. **🔴 Supprimer une course terminée.** Depuis le résumé **ou** depuis l'analyse : suppression
+      avec confirmation. Vérifier ensuite que la course a disparu de l'historique **et** des
+      statistiques de la semaine.
+- [ ] 12. **Une suppression rend son record.** Faire une course courte qui décroche un record
+      (ex. record du 1 km sur un compte neuf), vérifier le record dans l'historique, **supprimer la
+      course**, puis revenir aux records : le record doit avoir disparu ou être revenu au précédent.
+      ⚠️ **Le critère le plus important de ce lot** : c'est le mécanisme par lequel un seul fix GPS
+      aberrant pouvait dérégler l'allure de référence — donc **toutes** les allures cibles — sans
+      recours.
+- [ ] 13. **Corriger une distance.** Analyse → « Corriger la distance » → saisir une valeur →
+      enregistrer. La distance **et l'allure moyenne** changent ; la carte du parcours est
+      **inchangée**.
+- [ ] 14. **L'écart de pause est expliqué.** Sur une course qui a eu des pauses, le résumé affiche
+      une ligne du type « 1:00 de pause exclues · 4:00 écoulées ». Sur une course sans pause, cette
+      ligne est **absente** (et non « 0:00 »).
+
+### Le bandeau de segment — le cœur de la refonte
+
+- [ ] 15. **🔴 📍 dehors — La séance structurée se voit.** Avoir une séance planifiée avec une
+      structure (par ex. `2 km éch + 6×400/200 + 1 km rac`). La démarrer. En haut de l'écran, un
+      bandeau sombre affiche : la **nature du segment**, la **répétition** (« 3 / 6 »), ce qui
+      **reste** (« 250 m »), l'**allure cible**, et « Puis : … ». Deux barres de progression : celle
+      du segment, celle de la séance.
+      *Avant : rien. Tout était à la voix, et la voix est désactivée par défaut.*
+- [ ] 16. **🔴 Le bandeau marche AVEC LA VOIX COUPÉE.** Vérifier dans **Réglages → Profil coureur**
+      que « Guidage fractionné » est **désactivé**, puis refaire le critère 15.
+      ⚠️ **C'est un défaut trouvé en implémentant** : le curseur de phase n'avançait que si le
+      guidage vocal était activé. Donc, pour la majorité des utilisateurs, ni le bandeau ni le
+      tableau « fraction par fraction » du résumé n'auraient jamais rien affiché.
+- [ ] 17. **Le bandeau est absent sur une course libre.** Démarrer une course sans séance : aucun
+      bandeau — pas un bandeau vide.
+- [ ] 18. **Fin de séance annoncée.** Franchir tous les segments : le bandeau annonce « Séance
+      terminée » et **jamais** « fraction 15 sur 14 ».
+- [ ] 19. **Le grand chiffre dépend de la séance.** Sur un **fractionné**, l'**allure** est en grand.
+      Sur une **sortie longue**, la **distance**. Sur une séance bornée en durée, le **chrono**.
+- [ ] 20. **Le grand chiffre se change d'un tap.** Taper dessus : il passe à la métrique suivante
+      (allure → distance → temps), et les deux autres restent lisibles en dessous.
+- [ ] 21. **Le mot « net » est écrit.** À côté du temps, la mention « hors pauses » est visible.
+
+### Le hub course
+
+- [ ] 22. **Quatre états, jamais deux cartes.** Vérifier les quatre, dans l'ordre de priorité :
+      (a) une course **en cours** → « Reprendre » ; (b) une séance **aujourd'hui** → la carte de
+      séance ; (c) un **programme actif sans séance aujourd'hui** → « Rien de prévu aujourd'hui »
+      + la date de la prochaine ; (d) **aucun programme** → « Par où commencer ? » avec deux
+      propositions.
+      *Avant : trois états, et (c) et (d) affichaient la même carte.*
+- [ ] 23. **La carte du jour porte le CONTENU de la séance.** Structure en puces
+      (`Échauffement — 2 km`, `6 × 400 m…`), **volume total**, **durée estimée**, allure cible et la
+      **consigne rédigée**.
+- [ ] 24. **🔴 Le profil coureur est accessible depuis le pilier.** Un bouton « Profil coureur » en
+      en-tête du hub.
+      *Avant : uniquement depuis les **Réglages de l'application** — alors qu'il porte l'allure de
+      référence, qui pilote toutes les allures cibles, et les deux réglages audio, désactivés par
+      défaut.*
+- [ ] 25. **Ma semaine.** Une bande affiche : « n / m faites », les **sept jours** (couru = coche
+      verte, aujourd'hui = accent, prévu = pointillés), et distance / temps / D+ de la semaine.
+- [ ] 26. **La fréquence hebdo visée sert enfin.** Renseigner « Fréquence hebdo visée » dans le
+      profil coureur, revenir au hub : le compte de la bande se lit sur cet objectif, et une ligne
+      le rappelle quand il diffère du nombre de séances prévues.
+      *Avant : ce champ était saisi et **lu nulle part**.*
+- [ ] 27. **Une tuile vide ne réserve plus sa case.** Sur un **compte neuf** (aucune course, aucun
+      programme), la grille du hub ne montre pas quatre tuiles à zéro.
+- [ ] 28. **La bande « Ma semaine » se tait.** Sur un compte neuf, elle n'apparaît pas du tout.
+
+### Le résumé, en deux temps
+
+- [ ] 29. **🔴 Le premier écran tient sans défilement.** Après une course : quatre chiffres, la
+      séance validée, le ressenti, et **deux boutons** — *Enregistrer* et *Analyser*. Vérifier sur
+      un téléphone réel qu'aucun défilement n'est nécessaire pour atteindre *Enregistrer*.
+      *Avant : douze sections, et « Terminé » tout en bas.*
+- [ ] 30. **Le ressenti est nommé.** Cinq niveaux **Facile → Max** (les mêmes que la muscu), et non
+      dix boutons numérotés. Un ressenti saisi **avant** cette US se relit correctement.
+- [ ] 31. **« Analyser » porte tout le reste.** Splits par km, fraction par fraction, courbes
+      d'allure, carte, terrain, export GPX, partage, corriger, supprimer.
+- [ ] 32. **🔴 Le tableau des fractions affiche la PLAGE complète.** Sur une séance dont les
+      fractions visaient une plage (ex. 4:05–4:10), la colonne « Prévu » affiche **4:05 – 4:10**.
+      *Avant : « 4:05 » seul, ce qui se lit comme une cible unique — et faisait passer pour hors
+      cible une fraction courue à 4:09.*
+- [ ] 33. **Le libellé « Récupération » n'est pas tronqué** dans ce tableau.
+
+### Non-régression — à vérifier, cette US touche des écrans partagés
+
+- [ ] 34. **La musculation n'a pas bougé.** MUSCU-UX01 a été livrée la veille : ouvrir le hub muscu,
+      démarrer une séance, valider une série, terminer. Rien ne doit avoir changé.
+      ⚠️ Les deux US touchent `packages/shared/src/widgets.ts` — régions distinctes
+      (`RUNNING_*` contre `STRENGTH_*`), mais à vérifier.
+- [ ] 35. **Le planning reste pilier-agnostique.** Ouvrir `/planning` : les séances muscu **et**
+      course s'affichent, « Marquer fait » fonctionne pour les deux.
+- [ ] 36. **L'accueil n'a pas bougé.** La carte de séance du jour et le widget de course s'affichent
+      normalement.
+- [ ] 37. **Les annonces vocales périodiques fonctionnent toujours.** Activer « Annonces vocales »
+      dans le profil coureur, courir 1 km : l'annonce se déclenche.
+- [ ] 38. **L'export GPX fonctionne toujours** (depuis « Analyser »).
+- [ ] 39. **La carte partageable fonctionne toujours** (depuis « Analyser »).
+
+### 🔴 Ce qui attend la migration — NON recettable aujourd'hui
+
+`npm run db:push` vise la base **cloud de production** : c'est une décision de Florian ou Damien,
+pas une étape de recette. Tant qu'elle n'est pas passée, ces deux points sont **volontairement
+invisibles** dans l'app.
+
+- [ ] 40. *(après `npm run db:push` + `npm run db:types` + passer `ADAPTATION_WRITE_READY` à `true`)*
+      **La carte d'adaptation agit.** Le bouton « Appliquer aujourd'hui » apparaît, l'appliquer
+      n'allège **que** la séance du jour, et le programme des semaines suivantes reste intact.
+- [ ] 41. *(après la même migration)* **Un programme peut progresser d'une semaine à l'autre.**
+      ⚠️ Le code de génération n'est **pas encore** livré (voir ci-dessous) : la colonne existe, son
+      exploitation reste à faire.
+
+### 🟡 Ce qui reste ouvert dans cette US — à ne pas chercher dans l'app
+
+Six chantiers de l'audit ne sont **pas** livrés dans ce lot. Ils ont leur spec, leur plan et,
+pour deux d'entre eux, leurs briques de calcul déjà écrites et testées :
+
+| Constats | Sujet | État |
+|---|---|---|
+| F2, F3, F39 | Les **quatre portes** vers l'allure de référence + accueil du pilier en 3 questions | Brique de calcul livrée et testée (`referencePaceFromRaceTime`, `referencePaceFromCooperTest`, 8 tests) — **écrans à faire** |
+| F4 → F8, F26 | Écran de **départ** : fix GPS attendu, mode mémorisé, compte à rebours, contexte de séance, **saisie rétroactive** | `createPastRun` livrée et typée côté repository — **écran à faire** |
+| F22, F23, F24 | **Historique** en trois onglets, liste virtualisée et filtrable | Requête enrichie livrée (type de séance, terrain, RPE remontent déjà) — **écran à faire** |
+| F27 → F34 | **Éditeur de séance** à trois niveaux, « Répéter la sélection », modèles, saisie en une ligne | Grammaire complète livrée et testée (`parseSessionLine`, `SESSION_TEMPLATES`, 20 tests) — **éditeurs à réécrire** |
+| F35 | Génération des **semaines qui progressent** | Colonne livrée (migration non poussée) — **`planProgram` à étendre** |
+| F25 | **Import** GPX et Health Connect | Rien de livré. ⚠️ La lecture Health Connect ajoute deux permissions, donc **change la déclaration « Health apps » du Play Store** — chemin critique du lancement (9.2) |

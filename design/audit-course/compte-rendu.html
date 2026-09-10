@@ -1,0 +1,1191 @@
+<title>Audit du pilier Course</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+  /* ── Jetons : ceux de l'app (theme/colors.ts), étendus pour un document ── */
+  :root {
+    --ground:      #f7eede;
+    --surface:     #fffaf2;
+    --surface-alt: #f3ddd0;
+    --rule:        #ece0cd;
+    --rule-strong: #c9b79a;
+    --ink:         #33291f;
+    --ink-muted:   #786a59;
+    --accent:      #b14f2b;
+    --accent-soft: rgba(177, 79, 43, 0.10);
+    --p0:          #b23b2e;
+    --p0-soft:     rgba(178, 59, 46, 0.09);
+    --p1:          #8a6419;
+    --p1-soft:     rgba(138, 100, 25, 0.11);
+    --p2:          #786a59;
+    --p2-soft:     rgba(120, 106, 89, 0.09);
+    --good:        #66714b;
+    --panel:       #33291f;
+    --panel-ink:   #f0e4d0;
+    --panel-muted: #c9b79a;
+    --panel-accent:#d9a888;
+
+    --display: 'Bricolage Grotesque', 'Trebuchet MS', system-ui, sans-serif;
+    --body:    'Hanken Grotesk', 'Segoe UI', system-ui, sans-serif;
+    --data:    'Space Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+    --measure: 68ch;
+    --page:    980px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:      #1c150e;
+      --surface:     #30271e;
+      --surface-alt: #3a2e22;
+      --rule:        #3a2e22;
+      --rule-strong: #797169;
+      --ink:         #f4ecdd;
+      --ink-muted:   #c9b79a;
+      --accent:      #dd6e40;
+      --accent-soft: rgba(221, 110, 64, 0.14);
+      --p0:          #e0524a;
+      --p0-soft:     rgba(224, 82, 74, 0.14);
+      --p1:          #e0b155;
+      --p1-soft:     rgba(224, 177, 85, 0.14);
+      --p2:          #c9b79a;
+      --p2-soft:     rgba(201, 183, 154, 0.10);
+      --good:        #a9ba7e;
+      --panel:       #241e18;
+      --panel-ink:   #f0e4d0;
+      --panel-muted: #c9b79a;
+      --panel-accent:#e0a97f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:      #1c150e;
+    --surface:     #30271e;
+    --surface-alt: #3a2e22;
+    --rule:        #3a2e22;
+    --rule-strong: #797169;
+    --ink:         #f4ecdd;
+    --ink-muted:   #c9b79a;
+    --accent:      #dd6e40;
+    --accent-soft: rgba(221, 110, 64, 0.14);
+    --p0:          #e0524a;
+    --p0-soft:     rgba(224, 82, 74, 0.14);
+    --p1:          #e0b155;
+    --p1-soft:     rgba(224, 177, 85, 0.14);
+    --p2:          #c9b79a;
+    --p2-soft:     rgba(201, 183, 154, 0.10);
+    --good:        #a9ba7e;
+    --panel:       #241e18;
+    --panel-ink:   #f0e4d0;
+    --panel-muted: #c9b79a;
+    --panel-accent:#e0a97f;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--accent-soft); }
+  a:hover { border-bottom-color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+
+  .wrap { max-width: var(--page); margin: 0 auto; padding: 0 28px 96px; }
+  .measure { max-width: var(--measure); }
+
+  /* ── Bandeau de titre ─────────────────────────────────────────── */
+  .masthead { border-bottom: 2px solid var(--ink); padding: 54px 0 22px; margin-bottom: 34px; }
+  .eyebrow {
+    font-family: var(--data); font-size: 11.5px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+    margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 800; font-size: clamp(34px, 6vw, 54px);
+    letter-spacing: -0.032em; line-height: 1.03; margin: 0 0 16px; text-wrap: balance;
+  }
+  .standfirst { font-size: 18.5px; line-height: 1.55; color: var(--ink-muted); max-width: 62ch; margin: 0 0 26px; }
+  .byline {
+    display: flex; flex-wrap: wrap; gap: 6px 26px;
+    font-family: var(--data); font-size: 12px; color: var(--ink-muted);
+  }
+  .byline b { color: var(--ink); font-weight: 700; }
+
+  /* ── Titres de section ────────────────────────────────────────── */
+  h2 {
+    font-family: var(--display); font-weight: 700; font-size: 27px;
+    letter-spacing: -0.022em; line-height: 1.16; margin: 62px 0 6px; text-wrap: balance;
+    padding-top: 20px; border-top: 1px solid var(--rule);
+  }
+  h2 .kicker {
+    display: block; font-family: var(--data); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-muted);
+    margin-bottom: 9px; letter-spacing: 0.12em;
+  }
+  h3 {
+    font-family: var(--display); font-weight: 600; font-size: 19px;
+    letter-spacing: -0.015em; margin: 34px 0 8px; text-wrap: balance;
+  }
+  h4 {
+    font-family: var(--body); font-weight: 700; font-size: 15px;
+    margin: 20px 0 4px; color: var(--ink);
+  }
+  p { margin: 0 0 15px; }
+  .lede { font-size: 17px; color: var(--ink-muted); margin-bottom: 26px; max-width: 64ch; }
+
+  code, .mono { font-family: var(--data); font-size: 0.875em; }
+  code {
+    background: var(--surface-alt); padding: 1px 5px; border-radius: 4px;
+    word-break: break-word;
+  }
+  strong { font-weight: 700; }
+
+  /* ── Trois tuiles de gravité : ce sont elles, le sujet ────────── */
+  .tally { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin: 30px 0 8px; }
+  .tally-item { border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); padding: 18px 18px 16px; border-top-width: 4px; }
+  .tally-item.p0 { border-top-color: var(--p0); }
+  .tally-item.p1 { border-top-color: var(--p1); }
+  .tally-item.p2 { border-top-color: var(--p2); }
+  .tally-n {
+    font-family: var(--display); font-weight: 800; font-size: 46px;
+    letter-spacing: -0.04em; line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .tally-item.p0 .tally-n { color: var(--p0); }
+  .tally-item.p1 .tally-n { color: var(--p1); }
+  .tally-item.p2 .tally-n { color: var(--p2); }
+  .tally-k {
+    font-family: var(--data); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted);
+    margin: 8px 0 6px;
+  }
+  .tally-d { font-size: 13.5px; line-height: 1.45; color: var(--ink-muted); }
+
+  /* ── Le verdict en trois points ───────────────────────────────── */
+  .verdict { background: var(--panel); border-radius: 4px; padding: 26px 28px; margin: 30px 0; color: var(--panel-ink); }
+  .verdict h3 { color: var(--panel-ink); margin: 0 0 16px; font-size: 17px; }
+  .verdict ol { margin: 0; padding: 0; list-style: none; counter-reset: v; display: flex; flex-direction: column; gap: 14px; }
+  .verdict li { counter-increment: v; display: grid; grid-template-columns: 26px 1fr; gap: 12px; align-items: start; }
+  .verdict li::before {
+    content: counter(v); font-family: var(--data); font-weight: 700; font-size: 12px;
+    color: var(--panel-accent); border: 1px solid var(--panel-accent); border-radius: 3px;
+    width: 22px; height: 22px; display: flex; align-items: center; justify-content: center;
+    margin-top: 2px;
+  }
+  .verdict li p { margin: 0; font-size: 15px; line-height: 1.55; color: var(--panel-ink); }
+  .verdict li b { color: #fff; }
+  .verdict-foot { margin: 18px 0 0; padding-top: 16px; border-top: 1px solid rgba(240,228,208,0.2); font-size: 14.5px; color: var(--panel-muted); }
+
+  /* ── Personas ─────────────────────────────────────────────────── */
+  .runner { border-left: 3px solid var(--accent); padding-left: 20px; margin: 30px 0; }
+  .runner-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 4px; }
+  .runner-name { font-family: var(--display); font-weight: 700; font-size: 20px; letter-spacing: -0.018em; }
+  .runner-meta { font-family: var(--data); font-size: 11.5px; color: var(--ink-muted); }
+  .runner blockquote {
+    margin: 12px 0 12px; padding: 0; font-size: 15.5px; line-height: 1.66; color: var(--ink);
+    max-width: 66ch;
+  }
+  .runner blockquote p { margin: 0 0 12px; }
+  .runner blockquote p:last-child { margin-bottom: 0; }
+  .takeaway { font-size: 14.5px; color: var(--ink-muted); }
+  .takeaway b { color: var(--ink); }
+
+  /* Renvoi vers un constat, dans le fil du texte */
+  .ref {
+    font-family: var(--data); font-size: 11px; font-weight: 700;
+    color: var(--accent); background: var(--accent-soft);
+    padding: 1px 5px; border-radius: 3px; white-space: nowrap;
+  }
+
+  /* ── Fiches de constat ────────────────────────────────────────── */
+  .finding { border: 1px solid var(--rule); border-left-width: 4px; border-radius: 4px; background: var(--surface); padding: 20px 22px; margin: 16px 0; }
+  .finding.sev0 { border-left-color: var(--p0); }
+  .finding.sev1 { border-left-color: var(--p1); }
+  .finding-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 11px; margin-bottom: 12px; }
+  .finding-id {
+    font-family: var(--data); font-weight: 700; font-size: 12.5px;
+    padding: 2px 7px; border-radius: 3px; color: #fff;
+  }
+  .sev0 .finding-id { background: var(--p0); }
+  .sev1 .finding-id { background: var(--p1); }
+  :root[data-theme="dark"] .sev0 .finding-id,
+  :root[data-theme="dark"] .sev1 .finding-id { color: #1c150e; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .sev0 .finding-id,
+    :root:not([data-theme="light"]) .sev1 .finding-id { color: #1c150e; }
+  }
+  .finding-title { font-family: var(--display); font-weight: 700; font-size: 18px; letter-spacing: -0.016em; }
+  .finding-flag { font-family: var(--data); font-size: 10.5px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--p0); }
+  .finding p { max-width: 70ch; }
+  .finding p:last-child { margin-bottom: 0; }
+  .finding h4:first-of-type { margin-top: 0; }
+
+  /* Chaîne de preuve : liste d'ancres de code */
+  .evidence { margin: 10px 0 15px; padding: 14px 16px; background: var(--surface-alt); border-radius: 4px; }
+  .evidence ul { margin: 0; padding-left: 18px; }
+  .evidence li { font-size: 14px; line-height: 1.55; margin-bottom: 5px; }
+  .evidence li:last-child { margin-bottom: 0; }
+
+  pre {
+    margin: 12px 0 15px; padding: 14px 16px; background: var(--panel); color: var(--panel-ink);
+    border-radius: 4px; overflow-x: auto; font-family: var(--data); font-size: 12.5px; line-height: 1.6;
+  }
+  pre .cm { color: var(--panel-muted); }
+  pre .hl { color: var(--panel-accent); font-weight: 700; }
+
+  /* ── Tableau du registre ──────────────────────────────────────── */
+  .table-scroll { overflow-x: auto; margin: 20px 0 8px; border: 1px solid var(--rule); border-radius: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; background: var(--surface); }
+  thead th {
+    text-align: left; font-family: var(--data); font-size: 10.5px; font-weight: 700;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-muted);
+    padding: 11px 14px; border-bottom: 1px solid var(--rule-strong); white-space: nowrap;
+    background: var(--surface-alt);
+  }
+  tbody td { padding: 11px 14px; border-bottom: 1px solid var(--rule); vertical-align: top; line-height: 1.5; }
+  tbody tr:last-child td { border-bottom: none; }
+  td.id { font-family: var(--data); font-weight: 700; font-size: 12.5px; color: var(--accent); white-space: nowrap; }
+  td.loc { font-family: var(--data); font-size: 11.5px; color: var(--ink-muted); }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td.w { font-family: var(--data); font-size: 11.5px; font-weight: 700; white-space: nowrap; }
+
+  /* ── Causes racines ───────────────────────────────────────────── */
+  .root { margin: 26px 0; }
+  .root-n {
+    font-family: var(--data); font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--accent); margin-bottom: 5px;
+  }
+  .principle {
+    margin: 14px 0 0; padding: 13px 16px; border-left: 3px solid var(--good);
+    background: var(--surface); font-size: 14.5px; line-height: 1.55;
+  }
+  .principle b { color: var(--good); }
+
+  /* ── Flux ─────────────────────────────────────────────────────── */
+  .flow-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; margin: 24px 0; }
+  .flow { border: 1px solid var(--rule); border-radius: 4px; background: var(--surface); padding: 16px 18px; }
+  .flow-step { font-family: var(--data); font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-muted); }
+  .flow-name { font-family: var(--display); font-weight: 700; font-size: 17px; letter-spacing: -0.016em; margin: 4px 0 7px; }
+  .flow-desc { font-size: 14px; line-height: 1.5; color: var(--ink-muted); margin-bottom: 10px; }
+  .flow-refs { display: flex; flex-wrap: wrap; gap: 4px; }
+
+  .callout {
+    border: 1px solid var(--accent); border-radius: 4px; background: var(--accent-soft);
+    padding: 18px 20px; margin: 26px 0;
+  }
+  .callout p { margin: 0; max-width: 66ch; }
+  .callout p + p { margin-top: 10px; }
+
+  /* ── Lots d'US ────────────────────────────────────────────────── */
+  .lot { margin: 30px 0; }
+  .lot-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; margin-bottom: 4px; }
+  .lot-tag { font-family: var(--data); font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 3px; }
+  .lot-tag.p0 { background: var(--p0); color: #fff; }
+  .lot-tag.p1 { background: var(--p1); color: #fff; }
+  .lot-tag.p2 { background: var(--p2-soft); color: var(--ink-muted); border: 1px solid var(--rule-strong); }
+  :root[data-theme="dark"] .lot-tag.p0, :root[data-theme="dark"] .lot-tag.p1 { color: #1c150e; }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) .lot-tag.p0,
+    :root:not([data-theme="light"]) .lot-tag.p1 { color: #1c150e; }
+  }
+  .lot-name { font-family: var(--display); font-weight: 700; font-size: 19px; letter-spacing: -0.016em; }
+  .lot-note { font-size: 14px; color: var(--ink-muted); margin: 4px 0 0; }
+
+  ul.plain { margin: 0 0 15px; padding-left: 20px; }
+  ul.plain li { margin-bottom: 7px; line-height: 1.55; max-width: 68ch; }
+
+  .foot { margin-top: 62px; padding-top: 20px; border-top: 2px solid var(--ink); font-size: 13.5px; color: var(--ink-muted); max-width: 70ch; }
+
+  @media (max-width: 720px) {
+    .tally { grid-template-columns: 1fr; }
+    .wrap { padding: 0 18px 64px; }
+    h1 { font-size: 32px; }
+    h2 { font-size: 23px; }
+  }
+
+  @media print {
+    body { background: #fff; color: #000; font-size: 10.5pt; line-height: 1.5; }
+    .wrap { max-width: none; padding: 0; }
+    h2 { break-before: page; break-after: avoid; }
+    .masthead + * h2, h2:first-of-type { break-before: auto; }
+    h3, h4 { break-after: avoid; }
+    .finding, .runner, .tally-item, .flow, .verdict, .callout, tr { break-inside: avoid; }
+    .verdict { background: #f2f2f2; color: #000; }
+    .verdict h3, .verdict li p, .verdict li b { color: #000; }
+    .verdict-foot { color: #333; border-top-color: #bbb; }
+    pre { background: #f2f2f2; color: #000; }
+    pre .cm { color: #555; } pre .hl { color: #000; }
+    a { color: #000; border-bottom: none; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <p class="eyebrow">Audit d'ergonomie · amont de spec</p>
+    <h1>Audit du pilier Course</h1>
+    <p class="standfirst">
+      Un moteur d'entraînement remarquable, et trois choses qui manquent au même endroit&nbsp;:
+      ce qui est calculé n'est pas montré au bon moment, ce qui est saisi coûte trop cher,
+      et ce qui est fait ne se referme pas.
+    </p>
+    <div class="byline">
+      <span><b>09/09/2026</b></span>
+      <span>Demandeur <b>Florian</b></span>
+      <span>Périmètre <b>6&nbsp;687 lignes · 18 fichiers</b></span>
+      <span>Constats <b>40</b></span>
+      <span><code>npm run test</code> <b>vert</b></span>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2 style="border-top: none; padding-top: 0; margin-top: 0;">
+      <span class="kicker">Synthèse</span>
+      En une page
+    </h2>
+    <p class="lede">
+      Le pilier Course est riche en calcul et pauvre en surface. Presque tout ce qu'un plan
+      d'entraînement exige est calculable&nbsp;— allures dérivées, segments typés, rampes
+      progressives, ACWR, polarisation, Riegel, plan de passage, adaptation selon les signaux du
+      jour. Ce qui manque tient en trois phrases, et ce sont exactement les trois que l'utilisateur
+      voit.
+    </p>
+
+    <div class="verdict">
+      <h3>Ce que l'audit conclut</h3>
+      <ol>
+        <li><p><b>Ce qui est calculé n'est pas montré au bon moment.</b> Une séance de fractionné structurée est pilotée à la voix, et rien à l'écran ne dit dans quel segment on est. L'app sait, le coureur non.</p></li>
+        <li><p><b>Ce qui est saisi coûte trop cher.</b> Écrire «&nbsp;6&nbsp;×&nbsp;400&nbsp;m / 200&nbsp;m récup&nbsp;» demande de remplir 42 contrôles sur 3 segments — 70 sur une séance à cinq — dont un champ «&nbsp;Groupe&nbsp;» qui est une clé de base de données déguisée en champ texte.</p></li>
+        <li><p><b>Ce qui est fait ne se referme pas.</b> Terminer une course rattachée à une séance planifiée ne marque pas la séance comme faite&nbsp;: le hub continue de proposer de la refaire.</p></li>
+      </ol>
+      <p class="verdict-foot">
+        À quoi s'ajoutent deux défauts qui trompent l'utilisateur sur ses propres données&nbsp;: le
+        chrono affiché pendant la course n'est pas celui qui sera enregistré, et une course en mode
+        sans GPS&nbsp;— le tapis&nbsp;— n'enregistre aucune durée, donc aucune allure.
+      </p>
+    </div>
+
+    <div class="tally">
+      <div class="tally-item p0">
+        <div class="tally-n">5</div>
+        <div class="tally-k">Bloquants</div>
+        <div class="tally-d">Il perd des données, ou l'app lui affiche un chiffre faux.</div>
+      </div>
+      <div class="tally-item p1">
+        <div class="tally-n">13</div>
+        <div class="tally-k">Structurants</div>
+        <div class="tally-d">Il se perd, ou il abandonne devant la quantité de saisie.</div>
+      </div>
+      <div class="tally-item p2">
+        <div class="tally-n">22</div>
+        <div class="tally-k">Finition</div>
+        <div class="tally-d">Il y arrive, mais l'app ne l'aide pas.</div>
+      </div>
+    </div>
+
+    <p style="margin-top: 22px;" class="measure">
+      Les tests passent&nbsp;: les défauts décrits ici ne sont pas des régressions, ce sont des trous
+      de conception et de surface. Chacun est ancré sur un fichier et une ligne. Aucune ligne de code
+      applicatif n'a été écrite&nbsp;— ce document est l'entrée du couple
+      <em>spec → plan → design → validation</em>.
+    </p>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="kicker">Méthode</span>Quatre coureurs, six flux</h2>
+    <p class="lede">
+      Les quatre parcours ci-dessous sont écrits au présent de ce que fait le code aujourd'hui, pas
+      de ce que la spec voulait. Les six flux parcourus&nbsp;: découvrir, partir, courir, clore,
+      relire, préparer.
+    </p>
+
+    <div class="runner">
+      <div class="runner-head">
+        <span class="runner-name">Léa</span>
+        <span class="runner-meta">débutante · court depuis 3 semaines · veut tenir 30 minutes</span>
+      </div>
+      <blockquote>
+        <p>J'active le pilier Course. J'arrive sur un écran avec un bouton et quatre tuiles vides. Je
+        prends «&nbsp;Reprise en douceur&nbsp;» dans la bibliothèque. J'ouvre le programme&nbsp;:
+        chaque séance dit <em>«&nbsp;Renseigne ton profil&nbsp;»</em>. Je cherche où. Ce n'est pas
+        dans le pilier&nbsp;— il n'y a aucun lien. Je finis par le trouver dans les
+        <strong>Réglages de l'application</strong> <span class="ref">F1</span>. On me demande mon
+        «&nbsp;allure actuelle sur 5&nbsp;km&nbsp;». Je n'ai jamais couru 5&nbsp;km. Il n'y a ni
+        «&nbsp;je ne sais pas&nbsp;», ni test proposé, ni estimation possible
+        <span class="ref">F2</span>. Je laisse vide.</p>
+        <p>Je pars courir quand même. Trois gestes <span class="ref">F4</span>. Le chrono part
+        immédiatement, téléphone encore en main, et le GPS cherche encore
+        <span class="ref">F5</span> <span class="ref">F6</span>. À un feu rouge, l'auto-pause se
+        déclenche&nbsp;— mais <strong>le chrono continue de défiler</strong>
+        <span class="ref">F9</span>. J'arrive chez moi&nbsp;: 32:10 à l'écran. Je tape Stop, sans
+        confirmation <span class="ref">F11</span>. Le résumé affiche <strong>29:45</strong>. Je ne
+        comprends pas où sont passées mes deux minutes.</p>
+        <p>Le résumé fait douze sections. Je descends pour trouver «&nbsp;Terminé&nbsp;» et je
+        traverse au passage une «&nbsp;polarisation&nbsp;», un «&nbsp;indice de dégradation&nbsp;», un
+        «&nbsp;ACWR&nbsp;» <span class="ref">F17</span> <span class="ref">F22</span>. Je n'ose plus
+        rien toucher.</p>
+      </blockquote>
+      <p class="takeaway"><b>Ce que Léa retient</b> — l'app est pour les gens sérieux, et elle affiche des chiffres qui ne sont pas les bons.</p>
+    </div>
+
+    <div class="runner">
+      <div class="runner-head">
+        <span class="runner-name">Marc</span>
+        <span class="runner-meta">intermédiaire · 3 sorties/semaine · prépare un 10 km</span>
+      </div>
+      <blockquote>
+        <p>Je saisis ma séance du mardi&nbsp;: 2&nbsp;km d'échauffement, 6&nbsp;×&nbsp;400&nbsp;m,
+        200&nbsp;m de récup en trottinant, 1&nbsp;km de retour au calme. Trois segments. Pour
+        chacun&nbsp;: nature (5 puces), répétitions, un basculement puis un champ, un %VMA, deux
+        champs d'allure, une bascule «&nbsp;progressive&nbsp;», deux champs de chrono cible, une
+        nature de récupération (4 puces), un <strong>«&nbsp;Groupe&nbsp;»</strong> avec une clé texte
+        libre, puis un troisième basculement pour la récupération et son champ.
+        <strong>Quatorze contrôles par segment</strong> <span class="ref">F27</span>. Ma récup de
+        45&nbsp;secondes, je dois l'écrire <strong>«&nbsp;0.75&nbsp;»</strong> minute
+        <span class="ref">F30</span>.</p>
+        <p>Vingt minutes plus tard, ma séance est saisie. Je la planifie&nbsp;: on me demande un jour
+        par séance et un nombre de semaines. <strong>Les huit semaines seront identiques</strong>
+        <span class="ref">F35</span>. Or mon plan fait grandir la sortie longue de 8 à 14&nbsp;km.</p>
+        <p>Mardi, je pars. Le hub m'affiche la cible et la consigne&nbsp;— bien. Je tape
+        «&nbsp;Démarrer&nbsp;»&nbsp;: l'écran suivant <strong>n'en montre plus rien</strong>
+        <span class="ref">F7</span>. En course, l'écran affiche distance, chrono, deux allures, une
+        allure cible. <strong>Nulle part le segment en cours.</strong> Pas de
+        «&nbsp;fraction 3 sur 6&nbsp;», pas de «&nbsp;250&nbsp;m restants&nbsp;». Tout est à la
+        voix&nbsp;— et j'ai enlevé mes écouteurs au troisième 400 <span class="ref">F10</span>. Je
+        cours au hasard.</p>
+        <p>Le lendemain, le hub me propose <strong>de refaire la séance de mardi</strong>
+        <span class="ref">F20</span>.</p>
+      </blockquote>
+      <p class="takeaway"><b>Ce que Marc retient</b> — l'app sait tout faire, mais c'est lui qui fait le travail.</p>
+    </div>
+
+    <div class="runner">
+      <div class="runner-head">
+        <span class="runner-name">Sofia</span>
+        <span class="runner-meta">confirmée · 5 sorties/semaine · montre GPS au poignet</span>
+      </div>
+      <blockquote>
+        <p>Je cours avec ma montre. J'active Health Connect en me disant que mes sorties vont
+        remonter. Elles ne remontent pas&nbsp;: l'app <strong>écrit</strong> dans Health Connect mais
+        ne <strong>lit</strong> que le poids, les pas et le cycle <span class="ref">F25</span>. Pas
+        d'import GPX ou FIT non plus&nbsp;— l'export existe, pas l'entrée.</p>
+        <p>Alors je saisis à la main. Sauf qu'il n'y a <strong>aucune saisie rétroactive</strong>
+        <span class="ref">F26</span>&nbsp;: la seule façon de créer une course est de la démarrer en
+        temps réel. Je ne peux pas journaliser la sortie d'hier, ni mon dossard de dimanche.</p>
+        <p>J'essaie le mode «&nbsp;sans GPS&nbsp;» pour au moins consigner mes 45 minutes. Je regarde
+        le chrono pendant 45 minutes. Je tape Stop. Le résumé m'affiche
+        <strong>«&nbsp;Durée&nbsp;—&nbsp;»</strong> et
+        <strong>«&nbsp;Allure&nbsp;—&nbsp;»</strong>, et me demande seulement une distance
+        <span class="ref">F15</span>. Les 45 minutes ne sont nulle part. Sur le tapis en hiver, ce
+        sera pareil.</p>
+      </blockquote>
+      <p class="takeaway"><b>Ce que Sofia retient</b> — l'app ne peut pas être son journal d'entraînement.</p>
+    </div>
+
+    <div class="runner">
+      <div class="runner-head">
+        <span class="runner-name">Thomas</span>
+        <span class="runner-meta">avancé · entraîneur amateur · 6 séances/semaine sur 16 semaines</span>
+      </div>
+      <blockquote>
+        <p>Ce qui m'intéresse, c'est la structure. Et sur le papier elle y est&nbsp;: segments typés,
+        échauffement, gammes, rampes d'allure, groupes imbriqués, plan de passage par km, compte à
+        rebours de course, adaptation selon la douleur et l'énergie du jour. C'est du bon travail.</p>
+        <p>Mais je ne peux pas construire un plan de 16 semaines&nbsp;: le modèle ne porte qu'une
+        semaine répétée <span class="ref">F35</span>. Je ne peux pas réutiliser une séance&nbsp;: pas
+        de bibliothèque de séances, pas de duplication, pas de modèle «&nbsp;6&nbsp;×&nbsp;400&nbsp;»
+        <span class="ref">F34</span>.</p>
+        <p>La carte «&nbsp;séance du jour&nbsp;» me dit «&nbsp;retire 25&nbsp;% des
+        répétitions&nbsp;», puis précise qu'elle n'a rien modifié <span class="ref">F36</span>. Elle
+        a raison de le préciser, mais alors je refais le calcul moi-même, dans l'éditeur à 80
+        contrôles, un mardi matin à 6&nbsp;h.</p>
+        <p>Mon historique&nbsp;: 400 courses, toutes rendues d'un coup dans un <code>ScrollView</code>
+        non virtualisé <span class="ref">F23</span>. Aucun filtre, et une ligne ne dit même pas de
+        quel <em>type</em> était la séance <span class="ref">F24</span>. Et je ne peux
+        <strong>supprimer aucune course</strong> <span class="ref">F18</span>&nbsp;: le jour où le GPS
+        a déliré et m'a décerné un record du 1&nbsp;km à 2:41, ce record est là pour toujours&nbsp;—
+        et il fausse mon allure de référence, donc toutes mes allures cibles.</p>
+      </blockquote>
+      <p class="takeaway"><b>Ce que Thomas retient</b> — de très bonnes fondations qu'il ne peut ni alimenter, ni corriger, ni faire grandir.</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="kicker">Gravité 1 · cinq constats</span>Ce qui est faux</h2>
+    <p class="lede">
+      Ces cinq défauts ne relèvent pas de l'ergonomie mais de la justesse&nbsp;: l'utilisateur perd
+      une donnée, ou l'app lui montre un chiffre qui n'est pas le sien.
+    </p>
+
+    <article class="finding sev0">
+      <div class="finding-head">
+        <span class="finding-id">F15</span>
+        <span class="finding-title">Le mode sans GPS n'enregistre aucune durée</span>
+        <span class="finding-flag">le plus grave</span>
+      </div>
+      <h4>Ce que voit l'utilisateur</h4>
+      <p>
+        Il choisit «&nbsp;sans GPS&nbsp;», regarde un chrono pendant 45 minutes, tape Stop, et le
+        résumé affiche <code>Durée : —</code> et <code>Allure : —</code>. Il ne lui est proposé qu'un
+        champ <em>distance</em>. Sa séance compte pour <strong>zéro seconde</strong> dans ses
+        statistiques de temps.
+      </p>
+      <h4>La chaîne de cause, vérifiée</h4>
+      <div class="evidence">
+        <ul>
+          <li><code>runs.duration_seconds</code> n'est écrit que par <code>flushTrack</code> — <span class="mono">run-repository.ts:838</span></li>
+          <li><code>flushTrack</code> n'est appelé que par le tracker — <span class="mono">tracker-task.ts:359</span>, <span class="mono">tracker.ts:208</span></li>
+          <li><code>startTracking</code> n'est appelé <strong>qu'en mode GPS</strong> — <span class="mono">run/index.tsx:60</span> → <code>if (source === 'gps')</code></li>
+          <li><code>finishRun</code> se contente de relire la colonne — <span class="mono">run-repository.ts:921</span></li>
+          <li><code>setManualRunDistance</code> ne peut donc pas calculer d'allure — <span class="mono">run-repository.ts:1013</span></li>
+          <li>Le résumé n'offre <strong>aucun champ de durée</strong> — seulement la distance</li>
+        </ul>
+      </div>
+      <h4>Pourquoi les tests ne l'ont pas vu</h4>
+      <p>Le test du chemin manuel simule le tracker à la main&nbsp;:</p>
+      <pre><span class="cm">// run-sql.test.ts:270-278</span>
+const id = await startRun('manual');
+<span class="cm">// La durée d'une course manuelle est posée par le tracker avant la clôture ;</span>
+<span class="cm">// la distance, elle, reste à saisir à la main.</span>
+await flushTrack(id, { ...segment('a'), <span class="hl">durationSeconds: 1800</span> });</pre>
+      <p>
+        Le commentaire énonce une hypothèse <strong>fausse en production</strong>&nbsp;: en mode
+        manuel, aucun tracker ne tourne. Le test passe, la fonctionnalité est cassée. C'est le cas
+        d'école du test qui valide sa propre mise en scène.
+      </p>
+      <h4>Ce que ça contredit</h4>
+      <p>
+        La roadmap 5.21 est marquée <strong>✅</strong>&nbsp;: «&nbsp;<em>Mode sans GPS — Suivi à la
+        durée seule (streak + historique). Couvre aussi le tapis.</em>&nbsp;» La durée seule est
+        précisément ce qui n'est pas suivi. Et <code>RUN_TERRAINS</code> contient
+        <code>treadmill</code>&nbsp;: le tapis est un usage revendiqué, et c'est l'usage cardio
+        numéro un en hiver.
+      </p>
+      <h4>Correctif</h4>
+      <p>
+        Faire du mode manuel un vrai mode&nbsp;: chrono local avec pause réelle, champs durée
+        <em>et</em> distance éditables sur le résumé. C'est aussi ce qui débloque la saisie
+        rétroactive <span class="ref">F26</span>&nbsp;— une course manuelle sans chrono, c'est une
+        saisie d'après-coup.
+      </p>
+    </article>
+
+    <article class="finding sev0">
+      <div class="finding-head">
+        <span class="finding-id">F9</span>
+        <span class="finding-title">Le chrono affiché n'est pas le chrono enregistré</span>
+      </div>
+      <p>
+        L'écran de course affiche <strong>32:10</strong>. Le résumé affiche <strong>29:45</strong>. Et
+        pendant une pause&nbsp;— manuelle ou automatique&nbsp;— le chrono <strong>continue de
+        défiler</strong>, ce qui donne l'impression que le bouton Pause ne fait rien.
+      </p>
+      <div class="evidence">
+        <ul>
+          <li><strong>Affichage</strong>&nbsp;: <code>useElapsedSeconds(active?.startedAt)</code> = <code>now − startedAt</code>, horloge murale, pauses incluses — <span class="mono">active.tsx:43-52</span>, rendu <span class="mono">active.tsx:254</span></li>
+          <li><strong>Persistance</strong>&nbsp;: <code>netDurationS += dt</code> seulement hors pause — <span class="mono">tracker-task.ts:305-330</span></li>
+        </ul>
+      </div>
+      <p>
+        L'incohérence est visible <em>dans le même écran</em>&nbsp;: l'allure moyenne, elle, utilise
+        la durée nette (<code>durationForPace = active?.durationSeconds ?? elapsedSeconds</code>,
+        <span class="mono">active.tsx:124</span>). Le chrono est le seul chiffre resté sur l'horloge
+        murale.
+      </p>
+      <p>
+        <strong>Aggravant</strong> <span class="ref">F16</span>&nbsp;: <code>netDurationS</code>
+        n'avance que sur un segment GPS jugé fiable. Sous un tunnel, en forêt dense, la durée nette
+        n'avance pas non plus&nbsp;— alors que le coureur court.
+      </p>
+      <h4>Correctif</h4>
+      <p>
+        Le chrono affiché doit être la durée nette&nbsp;: <code>durationSeconds</code> du dernier
+        flush + le delta local depuis ce flush si non en pause. Et la pause doit se voir&nbsp;: chrono
+        figé, bandeau explicite.
+      </p>
+    </article>
+
+    <article class="finding sev0">
+      <div class="finding-head">
+        <span class="finding-id">F20</span>
+        <span class="finding-title">Terminer une course ne clôt pas la séance planifiée</span>
+      </div>
+      <p>
+        Il court sa séance du mardi. Le résumé lui dit «&nbsp;objectif atteint&nbsp;». Le mercredi,
+        <strong>le hub lui propose de démarrer la séance de mardi</strong>. Il doit aller dans le
+        planning la cocher à la main.
+      </p>
+      <div class="evidence">
+        <ul>
+          <li><code>markPlannedSessionDone</code> existe — <span class="mono">planned-session-repository.ts:621</span></li>
+          <li>… et n'est appelé <strong>que</strong> depuis un bouton du calendrier — <span class="mono">planning/index.tsx:251</span></li>
+          <li>Le hub filtre sur <code>ps.status = 'planned'</code> — <span class="mono">run-repository.ts:382</span></li>
+        </ul>
+      </div>
+      <p>
+        Ce n'est pas qu'un affichage&nbsp;: tout ce qui compte les séances faites est faux&nbsp;—
+        progression du bloc dans <code>RaceCountdownCard</code>, adhérence de la semaine précédente
+        (<code>usePriorWeekAdherence</code>, garde de progression), et le sentiment général que l'app
+        ne suit pas.
+      </p>
+    </article>
+
+    <article class="finding sev0">
+      <div class="finding-head">
+        <span class="finding-id">F11</span>
+        <span class="finding-title">Le bouton Stop termine la course sans confirmation ni retour</span>
+      </div>
+      <p>
+        Un appui&nbsp;— un frottement dans la poche, une main mouillée&nbsp;— et la course est
+        arrêtée, clôturée et quittée. <code>onStop</code> enchaîne <code>stopTracking()</code> →
+        <code>finishRun(runId)</code> → <code>router.replace('/run/summary')</code>
+        (<span class="mono">active.tsx:296-315</span>). Un seul bouton plein en pied d'écran, et
+        <code>useKeepAwake</code> maintient l'écran allumé et tactile pendant toute la course
+        <span class="ref">F12</span>.
+      </p>
+      <h4>Correctif</h4>
+      <p>
+        Stop en <strong>deux temps</strong>&nbsp;: appui → l'écran passe en pause et propose
+        <em>Reprendre</em> / <em>Terminer</em> / <em>Supprimer</em>. Ce patron d'interaction règle en même temps
+        <span class="ref">F18</span> et <span class="ref">F14</span>. Plus un verrouillage d'écran.
+      </p>
+    </article>
+
+    <article class="finding sev0">
+      <div class="finding-head">
+        <span class="finding-id">F18</span>
+        <span class="finding-title">Aucune course ne peut être supprimée</span>
+      </div>
+      <p>
+        Une course démarrée par erreur, une trace GPS délirante, 200&nbsp;m dans le salon&nbsp;: c'est
+        dans l'historique <strong>pour toujours</strong>. <code>cancelRun</code> existe
+        (<span class="mono">run-repository.ts:966</span>) mais n'est appelé que dans le flux de
+        permission refusée. Aucun écran ne propose la suppression.
+      </p>
+      <h4>Portée — c'est ce qui rend le défaut bloquant</h4>
+      <p>Une course fantôme&nbsp;:</p>
+      <ul class="plain">
+        <li>gonfle les statistiques de distance et de temps&nbsp;;</li>
+        <li>entre dans l'<strong>ACWR</strong>, donc dans le signal de risque de blessure&nbsp;;</li>
+        <li>entre dans la <strong>polarisation</strong>&nbsp;;</li>
+        <li>peut <strong>décerner un record</strong>&nbsp;— et un record 5&nbsp;km met à jour
+          l'<strong>allure de référence</strong>
+          (<span class="mono">running-record-repository.ts:149</span>), qui pilote
+          <strong>toutes</strong> les allures cibles de <strong>toutes</strong> les séances.</li>
+      </ul>
+      <p>
+        Un seul fix GPS aberrant peut donc dérégler tout le système d'allures,
+        <strong>sans recours</strong>.
+      </p>
+    </article>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="kicker">Gravité 2 · treize constats</span>Ce qui rend le pilier illisible</h2>
+
+    <article class="finding sev1">
+      <div class="finding-head">
+        <span class="finding-id">F10</span>
+        <span class="finding-title">La séance structurée est invisible pendant la course</span>
+      </div>
+      <p>
+        Le guidage de segment est <strong>uniquement sonore</strong> (<code>useIntervalGuidance</code>,
+        <span class="mono">active.tsx:134-158</span>). L'écran affiche distance, chrono, allure
+        moyenne, allure instantanée, allure cible&nbsp;— et jamais&nbsp;: dans quel segment on est,
+        quelle répétition, ce qui reste, ce qui vient après. Le seul indice visuel est l'allure cible
+        qui change silencieusement de valeur (<code>segmentPace</code>,
+        <span class="mono">active.tsx:167-197</span>).
+      </p>
+      <p>
+        <strong>Pourquoi c'est structurant.</strong> RUN-F4 a été l'US la plus lourde du pilier&nbsp;—
+        segments typés, rampes, groupes, curseur de phase persisté. Toute cette machinerie n'a aucune
+        surface visuelle en course. C'est le défaut qui coûte le plus de valeur par rapport au travail
+        déjà payé.
+      </p>
+    </article>
+
+    <article class="finding sev1">
+      <div class="finding-head">
+        <span class="finding-id">F27</span>
+        <span class="finding-title">Jusqu'à 14 contrôles par segment, 80 par séance</span>
+      </div>
+      <p>Inventaire réel d'<strong>un</strong> segment (<code>IntervalBlockEditor.tsx</code>)&nbsp;:</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th style="width:3.5em">#</th><th>Contrôle</th><th>Type</th></tr></thead>
+          <tbody>
+            <tr><td class="num">1</td><td>Nature du segment</td><td class="loc">5 puces</td></tr>
+            <tr><td class="num">2</td><td>Répétitions</td><td class="loc">champ</td></tr>
+            <tr><td class="num">3</td><td>Phase rapide&nbsp;: distance / durée</td><td class="loc">bascule</td></tr>
+            <tr><td class="num">4</td><td>Valeur de la phase</td><td class="loc">champ</td></tr>
+            <tr><td class="num">5</td><td>%&nbsp;VMA</td><td class="loc">champ</td></tr>
+            <tr><td class="num">6–7</td><td>Allure de la fraction min – max</td><td class="loc">2 champs <code>m:ss</code></td></tr>
+            <tr><td class="num">8</td><td>Allure progressive</td><td class="loc">bascule</td></tr>
+            <tr><td class="num">9–10</td><td>Chrono cible min – max</td><td class="loc">2 champs <code>m:ss</code></td></tr>
+            <tr><td class="num">11</td><td>Nature de la récupération</td><td class="loc">4 puces</td></tr>
+            <tr><td class="num">12–13</td><td>Groupe&nbsp;: clé + répétitions</td><td class="loc">2 champs</td></tr>
+            <tr><td class="num">14</td><td>Récupération&nbsp;: aucune / distance / durée + valeur</td><td class="loc">bascule + champ</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="margin-top:15px;">
+        Tous dépliés en permanence, sans regroupement, sans repli, sans mode simplifié. Une séance de
+        fractionné réaliste compte <strong>5 segments</strong>, soit <strong>70
+        contrôles</strong> pour une séance que Marc décrirait à l'oral en huit mots.
+        <code>CollapsibleCard</code> existe déjà dans le dépôt et n'est pas employé ici.
+      </p>
+      <h4>Correctif — trois niveaux de dévoilement</h4>
+      <ul class="plain">
+        <li><strong>Ligne compacte repliée</strong>&nbsp;: <code>Corps · 6 × 400 m @ 4:05 · R 200 m</code> — lecture immédiate, aucune saisie visible.</li>
+        <li><strong>Dépli essentiel</strong>&nbsp;: nature, répétitions, étendue, allure. Quatre contrôles.</li>
+        <li><strong>Dépli avancé</strong> («&nbsp;Réglages fins&nbsp;»)&nbsp;: %VMA, chrono cible, rampe, nature de récup, groupe.</li>
+      </ul>
+    </article>
+
+    <article class="finding sev1">
+      <div class="finding-head">
+        <span class="finding-id">F28</span>
+        <span class="finding-title">Le champ « Groupe » expose une clé de base de données</span>
+      </div>
+      <p>
+        Pour écrire <code>3 × (800 m + 400 m)</code>, l'utilisateur doit <strong>taper la même chaîne
+        arbitraire</strong> dans le champ «&nbsp;Groupe&nbsp;» de deux segments consécutifs, puis un
+        nombre de répétitions (<span class="mono">IntervalBlockEditor.tsx:476-508</span>). Le texte
+        d'aide l'explique, mais personne ne devinera ni ne retiendra ce mécanisme. Le correctif&nbsp;:
+        sélectionner deux segments contigus → <em>Répéter la sélection</em>. La clé reste en base,
+        invisible.
+      </p>
+    </article>
+
+    <article class="finding sev1">
+      <div class="finding-head">
+        <span class="finding-id">F1</span>
+        <span class="finding-title">Le profil coureur est hors du pilier</span>
+      </div>
+      <p><code>/running-profile</code> n'est atteignable que depuis&nbsp;:</p>
+      <div class="evidence">
+        <ul>
+          <li>les <strong>Réglages de l'application</strong> — <span class="mono">settings.tsx:322</span></li>
+          <li>un lien enfoui dans une carte d'analyse d'allure — <span class="mono">PaceCurveCards.tsx:166</span></li>
+        </ul>
+      </div>
+      <p>
+        Le hub course n'y mène pas&nbsp;: ses widgets sont <code>running-history</code>,
+        <code>running-programs</code>, <code>running-planning</code>,
+        <code>running-training-time</code> (<span class="mono">widgets.ts:93-100</span>). Or ce profil
+        porte l'<strong>allure de référence 5&nbsp;km</strong>&nbsp;— qui pilote toutes les allures
+        dérivées, les zones, la polarisation et les prédictions&nbsp;— et les <strong>deux réglages
+        audio</strong>, tous deux désactivés par défaut.
+      </p>
+      <p>
+        <strong>Conséquence directe.</strong> Les fonctions audio livrées par RUN-F2a et RUN-F2d sont
+        éteintes au départ et leur interrupteur est hors du pilier. Un utilisateur qui ne fouille pas
+        les Réglages ne saura jamais qu'elles existent. Et les messages
+        «&nbsp;Renseigne ton profil&nbsp;» ne proposent aucun lien pour y aller.
+      </p>
+    </article>
+
+    <article class="finding sev1">
+      <div class="finding-head">
+        <span class="finding-id">F2</span>
+        <span class="finding-title">L'allure de référence est une question impossible pour un débutant</span>
+      </div>
+      <p>
+        Le champ demande «&nbsp;<em>ton allure actuelle sur 5&nbsp;km</em>&nbsp;». Aucun repli&nbsp;:
+        pas de VMA, pas de test guidé, pas d'estimation depuis une course récente, pas d'option
+        «&nbsp;je ne sais pas&nbsp;». L'allure se remplit automatiquement&nbsp;— mais seulement le jour où
+        un record 5&nbsp;km tombe. D'ici là, le pilier fonctionne <strong>en mode dégradé
+        silencieux</strong>&nbsp;: aucune allure cible dérivée, aucune zone, aucune polarisation,
+        aucune prédiction.
+      </p>
+      <p>
+        <strong>Correctif</strong>&nbsp;: trois portes équivalentes&nbsp;— <em>je connais mon
+        allure</em> / <em>j'ai un chrono sur une distance</em> (Riegel inversé, le code existe déjà) /
+        <em>je fais le test</em>&nbsp;— plus une quatrième&nbsp;: <em>estime depuis mes courses</em>.
+      </p>
+    </article>
+
+    <article class="finding sev1">
+      <div class="finding-head">
+        <span class="finding-id">F17</span>
+        <span class="finding-title">Le résumé est un formulaire de douze sections, action principale en bas</span>
+      </div>
+      <p>
+        Ordre actuel&nbsp;: célébration de record → métriques → comparaison à l'objectif → distance
+        manuelle → carte → splits par km → fraction par fraction → <strong>3 cartes d'analyse de
+        courbe d'allure</strong> → export GPX → partage → RPE → terrain → notes →
+        <strong>Terminé</strong>.
+      </p>
+      <p>
+        Le geste attendu trente secondes après l'effort&nbsp;— noter son ressenti et fermer&nbsp;—
+        exige de traverser toute l'analyse. Et le champ RPE, la seule donnée que seul l'utilisateur
+        peut fournir, est en <strong>onzième position</strong>.
+      </p>
+    </article>
+
+    <article class="finding sev1">
+      <div class="finding-head">
+        <span class="finding-id">F22 · F23 · F24</span>
+        <span class="finding-title">L'historique est un mur de huit analyses, sans filtre ni virtualisation</span>
+      </div>
+      <p>
+        <code>running-history/index.tsx</code> empile dans un seul défilement&nbsp;: statistiques par
+        période, courbe d'allure, liste des courses, records, prédictions Riegel, charge
+        <strong>ACWR</strong>, <strong>polarisation</strong> face au repère 80/20, et les lectures de
+        courbe d'allure. Léa, avec trois courses, tombe sur l'ACWR <span class="ref">F22</span>.
+      </p>
+      <p>
+        La liste, elle, est un <code>runs.map(...)</code> dans un <code>ScrollView</code>
+        (<span class="mono">running-history/index.tsx:418-450</span>)&nbsp;: <strong>toutes</strong>
+        les courses montées d'un coup, aucun filtre, aucun regroupement par mois, aucune recherche
+        <span class="ref">F23</span>. Deux problèmes en un&nbsp;: on ne trouve rien, et ça ralentit
+        continûment avec l'usage. Et une ligne affiche date · distance · durée · allure&nbsp;— pas le
+        type de séance, pas «&nbsp;séance planifiée&nbsp;», pas le RPE
+        <span class="ref">F24</span>&nbsp;: impossible de distinguer un footing de récupération d'un
+        10&nbsp;×&nbsp;400.
+      </p>
+    </article>
+
+    <article class="finding sev1">
+      <div class="finding-head">
+        <span class="finding-id">F4 · F26 · F32 · F34</span>
+        <span class="finding-title">Les quatre autres</span>
+      </div>
+      <h4>F4 — Trois gestes pour partir, et un mode redemandé chaque fois</h4>
+      <p>
+        Hub → <em>Démarrer</em> → écran <code>/run</code> → choix GPS/manuel → <em>Démarrer</em>. Le
+        mode est réinitialisé à <code>'gps'</code> à chaque ouverture
+        (<span class="mono">run/index.tsx:38</span>) et n'est jamais mémorisé. La roadmap 5.13 promet
+        «&nbsp;GPS + chronomètre <strong>d'un tap</strong>&nbsp;» et est marquée ✅.
+      </p>
+      <h4>F26 — Aucune saisie rétroactive</h4>
+      <p>
+        <code>startRun</code> n'est appelable que depuis <code>/run</code>, en temps réel. Impossible
+        de journaliser la course d'hier, un dossard, une sortie enregistrée par la montre. C'est le
+        complément indispensable de <span class="ref">F25</span>.
+      </p>
+      <h4>F32 — L'éditeur de séance étale onze champs à plat</h4>
+      <p>
+        Type (6 puces) · bascule cible · champ cible · allure calculée · allure cible min–max · chrono
+        cible · RPE cible · consigne · <strong>critère d'adaptation</strong> · plan de passage · liste
+        de segments. Deux de ces champs sont des concepts d'entraîneur offerts au même rang que
+        «&nbsp;Distance&nbsp;» <span class="ref">F33</span>.
+      </p>
+      <h4>F34 — Aucun modèle, aucune réutilisation de séance</h4>
+      <p>
+        Il existe une bibliothèque de <em>programmes</em>. Il n'existe rien au niveau de la
+        séance&nbsp;: pas de séances types, pas de duplication de séance ni de segment, pas de saisie
+        abrégée. Chaque <code>6 × 400 m</code> du monde se resaisit à la main, 42 contrôles à la fois.
+        Par rapport valeur/effort&nbsp;: dupliquer un segment, puis dupliquer une séance, puis un
+        petit catalogue de modèles, puis la saisie en une ligne
+        (<code>2km éch + 6x400/200 + 1km rac</code>).
+      </p>
+    </article>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="kicker">Gravité 3 · vingt-deux constats</span>Le registre de finition</h2>
+    <p class="lede">
+      Ces constats ne bloquent personne, mais leur somme est ce qui fait dire «&nbsp;c'est
+      compliqué&nbsp;». Les défauts de rendu (F21) sont déduits des feuilles de style, pas observés.
+    </p>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>#</th><th>Constat</th><th>Où</th><th>Effet</th></tr>
+        </thead>
+        <tbody>
+          <tr><td class="id">F3</td><td>Aucun accueil du pilier au premier lancement&nbsp;: un bouton et quatre tuiles vides</td><td class="loc">hub</td><td>Le débutant ne sait pas par où commencer</td></tr>
+          <tr><td class="id">F5</td><td>Aucun compte à rebours au départ&nbsp;— pourtant spécifié roadmap 5.13 et marqué ✅</td><td class="loc">run/index.tsx</td><td>Le chrono part téléphone en main</td></tr>
+          <tr><td class="id">F6</td><td>Aucune attente de fix GPS&nbsp;: la course est créée et le chrono lancé avant le premier point</td><td class="loc">run/index.tsx:56-72</td><td>Premiers hectomètres perdus, allure moyenne absurde au départ</td></tr>
+          <tr><td class="id">F7</td><td>Le contexte de la séance planifiée disparaît sur l'écran de départ</td><td class="loc">run/index.tsx</td><td>La consigne qu'on vient de lire s'évapore</td></tr>
+          <tr><td class="id">F8</td><td>Permission refusée&nbsp;: la course est créée, annulée, puis recréée</td><td class="loc">run/index.tsx:87-104</td><td>Course fantôme + dialogue évitable</td></tr>
+          <tr><td class="id">F12</td><td>Aucun verrouillage d'écran, alors que <code>useKeepAwake</code> le garde tactile toute la course</td><td class="loc">active.tsx:70</td><td>Appuis involontaires (aggrave F11)</td></tr>
+          <tr><td class="id">F13</td><td>Écran de course figé&nbsp;: distance toujours en 72&nbsp;px, non paramétrable</td><td class="loc">active.tsx</td><td>Celui qui court à la durée ou en fractionné n'a pas son chiffre en héros. Le hub est personnalisable, l'écran de course non</td></tr>
+          <tr><td class="id">F14</td><td>Mode manuel&nbsp;: pas de bouton pause, aucun champ</td><td class="loc">active.tsx:520</td><td>Le mode manuel n'est pas un mode, c'est une absence</td></tr>
+          <tr><td class="id">F16</td><td>La durée nette n'avance pas quand le GPS décroche</td><td class="loc">tracker-task.ts:328</td><td>Durée sous-comptée en tunnel/forêt (aggrave F9)</td></tr>
+          <tr><td class="id">F19</td><td>Aucune correction possible d'une course (distance, type, date)&nbsp;: seuls RPE, notes, terrain</td><td class="loc">summary.tsx</td><td>Une donnée fausse est définitive</td></tr>
+          <tr><td class="id">F21</td><td>Tableau «&nbsp;fraction par fraction&nbsp;»&nbsp;: colonne de libellé figée à 52&nbsp;px, et le prévu n'affiche qu'<em>une</em> borne</td><td class="loc">summary.tsx</td><td>«&nbsp;Récupération&nbsp;» tronqué&nbsp;; la plage cible illisible</td></tr>
+          <tr><td class="id">F25</td><td>Health Connect&nbsp;: <code>ExerciseSession</code> et <code>Distance</code> en <strong>écriture seule</strong>&nbsp;; seuls poids, pas et cycle importés</td><td class="loc">health-connect.ts:108-109</td><td>Une sortie enregistrée à la montre n'entre jamais. Ni import GPX/FIT</td></tr>
+          <tr><td class="id">F29</td><td>Trois expressions concurrentes de l'intensité affichées ensemble, priorité invisible</td><td class="loc">IntervalBlockEditor.tsx</td><td>On ne sait pas lequel gagne</td></tr>
+          <tr><td class="id">F30</td><td>Les durées courtes se saisissent en <strong>minutes décimales</strong>&nbsp;: 45&nbsp;s s'affiche «&nbsp;0.75&nbsp;»</td><td class="loc">IntervalBlockEditor.tsx:64-66</td><td>Saisie contre-intuitive sur le champ le plus fréquent d'un fractionné</td></tr>
+          <tr><td class="id">F31</td><td>Distance de séance en unités d'affichage, distance de segment en mètres bruts non convertis</td><td class="loc">IntervalBlockEditor.tsx:38-40</td><td>L'utilisateur impérial voit des mètres au milieu de miles</td></tr>
+          <tr><td class="id">F33</td><td>«&nbsp;Critère d'adaptation&nbsp;»&nbsp;: texte libre, concept d'entraîneur, même rang que «&nbsp;Distance&nbsp;»</td><td class="loc">RunningSessionEditor.tsx</td><td>Champ ignoré ou mal rempli</td></tr>
+          <tr><td class="id">F35</td><td><strong>Aucune progression d'une semaine à l'autre</strong>&nbsp;: <code>sessions</code> n'a pas de <code>week_index</code></td><td class="loc">planned-session-repository.ts:493-540</td><td>Un «&nbsp;10&nbsp;km en 8 semaines&nbsp;» ne peut pas faire grandir sa sortie longue. <strong>Structurel</strong></td></tr>
+          <tr><td class="id">F36</td><td>La carte d'adaptation propose «&nbsp;retire 25&nbsp;%&nbsp;» et n'agit pas, sans bouton d'application</td><td class="loc">SessionAdaptationCard.tsx</td><td>L'app calcule, l'utilisateur exécute à la main</td></tr>
+          <tr><td class="id">F37</td><td>Le hub ne montre qu'une action et rien de la semaine</td><td class="loc">(tabs)/running.tsx</td><td>Aucune vue d'ensemble</td></tr>
+          <tr><td class="id">F38</td><td>Le détail d'un programme éditorial n'offre ni <em>Planifier</em> ni <em>Modifier</em>, sans dire pourquoi</td><td class="loc">running-programs/[id].tsx:200-233</td><td>L'utilisateur croit à un bug</td></tr>
+          <tr><td class="id">F39</td><td>Profil coureur&nbsp;: pas de <code>ScreenHeader</code>, bouton «&nbsp;Retour&nbsp;» en pied en plus de la flèche</td><td class="loc">running-profile.tsx:272</td><td>Redondance et écran sans titre</td></tr>
+          <tr><td class="id">F40</td><td>«&nbsp;Fréquence hebdo visée&nbsp;» est saisie et <strong>n'est lue nulle part</strong></td><td class="loc">running-profile.tsx:118-124</td><td>Question posée sans effet</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="kicker">Diagnostic</span>Quatre causes racines</h2>
+    <p class="lede">
+      Les 40 constats ne sont pas 40 problèmes indépendants. Ils se ramènent à quatre, dont trois
+      portent sur la surface et une sur le modèle.
+    </p>
+
+    <div class="root">
+      <div class="root-n">Cause 1 · dominante</div>
+      <h3>La surface n'a pas suivi le calcul</h3>
+      <p class="measure">
+        Le pilier a accumulé un moteur remarquable&nbsp;— <code>resolveSessionPace</code>,
+        <code>expandIntervalPhases</code>, <code>progressivePaceTarget</code>,
+        <code>computeKmSplits</code>, <code>computeAcwr</code>, <code>resolveRacePredictions</code>,
+        <code>evenPacingPlan</code>, <code>session-adaptation</code>&nbsp;— et chaque US a ajouté
+        <em>une ligne de texte</em> dans un écran existant plutôt qu'un endroit à elle. D'où la séance
+        structurée pilotée à la voix sans écran <span class="ref">F10</span>, l'adaptation qui
+        conseille sans agir <span class="ref">F36</span>, le résumé à douze sections
+        <span class="ref">F17</span>, l'historique à huit analyses <span class="ref">F22</span>.
+      </p>
+      <p class="principle">
+        <b>Le principe à poser</b> — une fonctionnalité n'est pas livrée quand son calcul est juste et
+        testé&nbsp;; elle est livrée quand l'utilisateur peut la voir et l'utiliser au moment où elle
+        sert.
+      </p>
+    </div>
+
+    <div class="root">
+      <div class="root-n">Cause 2</div>
+      <h3>Aucun dévoilement progressif</h3>
+      <p class="measure">
+        Le pilier a un seul niveau de lecture, calé sur l'utilisateur le plus expert. Tout est affiché
+        tout le temps&nbsp;: 14 contrôles par segment, 11 champs par séance, 8 analyses par
+        historique, 12 sections par résumé. Or <code>CollapsibleCard</code> existe, et
+        <code>PolarisationSection</code> sait déjà se taire quand elle n'a rien à dire. Les briques
+        sont là&nbsp;; c'est le principe qui n'est pas posé.
+      </p>
+      <p class="principle">
+        <b>Le principe à poser</b> — trois niveaux&nbsp;: <em>ce que tout le monde voit</em> /
+        <em>ce qu'on déplie</em> / <em>ce qu'on active</em>. Et une règle déjà appliquée par endroits,
+        à généraliser&nbsp;: rien à dire, rien à l'écran.
+      </p>
+    </div>
+
+    <div class="root">
+      <div class="root-n">Cause 3</div>
+      <h3>Les boucles ne se referment pas</h3>
+      <ul class="plain">
+        <li>prévu → réalisé → <strong>coché</strong>&nbsp;: la dernière étape est manuelle et ailleurs <span class="ref">F20</span>&nbsp;;</li>
+        <li>démarrer → courir → <strong>corriger/supprimer</strong>&nbsp;: impossible <span class="ref">F18</span> <span class="ref">F19</span>&nbsp;;</li>
+        <li>conseiller → <strong>appliquer</strong>&nbsp;: impossible <span class="ref">F36</span>&nbsp;;</li>
+        <li>courir dehors → <strong>entrer dans l'app</strong>&nbsp;: impossible <span class="ref">F25</span> <span class="ref">F26</span>&nbsp;;</li>
+        <li>afficher un chrono → <strong>l'enregistrer</strong>&nbsp;: cassé <span class="ref">F9</span> <span class="ref">F15</span>.</li>
+      </ul>
+      <p class="principle">
+        <b>Le principe à poser</b> — toute donnée affichée doit être corrigeable, tout conseil doit
+        être applicable, toute intention doit être clôturable là où l'utilisateur se trouve.
+      </p>
+    </div>
+
+    <div class="root">
+      <div class="root-n">Cause 4 · modèle de données</div>
+      <h3>Le modèle de programme ne porte qu'une semaine</h3>
+      <p class="measure">
+        <code>sessions</code> n'a pas de <code>week_index</code> et <code>planProgram</code> répète le
+        patron hebdomadaire pendant N semaines. Un programme est donc <em>une semaine type
+        répétée</em>, jamais un plan progressif. C'est la seule cause qui touche le modèle et non la
+        surface. Elle explique pourquoi Marc et Thomas devront de toute façon rééditer à la
+        main&nbsp;— et donc pourquoi le coût de saisie <span class="ref">F27</span>
+        <span class="ref">F34</span> est encore plus lourd qu'il n'y paraît.
+      </p>
+      <div class="callout">
+        <p><strong>À trancher explicitement.</strong> Trois options&nbsp;:</p>
+        <p><strong>1. Assumer</strong> — les programmes restent des semaines types&nbsp;; la
+        progression se fait en dupliquant. Coût nul, mais «&nbsp;10&nbsp;km en 8 semaines&nbsp;»
+        devient une promesse trompeuse.</p>
+        <p><strong>2. <code>week_index</code> sur <code>sessions</code></strong> — une séance
+        appartient à une semaine du programme. Migration additive, <code>planProgram</code> et
+        l'éditeur à revoir. <em>C'est la vraie réponse.</em></p>
+        <p><strong>3. Règles de progression</strong> — <code>+10 %/semaine</code> sur la sortie
+        longue, décharge toutes les 4. Plus élégant, moins expressif&nbsp;: ça n'exprime pas un plan
+        réel.</p>
+        <p style="margin-top:14px;"><strong>Recommandation</strong>&nbsp;: option 2, mais
+        <em>après</em> les bloquants et le lot d'ergonomie. C'est un chantier de modèle, pas une
+        amélioration d'ergonomie, et il ne bloque pas le lancement.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="kicker">Cible</span>Le pilier refondu, écran par écran</h2>
+    <p class="lede">
+      Neuf écrans cibles sur le canevas de design, plus le
+      relevé des deux écrans actuels pour mesurer l'écart. Elles reprennent les jetons réels de l'app
+      (<code>theme/colors.ts</code>, <code>theme/fonts.ts</code>).
+    </p>
+
+    <div class="flow-grid">
+      <div class="flow">
+        <div class="flow-step">Découvrir</div>
+        <div class="flow-name">Découvrir</div>
+        <p class="flow-desc">Trois questions, pas un formulaire&nbsp;: comment tu cours, ton allure de référence (quatre portes dont «&nbsp;je ne sais pas&nbsp;»), la voix pendant la course. Ce dernier point allume les fonctions audio déjà livrées.</p>
+        <div class="flow-refs"><span class="ref">F1</span><span class="ref">F2</span><span class="ref">F3</span></div>
+      </div>
+      <div class="flow">
+        <div class="flow-step">Au quotidien</div>
+        <div class="flow-name">Le hub</div>
+        <p class="flow-desc">L'action du jour avec sa structure et sa consigne, la semaine (2 faites sur 3), la carte d'adaptation qui <em>agit</em>, et l'accès au profil au premier rang.</p>
+        <div class="flow-refs"><span class="ref">F1</span><span class="ref">F4</span><span class="ref">F36</span><span class="ref">F37</span></div>
+      </div>
+      <div class="flow">
+        <div class="flow-step">Partir</div>
+        <div class="flow-name">Partir</div>
+        <p class="flow-desc">Un écran de préparation&nbsp;: la séance reste lisible, le fix GPS est attendu et chiffré, le mode est mémorisé, le compte à rebours existe. Et la porte de la saisie rétroactive est ici.</p>
+        <div class="flow-refs"><span class="ref">F4</span><span class="ref">F5</span><span class="ref">F6</span><span class="ref">F7</span><span class="ref">F26</span></div>
+      </div>
+      <div class="flow">
+        <div class="flow-step">Courir</div>
+        <div class="flow-name">Courir</div>
+        <p class="flow-desc">Le bandeau de segment en haut&nbsp;: fraction 3/6, 250&nbsp;m restants, cible, ce qui suit, progression de la séance. Le chiffre en héros change selon la séance. Et le mot «&nbsp;net&nbsp;» est écrit à côté du chrono.</p>
+        <div class="flow-refs"><span class="ref">F9</span><span class="ref">F10</span><span class="ref">F13</span></div>
+      </div>
+      <div class="flow">
+        <div class="flow-step">Courir</div>
+        <div class="flow-name">Arrêter</div>
+        <p class="flow-desc">Un appui met en pause&nbsp;— chrono figé, bandeau visible&nbsp;— et propose trois issues&nbsp;: reprendre, terminer, supprimer. Plus un verrou d'écran.</p>
+        <div class="flow-refs"><span class="ref">F11</span><span class="ref">F12</span><span class="ref">F18</span></div>
+      </div>
+      <div class="flow">
+        <div class="flow-step">Clore</div>
+        <div class="flow-name">Clore, puis analyser</div>
+        <p class="flow-desc">Un écran sans défilement&nbsp;: quatre chiffres, la séance validée, le ressenti, Enregistrer. L'écart pause/réel est expliqué. Tout le reste&nbsp;— splits, fractions, courbes, corriger, supprimer&nbsp;— derrière «&nbsp;Analyser&nbsp;».</p>
+        <div class="flow-refs"><span class="ref">F17</span><span class="ref">F19</span><span class="ref">F20</span><span class="ref">F21</span></div>
+      </div>
+      <div class="flow">
+        <div class="flow-step">Préparer</div>
+        <div class="flow-name">Préparer</div>
+        <p class="flow-desc">Segments repliés et lisibles, dépli à quatre contrôles, réglages fins cachés. «&nbsp;Répéter la sélection&nbsp;» remplace la clé texte. Des modèles, et la saisie en une ligne.</p>
+        <div class="flow-refs"><span class="ref">F27</span><span class="ref">F28</span><span class="ref">F29</span><span class="ref">F30</span><span class="ref">F32</span><span class="ref">F34</span></div>
+      </div>
+      <div class="flow">
+        <div class="flow-step">Relire</div>
+        <div class="flow-name">Relire</div>
+        <p class="flow-desc">Trois onglets — Journal, Progression, Records — au lieu de huit analyses empilées. Liste virtualisée, filtrée, groupée par mois, avec badges de type et de terrain.</p>
+        <div class="flow-refs"><span class="ref">F22</span><span class="ref">F23</span><span class="ref">F24</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="kicker">Suite</span>Plan de travail proposé</h2>
+    <p class="lede">
+      Découpage en US candidates, prêtes à entrer dans le pipeline <code>/us</code>. L'ordre&nbsp;: ce
+      qui trompe l'utilisateur d'abord, ce qui le perd ensuite, le modèle en dernier.
+    </p>
+
+    <div class="lot">
+      <div class="lot-head">
+        <span class="lot-tag p0">Lot 0</span>
+        <span class="lot-name">Corriger ce qui est faux</span>
+      </div>
+      <p class="lot-note">À faire avant toute recette de course.</p>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>US</th><th>Titre</th><th>Constats</th><th>Charge</th></tr></thead>
+          <tbody>
+            <tr><td class="id">CARDIO-01</td><td>Le chrono affiché est le chrono enregistré</td><td class="loc">F9 · F16</td><td class="w">S</td></tr>
+            <tr><td class="id">CARDIO-02</td><td>Le mode sans GPS enregistre sa durée</td><td class="loc">F15 · F14</td><td class="w">M</td></tr>
+            <tr><td class="id">CARDIO-03</td><td>Terminer une course clôt la séance planifiée</td><td class="loc">F20</td><td class="w">S</td></tr>
+            <tr><td class="id">CARDIO-04</td><td>Arrêt en deux temps + supprimer une course</td><td class="loc">F11 · F12 · F18 · F19</td><td class="w">M</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="lot">
+      <div class="lot-head">
+        <span class="lot-tag p1">Lot 1</span>
+        <span class="lot-name">Rendre le pilier lisible</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>US</th><th>Titre</th><th>Constats</th><th>Charge</th></tr></thead>
+          <tbody>
+            <tr><td class="id">CARDIO-05</td><td>Bandeau de segment en course + héros adaptatif</td><td class="loc">F10 · F13</td><td class="w">M</td></tr>
+            <tr><td class="id">CARDIO-06</td><td>Éditeur de segment à trois niveaux + répéter une sélection</td><td class="loc">F27 · F28 · F29 · F30 · F31</td><td class="w">L</td></tr>
+            <tr><td class="id">CARDIO-07</td><td>Le profil coureur entre dans le pilier + accueil en 3 questions</td><td class="loc">F1 · F2 · F3 · F39 · F40</td><td class="w">M</td></tr>
+            <tr><td class="id">CARDIO-08</td><td>Résumé en deux temps</td><td class="loc">F17 · F21</td><td class="w">M</td></tr>
+            <tr><td class="id">CARDIO-09</td><td>Historique en trois onglets, liste virtualisée et filtrable</td><td class="loc">F22 · F23 · F24</td><td class="w">L</td></tr>
+            <tr><td class="id">CARDIO-10</td><td>Partir en un geste&nbsp;: mode mémorisé, fix GPS, compte à rebours, contexte</td><td class="loc">F4 · F5 · F6 · F7 · F8</td><td class="w">M</td></tr>
+            <tr><td class="id">CARDIO-11</td><td>Ajouter une course passée</td><td class="loc">F26</td><td class="w">M</td></tr>
+            <tr><td class="id">CARDIO-12</td><td>Éditeur de séance replié + modèles de séance</td><td class="loc">F32 · F33 · F34</td><td class="w">L</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="lot">
+      <div class="lot-head">
+        <span class="lot-tag p2">Lot 2</span>
+        <span class="lot-name">Finir</span>
+      </div>
+      <div class="table-scroll">
+        <table>
+          <thead><tr><th>US</th><th>Titre</th><th>Constats</th><th>Charge</th></tr></thead>
+          <tbody>
+            <tr><td class="id">CARDIO-13</td><td>Le hub montre la semaine</td><td class="loc">F37</td><td class="w">S</td></tr>
+            <tr><td class="id">CARDIO-14</td><td>La carte d'adaptation s'applique</td><td class="loc">F36</td><td class="w">M</td></tr>
+            <tr><td class="id">CARDIO-15</td><td>Programme éditorial&nbsp;: dire pourquoi il faut dupliquer</td><td class="loc">F38</td><td class="w">S</td></tr>
+            <tr><td class="id">CARDIO-16</td><td>Import des séances depuis Health Connect (+ GPX)</td><td class="loc">F25</td><td class="w">L</td></tr>
+            <tr><td class="id">CARDIO-17</td><td>Un programme porte des semaines qui progressent <em>(après lancement)</em></td><td class="loc">F35</td><td class="w">XL</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="callout">
+      <p><strong>Ce que je recommande de faire tout de suite.</strong> Si un seul lot doit partir,
+      c'est le <strong>lot 0</strong>&nbsp;: quatre US, dont deux petites, et il supprime les deux cas
+      où l'app affiche à l'utilisateur un chiffre qui n'est pas le sien.</p>
+      <p>Aucune des recettes en attente ne devrait être passée sur le pilier Course avant
+      <code>CARDIO-01</code> et <code>CARDIO-02</code>&nbsp;— un recetteur qui compare son chrono à
+      son résumé va signaler le défaut, et il aura raison.</p>
+      <p>Ensuite, par rapport valeur/effort, du plus rentable au moins&nbsp;: <strong>CARDIO-05</strong> (le bandeau
+      de segment débloque toute la valeur de RUN-F4, déjà payée), <strong>CARDIO-07</strong> (allume
+      les fonctions audio déjà livrées), <strong>CARDIO-06</strong> (supprime la première cause
+      d'abandon).</p>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════════════════ -->
+  <section>
+    <h2><span class="kicker">Limites</span>Ce que je n'ai pas pu vérifier</h2>
+    <ul class="plain">
+      <li><strong>Rien n'a été observé sur device.</strong> Les défauts de rendu (F21 notamment) sont déduits des feuilles de style. Ils doivent être confirmés.</li>
+      <li><strong>La qualité réelle du GPS</strong> — seuils <code>isValidFix</code> à 30&nbsp;m, bruit vertical à 3&nbsp;m, <code>PACE_TOLERANCE_S_PER_KM = 5</code> — n'est pas jugeable en lecture. Ces trois nombres sont déjà documentés comme non validés terrain.</li>
+      <li><strong>Le ressenti sonore</strong> (voix qui coupe la musique, latence de l'annonce à un changement de phase) exige une sortie réelle.</li>
+      <li><strong>Les temps de rendu</strong> de F23 sont un raisonnement (<code>ScrollView</code> non virtualisé), pas une mesure.</li>
+      <li><strong>Le contenu des 3 programmes publiés</strong> n'a pas été relu du point de vue de l'entraînement.</li>
+    </ul>
+  </section>
+
+  <p class="foot">
+    Livrable d'audit. Il ne modifie aucun code, ne crée aucune US et ne change aucun statut de
+    roadmap. Les US proposées doivent passer par <code>/us</code>
+    (spec → plan → maquette → validation par Florian ou Damien) avant toute implémentation.
+    Source de vérité versionnée&nbsp;: <code>docs/product/audit-ergonomie-pilier-course.md</code>,
+    branche <code>docs/audit-ergonomie-course</code>.
+  </p>
+
+</div>
