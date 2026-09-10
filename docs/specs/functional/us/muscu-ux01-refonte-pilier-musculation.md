@@ -3,7 +3,7 @@ id: MUSCU-UX01
 titre: "Refonte UX du pilier Musculation — hub, séance, après-séance, entrée programme"
 roadmap: [3.59]
 catalogue: []
-etape: code
+etape: recette
 branche: feature/muscu-refonte-ux
 maj: 10/09/2026
 ---
