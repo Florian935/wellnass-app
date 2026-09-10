@@ -3,9 +3,9 @@ id: ACCUEIL-05
 titre: "Le pied « la suite » et le tirer-pour-rafraîchir"
 roadmap: [7.27]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/accueil-refonte
-maj: 09/09/2026
+maj: 10/09/2026
 ---
 
 # ACCUEIL-05 — Le pied « la suite » et le rafraîchissement

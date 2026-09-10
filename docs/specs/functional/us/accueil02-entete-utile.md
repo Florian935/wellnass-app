@@ -3,9 +3,9 @@ id: ACCUEIL-02
 titre: "En-tête utile & moment de la journée — et la fin du petit-déjeuner à 20 h"
 roadmap: [7.24]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/accueil-refonte
-maj: 09/09/2026
+maj: 10/09/2026
 ---
 
 # ACCUEIL-02 — En-tête utile & moment de la journée

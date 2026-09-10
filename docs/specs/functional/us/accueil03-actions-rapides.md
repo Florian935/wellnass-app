@@ -3,9 +3,9 @@ id: ACCUEIL-03
 titre: "Actions rapides — les gestes du quotidien à un tap"
 roadmap: [7.25]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/accueil-refonte
-maj: 09/09/2026
+maj: 10/09/2026
 ---
 
 # ACCUEIL-03 — Actions rapides

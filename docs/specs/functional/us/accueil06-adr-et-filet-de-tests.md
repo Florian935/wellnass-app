@@ -3,9 +3,9 @@ id: ACCUEIL-06
 titre: "Amendement d'ADR-007 & premier test d'écran de l'accueil"
 roadmap: [7.28]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/accueil-refonte
-maj: 09/09/2026
+maj: 10/09/2026
 ---
 
 # ACCUEIL-06 — Amendement d'ADR-007 & filet de tests

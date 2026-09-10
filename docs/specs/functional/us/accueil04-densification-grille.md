@@ -3,9 +3,9 @@ id: ACCUEIL-04
 titre: "Densification de la grille — la forme « row », le retour du poids et les squelettes"
 roadmap: [7.26]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/accueil-refonte
-maj: 09/09/2026
+maj: 10/09/2026
 ---
 
 # ACCUEIL-04 — Densification de la grille

@@ -3,9 +3,9 @@ id: ACCUEIL-01
 titre: "La carte « maintenant » — l'accueil a enfin une priorité"
 roadmap: [7.23]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/accueil-refonte
-maj: 09/09/2026
+maj: 10/09/2026
 ---
 
 # ACCUEIL-01 — La carte « maintenant »
