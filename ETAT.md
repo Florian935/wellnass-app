@@ -97,8 +97,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/accueil-refonte` (modifications non commitées) |
-| Commits | 1196 · `main` a **1190** commits de retard sur `dev` |
+| Branche courante | `dev` (modifications non commitées) |
+| Commits | 1197 · `main` a **1190** commits de retard sur `dev` |
 | Specs d'US | 141 au total — 85 clôturées, 56 en cours |
 | Migrations | 88/88 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -109,11 +109,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `4c28369` docs(accueil): recette validee, les 6 US passent a `close`
 - `67e0755` fix(accueil): cinq defauts de la premiere passe de recette
 - `e9b0f12` chore(etat): regenere ETAT.md apres le commit de la refonte
 - `6e8b284` feat(accueil): refonte de l'ecran d'accueil en cinq zones (ACCUEIL-01 a 06)
 - `8db76eb` fix(recettes): repare les chemins corrompus de l'etape 0c
-- `ee2fe99` docs(recettes): l'APK doit venir de 421e948 ou plus recent
 
 ---
 
