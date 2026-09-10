@@ -1,0 +1,4 @@
+# Canvas Claude Design seedé : 2,5 Mo de moteur d'édition embarqué, régénérable à tout moment
+# depuis les .dc.html + canvas.json. Même règle que `design/refonte-muscu-2026-09/.gitignore` —
+# les sources sont suivies, le produit ne l'est pas.
+accueil-fittrio.html

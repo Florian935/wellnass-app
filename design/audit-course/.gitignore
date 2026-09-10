@@ -1,0 +1,15 @@
+# Artefacts régénérables de l'audit du pilier Course. Même règle que
+# `design/refonte-muscu-2026-09/.gitignore` : les **sources** sont suivies
+# (les .dc.html, canvas.json, compte-rendu.html), les **produits** ne le sont pas.
+
+# Canvas Claude Design seedé : 2,5 Mo de moteur d'édition embarqué, régénérable à tout moment
+# depuis les .dc.html + canvas.json via `seed-canvas.mjs`. Le versionner alourdirait le dépôt
+# sans rien apporter.
+pilier-course-refonte.html
+
+# Version imprimable du compte rendu : 1,1 Mo, dont ~1 Mo de polices Bricolage / Hanken / Space
+# Mono embarquées en base64. Reconstruite depuis `compte-rendu.html` + les .ttf de
+# `node_modules/@expo-google-fonts/`. C'est elle qui produit
+# `docs/product/audit-ergonomie-pilier-course.pdf`, lui **suivi** — c'est le PDF qu'on lit, pas
+# le HTML qui le fabrique.
+compte-rendu-impression.html

@@ -101,7 +101,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1203 · `main` a **1200** commits de retard sur `dev` |
+| Commits | 1205 · `main` a **1200** commits de retard sur `dev` |
 | Specs d'US | 144 au total — 85 clôturées, 59 en cours |
 | Migrations | 92/93 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -113,11 +113,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `542b753` merge: integre CARDIO-UX01 (refonte UX du pilier Course) dans dev
 - `b710349` feat(nutri-ux01): refonte UX du pilier Nutrition — 11 ecrans, 26 constats
+- `a035e8d` feat(cardio-ux01): refonte UX du pilier Course — premier lot
 - `18cf3a3` docs(recettes): l'en-tete comptait 56 sections, il y en a 57
 - `8286ff7` docs(muscu-ux01): l'US passe en recette
-- `48d3011` merge: integre dev (refonte accueil) dans muscu-refonte-ux
-- `2c11d29` chore(etat): regenere ETAT.md apres le merge sur dev
 
 ---
 

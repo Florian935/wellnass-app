@@ -2715,7 +2715,7 @@ deux exclusions, toutes deux extérieures à cette US :
 > Maquettes : [design/audit-course/](design/audit-course/) (11 planches, dont 2 relevés de l'existant).
 >
 > **🔴 Une migration est écrite et NON POUSSÉE** —
-> `20260910154350_cardio_ux01_semaines_et_adaptation`. Elle n'est **pas** nécessaire pour recetter
+> `20260910214329_cardio_ux01_semaines_et_adaptation`. Elle n'est **pas** nécessaire pour recetter
 > cette section : tout ce qui suit fonctionne sans elle. Elle conditionne deux choses seulement, qui
 > ne sont donc **pas** recettables aujourd'hui : les semaines qui progressent (F35) et le bouton
 > « Appliquer aujourd'hui » de la carte d'adaptation (F36). Voir « Ce qui attend la migration » en

@@ -282,7 +282,7 @@ Ce ne sont pas des défauts d'ergonomie. L'app perdait une donnée, ou affichait
 ### Technique / Notes
 
 - **Une migration écrite et NON POUSSÉE** —
-  `20260910154350_cardio_ux01_semaines_et_adaptation` : `sessions.week_index` (F35, un programme
+  `20260910214329_cardio_ux01_semaines_et_adaptation` : `sessions.week_index` (F35, un programme
   était **une semaine type répétée**, jamais un plan progressif) et
   `planned_sessions.adapted_reps_pct` / `adapted_pace_delta_s` (F36, la carte d'adaptation
   conseillait sans pouvoir agir). `npm run db:push` vise la **production** : décision de Florian ou
@@ -306,6 +306,23 @@ Ce ne sont pas des défauts d'ergonomie. L'app perdait une donnée, ou affichait
   Sans cette nuance, le tick d'horloge d'une course manuelle écrirait `distance_m = 0` et le résumé
   — qui décide d'afficher son champ de distance sur `distanceM !== null` — ne le proposerait plus
   jamais.
+- **Migration redatée** de `20260910154350` à `20260910214329` (10/09/2026, après le merge sur
+  `dev`). Le premier `db:push` a été **refusé** : « *Found local migration files to be inserted
+  before the last migration on remote database* ». Elle avait été écrite à 15:43 sur une branche
+  parallèle, pendant que NUTRI-UX01 créait et poussait quatre migrations dont la dernière porte
+  16:22 — la mienne insérait donc **dans le passé** de l'historique distant. Redatée plutôt que
+  forcée avec `--include-all` : les deux marchaient (elle est additive, sur des tables que la
+  nutrition ne touche pas), mais `--include-all` laisse un `schema_migrations` **non monotone**,
+  exactement la divergence que `MIGRATIONS.md` existe pour éviter. Sans risque **parce qu'elle
+  n'était appliquée nulle part** — condition qui ne sera plus vraie après le push.
+- **Artefacts de design sortis du suivi**, sur la convention posée par
+  `design/refonte-muscu-2026-09/.gitignore` : les sources (`.dc.html`, `canvas.json`,
+  `compte-rendu.html`) sont versionnées, les **produits** régénérables ne le sont pas. Retire
+  `design/audit-course/pilier-course-refonte.html` (2,5 Mo de moteur d'édition embarqué, commité
+  par erreur) et ignore les trois payloads équivalents des dossiers `audit-course`,
+  `accueil-refonte` et `nutrition-refonte-2026-09`, plus la version imprimable du compte rendu
+  (1,1 Mo, dont ~1 Mo de polices en base64). Les fichiers restent sur le disque ; c'est le PDF
+  qu'on lit qui est suivi, pas le HTML qui le fabrique.
 - **Aucune dépendance native neuve.** Recettable sur un build de la branche.
 - **Vérifié** : typecheck 3 workspaces à 0, lint à 0, **2 753 tests verts** (+ 10 depuis MUSCU-UX01,
   dont **78 tests purs neufs** dans `packages/shared`), parité i18n FR/EN contrôlée par
