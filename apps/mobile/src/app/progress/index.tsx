@@ -240,9 +240,45 @@ export default function ProgressScreen() {
 
             {/* US MUSCPWR-01 — module force (%1RM, DOTS, total SBD). Sa place est ici : DOTS et
                 %1RM rapportent la performance au **poids de corps**. Toujours conditionnel — il
-                rend `null` tant que rien n'est désigné ni calculable. */}
+                rend son `fallback` tant que rien n'est désigné ni calculable.
+
+                Le `fallback` est le correctif de la recette §57.55 : les deux seules entrées vers
+                `/strength-lifts` vivaient DANS la section, qui se masquait tant que rien n'était
+                désigné. Personne ne pouvait donc rien désigner, et l'onglet « Mon corps » ne
+                montrait que les mensurations. */}
             <View style={styles.sectionTitleSpaced} />
-            <StrengthSection />
+            <StrengthSection
+              fallback={
+                <>
+                {/* Le titre n'est rendu QUE dans le repli : quand la section existe, elle porte
+                    déjà le sien (`CollapsibleCard title=…`), et l'afficher deux fois ferait un
+                    doublon « Force / Force ». */}
+                <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                  {t('strength.section.title')}
+                </Text>
+                <Pressable
+                  onPress={() => router.push('/strength-lifts')}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('strength.sbd.designate')}
+                  style={[
+                    styles.exerciseSelector,
+                    { backgroundColor: colors.surface, borderColor: colors.border },
+                  ]}
+                >
+                  <View style={styles.exerciseSelectorInner}>
+                    <Ionicons name="barbell-outline" size={20} color={colors.accent} />
+                    <Text
+                      style={[styles.measurementsCta, { color: colors.text }]}
+                      maxFontSizeMultiplier={1.3}
+                    >
+                      {t('strength.sbd.designate')}
+                    </Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+                </Pressable>
+                </>
+              }
+            />
           </>
         ) : null}
 

@@ -266,6 +266,7 @@
       "deltaTimeDown": "▼ −{{duration}}"
     },
     "displayLevel": {
+      "title": "Niveau d'affichage",
       "levels": {
         "simplified": {
           "label": "Simplifiée",

@@ -1421,7 +1421,7 @@ export const SELECT_PREVIOUS_SETS = `
             JOIN workout_sets s2 ON s2.workout_id = w2.id
                  AND s2.exercise_id = ce.exercise_id
                  AND s2.deleted_at IS NULL AND s2.done = 1
-            WHERE w2.owner_id = ? AND w2.deleted_at IS NULL AND w2.status = 'completed'
+            WHERE w2.user_id = ? AND w2.deleted_at IS NULL AND w2.status = 'completed'
               AND w2.started_at < (SELECT started_at FROM workouts WHERE id = ?)
             ORDER BY w2.started_at DESC
             LIMIT 1) AS prev_workout_id

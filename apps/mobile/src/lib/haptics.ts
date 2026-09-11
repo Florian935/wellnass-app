@@ -8,15 +8,24 @@
  * plus répété de l'app — 30 à 40 validations par séance — n'avait rien. On valide, rien ne bouge,
  * on vérifie que c'est passé.
  *
- * ── 2. `impactAsync` est déprécié sur Android, et l'app est Android d'abord ──────────────────────
- * La documentation Expo SDK 57 est explicite : sur Android, `impactAsync` / `notificationAsync`
- * passent par l'API `Vibrator`, **dépréciée**, et réclament la permission `VIBRATE`. La voie
- * recommandée est `performAndroidHapticsAsync`, qui s'aligne sur le modèle iOS et ne demande
- * aucune permission.
+ * ── 2. Pourquoi PAS `performAndroidHapticsAsync` (correctif de recette, 11/09/2026) ─────────────
+ * Le premier jet de cette façade suivait la recommandation de la doc Expo SDK 57 : sur Android,
+ * `impactAsync` / `notificationAsync` passent par l'API `Vibrator`, **dépréciée**, là où
+ * `performAndroidHapticsAsync` ne demande aucune permission. Techniquement exact — et pourtant
+ * **rien ne vibrait sur device** (recette §57.21).
  *
- * Cette façade choisit donc la bonne API par plateforme, une fois, ici — plutôt que de disperser
- * la condition dans chaque appelant. Les appels existants (`planning`, `running`) ne sont pas
- * touchés : les migrer sort du périmètre de l'US MUSCU-UX01.
+ * La raison est dans l'implémentation native : `performAndroidHapticsAsync` appelle
+ * `View.performHapticFeedback(...)`, qu'Android **ignore silencieusement** quand le réglage
+ * système « vibration au toucher » est désactivé — ce qu'il est, par défaut, sur beaucoup
+ * d'appareils. Aucune erreur, aucun retour : l'appel réussit et ne fait rien. Deux limites
+ * s'ajoutent : `HapticFeedbackConstants.CONFIRM` n'existe qu'à partir de l'API 30 (en dessous, le
+ * module lève, et le `catch` ci-dessous avale), et le module ne remonte pas le booléen que
+ * `performHapticFeedback` retourne — impossible de détecter l'échec pour se rabattre.
+ *
+ * On repasse donc par `Vibrator` : c'est ce que faisait `Vibration.vibrate()` avant cette US (la
+ * vibration de fin de repos, elle, marchait), c'est ce qu'utilisent déjà `planning` et le guidage
+ * de fractionné, et la permission `VIBRATE` est déclarée au manifeste depuis le début. Dépréciée
+ * mais fonctionnelle vaut mieux que recommandée mais muette.
  *
  * Tout est **best-effort** : un appareil sans moteur haptique, ou un utilisateur qui a coupé le
  * retour système, ne doit jamais faire échouer l'action qu'il accompagne. D'où les `void` et les
@@ -24,7 +33,6 @@
  * serait un défaut bien pire que l'absence de vibration.
  */
 
-import { Platform } from 'react-native';
 import * as Haptics from 'expo-haptics';
 
 /** Exécute un retour haptique sans jamais propager d'erreur. */
@@ -42,14 +50,10 @@ function safely(run: () => Promise<unknown>): void {
  * Confirme une action réussie et attendue — **la validation d'une série**.
  *
  * Discret par construction : répété quarante fois dans l'heure, un retour appuyé deviendrait
- * pénible. `Confirm` sur Android, `Success` ailleurs.
+ * pénible — d'où l'impact `Light` (50 ms à amplitude 30) plutôt qu'un motif de notification.
  */
 export function hapticConfirm(): void {
-  if (Platform.OS === 'android') {
-    safely(() => Haptics.performAndroidHapticsAsync(Haptics.AndroidHaptics.Confirm));
-    return;
-  }
-  safely(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success));
+  safely(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light));
 }
 
 /**
@@ -57,18 +61,10 @@ export function hapticConfirm(): void {
  * Plus appuyé que `hapticConfirm` : il arrive une fois, pas quarante.
  */
 export function hapticMilestone(): void {
-  if (Platform.OS === 'android') {
-    safely(() => Haptics.performAndroidHapticsAsync(Haptics.AndroidHaptics.Long_Press));
-    return;
-  }
   safely(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success));
 }
 
 /** Accompagne un changement de sélection (pas à pas d'un stepper, bascule d'exercice). */
 export function hapticSelect(): void {
-  if (Platform.OS === 'android') {
-    safely(() => Haptics.performAndroidHapticsAsync(Haptics.AndroidHaptics.Clock_Tick));
-    return;
-  }
   safely(() => Haptics.selectionAsync());
 }

@@ -44,7 +44,8 @@ type TodayPlanRow = {
   order_index: number;
   program_name: string | null;
   week_index: number | null;
-  exercise_name: string;
+  /** `null` si l'exercice n'a de traduction ni dans la langue courante ni en français. */
+  exercise_name: string | null;
   exercise_order: number;
   target_sets: number | null;
   rest_seconds: number | null;
@@ -62,7 +63,7 @@ export const SELECT_TODAY_PLAN = `
   SELECT ps.id AS planned_session_id, ps.session_id, ps.week_index,
          s.name AS session_name, s.order_index,
          COALESCE(tl.name, tfr.name) AS program_name,
-         COALESCE(etl.name, etfr.name, e.name) AS exercise_name,
+         COALESCE(etl.name, etfr.name) AS exercise_name,
          ep.order_index AS exercise_order, ep.target_sets, ep.rest_seconds
   FROM planned_sessions ps
   JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
@@ -186,7 +187,13 @@ export function useStrengthHub(): StrengthHubData {
         orderIndex: first.order_index,
         exerciseCount: planRows.length,
         programName: first.program_name,
-        previewExercises: planRows.slice(0, PREVIEW_EXERCISE_COUNT).map((r) => r.exercise_name),
+        // Les noms manquants sont écartés AVANT la troncature : un exercice créé dans une langue
+        // et relu dans l'autre n'a de traduction ni en courant ni en français, et sa puce serait
+        // vide. Mieux vaut nommer deux exercices sur trois que d'afficher un blanc.
+        previewExercises: planRows
+          .map((r) => r.exercise_name)
+          .filter((name): name is string => (name ?? '').trim() !== '')
+          .slice(0, PREVIEW_EXERCISE_COUNT),
         estimatedMinutes: estimateSessionMinutes(
           planRows.map((r) => ({ targetSets: r.target_sets, restSeconds: r.rest_seconds })),
         ),

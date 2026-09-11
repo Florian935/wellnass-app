@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, type ReactNode } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
@@ -22,8 +22,17 @@ import { useTheme } from '@/theme/useTheme';
  * l'écran Progression compte déjà cinq sections.
  *
  * Rien n'est stocké : tout est dérivé à l'affichage (règle R13).
+ *
+ * ⚠️ **`fallback`** (recette MUSCU-UX01 §57.55, 11/09/2026). Se masquer était juste ; se masquer
+ * **en emportant le seul chemin vers `/strength-lifts`** ne l'était pas. Les deux seules entrées
+ * de l'écran de désignation vivent dans cette section : tant que rien n'est désigné, la section
+ * disparaît, donc l'écran devient inatteignable, donc rien ne peut jamais être désigné. Boucle
+ * fermée — le module force était invisible pour tout le monde depuis MUSCPWR-01.
+ *
+ * L'appelant passe donc ce qu'il veut voir à la place du vide. Le prédicat, lui, reste **ici** :
+ * le dupliquer côté écran le ferait diverger au premier changement.
  */
-export function StrengthSection() {
+export function StrengthSection({ fallback }: { fallback?: ReactNode }) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -40,7 +49,9 @@ export function StrengthSection() {
 
   // Conditionnel par défaut : tant que rien n'est désigné et qu'aucun total n'existe, la section
   // n'existe pas. Pas de section vide, pas de « — », pas d'invitation permanente.
-  if (isLoading || (designatedCount === 0 && total.totalKg === null)) return null;
+  // Le chargement ne rend jamais le `fallback` : il clignoterait avant de céder la place.
+  if (isLoading) return null;
+  if (designatedCount === 0 && total.totalKg === null) return <>{fallback ?? null}</>;
 
   const summary =
     total.totalKg !== null

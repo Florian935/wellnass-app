@@ -285,8 +285,26 @@ function Stat({
 }) {
   return (
     <View style={styles.statCell}>
-      <Text style={[styles.statValue, { color: colors.text }]}>{value}</Text>
-      <Text style={[styles.statLabel, { color: colors.textMuted }]}>{label.toUpperCase()}</Text>
+      {/* `adjustsFontSizeToFit` + `numberOfLines` : un tonnage à quatre chiffres (« 4 108,0 kg »)
+          et sa densité débordaient de la bande, poussant la dernière cellule hors de l'écran —
+          valeur tronquée, libellé coupé. La valeur rétrécit maintenant dans sa colonne plutôt que
+          de pousser ses voisines. */}
+      <Text
+        style={[styles.statValue, { color: colors.text }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.6}
+      >
+        {value}
+      </Text>
+      <Text
+        style={[styles.statLabel, { color: colors.textMuted }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.8}
+      >
+        {label.toUpperCase()}
+      </Text>
     </View>
   );
 }
@@ -587,14 +605,16 @@ const styles = StyleSheet.create({
   statBand: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-around',
     borderWidth: 1,
     borderRadius: 18,
     paddingVertical: 15,
-    paddingHorizontal: 10,
+    paddingHorizontal: 8,
   },
-  statCell: { alignItems: 'center', gap: 3 },
-  statValue: { fontFamily: fontFamily.monoBold, fontSize: 19 },
+  // `flex: 1` + `minWidth: 0` : sans eux, chaque cellule se dimensionne sur son contenu et la
+  // bande déborde dès que le tonnage passe les quatre chiffres. Les quatre colonnes se partagent
+  // maintenant la largeur à parts égales, quoi qu'elles contiennent.
+  statCell: { flex: 1, minWidth: 0, alignItems: 'center', gap: 3, paddingHorizontal: 2 },
+  statValue: { fontFamily: fontFamily.monoBold, fontSize: 17 },
   statLabel: { fontFamily: fontFamily.bodySemi, fontSize: 9.5, letterSpacing: 0.5 },
   statSep: { width: 1, height: 30 },
   warmupNote: { fontFamily: fontFamily.body, fontSize: 12.5, textAlign: 'center' },

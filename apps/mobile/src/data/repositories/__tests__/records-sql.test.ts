@@ -16,8 +16,8 @@
  * durée) est testée dans `@wellness/shared` ; on vérifie ici son câblage à la base.
  */
 
-import { evaluateWorkoutRecords } from '../records-repository';
-import { resetTestDb, rowsOf, seed } from '@/test-utils/sqlite-harness';
+import { evaluateWorkoutRecords, SELECT_PREVIOUS_SETS } from '../records-repository';
+import { resetTestDb, rowsOf, seed, testPowerSync } from '@/test-utils/sqlite-harness';
 
 jest.mock('@/powersync/system', () => ({
   powerSync: require('@/test-utils/sqlite-harness').testPowerSync,
@@ -326,5 +326,101 @@ describe('ré-évaluation de la même séance', () => {
     // Les valeurs ne sont plus strictement supérieures à celles insérées au 1er passage.
     expect(beaten).toEqual([]);
     expect(records()).toHaveLength(3);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Écart depuis la fois d'avant — recette MUSCU-UX01 §57.36 (11/09/2026)
+// ---------------------------------------------------------------------------
+
+/**
+ * `SELECT_PREVIOUS_SETS` filtrait `w2.owner_id`. `workouts` porte `user_id` : la requête levait à
+ * chaque ouverture du résumé, `useQuery` avalait l'erreur, et `useExerciseDeltas` rendait une carte
+ * **toujours vide**. Aucun « ▲ +2,5 kg » n'a donc jamais pu s'afficher — pas même sur une séance
+ * qui battait deux records le même soir, ce qui est exactement ce qu'a vu la recette.
+ */
+describe('SELECT_PREVIOUS_SETS — la référence de l’exercice', () => {
+  const previousSets = (workoutId: string) =>
+    testPowerSync.getAll<{ exercise_id: string; reps: number; weight_kg: number }>(
+      SELECT_PREVIOUS_SETS,
+      [workoutId, 'user-1', workoutId],
+    );
+
+  /** Une séance terminée, datée, pour maîtriser l'ordre chronologique. */
+  function seedDatedWorkout(
+    startedAt: string,
+    sets: { exerciseId?: string; reps: number; weightKg: number; done?: boolean }[],
+    opts: { userId?: string; status?: string } = {},
+  ): string {
+    const [workoutId] = seed('workouts', [
+      {
+        user_id: opts.userId ?? 'user-1',
+        status: opts.status ?? 'completed',
+        started_at: startedAt,
+      },
+    ]);
+    seed(
+      'workout_sets',
+      sets.map((s, i) => ({
+        workout_id: workoutId,
+        user_id: opts.userId ?? 'user-1',
+        exercise_id: s.exerciseId ?? 'squat',
+        order_index: i,
+        set_type: 'normal',
+        reps: s.reps,
+        weight_kg: s.weightKg,
+        done: s.done === false ? 0 : 1,
+      })),
+    );
+    return workoutId!;
+  }
+
+  it('ramène les séries du passage précédent sur le même exercice', async () => {
+    seedDatedWorkout('2026-09-04T18:00:00Z', [{ reps: 5, weightKg: 60 }]);
+    const current = seedDatedWorkout('2026-09-11T21:00:00Z', [{ reps: 8, weightKg: 80 }]);
+
+    const rows = await previousSets(current);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0]!.weight_kg).toBe(60);
+    expect(rows[0]!.reps).toBe(5);
+  });
+
+  it('ne ramène rien pour un premier passage — pas de référence, donc pas de « = »', async () => {
+    const current = seedDatedWorkout('2026-09-11T21:00:00Z', [{ reps: 8, weightKg: 80 }]);
+
+    expect(await previousSets(current)).toEqual([]);
+  });
+
+  it('prend la référence exercice par exercice, pas « la séance d’avant »', async () => {
+    seedDatedWorkout('2026-09-01T18:00:00Z', [{ exerciseId: 'bench', reps: 8, weightKg: 70 }]);
+    seedDatedWorkout('2026-09-04T18:00:00Z', [{ exerciseId: 'squat', reps: 5, weightKg: 100 }]);
+    const current = seedDatedWorkout('2026-09-11T21:00:00Z', [
+      { exerciseId: 'squat', reps: 5, weightKg: 105 },
+      { exerciseId: 'bench', reps: 8, weightKg: 75 },
+    ]);
+
+    const rows = await previousSets(current);
+
+    expect(rows.map((r) => [r.exercise_id, r.weight_kg])).toEqual(
+      expect.arrayContaining([
+        ['squat', 100],
+        ['bench', 70],
+      ]),
+    );
+  });
+
+  it('ignore les séances d’un autre utilisateur', async () => {
+    seedDatedWorkout('2026-09-04T18:00:00Z', [{ reps: 5, weightKg: 60 }], { userId: 'user-2' });
+    const current = seedDatedWorkout('2026-09-11T21:00:00Z', [{ reps: 8, weightKg: 80 }]);
+
+    expect(await previousSets(current)).toEqual([]);
+  });
+
+  it('ignore une séance non terminée', async () => {
+    seedDatedWorkout('2026-09-04T18:00:00Z', [{ reps: 5, weightKg: 60 }], { status: 'in_progress' });
+    const current = seedDatedWorkout('2026-09-11T21:00:00Z', [{ reps: 8, weightKg: 80 }]);
+
+    expect(await previousSets(current)).toEqual([]);
   });
 });

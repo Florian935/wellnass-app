@@ -10,6 +10,81 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 11/09/2026 — MUSCU-UX01 : sept constats de la 1ʳᵉ passe de recette
+
+Branche `fix/muscu-ux01-recette-passe-1` (depuis `dev`, commit précédent `e719a47`).
+Première recette device de MUSCU-UX01 par Florian : **7 des 59 critères tombent**. Deux d'entre
+eux sont la **même panne de fond** et masquaient chacun un état entier de l'app.
+
+### Corrigé
+
+- **§57.3 — le hub muscu n'affichait jamais la séance du jour.** `SELECT_TODAY_PLAN`
+  (`strength-hub-repository.ts`) résolvait le nom d'exercice par
+  `COALESCE(etl.name, etfr.name, e.name)`. **`exercises` n'a pas de colonne `name`** : les noms
+  vivent uniquement dans `exercise_translations`. La requête levait donc à *chaque* rendu,
+  `useQuery` avalait l'erreur, `planRows` restait vide, et `resolveHubState` retombait sur
+  l'état C (« Repos aujourd'hui »). **L'état B — le plus important des quatre — était
+  inatteignable pour tout le monde depuis le premier jour.** Constaté avec une séance
+  effectivement prévue à 22 h le jour même.
+- **§57.36 — aucun écart n'a jamais pu s'afficher sur le résumé.** `SELECT_PREVIOUS_SETS`
+  (`records-repository.ts`) filtrait `w2.owner_id` ; `workouts` porte **`user_id`**. Même
+  mécanisme, même silence : `useExerciseDeltas` rendait une carte toujours vide, y compris sur
+  une séance qui battait deux records le même soir.
+- **§57.35 + §57.37 — la bande de statistiques débordait.** `statCell` n'avait pas de `flex` :
+  chaque cellule se dimensionnait sur son contenu et, dès un tonnage à quatre chiffres
+  (« 4 108,0 kg »), la quatrième colonne sortait de l'écran — valeur tronquée, « DENSITÉ » coupé.
+  Les quatre colonnes se partagent désormais la largeur (`flex: 1` + `minWidth: 0`) et les textes
+  rétrécissent dans leur colonne (`adjustsFontSizeToFit`) au lieu de pousser leurs voisines.
+- **§57.23 — clé i18n brute dans le menu de séance.** `workout.displayLevel.title` n'existait pas
+  (seul `onboarding.displayLevel.title` était défini) : le sélecteur de niveau d'affichage
+  montrait la clé. Ajoutée en FR et EN.
+- **§57.21 — aucun retour haptique à la validation de série.** La façade `lib/haptics.ts` suivait
+  la recommandation Expo SDK 57 (`performAndroidHapticsAsync` plutôt que l'API `Vibrator`
+  dépréciée). Or l'implémentation native appelle `View.performHapticFeedback(...)`, **qu'Android
+  ignore silencieusement** quand le réglage système « vibration au toucher » est coupé — ce qu'il
+  est par défaut sur beaucoup d'appareils. S'y ajoutent `HapticFeedbackConstants.CONFIRM` réservé
+  à l'API ≥ 30 et l'absence de remontée du booléen d'échec. Retour à `impactAsync` /
+  `notificationAsync` / `selectionAsync` (chemin `Vibrator`), qui est déjà celui du planning et du
+  guidage de fractionné. **Effet de bord réparé au passage : la vibration de fin de repos**, qui
+  marchait *avant* cette US via `Vibration.vibrate()`, était muette depuis.
+- **§57.55 — le module force était inatteignable.** Les **deux seules** entrées vers
+  `/strength-lifts` vivaient dans `StrengthSection`, qui rend `null` tant qu'aucun mouvement n'est
+  désigné. Boucle fermée : pas de section → pas d'accès à la désignation → jamais de section. Le
+  module était donc invisible pour tout le monde **depuis MUSCPWR-01**, pas depuis cette US. La
+  section accepte maintenant un `fallback` — le prédicat reste dans le composant, l'écran
+  Progression y met une entrée « Désigner mes mouvements » dans l'onglet **Mon corps**.
+
+### Ajouté (tests)
+
+- `__tests__/sql-prepare-sweep.test.ts` — **garde-fou de la classe entière**. Prépare les
+  **162** requêtes SQL littérales des repositories contre le schéma PowerSync local. Les deux bugs
+  ci-dessus partagent le même profil : requête invalide → erreur avalée par `useQuery` → écran en
+  état « pas de donnée », qui est un état légitime. Aucun crash, aucun log, aucun test rouge. Le
+  harness SQLite existait pour ça, mais ne couvrait que les requêtes qu'un test citait nommément.
+- `__tests__/strength-hub-sql.test.ts` — 10 cas sur les 4 requêtes du hub, qui **n'en avait aucun**
+  alors que sa docstring annonçait ses `SELECT_*` comme testables contre le harness.
+- `records-sql.test.ts` — 5 cas sur `SELECT_PREVIOUS_SETS` (référence par exercice et non « la
+  séance d'avant », premier passage sans écart, isolation par utilisateur, séance non terminée).
+- `test-utils/node-fs.d.ts` — déclarations minimales de `node:fs` / `node:path`, sur le modèle de
+  `node-sqlite.d.ts` : aucun global exposé, pour ne pas rendre `process`/`Buffer` visibles au code
+  applicatif React Native.
+
+### Technique — Notes
+
+- ⚠️ **La leçon de fond** : sous PowerSync, une requête invalide ne casse rien de visible. Le
+  schéma local (`powersync/schema.ts`) est la seule autorité sur les colonnes disponibles, et il
+  **diffère de Supabase** (`exercises` sans `name`, `workouts` en `user_id` et non `owner_id`).
+  Toute nouvelle requête doit passer le sweep.
+- `exercise_name` peut désormais valoir `null` (exercice traduit ni dans la langue courante ni en
+  français). Les noms vides sont écartés **avant** la troncature à 3, pour ne pas afficher une
+  puce blanche sur la carte du jour.
+- Aucune migration, aucune sync rule, aucune dépendance native. Recettable sur un build de la
+  branche.
+- Vérifié : typecheck 3 workspaces à 0, lint à 0, **2 810 tests Jest + 115 fichiers Vitest verts**
+  (codes de sortie lus sans pipe).
+- RECETTES.md §57 : bloc « Correctifs de la 1ʳᵉ passe » ajouté, critères **60 à 67**.
+
+
 ## 10/09/2026 — CARDIO-UX01 : migration appliquée, la carte d'adaptation agit
 
 Suite directe du lot CARDIO-UX01. `npm run db:push` est passé (par Florian), les 3 colonnes de
