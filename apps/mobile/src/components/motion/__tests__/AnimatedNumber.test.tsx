@@ -64,6 +64,23 @@ describe('AnimatedNumber', () => {
     );
   });
 
+  it('suit les séparateurs de la langue', async () => {
+    // `Intl` n'existe pas sur le thread UI : les séparateurs sont donc des **paramètres**, que
+    // l'appelant tire de la langue via `useLocaleSeparators`. Sans ça, cette primitive aurait
+    // imposé le format français à l'anglais dans une app bilingue depuis le jour 1 (décision G).
+    await expect(
+      valeurAffichee(
+        <AnimatedNumber
+          value={1234.5}
+          decimals={1}
+          groupSeparator=","
+          decimalSeparator="."
+          testID="nombre"
+        />,
+      ),
+    ).resolves.toBe('1,234.5');
+  });
+
   it('annonce la valeur d’arrivée, jamais les valeurs intermédiaires', async () => {
     const { getByLabelText } = await render(<AnimatedNumber value={1715} />);
     expect(getByLabelText('1 715')).toBeTruthy();

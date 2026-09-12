@@ -10,6 +10,7 @@
  */
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { AnimatedNumber, useLocaleSeparators } from '@/components/motion/AnimatedNumber';
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +38,7 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { colors } = useTheme();
   const router = useRouter();
   const { current, activeToday, last7, restorableGap, isLoading } = useStreakData();
+  const separators = useLocaleSeparators();
   const [jokerBusy, setJokerBusy] = useState(false);
   const [jokerError, setJokerError] = useState(false);
 
@@ -79,9 +81,21 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
       <WidgetFrame pad={16} onPress={openReview} accessibilityLabel={t('home.streak.title')}>
         <Eyebrow>{t('home.streak.eyebrow')}</Eyebrow>
         <View style={styles.smallCenter}>
-          <Text style={[styles.bigNum, { color: isEmpty ? colors.textMuted : colors.accent }]}>
-            {current}
-          </Text>
+          {/*
+            MOTION-01 (A1) : le seul chiffre de l'app qui change tout seul sous les yeux de
+            l'utilisateur — au passage de minuit, ou à la clôture de la séance du jour. Il
+            **transite** depuis sa valeur précédente au lieu d'être remplacé : c'est ce qui fait
+            voir le jour gagné.
+
+            Le nom accessible reste porté par la carte (`accessibilityLabel` de `WidgetFrame`),
+            donc pas de doublon d'annonce ici.
+          */}
+          <AnimatedNumber
+            value={current}
+            {...separators}
+            announce={false}
+            style={[styles.bigNum, { color: isEmpty ? colors.textMuted : colors.accent }]}
+          />
           <Text style={styles.flame}>🔥</Text>
         </View>
         <Text style={[styles.smallSub, { color: colors.textMuted }]}>{suffix}</Text>

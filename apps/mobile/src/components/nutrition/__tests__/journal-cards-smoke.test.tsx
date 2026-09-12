@@ -61,9 +61,23 @@ const balanceProps = {
 
 describe('DayBalanceCard', () => {
   it('affiche le restant et le détail consommé / objectif', async () => {
-    const { getByText, getAllByText } = await render(<DayBalanceCard {...balanceProps} />);
+    const { getByText, getAllByText, getByTestId } = await render(
+      <DayBalanceCard {...balanceProps} />,
+    );
     // 2150 - 1480 = 670, écrit deux fois : au centre de l'anneau et sur la ligne « Restant ».
-    expect(getAllByText('670')).toHaveLength(2);
+    //
+    // Depuis MOTION-01 (N1), le chiffre central **transite** depuis sa valeur précédente au lieu
+    // d'être remplacé : il est rendu par `AnimatedNumber`, donc par un champ en lecture seule et
+    // non plus par un `Text` (seul composant du cœur de React Native dont le contenu est pilotable
+    // depuis le thread UI). Le garde-fou reste le même — la valeur apparaît bien aux deux endroits
+    // — mais il s'interroge en deux temps.
+    expect(getAllByText('670')).toHaveLength(1);
+    // `includeHiddenElements` : le chiffre central est délibérément masqué aux lecteurs d'écran
+    // (`announce={false}`), la carte portant déjà un nom accessible complet — sans quoi la valeur
+    // serait annoncée deux fois de suite.
+    expect(
+      getByTestId('balance-ring-value', { includeHiddenElements: true }).props.defaultValue,
+    ).toBe('670');
     expect(getByText('journal.balance.kcalRemaining')).toBeTruthy();
     expect(getByText('journal.balance.consumed')).toBeTruthy();
     expect(getByText('journal.balance.target')).toBeTruthy();

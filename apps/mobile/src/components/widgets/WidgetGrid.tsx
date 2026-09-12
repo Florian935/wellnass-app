@@ -26,6 +26,7 @@ import { cellRect, gridHeight } from '@/components/widgets/grid-geometry';
 import { useScreenLayout } from '@/data/repositories/widget-layout-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { StaggerIn } from '@/components/motion/StaggerIn';
 import { WidgetIdentityProvider } from '@/components/widgets/widget-identity';
 
 /** Gouttière entre cases (px). */
@@ -123,11 +124,20 @@ export function WidgetGrid({
   return (
     <View onLayout={onLayout} style={{ height: gridHeight(positioned, colW, GRID_GAP) }}>
       {colW > 0
-        ? positioned.map((w) => {
+        ? positioned.map((w, index) => {
             const r = cellRect(w, colW, GRID_GAP);
             return (
-              <View
+              // MOTION-01 (S2) : les cartes arrivent décalées de 40 ms au lieu de surgir ensemble.
+              // L'œil suit une composition au lieu de recevoir un mur. Le décalage est plafonné à
+              // six cartes par `staggerDelay` — au-delà il cesserait d'être une élégance pour
+              // devenir une attente, au moment précis du premier contact du matin.
+              //
+              // L'animation ne joue **qu'au montage** des cellules, c'est-à-dire une fois par
+              // ouverture de l'écran : réagencer ou redimensionner un widget garde la même clé,
+              // donc ne remonte rien et ne rejoue rien.
+              <StaggerIn
                 key={w.id}
+                index={index}
                 style={{
                   position: 'absolute',
                   left: r.left,
@@ -141,7 +151,7 @@ export function WidgetGrid({
                 <WidgetIdentityProvider id={w.id}>
                   {renderWidget(w.id, w.size)}
                 </WidgetIdentityProvider>
-              </View>
+              </StaggerIn>
             );
           })
         : null}

@@ -21,7 +21,6 @@
  * de l'app (30 à 40 validations par séance) ne paie pas une milliseconde de décoration.
  */
 
-import { useCallback } from 'react';
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
 import Animated, {
   useAnimatedStyle,
@@ -68,20 +67,21 @@ export function PressableScale({
   const reduced = useAppReducedMotion();
   const scale = useSharedValue(1);
 
-  const handlePressIn: PressableProps['onPressIn'] = useCallback(
-    (event: Parameters<NonNullable<PressableProps['onPressIn']>>[0]) => {
-      // L'haptique part à l'**enfoncement**, pas au relâchement : c'est le moment où le doigt
-      // touche, donc celui où le retour est attendu. Elle survit à `reduced` (voir l'en-tête).
-      if (haptic !== 'none' && !disabled) HAPTIC[haptic]();
-      if (!reduced) scale.value = withTiming(scaleTo, { duration: DURATION.instant });
-      onPressIn?.(event);
-    },
-    [disabled, haptic, onPressIn, reduced, scale, scaleTo],
-  );
+  // Fonctions simples, **pas** de `useCallback` : la regle `react-hooks/immutability` (React
+  // Compiler) refuse qu'une valeur partagee Reanimated soit mutee depuis une fonction
+  // memoisee. Le cout est nul ici : `Pressable` ne re-rend pas sur une identite de
+  // gestionnaire.
+  const handlePressIn: PressableProps['onPressIn'] = (event) => {
+    // L'haptique part à l'**enfoncement**, pas au relâchement : c'est le moment où le doigt
+    // touche, donc celui où le retour est attendu. Elle survit à `reduced` (voir l'en-tête).
+    if (haptic !== 'none' && !disabled) HAPTIC[haptic]();
+    if (!reduced) scale.value = withTiming(scaleTo, { duration: DURATION.instant });
+    onPressIn?.(event);
+  };
 
-  const handlePressOut: PressableProps['onPressOut'] = useCallback(() => {
+  const handlePressOut: PressableProps['onPressOut'] = () => {
     if (!reduced) scale.value = withSpring(1, SPRING.settle);
-  }, [reduced, scale]);
+  };
 
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 

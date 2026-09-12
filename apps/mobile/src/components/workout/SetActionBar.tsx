@@ -27,10 +27,11 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { SetType } from '@wellness/shared';
 import { hapticSelect } from '@/lib/haptics';
+import { PressableScale } from '@/components/motion/PressableScale';
 import { fontFamily } from '@/theme/fonts';
 import type { Palette } from '@/theme/colors';
 
@@ -198,19 +199,24 @@ export function SetActionBar({
         {renderField(secondary)}
       </View>
 
-      <Pressable
+      {/*
+        MOTION-01 (M1) : le geste le plus répété de l'app — 30 à 40 fois par séance — encaisse
+        désormais le coup au lieu de changer d'opacité sous un pouce qui le recouvre. L'haptique
+        de validation était déjà là (`hapticConfirm`, appelée par `workout.tsx`) : on ne la double
+        pas ici, d'où `haptic="none"`.
+
+        ⚠️ Règle R2 : `onValidate` part **immédiatement**, jamais à la fin de l'animation.
+      */}
+      <PressableScale
         accessibilityRole="button"
+        haptic="none"
         onPress={onValidate}
-        style={({ pressed }) => [
-          styles.validate,
-          { backgroundColor: colors.accent },
-          pressed && styles.pressed,
-        ]}
+        style={[styles.validate, { backgroundColor: colors.accent }]}
       >
         <Text style={[styles.validateLabel, { color: colors.accentText }]}>
           {chainsToSuperset ? t('workout.validateAndChain') : t('workout.validateSet')}
         </Text>
-      </Pressable>
+      </PressableScale>
     </View>
   );
 }
@@ -228,19 +234,18 @@ function StepButton({
   label: string;
 }) {
   return (
-    <Pressable
+    // Petite cible : l'enfoncement doit descendre plus bas que le défaut pour se voir (MOTION-01 · M8).
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={label}
+      haptic="none"
+      scaleTo={0.92}
       hitSlop={8}
       onPress={onPress}
-      style={({ pressed }) => [
-        styles.stepBtn,
-        { borderColor: colors.border, backgroundColor: colors.surface },
-        pressed && styles.pressed,
-      ]}
+      style={[styles.stepBtn, { borderColor: colors.border, backgroundColor: colors.surface }]}
     >
       <Ionicons name={icon} size={17} color={colors.text} />
-    </Pressable>
+    </PressableScale>
   );
 }
 

@@ -20,8 +20,16 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { RestRing } from '@/components/workout/RestRing';
 import { fontFamily } from '@/theme/fonts';
 import type { Palette } from '@/theme/colors';
+
+/**
+ * Diamètre de l'anneau de repos. Calé sur la largeur d'un écran étroit (360 dp) moins les marges
+ * de `content` : il occupe la place sans jamais toucher les bords.
+ */
+const RING_SIZE = 248;
+const RING_STROKE = 10;
 
 type RestOverlayProps = {
   secondsLeft: number;
@@ -29,6 +37,13 @@ type RestOverlayProps = {
   collapsed: boolean;
   /** Repos configuré pour l'exercice courant (secondes) — sert au réglage rapide. */
   restSeconds: number;
+  /**
+   * Durée totale du repos **en cours**, dénominateur de l'anneau (MOTION-01 · M3).
+   *
+   * Distinct de `restSeconds` à dessein : celui-ci est le réglage *durable* de l'exercice, celui-là
+   * la durée réellement lancée. Les deux divergent dès qu'on appuie sur « + 15 s ».
+   */
+  totalSeconds: number;
   /** Exercice de la série qui suit, `null` si la séance est terminée. */
   nextLabel: string | null;
   /** Rang de la série qui suit (« Série 3/4 »), `null` si inconnu. */
@@ -56,6 +71,7 @@ export function RestOverlay({
   secondsLeft,
   collapsed,
   restSeconds,
+  totalSeconds,
   nextLabel,
   nextDetail,
   onSkip,
@@ -110,7 +126,22 @@ export function RestOverlay({
 
       <View style={styles.content}>
         <Text style={[styles.title, { color: colors.panelMuted }]}>{t('workout.restTitle')}</Text>
-        <Text style={[styles.countdown, { color: colors.panelText }]}>{countdown}</Text>
+        {/*
+          MOTION-01 (M3/M4) : le compte à rebours passe **dans** un anneau qui se vide. Le chiffre
+          n'a pas changé — il reste la source d'information — mais il cesse d'être la seule chose à
+          regarder sur un écran où l'on attend, assis, une minute et demie.
+        */}
+        <RestRing
+          secondsLeft={secondsLeft}
+          totalSeconds={totalSeconds}
+          size={RING_SIZE}
+          stroke={RING_STROKE}
+          color={colors.panelAccent}
+          warnColor={colors.success}
+          trackColor={`${colors.panelText}1f`}
+        >
+          <Text style={[styles.countdown, { color: colors.panelText }]}>{countdown}</Text>
+        </RestRing>
 
         {/* Ce qui vient : le repos cesse d'être un temps mort. */}
         {nextLabel ? (
@@ -187,7 +218,10 @@ const styles = StyleSheet.create({
     letterSpacing: 0.9,
     textTransform: 'uppercase',
   },
-  countdown: { fontFamily: fontFamily.monoBold, fontSize: 72, letterSpacing: -2, lineHeight: 80 },
+  // Abaissé de 72 à 60 px en entrant dans l'anneau (MOTION-01 · M3) : le diamètre intérieur fait
+  // 228 px, et Space Mono avance d'environ 0,6 em par glyphe. À 72 px un repos de dix minutes
+  // (« 10:00 », 5 glyphes ≈ 216 px) touchait l'arc ; à 60 px il reste 48 px de marge.
+  countdown: { fontFamily: fontFamily.monoBold, fontSize: 60, letterSpacing: -2, lineHeight: 68 },
   nextCard: { width: '100%', borderRadius: 18, padding: 16, gap: 4, marginTop: 18 },
   nextEyebrow: {
     fontFamily: fontFamily.bodySemi,

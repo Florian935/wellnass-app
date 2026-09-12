@@ -18,6 +18,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { AccentHalo } from '@/components/AccentHalo';
 import { Button } from '@/components/Button';
+import { AnimatedNumber, useLocaleSeparators } from '@/components/motion/AnimatedNumber';
 import { RingGauge } from '@/components/widgets/primitives';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -49,6 +50,7 @@ export function DayBalanceCard({
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const lang = i18n.language;
+  const separators = useLocaleSeparators();
 
   const remaining = target != null ? target - consumed : null;
   const over = remaining != null && remaining < 0;
@@ -61,7 +63,8 @@ export function DayBalanceCard({
 
   return (
     <View style={[styles.card, { backgroundColor: colors.panel }]}>
-      <AccentHalo />
+      {/* Carte héros du pilier Nutrition — elle respire (MOTION-01 · S11). */}
+      <AccentHalo breathe />
 
       <Text style={[styles.eyebrow, { color: colors.panelAccent }]}>{t('journal.balance.title')}</Text>
 
@@ -95,9 +98,21 @@ export function DayBalanceCard({
                 target,
               })}
             >
-              <Text style={[styles.ringValue, { color: colors.panelText }]}>
-                {fmt(Math.abs(remaining ?? 0), lang)}
-              </Text>
+              {/*
+                MOTION-01 (N1) : le geste quotidien du pilier. Ajouter un aliment fait monter
+                l'anneau **et** rouler ce chiffre depuis sa valeur précédente — la causalité se
+                voit, c'est bien cette portion-là qui a coûté ces calories.
+
+                Le nom accessible reste porté par la vue parente, donc ce chiffre n'est pas
+                annoncé deux fois.
+              */}
+              <AnimatedNumber
+                value={Math.abs(remaining ?? 0)}
+                {...separators}
+                announce={false}
+                testID="balance-ring-value"
+                style={[styles.ringValue, { color: colors.panelText }]}
+              />
               <Text style={[styles.ringLabel, { color: remainingColor }]}>
                 {t(over ? 'journal.balance.kcalOver' : 'journal.balance.kcalRemaining')}
               </Text>

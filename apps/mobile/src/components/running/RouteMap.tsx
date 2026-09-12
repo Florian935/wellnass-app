@@ -26,6 +26,7 @@ import {
   type LngLatBounds,
 } from '@maplibre/maplibre-react-native';
 import type { GpsPoint } from '@wellness/shared';
+import { PulseDot } from '@/components/running/PulseDot';
 import { hasMapKey, MAP_STYLE_URL } from '@/lib/map';
 import { useTheme } from '@/theme/useTheme';
 import { useTranslation } from 'react-i18next';
@@ -284,6 +285,13 @@ function RouteMapInner({
           />
         </GeoJSONSource>
       </Map>
+
+      {/*
+        MOTION-01 (C1) — le `pulsedot` de la maquette, enfin posé. Uniquement en mode suivi : c'est
+        le seul mode où la caméra est centrée sur le dernier point, donc le seul où un halo posé au
+        centre du conteneur coïncide avec le marqueur (voir l'en-tête de `PulseDot`).
+      */}
+      {follow ? <PulseDot color={colors.accent} /> : null}
     </View>
   );
 }

@@ -36,9 +36,16 @@
  */
 
 import { StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import { Breathe } from '@/components/motion/Breathe';
 import { useWidgetIdentity } from '@/components/widgets/widget-identity';
 import { useMenuAccent, type MenuKey } from '@/stores/menu-accent-store';
 import { useTheme } from '@/theme/useTheme';
+
+/**
+ * Durée d'un cycle de respiration d'une carte héros. Six secondes : assez lent pour qu'on ne le
+ * remarque pas — on remarquerait son absence.
+ */
+const HERO_BREATH_MS = 6000;
 
 /** Coin d'ancrage du cercle. */
 export type HaloCorner = 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
@@ -122,6 +129,16 @@ export function AccentHalo({
   seed,
   /** Force le module dont on emprunte la géométrie de repli (tests, écrans hors navigation). */
   menu,
+  /**
+   * Fait **respirer** le halo (MOTION-01 · S11 / A4) : une pulsation de 6 s, amplitude 7 %.
+   *
+   * Réservé aux **cartes héros** — « Séance du jour », « Bilan du jour », « Régularité ». Le faire
+   * sur toutes les cartes referait exactement l'erreur que `hasHaloFor` évite (voir l'en-tête) :
+   * un ornement partout n'accentue plus rien, et en mouvement il deviendrait un fond qui frétille.
+   *
+   * Off par défaut, donc aucun des appelants existants ne change de comportement.
+   */
+  breathe = false,
   style,
 }: {
   size?: number;
@@ -130,6 +147,7 @@ export function AccentHalo({
   corner?: HaloCorner;
   seed?: string;
   menu?: MenuKey;
+  breathe?: boolean;
   style?: StyleProp<ViewStyle>;
 }) {
   const { colors } = useTheme();
@@ -150,7 +168,7 @@ export function AccentHalo({
   // Débord d'un quart du diamètre, comme la maquette (150 → −40, soit ~27 %).
   const bleed = -Math.round(diameter / 4);
 
-  return (
+  const circle = (
     <View
       pointerEvents="none"
       style={[
@@ -166,6 +184,16 @@ export function AccentHalo({
         style,
       ]}
     />
+  );
+
+  if (!breathe) return circle;
+
+  // `Breathe` enveloppe sans déplacer : il n'applique qu'une échelle, et le positionnement du
+  // cercle reste porté par `cornerStyle` à l'intérieur. Sa boucle s'annule hors focus (règle R4).
+  return (
+    <Breathe duration={HERO_BREATH_MS} style={StyleSheet.absoluteFill} pointerEvents="none">
+      {circle}
+    </Breathe>
   );
 }
 

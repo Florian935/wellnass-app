@@ -1,52 +1,84 @@
 /**
- * CelebrationCard.test.tsx — conteneur animé de célébration (US MUSC-F8, décision D13).
+ * CelebrationCard.test.tsx — conteneur animé de célébration (US MUSC-F8, repris par MOTION-01).
  *
- * Vérifie :
- *  1. Le rendu des enfants (le conteneur ne filtre rien).
- *  2. Le respect de « réduire les animations » : quand `AccessibilityInfo.isReduceMotionEnabled`
- *     résout `true`, la valeur animée doit atteindre son état final SANS passer par
- *     `Animated.timing` (vérifié en espionnant `Animated.timing`, qui ne doit pas être appelé).
+ * Le contrat testé a changé avec MOTION-01 : le composant ne gère plus lui-même le réglage système
+ * via `AccessibilityInfo` (il était le seul fichier de l'app à le faire), mais lit le hook partagé
+ * `useAppReducedMotion`, qui combine le réglage système **et** l'interrupteur « Animations » des
+ * Réglages. Les tests pilotent donc ce hook, et non `AccessibilityInfo`.
+ *
+ * On vérifie le **contrat**, pas la trajectoire : que les enfants passent, que les ondes
+ * décoratives disparaissent quand le mouvement est coupé, et qu'elles ne sont jamais annoncées.
  */
-import React from 'react';
-import { AccessibilityInfo, Animated, Text } from 'react-native';
-import { render, waitFor } from '@testing-library/react-native';
+import { Text } from 'react-native';
+import { render } from '@testing-library/react-native';
 import { CelebrationCard } from '../CelebrationCard';
+import { useAppReducedMotion } from '@/hooks/useAppReducedMotion';
+
+jest.mock('@/hooks/useAppReducedMotion', () => ({
+  useAppReducedMotion: jest.fn(() => false),
+}));
+
+const reduced = useAppReducedMotion as jest.MockedFunction<typeof useAppReducedMotion>;
+
+/** Compte les cercles décoratifs : ce sont les seules vues à bord de 2 px que pose le composant. */
+function compterOndes(tree: unknown): number {
+  const json = JSON.stringify(tree ?? null);
+  return (json.match(/"borderWidth":2/g) ?? []).length;
+}
 
 describe('CelebrationCard', () => {
-  afterEach(() => {
-    jest.restoreAllMocks();
+  beforeEach(() => {
+    reduced.mockReturnValue(false);
   });
 
   it('rend ses enfants', async () => {
-    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
     const { getByText } = await render(
       <CelebrationCard>
-        <Text>Contenu</Text>
+        <Text>Record battu</Text>
       </CelebrationCard>,
     );
-    expect(getByText('Contenu')).toBeTruthy();
+    expect(getByText('Record battu')).toBeTruthy();
   });
 
-  it('anime avec Animated.timing quand « réduire les animations » est désactivé', async () => {
-    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(false);
-    const timingSpy = jest.spyOn(Animated, 'timing');
-    await render(
-      <CelebrationCard>
-        <Text>Contenu</Text>
-      </CelebrationCard>,
-    );
-    await waitFor(() => expect(timingSpy).toHaveBeenCalled());
-  });
-
-  it('saute l’animation quand « réduire les animations » est activé', async () => {
-    jest.spyOn(AccessibilityInfo, 'isReduceMotionEnabled').mockResolvedValue(true);
-    const timingSpy = jest.spyOn(Animated, 'timing');
+  it('rend ses enfants même quand le mouvement est coupé', async () => {
+    // Règle R1 : couper l'animation ne doit rien cacher. C'est ce qui autorise à en poser partout.
+    reduced.mockReturnValue(true);
     const { getByText } = await render(
       <CelebrationCard>
-        <Text>Contenu</Text>
+        <Text>Record battu</Text>
       </CelebrationCard>,
     );
-    await waitFor(() => expect(getByText('Contenu')).toBeTruthy());
-    expect(timingSpy).not.toHaveBeenCalled();
+    expect(getByText('Record battu')).toBeTruthy();
+  });
+
+  it('pose deux ondes quand le mouvement est permis', async () => {
+    const { toJSON } = await render(
+      <CelebrationCard>
+        <Text>Record battu</Text>
+      </CelebrationCard>,
+    );
+    expect(compterOndes(toJSON())).toBe(2);
+  });
+
+  it('ne pose aucune onde quand le mouvement est coupé', async () => {
+    // Une onde n'est rien d'autre que son mouvement : contrairement au reste de l'US, il n'y a pas
+    // d'« état final » à afficher — on ne la rend pas du tout.
+    reduced.mockReturnValue(true);
+    const { toJSON } = await render(
+      <CelebrationCard>
+        <Text>Record battu</Text>
+      </CelebrationCard>,
+    );
+    expect(compterOndes(toJSON())).toBe(0);
+  });
+
+  it('ne fait pas annoncer les ondes par un lecteur d’écran', async () => {
+    const { toJSON } = await render(
+      <CelebrationCard>
+        <Text>Record battu</Text>
+      </CelebrationCard>,
+    );
+    const json = JSON.stringify(toJSON());
+    expect((json.match(/"importantForAccessibility":"no-hide-descendants"/g) ?? []).length).toBe(2);
   });
 });

@@ -1,7 +1,8 @@
-import { Ionicons } from '@expo/vector-icons';
+import type { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { resolveActivePillars, type Pillar } from '@wellness/shared';
+import { TabBarIcon } from '@/components/motion/TabBarIcon';
 import { useSettings } from '@/data/repositories/settings-repository';
 import { useMenuAccent } from '@/stores/menu-accent-store';
 import { fontFamily } from '@/theme/fonts';
@@ -49,7 +50,9 @@ export default function TabsLayout() {
         options={{
           title: t('tabs.home'),
           tabBarActiveTintColor: tabTint('home'),
-          tabBarIcon: ({ color, size }) => <Ionicons name="home" color={color} size={size} />,
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabBarIcon name="home" color={color} size={size} focused={focused} />
+          ),
         }}
       />
       <Tabs.Screen
@@ -58,8 +61,8 @@ export default function TabsLayout() {
           title: t('tabs.strength'),
           href: isActive('strength') ? undefined : null,
           tabBarActiveTintColor: tabTint('strength'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name={PILLAR_ICON.strength} color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabBarIcon name={PILLAR_ICON.strength} color={color} size={size} focused={focused} />
           ),
         }}
       />
@@ -69,8 +72,8 @@ export default function TabsLayout() {
           title: t('tabs.running'),
           href: isActive('running') ? undefined : null,
           tabBarActiveTintColor: tabTint('running'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name={PILLAR_ICON.running} color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabBarIcon name={PILLAR_ICON.running} color={color} size={size} focused={focused} />
           ),
         }}
       />
@@ -80,8 +83,8 @@ export default function TabsLayout() {
           title: t('tabs.nutrition'),
           href: isActive('nutrition') ? undefined : null,
           tabBarActiveTintColor: tabTint('nutrition'),
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name={PILLAR_ICON.nutrition} color={color} size={size} />
+          tabBarIcon: ({ color, size, focused }) => (
+            <TabBarIcon name={PILLAR_ICON.nutrition} color={color} size={size} focused={focused} />
           ),
         }}
       />

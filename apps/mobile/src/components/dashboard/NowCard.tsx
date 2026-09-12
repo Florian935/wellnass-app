@@ -238,7 +238,8 @@ export function NowCard() {
           module actif (`MENU_HALO.home`) et le rend systématiquement. C'est voulu ici — dans la
           grille, `hasHaloFor` n'en pose que sur environ un widget sur trois, et la carte épinglée
           doit, elle, être toujours marquée. */}
-      <AccentHalo size={150} />
+      {/* Carte héros de l'accueil : la seule de la grille qui respire (MOTION-01 · A4). */}
+      <AccentHalo size={150} breathe />
       <View accessible accessibilityLabel={a11y}>
         <Text style={[styles.eyebrow, { color: colors.panelAccent }]} numberOfLines={1}>
           {painted.eyebrow}

@@ -43,18 +43,32 @@ import Animated, {
   withTiming,
   type WithTimingConfig,
 } from 'react-native-reanimated';
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useAppReducedMotion } from '@/hooks/useAppReducedMotion';
 import { DURATION, EASING } from '@/theme/motion';
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 /**
- * Formate un nombre côté worklet. Réimplémenté ici parce que `Intl` n'est pas disponible sur le
- * thread UI — et parce que le séparateur de milliers de l'app est **l'espace fine**, celui de la
- * typographie française, pas la virgule.
+ * Formate un nombre côté worklet.
+ *
+ * Réimplémenté ici parce que **`Intl` n'existe pas sur le thread UI** : un worklet tourne dans un
+ * contexte JS séparé, sans les objets du moteur hôte. Impossible donc d'appeler le
+ * `new Intl.NumberFormat(lang)` employé partout ailleurs dans l'app.
+ *
+ * Conséquence directe : les séparateurs deviennent des **paramètres**, et l'appelant les tire de la
+ * langue courante. Les défauts sont ceux du français (espace fine insécable + virgule) parce que
+ * c'est la langue du projet, mais l'anglais passe `,` et `.` — sans quoi cette primitive aurait
+ * introduit une régression i18n dans une app bilingue depuis le premier jour (décision G).
  */
-function formatOnUi(value: number, decimals: number, grouping: boolean): string {
+function formatOnUi(
+  value: number,
+  decimals: number,
+  grouping: boolean,
+  groupSeparator: string,
+  decimalSeparator: string,
+): string {
   'worklet';
   const safe = Number.isFinite(value) ? value : 0;
   const fixed = Math.abs(safe).toFixed(decimals);
@@ -65,13 +79,42 @@ function formatOnUi(value: number, decimals: number, grouping: boolean): string 
     for (let i = 0; i < intPart.length; i += 1) {
       // Un espace tous les trois chiffres **en partant de la droite** : la position d'insertion
       // dépend donc du reste de la division, pas de l'index brut.
-      if (i > 0 && (intPart.length - i) % 3 === 0) grouped += ' ';
+      if (i > 0 && (intPart.length - i) % 3 === 0) grouped += groupSeparator;
       grouped += intPart[i];
     }
   }
   const sign = safe < 0 ? '-' : '';
-  // Le séparateur décimal français est la virgule — cohérent avec le reste de l'app.
-  return decPart ? `${sign}${grouped},${decPart}` : `${sign}${grouped}`;
+  return decPart ? `${sign}${grouped}${decimalSeparator}${decPart}` : `${sign}${grouped}`;
+}
+
+/**
+ * Sépare les milliers et les décimales **selon la langue courante**.
+ *
+ * Tourne sur le thread JS, où `Intl` existe : on lui fait formater un nombre témoin (1234,5) et on
+ * relit les séparateurs qu'il a choisis, plutôt que de maintenir une table de correspondance
+ * langue → séparateurs qui se démoderait au premier ajout de langue.
+ *
+ * Le résultat est passé en props à {@link AnimatedNumber}, qui, lui, tourne sur le thread UI et
+ * n'a pas accès à `Intl`.
+ */
+export function useLocaleSeparators(): { groupSeparator: string; decimalSeparator: string } {
+  const { i18n } = useTranslation();
+  // `i18n` peut manquer : les mocks de `react-i18next` des tests d'écran ne fournissent souvent que
+  // `t`, et au tout premier rendu l'instance n'est pas toujours prête. Le français est le repli —
+  // c'est la langue du projet.
+  const lang = i18n?.language ?? 'fr';
+  return useMemo(() => {
+    try {
+      const parts = new Intl.NumberFormat(lang).formatToParts(1234.5);
+      return {
+        groupSeparator: parts.find((p) => p.type === 'group')?.value ?? ' ',
+        decimalSeparator: parts.find((p) => p.type === 'decimal')?.value ?? ',',
+      };
+    } catch {
+      // Locale inconnue du moteur : on retombe sur le français, langue du projet.
+      return { groupSeparator: ' ', decimalSeparator: ',' };
+    }
+  }, [lang]);
 }
 
 type AnimatedNumberProps = {
@@ -79,8 +122,15 @@ type AnimatedNumberProps = {
   value: number;
   /** Décimales affichées. Défaut 0 (calories, répétitions, jours). */
   decimals?: number;
-  /** Espace fine tous les trois chiffres. Défaut `true`. */
+  /** Séparateur de milliers tous les trois chiffres. Défaut `true`. */
   grouping?: boolean;
+  /**
+   * Séparateur de milliers. Défaut : l'espace fine insécable du français.
+   * En anglais, passer `','` — `Intl` n'étant pas disponible sur le thread UI (voir `formatOnUi`).
+   */
+  groupSeparator?: string;
+  /** Séparateur décimal. Défaut : la virgule française. En anglais, passer `'.'`. */
+  decimalSeparator?: string;
   /** Durée de la transition. Défaut `DURATION.data`. */
   duration?: number;
   style?: StyleProp<TextStyle>;
@@ -91,16 +141,27 @@ type AnimatedNumberProps = {
   accessibilityLabel?: string;
   /** Posé sur le champ porteur du chiffre, pour les tests et les repères de recette. */
   testID?: string;
+  /**
+   * Le chiffre doit-il être annoncé par un lecteur d'écran ? Défaut `true`.
+   *
+   * Passer `false` quand un **ancêtre porte déjà** un nom accessible contenant la valeur — c'est le
+   * cas des widgets du tableau de bord (`WidgetFrame` annonce « Régularité. 12 jours d'affilée »)
+   * et de la carte de bilan calorique. Sans ça, le chiffre serait lu deux fois de suite.
+   */
+  announce?: boolean;
 };
 
 export function AnimatedNumber({
   value,
   decimals = 0,
   grouping = true,
+  groupSeparator = ' ',
+  decimalSeparator = ',',
   duration = DURATION.data,
   style,
   accessibilityLabel,
   testID,
+  announce = true,
 }: AnimatedNumberProps) {
   const reduced = useAppReducedMotion();
   const progress = useSharedValue(value);
@@ -115,7 +176,9 @@ export function AnimatedNumber({
     progress.value = withTiming(value, config);
   }, [decimals, duration, progress, reduced, value]);
 
-  const text = useDerivedValue(() => formatOnUi(progress.value, decimals, grouping));
+  const text = useDerivedValue(() =>
+    formatOnUi(progress.value, decimals, grouping, groupSeparator, decimalSeparator),
+  );
 
   // `text` est une propriété **native** du `TextInput` (Android comme iOS) mais n'est pas déclarée
   // dans `TextInputProps` : React Native ne l'expose pas côté JS, on ne l'atteint que par
@@ -127,10 +190,16 @@ export function AnimatedNumber({
 
   // La valeur d'arrivée, formatée côté JS, sert à l'annonce du lecteur d'écran : jamais les
   // valeurs intermédiaires.
-  const settled = formatOnUi(value, decimals, grouping);
+  const settled = formatOnUi(value, decimals, grouping, groupSeparator, decimalSeparator);
 
   return (
-    <View accessible accessibilityRole="text" accessibilityLabel={accessibilityLabel ?? settled}>
+    <View
+      accessible={announce}
+      accessibilityRole={announce ? 'text' : undefined}
+      accessibilityLabel={announce ? (accessibilityLabel ?? settled) : undefined}
+      accessibilityElementsHidden={!announce}
+      importantForAccessibility={announce ? 'auto' : 'no-hide-descendants'}
+    >
       <AnimatedTextInput
         testID={testID}
         editable={false}

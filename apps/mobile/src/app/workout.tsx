@@ -249,6 +249,10 @@ export default function WorkoutScreen() {
   const [focusOverride, setFocusOverride] = useState<FocusOverride>(null);
   const [restOverride, setRestOverride] = useState<Record<string, number>>({});
   const [restEndsAt, setRestEndsAt] = useState<number | null>(null);
+  // Durée totale du repos **en cours** — dénominateur de l'anneau (MOTION-01 · M3). Distinct du
+  // réglage durable de l'exercice (`currentRest`) : « + 15 s » allonge celui-ci sans toucher à
+  // celui-là, et l'anneau doit suivre la durée réellement lancée, pas la durée configurée.
+  const [restTotal, setRestTotal] = useState(0);
   const [restLeft, setRestLeft] = useState(0);
   const [restCollapsed, setRestCollapsed] = useState(false);
   // État d'édition rattaché à l'id de la série : dès que la série courante change, il cesse de
@@ -469,6 +473,7 @@ export default function WorkoutScreen() {
     // Forme fonctionnelle : `Date.now()` lu à l'application de la mise à jour, pas pendant le
     // rendu (règle `react-hooks/purity`). Même patron que « Prolonger » plus bas.
     setRestEndsAt(() => Date.now() + currentRest * 1000);
+    setRestTotal(currentRest);
     setFocusOverride(null);
   };
 
@@ -758,6 +763,7 @@ export default function WorkoutScreen() {
           secondsLeft={restLeft}
           collapsed={restCollapsed}
           restSeconds={currentRest}
+          totalSeconds={restTotal}
           nextLabel={current ? current.entry.exerciseName : null}
           nextDetail={
             current
@@ -768,7 +774,10 @@ export default function WorkoutScreen() {
               : null
           }
           onSkip={() => setRestEndsAt(null)}
-          onExtend={() => setRestEndsAt((e) => (e ?? Date.now()) + 15000)}
+          onExtend={() => {
+            setRestEndsAt((e) => (e ?? Date.now()) + 15000);
+            setRestTotal((total) => total + 15);
+          }}
           onToggleCollapse={() => setRestCollapsed((c) => !c)}
           onChangeRest={onSetRest}
           colors={colors}

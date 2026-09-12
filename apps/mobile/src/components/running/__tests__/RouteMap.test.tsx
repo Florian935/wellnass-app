@@ -64,6 +64,11 @@ jest.mock('@maplibre/maplibre-react-native', () => {
 
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k: string) => k }) }));
 
+// Le halo de position (MOTION-01 · C1) est purement décoratif et s'abonne au focus de l'écran
+// (`useFocusEffect`), donc à un conteneur de navigation que ce test n'a pas — il teste la caméra
+// et le GeoJSON, pas un écran. On le neutralise comme les autres dépendances externes du fichier.
+jest.mock('@/components/running/PulseDot', () => ({ PulseDot: () => null }));
+
 jest.mock('@/theme/useTheme', () => ({
   useTheme: () => ({
     colors: { text: '#33291f', surfaceAlt: '#f3ddd0', border: '#ece0cd', accent: '#c0562f' },
