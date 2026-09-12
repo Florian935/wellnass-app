@@ -1,0 +1,27 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "x": 0, "y": 0, "w": 1200, "h": 1100, "title": "Langage de mouvement" },
+    { "file": "Socle.dc.html", "x": 1320, "y": 0, "w": 1200, "h": 1140, "title": "Socle technique" },
+    { "file": "Muscu.dc.html", "x": 0, "y": 1270, "w": 1060, "h": 1100, "title": "Musculation — l'impact" },
+    { "file": "Course.dc.html", "x": 1180, "y": 1270, "w": 1060, "h": 1100, "title": "Course — le flux" },
+    { "file": "Nutrition.dc.html", "x": 0, "y": 2500, "w": 1060, "h": 1100, "title": "Nutrition — le remplissage" },
+    { "file": "Accueil.dc.html", "x": 1180, "y": 2500, "w": 1060, "h": 1100, "title": "Accueil — le souffle" }
+  ],
+  "annotations": [
+    {
+      "id": "note-lecture",
+      "x": 0,
+      "y": -150,
+      "w": 520,
+      "text": "Tout bouge en boucle, exprès : un brief sur le mouvement ne se juge pas sur des images fixes.\nCommence par « Langage de mouvement », puis descends pilier par pilier."
+    },
+    {
+      "id": "note-priorite",
+      "x": 1320,
+      "y": -150,
+      "w": 520,
+      "text": "Si un seul lot devait passer : le socle (planche de droite) + la planche Accueil.\nÉcrits une fois dans les primitives, ils touchent les 80 écrans d'un coup."
+    }
+  ],
+  "launch": { "view": "canvas" }
+}

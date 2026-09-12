@@ -45,6 +45,7 @@ import {
   useMenuAccent,
   type MenuKey,
 } from '@/stores/menu-accent-store';
+import { useMotionPreference } from '@/stores/motion-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -235,6 +236,8 @@ export default function SettingsScreen() {
   const { settings } = useSettings();
   const menuColorsEnabled = useMenuAccent((s) => s.enabled);
   const setMenuColorsEnabled = useMenuAccent((s) => s.setEnabled);
+  const motionEnabled = useMotionPreference((s) => s.enabled);
+  const setMotionEnabled = useMotionPreference((s) => s.setEnabled);
   const menuColors = useMenuAccent((s) => s.colors);
   const setMenuColor = useMenuAccent((s) => s.setColor);
   const resetMenuColors = useMenuAccent((s) => s.reset);
@@ -400,6 +403,36 @@ export default function SettingsScreen() {
         onChange={(next: Theme) => void updateSettings({ theme: next })}
         label={(option) => t(`settings.appearance.${option}`)}
       />
+
+      {/*
+        Animations (MOTION-01). `navigation-ux.md` §4.2 demande « animation + son (désactivable) ».
+        Ce réglage ne remplace pas celui du système : les deux se combinent par un OU, donc
+        « réduire les animations » d'Android reste souverain et ne peut pas être contredit ici.
+        Le retour haptique, lui, n'est pas concerné — il reste actif quand les animations sont
+        coupées, parce que couper le mouvement visuel n'est pas couper le retour tactile.
+      */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settings.motion.title')}
+      </Text>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.row}>
+          <View style={styles.rowGrow}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>
+              {t('settings.motion.enable')}
+            </Text>
+            <Text style={[styles.rowDesc, { color: colors.textMuted }]}>
+              {t('settings.motion.desc')}
+            </Text>
+          </View>
+          <Switch
+            value={motionEnabled}
+            onValueChange={setMotionEnabled}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('settings.motion.enable')}
+          />
+        </View>
+      </View>
 
       {/* Couleurs des menus : un accent par onglet (Accueil / Muscu / Course / Alimentation) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>

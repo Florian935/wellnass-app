@@ -1,0 +1,393 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+
+    .cr-root {
+      width: 1060px; height: 1100px; box-sizing: border-box;
+      background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif;
+      padding: 40px 44px; display: flex; flex-direction: column; gap: 22px;
+    }
+    .cr-eyebrow {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px;
+      letter-spacing: 1.6px; text-transform: uppercase; color: #2f6fc0;
+    }
+    .cr-h1 {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 38px; letter-spacing: -1.2px; margin: 6px 0 0; line-height: 1;
+    }
+    .cr-lede { font-size: 14px; color: #786a59; max-width: 800px; line-height: 1.5; margin-top: 8px; }
+
+    .cr-cols { display: grid; grid-template-columns: repeat(3, 300px); gap: 36px; }
+    .cr-col { display: flex; flex-direction: column; gap: 14px; }
+    .cr-num {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 15px; color: #2f6fc0; letter-spacing: -.3px;
+    }
+    .cr-screen {
+      width: 300px; height: 560px; border-radius: 28px; overflow: hidden;
+      position: relative; border: 1px solid #ece0cd; background: #2a2118;
+    }
+    .cr-cap { font-size: 12.5px; color: #786a59; line-height: 1.5; }
+    .cr-cap b { color: #33291f; }
+    .cr-spec {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px;
+      color: #786a59; line-height: 1.65; border-top: 1px dashed #ece0cd; padding-top: 9px;
+    }
+    .cr-spec b { color: #2f6fc0; }
+
+    /* ---------- 1. Carte live ---------- */
+    .cr-map { position: absolute; left: 0; right: 0; top: 0; height: 330px; background: #211a13; overflow: hidden; }
+    .cr-grid-l { position: absolute; inset: 0; opacity: .5; }
+    .cr-trace { stroke-dasharray: 420; stroke-dashoffset: 420; animation: crDraw 7s linear infinite; }
+    @keyframes crDraw {
+      0% { stroke-dashoffset: 420; }
+      88%, 100% { stroke-dashoffset: 0; }
+    }
+    /* dashmove : les pointillés défilent dans le sens de la marche */
+    .cr-flow {
+      stroke-dasharray: 5 13; animation: crFlow 1.2s linear infinite;
+    }
+    @keyframes crFlow {
+      0% { stroke-dashoffset: 0; }
+      100% { stroke-dashoffset: -18; }
+    }
+    /* pulsedot : la position se propage en cercle, 2 s, sans fin */
+    .cr-dot-wrap { position: absolute; left: 196px; top: 96px; animation: crMove 7s linear infinite; }
+    @keyframes crMove {
+      0% { transform: translate(-104px, 128px); }
+      88%, 100% { transform: translate(0, 0); }
+    }
+    .cr-dot {
+      position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px;
+      border-radius: 50%; background: #2f6fc0; border: 2px solid #f0e4d0; box-sizing: border-box;
+    }
+    .cr-ping {
+      position: absolute; width: 14px; height: 14px; margin: -7px 0 0 -7px;
+      border-radius: 50%; background: rgba(47, 111, 192, .55);
+      animation: crPing 2s cubic-bezier(0, .55, .45, 1) infinite;
+    }
+    .cr-ping.p2 { animation-delay: 1s; }
+    @keyframes crPing {
+      0% { transform: scale(1); opacity: .7; }
+      100% { transform: scale(5.5); opacity: 0; }
+    }
+
+    .cr-stats { position: absolute; left: 0; right: 0; bottom: 0; top: 330px; padding: 22px 20px; }
+    .cr-big {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 62px; color: #f0e4d0; letter-spacing: -3px; line-height: 1;
+    }
+    .cr-big-u { font-size: 20px; color: #c9b79a; letter-spacing: -.5px; }
+    .cr-sub {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px;
+      letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a; margin-top: 4px;
+    }
+    .cr-trio { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 24px; }
+    .cr-tile { background: rgba(240, 228, 208, .07); border-radius: 14px; padding: 11px 12px; }
+    .cr-tile-v {
+      font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700;
+      font-size: 16px; color: #f0e4d0;
+    }
+    .cr-tile-l { font-size: 9.5px; color: #c9b79a; letter-spacing: .8px; text-transform: uppercase; margin-top: 3px; }
+    /* Le km qui tombe : la ligne entre par la droite */
+    .cr-split {
+      position: absolute; left: 20px; right: 20px; bottom: 22px;
+      background: rgba(47, 111, 192, .22); border-left: 2px solid #2f6fc0;
+      border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px;
+      animation: crSplit 7s infinite;
+    }
+    @keyframes crSplit {
+      0%, 52% { opacity: 0; transform: translateX(40px); }
+      58% { opacity: 1; transform: translateX(0); }
+      86% { opacity: 1; transform: translateX(0); }
+      92%, 100% { opacity: 0; transform: translateX(0); }
+    }
+    .cr-split-k {
+      font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700;
+      font-size: 13px; color: #f0e4d0;
+    }
+    .cr-split-p {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px;
+      color: #a9ba7e; margin-left: auto;
+    }
+
+    /* ---------- 2. Fractionné ---------- */
+    .cr-int { position: absolute; inset: 0; background: #2a2118; }
+    .cr-zone {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(178, 59, 46, .30) 0%, rgba(42, 33, 24, 0) 55%);
+      animation: crZoneBg 8s infinite;
+    }
+    @keyframes crZoneBg {
+      0%, 42% { opacity: 1; }
+      50%, 92% { opacity: 0; }
+      100% { opacity: 1; }
+    }
+    .cr-zone-cool {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(47, 111, 192, .30) 0%, rgba(42, 33, 24, 0) 55%);
+      animation: crZoneCool 8s infinite;
+    }
+    @keyframes crZoneCool {
+      0%, 42% { opacity: 0; }
+      50%, 92% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    .cr-int-inner { position: absolute; inset: 0; padding: 44px 20px 0; }
+    .cr-int-e {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px;
+      letter-spacing: 2px; text-transform: uppercase; color: #c9b79a;
+    }
+    .cr-int-t {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 40px; letter-spacing: -1.6px; margin-top: 6px; line-height: 1;
+      animation: crBlockName 8s infinite;
+    }
+    @keyframes crBlockName {
+      0%, 42% { color: #e0524a; }
+      50%, 92% { color: #6ea8f0; }
+      100% { color: #e0524a; }
+    }
+    .cr-int-bar {
+      height: 10px; border-radius: 999px; background: rgba(240, 228, 208, .12);
+      margin-top: 20px; overflow: hidden;
+    }
+    .cr-int-fill {
+      height: 100%; border-radius: 999px; width: 100%; transform-origin: left;
+      animation: crDrain 8s linear infinite, crDrainColor 8s infinite;
+    }
+    @keyframes crDrain {
+      0% { transform: scaleX(1); }
+      42% { transform: scaleX(0); }
+      50% { transform: scaleX(1); }
+      92% { transform: scaleX(0); }
+      100% { transform: scaleX(1); }
+    }
+    @keyframes crDrainColor {
+      0%, 42% { background: #e0524a; }
+      50%, 92% { background: #6ea8f0; }
+      100% { background: #e0524a; }
+    }
+    .cr-int-meta {
+      display: flex; justify-content: space-between; margin-top: 10px;
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a;
+    }
+    .cr-int-pace {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 54px; color: #f0e4d0; letter-spacing: -2.4px; margin-top: 34px; line-height: 1;
+    }
+    .cr-int-pl { font-size: 11px; color: #c9b79a; letter-spacing: 1.4px; text-transform: uppercase; margin-top: 4px; }
+    .cr-up { margin-top: 30px; border-top: 1px solid rgba(240,228,208,.12); padding-top: 14px; }
+    .cr-up-r { display: flex; justify-content: space-between; padding: 7px 0; font-size: 12.5px; color: #c9b79a; }
+    /* Le 3-2-1 qui zoome à chaque changement de bloc */
+    .cr-cd {
+      position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+      background: rgba(42, 33, 24, .72);
+      animation: crCdBg 8s infinite;
+    }
+    @keyframes crCdBg {
+      0%, 30% { opacity: 0; }
+      33%, 47% { opacity: 1; }
+      50%, 100% { opacity: 0; }
+    }
+    .cr-cd-n {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 130px; color: #f0e4d0; letter-spacing: -6px;
+      animation: crCdN 8s infinite;
+    }
+    @keyframes crCdN {
+      0%, 31% { transform: scale(1.7); opacity: 0; }
+      35% { transform: scale(1); opacity: 1; }
+      41% { transform: scale(1); opacity: 1; }
+      46% { transform: scale(.6); opacity: 0; }
+      100% { transform: scale(.6); opacity: 0; }
+    }
+
+    /* ---------- 3. Auto-pause ---------- */
+    .cr-ap { position: absolute; inset: 0; background: #2a2118; }
+    .cr-ap-content {
+      position: absolute; inset: 0; padding: 44px 20px 0;
+      animation: crDesat 6s infinite;
+    }
+    /* La désaturation : l'écran perd sa couleur, on comprend sans lire */
+    @keyframes crDesat {
+      0%, 26% { filter: saturate(1) brightness(1); }
+      36%, 74% { filter: saturate(.12) brightness(.72); }
+      86%, 100% { filter: saturate(1) brightness(1); }
+    }
+    .cr-ap-badge {
+      position: absolute; left: 20px; right: 20px; top: 220px;
+      background: rgba(240, 228, 208, .1); border: 1px solid rgba(240,228,208,.2);
+      border-radius: 18px; padding: 16px; text-align: center;
+      animation: crApBadge 6s infinite;
+    }
+    @keyframes crApBadge {
+      0%, 28% { opacity: 0; transform: translateY(8px); }
+      38%, 72% { opacity: 1; transform: translateY(0); }
+      84%, 100% { opacity: 0; transform: translateY(8px); }
+    }
+    .cr-ap-t {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700;
+      font-size: 19px; color: #f0e4d0; letter-spacing: -.6px;
+    }
+    .cr-ap-s { font-size: 12.5px; color: #c9b79a; margin-top: 5px; }
+    .cr-ap-bar {
+      position: absolute; left: 0; right: 0; top: 0; height: 3px; background: #2f6fc0;
+      transform-origin: left; animation: crApBar 6s infinite;
+    }
+    @keyframes crApBar {
+      0%, 30% { transform: scaleX(1); opacity: 1; }
+      38%, 76% { transform: scaleX(0); opacity: .4; }
+      86%, 100% { transform: scaleX(1); opacity: 1; }
+    }
+  </style>
+</helmet>
+
+<div class="cr-root">
+
+  <div>
+    <div class="cr-eyebrow">Pilier 2 · Course — le flux</div>
+    <h1 class="cr-h1">Rien ne démarre, rien ne s'arrête</h1>
+    <div class="cr-lede">
+      On court sans regarder l'écran, et on y jette un œil une fois par kilomètre. Le mouvement doit
+      donc être <b>continu et lisible de loin</b> : des boucles à vitesse constante, aucun à-coup,
+      aucune information qui ne tienne qu'à un instant précis. Trois des quatre effets ci-dessous
+      sont <b>déjà spécifiés dans la maquette FitTrio</b> — et jamais implémentés.
+    </div>
+  </div>
+
+  <div class="cr-cols">
+
+    <!-- 1 -->
+    <div class="cr-col">
+      <div class="cr-num">1 — La position vit</div>
+      <div class="cr-screen">
+        <div class="cr-map">
+          <svg class="cr-grid-l" width="300" height="330" viewBox="0 0 300 330" fill="none">
+            <path d="M0 70h300M0 150h300M0 240h300M70 0v330M170 0v330M250 0v330" stroke="#332a20" stroke-width="1"/>
+            <path d="M-10 300 L60 280 L92 224 L150 208 L168 150 L196 96"
+                  stroke="rgba(47,111,192,.28)" stroke-width="9" stroke-linecap="round" stroke-linejoin="round" fill="none" class="cr-trace"/>
+            <path d="M-10 300 L60 280 L92 224 L150 208 L168 150 L196 96"
+                  stroke="#2f6fc0" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none" class="cr-trace cr-flow"/>
+          </svg>
+          <div class="cr-dot-wrap">
+            <div class="cr-ping"></div>
+            <div class="cr-ping p2"></div>
+            <div class="cr-dot"></div>
+          </div>
+        </div>
+        <div class="cr-stats">
+          <div class="cr-big">5,42<span class="cr-big-u"> km</span></div>
+          <div class="cr-sub">Distance</div>
+          <div class="cr-trio">
+            <div class="cr-tile"><div class="cr-tile-v">28:14</div><div class="cr-tile-l">Temps</div></div>
+            <div class="cr-tile"><div class="cr-tile-v">5:12</div><div class="cr-tile-l">Allure</div></div>
+            <div class="cr-tile"><div class="cr-tile-v">148</div><div class="cr-tile-l">BPM</div></div>
+          </div>
+        </div>
+        <div class="cr-split">
+          <div class="cr-split-k">KM 5</div>
+          <div class="cr-split-p">5:04 ↓ 8 s</div>
+        </div>
+      </div>
+      <div class="cr-cap">
+        <b>pulsedot</b> + <b>dashmove</b>, les deux noms d'animation écrits dans le design system et
+        restés lettre morte. Le halo se propage en continu, les pointillés du tracé défilent dans le
+        sens de la marche : l'écran prouve que le GPS suit. Chaque km franchi <b>entre par la droite</b>.
+      </div>
+      <div class="cr-spec">
+        halo <b>2 s</b>, ×2 déphasés 1 s<br>
+        pointillés <b>1,2 s linear</b>, infini<br>
+        tracé <b>stroke-dashoffset</b> continu<br>
+        split <b>+40 px → 0</b>, 280 ms + haptique
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="cr-col">
+      <div class="cr-num">2 — Le bloc de fractionné</div>
+      <div class="cr-screen">
+        <div class="cr-int">
+          <div class="cr-zone"></div>
+          <div class="cr-zone-cool"></div>
+          <div class="cr-int-inner">
+            <div class="cr-int-e">Bloc 4 sur 8</div>
+            <div class="cr-int-t">Rapide · 400 m</div>
+            <div class="cr-int-bar"><div class="cr-int-fill"></div></div>
+            <div class="cr-int-meta"><span>Cible 4:10 /km</span><span>0:42</span></div>
+            <div class="cr-int-pace">4:06</div>
+            <div class="cr-int-pl">Allure · dans la cible</div>
+            <div class="cr-up">
+              <div class="cr-up-r"><span>Récupération</span><span>200 m</span></div>
+              <div class="cr-up-r"><span>Rapide</span><span>400 m</span></div>
+              <div class="cr-up-r"><span>Retour au calme</span><span>1,0 km</span></div>
+            </div>
+          </div>
+          <div class="cr-cd"><div class="cr-cd-n">3</div></div>
+        </div>
+      </div>
+      <div class="cr-cap">
+        La barre du bloc <b>se vide</b> à vitesse réelle — lisible d'un coup d'œil à bout de bras. Le
+        fond prend la couleur de la zone (rouge en effort, bleu en récup) et le changement de bloc
+        s'annonce par un <b>3-2-1 qui zoome</b>, doublé du guidage vocal déjà en place.
+      </div>
+      <div class="cr-spec">
+        barre <b>linear</b>, durée = bloc<br>
+        fond de zone <b>crossfade 400 ms</b><br>
+        compte à rebours <b>1 s / chiffre</b><br>
+        1,7 → 1 → 0,6 · <b>haptique à 0</b>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="cr-col">
+      <div class="cr-num">3 — L'auto-pause</div>
+      <div class="cr-screen">
+        <div class="cr-ap">
+          <div class="cr-ap-bar"></div>
+          <div class="cr-ap-content">
+            <div class="cr-int-e">Sortie libre</div>
+            <div class="cr-big" style="margin-top:8px">3,18<span class="cr-big-u"> km</span></div>
+            <div class="cr-sub">Distance</div>
+            <div class="cr-trio">
+              <div class="cr-tile"><div class="cr-tile-v">17:02</div><div class="cr-tile-l">Temps</div></div>
+              <div class="cr-tile"><div class="cr-tile-v">5:21</div><div class="cr-tile-l">Allure</div></div>
+              <div class="cr-tile"><div class="cr-tile-v">62 m</div><div class="cr-tile-l">D+</div></div>
+            </div>
+          </div>
+          <div class="cr-ap-badge">
+            <div class="cr-ap-t">En pause</div>
+            <div class="cr-ap-s">Reprend dès que tu repars</div>
+          </div>
+        </div>
+      </div>
+      <div class="cr-cap">
+        Le feu rouge, le carrefour, le lacet défait. Plutôt qu'un bandeau de plus, <b>tout l'écran se
+        désature</b> : on comprend l'état sans rien lire, de loin, en trottinant. La couleur revient
+        au redémarrage. Un trait bleu en haut se rétracte — le chrono s'est arrêté.
+      </div>
+      <div class="cr-spec">
+        saturation <b>1 → 0,12</b> · 600 ms<br>
+        luminosité <b>1 → 0,72</b><br>
+        retour <b>420 ms</b> ease-out<br>
+        ⚠ doublé d'un <b>texte</b> (jamais la couleur seule)
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

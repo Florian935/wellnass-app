@@ -1,0 +1,8 @@
+# Artefacts régénérables des maquettes de motion. Même règle que
+# `design/audit-course/.gitignore` : les **sources** sont suivies (.dc.html, canvas.json),
+# les **produits** ne le sont pas.
+
+# Canvas Claude Design seedé : 2,5 Mo de moteur d'édition embarqué, régénérable à tout moment
+# depuis les .dc.html + canvas.json via `seed-canvas.mjs`. Le versionner alourdirait le dépôt
+# sans rien apporter.
+fittrio-motion.html

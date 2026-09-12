@@ -1813,6 +1813,11 @@
       "light": "Light",
       "dark": "Dark"
     },
+    "motion": {
+      "title": "Animations",
+      "enable": "Interface animations",
+      "desc": "Transitions, filling rings, press feedback. The system's \"reduce motion\" setting still takes priority. Vibrations are unaffected."
+    },
     "menuColors": {
       "title": "Menu colors",
       "enable": "Enable per-menu colors",

@@ -12,7 +12,7 @@
  * Purement présentationnels : aucune récupération de données, aucune chaîne en dur.
  */
 
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import Svg, {
   Circle,
@@ -23,9 +23,23 @@ import Svg, {
   Polyline,
   Stop,
 } from 'react-native-svg';
+import Animated, {
+  useAnimatedProps,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { withAlpha } from '@/theme/color-utils';
+import { useAppReducedMotion } from '@/hooks/useAppReducedMotion';
+import { DURATION, EASING } from '@/theme/motion';
+
+/**
+ * Cercle SVG dont les propriétés sont pilotables **depuis le thread UI** (règle R3 de MOTION-01).
+ * Créé une fois au niveau du module : le refaire à chaque rendu remonterait un composant neuf à
+ * React et ferait clignoter l'anneau.
+ */
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 /** Compteur d'ids uniques pour les dégradés SVG (évite les collisions entre instances). */
 let gradientSeq = 0;
@@ -69,10 +83,33 @@ export function RingGauge({
   children?: ReactNode;
 }) {
   const { colors } = useTheme();
+  const reduced = useAppReducedMotion();
   const arc = Math.max(0, Math.min(1, Number.isFinite(pct) ? pct : 0));
   const r = (size - stroke) / 2;
   const c = 2 * Math.PI * r;
   const center = size / 2;
+
+  /**
+   * L'arc rempli, animé **depuis sa valeur précédente** (règle R5 de MOTION-01).
+   *
+   * C'est ici que se joue le geste quotidien de la nutrition : ajouter un aliment fait monter
+   * l'anneau de 1 460 à 1 715 kcal. S'il repartait de zéro à chaque rendu, il cacherait précisément
+   * ce qu'on veut montrer — la portion qui vient d'être ajoutée.
+   *
+   * Initialisé à `arc` et non à 0 : au **premier** rendu il n'y a pas de valeur précédente, et
+   * animer depuis zéro à l'ouverture de chaque écran ferait balayer tous les anneaux de la grille.
+   */
+  const progress = useSharedValue(arc);
+
+  useEffect(() => {
+    if (reduced) {
+      progress.value = arc;
+      return;
+    }
+    progress.value = withTiming(arc, { duration: DURATION.data, easing: EASING.fill });
+  }, [arc, progress, reduced]);
+
+  const arcProps = useAnimatedProps(() => ({ strokeDashoffset: c * (1 - progress.value) }));
 
   return (
     <View style={{ width: size, height: size }}>
@@ -85,7 +122,7 @@ export function RingGauge({
           strokeWidth={stroke}
           fill="none"
         />
-        <Circle
+        <AnimatedCircle
           cx={center}
           cy={center}
           r={r}
@@ -94,7 +131,7 @@ export function RingGauge({
           fill="none"
           strokeLinecap="round"
           strokeDasharray={c}
-          strokeDashoffset={c * (1 - arc)}
+          animatedProps={arcProps}
           transform={`rotate(-90 ${center} ${center})`}
         />
         {(milestones ?? []).map((m) => {

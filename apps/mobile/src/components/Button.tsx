@@ -1,4 +1,5 @@
-import { ActivityIndicator, Pressable, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text } from 'react-native';
+import { PressableScale, type PressHaptic } from '@/components/motion/PressableScale';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -13,6 +14,11 @@ type ButtonProps = {
    * (« − », « + ») n'annonce rien d'exploitable au lecteur d'écran (US PAS-01).
    */
   accessibilityLabel?: string;
+  /**
+   * Retour tactile à l'appui (MOTION-01). Défaut `select`, le plus discret.
+   * Un bouton qui clôt une séance ou valide un objectif peut passer à `milestone`.
+   */
+  haptic?: PressHaptic;
 };
 
 export function Button({
@@ -22,6 +28,7 @@ export function Button({
   loading = false,
   disabled = false,
   accessibilityLabel,
+  haptic = 'select',
 }: ButtonProps) {
   const { colors } = useTheme();
   const isPrimary = variant === 'primary';
@@ -35,13 +42,17 @@ export function Button({
   const labelColor = isSolid ? colors.accentText : colors.text;
 
   return (
-    <Pressable
+    // MOTION-01 : l'enfoncement remplace le `opacity: 0.85` d'origine — sous le pouce qui recouvre
+    // le bouton, une variation d'opacité est le retour le plus faible qui existe. L'opacité reste
+    // employée pour l'état **désactivé**, où elle dit autre chose (« indisponible », pas « pressé »).
+    <PressableScale
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       disabled={isDisabled}
       onPress={onPress}
-      style={({ pressed }) => [
+      haptic={isDisabled ? 'none' : haptic}
+      style={[
         styles.button,
         isSolid
           ? { backgroundColor: solidColor }
@@ -49,7 +60,7 @@ export function Button({
             // `borderStrong` (3:1) et non `border`. Sans lui, un bouton secondaire n'a pas de
             // limite perceptible.
             { backgroundColor: 'transparent', borderWidth: 1, borderColor: colors.borderStrong },
-        (pressed || isDisabled) && { opacity: isDisabled ? 0.5 : 0.85 },
+        isDisabled && { opacity: 0.5 },
       ]}
     >
       {loading ? (
@@ -59,7 +70,7 @@ export function Button({
           {label}
         </Text>
       )}
-    </Pressable>
+    </PressableScale>
   );
 }
 

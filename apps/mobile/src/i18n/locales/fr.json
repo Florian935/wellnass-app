@@ -1813,6 +1813,11 @@
       "light": "Clair",
       "dark": "Sombre"
     },
+    "motion": {
+      "title": "Animations",
+      "enable": "Animations de l'interface",
+      "desc": "Transitions, anneaux qui se remplissent, retours à l'appui. Le réglage « réduire les animations » du système reste prioritaire. Les vibrations ne sont pas concernées."
+    },
     "menuColors": {
       "title": "Couleurs des menus",
       "enable": "Activer les couleurs par menu",

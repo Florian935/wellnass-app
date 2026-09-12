@@ -1,0 +1,274 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+
+    .so-root {
+      width: 1200px; height: 1140px; box-sizing: border-box;
+      background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif;
+      padding: 40px 46px; display: flex; flex-direction: column; gap: 22px;
+    }
+    .so-eyebrow {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px;
+      letter-spacing: 1.6px; text-transform: uppercase; color: #786a59;
+    }
+    .so-h1 {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 38px; letter-spacing: -1.2px; margin: 6px 0 0; line-height: 1;
+    }
+    .so-lede { font-size: 14px; color: #786a59; max-width: 860px; line-height: 1.5; margin-top: 8px; }
+
+    .so-sec {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px;
+      letter-spacing: 1.8px; text-transform: uppercase; color: #786a59; margin-bottom: 10px;
+    }
+
+    /* ---- Les 4 courbes ---- */
+    .so-curves { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
+    .so-cu {
+      background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 16px;
+      display: flex; flex-direction: column; gap: 10px;
+    }
+    .so-cu-h { display: flex; align-items: center; gap: 7px; }
+    .so-cu-d { width: 9px; height: 9px; border-radius: 50%; flex: none; }
+    .so-cu-n { font-weight: 700; font-size: 12.5px; }
+    .so-cu-graph { position: relative; height: 84px; }
+    .so-cu-graph svg { display: block; }
+    /* Le point qui parcourt la courbe avec SA propre timing-function */
+    .so-runner { position: absolute; left: 8px; bottom: 8px; width: 11px; height: 11px; border-radius: 50%; }
+    .so-r-mu { background: #6b0028; animation: soTravel 2.4s cubic-bezier(.2, 1.5, .35, 1) infinite; }
+    .so-r-cr { background: #2f6fc0; animation: soTravel 2.4s linear infinite; }
+    .so-r-nu { background: #5c7a3f; animation: soTravel 2.4s cubic-bezier(.22, .61, .36, 1) infinite; }
+    .so-r-ac { background: #c0562f; animation: soTravel 2.4s ease-in-out infinite; }
+    @keyframes soTravel {
+      0% { transform: translate(0, 0); }
+      55%, 100% { transform: translate(116px, -58px); }
+    }
+    .so-cu-code {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 9.5px;
+      color: #786a59; line-height: 1.6; border-top: 1px dashed #ece0cd; padding-top: 9px;
+    }
+    .so-cu-code b { color: #33291f; }
+
+    /* ---- Tokens ---- */
+    .so-body { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+    .so-tok {
+      background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 18px 20px;
+    }
+    .so-tr {
+      display: grid; grid-template-columns: 128px 78px 1fr; gap: 12px; align-items: baseline;
+      padding: 7px 0; border-bottom: 1px solid #f2e7d6; font-size: 12.5px;
+    }
+    .so-tr:last-child { border-bottom: 0; }
+    .so-tk {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px;
+      font-weight: 700; color: #b14f2b;
+    }
+    .so-tv { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px; color: #33291f; }
+    .so-td { color: #786a59; line-height: 1.4; font-size: 12px; }
+
+    .so-no { display: flex; flex-direction: column; gap: 7px; }
+    .so-ni {
+      background: #fffaf2; border: 1px solid #ece0cd; border-radius: 14px;
+      padding: 10px 14px; display: flex; gap: 11px; align-items: flex-start;
+      border-left: 3px solid #b23b2e;
+    }
+    .so-ni-x { flex: none; margin-top: 2px; }
+    .so-ni-t { font-weight: 700; font-size: 12.5px; }
+    .so-ni-s { font-size: 11.5px; color: #786a59; line-height: 1.45; margin-top: 2px; }
+
+    .so-rm {
+      background: #f7ead6; border: 1px solid #e9cfa0; border-radius: 18px;
+      padding: 16px 18px; display: flex; gap: 14px; align-items: flex-start;
+    }
+    .so-rm-t { font-weight: 700; font-size: 13.5px; color: #8a6419; }
+    .so-rm-s { font-size: 12.5px; color: #8a6419; line-height: 1.5; margin-top: 4px; }
+    .so-rm-s code {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px;
+      background: rgba(138, 100, 25, .12); padding: 1px 5px; border-radius: 4px;
+    }
+  </style>
+</helmet>
+
+<div class="so-root">
+
+  <div>
+    <div class="so-eyebrow">Socle technique · ce qu'il faut écrire une seule fois</div>
+    <h1 class="so-h1">Quatre courbes, dix jetons, zéro dépendance</h1>
+    <div class="so-lede">
+      Reanimated 4.5 et expo-haptics sont <b>déjà installés</b> — et n'animent aujourd'hui que le
+      glisser-déposer du planning. Tout ce qui précède se fait avec eux, plus react-native-svg déjà
+      là : <b>aucun module natif à ajouter</b>, donc aucun nouveau build EAS avant de pouvoir tester.
+    </div>
+  </div>
+
+  <div>
+    <div class="so-sec">Les 4 courbes — même distance, même durée, trois arrivées différentes</div>
+    <div class="so-curves">
+
+      <div class="so-cu">
+        <div class="so-cu-h"><span class="so-cu-d" style="background:#6b0028"></span><span class="so-cu-n">Muscu · impact</span></div>
+        <div class="so-cu-graph">
+          <svg width="140" height="84" viewBox="0 0 140 84" fill="none">
+            <path d="M8 76h124M8 76V8" stroke="#ece0cd" stroke-width="1"/>
+            <path d="M8 76 C 32 76, 40 2, 74 12 C 96 18, 100 18, 124 18" stroke="#6b0028" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="so-runner so-r-mu"></div>
+        </div>
+        <div class="so-cu-code">
+          <b>spring</b> 420 / 18 / .7<br>
+          dépasse puis revient<br>
+          ≈ <b>180 ms</b>
+        </div>
+      </div>
+
+      <div class="so-cu">
+        <div class="so-cu-h"><span class="so-cu-d" style="background:#2f6fc0"></span><span class="so-cu-n">Course · flux</span></div>
+        <div class="so-cu-graph">
+          <svg width="140" height="84" viewBox="0 0 140 84" fill="none">
+            <path d="M8 76h124M8 76V8" stroke="#ece0cd" stroke-width="1"/>
+            <path d="M8 76 L124 18" stroke="#2f6fc0" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="so-runner so-r-cr"></div>
+        </div>
+        <div class="so-cu-code">
+          <b>linear</b><br>
+          ni début ni fin<br>
+          <b>1,1 – 2,4 s</b> en boucle
+        </div>
+      </div>
+
+      <div class="so-cu">
+        <div class="so-cu-h"><span class="so-cu-d" style="background:#5c7a3f"></span><span class="so-cu-n">Nutrition · remplissage</span></div>
+        <div class="so-cu-graph">
+          <svg width="140" height="84" viewBox="0 0 140 84" fill="none">
+            <path d="M8 76h124M8 76V8" stroke="#ece0cd" stroke-width="1"/>
+            <path d="M8 76 C 34 48, 58 22, 124 18" stroke="#5c7a3f" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="so-runner so-r-nu"></div>
+        </div>
+        <div class="so-cu-code">
+          <b>(.22,.61,.36,1)</b><br>
+          décélère, ne dépasse jamais<br>
+          <b>420 – 600 ms</b>
+        </div>
+      </div>
+
+      <div class="so-cu">
+        <div class="so-cu-h"><span class="so-cu-d" style="background:#c0562f"></span><span class="so-cu-n">Accueil · souffle</span></div>
+        <div class="so-cu-graph">
+          <svg width="140" height="84" viewBox="0 0 140 84" fill="none">
+            <path d="M8 76h124M8 76V8" stroke="#ece0cd" stroke-width="1"/>
+            <path d="M8 76 C 42 76, 48 18, 66 47 C 84 76, 96 18, 124 18" stroke="#c0562f" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="so-runner so-r-ac"></div>
+        </div>
+        <div class="so-cu-code">
+          <b>inOut(sin)</b><br>
+          part et revient, sans fin<br>
+          <b>2,4 – 6 s</b> · amplitude ≤ 6 %
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="so-body">
+
+    <div>
+      <div class="so-sec">theme/motion.ts — le fichier qui n'existe pas encore</div>
+      <div class="so-tok">
+        <div class="so-tr"><span class="so-tk">instant</span><span class="so-tv">90 ms</span><span class="so-td">Enfoncement au doigt. Le seul autorisé partout.</span></div>
+        <div class="so-tr"><span class="so-tk">quick</span><span class="so-tv">160 ms</span><span class="so-td">Bascule, chip, changement de sélection.</span></div>
+        <div class="so-tr"><span class="so-tk">base</span><span class="so-tv">240 ms</span><span class="so-td">Entrée de carte, transition d'écran, cascade.</span></div>
+        <div class="so-tr"><span class="so-tk">data</span><span class="so-tv">420 ms</span><span class="so-td">Une valeur qui change : anneau, barre, compteur.</span></div>
+        <div class="so-tr"><span class="so-tk">celebrate</span><span class="so-tv">700 ms</span><span class="so-td">Record, séance bouclée, objectif atteint.</span></div>
+        <div class="so-tr"><span class="so-tk">ambient</span><span class="so-tv">2400 ms</span><span class="so-td">Respiration d'un halo, pulsation GPS, vagues.</span></div>
+        <div class="so-tr"><span class="so-tk">stagger</span><span class="so-tv">40 ms</span><span class="so-td">Décalage entre deux cartes. Plafond : 6.</span></div>
+      </div>
+      <div class="so-rm" style="margin-top: 16px">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8a6419" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7.5v5.5M12 16.2v.1"/></svg>
+        <div>
+          <div class="so-rm-t">Une seule porte d'entrée, et elle est déjà là</div>
+          <div class="so-rm-s">
+            Reanimated expose <code>useReducedMotion()</code> — synchrone, sans l'écouteur manuel que
+            <code>CelebrationCard</code> réinvente aujourd'hui, et le seul fichier de l'app à gérer le
+            réglage. Toutes les primitives le lisent ; si c'est actif, elles rendent <b>l'état final,
+            tout de suite</b>. Aucune information ne disparaît, puisqu'aucune n'était portée par le mouvement.
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="so-sec">Ce qu'on ne fera pas — et pourquoi</div>
+      <div class="so-no">
+
+        <div class="so-ni">
+          <svg class="so-ni-x" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#b23b2e" stroke-width="2.4" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          <div>
+            <div class="so-ni-t">Des confettis à chaque record</div>
+            <div class="so-ni-s">Trope générique, et hors sujet : on soulève de la fonte. Une onde qui part de la barre dit la même chose et appartient au produit.</div>
+          </div>
+        </div>
+
+        <div class="so-ni">
+          <svg class="so-ni-x" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#b23b2e" stroke-width="2.4" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          <div>
+            <div class="so-ni-t">Une animation avant l'état</div>
+            <div class="so-ni-s">Valider une série, 40 fois par séance : l'état change d'abord, le mouvement décore après. Jamais l'inverse, jamais une attente ajoutée.</div>
+          </div>
+        </div>
+
+        <div class="so-ni">
+          <svg class="so-ni-x" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#b23b2e" stroke-width="2.4" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          <div>
+            <div class="so-ni-t">Un shimmer sur les squelettes</div>
+            <div class="so-ni-s">Les données sont en SQLite local : l'attente se compte en dizaines de ms. Une pulsation n'aurait pas le temps d'un cycle et se lirait comme un scintillement — l'argument est déjà écrit dans <code>WidgetSkeleton</code>, il tient.</div>
+          </div>
+        </div>
+
+        <div class="so-ni">
+          <svg class="so-ni-x" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#b23b2e" stroke-width="2.4" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          <div>
+            <div class="so-ni-t">Du rebond sur la nutrition</div>
+            <div class="so-ni-s">Une jauge de calories qui dépasse puis revient affiche, une fraction de seconde, un chiffre faux sur une donnée qu'on surveille. Décélération pure, overshoot zéro.</div>
+          </div>
+        </div>
+
+        <div class="so-ni">
+          <svg class="so-ni-x" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#b23b2e" stroke-width="2.4" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          <div>
+            <div class="so-ni-t">Des boucles infinies qui tournent en fond</div>
+            <div class="so-ni-s">Halo qui respire, pulsation GPS, vagues : coupées dès que l'écran perd le focus. Sur une sortie d'une heure en GPS, une boucle oubliée se paie en batterie.</div>
+          </div>
+        </div>
+
+        <div class="so-ni">
+          <svg class="so-ni-x" width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="#b23b2e" stroke-width="2.4" stroke-linecap="round"><path d="M4 4l8 8M12 4l-8 8"/></svg>
+          <div>
+            <div class="so-ni-t">Un <code>setState</code> par image</div>
+            <div class="so-ni-s">Tout passe par des worklets sur le thread UI. Un compteur qui roule via l'état React à 60 Hz fait ramer l'écran qu'il devait embellir.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

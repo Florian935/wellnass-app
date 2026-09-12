@@ -1,0 +1,446 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+
+    .nu-root {
+      width: 1060px; height: 1100px; box-sizing: border-box;
+      background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif;
+      padding: 40px 44px; display: flex; flex-direction: column; gap: 22px;
+    }
+    .nu-eyebrow {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px;
+      letter-spacing: 1.6px; text-transform: uppercase; color: #5c7a3f;
+    }
+    .nu-h1 {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 38px; letter-spacing: -1.2px; margin: 6px 0 0; line-height: 1;
+    }
+    .nu-lede { font-size: 14px; color: #786a59; max-width: 800px; line-height: 1.5; margin-top: 8px; }
+
+    .nu-cols { display: grid; grid-template-columns: repeat(3, 300px); gap: 36px; }
+    .nu-col { display: flex; flex-direction: column; gap: 14px; }
+    .nu-num {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 15px; color: #5c7a3f; letter-spacing: -.3px;
+    }
+    .nu-screen {
+      width: 300px; height: 560px; border-radius: 28px; overflow: hidden;
+      position: relative; border: 1px solid #ece0cd; background: #f7eede;
+    }
+    .nu-cap { font-size: 12.5px; color: #786a59; line-height: 1.5; }
+    .nu-cap b { color: #33291f; }
+    .nu-spec {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px;
+      color: #786a59; line-height: 1.65; border-top: 1px dashed #ece0cd; padding-top: 9px;
+    }
+    .nu-spec b { color: #5c7a3f; }
+
+    /* ---------- 1. L'anneau qui se remplit ---------- */
+    .nu-hero {
+      margin: 16px; background: #33291f; border-radius: 22px; padding: 20px;
+      position: relative; overflow: hidden;
+    }
+    .nu-hero-halo {
+      position: absolute; width: 150px; height: 150px; border-radius: 50%;
+      background: #5c7a3f; opacity: .22; top: -40px; right: -40px;
+      animation: nuBreathe 6s ease-in-out infinite;
+    }
+    @keyframes nuBreathe {
+      0%, 100% { transform: scale(1); opacity: .18; }
+      50% { transform: scale(1.08); opacity: .26; }
+    }
+    .nu-hero-e {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 9.5px;
+      letter-spacing: 1.8px; text-transform: uppercase; color: #c9b79a; position: relative;
+    }
+    .nu-ring-row { display: flex; align-items: center; gap: 18px; margin-top: 14px; position: relative; }
+    .nu-ring { transform: rotate(-90deg); }
+    .nu-ring-arc {
+      stroke-dasharray: 320;
+      animation: nuFill 5s cubic-bezier(.22, .61, .36, 1) infinite;
+    }
+    /* Se remplit depuis la valeur précédente — jamais depuis zéro à chaque ajout */
+    @keyframes nuFill {
+      0% { stroke-dashoffset: 320; }
+      14%, 44% { stroke-dashoffset: 112; }
+      58%, 100% { stroke-dashoffset: 61; }
+    }
+    .nu-ring-wrap { position: relative; width: 112px; height: 112px; flex: none; }
+    .nu-ring-c {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    /* Le compteur roule de 1 460 vers 1 715 — il ne saute pas */
+    .nu-roll { height: 30px; overflow: hidden; }
+    .nu-roll-in { animation: nuRoll 5s cubic-bezier(.22, .61, .36, 1) infinite; }
+    @keyframes nuRoll {
+      0%, 44% { transform: translateY(0); }
+      58%, 100% { transform: translateY(-30px); }
+    }
+    .nu-roll-v {
+      height: 30px; display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700;
+      font-size: 22px; color: #f0e4d0; letter-spacing: -.5px;
+    }
+    .nu-ring-l { font-size: 9.5px; color: #c9b79a; letter-spacing: .6px; }
+    .nu-macros { flex: 1; display: flex; flex-direction: column; gap: 9px; }
+    .nu-macro-l {
+      display: flex; justify-content: space-between;
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; color: #c9b79a;
+    }
+    .nu-mtrack { height: 6px; border-radius: 999px; background: rgba(240,228,208,.14); overflow: hidden; margin-top: 4px; }
+    .nu-mfill { height: 100%; border-radius: 999px; transform-origin: left; }
+    .nu-m1 { background: #a9ba7e; animation: nuM1 5s cubic-bezier(.22,.61,.36,1) infinite; }
+    .nu-m2 { background: #e0b155; animation: nuM2 5s cubic-bezier(.22,.61,.36,1) infinite; }
+    .nu-m3 { background: #dd6e40; animation: nuM3 5s cubic-bezier(.22,.61,.36,1) infinite; }
+    /* Décalage de 60 ms entre les trois : une cascade, pas trois barres simultanées */
+    @keyframes nuM1 {
+      0%, 44% { transform: scaleX(.52); }
+      58%, 100% { transform: scaleX(.79); }
+    }
+    @keyframes nuM2 {
+      0%, 46% { transform: scaleX(.44); }
+      60%, 100% { transform: scaleX(.58); }
+    }
+    @keyframes nuM3 {
+      0%, 48% { transform: scaleX(.61); }
+      62%, 100% { transform: scaleX(.70); }
+    }
+
+    .nu-meal { margin: 0 16px; }
+    .nu-meal-h {
+      display: flex; justify-content: space-between; align-items: baseline;
+      padding: 14px 2px 8px;
+    }
+    .nu-meal-t {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700;
+      font-size: 16px; letter-spacing: -.4px;
+    }
+    .nu-meal-k { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59; }
+    .nu-row {
+      background: #fffaf2; border: 1px solid #ece0cd; border-radius: 14px;
+      padding: 11px 13px; display: flex; align-items: center; gap: 10px; margin-bottom: 7px;
+    }
+    .nu-row-n { font-size: 13px; font-weight: 600; flex: 1; }
+    .nu-row-q { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59; }
+    /* La ligne ajoutée glisse depuis le bas, en même temps que l'anneau monte */
+    .nu-new {
+      border-color: #5c7a3f; background: #f1f4ea;
+      animation: nuNew 5s cubic-bezier(.22, .61, .36, 1) infinite;
+    }
+    @keyframes nuNew {
+      0%, 44% { opacity: 0; transform: translateY(16px) scale(.98); max-height: 0; margin-bottom: 0; }
+      58% { opacity: 1; transform: translateY(0) scale(1); max-height: 46px; margin-bottom: 7px; }
+      100% { opacity: 1; transform: translateY(0) scale(1); max-height: 46px; margin-bottom: 7px; }
+    }
+    .nu-addbtn {
+      margin: 2px 16px; border: 1px dashed #90897d; border-radius: 14px; padding: 11px;
+      text-align: center; font-size: 13px; font-weight: 600; color: #786a59;
+    }
+
+    /* ---------- 2. Hydratation ---------- */
+    .nu-hyd { position: absolute; inset: 0; background: #f7eede; padding: 24px 20px; }
+    .nu-hyd-t {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 24px; letter-spacing: -.8px;
+    }
+    .nu-hyd-s { font-size: 13px; color: #786a59; margin-top: 4px; }
+    .nu-glass {
+      width: 172px; height: 240px; margin: 26px auto 0; position: relative;
+      border: 2px solid #ece0cd; border-radius: 20px; overflow: hidden; background: #fffaf2;
+    }
+    .nu-water {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 260px;
+      animation: nuRise 6s cubic-bezier(.22, .61, .36, 1) infinite;
+    }
+    @keyframes nuRise {
+      0% { transform: translateY(168px); }
+      18%, 40% { transform: translateY(112px); }
+      58%, 100% { transform: translateY(56px); }
+    }
+    .nu-wave { position: absolute; left: -50%; top: 0; width: 200%; height: 22px; }
+    .nu-wave svg { display: block; width: 100%; height: 22px; }
+    .nu-wave-a { animation: nuWave 3.2s linear infinite; }
+    .nu-wave-b { animation: nuWave 4.6s linear infinite reverse; opacity: .55; }
+    @keyframes nuWave {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(25%); }
+    }
+    .nu-body { position: absolute; left: 0; right: 0; top: 20px; bottom: -260px; background: #5c7a3f; }
+    .nu-body-b { background: #7c8a5b; }
+    .nu-hyd-v {
+      text-align: center; margin-top: 22px;
+      font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 26px;
+    }
+    .nu-hyd-vl {
+      text-align: center; font-size: 11px; color: #786a59;
+      letter-spacing: 1.2px; text-transform: uppercase; margin-top: 3px;
+    }
+    .nu-cups { display: flex; gap: 8px; justify-content: center; margin-top: 22px; }
+    .nu-cup {
+      width: 34px; height: 42px; border-radius: 9px; border: 1.5px solid #ece0cd; background: #fffaf2;
+    }
+    .nu-cup.on { background: #5c7a3f; border-color: #5c7a3f; }
+    .nu-cup.pop { animation: nuCup 6s infinite; }
+    @keyframes nuCup {
+      0%, 52% { background: #fffaf2; border-color: #ece0cd; transform: scale(1); }
+      58% { background: #5c7a3f; border-color: #5c7a3f; transform: scale(1.14); }
+      66%, 100% { background: #5c7a3f; border-color: #5c7a3f; transform: scale(1); }
+    }
+
+    /* ---------- 3. Scan ---------- */
+    .nu-scan { position: absolute; inset: 0; background: #241c15; }
+    .nu-scan-img {
+      position: absolute; inset: 0;
+      background:
+        linear-gradient(180deg, rgba(36,28,21,.6) 0%, rgba(36,28,21,.2) 40%, rgba(36,28,21,.85) 100%),
+        repeating-linear-gradient(92deg, #3a2e22 0 7px, #4b3c2c 7px 11px);
+    }
+    .nu-frame {
+      position: absolute; left: 42px; right: 42px; top: 168px; height: 150px;
+      animation: nuFrame 5.5s infinite;
+    }
+    /* Le cadre respire tant qu'il cherche, puis se referme d'un coup sur le code */
+    @keyframes nuFrame {
+      0%, 48% { transform: scale(1); }
+      56% { transform: scale(.9); }
+      64%, 100% { transform: scale(.93); }
+    }
+    .nu-corner { position: absolute; width: 30px; height: 30px; border: 3px solid #a9ba7e; }
+    .nu-c1 { top: 0; left: 0; border-right: 0; border-bottom: 0; border-radius: 8px 0 0 0; }
+    .nu-c2 { top: 0; right: 0; border-left: 0; border-bottom: 0; border-radius: 0 8px 0 0; }
+    .nu-c3 { bottom: 0; left: 0; border-right: 0; border-top: 0; border-radius: 0 0 0 8px; }
+    .nu-c4 { bottom: 0; right: 0; border-left: 0; border-top: 0; border-radius: 0 0 8px 0; }
+    .nu-scanline {
+      position: absolute; left: 6px; right: 6px; height: 2px; background: #a9ba7e;
+      box-shadow: 0 0 14px 2px rgba(169, 186, 126, .8);
+      animation: nuScanline 5.5s ease-in-out infinite;
+    }
+    @keyframes nuScanline {
+      0% { top: 8px; opacity: .9; }
+      24% { top: 138px; opacity: .9; }
+      48% { top: 8px; opacity: .9; }
+      54%, 100% { opacity: 0; }
+    }
+    .nu-barcode {
+      position: absolute; left: 50%; top: 50%; width: 118px; height: 62px; margin: -31px 0 0 -59px;
+      background: repeating-linear-gradient(90deg, #1a140f 0 3px, #e8ddcb 3px 6px, #1a140f 6px 8px, #e8ddcb 8px 13px);
+      border-radius: 3px;
+    }
+    .nu-flash-ok {
+      position: absolute; inset: 0; background: #a9ba7e; opacity: 0;
+      animation: nuFlashOk 5.5s infinite;
+    }
+    @keyframes nuFlashOk {
+      0%, 52% { opacity: 0; }
+      56% { opacity: .35; }
+      66%, 100% { opacity: 0; }
+    }
+    .nu-sheet {
+      position: absolute; left: 0; right: 0; bottom: 0; background: #fffaf2;
+      border-radius: 24px 24px 0 0; padding: 20px 18px 24px;
+      animation: nuSheet 5.5s cubic-bezier(.22, .61, .36, 1) infinite;
+    }
+    @keyframes nuSheet {
+      0%, 56% { transform: translateY(100%); }
+      68%, 100% { transform: translateY(0); }
+    }
+    .nu-sheet-grip { width: 38px; height: 4px; border-radius: 999px; background: #ece0cd; margin: 0 auto 14px; }
+    .nu-sheet-t {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700;
+      font-size: 18px; letter-spacing: -.5px;
+    }
+    .nu-sheet-s { font-size: 12.5px; color: #786a59; margin-top: 3px; }
+    .nu-sheet-row {
+      display: flex; gap: 8px; margin-top: 14px;
+    }
+    .nu-chip {
+      flex: 1; background: #f3ddd0; border-radius: 999px; padding: 8px 0; text-align: center;
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #a34e2c;
+    }
+    .nu-sheet-cta {
+      margin-top: 14px; height: 48px; border-radius: 16px; background: #5c7a3f; color: #fff;
+      display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;
+    }
+  </style>
+</helmet>
+
+<div class="nu-root">
+
+  <div>
+    <div class="nu-eyebrow">Pilier 3 · Nutrition — le remplissage</div>
+    <h1 class="nu-h1">Ça monte et ça se pose</h1>
+    <div class="nu-lede">
+      Manger, c'est remplir. Le mouvement du pilier est donc <b>vertical et sans rebond</b> : une
+      jauge qui dépasse puis revient dirait quelque chose de faux sur un chiffre qu'on surveille.
+      Surtout, l'anneau repart <b>de sa valeur précédente</b>, jamais de zéro — c'est ce qui fait
+      voir la portion qu'on vient d'ajouter.
+    </div>
+  </div>
+
+  <div class="nu-cols">
+
+    <!-- 1 -->
+    <div class="nu-col">
+      <div class="nu-num">1 — Ajouter un aliment</div>
+      <div class="nu-screen">
+        <div class="nu-hero">
+          <div class="nu-hero-halo"></div>
+          <div class="nu-hero-e">Bilan du jour</div>
+          <div class="nu-ring-row">
+            <div class="nu-ring-wrap">
+              <svg class="nu-ring" width="112" height="112" viewBox="0 0 112 112">
+                <circle cx="56" cy="56" r="51" fill="none" stroke="#3a2e22" stroke-width="9"/>
+                <circle class="nu-ring-arc" cx="56" cy="56" r="51" fill="none" stroke="#a9ba7e" stroke-width="9" stroke-linecap="round"/>
+              </svg>
+              <div class="nu-ring-c">
+                <div class="nu-roll">
+                  <div class="nu-roll-in">
+                    <div class="nu-roll-v">1 460</div>
+                    <div class="nu-roll-v">1 715</div>
+                  </div>
+                </div>
+                <div class="nu-ring-l">/ 2 250 kcal</div>
+              </div>
+            </div>
+            <div class="nu-macros">
+              <div>
+                <div class="nu-macro-l"><span>Protéines</span><span>124 g</span></div>
+                <div class="nu-mtrack"><div class="nu-mfill nu-m1"></div></div>
+              </div>
+              <div>
+                <div class="nu-macro-l"><span>Glucides</span><span>168 g</span></div>
+                <div class="nu-mtrack"><div class="nu-mfill nu-m2"></div></div>
+              </div>
+              <div>
+                <div class="nu-macro-l"><span>Lipides</span><span>52 g</span></div>
+                <div class="nu-mtrack"><div class="nu-mfill nu-m3"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="nu-meal">
+          <div class="nu-meal-h">
+            <div class="nu-meal-t">Déjeuner</div>
+            <div class="nu-meal-k">712 kcal</div>
+          </div>
+          <div class="nu-row"><div class="nu-row-n">Riz basmati</div><div class="nu-row-q">180 g</div></div>
+          <div class="nu-row"><div class="nu-row-n">Filet de poulet</div><div class="nu-row-q">150 g</div></div>
+          <div class="nu-row nu-new"><div class="nu-row-n">Huile d'olive</div><div class="nu-row-q">15 g</div></div>
+        </div>
+        <div class="nu-addbtn">+ Ajouter un aliment</div>
+      </div>
+      <div class="nu-cap">
+        Un seul geste, <b>trois choses liées</b> : la ligne glisse en place, l'anneau monte depuis
+        1 460 et non depuis 0, le compteur roule vers 1 715. La causalité se voit — c'est bien
+        <i>cette</i> cuillère d'huile qui a coûté 255 kcal.
+      </div>
+      <div class="nu-spec">
+        anneau <b>420 ms</b>, depuis la valeur n−1<br>
+        compteur <b>roule</b>, même courbe<br>
+        macros <b>décalées 0 / 60 / 120 ms</b><br>
+        ligne <b>+16 px → 0</b> · aucun overshoot
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="nu-col">
+      <div class="nu-num">2 — L'hydratation</div>
+      <div class="nu-screen">
+        <div class="nu-hyd">
+          <div class="nu-hyd-t">Hydratation</div>
+          <div class="nu-hyd-s">Objectif 2,0 L · il te reste 3 verres</div>
+          <div class="nu-glass">
+            <div class="nu-water">
+              <div class="nu-wave nu-wave-b">
+                <svg viewBox="0 0 400 22" preserveAspectRatio="none"><path d="M0 12 Q25 2 50 12 T100 12 T150 12 T200 12 T250 12 T300 12 T350 12 T400 12 V22 H0 Z" fill="#7c8a5b"/></svg>
+              </div>
+              <div class="nu-body nu-body-b"></div>
+              <div class="nu-wave nu-wave-a">
+                <svg viewBox="0 0 400 22" preserveAspectRatio="none"><path d="M0 12 Q25 2 50 12 T100 12 T150 12 T200 12 T250 12 T300 12 T350 12 T400 12 V22 H0 Z" fill="#5c7a3f"/></svg>
+              </div>
+              <div class="nu-body"></div>
+            </div>
+          </div>
+          <div class="nu-hyd-v">1,25 L</div>
+          <div class="nu-hyd-vl">sur 2,0 L</div>
+          <div class="nu-cups">
+            <div class="nu-cup on"></div>
+            <div class="nu-cup on"></div>
+            <div class="nu-cup on"></div>
+            <div class="nu-cup on"></div>
+            <div class="nu-cup pop"></div>
+          </div>
+        </div>
+      </div>
+      <div class="nu-cap">
+        La seule métaphore <b>littérale</b> de l'app, et c'est justement la bonne : deux sinusoïdes
+        déphasées donnent un liquide, pas une barre. Le niveau monte à chaque verre, le verre
+        s'allume avec un dépassement court. C'est le genre de détail qu'on rouvre l'app pour voir.
+      </div>
+      <div class="nu-spec">
+        vagues <b>3,2 s</b> + <b>4,6 s</b> inversée<br>
+        niveau <b>600 ms</b> cubic-bezier<br>
+        verre <b>1 → 1,14 → 1</b>, 240 ms<br>
+        ⏸ vagues <b>coupées</b> hors écran
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="nu-col">
+      <div class="nu-num">3 — Le scan</div>
+      <div class="nu-screen">
+        <div class="nu-scan">
+          <div class="nu-scan-img"></div>
+          <div class="nu-barcode"></div>
+          <div class="nu-frame">
+            <div class="nu-corner nu-c1"></div>
+            <div class="nu-corner nu-c2"></div>
+            <div class="nu-corner nu-c3"></div>
+            <div class="nu-corner nu-c4"></div>
+            <div class="nu-scanline"></div>
+          </div>
+          <div class="nu-flash-ok"></div>
+          <div class="nu-sheet">
+            <div class="nu-sheet-grip"></div>
+            <div class="nu-sheet-t">Skyr nature</div>
+            <div class="nu-sheet-s">Danone · 150 g · pour 100 g</div>
+            <div class="nu-sheet-row">
+              <div class="nu-chip">63 kcal</div>
+              <div class="nu-chip">P 11 g</div>
+              <div class="nu-chip">G 4 g</div>
+            </div>
+            <div class="nu-sheet-cta">Ajouter au petit-déjeuner</div>
+          </div>
+        </div>
+      </div>
+      <div class="nu-cap">
+        Tant qu'il cherche, la ligne balaie le cadre. À la détection, <b>les quatre coins se
+        resserrent</b> sur le code, l'écran verdit un quart de seconde et la fiche monte. On sait
+        que c'est lu avant d'avoir lu le nom du produit.
+      </div>
+      <div class="nu-spec">
+        balayage <b>1,3 s</b> ease-in-out, boucle<br>
+        fermeture <b>1 → 0,90 → 0,93</b>, 220 ms<br>
+        flash vert <b>.35 → 0</b>, 320 ms<br>
+        fiche <b>sheetup 380 ms</b> + haptique
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

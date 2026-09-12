@@ -1,0 +1,408 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+
+    .ac-root {
+      width: 1060px; height: 1100px; box-sizing: border-box;
+      background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif;
+      padding: 40px 44px; display: flex; flex-direction: column; gap: 22px;
+    }
+    .ac-eyebrow {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px;
+      letter-spacing: 1.6px; text-transform: uppercase; color: #c0562f;
+    }
+    .ac-h1 {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 38px; letter-spacing: -1.2px; margin: 6px 0 0; line-height: 1;
+    }
+    .ac-lede { font-size: 14px; color: #786a59; max-width: 800px; line-height: 1.5; margin-top: 8px; }
+
+    .ac-cols { display: grid; grid-template-columns: repeat(3, 300px); gap: 36px; }
+    .ac-col { display: flex; flex-direction: column; gap: 14px; }
+    .ac-num {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 15px; color: #c0562f; letter-spacing: -.3px;
+    }
+    .ac-screen {
+      width: 300px; height: 560px; border-radius: 28px; overflow: hidden;
+      position: relative; border: 1px solid #ece0cd; background: #f7eede;
+    }
+    .ac-cap { font-size: 12.5px; color: #786a59; line-height: 1.5; }
+    .ac-cap b { color: #33291f; }
+    .ac-spec {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px;
+      color: #786a59; line-height: 1.65; border-top: 1px dashed #ece0cd; padding-top: 9px;
+    }
+    .ac-spec b { color: #c0562f; }
+
+    /* ---------- 1. Cascade d'entrée ---------- */
+    .ac-top { padding: 20px 16px 6px; }
+    .ac-hi {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 26px; letter-spacing: -1px; line-height: 1.1;
+    }
+    .ac-date { font-size: 12.5px; color: #786a59; margin-top: 3px; }
+    .ac-wgrid { padding: 12px 16px; display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; }
+    .ac-w {
+      background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px;
+      padding: 14px; position: relative; overflow: hidden;
+      animation: acStagger 4s cubic-bezier(.22, .61, .36, 1) infinite;
+    }
+    .ac-w.hero { grid-column: span 2; background: #33291f; border-color: #33291f; }
+    /* Le décalage : 40 ms par carte, plafonné à 6 — au-delà ça devient une attente */
+    .ac-w:nth-child(1) { animation-delay: 0s; }
+    .ac-w:nth-child(2) { animation-delay: .04s; }
+    .ac-w:nth-child(3) { animation-delay: .08s; }
+    .ac-w:nth-child(4) { animation-delay: .12s; }
+    .ac-w:nth-child(5) { animation-delay: .16s; }
+    .ac-w:nth-child(6) { animation-delay: .2s; }
+    @keyframes acStagger {
+      0% { opacity: 0; transform: translateY(12px); }
+      12%, 88% { opacity: 1; transform: translateY(0); }
+      100% { opacity: 0; transform: translateY(12px); }
+    }
+    .ac-w-halo {
+      position: absolute; width: 110px; height: 110px; border-radius: 50%;
+      background: #c0562f; opacity: .2; top: -32px; right: -32px;
+      animation: acBreathe 6s ease-in-out infinite;
+    }
+    @keyframes acBreathe {
+      0%, 100% { transform: scale(1); opacity: .16; }
+      50% { transform: scale(1.07); opacity: .24; }
+    }
+    .ac-w-e {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 9px;
+      letter-spacing: 1.4px; text-transform: uppercase; color: #786a59; position: relative;
+    }
+    .ac-w.hero .ac-w-e { color: #c9b79a; }
+    .ac-w-v {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 24px; letter-spacing: -.9px; margin-top: 6px; position: relative; line-height: 1.1;
+    }
+    .ac-w.hero .ac-w-v { color: #f0e4d0; font-size: 20px; }
+    .ac-w-s { font-size: 11.5px; color: #786a59; margin-top: 3px; position: relative; }
+    .ac-w.hero .ac-w-s { color: #c9b79a; }
+    .ac-w-cta {
+      margin-top: 12px; background: #d9a888; color: #33291f; border-radius: 12px;
+      padding: 9px 0; text-align: center; font-weight: 700; font-size: 13px; position: relative;
+    }
+
+    /* ---------- 2. Réponse au doigt ---------- */
+    .ac-press { position: absolute; inset: 0; background: #f7eede; padding: 24px 20px; }
+    .ac-press-t {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px;
+      letter-spacing: 1.6px; text-transform: uppercase; color: #786a59;
+    }
+    .ac-demo-card {
+      background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px;
+      padding: 18px; margin-top: 12px; position: relative;
+      animation: acPress 2.6s cubic-bezier(.2, 1.4, .35, 1) infinite;
+    }
+    /* Niveau 0 : 90 ms, amplitude 3 %. Assez pour être senti, trop court pour être attendu. */
+    @keyframes acPress {
+      0%, 30% { transform: scale(1); }
+      38% { transform: scale(.97); }
+      50%, 100% { transform: scale(1); }
+    }
+    .ac-finger {
+      position: absolute; width: 42px; height: 42px; border-radius: 50%;
+      background: rgba(51, 41, 31, .16); left: 50%; margin-left: -21px; top: 30px;
+      animation: acFinger 2.6s infinite;
+    }
+    @keyframes acFinger {
+      0%, 28% { opacity: 0; transform: scale(.6); }
+      38% { opacity: 1; transform: scale(1); }
+      58%, 100% { opacity: 0; transform: scale(1.5); }
+    }
+    .ac-dc-t { font-weight: 700; font-size: 15px; }
+    .ac-dc-s { font-size: 12.5px; color: #786a59; margin-top: 4px; }
+    .ac-btn {
+      margin-top: 14px; height: 52px; border-radius: 16px; background: #b14f2b; color: #fff;
+      display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;
+      animation: acPress 2.6s cubic-bezier(.2, 1.4, .35, 1) infinite; animation-delay: .3s;
+    }
+
+    /* La barre d'onglets */
+    .ac-tabs {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 72px; background: #fffaf2;
+      border-top: 1px solid #ece0cd; display: flex; align-items: flex-start; padding-top: 10px;
+    }
+    .ac-tab { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; position: relative; }
+    .ac-tab-l { font-size: 10.5px; font-weight: 600; color: #786a59; }
+    .ac-tab svg { display: block; }
+    /* La pastille glisse d'un onglet à l'autre — elle ne saute pas */
+    .ac-pill {
+      position: absolute; top: 0; left: 0; width: 75px; height: 46px; border-radius: 14px;
+      animation: acPill 8s cubic-bezier(.34, 1.25, .5, 1) infinite;
+    }
+    @keyframes acPill {
+      0%, 16% { transform: translateX(0); background: rgba(192, 86, 47, .14); }
+      25%, 41% { transform: translateX(75px); background: rgba(107, 0, 40, .14); }
+      50%, 66% { transform: translateX(150px); background: rgba(47, 111, 192, .14); }
+      75%, 91% { transform: translateX(225px); background: rgba(92, 122, 63, .14); }
+      100% { transform: translateX(0); background: rgba(192, 86, 47, .14); }
+    }
+    .ac-ic1 { animation: acIc1 8s infinite; }
+    .ac-ic2 { animation: acIc2 8s infinite; }
+    .ac-ic3 { animation: acIc3 8s infinite; }
+    .ac-ic4 { animation: acIc4 8s infinite; }
+    @keyframes acIc1 {
+      0%, 16% { color: #c0562f; transform: scale(1.14); }
+      22%, 94% { color: #786a59; transform: scale(1); }
+      100% { color: #c0562f; transform: scale(1.14); }
+    }
+    @keyframes acIc2 {
+      0%, 19% { color: #786a59; transform: scale(1); }
+      25%, 41% { color: #6b0028; transform: scale(1.14); }
+      47%, 100% { color: #786a59; transform: scale(1); }
+    }
+    @keyframes acIc3 {
+      0%, 44% { color: #786a59; transform: scale(1); }
+      50%, 66% { color: #2f6fc0; transform: scale(1.14); }
+      72%, 100% { color: #786a59; transform: scale(1); }
+    }
+    @keyframes acIc4 {
+      0%, 69% { color: #786a59; transform: scale(1); }
+      75%, 91% { color: #5c7a3f; transform: scale(1.14); }
+      97%, 100% { color: #786a59; transform: scale(1); }
+    }
+
+    /* ---------- 3. Le streak ---------- */
+    .ac-st { position: absolute; inset: 0; background: #f7eede; padding: 24px 20px; }
+    .ac-st-card {
+      background: #33291f; border-radius: 24px; padding: 26px 22px; position: relative; overflow: hidden;
+    }
+    .ac-st-halo {
+      position: absolute; width: 190px; height: 190px; border-radius: 50%; background: #c0562f;
+      top: -56px; right: -56px; opacity: .2; animation: acBreathe 6s ease-in-out infinite;
+    }
+    .ac-st-e {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 9.5px;
+      letter-spacing: 1.8px; text-transform: uppercase; color: #c9b79a; position: relative;
+    }
+    .ac-st-row { display: flex; align-items: baseline; gap: 10px; margin-top: 8px; position: relative; }
+    .ac-st-roll { height: 66px; overflow: hidden; }
+    .ac-st-roll-in { animation: acStRoll 5s cubic-bezier(.22, .61, .36, 1) infinite; }
+    @keyframes acStRoll {
+      0%, 42% { transform: translateY(0); }
+      54%, 100% { transform: translateY(-66px); }
+    }
+    .ac-st-n {
+      height: 66px; display: flex; align-items: center;
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 62px; color: #f0e4d0; letter-spacing: -3px; line-height: 1;
+    }
+    .ac-st-u { font-size: 16px; color: #c9b79a; }
+    .ac-st-ring {
+      position: absolute; left: 22px; top: 42px; width: 66px; height: 66px; border-radius: 50%;
+      border: 2px solid #d9a888; opacity: 0; animation: acStRing 5s infinite;
+    }
+    @keyframes acStRing {
+      0%, 44% { transform: scale(.5); opacity: 0; }
+      52% { opacity: .8; }
+      74%, 100% { transform: scale(3.2); opacity: 0; }
+    }
+    .ac-week { display: flex; gap: 6px; margin-top: 20px; position: relative; }
+    .ac-day {
+      flex: 1; height: 38px; border-radius: 10px; background: rgba(240, 228, 208, .1);
+      display: flex; align-items: center; justify-content: center;
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; color: #c9b79a;
+    }
+    .ac-day.on { background: #d9a888; color: #33291f; font-weight: 700; }
+    .ac-day.today { animation: acToday 5s cubic-bezier(.2, 1.5, .4, 1) infinite; }
+    @keyframes acToday {
+      0%, 44% { background: rgba(240,228,208,.1); color: #c9b79a; transform: scale(1); }
+      54% { background: #d9a888; color: #33291f; transform: scale(1.16); }
+      64%, 100% { background: #d9a888; color: #33291f; transform: scale(1); }
+    }
+    .ac-st-note { font-size: 12.5px; color: #c9b79a; margin-top: 18px; position: relative; line-height: 1.45; }
+    .ac-st-after {
+      margin-top: 16px; background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px;
+    }
+    .ac-st-at { font-weight: 700; font-size: 14px; }
+    .ac-st-as { font-size: 12.5px; color: #786a59; margin-top: 4px; line-height: 1.45; }
+  </style>
+</helmet>
+
+<div class="ac-root">
+
+  <div>
+    <div class="ac-eyebrow">Socle · Accueil et bien-être — le souffle</div>
+    <h1 class="ac-h1">Le niveau qu'on ne remarque pas</h1>
+    <div class="ac-lede">
+      Ces trois-là ne sont spectaculaires pour personne, et c'est exactement l'objectif : ils ne se
+      voient pas, mais leur absence se sent. C'est <b>le plus gros retour sur investissement</b> du lot
+      — écrits une fois dans les primitives partagées, ils touchent les 80 écrans d'un coup.
+    </div>
+  </div>
+
+  <div class="ac-cols">
+
+    <!-- 1 -->
+    <div class="ac-col">
+      <div class="ac-num">1 — L'écran se pose</div>
+      <div class="ac-screen">
+        <div class="ac-top">
+          <div class="ac-hi">Bonjour Florian</div>
+          <div class="ac-date">Jeudi 11 septembre</div>
+        </div>
+        <div class="ac-wgrid">
+          <div class="ac-w hero">
+            <div class="ac-w-halo"></div>
+            <div class="ac-w-e">Séance du jour</div>
+            <div class="ac-w-v">Push A · 5 exercices</div>
+            <div class="ac-w-s">≈ 52 min · dernière il y a 2 jours</div>
+            <div class="ac-w-cta">Démarrer</div>
+          </div>
+          <div class="ac-w">
+            <div class="ac-w-e">Calories</div>
+            <div class="ac-w-v">1 460</div>
+            <div class="ac-w-s">sur 2 250 kcal</div>
+          </div>
+          <div class="ac-w">
+            <div class="ac-w-e">Régularité</div>
+            <div class="ac-w-v">12 j</div>
+            <div class="ac-w-s">série en cours</div>
+          </div>
+          <div class="ac-w">
+            <div class="ac-w-e">Poids</div>
+            <div class="ac-w-v">78,4</div>
+            <div class="ac-w-s">−0,6 kg / 30 j</div>
+          </div>
+          <div class="ac-w">
+            <div class="ac-w-e">Pas</div>
+            <div class="ac-w-v">6 210</div>
+            <div class="ac-w-s">sur 8 000</div>
+          </div>
+        </div>
+      </div>
+      <div class="ac-cap">
+        Les widgets arrivent <b>décalés de 40 ms</b>, pas tous en même temps : l'œil suit une
+        composition au lieu de recevoir un mur. Plafonné à <b>6 cartes</b> — au-delà, le décalage
+        cesse d'être une élégance et devient une attente.
+      </div>
+      <div class="ac-spec">
+        <b>+12 px → 0</b> + fondu, 240 ms<br>
+        décalage <b>40 ms</b>, max <b>6 cartes</b><br>
+        au montage <b>seulement</b> — jamais au retour<br>
+        squelette → réel : <b>crossfade 150 ms</b>
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="ac-col">
+      <div class="ac-num">2 — La réponse au doigt</div>
+      <div class="ac-screen">
+        <div class="ac-press">
+          <div class="ac-press-t">Niveau 0 · partout</div>
+          <div class="ac-demo-card">
+            <div class="ac-finger"></div>
+            <div class="ac-dc-t">Développé couché</div>
+            <div class="ac-dc-s">4 séries · 82,5 kg · record il y a 3 semaines</div>
+          </div>
+          <div class="ac-btn">Démarrer la séance</div>
+          <div class="ac-press-t" style="margin-top: 28px">Niveau 1 · la pastille suit</div>
+        </div>
+        <div class="ac-tabs">
+          <div class="ac-pill"></div>
+          <div class="ac-tab">
+            <svg class="ac-ic1" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5"/><path d="M5.5 9.5V20h13V9.5"/></svg>
+            <div class="ac-tab-l">Accueil</div>
+          </div>
+          <div class="ac-tab">
+            <svg class="ac-ic2" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 9v6M19 9v6M8 7v10M16 7v10M8 12h8M2.5 10.5v3M21.5 10.5v3"/></svg>
+            <div class="ac-tab-l">Muscu</div>
+          </div>
+          <div class="ac-tab">
+            <svg class="ac-ic3" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="14.5" cy="4.5" r="1.8"/><path d="M6 21l3.2-5.4 3.3-2.1-1.4-4.8L8 10.5 5.5 14"/><path d="M11.1 8.7l3.9-1.6 3 2.4 2.5.6"/><path d="M12.5 13.5l2.8 2.2.9 4.3"/></svg>
+            <div class="ac-tab-l">Course</div>
+          </div>
+          <div class="ac-tab">
+            <svg class="ac-ic4" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c4.4 0 8-3.9 8-8.7 0-3.3-1.9-6.4-4.6-7.8C13.9 3.6 12.8 3 12 3s-1.9.6-3.4 1.5C5.9 5.9 4 9 4 12.3 4 17.1 7.6 21 12 21z"/><path d="M12 21V9"/></svg>
+            <div class="ac-tab-l">Alim</div>
+          </div>
+        </div>
+      </div>
+      <div class="ac-cap">
+        Aujourd'hui, <code>Button</code> ne fait qu'<b>un changement d'opacité</b>. Un enfoncement de
+        3 % plus une vibration de 15 ms, et l'app cesse d'avoir l'air en carton. La pastille de la
+        barre d'onglets <b>glisse</b> et prend la couleur du pilier — l'infra existe déjà
+        (<code>menu-accent-store</code>), elle n'est juste pas branchée.
+      </div>
+      <div class="ac-spec">
+        appui <b>scale .97</b> · 90 ms · spring<br>
+        relâché <b>retour 140 ms</b><br>
+        <b>hapticSelect()</b> — existe déjà<br>
+        pastille <b>spring 260/24</b> · 320 ms
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="ac-col">
+      <div class="ac-num">3 — Le jour de plus</div>
+      <div class="ac-screen">
+        <div class="ac-st">
+          <div class="ac-st-card">
+            <div class="ac-st-halo"></div>
+            <div class="ac-st-e">Régularité</div>
+            <div class="ac-st-row">
+              <div class="ac-st-ring"></div>
+              <div class="ac-st-roll">
+                <div class="ac-st-roll-in">
+                  <div class="ac-st-n">12</div>
+                  <div class="ac-st-n">13</div>
+                </div>
+              </div>
+              <div class="ac-st-u">jours d'affilée</div>
+            </div>
+            <div class="ac-week">
+              <div class="ac-day on">L</div>
+              <div class="ac-day on">M</div>
+              <div class="ac-day on">M</div>
+              <div class="ac-day on">J</div>
+              <div class="ac-day on">V</div>
+              <div class="ac-day on">S</div>
+              <div class="ac-day today">D</div>
+            </div>
+            <div class="ac-st-note">Ta plus longue série reste 18 jours, en juin.</div>
+          </div>
+          <div class="ac-st-after">
+            <div class="ac-st-at">Pourquoi pas de flamme</div>
+            <div class="ac-st-as">
+              La gamification est hors V1 (décision C). Le streak reste un <b>constat</b>, pas une
+              récompense : le chiffre roule, une onde passe, et c'est tout. Aucun badge, aucun palier,
+              rien qui crée une dette envers l'app.
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="ac-cap">
+        Le seul endroit de l'app où un chiffre <b>change tout seul</b> sous les yeux de
+        l'utilisateur. Il roule de 12 vers 13, le jour s'allume avec un dépassement court, une onde
+        part du chiffre. Trois gestes, moins d'une seconde.
+      </div>
+      <div class="ac-spec">
+        chiffre <b>roule</b> 420 ms, sans rebond<br>
+        onde <b>.5 → 3,2</b> · 700 ms<br>
+        jour <b>spring 300/14</b> · 260 ms<br>
+        <b>1× par jour</b> — au premier affichage
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

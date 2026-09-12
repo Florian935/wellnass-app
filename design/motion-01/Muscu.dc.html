@@ -1,0 +1,405 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+
+    .mu-root {
+      width: 1060px; height: 1100px; box-sizing: border-box;
+      background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif;
+      padding: 40px 44px; display: flex; flex-direction: column; gap: 22px;
+    }
+    .mu-eyebrow {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px;
+      letter-spacing: 1.6px; text-transform: uppercase; color: #6b0028;
+    }
+    .mu-h1 {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 38px; letter-spacing: -1.2px; margin: 6px 0 0; line-height: 1;
+    }
+    .mu-lede { font-size: 14px; color: #786a59; max-width: 800px; line-height: 1.5; margin-top: 8px; }
+
+    .mu-cols { display: grid; grid-template-columns: repeat(3, 300px); gap: 36px; }
+    .mu-col { display: flex; flex-direction: column; gap: 14px; }
+    .mu-num {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 15px; color: #6b0028; letter-spacing: -.3px;
+    }
+    .mu-screen {
+      width: 300px; height: 560px; border-radius: 28px; overflow: hidden;
+      position: relative; border: 1px solid #ece0cd; background: #f7eede;
+    }
+    .mu-cap { font-size: 12.5px; color: #786a59; line-height: 1.5; }
+    .mu-cap b { color: #33291f; }
+    .mu-spec {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px;
+      color: #786a59; line-height: 1.65; border-top: 1px dashed #ece0cd; padding-top: 9px;
+    }
+    .mu-spec b { color: #6b0028; }
+
+    /* ---------- 1. Validation de série ---------- */
+    .mu-hdr { padding: 18px 16px 12px; }
+    .mu-hdr-t {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700;
+      font-size: 18px; letter-spacing: -.5px;
+    }
+    .mu-hdr-s { font-size: 12px; color: #786a59; margin-top: 2px; }
+    .mu-bar { height: 6px; border-radius: 999px; background: #eadcc6; margin: 12px 0 0; overflow: hidden; }
+    .mu-bar-f { height: 100%; border-radius: 999px; background: #6b0028; width: 50%; animation: muBar 3.4s infinite; }
+    @keyframes muBar {
+      0%, 34% { width: 50%; }
+      44%, 100% { width: 62.5%; }
+    }
+
+    .mu-sets { padding: 0 16px; display: flex; flex-direction: column; gap: 8px; }
+    .mu-set {
+      background: #fffaf2; border: 1px solid #ece0cd; border-radius: 16px;
+      padding: 12px 14px; display: flex; align-items: center; gap: 12px; position: relative; overflow: hidden;
+    }
+    .mu-set-n {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px;
+      color: #786a59; width: 30px; flex: none;
+    }
+    .mu-set-v {
+      font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px; flex: 1;
+    }
+    .mu-check {
+      width: 22px; height: 22px; border-radius: 50%; flex: none;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .mu-done { opacity: .55; }
+    .mu-done .mu-check { background: #66714b; }
+
+    /* La série en cours : elle encaisse le coup puis repart */
+    .mu-live {
+      border-color: #6b0028; border-width: 2px; background: #fffaf2;
+      animation: muSlamCard 3.4s infinite;
+    }
+    @keyframes muSlamCard {
+      0%, 33% { transform: scale(1); }
+      36% { transform: scale(.975); }
+      41% { transform: scale(1.012); }
+      46%, 100% { transform: scale(1); }
+    }
+    /* Le balayage vert qui traverse la ligne validée */
+    .mu-sweep {
+      position: absolute; inset: 0; border-radius: 14px;
+      background: linear-gradient(90deg, rgba(102,113,75,0) 0%, rgba(102,113,75,.28) 45%, rgba(102,113,75,0) 100%);
+      transform: translateX(-110%); animation: muSweep 3.4s infinite;
+    }
+    @keyframes muSweep {
+      0%, 34% { transform: translateX(-110%); }
+      48% { transform: translateX(110%); }
+      100% { transform: translateX(110%); }
+    }
+    .mu-live .mu-check { background: #6b0028; animation: muCheckPop 3.4s infinite; }
+    @keyframes muCheckPop {
+      0%, 34% { transform: scale(0); }
+      42% { transform: scale(1.25); }
+      48%, 100% { transform: scale(1); }
+    }
+    .mu-check svg { display: block; }
+    .mu-tick { stroke-dasharray: 16; stroke-dashoffset: 16; animation: muTick 3.4s infinite; }
+    @keyframes muTick {
+      0%, 36% { stroke-dashoffset: 16; }
+      50%, 100% { stroke-dashoffset: 0; }
+    }
+    /* La série suivante monte en place au lieu d'apparaître */
+    .mu-next-set { animation: muRise 3.4s infinite; }
+    @keyframes muRise {
+      0%, 44% { opacity: 0; transform: translateY(14px); }
+      58%, 100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .mu-cta {
+      margin: 16px; height: 52px; border-radius: 16px; background: #6b0028; color: #fff;
+      display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;
+      animation: muCta 3.4s infinite;
+    }
+    @keyframes muCta {
+      0%, 32% { transform: scale(1); }
+      35% { transform: scale(.97); }
+      40%, 100% { transform: scale(1); }
+    }
+    .mu-haptic {
+      position: absolute; left: 50%; margin-left: -30px; bottom: 82px;
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 9px; letter-spacing: 1px;
+      color: #6b0028; opacity: 0; animation: muHaptic 3.4s infinite; white-space: nowrap;
+    }
+    @keyframes muHaptic {
+      0%, 34% { opacity: 0; transform: translateY(0); }
+      40% { opacity: 1; transform: translateY(-6px); }
+      56%, 100% { opacity: 0; transform: translateY(-12px); }
+    }
+
+    /* ---------- 2. Timer de repos ---------- */
+    .mu-rest { position: absolute; inset: 0; background: #33291f; display: flex; flex-direction: column; align-items: center; }
+    .mu-rest-t {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 2px;
+      text-transform: uppercase; color: #c9b79a; margin-top: 48px;
+    }
+    .mu-ring-wrap { position: relative; width: 200px; height: 200px; margin-top: 22px; }
+    .mu-ring { position: absolute; inset: 0; transform: rotate(-90deg); }
+    .mu-ring-arc {
+      stroke-dasharray: 477.5; stroke-dashoffset: 0;
+      animation: muDrain 6s linear infinite;
+    }
+    @keyframes muDrain {
+      0% { stroke-dashoffset: 0; stroke: #d9a888; }
+      70% { stroke: #d9a888; }
+      82% { stroke: #a9ba7e; }
+      100% { stroke-dashoffset: 477.5; stroke: #a9ba7e; }
+    }
+    .mu-count {
+      position: absolute; inset: 0; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+    }
+    .mu-count-n {
+      font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700;
+      font-size: 52px; color: #f0e4d0; letter-spacing: -2px;
+      animation: muPulse 1s ease-out infinite;
+    }
+    @keyframes muPulse {
+      0% { transform: scale(1.06); }
+      30%, 100% { transform: scale(1); }
+    }
+    .mu-count-l { font-size: 11px; color: #c9b79a; letter-spacing: 1px; margin-top: 2px; }
+    /* Le flash de fin : l'anneau se dilate et s'efface */
+    .mu-flash {
+      position: absolute; left: 50%; top: 50%; width: 200px; height: 200px; margin: -100px 0 0 -100px;
+      border-radius: 50%; border: 3px solid #a9ba7e; opacity: 0;
+      animation: muFlash 6s linear infinite;
+    }
+    @keyframes muFlash {
+      0%, 92% { transform: scale(1); opacity: 0; }
+      96% { transform: scale(1.18); opacity: .9; }
+      100% { transform: scale(1.4); opacity: 0; }
+    }
+    .mu-next {
+      margin-top: 30px; width: 232px; border-radius: 16px; padding: 14px 16px;
+      background: rgba(217, 168, 136, .12);
+    }
+    .mu-next-e {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 9.5px;
+      letter-spacing: 1.6px; text-transform: uppercase; color: #d9a888;
+    }
+    .mu-next-t { color: #f0e4d0; font-weight: 700; font-size: 15px; margin-top: 5px; }
+    .mu-next-d { color: #c9b79a; font-size: 12px; margin-top: 2px; }
+    .mu-rest-actions { display: flex; gap: 10px; margin-top: 22px; }
+    .mu-rest-btn {
+      border: 1px solid #797169; border-radius: 14px; padding: 11px 18px;
+      color: #f0e4d0; font-size: 13px; font-weight: 600;
+    }
+
+    /* ---------- 3. Record ---------- */
+    .mu-pr-bg { position: absolute; inset: 0; background: #f7eede; }
+    .mu-pr-dim {
+      position: absolute; inset: 0; background: rgba(51, 41, 31, .35);
+      animation: muDim 4s infinite;
+    }
+    @keyframes muDim {
+      0%, 16% { opacity: 0; }
+      24%, 82% { opacity: 1; }
+      92%, 100% { opacity: 0; }
+    }
+    .mu-ghost { padding: 18px 16px; opacity: .5; }
+    .mu-ghost-row {
+      height: 46px; border-radius: 14px; background: #fffaf2; border: 1px solid #ece0cd; margin-bottom: 8px;
+    }
+    .mu-toast {
+      position: absolute; left: 20px; right: 20px; top: 168px;
+      background: #6b0028; border-radius: 22px; padding: 22px 20px; overflow: hidden;
+      animation: muPrPop 4s infinite;
+    }
+    /* prpop : entrée franche, dépassement court, retour. Le geste de la muscu. */
+    @keyframes muPrPop {
+      0%, 16% { opacity: 0; transform: scale(.82) translateY(18px); }
+      23% { opacity: 1; transform: scale(1.06) translateY(0); }
+      28% { transform: scale(.985) translateY(0); }
+      33%, 82% { opacity: 1; transform: scale(1) translateY(0); }
+      92%, 100% { opacity: 0; transform: scale(.96) translateY(-10px); }
+    }
+    /* L'éclat qui part du centre au moment de l'impact */
+    .mu-burst {
+      position: absolute; left: 50%; top: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px;
+      border-radius: 50%; border: 2px solid #d9a888; opacity: 0;
+      animation: muBurst 4s infinite;
+    }
+    .mu-burst.b2 { animation-delay: .12s; }
+    @keyframes muBurst {
+      0%, 20% { transform: scale(.4); opacity: 0; }
+      26% { opacity: .85; }
+      44%, 100% { transform: scale(7); opacity: 0; }
+    }
+    .mu-pr-e {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px;
+      letter-spacing: 2px; text-transform: uppercase; color: #d9a888; position: relative;
+    }
+    .mu-pr-v {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 46px; color: #fff; letter-spacing: -2px; line-height: 1.05; margin-top: 8px; position: relative;
+      animation: muPrVal 4s infinite;
+    }
+    @keyframes muPrVal {
+      0%, 24% { opacity: 0; transform: translateY(10px); }
+      34%, 100% { opacity: 1; transform: translateY(0); }
+    }
+    .mu-pr-x { font-size: 14px; color: #f0e4d0; margin-top: 6px; position: relative; }
+    .mu-pr-old {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px;
+      color: #d9a888; margin-top: 12px; position: relative;
+    }
+  </style>
+</helmet>
+
+<div class="mu-root">
+
+  <div>
+    <div class="mu-eyebrow">Pilier 1 · Musculation — l'impact</div>
+    <h1 class="mu-h1">Ça encaisse, ça rebondit, c'est fini</h1>
+    <div class="mu-lede">
+      Une séance, c'est 30 à 40 validations. Le mouvement doit donc être <b>court</b> — jamais une
+      milliseconde d'attente ajoutée sur le geste le plus répété de l'app — et <b>franc</b>, pour
+      qu'on n'ait pas à vérifier que c'est passé. Ressort raide, amplitude faible, vibration.
+    </div>
+  </div>
+
+  <div class="mu-cols">
+
+    <!-- 1 -->
+    <div class="mu-col">
+      <div class="mu-num">1 — Valider une série</div>
+      <div class="mu-screen">
+        <div class="mu-hdr">
+          <div class="mu-hdr-t">Développé couché</div>
+          <div class="mu-hdr-s">Exercice 2 sur 5 · Push A</div>
+          <div class="mu-bar"><div class="mu-bar-f"></div></div>
+        </div>
+        <div class="mu-sets">
+          <div class="mu-set mu-done">
+            <div class="mu-set-n">S1</div><div class="mu-set-v">80 kg × 8</div>
+            <div class="mu-check"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="mu-set mu-done">
+            <div class="mu-set-n">S2</div><div class="mu-set-v">80 kg × 8</div>
+            <div class="mu-check"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path d="M3 8.5l3.2 3.2L13 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="mu-set mu-live">
+            <div class="mu-sweep"></div>
+            <div class="mu-set-n">S3</div><div class="mu-set-v">82,5 kg × 8</div>
+            <div class="mu-check"><svg width="12" height="12" viewBox="0 0 16 16" fill="none"><path class="mu-tick" d="M3 8.5l3.2 3.2L13 5" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="mu-set mu-next-set">
+            <div class="mu-set-n">S4</div><div class="mu-set-v" style="color:#786a59">82,5 kg × 8</div>
+            <div class="mu-check" style="border:1.5px solid #ece0cd"></div>
+          </div>
+        </div>
+        <div class="mu-haptic">▮ 30 ms</div>
+        <div class="mu-cta">Valider la série</div>
+      </div>
+      <div class="mu-cap">
+        La carte <b>encaisse</b> (0,975 → 1,012 → 1), un balayage vert traverse la ligne, la coche se
+        dessine, et la série suivante <b>monte en place</b> au lieu d'apparaître d'un coup.
+      </div>
+      <div class="mu-spec">
+        carte <b>spring 420/18</b> · 180 ms<br>
+        balayage <b>240 ms</b> · coche 140 ms<br>
+        montée S+1 <b>200 ms</b> après<br>
+        <b>hapticConfirm()</b> — existe déjà
+      </div>
+    </div>
+
+    <!-- 2 -->
+    <div class="mu-col">
+      <div class="mu-num">2 — Le repos, enfin visible</div>
+      <div class="mu-screen">
+        <div class="mu-rest">
+          <div class="mu-rest-t">Repos</div>
+          <div class="mu-ring-wrap">
+            <svg class="mu-ring" width="200" height="200" viewBox="0 0 200 200">
+              <circle cx="100" cy="100" r="76" fill="none" stroke="#3a2e22" stroke-width="10"/>
+              <circle class="mu-ring-arc" cx="100" cy="100" r="76" fill="none" stroke="#d9a888" stroke-width="10" stroke-linecap="round"/>
+            </svg>
+            <div class="mu-flash"></div>
+            <div class="mu-count">
+              <div class="mu-count-n">1:04</div>
+              <div class="mu-count-l">restantes</div>
+            </div>
+          </div>
+          <div class="mu-next">
+            <div class="mu-next-e">Ensuite</div>
+            <div class="mu-next-t">Développé couché</div>
+            <div class="mu-next-d">Série 4 sur 4 · 82,5 kg</div>
+          </div>
+          <div class="mu-rest-actions">
+            <div class="mu-rest-btn">+ 30 s</div>
+            <div class="mu-rest-btn">Passer</div>
+          </div>
+        </div>
+      </div>
+      <div class="mu-cap">
+        Aujourd'hui c'est <b>un texte qui décrémente</b>. L'anneau rend le temps restant lisible sans
+        lire : il se vide, vire au vert dans les dernières secondes, et la fin <b>éclate</b> plutôt
+        que de s'arrêter.
+      </div>
+      <div class="mu-spec">
+        anneau <b>linear</b>, durée = repos<br>
+        virage vert à <b>T−5 s</b><br>
+        battement du chiffre <b>1 s</b><br>
+        fin <b>flash 260 ms</b> + <b>hapticMilestone()</b>
+      </div>
+    </div>
+
+    <!-- 3 -->
+    <div class="mu-col">
+      <div class="mu-num">3 — Le record</div>
+      <div class="mu-screen">
+        <div class="mu-pr-bg">
+          <div class="mu-ghost">
+            <div class="mu-ghost-row"></div>
+            <div class="mu-ghost-row"></div>
+            <div class="mu-ghost-row"></div>
+            <div class="mu-ghost-row"></div>
+            <div class="mu-ghost-row"></div>
+            <div class="mu-ghost-row"></div>
+            <div class="mu-ghost-row"></div>
+          </div>
+        </div>
+        <div class="mu-pr-dim"></div>
+        <div class="mu-toast">
+          <div class="mu-burst"></div>
+          <div class="mu-burst b2"></div>
+          <div class="mu-pr-e">Record battu</div>
+          <div class="mu-pr-v">82,5 kg</div>
+          <div class="mu-pr-x">Développé couché · 8 répétitions</div>
+          <div class="mu-pr-old">Précédent : 80 kg × 8 — il y a 3 semaines</div>
+        </div>
+      </div>
+      <div class="mu-cap">
+        Le <b>prpop</b> de la maquette FitTrio, jamais implémenté. Entrée en dépassement court
+        (0,82 → 1,06 → 1), deux ondes qui partent du centre, la valeur qui monte derrière.
+        <b>Pas de confettis</b> : on soulève de la fonte, on ne gagne pas à la loterie.
+      </div>
+      <div class="mu-spec">
+        toast <b>spring 380/16</b> · 420 ms<br>
+        ondes <b>×2</b>, décalage 120 ms<br>
+        valeur <b>+10 px → 0</b>, 260 ms<br>
+        <b>hapticMilestone()</b> · 1× par séance
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,292 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+
+    .mn-root {
+      width: 1200px; height: 1100px; box-sizing: border-box;
+      background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif;
+      padding: 44px 48px; display: flex; flex-direction: column; gap: 26px;
+    }
+    .mn-eyebrow {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px;
+      letter-spacing: 1.6px; text-transform: uppercase; color: #786a59;
+    }
+    .mn-h1 {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 46px; letter-spacing: -1.5px; margin: 6px 0 0; line-height: 1;
+    }
+    .mn-lede { font-size: 15px; color: #786a59; max-width: 760px; line-height: 1.5; margin-top: 10px; }
+
+    /* ---- Les 4 physiques ---- */
+    .mn-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; }
+    .mn-card {
+      background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px;
+      padding: 18px; display: flex; flex-direction: column; gap: 12px;
+      position: relative; overflow: hidden;
+    }
+    .mn-halo { position: absolute; width: 150px; height: 150px; border-radius: 50%; opacity: .16; top: -40px; right: -40px; }
+    .mn-pill { display: flex; align-items: center; gap: 8px; position: relative; }
+    .mn-dot { width: 10px; height: 10px; border-radius: 50%; flex: none; }
+    .mn-pillar { font-weight: 700; font-size: 13px; letter-spacing: .2px; }
+    .mn-word {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 25px; letter-spacing: -.9px; line-height: 1; position: relative;
+    }
+    .mn-why { font-size: 12.5px; color: #786a59; line-height: 1.45; min-height: 54px; position: relative; }
+
+    /* La scène de démo : 4 physiques, même durée de cycle, comportements opposés */
+    .mn-stage {
+      height: 108px; border-radius: 16px; background: #f3ddd0;
+      position: relative; overflow: hidden; border: 1px solid #ece0cd;
+    }
+
+    /* Muscu — l'impact : ça tombe, ça encaisse, ça rebondit court */
+    .mn-slam {
+      position: absolute; left: 50%; margin-left: -34px; top: 14px;
+      width: 68px; height: 14px; border-radius: 4px; background: #6b0028;
+      animation: mnSlam 2.6s infinite;
+    }
+    .mn-anvil {
+      position: absolute; left: 50%; margin-left: -44px; bottom: 18px;
+      width: 88px; height: 8px; border-radius: 3px; background: rgba(107, 0, 40, .22);
+      animation: mnAnvil 2.6s infinite;
+    }
+    @keyframes mnSlam {
+      0%, 14% { transform: translateY(0); }
+      26% { transform: translateY(58px); }
+      31% { transform: translateY(48px); }
+      36% { transform: translateY(58px); }
+      100% { transform: translateY(58px); }
+    }
+    @keyframes mnAnvil {
+      0%, 24% { transform: scaleX(1); opacity: .22; }
+      27% { transform: scaleX(1.28); opacity: .45; }
+      42%, 100% { transform: scaleX(1); opacity: .22; }
+    }
+
+    /* Course — le flux : ça ne s'arrête jamais */
+    .mn-track2 { position: absolute; left: 0; right: 0; top: 50%; height: 2px; background: rgba(47, 111, 192, .2); }
+    .mn-runner {
+      position: absolute; top: 50%; margin-top: -7px; left: -14px;
+      width: 14px; height: 14px; border-radius: 50%; background: #2f6fc0;
+      animation: mnRun 2.6s linear infinite;
+    }
+    .mn-trail {
+      position: absolute; top: 50%; margin-top: -1px; left: 0; width: 100%; height: 2px;
+      background: repeating-linear-gradient(90deg, #2f6fc0 0 8px, transparent 8px 18px);
+      opacity: .55; animation: mnDash 1.1s linear infinite;
+    }
+    @keyframes mnRun {
+      0% { left: -14px; }
+      100% { left: 100%; }
+    }
+    @keyframes mnDash {
+      0% { background-position-x: 0; }
+      100% { background-position-x: 18px; }
+    }
+
+    /* Nutrition — le remplissage : ça monte, ça se pose, jamais de rebond */
+    .mn-vessel {
+      position: absolute; left: 50%; margin-left: -30px; top: 14px;
+      width: 60px; height: 80px; border-radius: 12px; border: 2px solid rgba(92, 122, 63, .35);
+      overflow: hidden;
+    }
+    .mn-liquid {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 100%;
+      background: #5c7a3f; transform-origin: bottom;
+      animation: mnFill 2.6s cubic-bezier(.22, .61, .36, 1) infinite;
+    }
+    @keyframes mnFill {
+      0% { transform: scaleY(0); }
+      30%, 78% { transform: scaleY(.74); }
+      100% { transform: scaleY(0); }
+    }
+
+    /* Accueil — le souffle : lent, continu, à peine perceptible */
+    .mn-breath {
+      position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px;
+      border-radius: 50%; background: #c0562f;
+      animation: mnBreath 2.6s ease-in-out infinite;
+    }
+    .mn-breath-ring {
+      position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px;
+      border-radius: 50%; border: 1.5px solid #c0562f;
+      animation: mnBreathRing 2.6s ease-in-out infinite;
+    }
+    @keyframes mnBreath {
+      0%, 100% { transform: scale(1); opacity: .9; }
+      50% { transform: scale(1.1); opacity: 1; }
+    }
+    @keyframes mnBreathRing {
+      0%, 100% { transform: scale(1); opacity: .45; }
+      50% { transform: scale(1.5); opacity: 0; }
+    }
+
+    .mn-spec {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px;
+      color: #786a59; line-height: 1.6; position: relative;
+      border-top: 1px dashed #ece0cd; padding-top: 10px;
+    }
+    .mn-spec b { color: #33291f; font-weight: 700; }
+
+    /* ---- Hiérarchie ---- */
+    .mn-levels { display: flex; flex-direction: column; gap: 8px; }
+    .mn-lvl-head {
+      display: grid; grid-template-columns: 118px 1fr 120px 168px; gap: 16px;
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px;
+      letter-spacing: 1.2px; text-transform: uppercase; color: #786a59; padding: 0 16px;
+    }
+    .mn-lvl {
+      display: grid; grid-template-columns: 118px 1fr 120px 168px; gap: 16px; align-items: center;
+      background: #fffaf2; border: 1px solid #ece0cd; border-radius: 16px; padding: 12px 16px;
+    }
+    .mn-lvl-n {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 13px; letter-spacing: -.2px;
+    }
+    .mn-lvl-d { font-size: 13px; color: #33291f; line-height: 1.35; }
+    .mn-lvl-t { font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; color: #786a59; }
+    .mn-badge {
+      display: inline-block; font-size: 11px; font-weight: 700; padding: 4px 10px;
+      border-radius: 999px; background: #f3ddd0; color: #a34e2c;
+    }
+    .mn-badge.rare { background: #f7ead6; color: #8a6419; }
+    .mn-foot {
+      font-size: 12.5px; color: #786a59; line-height: 1.5;
+      border-left: 2px solid #b14f2b; padding-left: 12px;
+    }
+  </style>
+</helmet>
+
+<div class="mn-root">
+
+  <div>
+    <div class="mn-eyebrow">FitTrio · Motion — proposition</div>
+    <h1 class="mn-h1">Un mouvement par pilier</h1>
+    <div class="mn-lede">
+      Chaque pilier a une réalité physique différente. La muscu, c'est de la charge qu'on encaisse ;
+      la course, un flux qui ne s'arrête pas ; la nutrition, un remplissage qui se dose. Le mouvement
+      de l'interface reprend cette physique — l'app devient reconnaissable au doigt, pas seulement à l'œil.
+    </div>
+  </div>
+
+  <div class="mn-grid">
+
+    <div class="mn-card">
+      <div class="mn-halo" style="background: #6b0028"></div>
+      <div class="mn-pill"><span class="mn-dot" style="background: #6b0028"></span><span class="mn-pillar">Musculation</span></div>
+      <div class="mn-word" style="color: #6b0028">L'impact</div>
+      <div class="mn-why">Court, franc, sans traîner. Le geste est déjà fini quand l'œil arrive. Un ressort raide, une amplitude faible, une vibration.</div>
+      <div class="mn-stage">
+        <div class="mn-slam"></div>
+        <div class="mn-anvil"></div>
+      </div>
+      <div class="mn-spec">
+        spring <b>damping 18</b><br>
+        <b>stiffness 420</b> · mass .7<br>
+        ≈ <b>180 ms</b> · haptique oui
+      </div>
+    </div>
+
+    <div class="mn-card">
+      <div class="mn-halo" style="background: #2f6fc0"></div>
+      <div class="mn-pill"><span class="mn-dot" style="background: #2f6fc0"></span><span class="mn-pillar">Course</span></div>
+      <div class="mn-word" style="color: #2f6fc0">Le flux</div>
+      <div class="mn-why">Continu, régulier, jamais d'à-coup. Rien ne démarre ni ne s'arrête : ça défile. Boucles infinies, vitesse constante.</div>
+      <div class="mn-stage">
+        <div class="mn-track2"></div>
+        <div class="mn-trail"></div>
+        <div class="mn-runner"></div>
+      </div>
+      <div class="mn-spec">
+        easing <b>linear</b> / sin<br>
+        cycles <b>1,1 s – 2,4 s</b><br>
+        en boucle · pas de rebond
+      </div>
+    </div>
+
+    <div class="mn-card">
+      <div class="mn-halo" style="background: #5c7a3f"></div>
+      <div class="mn-pill"><span class="mn-dot" style="background: #5c7a3f"></span><span class="mn-pillar">Nutrition</span></div>
+      <div class="mn-word" style="color: #5c7a3f">Le remplissage</div>
+      <div class="mn-why">Ça monte et ça se pose. Jamais de rebond : un verre qui déborde puis revient serait un contresens. Décélération pure.</div>
+      <div class="mn-stage">
+        <div class="mn-vessel"><div class="mn-liquid"></div></div>
+      </div>
+      <div class="mn-spec">
+        cubic-bezier<br>
+        <b>(.22, .61, .36, 1)</b><br>
+        <b>420 – 600 ms</b> · overshoot 0
+      </div>
+    </div>
+
+    <div class="mn-card">
+      <div class="mn-halo" style="background: #c0562f"></div>
+      <div class="mn-pill"><span class="mn-dot" style="background: #c0562f"></span><span class="mn-pillar">Accueil / bien-être</span></div>
+      <div class="mn-word" style="color: #c0562f">Le souffle</div>
+      <div class="mn-why">Lent au point qu'on ne le remarque pas — on remarquerait son absence. L'écran est vivant sans rien réclamer.</div>
+      <div class="mn-stage">
+        <div class="mn-breath-ring"></div>
+        <div class="mn-breath"></div>
+      </div>
+      <div class="mn-spec">
+        easing <b>inOut(sin)</b><br>
+        cycle <b>2,4 s – 6 s</b><br>
+        amplitude <b>≤ 6 %</b>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="mn-levels">
+    <div class="mn-lvl-head">
+      <div>Niveau</div><div>Ce que le mouvement dit</div><div>Durée</div><div>Budget</div>
+    </div>
+    <div class="mn-lvl">
+      <div class="mn-lvl-n" style="color: #786a59">0 · Réponse</div>
+      <div class="mn-lvl-d">« J'ai senti ton doigt. » Enfoncement, haptique. Le seul niveau qui a le droit d'être partout.</div>
+      <div class="mn-lvl-t">90 ms</div>
+      <div><span class="mn-badge">à chaque appui</span></div>
+    </div>
+    <div class="mn-lvl">
+      <div class="mn-lvl-n" style="color: #786a59">1 · Continuité</div>
+      <div class="mn-lvl-d">« Ça vient de là, ça va là. » Transitions, cascades d'entrée, listes qui se réagencent. L'écran ne saute plus.</div>
+      <div class="mn-lvl-t">160 – 280 ms</div>
+      <div><span class="mn-badge">à chaque écran</span></div>
+    </div>
+    <div class="mn-lvl">
+      <div class="mn-lvl-n" style="color: #b14f2b">2 · Sens</div>
+      <div class="mn-lvl-d">« Ce chiffre a bougé, et voilà de combien. » L'anneau se remplit, la barre monte, le compteur roule depuis l'ancienne valeur.</div>
+      <div class="mn-lvl-t">420 – 800 ms</div>
+      <div><span class="mn-badge">quand la donnée change</span></div>
+    </div>
+    <div class="mn-lvl">
+      <div class="mn-lvl-n" style="color: #b14f2b">3 · Célébration</div>
+      <div class="mn-lvl-d">« Ça, c'est arrivé une fois. » Record, séance bouclée, objectif atteint. Propre à chaque pilier, et c'est tout l'intérêt.</div>
+      <div class="mn-lvl-t">600 – 1200 ms</div>
+      <div><span class="mn-badge rare">1× par séance max</span></div>
+    </div>
+  </div>
+
+  <div class="mn-foot">
+    <b>La règle qui tient le tout :</b> le mouvement ne porte jamais d'information. Coupez-le — réglage
+    « réduire les animations » compris — et l'écran doit dire exactement la même chose. C'est ce qui
+    permet d'en mettre partout sans rien devoir à personne.
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
