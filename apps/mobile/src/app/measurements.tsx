@@ -28,6 +28,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { BodyExplorerLink } from '@/components/body/BodyExplorerLink';
 import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import { MeasurementSheet } from '@/components/measurements/MeasurementSheet';
 import {
@@ -92,6 +93,7 @@ export default function MeasurementsScreen() {
         <ScreenHeader title={t('measurements.title')} />
 
         <Button label={t('measurements.cta')} onPress={() => setSheetOpen(true)} />
+        <BodyExplorerLink />
 
         {!hasAnyMeasurement ? (
           <Card>

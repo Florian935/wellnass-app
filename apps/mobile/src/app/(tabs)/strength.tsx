@@ -29,6 +29,7 @@ import { useTranslation } from 'react-i18next';
 import type { StrengthWidgetId, WidgetId, WidgetSize } from '@wellness/shared';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { BodyExplorerLink } from '@/components/body/BodyExplorerLink';
 import { ProgramProgressBar } from '@/components/strength/ProgramProgressBar';
 import { StrengthNowCard } from '@/components/strength/StrengthNowCard';
 import { SuggestedPrograms } from '@/components/strength/SuggestedPrograms';
@@ -177,6 +178,8 @@ export default function StrengthScreen() {
             <View style={[styles.rule, { backgroundColor: colors.border }]} />
           </View>
         ) : null}
+
+        {!editing ? <BodyExplorerLink /> : null}
 
         <WidgetGrid
           screen="strength"

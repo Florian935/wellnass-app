@@ -1,4 +1,54 @@
 {
+  "bodyExplorer": {
+    "title": "My body",
+    "subtitle": "Explore your muscles. Find your exercises.",
+    "entryHint": "Muscles, anatomy and related exercises",
+    "explore": "Explore muscles",
+    "muscles": "Choose a muscle",
+    "selectHint": "Tap the figure or choose a muscle from the list.",
+    "chooseMuscle": "Choose a muscle to discover related exercises.",
+    "gestureHint": "Use two fingers to zoom and move the figure.",
+    "exercises": "Related exercises",
+    "loading": "Loading…",
+    "pan": {
+      "left": "Move the figure left",
+      "right": "Move the figure right",
+      "up": "Move the figure up",
+      "down": "Move the figure down"
+    },
+    "search": "Search exercises",
+    "clearSearch": "Clear search",
+    "empty": "No related exercises in your library.",
+    "noResults": "No exercises match this search.",
+    "error": "Exercises are unavailable at the moment.",
+    "favorite": "Favourite",
+    "inferred": "Muscle group association",
+    "inferredHint": "These exercises are linked through a broad muscle group; the specific muscle has not been tagged yet.",
+    "contextHint": "Colours reflect the previous screen. The outline marks your selection.",
+    "context": {
+      "exercise": "Muscles for this exercise",
+      "session": "Muscles for this session",
+      "week": "Muscles from the weekly review"
+    },
+    "zoom": {
+      "in": "Zoom in on the figure",
+      "out": "Zoom out of the figure",
+      "reset": "Reset view",
+      "value": "Zoom × {{value}}"
+    },
+    "anatomy": {
+      "chest": "Pectoralis major",
+      "back": "Latissimus dorsi, trapezius and back muscles",
+      "shoulders": "Deltoids",
+      "biceps": "Biceps brachii",
+      "triceps": "Triceps brachii",
+      "abs": "Abdominals and obliques",
+      "glutes": "Gluteal muscles",
+      "quadriceps": "Quadriceps — front of the thighs",
+      "hamstrings": "Hamstrings — back of the thighs",
+      "calves": "Gastrocnemius and soleus"
+    }
+  },
   "common": {
     "appName": "Wellness",
     "cancel": "Cancel",

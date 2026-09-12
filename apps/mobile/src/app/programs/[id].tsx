@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import { resolveSessionFineMuscles } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { BodyMap } from '@/components/body/BodyMap';
+import { BodyExplorerLink } from '@/components/body/BodyExplorerLink';
 import { Card } from '@/components/Card';
 import { CollapsibleCard } from '@/components/CollapsibleCard';
 import { Screen } from '@/components/Screen';
@@ -323,6 +324,7 @@ function SessionCard({
           {/* US MUSC-F1b — complément visuel (R5 : la liste des exercices ci-dessous reste
               affichée, jamais remplacée). */}
           <BodyMap full={bodyMapFull} reduced={bodyMapReduced} />
+          <BodyExplorerLink full={bodyMapFull} reduced={bodyMapReduced} context="session" />
           {session.plans.map((plan) => (
             <PlanRow key={plan.id} plan={plan} />
           ))}

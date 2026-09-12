@@ -17,6 +17,7 @@ import { useTranslation } from 'react-i18next';
 import { formatDayFull, type ReviewChange } from '@wellness/shared';
 
 import { BodyMap } from '@/components/body/BodyMap';
+import { BodyExplorerLink } from '@/components/body/BodyExplorerLink';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -194,6 +195,7 @@ export default function ReviewScreen() {
             </Text>
             <Card>
               <BodyMap full={bodyMapFull} reduced={bodyMapReduced} />
+              <BodyExplorerLink full={bodyMapFull} reduced={bodyMapReduced} context="week" />
             </Card>
 
             {review.previous === null && (

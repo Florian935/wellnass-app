@@ -76,6 +76,7 @@ import { useExercise, type ExerciseListItem } from '@/data/repositories/exercise
 import { useTrainingRegularity } from '@/data/repositories/planned-session-repository';
 import { StrengthSection } from '@/components/strength/StrengthSection';
 import { ExecutionSection } from '@/components/progress/ExecutionSection';
+import { BodyExplorerLink } from '@/components/body/BodyExplorerLink';
 import type { Palette } from '@/theme/colors';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -214,6 +215,7 @@ export default function ProgressScreen() {
         {/* ═══ Mon corps — mensurations et force relative ═══════════════════════════════════ */}
         {tab === 'body' ? (
           <>
+            <BodyExplorerLink />
             <Text style={[styles.sectionTitle, { color: colors.text }]}>
               {t('measurements.entryTitle')}
             </Text>

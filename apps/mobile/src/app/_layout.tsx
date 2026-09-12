@@ -568,6 +568,8 @@ function RootNavigator() {
             n'échoue ni au typecheck ni aux tests — seul l'œil voit l'en-tête manquant (cf. PAS-01). */}
         <Stack.Screen name="meal-plan" options={{ headerShown: false }} />
         <Stack.Screen name="progress" options={{ headerShown: false }} />
+        {/* CORPS-01 provides its own safe-area header and back control. */}
+        <Stack.Screen name="body" options={{ headerShown: false }} />
         {/* US MUSCPWR-01 : désignation des mouvements de force. Une route non déclarée ici
             n'échoue ni au typecheck ni aux tests — seul l'œil voit l'en-tête manquant (PAS-01). */}
         <Stack.Screen name="strength-lifts" options={{ headerShown: false }} />

@@ -365,6 +365,12 @@ describe('séance libre', () => {
 // ---------------------------------------------------------------------------
 
 describe('zone Suivre', () => {
+  it('ouvre Mon corps même sans historique de séances', async () => {
+    await afficher({ kind: 'onboarding' });
+    await taper(screen.getByRole('button', { name: 'bodyExplorer.title' }));
+    expect(push).toHaveBeenCalledWith('/body');
+  });
+
   it('🔴 exclut historique et progression tant qu’aucune séance n’existe', async () => {
     // LE défaut du hub : la grille ne recevait pas de prédicat, donc une tuile sans donnée
     // réservait quand même sa case — 2,4 écrans de scroll de carrés vides sur un compte neuf.

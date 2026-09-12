@@ -39,6 +39,7 @@ export * from './widgets';
 export * from './day-moment';
 export * from './now-action';
 export * from './exercise';
+export * from './body-explorer';
 export * from './exercise-filter';
 export * from './exercise-variant';
 export * from './workout';

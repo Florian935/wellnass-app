@@ -115,7 +115,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 06/08/2026, *
 | 3.13 | Bibliothèque d'exercices | Base fournie par l'app avec fiche complète par exercice. | Moyen | 4h | 🟡 | ✅ | Fiche complète `/exercises/[id]` (nom, groupe, matériel, instructions, muscles secondaires, variantes, records) + accès direct depuis le hub muscu — MUSC-F10a/b (22/07/2026). 🌐 fiches bilingues FR+EN. |
 | 6.1 | GIF animé par exercice | Animation en boucle du mouvement correct. | Moyen | 4h | 🔴 | ❌ | **Abandonné** (décision Florian/Damien, 20/07/2026) : jugé trop complexe pour la valeur apportée (sourcing + hébergement + import en masse). `media_url` reste stocké (colonne inoffensive, non retirée) mais ne sera **jamais rendu**. Voir [[Musculation]]. |
 | 3.18 | Démonstration GIF animé | GIF affiché sur la fiche exercice. | Moyen | 4h | 🟡 | ❌ | **Abandonné** avec 6.1 (dont il dépendait). |
-| 6.2 | Muscles ciblés sur schéma | Corps humain SVG avec muscles travaillés en évidence. | Moyen | 4h | 🟢 | ✅ | **MUSC-F1b, 02/08/2026** : anatomie fine à 10 muscles (`muscles_fine`, **additive** aux 6 groupes larges existants, spec §0), `<BodyMap/>` (11 tracés, face + dos), montée sur la fiche exercice, l'aperçu de séance et le bilan hebdo. Repli automatique sur les groupes larges tant qu'un exercice n'est pas tagué fin (travail de coach, hors dev). ⚠️ Critère de recette 12 (relecture anatomique des 11 tracés) reste à valider — device requis. |
+| 6.2 | Muscles ciblés sur schéma | Corps humain SVG avec muscles travaillés en évidence. | Moyen | 4h | 🟢 | ✅ | **CORPS-01, 12/09/2026** : dessin anatomique ombré partagé face/dos, explorateur « Mon corps » avec sélection des 10 muscles fins, zoom/déplacement accessibles, exercices associés locaux et six points d'entrée. Remplace les tracés de MUSC-F1b ; conserve ses identifiants, repli large et contexte full/reduced. Articulations du journal sensible recalées. **Recette Android §60 en attente**, dont revue anatomique. Morphologie modifiable / 3D dans un lot ultérieur. |
 | 3.14 | Recherche d'exercices | Par nom, groupe musculaire ou matériel. | Facile | 2h | 🟢 | ✅ | Nom + **filtre groupe musculaire & matériel** (tiroir Filtres, MUSC-F3). Recette device validée (Florian, 22/07/2026). |
 | 3.15 | Exercices favoris | Épingler les exercices préférés. | Facile | 1h | 🟢 | ✅ | `toggleFavorite` + tri favoris. |
 | 3.16 | Exercice personnalisé | Créer un exercice custom si absent de la base. | Facile | 2h | 🟢 | ✅ | `addCustomExercise` ; création en **modale bottom-sheet** (MUSC-F11) ; **édition enrichie** (groupe, matériel, muscles secondaires, instructions) en modale (MUSC-F12, 23/07/2026). **Recette validée (Florian, 23/07/2026).** |
@@ -479,6 +479,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | **Total périmètre de lancement** | **239** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
+> **CORPS-01, 12/09/2026** enrichit la ligne **6.2**, déjà livrée : compteurs et détail par version inchangés. Code de l'explorateur prêt pour recette Android ; les phases morphologie et objectifs ne sont pas comptées comme livrées.
+
 > **230 → 236 le 09/09/2026** : les **six lignes 7.23 → 7.28** de la refonte de l'accueil
 > (ACCUEIL-01 → 06). Elles ne rallongent pas le périmètre de lancement au sens d'un nouveau
 > besoin — elles **corrigent l'écran d'atterrissage**, dont l'analyse du 09/09/2026 a relevé
@@ -582,6 +584,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**12/09/2026 — CORPS-01 (6.2) : nouvelle anatomie et explorateur Mon corps**
+Carte ombrée partagée, sélection / caméra accessibles, exercices offline et six accès ; recette Android §60 en attente.
+Compteurs inchangés ; morphologie déformable et recommandations restent ultérieures.
 
 **12/09/2026 — MUSCU-UX01 (3.59) : 2ᵉ passe de recette, 3 constats de plus**
 Compteurs **inchangés**, US toujours en recette. Le plus coûteux est un **changement de plateforme**
