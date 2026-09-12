@@ -1,0 +1,40 @@
+{
+  "pages": [
+    { "id": "page-1", "name": "Les 3 modes" },
+    { "id": "page-2", "name": "Architecture" }
+  ],
+  "artboards": [
+    { "file": "Main.dc.html", "title": "1 · Simple", "page": "page-1", "x": 0, "y": 0, "w": 390, "h": 1180 },
+    { "file": "Intermediaire.dc.html", "title": "2 · Intermédiaire", "page": "page-1", "x": 510, "y": 0, "w": 390, "h": 2020 },
+    { "file": "Avance.dc.html", "title": "3 · Avancé", "page": "page-1", "x": 1020, "y": 0, "w": 390, "h": 3520 },
+    { "file": "Historique.dc.html", "title": "Le même écran, depuis l'historique", "page": "page-1", "x": 1530, "y": 0, "w": 390, "h": 1070 },
+    { "file": "Architecture.dc.html", "title": "Un composant, deux montages", "page": "page-2", "x": 0, "y": 0, "w": 940, "h": 1140 }
+  ],
+  "annotations": [
+    {
+      "id": "lecture",
+      "page": "page-1",
+      "x": 0,
+      "y": -300,
+      "w": 900,
+      "text": "Les 3 modes, côte à côte.\n\nSimple = « c'est fait » : la preuve et la récompense, 5 s après avoir reposé la barre.\nIntermédiaire = « c'était comment » : la mise en perspective.\nAvancé = « qu'est-ce que ça vaut » : l'analyse.\n\nLes blocs ne se réordonnent jamais : chaque niveau AJOUTE dessous. Lis les trois planches de gauche à droite, la colonne de gauche reste identique."
+    },
+    {
+      "id": "iso",
+      "page": "page-1",
+      "x": 1530,
+      "y": -300,
+      "w": 390,
+      "text": "L'iso.\n\nMême composant, monté depuis l'historique. Seules 3 choses changent : l'en-tête (date + retour), pas d'animation de célébration à la réouverture, pas de « Retour à l'accueil ».\n\nTout le reste est identique PAR CONSTRUCTION, pas par discipline."
+    },
+    {
+      "id": "gisement",
+      "page": "page-2",
+      "x": 0,
+      "y": -240,
+      "w": 940,
+      "text": "8 briques de calcul déjà écrites et testées dans packages/shared ne sont pas branchées sur le récap : sessionRelativeIntensity, computeSetTypeMix, computeExecutionCompliance, computeMuscleBalance, sessionBestEstimated1RM, computeSessionDuration, computeDots, compareExercisePerformance.\n\nLe récap est pauvre alors que le calcul est déjà fait ailleurs."
+    }
+  ],
+  "launch": { "view": "canvas", "page": "page-1" }
+}

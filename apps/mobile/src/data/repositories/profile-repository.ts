@@ -44,6 +44,7 @@ export type ProfileInput = Pick<
   | 'startWeightKg'
   | 'mainGoal'
   | 'workoutDisplayLevel'
+  | 'summaryDisplayLevel'
   | 'dailyStepGoal'
   | 'onboardingCompletedAt'
   | 'activationPathDismissedAt'
@@ -62,6 +63,7 @@ type ProfileDbRow = {
   start_weight_kg: number | null;
   main_goal: string | null;
   workout_display_level: string | null;
+  summary_display_level: string | null;
   daily_step_goal: number | null;
   onboarding_completed_at: string | null;
   activation_path_dismissed_at: string | null;
@@ -90,6 +92,13 @@ function rowToProfile(row: ProfileDbRow): Profile {
     startWeightKg: row.start_weight_kg,
     mainGoal: row.main_goal as Profile['mainGoal'],
     workoutDisplayLevel: coerceWorkoutDisplayLevel(row.workout_display_level),
+    // Décision D1 : « colonne dédiée, **initialisée sur la valeur du niveau de séance** ». La
+    // migration pose `default 'normal'`, qui ne couvre que les lignes créées après elle : sans ce
+    // repli, quelqu'un qui avait réglé sa séance en « Avancé » ouvrait son premier bilan en
+    // « Intermédiaire ». `NULL` veut dire « jamais choisi », pas « normal ».
+    summaryDisplayLevel: coerceWorkoutDisplayLevel(
+      row.summary_display_level ?? row.workout_display_level,
+    ),
     dailyStepGoal: row.daily_step_goal,
     onboardingCompletedAt: row.onboarding_completed_at,
     activationPathDismissedAt: row.activation_path_dismissed_at,
@@ -111,6 +120,7 @@ function inputToColumns(input: Partial<ProfileInput>): Record<string, unknown> {
   if ('startWeightKg' in input) columns['start_weight_kg'] = input.startWeightKg;
   if ('mainGoal' in input) columns['main_goal'] = input.mainGoal;
   if ('workoutDisplayLevel' in input) columns['workout_display_level'] = input.workoutDisplayLevel;
+  if ('summaryDisplayLevel' in input) columns['summary_display_level'] = input.summaryDisplayLevel;
   if ('dailyStepGoal' in input) columns['daily_step_goal'] = input.dailyStepGoal;
   if ('onboardingCompletedAt' in input) {
     columns['onboarding_completed_at'] = input.onboardingCompletedAt;

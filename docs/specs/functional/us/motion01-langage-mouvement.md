@@ -116,7 +116,7 @@ C'est le point qui rend cette US acceptable après le travail de CONF-07.
 ## 4. Périmètre livré — **19 effets sur les 45 analysés**
 
 Référence visuelle complète : [maquettes](../../../../design/motion-01/). Le détail cochable est en
-[RECETTES.md](../../../../RECETTES.md) §60.
+[RECETTES.md](../../../../RECETTES.md) §61.
 
 > **Le socle, lui, est complet.** C'est ce qui compte pour la suite : les effets restants ne sont
 > plus que du branchement sur des primitives écrites, testées et documentées.
@@ -205,7 +205,7 @@ Ceux-ci ne sont pas « à faire plus tard » : ils demandent autre chose que du 
 
 ## 7. Critères d'acceptation
 
-Détail cochable dans [RECETTES.md](../../../../RECETTES.md) §60 (24 critères). En résumé :
+Détail cochable dans [RECETTES.md](../../../../RECETTES.md) §61 (24 critères). En résumé :
 
 1. Couper « Animations » dans les Réglages **ou** activer « réduire les animations » du système
    supprime tout mouvement **sans rien cacher** — c'est le critère qui conditionne tous les autres.

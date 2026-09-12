@@ -127,3 +127,7 @@ export * from './pain-zones';
 // US HORAIRE-01 (roadmap 2.4) — convocation d'une séance planifiée à heure connue.
 export * from './session-reminder';
 export type { Database, Json } from './database.types';
+export * from './session-muscle-split';
+export * from './rep-ranges';
+export * from './session-comparison';
+export * from './workout-report';

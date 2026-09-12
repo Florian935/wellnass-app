@@ -253,6 +253,7 @@ export default function SettingsScreen() {
   const { connected, hasSynced } = useStatus();
   const { profile } = useProfile();
   const displayLevel = profile?.workoutDisplayLevel ?? 'normal';
+  const summaryLevel = profile?.summaryDisplayLevel ?? 'normal';
   const [exporting, setExporting] = useState(false);
 
   // Préférences de notifications (US 2.6/2.8/1.17).
@@ -593,6 +594,54 @@ export default function SettingsScreen() {
       </View>
       <Text style={[styles.hint, { color: colors.textMuted }]}>
         {t('settings.workoutDisplayLevel.hint')}
+      </Text>
+
+      {/* Niveau de lecture du BILAN de séance (US MUSCU-UX02, décision D1) — volontairement
+          distinct du réglage ci-dessus : celui-là règle la densité de SAISIE sous la barre, où
+          l'on veut le minimum de champs ; celui-ci la profondeur de LECTURE du bilan, consulté
+          assis au calme. Il se change aussi depuis le bilan lui-même (D2), où il est découvert. */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settings.summaryDisplayLevel.title')}
+      </Text>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        {WORKOUT_DISPLAY_LEVELS.map((lvl, i) => {
+          const selected = summaryLevel === lvl;
+          return (
+            <Pressable
+              key={lvl}
+              accessibilityRole="button"
+              accessibilityState={{ selected }}
+              onPress={() => void upsertProfile({ summaryDisplayLevel: lvl })}
+              style={[
+                styles.menuColorRow,
+                { flexDirection: 'row', alignItems: 'center', gap: 12 },
+                i < WORKOUT_DISPLAY_LEVELS.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
+              ]}
+            >
+              <View style={{ flex: 1, gap: 2 }}>
+                <Text style={[styles.rowLabel, { color: colors.text }]}>
+                  {t(`workout.report.level.${lvl}`)}
+                </Text>
+                <Text style={[styles.hint, { color: colors.textMuted, marginTop: 0 }]}>
+                  {t(`workout.report.levelDescription.${lvl}`)}
+                </Text>
+              </View>
+              <View
+                style={[
+                  styles.menuColorDot,
+                  {
+                    backgroundColor: selected ? colors.accent : 'transparent',
+                    borderColor: colors.border,
+                    borderWidth: selected ? 0 : 1.5,
+                  },
+                ]}
+              />
+            </Pressable>
+          );
+        })}
+      </View>
+      <Text style={[styles.hint, { color: colors.textMuted }]}>
+        {t('settings.summaryDisplayLevel.hint')}
       </Text>
 
       {/* Notifications (US 2.6 rappel streak, 1.17 gestion par type) */}

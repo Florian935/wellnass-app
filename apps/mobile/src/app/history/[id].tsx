@@ -1,65 +1,56 @@
+/**
+ * Détail d'une séance passée — le **second montage** du bilan (US MUSCU-UX02).
+ *
+ * ── Ce que cet écran a perdu, et pourquoi c'est le but ───────────────────────────────────────────
+ * Il portait son propre `MetaRow`, ses `ExerciseCard`, `SetRow` et `RecordRow` : une seconde version
+ * du récap, qui avait divergé de la première. Elle montrait le détail série par série et l'écart au
+ * planifié que le récap n'avait pas, mais pas la comparaison à la séance précédente que le récap
+ * avait — et elle affichait le ressenti **en brut** (« 8/10 ») là où le récap disait « Difficile »,
+ * deux lectures contradictoires de `workouts.rpe`.
+ *
+ * Tout cela vit désormais dans `<WorkoutReport>`. Cet écran ne garde que son en-tête.
+ */
+
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import {
-  useWorkoutDetail,
-  useWorkoutRecords,
-  type WorkoutDetail,
-  type BeatenRecord,
-} from '@/data/repositories/records-repository';
-import type { WorkoutEntry, WorkoutSetItem } from '@/data/repositories/workout-repository';
-import { useUnits } from '@/hooks/useUnits';
-import { useIntensity } from '@/hooks/useIntensity';
+import { WorkoutReport } from '@/components/workout/report/WorkoutReport';
+import { useWorkoutReport } from '@/data/repositories/workout-report-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
-// ---------------------------------------------------------------------------
-// Formatage de date JJ/MM/AAAA
-// ---------------------------------------------------------------------------
 
+/** JJ/MM/AAAA en date **locale** — un slice de l'ISO UTC décalerait le jour selon le fuseau. */
 function formatDateFr(isoString: string): string {
   const d = new Date(isoString);
   const dd = String(d.getDate()).padStart(2, '0');
   const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const yyyy = d.getFullYear();
-  return `${dd}/${mm}/${yyyy}`;
+  return `${dd}/${mm}/${d.getFullYear()}`;
 }
-
-// ---------------------------------------------------------------------------
-// Écran principal
-// ---------------------------------------------------------------------------
 
 export default function WorkoutDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const workoutId = typeof id === 'string' ? id : '';
-  return <WorkoutDetailView workoutId={workoutId} />;
-}
 
-// ---------------------------------------------------------------------------
-// Vue principale
-// ---------------------------------------------------------------------------
-
-function WorkoutDetailView({ workoutId }: { workoutId: string }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const { report, isLoading } = useWorkoutReport(workoutId);
 
-  const { detail, isLoading: detailLoading } = useWorkoutDetail(workoutId);
-  const { records, isLoading: recordsLoading } = useWorkoutRecords(workoutId);
+  const back = (
+    <Pressable
+      onPress={() => router.back()}
+      hitSlop={12}
+      accessibilityRole="button"
+      accessibilityLabel={t('common.back')}
+    >
+      <Ionicons name="arrow-back" size={24} color={colors.accent} />
+    </Pressable>
+  );
 
-  const isLoading = detailLoading || recordsLoading;
-
-  // ── Loading ──────────────────────────────────────────────────────────────
-  if (isLoading && !detail) {
+  if (isLoading && report === null) {
     return (
       <Screen edges={['top']} center>
         <ActivityIndicator color={colors.accent} />
@@ -67,22 +58,10 @@ function WorkoutDetailView({ workoutId }: { workoutId: string }) {
     );
   }
 
-  // ── Séance introuvable ────────────────────────────────────────────────────
-  if (!detail) {
+  if (report === null) {
     return (
       <Screen edges={['top']}>
-        <ScreenHeader
-          title={t('history.detail.notFoundTitle')}
-          action={
-            <Pressable
-              onPress={() => router.back()}
-              hitSlop={12}
-              accessibilityRole="button"
-            >
-              <Ionicons name="arrow-back" size={24} color={colors.accent} />
-            </Pressable>
-          }
-        />
+        <ScreenHeader title={t('history.detail.notFoundTitle')} action={back} />
         <Text style={[styles.notFound, { color: colors.textMuted }]}>
           {t('history.detail.notFoundMessage')}
         </Text>
@@ -90,395 +69,21 @@ function WorkoutDetailView({ workoutId }: { workoutId: string }) {
     );
   }
 
-  const dateLabel = formatDateFr(detail.finishedAt ?? detail.startedAt);
-
   return (
     <Screen edges={['top']}>
       <ScreenHeader
-        title={dateLabel}
-        action={
-          <Pressable
-            onPress={() => router.back()}
-            hitSlop={12}
-            accessibilityRole="button"
-            accessibilityLabel={t('common.back')}
-          >
-            <Ionicons name="arrow-back" size={24} color={colors.accent} />
-          </Pressable>
-        }
+        title={formatDateFr(report.startedAt)}
+        subtitle={report.title ?? t('history.freeSession')}
+        action={back}
       />
-
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-      >
-        {/* Métadonnées */}
-        <MetaRow detail={detail} />
-
-        {/* Exercices */}
-        <Text style={[styles.sectionTitle, { color: colors.text }]}>
-          {t('history.detail.sectionExercises')}
-        </Text>
-
-        {detail.entries.length === 0 ? (
-          <Text style={[styles.emptyText, { color: colors.textMuted }]}>
-            {t('history.detail.emptyExercises')}
-          </Text>
-        ) : (
-          <View style={styles.exerciseList}>
-            {detail.entries.map((entry) => (
-              <ExerciseCard key={entry.exerciseId} entry={entry} />
-            ))}
-          </View>
-        )}
-
-        {/* Records battus */}
-        {records.length > 0 ? (
-          <>
-            <Text style={[styles.sectionTitle, styles.sectionTitleSpaced, { color: colors.text }]}>
-              {t('history.detail.sectionRecords')}
-            </Text>
-            <View style={styles.recordList}>
-              {records.map((rec) => (
-                <RecordRow key={`${rec.exerciseId}-${rec.type}`} record={rec} />
-              ))}
-            </View>
-          </>
-        ) : null}
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <WorkoutReport report={report} context="history" />
       </ScrollView>
     </Screen>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Métadonnées (durée, volume, RPE, notes)
-// ---------------------------------------------------------------------------
-
-function MetaRow({ detail }: { detail: WorkoutDetail }) {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
-  const units = useUnits();
-
-  const items: { label: string; value: string }[] = [];
-
-  if (detail.durationSeconds != null) {
-    items.push({
-      label: t('history.detail.metaDuration'),
-      value: t('history.detail.durationMin', {
-        count: Math.round(detail.durationSeconds / 60),
-      }),
-    });
-  }
-  if (detail.volume > 0) {
-    items.push({
-      label: t('history.detail.metaVolume'),
-      value: t('history.detail.volumeKg', { volume: units.formatWeight(detail.volume) }),
-    });
-  }
-  if (detail.rpe != null) {
-    items.push({
-      label: t('history.detail.metaRpe'),
-      value: t('history.detail.metaRpeValue', { value: detail.rpe }),
-    });
-  }
-
-  return (
-    <View style={styles.metaContainer}>
-      {items.map((item) => (
-        <View
-          key={item.label}
-          style={[styles.metaChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
-        >
-          <Text style={[styles.metaLabel, { color: colors.textMuted }]}>{item.label}</Text>
-          <Text style={[styles.metaValue, { color: colors.text }]}>{item.value}</Text>
-        </View>
-      ))}
-      {detail.notes ? (
-        <View style={[styles.notesCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          <Text style={[styles.metaLabel, { color: colors.textMuted }]}>
-            {t('history.detail.metaNotes')}
-          </Text>
-          <Text style={[styles.notesText, { color: colors.text }]}>{detail.notes}</Text>
-        </View>
-      ) : null}
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Carte d'exercice (nom + séries)
-// ---------------------------------------------------------------------------
-
-function ExerciseCard({ entry }: { entry: WorkoutEntry }) {
-  const { colors } = useTheme();
-
-  return (
-    <View style={[styles.exerciseCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <View style={styles.exerciseHeader}>
-        <Ionicons name="barbell-outline" size={14} color={colors.accent} />
-        <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={1}>
-          {entry.exerciseName}
-        </Text>
-      </View>
-      <View style={styles.setList}>
-        {entry.sets.map((set, idx) => (
-          <SetRow key={set.id} set={set} index={idx} />
-        ))}
-      </View>
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Ligne de série (numéro + type + reps × charge)
-// ---------------------------------------------------------------------------
-
-/** Formate une durée en « m:ss » (série à la durée). */
-function formatDurationMmSs(totalSeconds: number): string {
-  const s = Math.max(0, Math.floor(totalSeconds));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
-}
-
-function SetRow({ set, index }: { set: WorkoutSetItem; index: number }) {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
-  const units = useUnits();
-  const intensity = useIntensity();
-
-  const setTypeLabelMap: Record<string, string> = {
-    normal: t('history.detail.setNormal'),
-    warmup: t('history.detail.setWarmup'),
-    superset: t('history.detail.setSuperset'),
-    duration: t('history.detail.setDuration'),
-    bodyweight: t('history.detail.setBodyweight'),
-    dropset: t('history.detail.setDropset'),
-    failure: t('history.detail.setFailure'),
-  };
-  const typeLabel = setTypeLabelMap[set.setType] ?? t('history.detail.setNormal');
-
-  let valueLabel: string;
-  if (set.setType === 'duration') {
-    const duration = set.durationSeconds == null ? '—' : formatDurationMmSs(set.durationSeconds);
-    valueLabel = set.weightKg == null ? duration : `${duration} · +${units.formatWeight(set.weightKg)}`;
-  } else if (set.reps != null && set.weightKg != null) {
-    valueLabel = t('history.detail.repsWeight', { reps: set.reps, weight: units.formatWeight(set.weightKg) });
-  } else if (set.reps != null) {
-    valueLabel = t('history.detail.repsOnly', { reps: set.reps });
-  } else if (set.weightKg != null) {
-    valueLabel = t('history.detail.weightOnly', { weight: units.formatWeight(set.weightKg) });
-  } else {
-    valueLabel = '—';
-  }
-
-  // Écart charge réalisée vs planifiée (flèche =/▲/▼), et RPE de la série.
-  const meta: string[] = [];
-  if (set.plannedWeightKg != null) {
-    let arrow = '=';
-    if (set.weightKg != null && set.weightKg > set.plannedWeightKg) arrow = '▲';
-    else if (set.weightKg != null && set.weightKg < set.plannedWeightKg) arrow = '▼';
-    meta.push(`${t('history.detail.planned', { weight: units.formatWeight(set.plannedWeightKg) })} ${arrow}`);
-  }
-  // US UX-05 : affiché dans l'échelle choisie (RPE ou RIR). La donnée stockée reste le RPE.
-  const intensityLabel = intensity.format(set.rpe);
-  if (intensityLabel !== null) {
-    meta.push(intensityLabel);
-  }
-
-  return (
-    <View style={styles.setRow}>
-      <Text style={[styles.setIndex, { color: colors.textMuted }]}>{index + 1}</Text>
-      <Text style={[styles.setType, { color: colors.textMuted }]}>{typeLabel}</Text>
-      <View style={styles.setValueCol}>
-        <Text style={[styles.setValue, { color: colors.text }]}>{valueLabel}</Text>
-        {meta.length > 0 ? (
-          <Text style={[styles.setMeta, { color: colors.textMuted }]}>{meta.join(' · ')}</Text>
-        ) : null}
-      </View>
-      {set.done ? (
-        <Ionicons name="checkmark-circle" size={14} color={colors.accent} />
-      ) : (
-        <Ionicons name="ellipse-outline" size={14} color={colors.border} />
-      )}
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Ligne de record battu
-// ---------------------------------------------------------------------------
-
-function RecordRow({ record }: { record: BeatenRecord }) {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
-  const units = useUnits();
-
-  const typeLabel = t(`history.detail.record.${record.type}`);
-
-  const valueParts: string[] = [];
-  if (record.reps != null && record.weightKg != null) {
-    valueParts.push(t('history.detail.repsWeight', { reps: record.reps, weight: units.formatWeight(record.weightKg) }));
-  } else if (record.weightKg != null) {
-    valueParts.push(t('history.detail.volumeKg', { volume: units.formatWeight(record.value) }));
-  } else {
-    valueParts.push(String(Math.round(record.value)));
-  }
-
-  return (
-    <View style={[styles.recordRow, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <View style={styles.recordLeft}>
-        <Ionicons name="trophy-outline" size={14} color={colors.accent} />
-        <View style={styles.recordTexts}>
-          <Text style={[styles.recordExercise, { color: colors.text }]} numberOfLines={1}>
-            {record.exerciseName}
-          </Text>
-          <Text style={[styles.recordType, { color: colors.textMuted }]}>{typeLabel}</Text>
-        </View>
-      </View>
-      <Text style={[styles.recordValue, { color: colors.accent }]}>{valueParts.join(' · ')}</Text>
-    </View>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Styles
-// ---------------------------------------------------------------------------
-
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 32 },
-  notFound: {
-    fontFamily: fontFamily.body,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  metaContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 10,
-    marginBottom: 24,
-  },
-  metaChip: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 2,
-    minWidth: 80,
-  },
-  notesCard: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    gap: 4,
-    width: '100%',
-  },
-  metaLabel: {
-    fontFamily: fontFamily.body,
-    fontSize: 11,
-    letterSpacing: 0.4,
-    textTransform: 'uppercase',
-  },
-  metaValue: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 15,
-  },
-  notesText: {
-    fontFamily: fontFamily.body,
-    fontSize: 13,
-    lineHeight: 18,
-  },
-  sectionTitle: {
-    fontFamily: fontFamily.displaySemi,
-    fontSize: 18,
-    letterSpacing: -0.3,
-    marginBottom: 12,
-  },
-  sectionTitleSpaced: {
-    marginTop: 28,
-  },
-  exerciseList: { gap: 12 },
-  exerciseCard: {
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 14,
-    gap: 10,
-  },
-  exerciseHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  exerciseName: {
-    flex: 1,
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 15,
-  },
-  setList: { gap: 6 },
-  setRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  setIndex: {
-    fontFamily: fontFamily.mono,
-    fontSize: 12,
-    width: 16,
-    textAlign: 'right',
-  },
-  setType: {
-    fontFamily: fontFamily.body,
-    fontSize: 12,
-    width: 48,
-  },
-  setValueCol: {
-    flex: 1,
-    gap: 2,
-  },
-  setValue: {
-    fontFamily: fontFamily.body,
-    fontSize: 14,
-  },
-  setMeta: {
-    fontFamily: fontFamily.body,
-    fontSize: 11,
-  },
-  emptyText: {
-    fontFamily: fontFamily.body,
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  recordList: { gap: 8 },
-  recordRow: {
-    borderWidth: 1,
-    borderRadius: 12,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 10,
-  },
-  recordLeft: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  recordTexts: {
-    flex: 1,
-    gap: 2,
-  },
-  recordExercise: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 14,
-  },
-  recordType: {
-    fontFamily: fontFamily.body,
-    fontSize: 12,
-  },
-  recordValue: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 14,
-    flexShrink: 0,
-  },
+  notFound: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
 });

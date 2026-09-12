@@ -34,6 +34,10 @@ const profiles = new Table({
   start_weight_kg: column.real,
   main_goal: column.text,
   workout_display_level: column.text,
+  // US MUSCU-UX02 — niveau de lecture du BILAN, distinct de celui de la saisie ci-dessus (D1).
+  // ⚠️ Absente d'ici, l'écriture échoue et `void upsertProfile()` avale l'erreur : le sélecteur
+  // revient à sa valeur précédente sans le moindre message (piège déjà rencontré deux fois).
+  summary_display_level: column.text,
   // US PAS-01 — objectif de pas quotidien (1000-50000). Migration :
   // 20260728132424_pas01_daily_steps.sql. ⚠️ Ajoutée après coup : la colonne existait déjà côté
   // Supabase et dans `profile-repository.ts` sans être déclarée ici, donc toute lecture/écriture

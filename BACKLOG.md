@@ -93,6 +93,10 @@ avec son front-matter, **disparaît d'ici** et apparaît dans [ETAT.md](ETAT.md)
 
 Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 
+> 🆕 **Ouvert le 12/09/2026 — code devenu orphelin par MUSCU-UX02.** Le bilan de séance passant par `useWorkoutReport`, trois hooks de `records-repository.ts` n'ont plus **aucun appelant de production** : `useWorkoutRecords` (l. 538), `useWorkoutDetail` (l. 1026) et `useExerciseDeltas` (l. 1445) — seuls `records-sql.test.ts` les touche encore. Même chose pour les clés i18n `workout.summary.records.*`, `workout.summary.density`, `workout.summary.minuteSymbol` et tout le bloc `history.detail.set*/record*/meta*`, à zéro usage dans les deux locales.
+> ⚠️ **Volontairement pas supprimés dans le lot MUSCU-UX02** : la suppression touche un fichier de 1 500 lignes et ses tests, juste avant une recette de 24 critères — un dégât collatéral y coûterait plus cher que le ménage n'y rapporte. À faire **après** la clôture de l'US, d'un seul geste et avec la suite de tests en filet.
+> 🔴 `SummaryExerciseList.tsx`, lui, **a bien été supprimé** dans le lot : il n'était plus référencé nulle part et ne portait aucun test.
+
 > ✅ **Fermé le 06/08/2026 — les 15 US en recette sans critères cochables.** Ouvert le matin par
 > [`/reconcilier`](.claude/commands/reconcilier.md), comblé l'après-midi : **RECETTES.md §35 à §49**
 > couvrent GARDE-01, META-19, MN-04, MR-08, MUSC-12, MUSC-19, MUSC-20, MUSC-F15, NUTR-18, RN-03,
