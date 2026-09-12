@@ -1,5 +1,5 @@
 /**
- * Retours haptiques de l'app — une façade, pour deux raisons.
+ * Retours haptiques de l'app — une façade, et l'histoire de deux correctifs.
  *
  * ── 1. La spec le demandait, la muscu ne l'avait pas ─────────────────────────────────────────────
  * `navigation-ux.md` §4.2 : « Chaque série validée → animation + son (désactivable) ». L'écran de
@@ -8,41 +8,60 @@
  * plus répété de l'app — 30 à 40 validations par séance — n'avait rien. On valide, rien ne bouge,
  * on vérifie que c'est passé.
  *
- * ── 2. Pourquoi PAS `performAndroidHapticsAsync` (correctif de recette, 11/09/2026) ─────────────
- * Le premier jet de cette façade suivait la recommandation de la doc Expo SDK 57 : sur Android,
- * `impactAsync` / `notificationAsync` passent par l'API `Vibrator`, **dépréciée**, là où
- * `performAndroidHapticsAsync` ne demande aucune permission. Techniquement exact — et pourtant
- * **rien ne vibrait sur device** (recette §57.21).
+ * ── 2. Deux tentatives ratées avec `expo-haptics`, et pourquoi ──────────────────────────────────
+ * **Tentative A — `performAndroidHapticsAsync`** (la recommandation de la doc Expo SDK 57, puisque
+ * `Vibrator` y est annoncé déprécié). Muette sur device : l'implémentation native appelle
+ * `View.performHapticFeedback(...)`, qu'Android **ignore silencieusement** quand le réglage système
+ * « vibration au toucher » est coupé. S'y ajoutent `HapticFeedbackConstants.CONFIRM` réservé à
+ * l'API ≥ 30, et l'absence de remontée du booléen d'échec — donc aucun repli possible.
  *
- * La raison est dans l'implémentation native : `performAndroidHapticsAsync` appelle
- * `View.performHapticFeedback(...)`, qu'Android **ignore silencieusement** quand le réglage
- * système « vibration au toucher » est désactivé — ce qu'il est, par défaut, sur beaucoup
- * d'appareils. Aucune erreur, aucun retour : l'appel réussit et ne fait rien. Deux limites
- * s'ajoutent : `HapticFeedbackConstants.CONFIRM` n'existe qu'à partir de l'API 30 (en dessous, le
- * module lève, et le `catch` ci-dessous avale), et le module ne remonte pas le booléen que
- * `performHapticFeedback` retourne — impossible de détecter l'échec pour se rabattre.
+ * **Tentative B — `impactAsync` / `notificationAsync`** (le chemin `Vibrator`, celui du planning).
+ * Muette aussi, pour une raison **complètement différente** : expo-haptics ne demande pas une
+ * vibration, il impose une **forme d'onde à amplitude fixe**. `impactAsync('light')` vaut
+ * `createWaveform(timings = [0, 50], amplitudes = [0, 30])` — soit **30 sur 255, 12 % de la
+ * puissance du moteur** pendant 50 ms. `notificationAsync('success')` n'est guère mieux (50 et 60,
+ * ~20 %). Sur le LRA d'un Pixel 6a, c'est en dessous du seuil de perception, téléphone en main.
  *
- * On repasse donc par `Vibrator` : c'est ce que faisait `Vibration.vibrate()` avant cette US (la
- * vibration de fin de repos, elle, marchait), c'est ce qu'utilisent déjà `planning` et le guidage
- * de fractionné, et la permission `VIBRATE` est déclarée au manifeste depuis le début. Dépréciée
- * mais fonctionnelle vaut mieux que recommandée mais muette.
+ * ── 3. Ce qu'on utilise, et pourquoi c'est le bon choix ─────────────────────────────────────────
+ * `Vibration` de **React Native**. Son module natif appelle
+ * `VibrationEffect.createOneShot(durée, VibrationEffect.DEFAULT_AMPLITUDE)` : l'amplitude est celle
+ * que le constructeur juge nominale pour son moteur, pas un 12 % arbitraire. C'est précisément
+ * l'API qui marchait **avant** cette US (la fin de repos faisait `Vibration.vibrate()`), c'est
+ * celle du guidage de fractionné, et la permission `VIBRATE` est au manifeste depuis le début.
  *
- * Tout est **best-effort** : un appareil sans moteur haptique, ou un utilisateur qui a coupé le
- * retour système, ne doit jamais faire échouer l'action qu'il accompagne. D'où les `void` et les
- * `catch` silencieux — une validation de série qui planterait parce que le téléphone ne vibre pas
- * serait un défaut bien pire que l'absence de vibration.
+ * On ne règle donc plus que **la durée** — le seul paramètre qui distingue vraiment un tic d'une
+ * confirmation. C'est aussi le seul qui se raisonne : l'amplitude perçue dépend du moteur, la
+ * durée non.
+ *
+ * ⚠️ Trois choses restent hors de notre contrôle, et aucune n'est un défaut de l'app : un appareil
+ * sans moteur haptique, le mode « Ne pas déranger » total, et le curseur système de retour tactile
+ * à zéro. D'où le `try/catch` : une validation de série qui planterait parce que le téléphone ne
+ * vibre pas serait un défaut bien pire que l'absence de vibration.
  */
 
-import * as Haptics from 'expo-haptics';
+import { Vibration } from 'react-native';
 
-/** Exécute un retour haptique sans jamais propager d'erreur. */
-function safely(run: () => Promise<unknown>): void {
+/**
+ * Durées, en millisecondes. Ce sont les **seuls** réglages de ce module.
+ *
+ * Bornes utiles : en dessous de ~15 ms un LRA n'a pas le temps de monter en régime et on ne sent
+ * rien ; au-delà de ~50 ms, un retour répété quarante fois dans l'heure devient agaçant.
+ */
+const DURATION_MS = {
+  /** Validation d'une série — bref, mais franc. Répété 30 à 40 fois par séance. */
+  confirm: 30,
+  /** Fin de repos, clôture de séance, record battu — arrive une fois, peut se permettre d'insister. */
+  milestone: 140,
+  /** Pas d'un stepper, bascule d'exercice — le plus discret des trois. */
+  select: 15,
+} as const;
+
+/** Déclenche une vibration sans jamais propager d'erreur. */
+function safely(durationMs: number): void {
   try {
-    void run().catch(() => {
-      // Pas de moteur haptique, retour système coupé, permission refusée : sans conséquence.
-    });
+    Vibration.vibrate(durationMs);
   } catch {
-    // Certaines implémentations lèvent de façon synchrone.
+    // Pas de moteur haptique, retour système coupé, permission refusée : sans conséquence.
   }
 }
 
@@ -50,10 +69,10 @@ function safely(run: () => Promise<unknown>): void {
  * Confirme une action réussie et attendue — **la validation d'une série**.
  *
  * Discret par construction : répété quarante fois dans l'heure, un retour appuyé deviendrait
- * pénible — d'où l'impact `Light` (50 ms à amplitude 30) plutôt qu'un motif de notification.
+ * pénible.
  */
 export function hapticConfirm(): void {
-  safely(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light));
+  safely(DURATION_MS.confirm);
 }
 
 /**
@@ -61,10 +80,10 @@ export function hapticConfirm(): void {
  * Plus appuyé que `hapticConfirm` : il arrive une fois, pas quarante.
  */
 export function hapticMilestone(): void {
-  safely(() => Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success));
+  safely(DURATION_MS.milestone);
 }
 
 /** Accompagne un changement de sélection (pas à pas d'un stepper, bascule d'exercice). */
 export function hapticSelect(): void {
-  safely(() => Haptics.selectionAsync());
+  safely(DURATION_MS.select);
 }

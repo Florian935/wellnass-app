@@ -159,7 +159,14 @@ jest.mock('@/theme/useTheme', () => ({
 }));
 
 jest.mock('@/hooks/useUnits', () => ({
-  useUnits: () => ({ formatWeight: (kg: number) => `${Math.round(kg)} kg` }),
+  useUnits: () => ({
+    formatWeight: (kg: number) => `${Math.round(kg)} kg`,
+    // US MUSCU-UX01 / recette §57.62 : la bande affiche le nombre et l'unité séparément, donc
+    // l'écran a besoin du symbole et de la valeur convertie, plus du seul `formatWeight`.
+    formatAxisNumber: (value: number) => String(value),
+    toWeightValue: (kg: number) => kg,
+    weightSymbol: 'kg',
+  }),
 }));
 
 // ---------------------------------------------------------------------------
@@ -266,15 +273,22 @@ describe('résumé', () => {
     expect(screen.getByText('workout.none')).toBeTruthy();
   });
 
-  it('affiche durée, exercices, séries, volume et densité', async () => {
+  it('affiche durée, séries, volume et densité', async () => {
     await afficher({ sets: [serie(), serie({ exerciseId: 'ex-2' })] });
 
-    expect(screen.getByText('workout.summary.minutes:{"count":75}')).toBeTruthy();
     // US MUSCU-UX01 : la bande porte durée, séries, tonnage et densité. Le **nombre d'exercices**
     // n'y figure plus — il se lit directement dans « Ce que tu as fait », une carte par exercice,
     // ce qui est plus utile qu'un compte isolé.
+    //
+    // Recette §57.62 : le nombre et son unité sont désormais **deux textes distincts** (« 75 » et
+    // « min »), et le tonnage est arrondi à l'entier. Cette séparation est ce qui empêche la bande
+    // de déborder, donc elle mérite d'être verrouillée ici.
+    expect(screen.getByText('75')).toBeTruthy();
     expect(screen.getByText('2')).toBeTruthy();
-    expect(screen.getByText('1600 kg')).toBeTruthy();
+    expect(screen.getByText('1600')).toBeTruthy();
+    // Deux unités « min » (durée et densité) + un « kg » (volume) et un « kg/min ».
+    expect(screen.getAllByText('workout.summary.minuteSymbol').length).toBeGreaterThan(0);
+    expect(screen.getByText('kg')).toBeTruthy();
   });
 
   it('🔴 les séries d’ÉCHAUFFEMENT sont comptées à part', async () => {

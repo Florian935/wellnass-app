@@ -273,36 +273,54 @@ function WorkoutCelebrationBanner({ workoutId }: { workoutId: string }) {
   );
 }
 
-/** Une statistique de la bande : la valeur d'abord, son nom en dessous. */
+/**
+ * Une statistique de la bande : le **nombre** en grand, son unité en petit à côté, le nom dessous.
+ *
+ * ── Pourquoi l'unité est séparée du nombre (recette §57.62) ──────────────────────────────────────
+ * Premier jet : « 5 500,0 kg » et « 2 750,0 kg/min » d'un bloc, en monospace, rétrécis par
+ * `adjustsFontSizeToFit` jusqu'à tenir. Ça ne débordait plus, mais chaque cellule rétrécissait
+ * *différemment* — quatre tailles de police sur une même ligne, la densité deux fois plus petite
+ * que la durée. Une bande de statistiques se lit en diagonale : si les nombres n'ont pas le même
+ * poids visuel, on ne compare plus rien.
+ *
+ * On raccourcit donc la **matière** au lieu de rétrécir le texte : l'unité descend en petit, et la
+ * décimale du tonnage disparaît (elle ne veut rien dire sur une somme de charges). « 5 500 kg »
+ * tient sans rétrécir là où « 5 500,0 kg » ne tenait pas. `adjustsFontSizeToFit` reste, mais comme
+ * filet — il ne se déclenche plus qu'au-delà de six chiffres.
+ */
 function Stat({
   value,
+  unit,
   label,
   colors,
 }: {
   value: string;
+  /** Unité affichée en petit à côté du nombre. Omise quand la grandeur n'en a pas (un compte). */
+  unit?: string;
   label: string;
   colors: ReturnType<typeof useTheme>['colors'];
 }) {
   return (
     <View style={styles.statCell}>
-      {/* `adjustsFontSizeToFit` + `numberOfLines` : un tonnage à quatre chiffres (« 4 108,0 kg »)
-          et sa densité débordaient de la bande, poussant la dernière cellule hors de l'écran —
-          valeur tronquée, libellé coupé. La valeur rétrécit maintenant dans sa colonne plutôt que
-          de pousser ses voisines. */}
-      <Text
-        style={[styles.statValue, { color: colors.text }]}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        minimumFontScale={0.6}
-      >
-        {value}
-      </Text>
-      <Text
-        style={[styles.statLabel, { color: colors.textMuted }]}
-        numberOfLines={1}
-        adjustsFontSizeToFit
-        minimumFontScale={0.8}
-      >
+      <View style={styles.statValueRow}>
+        <Text
+          style={[styles.statValue, { color: colors.text }]}
+          numberOfLines={1}
+          adjustsFontSizeToFit
+          minimumFontScale={0.7}
+        >
+          {value}
+        </Text>
+        {unit ? (
+          <Text style={[styles.statUnit, { color: colors.textMuted }]} numberOfLines={1}>
+            {unit}
+          </Text>
+        ) : null}
+      </View>
+      {/* Deux lignes autorisées : « SÉRIES VALIDÉES » et « VOLUME TOTAL » ne tiennent pas sur une
+          colonne de quart d'écran, et les réduire était précisément ce qui rendait la bande
+          bancale. Un libellé qui passe à la ligne reste aligné ; un libellé rapetissé, non. */}
+      <Text style={[styles.statLabel, { color: colors.textMuted }]} numberOfLines={2}>
         {label.toUpperCase()}
       </Text>
     </View>
@@ -402,25 +420,30 @@ export default function WorkoutSummaryScreen() {
           style={[styles.statBand, { backgroundColor: colors.surface, borderColor: colors.border }]}
         >
           <Stat
-            value={t('workout.summary.minutes', { count: summary.durationMin })}
+            value={units.formatAxisNumber(summary.durationMin)}
+            unit={t('workout.summary.minuteSymbol')}
             label={t('workout.summary.duration')}
             colors={colors}
           />
           <View style={[styles.statSep, { backgroundColor: colors.border }]} />
           <Stat
-            value={String(summary.doneSets)}
+            value={units.formatAxisNumber(summary.doneSets)}
             label={t('workout.summary.sets')}
             colors={colors}
           />
           <View style={[styles.statSep, { backgroundColor: colors.border }]} />
+          {/* Arrondi à l'entier : une somme de charges au dixième de kilo est une fausse
+              précision, et c'est cette décimale qui faisait déborder la bande. */}
           <Stat
-            value={units.formatWeight(summary.volume)}
+            value={units.formatAxisNumber(Math.round(units.toWeightValue(summary.volume)))}
+            unit={units.weightSymbol}
             label={t('workout.summary.volume')}
             colors={colors}
           />
           <View style={[styles.statSep, { backgroundColor: colors.border }]} />
           <Stat
-            value={`${units.formatWeight(summary.density)}/min`}
+            value={units.formatAxisNumber(Math.round(units.toWeightValue(summary.density)))}
+            unit={`${units.weightSymbol}/${t('workout.summary.minuteSymbol')}`}
             label={t('workout.summary.density')}
             colors={colors}
           />
@@ -604,7 +627,10 @@ const styles = StyleSheet.create({
   noteTriggerLabel: { fontFamily: fontFamily.body, fontSize: 13.5 },
   statBand: {
     flexDirection: 'row',
-    alignItems: 'center',
+    // `stretch`, pas `center` : un libellé sur deux lignes rend sa cellule plus haute, et un
+    // centrage vertical décalerait alors SON nombre par rapport aux trois autres. Ici tous les
+    // nombres partent du même bord haut, quelle que soit la longueur du libellé dessous.
+    alignItems: 'stretch',
     borderWidth: 1,
     borderRadius: 18,
     paddingVertical: 15,
@@ -613,10 +639,19 @@ const styles = StyleSheet.create({
   // `flex: 1` + `minWidth: 0` : sans eux, chaque cellule se dimensionne sur son contenu et la
   // bande déborde dès que le tonnage passe les quatre chiffres. Les quatre colonnes se partagent
   // maintenant la largeur à parts égales, quoi qu'elles contiennent.
-  statCell: { flex: 1, minWidth: 0, alignItems: 'center', gap: 3, paddingHorizontal: 2 },
-  statValue: { fontFamily: fontFamily.monoBold, fontSize: 17 },
-  statLabel: { fontFamily: fontFamily.bodySemi, fontSize: 9.5, letterSpacing: 0.5 },
-  statSep: { width: 1, height: 30 },
+  statCell: { flex: 1, minWidth: 0, alignItems: 'center', gap: 4, paddingHorizontal: 3 },
+  // `baseline` : le nombre et son unité reposent sur la même ligne d'écriture malgré 8 points
+  // d'écart de corps — sans quoi le « kg » flotte au milieu du chiffre.
+  statValueRow: { flexDirection: 'row', alignItems: 'baseline', gap: 3 },
+  statValue: { fontFamily: fontFamily.monoBold, fontSize: 19 },
+  statUnit: { fontFamily: fontFamily.bodySemi, fontSize: 11 },
+  statLabel: {
+    fontFamily: fontFamily.bodySemi,
+    fontSize: 9.5,
+    letterSpacing: 0.5,
+    textAlign: 'center',
+  },
+  statSep: { width: 1, height: 30, alignSelf: 'center' },
   warmupNote: { fontFamily: fontFamily.body, fontSize: 12.5, textAlign: 'center' },
   pressed: { opacity: 0.8 },
   noteInput: { minHeight: 90, textAlignVertical: 'top', paddingTop: 14 },

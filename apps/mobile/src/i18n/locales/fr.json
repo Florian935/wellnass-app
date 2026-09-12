@@ -223,6 +223,7 @@
       "subtitle": "Beau travail. Voici ton récap.",
       "duration": "Durée",
       "minutes": "{{count}} min",
+      "minuteSymbol": "min",
       "exercises": "Exercices",
       "sets": "Séries validées",
       "volume": "Volume total",

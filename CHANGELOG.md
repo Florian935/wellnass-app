@@ -10,6 +10,71 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/09/2026 — MUSCU-UX01 : 2ᵉ passe de recette, le clavier et l'haptique
+
+Branche `fix/muscu-ux01-recette-passe-1` (commit précédent `d6f2608`). Recette menée par
+Florian le 11/09 au soir, sur Pixel 6a.
+Six des huit critères de la passe précédente passent. Restent les deux haptiques — tombés pour une
+raison **sans rapport** avec la première tentative — plus une remarque d'esthétique, et **un défaut
+nouveau qui est le plus gênant du lot** : le clavier recouvre la barre de saisie.
+
+### Corrigé
+
+- 🔴 **§57.19 — le clavier passait par-dessus la barre de saisie.** C'était un critère *de cette
+  US*, coché au développement, et il n'avait jamais fonctionné. La barre collante avait bien été
+  livrée ; le décalage clavier, non. Depuis **Expo SDK 54, l'edge-to-edge est forcé** sur Android :
+  `android:windowSoftInputMode="adjustResize"` est toujours au manifeste mais **ne redimensionne
+  plus la fenêtre** — le clavier se contente de se superposer. Un montage en colonne, si correct
+  soit-il, ne suffit donc plus. Nouveau hook `useKeyboardHeight` (abonnements IME) + décalage de
+  l'écran de séance, avec bascule de l'arête basse de `SafeAreaView` : les insets de safe-area sont
+  `additive`, les cumuler aurait posé la barre à `inset + clavier` du bord.
+- 🔴 **§57.21 / §57.65 — l'haptique, seconde cause.** Le correctif précédent était passé de
+  `performAndroidHapticsAsync` (ignoré par Android quand « vibration au toucher » est coupé) à
+  `impactAsync`. Toujours muet, mais pour une raison **différente** : `expo-haptics` n'expose pas
+  une vibration, il impose une **forme d'onde à amplitude fixe**. `impactAsync('light')` vaut
+  `createWaveform(timings = [0, 50], amplitudes = [0, 30])` — **30 sur 255, 12 % de la puissance du
+  moteur** pendant 50 ms ; `notificationAsync('success')` plafonne à 60/255. Sur le LRA d'un
+  Pixel 6a, c'est sous le seuil de perception. On repasse sur **`Vibration` de React Native**, dont
+  le module natif appelle `createOneShot(durée, DEFAULT_AMPLITUDE)` : l'amplitude est celle que le
+  constructeur juge nominale, pas un 12 % arbitraire. C'est l'API qui marchait *avant* cette US et
+  celle du guidage de fractionné. Le module ne règle plus que la **durée** — 30 ms pour une série,
+  140 ms pour un jalon, 15 ms pour une sélection.
+- **§57.62 — l'esthétique de la bande de statistiques.** Le correctif précédent avait réglé le
+  débordement en rétrécissant le texte (`adjustsFontSizeToFit`), mais chaque cellule rétrécissait
+  *différemment* : quatre tailles de police sur une même ligne, la densité deux fois plus petite
+  que la durée. On raccourcit désormais la **matière** au lieu du texte — l'unité passe en petit à
+  côté du nombre, le tonnage perd sa décimale (fausse précision sur une somme de charges), et les
+  libellés longs passent à la ligne au lieu de rapetisser. Les nombres retrouvent un poids visuel
+  identique, ce qui est tout l'intérêt d'une bande qu'on lit en diagonale.
+
+### Ajouté
+
+- `hooks/useKeyboardHeight.ts` — hauteur de l'IME, réactive. Exporte aussi `keyboardEventNames()`,
+  la règle de choix des événements : **Android n'émet jamais les variantes `Will*`**, et s'y abonner
+  n'échoue pas — ça n'écoute simplement rien. Même profil de panne silencieuse que les deux requêtes
+  SQL de la passe précédente, d'où un test dédié.
+- Clé i18n `workout.summary.minuteSymbol` (FR + EN), le nombre et son unité étant désormais rendus
+  séparément. Parité vérifiée : 2 522 clés alignées.
+
+### Technique — Notes
+
+- ⚠️ **`render()` et `renderHook()` de RNTL v14 sont `async`** — le dépôt le documentait déjà pour
+  `renderHook`, c'est vrai des deux. Sans `await`, le composant n'est jamais monté et le test passe
+  au vert sans rien vérifier.
+- ⚠️ **Limite de test assumée** : le montage de `useKeyboardHeight` (abonnement → `setState` →
+  rendu) n'est pas testé. Sous RNTL v14, une mise à jour d'état déclenchée depuis un abonnement
+  natif mocké ne se propage pas au rendu ; le test aurait été décoratif. La **règle** est testée,
+  le comportement relève de la recette device (§68-69).
+- Le même défaut de clavier touche potentiellement tous les formulaires via `FormScreen`, qui passe
+  `behavior={undefined}` à `KeyboardAvoidingView` sur Android — c'est-à-dire rien, puisqu'il
+  comptait lui aussi sur `adjustResize`. **Non traité ici** : hors périmètre de MUSCU-UX01, et une
+  modification transverse des formulaires mérite sa propre recette. Ajouté au BACKLOG en P1.
+- Aucune migration, aucune sync rule, aucune dépendance native ajoutée.
+- Vérifié : typecheck 3 workspaces à 0, lint à 0, **2 813 tests Jest + 115 fichiers Vitest verts**,
+  parité i18n à 0 (codes de sortie lus sans pipe).
+- RECETTES.md §57 : critères **68 à 73** ajoutés ; 60-63, 66 et 67 cochés ; 64-65 marqués tombés.
+
+
 ## 11/09/2026 — MUSCU-UX01 : sept constats de la 1ʳᵉ passe de recette
 
 Branche `fix/muscu-ux01-recette-passe-1` (depuis `dev`, commit précédent `e719a47`).

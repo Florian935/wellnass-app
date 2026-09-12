@@ -223,6 +223,7 @@
       "subtitle": "Nice work. Here's your recap.",
       "duration": "Duration",
       "minutes": "{{count}} min",
+      "minuteSymbol": "min",
       "exercises": "Exercises",
       "sets": "Sets completed",
       "volume": "Total volume",

@@ -62,6 +62,7 @@ import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { maybePushRecords } from '@/data/repositories/notification-repository';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { usePriorWeekAdherence } from '@/data/repositories/planned-session-repository';
+import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
 import { hapticConfirm, hapticMilestone } from '@/lib/haptics';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -226,6 +227,11 @@ function useElapsed(startedAt: string | undefined): string {
 
 export default function WorkoutScreen() {
   useKeepAwake();
+
+  // Le clavier se superpose à l'écran depuis que l'edge-to-edge est forcé (SDK 54+) : `adjustResize`
+  // est toujours au manifeste mais ne redimensionne plus rien. Sans ce décalage, la barre de saisie
+  // passe SOUS le clavier — on tape une charge sans voir ce qu'on tape (recette §57.19).
+  const keyboardHeight = useKeyboardHeight();
   const { t } = useTranslation();
   const { colors } = useTheme();
   const units = useUnits();
@@ -561,8 +567,14 @@ export default function WorkoutScreen() {
 
   return (
     <SafeAreaView
-      style={[styles.safe, { backgroundColor: colors.background }]}
-      edges={['top', 'bottom']}
+      style={[
+        styles.safe,
+        { backgroundColor: colors.background },
+        // `additive` : l'inset de safe-area s'AJOUTE au padding du style. On coupe donc l'arête
+        // basse quand le clavier est là, sinon la barre flotterait à `inset + clavier` du bord.
+        keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : null,
+      ]}
+      edges={keyboardHeight > 0 ? ['top'] : ['top', 'bottom']}
     >
       {/* ── Barre haute : sortie, chrono, avancement, menu ─────────────────────────────────── */}
       <View style={styles.header}>

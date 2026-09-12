@@ -1,4 +1,4 @@
-# État du projet — 11/09/2026
+# État du projet — 12/09/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -86,9 +86,9 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (1) · P2 confort (1)</summary>
+<details><summary>P1 finitions (2) · P2 confort (1)</summary>
 
-**P1** — RUN-F3b — Météo de course
+**P1** — RUN-F3b — Météo de course · CLAV-01 — Le clavier recouvre les formulaires (edge-to-edge)
 
 **P2** — SOCLE-01 — RevenueCat câblé inactif
 
@@ -101,7 +101,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `fix/muscu-ux01-recette-passe-1` (modifications non commitées) |
-| Commits | 1207 · `main` a **1204** commits de retard sur `dev` |
+| Commits | 1208 · `main` a **1205** commits de retard sur `dev` |
 | Specs d'US | 144 au total — 85 clôturées, 59 en cours |
 | Migrations | 93/93 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -112,11 +112,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `d6f2608` fix(muscu-ux01): sept constats de la premiere passe de recette
 - `e719a47` chore(cardio-ux01): migration appliquee, la carte d'adaptation agit
 - `407087d` chore(cardio-ux01): redate la migration refusee et sort les payloads de design du suivi
 - `542b753` merge: integre CARDIO-UX01 (refonte UX du pilier Course) dans dev
 - `b710349` feat(nutri-ux01): refonte UX du pilier Nutrition — 11 ecrans, 26 constats
-- `a035e8d` feat(cardio-ux01): refonte UX du pilier Course — premier lot
 
 ---
 

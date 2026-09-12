@@ -5,7 +5,7 @@ roadmap: [3.59]
 catalogue: []
 etape: recette
 branche: feature/muscu-refonte-ux
-maj: 11/09/2026
+maj: 12/09/2026
 ---
 # US MUSCU-UX01 — Refonte UX du pilier Musculation
 
