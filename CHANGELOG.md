@@ -258,6 +258,28 @@ dans le code. Deux d'entre elles sont livrées ici.
   (169 / 2 856 avant).
 
 
+## 12/09/2026 — CORPS-01 : carte anatomique et explorateur Mon corps
+
+Branche `feature/corps01-explorateur`, base `448df97`. Premier lot développé après validation de Florian ; recette Android §62 à effectuer.
+
+### Ajouté
+
+- Écran `/body` : sélection de dix muscles par silhouette ou liste accessible, face/dos automatique, nom anatomique, zoom 1–2,5, déplacement borné par gestes et boutons, recentrage. État éphémère, sans écriture de morphologie.
+- Association et recherche d'exercices locales dans `packages/shared/src/body-explorer.ts` et `body-explorer-repository.ts` : tags fins prioritaires, repli large signalé, favoris prioritaires à précision égale, traduction courante puis française et soft deletes. Détail d'exercice consultable sans ajout à une séance.
+- Entrées depuis Musculation → Suivre, Progression → Mon corps, Mensurations, exercice, séance de programme et bilan hebdomadaire ; déclaration explicite au Stack racine. Les trois derniers accès transmettent leur contexte validé.
+- Spec, plan, analyse et maquettes dans `docs/` et `design/mon-corps-2026-09/`, avec exports de contrôle du vrai SVG.
+
+### Modifié
+
+- `AnatomyFigure`, `anatomy-geometry`, `BodyMap` et `PainBodyMap` utilisent des formes humaines ombrées communes. Articulations recalées, couleurs du journal sensible conservées. Tracés tiers embarqués avec licence MIT intégrale et révision figée dans `components/body/vendor` ; aucune dépendance ajoutée.
+- Locales FR/EN, thèmes clair/sombre et libellés accessibles. En contexte d'entraînement, sélectionner un groupe conserve sa couleur et ajoute un contour ; hors contexte, la sélection devient terracotta.
+
+### Technique / Notes
+
+- Revue indépendante suivie de corrections : maintien full/reduced, alternative au déplacement tactile, précision de l'association annoncée par TalkBack. Caméra via API `get`/`set` Reanimated sur le thread UI, compatible avec les règles du compilateur React.
+- Vérification : **6 016 tests passent** (587 admin, 2 839 mobile, 2 590 shared), lint et typecheck globaux passent ; export Android Metro/Hermes réussi. Un passage intermédiaire a retrouvé le cas intermittent Health Connect déjà documenté ; son test isolé puis la suite globale passent sans modification de ce module.
+- SVG pédagogique pour ce lot : morphologie déformable, maillage 3D et recommandations d'entraînement restent ultérieurs. Recette native des gestes, TalkBack, grandes polices, mode avion et performances à effectuer. Branche conservée localement ; aucun merge, push ou déploiement.
+
 ## 12/09/2026 — MUSCU-UX01 : 2ᵉ passe de recette, le clavier et l'haptique
 
 Branche `fix/muscu-ux01-recette-passe-1` (commit précédent `d6f2608`). Recette menée par

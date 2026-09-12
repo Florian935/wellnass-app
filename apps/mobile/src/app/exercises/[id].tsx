@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { resolveFineMuscles } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { BodyMap } from '@/components/body/BodyMap';
+import { BodyExplorerLink } from '@/components/body/BodyExplorerLink';
 import { EditExerciseModal } from '@/components/exercises/EditExerciseModal';
 import {
   useExercise,
@@ -174,6 +175,7 @@ export default function ExerciseDetailScreen() {
           {/* US MUSC-F1b — schéma corporel, complément visuel (R5 : la liste textuelle ci-dessus
               et ci-dessous reste affichée, jamais remplacée). */}
           <BodyMap full={bodyMapFull} reduced={bodyMapReduced} />
+          <BodyExplorerLink full={bodyMapFull} reduced={bodyMapReduced} context="exercise" />
 
           {/* US UX-03 — la section est TOUJOURS rendue, avec un état vide explicite plutôt que
               masquée. Un exercice perso créé sur mobile n'a ni muscles secondaires ni

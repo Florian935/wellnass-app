@@ -1,4 +1,54 @@
 {
+  "bodyExplorer": {
+    "title": "Mon corps",
+    "subtitle": "Explore les muscles, trouve tes exercices.",
+    "entryHint": "Muscles, anatomie et exercices associés",
+    "explore": "Explorer les muscles",
+    "muscles": "Choisir un muscle",
+    "selectHint": "Touche la silhouette ou choisis un muscle dans la liste.",
+    "chooseMuscle": "Choisis un muscle pour découvrir les exercices associés.",
+    "gestureHint": "Deux doigts pour zoomer et déplacer la silhouette.",
+    "exercises": "Exercices associés",
+    "loading": "Chargement…",
+    "pan": {
+      "left": "Déplacer la silhouette vers la gauche",
+      "right": "Déplacer la silhouette vers la droite",
+      "up": "Déplacer la silhouette vers le haut",
+      "down": "Déplacer la silhouette vers le bas"
+    },
+    "search": "Rechercher un exercice",
+    "clearSearch": "Effacer la recherche",
+    "empty": "Aucun exercice associé dans ta bibliothèque.",
+    "noResults": "Aucun exercice ne correspond à cette recherche.",
+    "error": "Les exercices ne sont pas disponibles pour le moment.",
+    "favorite": "Favori",
+    "inferred": "Association par groupe",
+    "inferredHint": "Pour ces exercices, l’association vient d’un groupe musculaire général ; le muscle précis n’a pas encore été renseigné.",
+    "contextHint": "La couleur reprend les indications de l’écran précédent. Le contour marque ta sélection.",
+    "context": {
+      "exercise": "Muscles de cet exercice",
+      "session": "Muscles de cette séance",
+      "week": "Muscles du bilan hebdomadaire"
+    },
+    "zoom": {
+      "in": "Agrandir la silhouette",
+      "out": "Réduire la silhouette",
+      "reset": "Recentrer",
+      "value": "Zoom × {{value}}"
+    },
+    "anatomy": {
+      "chest": "Grands pectoraux",
+      "back": "Grands dorsaux, trapèzes et muscles du dos",
+      "shoulders": "Deltoïdes",
+      "biceps": "Biceps brachiaux",
+      "triceps": "Triceps brachiaux",
+      "abs": "Abdominaux et obliques",
+      "glutes": "Muscles fessiers",
+      "quadriceps": "Quadriceps — avant des cuisses",
+      "hamstrings": "Ischio-jambiers — arrière des cuisses",
+      "calves": "Gastrocnémiens et soléaires"
+    }
+  },
   "common": {
     "appName": "Wellness",
     "cancel": "Annuler",

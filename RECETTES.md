@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **12/09/2026 (bis)** — **61 sections**.
+> Dernière mise à jour : **12/09/2026 (ter)** — **62 sections**.
 >
 > **② une §60 est arrivée** : MUSCU-UX02, le bilan de séance — suite directe de MUSCU-UX01 (§57).
 > 🔴 **Son cœur n'est pas l'ergonomie mais l'ISO** : le récap de fin de séance et l'écran
@@ -27,6 +27,9 @@
 > qu'on peut tout couper sans rien perdre, et c'est ce qui rend le reste acceptable.
 > ⚠️ Sa dernière sous-section liste **26 effets non livrés** sur les 45 analysés : ne pas les
 > chercher dans l'app.
+>
+> **Nouvelle §62 : CORPS-01**, carte anatomique et explorateur « Mon corps ». Le code vit sur
+> `feature/corps01-explorateur` ; il faut lancer cette branche pour effectuer sa recette.
 >
 > **③ une §58 est arrivée** : NUTRI-UX01, refonte du pilier Nutrition — troisième pilier repris
 > dans la même semaine, après l'accueil et la musculation. 🔴 **Elle a deux prérequis**, dont un
@@ -3206,3 +3209,22 @@ L'analyse listait 45 effets, **19 sont dans ce lot**. Les 26 autres, et pourquoi
 
 **Reste à faire, sans obstacle identifié** — M2, M5, M6, M9, M10 · C3 à C10 · N3, N5 à N9 ·
 A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branchements.
+---
+
+## 62. CORPS-01 — Carte anatomique et explorateur Mon corps
+
+Spec : [CORPS-01](docs/specs/functional/us/corps01-explorateur.md). Branche `feature/corps01-explorateur`, worktree `.claude/worktrees/mon-corps`. Premier lot local, non intégré à dev dans cette passe. Aperçu du dessin : [clair / sombre / articulations](design/mon-corps-2026-09/anatomy-qa.png).
+
+Lancer le serveur depuis ce worktree (`npm run mobile`) et utiliser le dev build Android du projet. Chemin principal : **Musculation → Suivre → Mon corps**. Il s'agit de l'explorateur de muscles ; la personnalisation de morphologie et l'éditeur d'objectifs ne sont pas encore développés.
+
+- [ ] 1. Sur un compte sans historique, ouvrir Mon corps depuis Musculation ; le corps est neutre et les dix muscles sont disponibles dans la liste.
+- [ ] 2. Inspecter les formes de face et de dos. Sélectionner chacune des dix zones par le dessin et par la liste ; la fiche porte le bon nom, les épaules fonctionnent des deux côtés et les groupes postérieurs basculent au dos.
+- [ ] 3. Zoomer au pincement et par les boutons, déplacer avec deux doigts puis avec les quatre flèches. Inspecter épaules et mollets, atteindre les bornes puis recentrer ; aucune zone n'est perdue hors cadre. Le scroll à un doigt et les appuis simples restent utilisables.
+- [ ] 4. Changer de vue et de muscle après zoom : la caméra se recentre. Vérifier retour système, retour d'écran et réouverture.
+- [ ] 5. Depuis un exercice, une séance de programme et le bilan, ouvrir Explorer les muscles : groupes et couleurs du contexte conservés, même si on sélectionne un muscle différent. Le retour retrouve l'écran appelant.
+- [ ] 6. Rechercher des exercices associés, vérifier les favoris et l'indication « Association par groupe ». Ouvrir une fiche sans ajouter d'exercice à une séance en cours. Vérifier français, anglais et repli français du catalogue.
+- [ ] 7. Vérifier accès Progression → Mon corps et Mensurations ; vérifier aussi les pastilles articulaires et la sélection symétrique dans le journal sensible, sans changement des niveaux de douleur.
+- [ ] 8. Activer thème sombre, grande taille de police et TalkBack : tous les muscles, onglets, contrôles caméra et exercices restent nommés, lisibles et accessibles. L'association générale doit être annoncée pour l'exercice concerné.
+- [ ] 9. Passer en mode avion après synchronisation ; dessins et catalogue restent disponibles. Sur un compte au catalogue vide, message explicite ; contrôler fluidité après plusieurs ouvertures / fermetures sur l'appareil cible.
+
+Contrôles automatiques terminés : 6 016 tests, typecheck et lint passent ; export Android Metro/Hermes réussi. Les cases ci-dessus restent à valider sur appareil.
