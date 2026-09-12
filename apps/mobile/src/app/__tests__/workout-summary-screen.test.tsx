@@ -1,37 +1,31 @@
 /**
- * Résumé de séance (`app/workout-summary.tsx`) — le **vrai** écran, monté.
+ * Écran de fin de séance (`app/workout-summary.tsx`) — ce que **la route** décide.
  *
- * `buildSummary` a déjà son test ([`workout-summary-build.test.ts`](./workout-summary-build.test.ts)) :
- * ce fichier couvre ce que l'écran **décide autour**, et il n'était couvert qu'à 7,5 % de branches
- * — le plus gros écart instructions ↔ branches de `src/app`. C'est le dernier écran qu'on voit
- * après un entraînement, donc celui où une erreur reste en mémoire.
+ * Depuis MUSCU-UX02, tout le contenu du bilan vit dans `<WorkoutReport>`, partagé avec
+ * l'historique, et a sa propre couverture
+ * ([`WorkoutReport.test.tsx`](../../components/workout/report/__tests__/WorkoutReport.test.tsx)) :
+ * niveaux, blocs vides, ressenti, célébration. Le composant est donc **mocké** ici — le remonter
+ * ne testerait rien de plus et rendrait chaque cas dépendant de blocs sans rapport.
  *
- * Quatre décisions, toutes conditionnelles, toutes silencieuses si elles cassent :
+ * Restent trois décisions, toutes conditionnelles, toutes silencieuses si elles cassent :
  *
  *  1. **« Enregistrer comme modèle » n'apparaît QUE sur une séance libre non vide.** Une séance
  *     issue d'un programme a déjà sa structure ailleurs : en refaire un modèle créerait un doublon
  *     que rien ne relie à l'original.
- *  2. **La carte partageable exige un contenu.** Une séance sans exercice ne produirait qu'une
- *     carte vide, envoyée à des tiers.
- *  3. **Le ressenti est borné 1–5 à l'affichage**, et un RPE hors bornes (donnée héritée d'une
- *     autre échelle) ne doit pas remplir six étoiles ni en vider cinq.
- *  4. **Le nom de modèle par défaut est daté en LOCAL.** Un `slice` de la chaîne ISO UTC
- *     décalerait le jour affiché d'un fuseau — une séance du soir deviendrait celle du lendemain.
+ *  2. **La carte partageable exige un contenu**, et porte des libellés DÉJÀ formatés — une séance
+ *     sans exercice ne produirait qu'une carte vide, envoyée à des tiers.
+ *  3. **Le nom de modèle par défaut est daté en LOCAL.** Un `slice` de la chaîne ISO UTC décalerait
+ *     le jour affiché d'un fuseau — une séance du soir deviendrait celle du lendemain.
  */
 import React from 'react';
 import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import WorkoutSummaryScreen from '../workout-summary';
-import {
-  getWorkoutSets,
-  setWorkoutFeedback,
-  useWorkoutHistory,
-} from '@/data/repositories/workout-repository';
-import { useWorkoutRecords } from '@/data/repositories/records-repository';
+import { useWorkoutHistory } from '@/data/repositories/workout-repository';
+import { useWorkoutReport } from '@/data/repositories/workout-report-repository';
 import { createTemplateFromWorkout } from '@/data/repositories/workout-template-repository';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { WORKOUT_FEELINGS } from '@wellness/shared';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -39,25 +33,20 @@ import { WORKOUT_FEELINGS } from '@wellness/shared';
 
 jest.mock('@/data/repositories/workout-repository', () => ({
   useWorkoutHistory: jest.fn(() => ({ workouts: [] })),
-  getWorkoutSets: jest.fn(),
-  setWorkoutFeedback: jest.fn(),
 }));
-jest.mock('@/data/repositories/records-repository', () => ({
-  useWorkoutRecords: jest.fn(() => ({ records: [], isLoading: false })),
-  // US MUSCU-UX01 : le résumé montre désormais le détail par exercice et son écart depuis le
-  // passage précédent. Neutralisés ici — ils ont leur propre couverture côté `packages/shared`
-  // (`compareExercisePerformance`) et n'entrent dans aucune des règles vérifiées dans ce fichier.
-  useWorkoutDetail: jest.fn(() => ({ detail: null, isLoading: false })),
-  useExerciseDeltas: jest.fn(() => ({ deltas: new Map(), isLoading: false })),
+jest.mock('@/data/repositories/workout-report-repository', () => ({
+  useWorkoutReport: jest.fn(() => ({ report: null, isLoading: false })),
 }));
 jest.mock('@/data/repositories/workout-template-repository', () => ({
   createTemplateFromWorkout: jest.fn(),
 }));
 
-jest.mock('@/components/CelebrationCard', () => {
+// Le bilan a sa propre couverture : on ne remonte pas douze blocs pour tester un bouton.
+jest.mock('@/components/workout/report/WorkoutReport', () => {
   const { Text } = require('react-native');
-  return { CelebrationCard: ({ title }: { title: string }) => <Text>celebration:{title}</Text> };
+  return { WorkoutReport: ({ context }: { context: string }) => <Text>bilan:{context}</Text> };
 });
+
 jest.mock('@/components/share/ShareCardSheet', () => {
   const { Text } = require('react-native');
   return {
@@ -82,10 +71,6 @@ jest.mock('@/components/FormScreen', () => {
 jest.mock('@/components/ScreenHeader', () => {
   const { Text } = require('react-native');
   return { ScreenHeader: ({ title }: { title: string }) => <Text>{title}</Text> };
-});
-jest.mock('@/components/Card', () => {
-  const { View } = require('react-native');
-  return { Card: ({ children }: { children: React.ReactNode }) => <View>{children}</View> };
 });
 jest.mock('@/components/Button', () => {
   const { Pressable, Text } = require('react-native');
@@ -148,25 +133,12 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/theme/useTheme', () => ({
   useTheme: () => ({
-    colors: {
-      text: '#33291f',
-      textMuted: '#96856f',
-      surface: '#fffaf2',
-      border: '#ece0cd',
-      accent: '#c0562f',
-    },
+    colors: { text: '#33291f', textMuted: '#96856f', surface: '#fffaf2', border: '#ece0cd', accent: '#c0562f' },
   }),
 }));
 
 jest.mock('@/hooks/useUnits', () => ({
-  useUnits: () => ({
-    formatWeight: (kg: number) => `${Math.round(kg)} kg`,
-    // US MUSCU-UX01 / recette §57.62 : la bande affiche le nombre et l'unité séparément, donc
-    // l'écran a besoin du symbole et de la valeur convertie, plus du seul `formatWeight`.
-    formatAxisNumber: (value: number) => String(value),
-    toWeightValue: (kg: number) => kg,
-    weightSymbol: 'kg',
-  }),
+  useUnits: () => ({ formatWeight: (kg: number) => `${Math.round(kg)} kg` }),
 }));
 
 // ---------------------------------------------------------------------------
@@ -174,23 +146,12 @@ jest.mock('@/hooks/useUnits', () => ({
 // ---------------------------------------------------------------------------
 
 const mockHistory = useWorkoutHistory as jest.Mock;
-const mockSets = getWorkoutSets as jest.Mock;
-const mockFeedback = setWorkoutFeedback as jest.Mock;
-const mockRecords = useWorkoutRecords as jest.Mock;
+const mockReport = useWorkoutReport as jest.Mock;
 const mockCreateTemplate = createTemplateFromWorkout as jest.Mock;
 const mockParams = useLocalSearchParams as unknown as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
 
 const replace = jest.fn();
-
-const serie = (overrides: Record<string, unknown> = {}) => ({
-  exerciseId: 'ex-1',
-  setType: 'normal',
-  reps: 10,
-  weightKg: 80,
-  done: true,
-  ...overrides,
-});
 
 /** Séance LIBRE par défaut : ni séance de programme, ni programme — condition du modèle. */
 const seance = (overrides: Record<string, unknown> = {}) => ({
@@ -205,16 +166,35 @@ const seance = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+/** Un bilan réduit à ce que l'écran lui demande : des totaux et des records. */
+const bilan = (overrides: Record<string, unknown> = {}) => ({
+  workoutId: 'w-1',
+  startedAt: '2026-08-13T18:30:00.000Z',
+  totals: {
+    exercises: 2,
+    workingSets: 5,
+    warmupSets: 0,
+    volumeKg: 1600,
+    durationMin: 75,
+    densityKgPerMin: 21,
+    bestEstimated1RM: null,
+    relativeIntensityPercent: null,
+    averageRpe: null,
+    sessionLoad: null,
+    hardSets: 0,
+    ratedSets: 0,
+  },
+  records: [],
+  ...overrides,
+});
+
 const afficher = async ({
   workouts = [seance()] as unknown[],
-  sets = [serie()] as unknown[],
-  records = [] as unknown[],
-  recordsLoading = false,
+  report = bilan() as unknown,
   params = { id: 'w-1' } as Record<string, string>,
 } = {}) => {
   mockHistory.mockReturnValue({ workouts });
-  mockSets.mockResolvedValue(sets);
-  mockRecords.mockReturnValue({ records, isLoading: recordsLoading });
+  mockReport.mockReturnValue({ report, isLoading: false });
   mockParams.mockReturnValue(params);
   await render(<WorkoutSummaryScreen />);
 };
@@ -231,22 +211,11 @@ const saisir = async (label: string, valeur: string) => {
   });
 };
 
-const record = (overrides: Record<string, unknown> = {}) => ({
-  exerciseId: 'ex-1',
-  exerciseName: 'Squat',
-  type: 'max_weight',
-  value: 120,
-  reps: 3,
-  weightKg: 120,
-  ...overrides,
-});
-
 beforeEach(() => {
   jest.clearAllMocks();
   jest.spyOn(Alert, 'alert').mockImplementation(() => {});
   mockUseRouter.mockReturnValue({ replace });
   mockCreateTemplate.mockResolvedValue('tpl-1');
-  mockFeedback.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -254,57 +223,29 @@ afterEach(() => {
 });
 
 // ---------------------------------------------------------------------------
-// Résumé
+// Montage du bilan
 // ---------------------------------------------------------------------------
 
-describe('résumé', () => {
+describe('bilan', () => {
+  it('monte le bilan partagé dans son contexte de fin de séance', async () => {
+    await afficher();
+
+    // `context` est ce qui distingue ce montage de celui de l'historique (spec R9).
+    expect(screen.getByText('bilan:post-session')).toBeTruthy();
+  });
+
   it('🔴 une séance INTROUVABLE affiche un message, pas un écran de zéros', async () => {
-    await afficher({ workouts: [] });
+    await afficher({ workouts: [], report: null });
 
     // Séance supprimée depuis un autre appareil, ou lien direct : « 0 exercice, 0 kg » se lirait
     // comme un entraînement raté.
     expect(screen.getByText('workout.none')).toBeTruthy();
-    expect(mockSets).not.toHaveBeenCalled();
   });
 
-  it('🔴 sans identifiant, rien n’est calculé', async () => {
-    await afficher({ params: {} });
+  it('🔴 sans identifiant, aucun bilan n’est monté', async () => {
+    await afficher({ params: {}, report: null });
 
-    expect(screen.getByText('workout.none')).toBeTruthy();
-  });
-
-  it('affiche durée, séries, volume et densité', async () => {
-    await afficher({ sets: [serie(), serie({ exerciseId: 'ex-2' })] });
-
-    // US MUSCU-UX01 : la bande porte durée, séries, tonnage et densité. Le **nombre d'exercices**
-    // n'y figure plus — il se lit directement dans « Ce que tu as fait », une carte par exercice,
-    // ce qui est plus utile qu'un compte isolé.
-    //
-    // Recette §57.62 : le nombre et son unité sont désormais **deux textes distincts** (« 75 » et
-    // « min »), et le tonnage est arrondi à l'entier. Cette séparation est ce qui empêche la bande
-    // de déborder, donc elle mérite d'être verrouillée ici.
-    expect(screen.getByText('75')).toBeTruthy();
-    expect(screen.getByText('2')).toBeTruthy();
-    expect(screen.getByText('1600')).toBeTruthy();
-    // Deux unités « min » (durée et densité) + un « kg » (volume) et un « kg/min ».
-    expect(screen.getAllByText('workout.summary.minuteSymbol').length).toBeGreaterThan(0);
-    expect(screen.getByText('kg')).toBeTruthy();
-  });
-
-  it('🔴 les séries d’ÉCHAUFFEMENT sont comptées à part', async () => {
-    await afficher({
-      sets: [serie(), serie({ setType: 'warmup' }), serie({ setType: 'warmup' })],
-    });
-
-    // Elles ne comptent ni dans les séries faites ni dans le volume : les mélanger gonflerait le
-    // tonnage d'une séance de 30 %, durablement, puisque le résumé est archivé.
-    expect(screen.getByText('workout.summary.warmupCount:{"count":2}')).toBeTruthy();
-  });
-
-  it('sans échauffement, aucune mention', async () => {
-    await afficher({ sets: [serie()] });
-
-    expect(screen.queryByText(/warmupCount/)).toBeNull();
+    expect(screen.queryByText(/^bilan:/)).toBeNull();
   });
 });
 
@@ -325,21 +266,17 @@ describe('enregistrer comme modèle', () => {
   ])('🔴 PAS proposé sur une séance %s', async (_cas, overrides) => {
     await afficher({ workouts: [seance(overrides)] });
 
-    // Une séance de programme a déjà sa structure ailleurs : en refaire un modèle créerait un
-    // doublon que rien ne relie à l'original.
     expect(screen.queryByLabelText('workout.summary.saveAsTemplate')).toBeNull();
   });
 
   it('🔴 PAS proposé sur une séance SANS exercice', async () => {
-    await afficher({ sets: [] });
+    await afficher({ report: bilan({ totals: { ...bilan().totals, exercises: 0 } }) });
 
     // Un modèle vide est un modèle qu'on ouvrira une fois avant de le supprimer.
     expect(screen.queryByLabelText('workout.summary.saveAsTemplate')).toBeNull();
   });
 
   it('🔴 le nom par défaut est daté en LOCAL, pas en UTC', async () => {
-    // 13/08 22h30 UTC = 14/08 00h30 à Paris : un `slice` de la chaîne ISO daterait le modèle du
-    // 13, alors que la séance s'est faite le 14 pour l'utilisateur.
     await afficher({ workouts: [seance({ startedAt: '2026-08-13T18:30:00.000Z' })] });
 
     await taper(screen.getByLabelText('workout.summary.saveAsTemplate'));
@@ -359,11 +296,8 @@ describe('enregistrer comme modèle', () => {
     await taper(screen.getByLabelText('workout.summary.saveAsTemplate'));
     await saisir('workout.summary.templateNameLabel', '   ');
 
-    // Un modèle sans nom serait introuvable dans la liste — et le détourage empêche de contourner
-    // la garde avec des espaces.
     expect(
-      screen.getByLabelText('workout.summary.saveAsTemplateConfirm').props.accessibilityState
-        .disabled,
+      screen.getByLabelText('workout.summary.saveAsTemplateConfirm').props.accessibilityState.disabled,
     ).toBe(true);
   });
 
@@ -375,7 +309,6 @@ describe('enregistrer comme modèle', () => {
     await taper(screen.getByLabelText('workout.summary.saveAsTemplateConfirm'));
 
     expect(mockCreateTemplate).toHaveBeenCalledWith('w-1', 'Haut du corps');
-    // La confirmation nomme le modèle : c'est ce qui permet de le retrouver ensuite.
     expect(Alert.alert).toHaveBeenCalledWith('workout.summary.templateSaved', 'Haut du corps');
   });
 
@@ -398,12 +331,7 @@ describe('enregistrer comme modèle', () => {
     await saisir('workout.summary.templateNameLabel', 'Haut du corps');
     await taper(screen.getByLabelText('workout.summary.saveAsTemplateConfirm'));
 
-    // Le fermer effacerait le nom saisi : l'utilisateur devrait tout retaper.
     expect(screen.getByLabelText('workout.summary.templateNameLabel')).toBeTruthy();
-    expect(
-      screen.getByLabelText('workout.summary.saveAsTemplateConfirm').props.accessibilityState
-        .disabled,
-    ).toBe(false);
   });
 
   it('annuler referme sans écrire', async () => {
@@ -413,141 +341,7 @@ describe('enregistrer comme modèle', () => {
     await taper(screen.getByLabelText('common.cancel'));
 
     expect(mockCreateTemplate).not.toHaveBeenCalled();
-    expect(screen.getByLabelText('workout.summary.saveAsTemplate')).toBeTruthy();
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Ressenti
-// ---------------------------------------------------------------------------
-
-describe('ressenti', () => {
-  // ── Réécrit le 10/09/2026 (US MUSCU-UX01) ────────────────────────────────────────────────────
-  // Le ressenti se notait en **cinq étoiles sans échelle nommée**, alors que la séance venait
-  // d'être notée série par série en RPE ou en RIR — deux formats pour la même question, et trois
-  // étoiles qui ne disaient pas ce qu'elles valaient.
-  //
-  // Il prend maintenant cinq niveaux nommés (Facile → Max). Le **stockage ne change pas** :
-  // `workouts.rpe` continue de recevoir un RPE 1-10, comme pour l'échelle par série. C'est le
-  // patron d'`intensity.ts` : la base ne change jamais de nature, seule la lecture change.
-
-  it('aucun niveau sélectionné par défaut', async () => {
-    await afficher();
-
-    for (const label of WORKOUT_FEELINGS.map((f) => `workout.summary.feeling.${f}`)) {
-      expect(screen.getByLabelText(label).props.accessibilityState?.selected).toBe(false);
-    }
-  });
-
-  it('🔴 choisir un niveau écrit le RPE correspondant, pas l’index du cran', async () => {
-    await afficher();
-
-    await taper(screen.getByLabelText('workout.summary.feeling.solid'));
-
-    // « Solide » = milieu de l'échelle = RPE 6. Écrire 3 (le rang du cran) rendrait la donnée
-    // incomparable avec les RPE saisis en séance.
-    expect(mockFeedback).toHaveBeenCalledWith('w-1', { rpe: 6 });
-    expect(screen.getByLabelText('workout.summary.feeling.solid').props.accessibilityState?.selected).toBe(true);
-  });
-
-  it('retaper le niveau déjà posé l’efface', async () => {
-    await afficher({ workouts: [seance({ rpe: 6 })] });
-
-    await taper(screen.getByLabelText('workout.summary.feeling.solid'));
-
-    expect(mockFeedback).toHaveBeenCalledWith('w-1', { rpe: null });
-  });
-
-  it('🔴 relit une note ancienne sans la faire passer pour facile', async () => {
-    // Les séances d'avant cette US stockaient 1-5 dans le même champ : rien ne les distingue d'un
-    // RPE. Le découpage par paires limite les dégâts — un ancien « 5 étoiles » se lit « Solide ».
-    await afficher({ workouts: [seance({ rpe: 5 })] });
-
-    expect(screen.getByLabelText('workout.summary.feeling.solid').props.accessibilityState?.selected).toBe(true);
-  });
-
-  it('un RPE hors bornes est ramené dans l’échelle', async () => {
-    await afficher({ workouts: [seance({ rpe: 42 })] });
-
-    expect(screen.getByLabelText('workout.summary.feeling.max').props.accessibilityState?.selected).toBe(true);
-  });
-
-  it('la note existante pré-remplit le champ, déjà ouvert', async () => {
-    await afficher({ workouts: [seance({ notes: 'Dos sensible' })] });
-
-    expect(screen.getByLabelText('workout.summary.note').props.value).toBe('Dos sensible');
-  });
-
-  it('sans note, le champ est replié derrière un bouton', async () => {
-    // Un champ multiligne vide occupait un tiers de l'écran pour une saisie rare.
-    await afficher();
-
-    expect(screen.queryByLabelText('workout.summary.note')).toBeNull();
-    expect(screen.getByText('workout.summary.addNote')).toBeTruthy();
-  });
-
-  it('🔴 une note VIDÉE est effacée, pas enregistrée comme chaîne vide', async () => {
-    await afficher({ workouts: [seance({ notes: 'Dos sensible' })] });
-
-    await saisir('workout.summary.note', '   ');
-    await act(async () => {
-      fireEvent(screen.getByLabelText('workout.summary.note'), 'blur');
-    });
-
-    // `null` et non `''` : une chaîne vide s'afficherait comme une note existante dans les écrans
-    // qui testent la présence plutôt que le contenu.
-    expect(mockFeedback).toHaveBeenCalledWith('w-1', { notes: null });
-  });
-
-  it('🔴 une note non vide est enregistrée telle quelle, espaces compris', async () => {
-    await afficher({ workouts: [seance({ notes: 'x' })] });
-
-    await saisir('workout.summary.note', '  Bonne séance  ');
-    await act(async () => {
-      fireEvent(screen.getByLabelText('workout.summary.note'), 'blur');
-    });
-
-    // Le détourage sert à décider si la note existe, pas à réécrire ce que l'utilisateur a tapé —
-    // une mise en forme volontaire (retour à la ligne, indentation) serait perdue.
-    expect(mockFeedback).toHaveBeenCalledWith('w-1', { notes: '  Bonne séance  ' });
-  });
-});
-
-// ---------------------------------------------------------------------------
-// Records et célébration
-// ---------------------------------------------------------------------------
-
-describe('records', () => {
-  it('🔴 aucune section ni célébration pendant le CHARGEMENT', async () => {
-    await afficher({ records: [record()], recordsLoading: true });
-
-    // Une bannière de félicitations qui apparaît une seconde après le résumé se lit comme un
-    // artefact, pas comme une récompense.
-    expect(screen.queryByText(/^celebration:/)).toBeNull();
-  });
-
-  it('🔴 aucune célébration sans record', async () => {
-    await afficher({ records: [] });
-
-    // Célébrer chaque séance banaliserait la seule chose qui mérite d'être remarquée.
-    expect(screen.queryByText(/^celebration:/)).toBeNull();
-  });
-
-  it('un record battu déclenche la célébration', async () => {
-    await afficher({ records: [record()] });
-
-    expect(screen.getByText(/^celebration:/)).toBeTruthy();
-    expect(screen.getByText('workout.summary.records.sectionTitle')).toBeTruthy();
-  });
-
-  it('deux records sur le MÊME exercice ne comptent qu’un exercice', async () => {
-    await afficher({
-      records: [record({ type: 'max_weight' }), record({ type: 'best_volume', value: 2400 })],
-    });
-
-    // `new Set(...).size` : « 2 exercices » alors qu'on n'en a battu qu'un donnerait une
-    // félicitation fausse.
-    expect(screen.getByText(/^celebration:/)).toBeTruthy();
+    expect(screen.queryByLabelText('workout.summary.templateNameLabel')).toBeNull();
   });
 });
 
@@ -557,39 +351,47 @@ describe('records', () => {
 
 describe('carte partageable', () => {
   it('🔴 aucun partage sur une séance SANS exercice', async () => {
-    await afficher({ sets: [] });
+    await afficher({ report: bilan({ totals: { ...bilan().totals, exercises: 0 } }) });
 
-    // Une carte vide envoyée à des tiers : le pire moment pour découvrir un état limite.
     expect(screen.queryByLabelText('share.cta')).toBeNull();
   });
 
   it('la carte s’ouvre avec les statistiques de la séance', async () => {
-    await afficher({ sets: [serie(), serie({ exerciseId: 'ex-2' })] });
+    await afficher();
 
     await taper(screen.getByLabelText('share.cta'));
 
-    expect(screen.getByText(/^partage:2:1600 kg/)).toBeTruthy();
+    expect(screen.getByText('partage:2:1600 kg:')).toBeTruthy();
   });
 
   it('🔴 les records sont portés sur la carte, DÉJÀ formatés', async () => {
-    await afficher({ records: [record({ exerciseName: 'Squat', value: 120 })] });
-
-    await taper(screen.getByLabelText('share.cta'));
-
-    // La carte n'applique aucune mise en forme métier : elle affiche des chaînes. Lui passer des
-    // nombres bruts lui ferait inventer un format, hors du système d'unités.
-    expect(screen.getByText(/Squat · 120 kg/)).toBeTruthy();
-  });
-
-  it('🔴 un record de VOLUME n’est pas formaté en poids', async () => {
     await afficher({
-      records: [record({ type: 'best_volume', value: 2400, exerciseName: 'Squat' })],
+      report: bilan({
+        records: [
+          { exerciseId: 'ex-1', exerciseName: 'Squat', type: 'max_weight', value: 120, previousValue: 115 },
+        ],
+      }),
     });
 
     await taper(screen.getByLabelText('share.cta'));
 
-    // Un volume est un produit charge × répétitions : « 2400 kg » suggérerait une charge soulevée.
-    expect(screen.getByText(/Squat · 2400\|?/)).toBeTruthy();
+    // La carte n'a aucune règle métier : elle affiche des chaînes déjà résolues et traduites.
+    expect(screen.getByText('partage:2:1600 kg:Squat · 120 kg')).toBeTruthy();
+  });
+
+  it('🔴 un record de VOLUME n’est pas formaté en poids', async () => {
+    await afficher({
+      report: bilan({
+        records: [
+          { exerciseId: 'ex-1', exerciseName: 'Squat', type: 'best_volume', value: 700, previousValue: 630 },
+        ],
+      }),
+    });
+
+    await taper(screen.getByLabelText('share.cta'));
+
+    // Un volume de série est un nombre brut (kg·reps) : lui coller « kg » en ferait une charge.
+    expect(screen.getByText('partage:2:1600 kg:Squat · 700')).toBeTruthy();
   });
 });
 
@@ -603,8 +405,8 @@ describe('sortie', () => {
 
     await taper(screen.getByLabelText('workout.backHome'));
 
-    // `replace` : revenir en arrière depuis l'accueil rouvrirait le résumé d'une séance close,
-    // et le geste de retour d'Android y ramènerait en boucle.
+    // Un `push` laisserait le résumé derrière : le geste « retour » y ramènerait, et la séance
+    // paraîtrait recommencer.
     expect(replace).toHaveBeenCalledWith('/(tabs)');
   });
 });

@@ -9,6 +9,171 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 12/09/2026 — MUSCU-UX02 : le bilan de séance, et la fin de deux écrans qui se contredisaient
+
+Branche `feature/muscu-ux02-bilan-seance` (commit précédent `d6f2608`). Analyse + maquettes
+validées par Florian le 12/09/2026 (canvas 5 planches), traité **en un seul lot** sur sa décision,
+recette humaine ensuite. Suite directe de MUSCU-UX01.
+
+**Le problème de départ n'était pas l'ergonomie, c'était la duplication.** `workout-summary.tsx`
+(623 l) et `history/[id].tsx` (484 l) étaient **deux implémentations divergentes du même objet** :
+l'un montrait les agrégats et l'écart depuis la dernière fois, l'autre le détail série par série et
+l'écart au planifié — et le **ressenti s'y lisait « 8/10 »** quand le récap affichait
+« Difficile ». Même colonne `workouts.rpe`, deux lectures contradictoires dans la même app.
+
+**L'autre constat : le récap était pauvre alors que le calcul était déjà fait ailleurs.** Huit
+briques pures, écrites et testées dans `packages/shared`, n'étaient branchées nulle part sur cet
+écran : `sessionRelativeIntensity`, `computeSetTypeMix`, `computeMuscleBalance`,
+`sessionBestEstimated1RM`, `computeSessionDuration`, `computeDots`, `parseTargetReps`, `sharesOf`.
+
+### Ajouté
+
+- **`<WorkoutReport>`, un composant unique monté par les deux routes.** L'iso cesse d'être une
+  discipline à tenir pour devenir une **propriété du code**. La prop `context` ne pilote que trois
+  choses (spec R9) : l'en-tête, l'animation de célébration — **qui ne rejoue plus** à la réouverture
+  d'une séance ancienne — et le bouton de pied.
+- **Trois niveaux de lecture** Simple / Intermédiaire / Avancé, pilotés par
+  `workoutReportVisibility(level)`, **calque délibéré de `workoutFieldVisibility`** (MUSC-F13) :
+  même forme, même patron, un seul endroit décide. Les niveaux **n'ajoutent pas des lignes, ils
+  changent la question posée** — « c'est fait » / « c'était comment » / « qu'est-ce que ça vaut ».
+- **Le verdict** : la phrase qui conclut le bilan, là où l'ancien écran ne concluait **jamais** (on
+  scrollait jusqu'à « Retour à l'accueil »). Cinq cas par ordre de priorité, du plus rare au plus
+  banal, **une clé i18n par cas** — jamais de concaténation, l'ordre des mots différant en anglais.
+  Le dernier cas est un repli qui ne peut pas échouer.
+- **4 modules purs neufs** (61 tests) : `workout-report.ts` (assemblage + verdict + conformité au
+  plan de **cette** séance), `session-comparison.ts` (« vs ton habitude »),
+  `session-muscle-split.ts` (groupes musculés + séries dures), `rep-ranges.ts` (force /
+  hypertrophie / endurance).
+- **`useWorkoutReport`** : une passe de requêtes là où l'écran interrogeait les records **3 fois**
+  (bandeau, section, écran) et le détail **2 fois** (dont une via `useExerciseDeltas`).
+- **Réglage dédié** `profiles.summary_display_level` + entrée dans Réglages + sélecteur **sur
+  l'écran** (décision D2 — un réglage enfoui n'aurait jamais été découvert).
+
+### Corrigé
+
+- 🔴 **Le ressenti se lit enfin pareil partout.** `history/[id].tsx` affichait le RPE brut
+  (« 8/10 ») là où le récap affichait l'échelle nommée. C'était un défaut de **justesse**, pas
+  d'ergonomie. La donnée stockée ne change pas ; c'est la lecture qui s'unifie (spec R10).
+- 🔴 **Régression rattrapée en cours de route** : la première version de `computeWorkoutReport`
+  ne gardait que les séries **validées**. Une séance interrompue aurait perdu ses séries prévues,
+  que l'ancien écran d'historique montrait — on aurait relu un entraînement plus propre que celui
+  qu'on a fait. `exercise.sets` porte désormais **toutes** les séries (avec la coche / le cercle
+  vide), `workingSets` seul porte la distinction pour les totaux.
+
+### Modifié
+
+- `workout-summary.tsx` : 623 → ~170 l. Ne garde que l'en-tête, l'enregistrement en modèle, le
+  partage et le retour à l'accueil.
+- `history/[id].tsx` : 484 → ~90 l. Perd son `MetaRow`, ses `ExerciseCard`, `SetRow` et
+  `RecordRow` locaux — c'est-à-dire la seconde version du récap.
+- `settings.tsx` : entrée « Niveau du bilan de séance », **distincte** de celle de la séance.
+- i18n FR + EN : 30 entrées sous `workout.report.*` (+ descriptions de niveaux).
+
+### Supprimé
+
+- `SummaryExerciseList.tsx` et `workout-summary-build.test.ts` : remplacés. ⚠️ **Les règles de ce
+  test n'ont pas disparu, elles ont changé de maison** — réinstallées dans `workout-report.test.ts`
+  au niveau pur (échauffements, plancher d'une minute, densité, séance vide), et les règles de
+  lecture de séries de l'ancien test d'historique dans `ReportExerciseList.test.tsx`, où elles
+  valent désormais pour **les deux** écrans au lieu d'un seul.
+- ⚠️ **Trois hooks de `records-repository.ts` deviennent orphelins** par la même occasion
+  (`useWorkoutRecords`, `useWorkoutDetail`, `useExerciseDeltas`), plus une poignée de clés i18n.
+  **Volontairement pas supprimés ici** — la suppression touche un fichier de 1 500 lignes et ses
+  tests, juste avant une recette de 24 critères. Consignés dans [BACKLOG.md](BACKLOG.md), à faire
+  après clôture, d'un seul geste et avec la suite de tests en filet.
+
+### Revue de code — 11 constats corrigés avant commit
+
+Revue déléguée sur le diff complet. **Deux bloquants**, trouvés là où les tests ne regardaient pas :
+
+- 🔴 **Le sélecteur de niveau ne dépliait ni ne repliait le détail des séries.**
+  `useState(detail === 'expanded')` n'évalue son initialiseur qu'au **montage**, et la carte est
+  keyée sur `exerciseId` — inchangé quand le niveau bouge. Passer en Avancé n'ouvrait rien ; revenir
+  en Simple laissait un écran déplié **sans chevron pour le refermer**. Aucun test ne l'attrapait :
+  tous montaient le composant avec un `detail` fixe, il faut un `rerender` pour le voir. État
+  désormais **dérivé pendant le rendu** (patron React officiel, pas d'effet en cascade), plus un
+  test de non-régression qui bascule les trois niveaux.
+- 🔴 **« Cette semaine » additionnait le tonnage sans borne haute.** Le sous-select `week_volume`
+  n'avait que `>= weekStart`. Un bilan de mars ouvert depuis l'historique affichait donc, sous
+  « 3ᵉ séance », le tonnage cumulé **de mars à aujourd'hui** — deux chiffres contradictoires sur la
+  même ligne, d'autant plus faux que la séance est ancienne.
+
+Et neuf points importants, tous corrigés :
+
+- **R11 n'était pas tenue** : chaque route appelait `useWorkoutReport` **et** montait
+  `<WorkoutReport>` qui le rappelait — 18 surveillances PowerSync au lieu de 9. Le bilan est
+  désormais **lu par la route et passé en prop**. Mon propre commentaire affirmait le contraire
+  (« sans requête en plus ») : `useQuery` ne déduplique pas entre instances.
+- **« Aucune séance » clignotait** sur l'écran de fin de séance, faute de garde `isLoading` — au
+  moment le plus valorisant de l'app — et **deux** messages s'empilaient si la séance était
+  réellement introuvable.
+- **La densité passait par `formatWeight`** : « 18,1 lb » sous un libellé « KG/MIN » en impérial.
+  Valeur convertie + unité composée, comme le faisait l'ancien récap.
+- **Cible tactile du sélecteur à 36 px** alors que la spec §6 nomme ces trois boutons → 44 px.
+- **Chaînes en dur** : le « d » de « séries dures » (abréviation française affichée telle quelle en
+  anglais), l'espace avant « % » concaténé à la main à cinq endroits, et deux `accessibilityLabel`
+  à ponctuation française — le texte lu à l'écran et celui lu par le lecteur d'écran disaient deux
+  choses différentes sur la même ligne en anglais.
+- **`CollapsibleBlock` était du code mort** : écrit, documenté « la parade à l'écran de 4 000 px
+  (D6) »… et jamais appelé. D6 est maintenant **réellement livrée** — intensité relative, plages de
+  reps, types de séries et « ce que ça pèse » sont repliés, chiffre-clé visible sur l'en-tête.
+- **`SessionWeight` était le seul bloc sans garde R2** : « 0,0 kg » deux fois sur un compte 100 %
+  poids du corps.
+- **D1 n'était pas appliquée** : `summary_display_level` ne retombait pas sur
+  `workout_display_level`. Quelqu'un ayant réglé sa séance en « Avancé » ouvrait son premier bilan
+  en « Intermédiaire ».
+- **Deux mineurs de cohérence** : « 0 % » de conformité peint en **vert**, et la barre de
+  comparaison qui suivait le signe alors que sa pastille suivait le ton — la ligne « Durée », neutre
+  à dessein, avait une barre verte.
+
+✅ **Ce que la revue a confirmé comme sain** : aucune division par zéro possible dans les 4 modules
+purs (chaque quotient est gardé), zéro appel réseau, les 90 clés `workout.report.*` strictement
+identiques en FR et EN, et **aucune perte silencieuse** par rapport à l'ancien écran d'historique.
+
+### Technique — Notes
+
+- **Migration** `20260912050404_muscuux02_summary_display_level` : 1 colonne additive sur
+  `profiles`, poussée sur le cloud, types régénérés, cochée au registre. ✅ Aucune sync rule (table
+  déjà publiée, lue en `select *`). 🔴 Colonne **déclarée dans `powersync/schema.ts`** — sans elle
+  l'écriture échoue et `void upsertProfile()` avale l'erreur, le sélecteur revenant à sa valeur
+  précédente sans message (panne exacte de CYCLE-01).
+- **Pourquoi une colonne séparée de `workout_display_level`** (D1) : l'une règle la densité de
+  **saisie** sous la barre, où l'on veut le minimum de champs ; l'autre la profondeur de **lecture**
+  du bilan, consulté assis au calme. Rien n'impose que ce soit le même choix. Mêmes valeurs et même
+  `coerceWorkoutDisplayLevel` — **aucun nouvel enum**.
+- **La règle qui gouverne tout le lot** (R2) : *un bloc sans donnée rend `null`, jamais zéro*. Une
+  première séance n'a pas « progressé de 0 % » ; un exercice sans 1RM connu n'est pas « à 0 % du
+  max ». Généralisation de la discipline déjà tenue par `compareExercisePerformance`.
+- **Plages de reps pondérées par le volume, pas par le nombre de séries** (R8) : compter les séries
+  donnerait une lecture **inverse** de la réalité chez quiconque finit par de l'isolation légère.
+  ⚠️ **Limite assumée** : les séries au poids du corps ne contribuent pas (tonnage nul) — une
+  séance 100 % callisthénie fait disparaître le bloc.
+- **Médiane et non moyenne** pour « vs ton habitude » (patron `computeSessionDuration`) : une
+  séance oubliée ouverte 3 h déplace une moyenne et laisse une médiane intacte. Se tait sous
+  **3 références** — deux séances ne font pas une habitude.
+- **Séries dures = RPE ≥ 8**, proxy assumé des repères MEV/MAV. ⚠️ Une série **sans** RPE n'est pas
+  « pas dure », elle est **inconnue** : `hardSets` est donc un **plancher**, affiché sur `ratedSets`
+  et jamais présenté comme un pourcentage exact.
+- **Conformité au plan distincte de `computeExecutionCompliance`** (MUSC-33), qui mesure une
+  tendance sur plusieurs séances et se tait sous trois. Ici la question est « ai-je fait ce qui
+  était prévu **aujourd'hui** », et elle a un sens dès la première séance. `parseTargetReps` est en
+  revanche réutilisé tel quel — le parsing tolérant du texte libre est le même problème.
+  ⚠️ **Dépasser le plan compte comme conforme** : c'est le but de la surcharge progressive, et le
+  compter comme un écart ferait chuter le taux de qui progresse.
+- **Hors périmètre assumé** (D3-D6) : temps de repos réel (MUSC-14) — `workout_sets.updated_at`
+  donnerait un repos de 14 h dès qu'une série est corrigée le lendemain, il faudrait une colonne
+  `completed_at` dédiée, **restée au backlog** ; ratio pousser/tirer (MUSC-11, type de mouvement
+  non modélisé) ; contexte nutritionnel des records (MUSC-34, gating pilier).
+- **Vérifications** : `npm run typecheck` ✅ · `npm run lint` ✅ (0 erreur, 0 warning) ·
+  `npm run test` ✅ **code de sortie 0 lu sans pipe** — 2 810 tests mobile (165 suites) +
+  119 fichiers `shared`.
+  ⚠️ `npx expo export --platform web` échoue (résolution de `better-sqlite3` dans
+  `@op-engineering/op-sqlite`) — **échec préexistant, vérifié à l'identique sur `dev` par stash**,
+  sans rapport avec ce lot.
+- **Recette** : [RECETTES.md](RECETTES.md) §60, **24 critères**. 🔴 Les critères 1 à 4 vérifient
+  l'iso et sont à passer en premier. ⚠️ Il faut un **historique** : la moitié des blocs se taisent
+  délibérément sur un compte neuf.
+
 
 ## 12/09/2026 — MUSCU-UX01 : 2ᵉ passe de recette, le clavier et l'haptique
 

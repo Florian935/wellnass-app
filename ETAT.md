@@ -51,6 +51,7 @@ avant de pouvoir publier.
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `recette` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
 | **MUSCPWR-01** — Module force — intensité relative (%1RM), force relative (DOTS) et total SBD avec projection | `recette` | `feature/muscpwr01-module-force` | — |
 | **MUSCU-UX01** — Refonte UX du pilier Musculation — hub, séance, après-séance, entrée programme | `recette` | `feature/muscu-refonte-ux` | [3.59] |
+| **MUSCU-UX02** — Bilan de séance — 3 niveaux de lecture, écran unique récap/historique | `recette` | `feature/muscu-ux02-bilan-seance` | [3.35] |
 | **NUTR-16** — Répartition calorique par repas | `recette` | `feature/nutr16-repartition-repas` | [4.38] |
 | **NUTR-18** — Bilan calorique hebdomadaire | `recette` | `feature/nutr18-bilan-calorique-hebdo` | — |
 | **NUTR-F1** — Rappels programmés nutrition — repas et pesée, à l'échéance apprise | `recette` | `feature/nutrf1-rappels-nutrition` | [1.14, 2.5] |
@@ -79,7 +80,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **57 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, BIEN-01, BILAN-01, CARDIO-UX01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, HORAIRE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-UX01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **58 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, BIEN-01, BILAN-01, CARDIO-UX01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, HORAIRE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-UX01, MUSCU-UX02, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -100,10 +101,10 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `fix/muscu-ux01-recette-passe-1` (modifications non commitées) |
-| Commits | 1208 · `main` a **1205** commits de retard sur `dev` |
-| Specs d'US | 144 au total — 85 clôturées, 59 en cours |
-| Migrations | 93/93 poussées sur le cloud |
+| Branche courante | `feature/muscu-ux02-bilan-seance` (modifications non commitées) |
+| Commits | 1209 · `main` a **1206** commits de retard sur `dev` |
+| Specs d'US | 145 au total — 85 clôturées, 60 en cours |
+| Migrations | 94/94 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -112,11 +113,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `448df97` fix(muscu-ux01): le clavier, l'haptique et la bande de stats
 - `d6f2608` fix(muscu-ux01): sept constats de la premiere passe de recette
 - `e719a47` chore(cardio-ux01): migration appliquee, la carte d'adaptation agit
 - `407087d` chore(cardio-ux01): redate la migration refusee et sort les payloads de design du suivi
 - `542b753` merge: integre CARDIO-UX01 (refonte UX du pilier Course) dans dev
-- `b710349` feat(nutri-ux01): refonte UX du pilier Nutrition — 11 ecrans, 26 constats
 
 ---
 

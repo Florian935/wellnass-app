@@ -1478,6 +1478,7 @@ export type Database = {
           onboarding_completed_at: string | null
           sex: string | null
           start_weight_kg: number | null
+          summary_display_level: string | null
           target_weight_kg: number | null
           updated_at: string
           user_id: string
@@ -1497,6 +1498,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           sex?: string | null
           start_weight_kg?: number | null
+          summary_display_level?: string | null
           target_weight_kg?: number | null
           updated_at?: string
           user_id: string
@@ -1516,6 +1518,7 @@ export type Database = {
           onboarding_completed_at?: string | null
           sex?: string | null
           start_weight_kg?: number | null
+          summary_display_level?: string | null
           target_weight_kg?: number | null
           updated_at?: string
           user_id?: string

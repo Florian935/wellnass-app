@@ -304,6 +304,137 @@
     "menu": {
       "title": "Session options",
       "rest": "Rest on this exercise"
+    },
+    "report": {
+      "level": {
+        "simplified": "Simple",
+        "normal": "Standard",
+        "detailed": "Advanced"
+      },
+      "notFound": "Workout not found.",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "whatYouDid": "What you did",
+      "warmupCount_one": "{{count}} warm-up set, excluded from tonnage",
+      "warmupCount_other": "{{count}} warm-up sets, excluded from tonnage",
+      "firstTime": "First time on this exercise — nothing to compare yet.",
+      "repsOnly_one": "{{count}} rep",
+      "repsOnly_other": "{{count}} reps",
+      "planned": "planned {{weight}}",
+      "deltaRepsUp_one": "+{{count}} rep",
+      "deltaRepsUp_other": "+{{count}} reps",
+      "deltaRepsDown_one": "−{{count}} rep",
+      "deltaRepsDown_other": "−{{count}} reps",
+      "deltaTimeUp": "▲ +{{duration}}",
+      "deltaTimeDown": "▼ −{{duration}}",
+      "verdict": {
+        "record": "Your best {{exercise}} yet.",
+        "recordSubtitle_one": "{{count}} personal record",
+        "recordSubtitle_other": "{{count}} personal records",
+        "bestVolume": "Your biggest {{session}} ever.",
+        "progress": "+{{weight}} on {{exercise}} since last time.",
+        "weekly_one": "Workout {{count}} this week.",
+        "weekly_other": "Workout {{count}} this week.",
+        "done_one": "Done in {{count}} min.",
+        "done_other": "Done in {{count}} min."
+      },
+      "stat": {
+        "duration": "Duration",
+        "volume": "Tonnage",
+        "sets": "Sets",
+        "density": "{{unit}}/min",
+        "ofMax": "of 1RM",
+        "averageRpe": "Avg RPE",
+        "load": "Load AU",
+        "hardSets": "Hard sets",
+        "best1rm": "Best 1RM"
+      },
+      "habit": {
+        "title": "Vs your usual",
+        "median": "med. {{value}}",
+        "minutesDelta_one": "{{count}} min",
+        "minutesDelta_other": "{{count}} min",
+        "note_one": "Median of your previous workout of the same type.",
+        "note_other": "Median of your {{count}} previous workouts of the same type.",
+        "a11y": "{{metric}}: {{delta}}, {{median}}"
+      },
+      "muscles": {
+        "title": "What you trained",
+        "note": "Working sets per muscle group.",
+        "noteHard": "Working sets per group · of which hard sets (RPE ≥ 8).",
+        "setsWithHard": "{{sets}} · {{hard}}h",
+        "a11y_one": "{{muscle}}: {{count}} set",
+        "a11y_other": "{{muscle}}: {{count}} sets"
+      },
+      "muscle": {
+        "chest": "Chest",
+        "back": "Back",
+        "legs": "Legs",
+        "shoulders": "Shoulders",
+        "arms": "Arms",
+        "core": "Core"
+      },
+      "program": {
+        "title": "Your program",
+        "fallbackName": "Planned workout",
+        "note": "{{compliant}} of {{planned}} sets matched the plan.",
+        "deviation": "Deviation: {{exercise}}, {{actual}} instead of {{planned}}.",
+        "a11y": "Plan compliance: {{percent}}%"
+      },
+      "intensity": {
+        "title": "Relative intensity",
+        "note": "Rep-weighted average, against your best known 1RM.",
+        "missing_one": "{{count}} exercise without a reference 1RM is not counted.",
+        "missing_other": "{{count}} exercises without a reference 1RM are not counted.",
+        "a11y": "{{exercise}}: {{percent}}% of 1RM"
+      },
+      "repRanges": {
+        "title": "Where your volume went",
+        "note": "Share of tonnage per rep range. Bodyweight sets do not contribute."
+      },
+      "repRange": {
+        "strength": "Strength · 1-5 reps",
+        "hypertrophy": "Hypertrophy · 6-12 reps",
+        "endurance": "Endurance · 13+ reps"
+      },
+      "setTypes": {
+        "title": "Set types",
+        "note": "Types you did not use are not listed.",
+        "a11y_one": "{{type}}: {{count}} set",
+        "a11y_other": "{{type}}: {{count}} sets"
+      },
+      "setType": {
+        "normal": "Normal",
+        "warmup": "Warm-up",
+        "superset": "Superset",
+        "duration": "Timed",
+        "bodyweight": "Bodyweight",
+        "dropset": "Drop set",
+        "failure": "To failure"
+      },
+      "records": {
+        "title": "Records broken",
+        "previous": "previous {{value}}",
+        "type": {
+          "max_weight": "Max weight",
+          "estimated_1rm": "Estimated 1RM",
+          "best_volume": "Best set volume"
+        }
+      },
+      "weight": {
+        "title": "What it adds up to",
+        "week": "This week",
+        "weekValue_one": "Workout {{count}} · {{volume}}",
+        "weekValue_other": "Workout {{count}} · {{volume}}",
+        "lifetime": "All time"
+      },
+      "levelDescription": {
+        "simplified": "The essentials: what you did, and the verdict.",
+        "normal": "Adds perspective: vs your usual, muscles trained, program.",
+        "detailed": "The full report: relative intensity, rep ranges, set types, totals."
+      },
+      "percent": "{{value}}%",
+      "percentSigned": "{{value}}%"
     }
   },
   "tabs": {
@@ -1930,6 +2061,10 @@
       "toggle": "Detect difficult back-to-backs",
       "subtitle": "Flags a heavy leg session the day before a long run or intervals, and suggests another day.",
       "hint": "Your plan is never blocked: you stay in control, the app only flags and suggests."
+    },
+    "summaryDisplayLevel": {
+      "title": "Workout report level",
+      "hint": "Separate from the workout display level: that one drives what you ENTER under the bar, this one what you READ afterwards. Also changeable from the report itself."
     }
   },
   "account": {

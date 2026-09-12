@@ -11,7 +11,14 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **10/09/2026 (ter)** — **59 sections**.
+> Dernière mise à jour : **12/09/2026** — **60 sections**.
+>
+> **② une §60 est arrivée** : MUSCU-UX02, le bilan de séance — suite directe de MUSCU-UX01 (§57).
+> 🔴 **Son cœur n'est pas l'ergonomie mais l'ISO** : le récap de fin de séance et l'écran
+> d'historique sont désormais **le même composant**, là où deux écrans de 1 107 lignes racontaient
+> la même séance différemment — jusqu'à afficher le ressenti « 8/10 » d'un côté et « Difficile »
+> de l'autre. Ses critères **1 à 4** vérifient cela et sont à passer en premier.
+> ⚠️ **Il faut un historique** : la moitié des blocs se taisent délibérément sur un compte neuf.
 >
 > **③ une §58 est arrivée** : NUTRI-UX01, refonte du pilier Nutrition — troisième pilier repris
 > dans la même semaine, après l'accueil et la musculation. 🔴 **Elle a deux prérequis**, dont un
@@ -2981,3 +2988,111 @@ pour deux d'entre eux, leurs briques de calcul déjà écrites et testées :
 | F27 → F34 | **Éditeur de séance** à trois niveaux, « Répéter la sélection », modèles, saisie en une ligne | Grammaire complète livrée et testée (`parseSessionLine`, `SESSION_TEMPLATES`, 20 tests) — **éditeurs à réécrire** |
 | F35 | Génération des **semaines qui progressent** | Colonne livrée **et poussée** (10/09/2026) — il reste `planProgram` à étendre et la vue par semaine de l'éditeur. Rien à chercher dans l'app aujourd'hui |
 | F25 | **Import** GPX et Health Connect | Rien de livré. ⚠️ La lecture Health Connect ajoute deux permissions, donc **change la déclaration « Health apps » du Play Store** — chemin critique du lancement (9.2) |
+
+## 60. MUSCU-UX02 — Bilan de séance, 3 niveaux de lecture (`feature/muscu-ux02-bilan-seance`)
+
+> **24 critères.** Spec : [muscuux02-bilan-seance.md](docs/specs/functional/us/muscuux02-bilan-seance.md) ·
+> Plan : [muscuux02-bilan-seance.md](docs/plans/muscuux02-bilan-seance.md) ·
+> Maquettes : [design/recap-seance-muscu/](design/recap-seance-muscu/) (5 planches, 2 pages).
+>
+> ✅ **Migration appliquée le 12/09/2026** —
+> `20260912050404_muscuux02_summary_display_level` (1 colonne additive sur `profiles`), types
+> régénérés, colonne déclarée dans `powersync/schema.ts`. Toute la section est recettable.
+>
+> **✅ Aucune sync rule à redéployer** (`profiles` est déjà publiée et lue en `select *`) ·
+> **aucune dépendance native neuve** → recettable sur un build de la branche.
+>
+> 🔴 **Le cœur de l'US est l'ISO récap ↔ historique** : les deux écrans sont désormais le **même
+> composant**. Les critères 1 à 4 le vérifient et sont à passer **en premier** — si l'un d'eux tombe,
+> le reste de la section n'a plus de sens.
+>
+> ⚠️ **Deux écrans à ouvrir pour chaque critère de contenu** : la fin de séance **et**
+> Historique → une séance. C'est le but : ils doivent montrer la même chose.
+>
+> ⚠️ **Il faut un historique pour tout voir.** Les blocs comparatifs se taisent délibérément sous
+> 3 séances de même nom (critère 13). Sur un compte neuf, la moitié de l'écran sera absente —
+> **c'est le comportement attendu**, pas un bug.
+
+### L'iso — à passer en premier
+
+- [ ] **1.** Terminer une séance, noter ce qu'affiche le récap. Ouvrir **Historique → cette même
+  séance** : mêmes blocs, mêmes chiffres, même ordre. Seuls diffèrent l'**en-tête** (date + flèche
+  retour au lieu de « Séance terminée ») et l'absence du bouton « Retour à l'accueil ».
+- [ ] **2.** 🔴 Battre un record → le récap de fin joue l'**animation de célébration**. Rouvrir la
+  même séance depuis l'historique → **aucune célébration ne rejoue** (mais le verdict, lui, est
+  bien là).
+- [ ] **3.** 🔴 Le **ressenti** se lit **de la même façon** des deux côtés : l'échelle nommée
+  (Facile → Max). L'historique ne doit **plus jamais** afficher un « 8/10 » brut — c'était le
+  défaut corrigé par cette US.
+- [ ] **4.** Modifier le ressenti **depuis l'historique**, revenir, rouvrir : la modification a
+  bien été enregistrée (la section est éditable des deux côtés, plus seulement en fin de séance).
+
+### Les 3 niveaux
+
+- [ ] **5.** Le sélecteur **Simple / Intermédiaire / Avancé** est visible en haut du bilan, et le
+  niveau actif est lisible d'un coup d'œil.
+- [ ] **6.** **Simple** : verdict, bande de 3 chiffres (durée / tonnage / séries), « Ce que tu as
+  fait », ressenti. **Rien d'autre** — ni comparaison, ni groupes musculaires, ni analyse.
+- [ ] **7.** **Intermédiaire** ajoute : 3 pastilles (kg/min, % du 1RM, RPE moyen), « Vs ton
+  habitude », « Ce que tu as travaillé », « Ton programme ». Les cartes d'exercice deviennent
+  **dépliables** (chevron), repliées par défaut.
+- [ ] **8.** **Avancé** ajoute : 3 pastilles de plus (charge UA, séries dures, 1RM max), intensité
+  relative, plages de reps, types de séries, records détaillés, « Ce que ça pèse ». Les cartes
+  d'exercice sont **dépliées d'emblée**.
+- [ ] **9.** 🔴 En montant de niveau, **aucun bloc ne disparaît ni ne change de place** : on ajoute
+  en dessous. Passer Simple → Intermédiaire → Avancé et vérifier que le haut de l'écran ne bouge pas.
+- [ ] **10.** Le niveau choisi **persiste** : quitter l'app, la rouvrir, rouvrir un bilan → même
+  niveau. Il vaut aussi pour l'historique.
+- [ ] **11.** Réglages → **« Niveau du bilan de séance »** existe, **distinct** de « Niveau
+  d'affichage de la séance ». Changer l'un **ne change pas** l'autre.
+
+### Le verdict — la phrase qui conclut
+
+- [ ] **12.** Le bilan se **termine par une phrase**, jamais par un écran de chiffres. Selon le cas :
+  un record battu → « Ton meilleur ‹exercice› » ; sinon plus gros tonnage sur ce type de séance ;
+  sinon progression en charge ; sinon « nᵉ séance cette semaine » ; sinon « Séance bouclée en n min ».
+  **Il y a toujours une phrase**, même sur une séance ordinaire.
+
+### Vs ton habitude
+
+- [ ] **13.** 🔴 Sur une séance dont le nom compte **moins de 3 séances précédentes**, le bloc
+  « Vs ton habitude » est **absent**. Il n'affiche **jamais** « +0 % » — deux séances ne font pas
+  une habitude.
+- [ ] **14.** Avec au moins 3 séances de même nom : le bloc compare tonnage, densité, durée et
+  charge à la **médiane**, avec un trait repère sur chaque barre.
+- [ ] **15.** ⚠️ Une séance **plus courte** que d'habitude affiche son écart en **neutre**, pas en
+  rouge : une séance plus efficace n'est pas un échec.
+- [ ] **16.** Sans ressenti saisi, la ligne « Charge (UA) » disparaît — mais le reste du bloc reste.
+
+### Les blocs d'analyse
+
+- [ ] **17.** « Ce que tu as travaillé » liste les groupes musculaires **de cette séance**, triés du
+  plus travaillé au moins. Un groupe non sollicité est **absent**, jamais à 0. En Avancé, chaque
+  ligne montre aussi les **séries dures** (« 6 · 4d »).
+- [ ] **18.** « Ton programme » n'apparaît que sur une séance **issue d'un programme**. Sur une
+  séance libre : **absent** (et non « 0 % »).
+- [ ] **19.** ⚠️ Faire **plus lourd** que le plan compte comme **conforme**, pas comme un écart : la
+  surcharge progressive est le but. Seul un réalisé **sous** la prescription est relevé.
+- [ ] **20.** « Intensité relative » (Avancé) n'affiche que les exercices ayant un **1RM connu** ; les
+  autres sont **absents**, et la note du bas dit combien ne sont pas comptés.
+- [ ] **21.** « Où est parti ton volume » : les parts somment à **100 %** exactement, la barre atteint
+  son bord, et l'ordre reste **Force → Hypertrophie → Endurance** même si l'endurance domine.
+  ⚠️ Une séance **100 % poids du corps** fait disparaître le bloc — c'est une limite assumée.
+
+### Le détail des séries
+
+- [ ] **22.** 🔴 Une séance **interrompue** (séries prévues non validées) montre bien ces séries dans
+  le détail déplié, avec un **cercle vide** au lieu de la coche. Elles ne comptent ni dans le
+  tonnage ni dans le nombre de séries.
+- [ ] **23.** Un **gainage** (série à la durée) se lit en **m:ss**, et un gainage **lesté** affiche
+  la charge préfixée d'un « + » — jamais comme une charge soulevée.
+- [ ] **24.** Un exercice **jamais fait auparavant** n'affiche **aucun badge d'écart**, et sa carte
+  dépliée dit « Premier passage sur cet exercice ». Un « = » y serait un contresens.
+
+### Hors périmètre — ne pas les chercher
+
+Quatre choses ont été **délibérément laissées de côté** (décisions D3 à D6 de la spec) :
+**temps de repos réel** (demanderait une colonne `completed_at` dédiée — `updated_at` donnerait un
+repos de 14 h dès qu'une série est corrigée le lendemain) · **ratio pousser/tirer** (le type de
+mouvement n'est pas modélisé sur `exercises`) · **contexte nutritionnel des records** (dépend du
+pilier nutrition) · **tendance historique de la densité**.

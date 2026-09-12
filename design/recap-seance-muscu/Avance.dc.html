@@ -1,0 +1,524 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Hanken+Grotesk:wght@300..800&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #1c150e; -webkit-font-smoothing: antialiased; }
+    * { box-sizing: border-box; }
+    a { color: #dd6e40; } a:hover { color: #e0a97f; }
+    .disp { font-family: 'Bricolage Grotesque', Georgia, serif; }
+    .body { font-family: 'Hanken Grotesk', system-ui, sans-serif; }
+    .mono { font-family: 'Space Mono', ui-monospace, monospace; }
+  </style>
+</helmet>
+
+<div class="body" style="width: 390px; background: #1c150e; padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+
+  <div style="display: flex; flex-direction: column; gap: 2px; margin-bottom: 4px;">
+    <div class="disp" style="font-size: 28px; font-weight: 800; letter-spacing: -0.8px; color: #f4ecdd;">Séance terminée</div>
+    <div style="font-size: 14px; line-height: 19px; color: #c9b79a;">Haut du corps · jeudi 11 sept., 18 h 42</div>
+  </div>
+
+  <div style="display: flex; gap: 4px; padding: 4px; background: #30271e; border: 1px solid #3a2e22; border-radius: 14px;">
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; height: 36px; border-radius: 10px; color: #c9b79a; font-size: 12.5px; font-weight: 600;">Simple</div>
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; height: 36px; border-radius: 10px; color: #c9b79a; font-size: 12.5px; font-weight: 600;">Intermédiaire</div>
+    <div style="flex: 1; display: flex; align-items: center; justify-content: center; height: 36px; border-radius: 10px; background: #dd6e40; color: #1c150e; font-size: 12.5px; font-weight: 700;">Avancé</div>
+  </div>
+
+  <div style="display: flex; gap: 14px; align-items: flex-start; background: #241e18; border-radius: 18px; padding: 18px;">
+    <div style="flex-shrink: 0; width: 40px; height: 40px; border-radius: 20px; background: rgba(221,110,64,0.16); display: flex; align-items: center; justify-content: center;">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#e0a97f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h2.5a1.5 1.5 0 0 1 0 5H17M7 5H4.5a1.5 1.5 0 0 0 0 5H7"/></svg>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 0;">
+      <div class="disp" style="font-size: 19px; font-weight: 700; line-height: 24px; letter-spacing: -0.3px; color: #f0e4d0;">Ton meilleur développé couché.</div>
+      <div style="font-size: 13px; line-height: 18px; color: #c9b79a;">3 records battus · ton plus gros volume sur un Haut du corps</div>
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; background: #30271e; border: 1px solid #3a2e22; border-radius: 18px; padding: 15px 8px;">
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div class="mono" style="font-size: 17px; font-weight: 700; color: #f4ecdd;">58 min</div>
+      <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.5px; color: #c9b79a;">DURÉE</div>
+    </div>
+    <div style="width: 1px; height: 30px; background: #3a2e22;"></div>
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div class="mono" style="font-size: 17px; font-weight: 700; color: #f4ecdd;">5 892 kg</div>
+      <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.5px; color: #c9b79a;">TONNAGE</div>
+    </div>
+    <div style="width: 1px; height: 30px; background: #3a2e22;"></div>
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div class="mono" style="font-size: 17px; font-weight: 700; color: #f4ecdd;">15</div>
+      <div style="font-size: 9.5px; font-weight: 600; letter-spacing: 0.5px; color: #c9b79a;">SÉRIES</div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 14px; padding: 11px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div class="mono" style="font-size: 14px; font-weight: 700; color: #f4ecdd;">102</div>
+      <div style="font-size: 9px; font-weight: 600; letter-spacing: 0.4px; color: #c9b79a;">KG/MIN</div>
+    </div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 14px; padding: 11px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div class="mono" style="font-size: 14px; font-weight: 700; color: #f4ecdd;">74 %</div>
+      <div style="font-size: 9px; font-weight: 600; letter-spacing: 0.4px; color: #c9b79a;">DU 1RM</div>
+    </div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 14px; padding: 11px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div class="mono" style="font-size: 14px; font-weight: 700; color: #f4ecdd;">8,1</div>
+      <div style="font-size: 9px; font-weight: 600; letter-spacing: 0.4px; color: #c9b79a;">RPE MOYEN</div>
+    </div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 14px; padding: 11px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div class="mono" style="font-size: 14px; font-weight: 700; color: #f4ecdd;">470</div>
+      <div style="font-size: 9px; font-weight: 600; letter-spacing: 0.4px; color: #c9b79a;">CHARGE UA</div>
+    </div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 14px; padding: 11px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div class="mono" style="font-size: 14px; font-weight: 700; color: #f4ecdd;">11/15</div>
+      <div style="font-size: 9px; font-weight: 600; letter-spacing: 0.4px; color: #c9b79a;">SÉRIES DURES</div>
+    </div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 14px; padding: 11px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+      <div class="mono" style="font-size: 14px; font-weight: 700; color: #f4ecdd;">104,5</div>
+      <div style="font-size: 9px; font-weight: 600; letter-spacing: 0.4px; color: #c9b79a;">1RM MAX KG</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.9px; color: #c9b79a;">VS TON HABITUDE</div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+          <div style="font-size: 13.5px; color: #f4ecdd;">Tonnage</div>
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <div class="mono" style="font-size: 12.5px; color: #c9b79a;">méd. 5 240</div>
+            <div style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; color: #a9ba7e; background: rgba(169,186,126,0.14);">+12 %</div>
+          </div>
+        </div>
+        <div style="position: relative; height: 6px; border-radius: 3px; background: #362c22;">
+          <div style="position: absolute; left: 0; top: 0; height: 6px; width: 78%; border-radius: 3px; background: #a9ba7e;"></div>
+          <div style="position: absolute; left: 69%; top: -3px; width: 2px; height: 12px; border-radius: 1px; background: #c9b79a;"></div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+          <div style="font-size: 13.5px; color: #f4ecdd;">Densité</div>
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <div class="mono" style="font-size: 12.5px; color: #c9b79a;">méd. 85</div>
+            <div style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; color: #a9ba7e; background: rgba(169,186,126,0.14);">+20 %</div>
+          </div>
+        </div>
+        <div style="position: relative; height: 6px; border-radius: 3px; background: #362c22;">
+          <div style="position: absolute; left: 0; top: 0; height: 6px; width: 84%; border-radius: 3px; background: #a9ba7e;"></div>
+          <div style="position: absolute; left: 70%; top: -3px; width: 2px; height: 12px; border-radius: 1px; background: #c9b79a;"></div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+          <div style="font-size: 13.5px; color: #f4ecdd;">Durée</div>
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <div class="mono" style="font-size: 12.5px; color: #c9b79a;">méd. 62 min</div>
+            <div style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; color: #c9b79a; background: #3a2e22;">−4 min</div>
+          </div>
+        </div>
+        <div style="position: relative; height: 6px; border-radius: 3px; background: #362c22;">
+          <div style="position: absolute; left: 0; top: 0; height: 6px; width: 66%; border-radius: 3px; background: #797169;"></div>
+          <div style="position: absolute; left: 70%; top: -3px; width: 2px; height: 12px; border-radius: 1px; background: #c9b79a;"></div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+          <div style="font-size: 13.5px; color: #f4ecdd;">Charge (UA)</div>
+          <div style="display: flex; align-items: baseline; gap: 8px;">
+            <div class="mono" style="font-size: 12.5px; color: #c9b79a;">méd. 428</div>
+            <div style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; color: #a9ba7e; background: rgba(169,186,126,0.14);">+10 %</div>
+          </div>
+        </div>
+        <div style="position: relative; height: 6px; border-radius: 3px; background: #362c22;">
+          <div style="position: absolute; left: 0; top: 0; height: 6px; width: 77%; border-radius: 3px; background: #a9ba7e;"></div>
+          <div style="position: absolute; left: 70%; top: -3px; width: 2px; height: 12px; border-radius: 1px; background: #c9b79a;"></div>
+        </div>
+      </div>
+      <div style="font-size: 12px; line-height: 16px; color: #c9b79a; padding-top: 2px;">Médiane de tes 5 dernières séances Haut du corps. Le trait clair marque la médiane.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.9px; color: #c9b79a;">CE QUE TU AS TRAVAILLÉ</div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 74px; flex-shrink: 0; font-size: 13px; color: #f4ecdd;">Épaules</div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: #362c22;">
+          <div style="height: 8px; width: 100%; border-radius: 4px; background: #dd6e40;"></div>
+        </div>
+        <div class="mono" style="width: 52px; flex-shrink: 0; text-align: right; font-size: 12.5px; color: #c9b79a;">6 · 4d</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 74px; flex-shrink: 0; font-size: 13px; color: #f4ecdd;">Pectoraux</div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: #362c22;">
+          <div style="height: 8px; width: 50%; border-radius: 4px; background: #dd6e40;"></div>
+        </div>
+        <div class="mono" style="width: 52px; flex-shrink: 0; text-align: right; font-size: 12.5px; color: #c9b79a;">3 · 3d</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 74px; flex-shrink: 0; font-size: 13px; color: #f4ecdd;">Dos</div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: #362c22;">
+          <div style="height: 8px; width: 50%; border-radius: 4px; background: #dd6e40;"></div>
+        </div>
+        <div class="mono" style="width: 52px; flex-shrink: 0; text-align: right; font-size: 12.5px; color: #c9b79a;">3 · 2d</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 74px; flex-shrink: 0; font-size: 13px; color: #f4ecdd;">Bras</div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: #362c22;">
+          <div style="height: 8px; width: 50%; border-radius: 4px; background: #dd6e40;"></div>
+        </div>
+        <div class="mono" style="width: 52px; flex-shrink: 0; text-align: right; font-size: 12.5px; color: #c9b79a;">3 · 2d</div>
+      </div>
+      <div style="font-size: 12px; line-height: 16px; color: #c9b79a; padding-top: 2px;">Séries de travail par groupe · dont séries dures (RPE ≥ 8). Jambes et abdos non sollicités.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.9px; color: #c9b79a;">TON PROGRAMME</div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex: 1; min-width: 0;">
+          <div style="font-size: 14.5px; font-weight: 600; color: #f4ecdd;">Push Pull Legs</div>
+          <div style="font-size: 12.5px; color: #c9b79a;">Semaine 3 · séance Push</div>
+        </div>
+        <div class="mono" style="font-size: 22px; font-weight: 700; color: #a9ba7e;">93 %</div>
+      </div>
+      <div style="height: 8px; border-radius: 4px; background: #362c22;">
+        <div style="height: 8px; width: 93%; border-radius: 4px; background: #a9ba7e;"></div>
+      </div>
+      <div style="font-size: 12.5px; line-height: 17px; color: #c9b79a;">14 des 15 séries conformes au plan. Seul écart : élévations latérales, 12 kg au lieu de 13 kg.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.9px; color: #c9b79a;">INTENSITÉ RELATIVE</div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 13px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="flex: 1; min-width: 0; font-size: 13px; color: #f4ecdd;">Développé couché</div>
+        <div style="width: 92px; flex-shrink: 0; height: 8px; border-radius: 4px; background: #362c22;">
+          <div style="height: 8px; width: 76%; border-radius: 4px; background: #e0b155;"></div>
+        </div>
+        <div class="mono" style="width: 38px; flex-shrink: 0; text-align: right; font-size: 12.5px; color: #f4ecdd;">76 %</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="flex: 1; min-width: 0; font-size: 13px; color: #f4ecdd;">Tirage horizontal</div>
+        <div style="width: 92px; flex-shrink: 0; height: 8px; border-radius: 4px; background: #362c22;">
+          <div style="height: 8px; width: 74%; border-radius: 4px; background: #e0b155;"></div>
+        </div>
+        <div class="mono" style="width: 38px; flex-shrink: 0; text-align: right; font-size: 12.5px; color: #f4ecdd;">74 %</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="flex: 1; min-width: 0; font-size: 13px; color: #f4ecdd;">Développé militaire</div>
+        <div style="width: 92px; flex-shrink: 0; height: 8px; border-radius: 4px; background: #362c22;">
+          <div style="height: 8px; width: 71%; border-radius: 4px; background: #e0b155;"></div>
+        </div>
+        <div class="mono" style="width: 38px; flex-shrink: 0; text-align: right; font-size: 12.5px; color: #f4ecdd;">71 %</div>
+      </div>
+      <div style="font-size: 12px; line-height: 16px; color: #c9b79a; padding-top: 2px;">Moyenne pondérée par les répétitions, contre ton meilleur 1RM connu. Élévations latérales et curl n&#39;ont pas de 1RM de référence : ils ne sont pas comptés.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.9px; color: #c9b79a;">OÙ EST PARTI TON VOLUME</div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 13px;">
+      <div style="display: flex; height: 12px; border-radius: 6px; overflow: hidden; background: #362c22;">
+        <div style="width: 84%; background: #dd6e40;"></div>
+        <div style="width: 16%; background: #e0b155;"></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 9px;">
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <div style="width: 10px; height: 10px; flex-shrink: 0; border-radius: 3px; background: #dd6e40;"></div>
+          <div style="flex: 1; min-width: 0; font-size: 13px; color: #f4ecdd;">Hypertrophie · 6-12 reps</div>
+          <div class="mono" style="font-size: 12.5px; color: #c9b79a;">84 %</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 9px;">
+          <div style="width: 10px; height: 10px; flex-shrink: 0; border-radius: 3px; background: #e0b155;"></div>
+          <div style="flex: 1; min-width: 0; font-size: 13px; color: #f4ecdd;">Endurance · 13 reps et +</div>
+          <div class="mono" style="font-size: 12.5px; color: #c9b79a;">16 %</div>
+        </div>
+      </div>
+      <div style="font-size: 12px; line-height: 16px; color: #c9b79a;">Aucune série en zone de force (1-5 reps) — cohérent avec ton objectif « prise de masse ».</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.9px; color: #c9b79a;">TYPES DE SÉRIES</div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 9px;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 92px; flex-shrink: 0; font-size: 13px; color: #f4ecdd;">Normale</div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: #362c22;">
+          <div style="height: 8px; width: 100%; border-radius: 4px; background: #dd6e40;"></div>
+        </div>
+        <div class="mono" style="width: 24px; flex-shrink: 0; text-align: right; font-size: 12.5px; color: #c9b79a;">14</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 92px; flex-shrink: 0; font-size: 13px; color: #f4ecdd;">Échauffement</div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: #362c22;">
+          <div style="height: 8px; width: 29%; border-radius: 4px; background: #797169;"></div>
+        </div>
+        <div class="mono" style="width: 24px; flex-shrink: 0; text-align: right; font-size: 12.5px; color: #c9b79a;">4</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 92px; flex-shrink: 0; font-size: 13px; color: #f4ecdd;">Échec</div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: #362c22;">
+          <div style="height: 8px; width: 7%; border-radius: 4px; background: #e0524a;"></div>
+        </div>
+        <div class="mono" style="width: 24px; flex-shrink: 0; text-align: right; font-size: 12.5px; color: #c9b79a;">1</div>
+      </div>
+      <div style="font-size: 12px; line-height: 16px; color: #c9b79a; padding-top: 2px;">Les types que tu n&#39;as pas utilisés ne sont pas listés.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.9px; color: #c9b79a;">CE QUE TU AS FAIT</div>
+
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 11px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <div style="flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; color: #f4ecdd;">Développé couché</div>
+        <div style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; color: #a9ba7e; background: rgba(169,186,126,0.14);">▲ +2,5 kg</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px; padding-top: 9px; border-top: 1px solid #3a2e22;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #797169;">1</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #797169;">Échauf.</div>
+          <div class="mono" style="flex: 1; font-size: 13px; color: #c9b79a;">60 kg × 10</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">2</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">82,5 kg × 8</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 80 kg ▲ · RPE 8 · 76 % 1RM</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">3</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">82,5 kg × 8</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 80 kg ▲ · RPE 8 · 76 % 1RM</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">4</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #e0524a;">Échec</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">82,5 kg × 7</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 80 kg ▲ · RPE 10 · 76 % 1RM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 11px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <div style="flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; color: #f4ecdd;">Tirage horizontal</div>
+        <div style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; color: #a9ba7e; background: rgba(169,186,126,0.14);">+1 rep</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px; padding-top: 9px; border-top: 1px solid #3a2e22;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">1</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">70 kg × 10</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 70 kg = · RPE 7 · 74 % 1RM</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">2</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">70 kg × 10</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 70 kg = · RPE 8 · 74 % 1RM</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">3</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">70 kg × 9</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 70 kg = · RPE 9 · 74 % 1RM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 11px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <div style="flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; color: #f4ecdd;">Développé militaire</div>
+        <div style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; color: #c9b79a; background: #3a2e22;">=</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px; padding-top: 9px; border-top: 1px solid #3a2e22;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">1</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">45 kg × 8</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 45 kg = · RPE 8 · 71 % 1RM</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">2</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">45 kg × 7</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 45 kg = · RPE 9 · 71 % 1RM</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">3</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">45 kg × 6</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 45 kg = · RPE 9 · 71 % 1RM</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 11px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <div style="flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; color: #f4ecdd;">Élévations latérales</div>
+        <div style="font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: 6px; color: #dd6e40; background: rgba(221,110,64,0.12);">▼ −1 kg</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px; padding-top: 9px; border-top: 1px solid #3a2e22;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">1</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">12 kg × 15</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 13 kg ▼ · RPE 7</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">2</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">12 kg × 14</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 13 kg ▼ · RPE 8</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">3</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">12 kg × 12</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">prévu 13 kg ▼ · RPE 9</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 11px;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+        <div style="flex: 1; min-width: 0; font-size: 14.5px; font-weight: 600; color: #f4ecdd;">Curl biceps haltères</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 7px; padding-top: 9px; border-top: 1px solid #3a2e22;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">1</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">16 kg × 12</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">RPE 7</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">2</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">16 kg × 11</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">RPE 8</div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div class="mono" style="width: 14px; flex-shrink: 0; text-align: right; font-size: 11.5px; color: #c9b79a;">3</div>
+          <div style="width: 46px; flex-shrink: 0; font-size: 11.5px; color: #c9b79a;">Normale</div>
+          <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+            <div class="mono" style="font-size: 13px; color: #f4ecdd;">16 kg × 10</div>
+            <div class="mono" style="font-size: 10.5px; color: #797169;">RPE 9</div>
+          </div>
+        </div>
+      </div>
+      <div style="font-size: 11.5px; line-height: 15px; color: #797169;">Premier passage sur cet exercice — rien à comparer.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.9px; color: #c9b79a;">RECORDS BATTUS</div>
+    <div style="display: flex; align-items: center; gap: 12px; background: #30271e; border: 1px solid #3a2e22; border-radius: 14px; padding: 12px 14px;">
+      <svg width="18" height="18" style="flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="#dd6e40" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h2.5a1.5 1.5 0 0 1 0 5H17M7 5H4.5a1.5 1.5 0 0 0 0 5H7"/></svg>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+        <div style="font-size: 14px; font-weight: 600; color: #f4ecdd;">Développé couché</div>
+        <div style="font-size: 12px; color: #c9b79a;">Charge maximale · précédent 80 kg</div>
+      </div>
+      <div class="mono" style="flex-shrink: 0; font-size: 14px; font-weight: 700; color: #dd6e40;">82,5 kg</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; background: #30271e; border: 1px solid #3a2e22; border-radius: 14px; padding: 12px 14px;">
+      <svg width="18" height="18" style="flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="#dd6e40" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h2.5a1.5 1.5 0 0 1 0 5H17M7 5H4.5a1.5 1.5 0 0 0 0 5H7"/></svg>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+        <div style="font-size: 14px; font-weight: 600; color: #f4ecdd;">Développé couché</div>
+        <div style="font-size: 12px; color: #c9b79a;">1RM estimé · précédent 101,3 kg</div>
+      </div>
+      <div class="mono" style="flex-shrink: 0; font-size: 14px; font-weight: 700; color: #dd6e40;">104,5 kg</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; background: #30271e; border: 1px solid #3a2e22; border-radius: 14px; padding: 12px 14px;">
+      <svg width="18" height="18" style="flex-shrink: 0;" viewBox="0 0 24 24" fill="none" stroke="#dd6e40" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M17 5h2.5a1.5 1.5 0 0 1 0 5H17M7 5H4.5a1.5 1.5 0 0 0 0 5H7"/></svg>
+      <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+        <div style="font-size: 14px; font-weight: 600; color: #f4ecdd;">Tirage horizontal</div>
+        <div style="font-size: 12px; color: #c9b79a;">Meilleur volume de série · précédent 630</div>
+      </div>
+      <div class="mono" style="flex-shrink: 0; font-size: 14px; font-weight: 700; color: #dd6e40;">700</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.9px; color: #c9b79a;">CE QUE ÇA PÈSE</div>
+    <div style="background: #30271e; border: 1px solid #3a2e22; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 11px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+        <div style="font-size: 13.5px; color: #f4ecdd;">Cette semaine</div>
+        <div class="mono" style="font-size: 13px; color: #c9b79a;">3ᵉ séance · 18 340 kg</div>
+      </div>
+      <div style="height: 1px; background: #3a2e22;"></div>
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+        <div style="font-size: 13.5px; color: #f4ecdd;">Depuis toujours</div>
+        <div class="mono" style="font-size: 13px; color: #c9b79a;">482 t soulevées</div>
+      </div>
+      <div style="font-size: 12px; line-height: 16px; color: #c9b79a;">Prochain jalon à 500 t, soit environ 3 mois à ton rythme actuel.</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="font-size: 11px; font-weight: 600; letter-spacing: 0.9px; color: #c9b79a;">C&#39;ÉTAIT COMMENT ?</div>
+    <div style="display: flex; gap: 7px;">
+      <div style="flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid #3a2e22; border-radius: 12px; background: #30271e; font-size: 12px; font-weight: 600; color: #c9b79a;">Facile</div>
+      <div style="flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid #3a2e22; border-radius: 12px; background: #30271e; font-size: 12px; font-weight: 600; color: #c9b79a;">Moyen</div>
+      <div style="flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid #dd6e40; border-radius: 12px; background: #dd6e40; font-size: 12px; font-weight: 600; color: #1c150e;">Dur</div>
+      <div style="flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid #3a2e22; border-radius: 12px; background: #30271e; font-size: 12px; font-weight: 600; color: #c9b79a;">Très dur</div>
+      <div style="flex: 1; min-height: 44px; display: flex; align-items: center; justify-content: center; border: 1px solid #3a2e22; border-radius: 12px; background: #30271e; font-size: 12px; font-weight: 600; color: #c9b79a;">Max</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 9px; border: 1px solid #3a2e22; border-radius: 14px; background: #30271e; padding: 13px 15px;">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+      <div style="font-size: 13.5px; color: #c9b79a;">Ajouter une note</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 4px;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 9px; height: 52px; border-radius: 16px; border: 1px solid #3a2e22; background: transparent;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.6 13.5 6.8 4M15.4 6.5 8.6 10.5"/></svg>
+      <div style="font-size: 16px; font-weight: 700; color: #f4ecdd;">Partager ma séance</div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center; height: 52px; border-radius: 16px; background: #dd6e40;">
+      <div style="font-size: 16px; font-weight: 700; color: #1c150e;">Retour à l&#39;accueil</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

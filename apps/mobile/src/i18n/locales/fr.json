@@ -304,6 +304,137 @@
     "menu": {
       "title": "Options de la séance",
       "rest": "Repos sur cet exercice"
+    },
+    "report": {
+      "level": {
+        "simplified": "Simple",
+        "normal": "Intermédiaire",
+        "detailed": "Avancé"
+      },
+      "notFound": "Séance introuvable.",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "whatYouDid": "Ce que tu as fait",
+      "warmupCount_one": "{{count}} série d’échauffement, hors tonnage",
+      "warmupCount_other": "{{count}} séries d’échauffement, hors tonnage",
+      "firstTime": "Premier passage sur cet exercice — rien à comparer.",
+      "repsOnly_one": "{{count}} rép.",
+      "repsOnly_other": "{{count}} rép.",
+      "planned": "prévu {{weight}}",
+      "deltaRepsUp_one": "+{{count}} rép.",
+      "deltaRepsUp_other": "+{{count}} rép.",
+      "deltaRepsDown_one": "−{{count}} rép.",
+      "deltaRepsDown_other": "−{{count}} rép.",
+      "deltaTimeUp": "▲ +{{duration}}",
+      "deltaTimeDown": "▼ −{{duration}}",
+      "verdict": {
+        "record": "Ton meilleur {{exercise}}.",
+        "recordSubtitle_one": "{{count}} record battu",
+        "recordSubtitle_other": "{{count}} records battus",
+        "bestVolume": "Ton plus gros volume sur un {{session}}.",
+        "progress": "+{{weight}} au {{exercise}} depuis la dernière fois.",
+        "weekly_one": "{{count}}ʳᵉ séance cette semaine.",
+        "weekly_other": "{{count}}ᵉ séance cette semaine.",
+        "done_one": "Séance bouclée en {{count}} min.",
+        "done_other": "Séance bouclée en {{count}} min."
+      },
+      "stat": {
+        "duration": "Durée",
+        "volume": "Tonnage",
+        "sets": "Séries",
+        "density": "{{unit}}/min",
+        "ofMax": "du 1RM",
+        "averageRpe": "RPE moyen",
+        "load": "Charge UA",
+        "hardSets": "Séries dures",
+        "best1rm": "1RM max"
+      },
+      "habit": {
+        "title": "Vs ton habitude",
+        "median": "méd. {{value}}",
+        "minutesDelta_one": "{{count}} min",
+        "minutesDelta_other": "{{count}} min",
+        "note_one": "Médiane de ta séance précédente de même type.",
+        "note_other": "Médiane de tes {{count}} séances précédentes de même type.",
+        "a11y": "{{metric}} : {{delta}}, {{median}}"
+      },
+      "muscles": {
+        "title": "Ce que tu as travaillé",
+        "note": "Séries de travail par groupe musculaire.",
+        "noteHard": "Séries de travail par groupe · dont séries dures (RPE ≥ 8).",
+        "setsWithHard": "{{sets}} · {{hard}}d",
+        "a11y_one": "{{muscle}} : {{count}} série",
+        "a11y_other": "{{muscle}} : {{count}} séries"
+      },
+      "muscle": {
+        "chest": "Pectoraux",
+        "back": "Dos",
+        "legs": "Jambes",
+        "shoulders": "Épaules",
+        "arms": "Bras",
+        "core": "Abdos"
+      },
+      "program": {
+        "title": "Ton programme",
+        "fallbackName": "Séance planifiée",
+        "note": "{{compliant}} des {{planned}} séries conformes au plan.",
+        "deviation": "Écart : {{exercise}}, {{actual}} au lieu de {{planned}}.",
+        "a11y": "Conformité au plan : {{percent}} %"
+      },
+      "intensity": {
+        "title": "Intensité relative",
+        "note": "Moyenne pondérée par les répétitions, contre ton meilleur 1RM connu.",
+        "missing_one": "{{count}} exercice sans 1RM de référence n’est pas compté.",
+        "missing_other": "{{count}} exercices sans 1RM de référence ne sont pas comptés.",
+        "a11y": "{{exercise}} : {{percent}} % du 1RM"
+      },
+      "repRanges": {
+        "title": "Où est parti ton volume",
+        "note": "Part du tonnage par plage de répétitions. Les séries au poids du corps n’y contribuent pas."
+      },
+      "repRange": {
+        "strength": "Force · 1-5 reps",
+        "hypertrophy": "Hypertrophie · 6-12 reps",
+        "endurance": "Endurance · 13 reps et +"
+      },
+      "setTypes": {
+        "title": "Types de séries",
+        "note": "Les types que tu n’as pas utilisés ne sont pas listés.",
+        "a11y_one": "{{type}} : {{count}} série",
+        "a11y_other": "{{type}} : {{count}} séries"
+      },
+      "setType": {
+        "normal": "Normale",
+        "warmup": "Échauf.",
+        "superset": "Superset",
+        "duration": "Durée",
+        "bodyweight": "Poids du corps",
+        "dropset": "Dropset",
+        "failure": "Échec"
+      },
+      "records": {
+        "title": "Records battus",
+        "previous": "précédent {{value}}",
+        "type": {
+          "max_weight": "Charge maximale",
+          "estimated_1rm": "1RM estimé",
+          "best_volume": "Meilleur volume de série"
+        }
+      },
+      "weight": {
+        "title": "Ce que ça pèse",
+        "week": "Cette semaine",
+        "weekValue_one": "{{count}}ʳᵉ séance · {{volume}}",
+        "weekValue_other": "{{count}}ᵉ séance · {{volume}}",
+        "lifetime": "Depuis toujours"
+      },
+      "levelDescription": {
+        "simplified": "L’essentiel : ce que tu as fait, et le verdict.",
+        "normal": "Ajoute la mise en perspective : vs ton habitude, groupes travaillés, programme.",
+        "detailed": "Le bilan complet : intensité relative, plages de reps, types de séries, cumuls."
+      },
+      "percent": "{{value}} %",
+      "percentSigned": "{{value}} %"
     }
   },
   "tabs": {
@@ -1930,6 +2061,10 @@
       "toggle": "Détecter les enchaînements difficiles",
       "subtitle": "Signale une grosse séance de jambes la veille d’une sortie longue ou d’un fractionné, et propose un autre jour.",
       "hint": "Le planning n’est jamais bloqué : tu gardes la main, l’app se contente de signaler et de proposer."
+    },
+    "summaryDisplayLevel": {
+      "title": "Niveau du bilan de séance",
+      "hint": "Réglage distinct de celui de la séance : l’un pilote ce que tu SAISIS sous la barre, celui-ci ce que tu LIS après. Modifiable aussi depuis le bilan lui-même."
     }
   },
   "account": {

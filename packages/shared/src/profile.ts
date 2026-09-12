@@ -46,6 +46,14 @@ export const profileRowSchema = syncFieldsSchema.extend({
   workoutDisplayLevel: workoutDisplayLevelSchema.nullable().default(null),
 
   /**
+   * Niveau de lecture du **bilan** de séance (MUSCU-UX02). Même échelle que
+   * `workoutDisplayLevel`, **réglage distinct** (décision D1) : l'un règle la densité de *saisie*
+   * sous la barre, l'autre la profondeur de *lecture* du bilan, assis au calme. Rien n'impose que
+   * ce soit le même choix. NULL en base → « normal » à la lecture (repo).
+   */
+  summaryDisplayLevel: workoutDisplayLevelSchema.nullable().default(null),
+
+  /**
    * Objectif de pas quotidien (US PAS-01). NULL en base pour les comptes antérieurs à la migration
    * → ramené au défaut (`DEFAULT_STEP_GOAL`) à la lecture, comme `workoutDisplayLevel`.
    */

@@ -133,7 +133,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 06/08/2026, *
 | 3.32 | Remplacer un exercice en direct | Choisir une variante en séance. | Moyen | 3h | 🟢 | ✅ | `replaceExercise` + action « Remplacer » sur l'exercice courant (picker existant, exclut les exercices déjà présents) — Refonte-C3. |
 | 3.33 | Note de séance | Champ texte libre. | Facile | 1h | 🟢 | ✅ | Note de séance collectée au résumé (`workout-summary.tsx` → `setWorkoutFeedback`). |
 | 3.34 | Ressenti global | RPE 1-10 ou 5 étoiles en fin de séance. | Facile | 1h | 🟢 | ✅ | RPE de séance saisi au résumé (`RpeSelector` → `setWorkoutFeedback`). |
-| 3.35 | Résumé fin de séance | Durée, volume, séries validées, records battus. | Moyen | 3h | 🟢 | ✅ | `workout-summary.tsx`. |
+| 3.35 | Bilan de fin de séance | Durée, tonnage, séries, records — puis **3 niveaux de lecture** (Simple/Intermédiaire/Avancé) et un **verdict**. | Moyen | 3h | 🟢 | ✅ | **Refondu par MUSCU-UX02 (12/09/2026)** : `<WorkoutReport>` est désormais monté par `workout-summary.tsx` **et** `history/[id].tsx` — l'iso récap/historique devient une propriété du code. Reste la recette device. |
 | 3.36 | Mise en pause de séance | Reprenable jusqu'à la clôture automatique (3h, US 3.37). | Moyen | 3h | 🟢 | ✅ | **MUSC-F6 — réconcilié le 01/08/2026 (Option A, Florian).** Le « conflit 3h/4h » n'a **jamais existé dans le comportement observable** : `WORKOUT_AUTO_CLOSE_SECONDS` (3h, déjà testée) est la seule limite réelle ; la promesse « 4h + popup Pause » de `musculation.md` §4.4 n'avait jamais été implémentée (aucun statut `paused`, aucune constante, aucune chaîne i18n). Doc corrigée pour dire ce que le code fait déjà — **zéro ligne de code applicatif**. |
 | 3.37 | Clôture automatique après 3h | Fermeture et sauvegarde automatiques. | Facile | 1h | 🟢 | ✅ | `isWorkoutStale` + `autoCloseStaleWorkout()` au démarrage (gaté `hasSynced`), durée plafonnée à la dernière activité réelle (25/07/2026). |
 | 3.22 | Record personnel (1RM estimé) | Formule d'Epley : charge × (1 + reps/30). | Facile | 1h | 🟢 | ✅ | `shared/records.ts` `estimate1RM`. Motivation (arbitrage C). |
@@ -582,6 +582,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**12/09/2026 — MUSCU-UX02 (3.35) : le bilan de séance, 3 niveaux de lecture**
+Compteurs **inchangés** (3.35 était déjà ✅) : ce n'est pas une fonctionnalité de plus mais la **fusion** de deux écrans qui se contredisaient — jusqu'au ressenti, lu « 8/10 » d'un côté et « Difficile » de l'autre.
+Huit briques pures déjà testées dans `shared` étaient écrites mais branchées nulle part sur cet écran ; elles le sont. Reste la recette device (§60, 24 critères).
 
 **12/09/2026 — MUSCU-UX01 (3.59) : 2ᵉ passe de recette, 3 constats de plus**
 Compteurs **inchangés**, US toujours en recette. Le plus coûteux est un **changement de plateforme**
