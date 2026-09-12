@@ -11,6 +11,7 @@
  */
 
 import { StyleSheet, Text, View } from 'react-native';
+import { AnimatedBar } from '@/components/motion/AnimatedBar';
 import { useTranslation } from 'react-i18next';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -37,18 +38,30 @@ export function MacroTriple({
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      {MACRO_KEYS.map((key) => {
+      {MACRO_KEYS.map((key, index) => {
         const value = consumed[key];
         const goal = targets?.[key] ?? 0;
-        const pct = goal > 0 ? Math.min(100, (value / goal) * 100) : 0;
+        const pct = goal > 0 ? Math.min(1, value / goal) : 0;
         return (
           <View key={key} style={styles.col}>
             <Text style={[styles.label, { color: colors.textMuted }]} numberOfLines={1}>
               {t(`nutrition.macros.${key}`)}
             </Text>
-            <View style={[styles.track, { backgroundColor: colors.track }]}>
-              <View style={[styles.fill, { backgroundColor: colorOf[key], width: `${pct}%` }]} />
-            </View>
+            {/*
+              MOTION-01 (N2) : les trois barres se remplissent **décalées de 60 ms**. Parties
+              ensemble, elles se lisaient comme un seul bloc qui grandit et on ne voyait plus
+              qu'elles ont des longueurs différentes ; décalées, l'œil les compare une à une.
+
+              Décélération pure, jamais de ressort (règle R6) : une jauge de protéines qui dépasse
+              puis revient affiche un chiffre faux sur une donnée qu'on surveille.
+            */}
+            <AnimatedBar
+              pct={pct}
+              index={index}
+              color={colorOf[key]}
+              trackColor={colors.track}
+              height={8}
+            />
             <Text style={[styles.value, { color: colors.textMuted }]} numberOfLines={1}>
               {value}
               {goal > 0 ? ` / ${goal}` : ''} g
@@ -64,7 +77,5 @@ const styles = StyleSheet.create({
   card: { borderRadius: 20, borderWidth: 1, paddingVertical: 16, paddingHorizontal: 18, flexDirection: 'row', gap: 16 },
   col: { flex: 1 },
   label: { fontFamily: fontFamily.bodySemi, fontSize: 12, marginBottom: 6 },
-  track: { height: 8, borderRadius: 5, overflow: 'hidden' },
-  fill: { height: '100%', borderRadius: 5 },
   value: { fontFamily: fontFamily.monoBold, fontSize: 11, marginTop: 6 },
 });

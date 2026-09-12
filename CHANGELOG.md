@@ -10,6 +10,89 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/09/2026 — MOTION-01 : l'app cesse d'être immobile
+
+Branche `feature/motion01-langage-mouvement`, créée depuis `dev` et développée dans un **worktree
+isolé** (`feature/muscu-ux02-bilan-seance` travaillait en parallèle sur l'écran récap, avec ~1 800
+lignes non commitées). Analyse et maquettes validées par Florian le 12/09, **traitée en un seul
+lot** sur sa décision — « je te laisse tout faire d'un seul lot en entier et comme ça je fais un
+recettage final ».
+
+Le point de départ : « l'application manque de pep's, il n'y a pas d'animation ». Le relevé fait
+sur le dépôt dit quelque chose de plus précis — et de plus encourageant : **l'outillage était là
+depuis le début et n'avait jamais été branché.** `react-native-reanimated` 4.5 et
+`react-native-worklets` étaient installés mais utilisés par **2 fichiers sur ~80 écrans** (le
+glisser-déposer du planning) ; `CelebrationCard` était le **seul** composant réellement animé ;
+`RingGauge` calculait son arc une fois, donc l'anneau apparaissait déjà rempli ; le timer de repos
+était **un texte qui décrémente** ; les trois fonctions haptiques, écrites et documentées sur
+trente lignes, n'étaient appelées que depuis deux fichiers, tous deux en muscu.
+
+Et surtout : `design/design-system.md` § « Animations clés » nommait **cinq animations validées en
+maquette** — `prpop`, `sheetup`, `pulsedot`, `dashmove`, `fadeslide` — dont **aucune** n'existait
+dans le code. Deux d'entre elles sont livrées ici.
+
+### Ajouté
+
+- **Un socle de mouvement complet**, dont tout le reste dépend : `theme/motion.ts` (durées,
+  ressorts et courbes, **une physique par pilier** — impact pour la muscu, flux pour la course,
+  remplissage pour la nutrition, souffle pour l'accueil), `useAppReducedMotion`, `useIsAppActive`,
+  et six primitives (`PressableScale`, `AnimatedNumber`, `AnimatedBar`, `StaggerIn`, `Breathe`,
+  `TabBarIcon`).
+- **L'anneau du temps de repos** (M3/M4) — le manque le plus criant du pilier muscu. L'arc se vide
+  en linéaire sur exactement le pas de la minuterie (1 s), donc sans à-coup entre deux secondes, et
+  vire au vert à T−5 s. `restTotal` distingue la durée **lancée** du réglage durable de l'exercice :
+  « + 15 s » remplit l'anneau, ce qui est exactement ce qui vient de se passer.
+- **Le `pulsedot`** (C1). Le marqueur GPS est un calque MapLibre, dont les propriétés de peinture ne
+  sont pas animables par Reanimated ; mais en mode suivi la caméra est centrée dessus, donc le halo
+  est une surcouche au centre du conteneur — aucun pont avec la carte, aucune reprojection.
+- **Un interrupteur « Animations »** dans les Réglages. `navigation-ux.md` §4.2 exigeait
+  « animation + son (désactivable) » **depuis le cadrage** ; c'est livré, et combiné au réglage
+  système par un **OU** (l'app ne peut pas contredire Android).
+
+### Modifié
+
+- **`Button`** troque son `opacity: 0.85` contre un enfoncement + une vibration. Sur un écran
+  tactile, l'opacité est le retour le plus faible qui existe : elle est invisible sous le pouce qui
+  recouvre justement le bouton. L'opacité reste employée pour l'état **désactivé**, où elle dit
+  autre chose.
+- **`RingGauge`** anime son arc depuis la valeur précédente : les **38** appelants en héritent sans
+  changer d'API. C'est ce qui fait que l'ajout d'un aliment montre enfin la portion ajoutée au lieu
+  de repartir de zéro.
+- **`CelebrationCard`** passe en Reanimated et devient le `prpop` de la maquette : ressort avec
+  dépassement, deux ondes qui partent du centre. **Pas de confettis** — on soulève de la fonte. Les
+  deux écrans de résumé (muscu et course) en héritent **sans être modifiés**, ce qui évite tout
+  conflit avec la réécriture en cours de `workout-summary.tsx`.
+- Cascade d'entrée des widgets, icône d'onglet qui réagit au focus, halo qui respire sur les deux
+  cartes héros, barres de macros décalées, chiffres du streak et du bilan calorique qui transitent.
+
+### Technique / Notes
+
+- 🔴 **Mock Reanimated global, écrit à la main.** Celui de la bibliothèque est inutilisable ici :
+  son propre `src/mock.ts` réimporte `react-native-reanimated/src/index.ts` et déclenche
+  l'initialisation native qu'il devait éviter. Sans mock, **26 suites mouraient à l'import** dès que
+  Reanimated entrait dans une primitive partagée comme `RingGauge`.
+- ⚠️ **`Intl` n'existe pas sur le thread UI.** `AnimatedNumber` formatait donc en français en dur ;
+  les séparateurs sont devenus des **paramètres**, que `useLocaleSeparators` tire de la langue
+  courante. Sans ça, régression i18n dans une app bilingue depuis le jour 1 (décision G).
+- ⚠️ **`useFocusEffect` et `useIsFocused` lèvent hors conteneur de navigation.** Un halo décoratif
+  n'a aucune raison de faire planter l'écran qui l'héberge — le défaut s'est manifesté dès qu'un
+  test a rendu une carte isolément. Les boucles infinies s'annulent donc sur `AppState`
+  (`useIsAppActive`), qui couvre le cas qui coûte vraiment de la batterie.
+- ⚠️ **Prop `announce`** sur `AnimatedNumber` : sans elle, le chiffre était annoncé **deux fois**
+  par un lecteur d'écran — une fois par le champ, une fois par la carte qui le contient déjà.
+- **`react-hooks/immutability`** (React Compiler) refuse qu'une valeur partagée Reanimated soit
+  mutée depuis un `useCallback`. Le dépôt ne les mutait jusqu'ici que dans des `useEffect` et des
+  worklets de geste ; les primitives suivent la même règle.
+- 🟡 **Lot volontairement partiel : 19 effets livrés sur les 45 analysés.** Le socle est complet,
+  le reste n'est que du branchement. **Quatre effets sont écartés pour une raison de fond**
+  (détaillée en spec §4.6) : la pastille d'onglet glissante, `dashmove`, le toast de record **en
+  séance**, et la transition séance → résumé.
+- ✅ **Aucune migration, aucune sync rule, aucune dépendance native** — tout était déjà au
+  `package.json`. Recettable sur un build de la branche, sans repasser par EAS.
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0, **170 suites / 2 862 tests verts**
+  (169 / 2 856 avant).
+
+
 ## 12/09/2026 — MUSCU-UX01 : 2ᵉ passe de recette, le clavier et l'haptique
 
 Branche `fix/muscu-ux01-recette-passe-1` (commit précédent `d6f2608`). Recette menée par

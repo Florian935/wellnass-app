@@ -11,7 +11,15 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **10/09/2026 (ter)** — **59 sections**.
+> Dernière mise à jour : **12/09/2026** — **60 sections**.
+>
+> **⑤ une §60 est arrivée** : MOTION-01, le langage de mouvement. C'est la première US du dépôt qui
+> ne change **ni une donnée, ni un écran** : elle ajoute la couche de réponse qui manquait (appuis,
+> anneaux, cascades). ✅ **Aucune migration, aucune sync rule, aucune dépendance native** — donc
+> recettable sur un build de la branche. 🔴 **Commencer par ses critères 1 à 3** : ils vérifient
+> qu'on peut tout couper sans rien perdre, et c'est ce qui rend le reste acceptable.
+> ⚠️ Sa dernière sous-section liste **26 effets non livrés** sur les 45 analysés : ne pas les
+> chercher dans l'app.
 >
 > **③ une §58 est arrivée** : NUTRI-UX01, refonte du pilier Nutrition — troisième pilier repris
 > dans la même semaine, après l'accueil et la musculation. 🔴 **Elle a deux prérequis**, dont un
@@ -2981,3 +2989,105 @@ pour deux d'entre eux, leurs briques de calcul déjà écrites et testées :
 | F27 → F34 | **Éditeur de séance** à trois niveaux, « Répéter la sélection », modèles, saisie en une ligne | Grammaire complète livrée et testée (`parseSessionLine`, `SESSION_TEMPLATES`, 20 tests) — **éditeurs à réécrire** |
 | F35 | Génération des **semaines qui progressent** | Colonne livrée **et poussée** (10/09/2026) — il reste `planProgram` à étendre et la vue par semaine de l'éditeur. Rien à chercher dans l'app aujourd'hui |
 | F25 | **Import** GPX et Health Connect | Rien de livré. ⚠️ La lecture Health Connect ajoute deux permissions, donc **change la déclaration « Health apps » du Play Store** — chemin critique du lancement (9.2) |
+
+---
+
+## 60. MOTION-01 — Langage de mouvement (`feature/motion01-langage-mouvement`)
+
+> **24 critères.** Spec : [motion01-langage-mouvement.md](docs/specs/functional/us/motion01-langage-mouvement.md) ·
+> Plan : [motion01-langage-mouvement.md](docs/plans/motion01-langage-mouvement.md) ·
+> Maquettes animées : [design/motion-01/](design/motion-01/) (6 planches).
+>
+> ✅ **Aucune migration, aucune sync rule, aucune dépendance native** — `react-native-reanimated`,
+> `react-native-worklets`, `expo-haptics` et `react-native-svg` étaient déjà au `package.json`.
+> **Recettable sur un build de la branche**, sans repasser par EAS.
+>
+> 🔴 **Le critère 1 conditionne tous les autres.** Si les animations sont coupées côté système,
+> rien de ce qui suit ne bougera — et ce sera le comportement correct.
+>
+> ⚠️ **Lot volontairement incomplet.** L'analyse proposait 45 effets ; **19 sont livrés**. La
+> dernière sous-section liste les 26 autres et dit pourquoi. Ne pas les chercher dans l'app.
+
+### Le garde-fou d'abord
+
+- [ ] 1. **Couper « Animations » dans Réglages → Animations** : plus aucun mouvement nulle part,
+      mais **rien ne disparaît** — anneaux, chiffres et barres s'affichent directement à leur
+      valeur. Rallumer : le mouvement revient.
+- [ ] 2. **Activer « Supprimer les animations » dans les réglages Android** : même effet, et
+      l'interrupteur de l'app ne peut **pas** le contredire (garder « Animations » activé dans
+      l'app : rien ne doit bouger malgré tout).
+- [ ] 3. **Les vibrations continuent** dans les deux cas ci-dessus. Couper le mouvement visuel
+      n'est pas couper le retour tactile.
+
+### Partout dans l'app
+
+- [ ] 4. **Appuyer sur n'importe quel bouton** : il s'enfonce légèrement et vibre brièvement.
+      *Avant : un simple changement d'opacité, invisible sous le pouce.*
+- [ ] 5. **Ouvrir l'accueil** : les cartes arrivent **en cascade**, pas toutes d'un coup.
+      Revenir depuis une sous-page ne rejoue **pas** la cascade.
+- [ ] 6. **Changer d'onglet** : l'icône de l'onglet qui prend le focus grossit brièvement.
+- [ ] 7. **Régler la langue sur English** : les chiffres animés (streak, bilan calorique) utilisent
+      `1,234.5` et non `1 234,5`.
+
+### Musculation
+
+- [ ] 8. **Démarrer une séance, valider une série, laisser le repos se lancer** : un **anneau**
+      entoure le compte à rebours et se vide régulièrement, sans à-coup entre deux secondes.
+      *Avant : un texte qui décrémente, et rien d'autre.*
+- [ ] 9. **Dans les 5 dernières secondes**, l'arc passe du beige au **vert**.
+- [ ] 10. **Appuyer sur « + 15 s » pendant le repos** : l'anneau **se remplit** (la durée totale a
+      augmenté), il ne saute pas.
+- [ ] 11. **Repos de 10 minutes** (régler un exercice à 600 s) : « 10:00 » tient dans l'anneau sans
+      toucher l'arc.
+- [ ] 12. **Valider une série** : le bouton encaisse le coup et la vibration part **à l'appui**,
+      pas au relâchement. Aucune latence ajoutée — la série est validée instantanément.
+- [ ] 13. **Boutons « − » et « + »** de poids / répétitions : ils s'enfoncent nettement (cible
+      plus petite, donc enfoncement plus marqué).
+- [ ] 14. **Terminer une séance avec un record** : la carte de célébration arrive en **ressort avec
+      dépassement**, et deux ondes partent du centre. *Pas de confettis.*
+
+### Course
+
+- [ ] 15. **Démarrer une course GPS** : un halo se propage en continu autour du point de position,
+      en boucle, pendant toute la course.
+- [ ] 16. **Mettre l'app en arrière-plan pendant une course, puis revenir** : le halo s'était
+      arrêté et repart. *C'est le garde-fou batterie — invisible, mais c'est le point.*
+- [ ] 17. **Écran de résumé de course** (mode bornes, pas suivi) : **aucun halo** — le dernier
+      point n'est plus au centre, un halo y serait à côté de la plaque.
+- [ ] 18. **Terminer une course avec un record** : même célébration qu'en muscu (composant partagé).
+
+### Nutrition
+
+- [ ] 19. **Ajouter un aliment au journal** : l'anneau du bilan monte **depuis sa valeur
+      précédente**, jamais depuis zéro, et le chiffre central roule vers la nouvelle valeur.
+- [ ] 20. **Les trois barres de macros** se remplissent **décalées**, pas ensemble.
+- [ ] 21. **Aucune barre ne dépasse puis ne revient** : elles décélèrent et se posent.
+- [ ] 22. **Carte « Bilan du jour »** : son halo d'accent respire très lentement (~6 s par cycle).
+
+### Accueil
+
+- [ ] 23. **Carte de régularité** : le chiffre de la série transite au lieu de sauter (se constate
+      au changement de jour, ou en clôturant la séance du jour).
+- [ ] 24. **Carte « Séance du jour »** : son halo respire, comme celui du bilan nutrition. Les
+      **autres** cartes de la grille ne respirent pas — c'est voulu.
+
+### 🔴 Ce qui n'est PAS livré — ne pas le chercher
+
+L'analyse listait 45 effets, **19 sont dans ce lot**. Les 26 autres, et pourquoi :
+
+**Écartés pour une raison de fond** (ne seront pas faits tels quels)
+
+- **S6 — pastille d'onglet glissante** : demande de remplacer la barre d'onglets d'`expo-router` par
+  une barre maison, qui porte déjà le masquage des piliers désactivés (décision H), la couleur par
+  menu et les libellés i18n. C'est de la reconstruction, pas du mouvement.
+- **C2 — `dashmove` (pointillés qui défilent sur le tracé)** : `line-dasharray` est une propriété de
+  **style de carte** MapLibre ; l'animer demanderait un rafraîchissement JS par image, ce que la
+  règle R3 interdit — sur l'écran qui tourne le plus longtemps de l'app.
+- **M7 en séance (toast de record live)** : les records ne sont évalués qu'à la **clôture** de la
+  séance (`evaluateWorkoutRecords`). Un toast en direct demanderait une évaluation par série, c'est
+  du travail de données, pas d'animation. La célébration existe, au résumé.
+- **M11 — transition séance → résumé** : `workout-summary.tsx` est en cours de réécriture sur
+  `feature/muscu-ux02-bilan-seance`. Y toucher aurait garanti un conflit de fusion pénible.
+
+**Reste à faire, sans obstacle identifié** — M2, M5, M6, M9, M10 · C3 à C10 · N3, N5 à N9 ·
+A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branchements.
