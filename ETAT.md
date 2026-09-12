@@ -102,7 +102,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/muscu-ux02-bilan-seance` (modifications non commitées) |
-| Commits | 1209 · `main` a **1206** commits de retard sur `dev` |
+| Commits | 1210 · `main` a **1206** commits de retard sur `dev` |
 | Specs d'US | 145 au total — 85 clôturées, 60 en cours |
 | Migrations | 94/94 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -113,11 +113,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `4f55712` feat(muscu-ux02): bilan de seance — 3 niveaux de lecture, ecran unique recap/historique
 - `448df97` fix(muscu-ux01): le clavier, l'haptique et la bande de stats
 - `d6f2608` fix(muscu-ux01): sept constats de la premiere passe de recette
 - `e719a47` chore(cardio-ux01): migration appliquee, la carte d'adaptation agit
 - `407087d` chore(cardio-ux01): redate la migration refusee et sort les payloads de design du suivi
-- `542b753` merge: integre CARDIO-UX01 (refonte UX du pilier Course) dans dev
 
 ---
 
