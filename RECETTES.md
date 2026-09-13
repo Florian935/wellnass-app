@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **12/09/2026 (ter)** — **62 sections**.
+> Dernière mise à jour : **13/09/2026** — **63 sections**.
 >
 > **② une §60 est arrivée** : MUSCU-UX02, le bilan de séance — suite directe de MUSCU-UX01 (§57).
 > 🔴 **Son cœur n'est pas l'ergonomie mais l'ISO** : le récap de fin de séance et l'écran
@@ -3215,7 +3215,7 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 
 Spec : [CORPS-01](docs/specs/functional/us/corps01-explorateur.md). Branche `feature/corps01-explorateur`, worktree `.claude/worktrees/mon-corps`. Premier lot local, non intégré à dev dans cette passe. Aperçu du dessin : [clair / sombre / articulations](design/mon-corps-2026-09/anatomy-qa.png).
 
-Lancer le serveur depuis ce worktree (`npm run mobile`) et utiliser le dev build Android du projet. Chemin principal : **Musculation → Suivre → Mon corps**. Il s'agit de l'explorateur de muscles ; la personnalisation de morphologie et l'éditeur d'objectifs ne sont pas encore développés.
+Lancer le serveur depuis ce worktree (`npm run mobile`) et utiliser le dev build Android du projet. Chemin principal : **Musculation → Suivre → Mon corps**. Il s'agit de l'explorateur de muscles ; la personnalisation de morphologie et l'éditeur d'objectifs sont suivis séparément en §63, branche `feature/corps02-morphologie` qui inclut CORPS-01.
 
 - [ ] 1. Sur un compte sans historique, ouvrir Mon corps depuis Musculation ; le corps est neutre et les dix muscles sont disponibles dans la liste.
 - [ ] 2. Inspecter les formes de face et de dos. Sélectionner chacune des dix zones par le dessin et par la liste ; la fiche porte le bon nom, les épaules fonctionnent des deux côtés et les groupes postérieurs basculent au dos.
@@ -3228,3 +3228,26 @@ Lancer le serveur depuis ce worktree (`npm run mobile`) et utiliser le dev build
 - [ ] 9. Passer en mode avion après synchronisation ; dessins et catalogue restent disponibles. Sur un compte au catalogue vide, message explicite ; contrôler fluidité après plusieurs ouvertures / fermetures sur l'appareil cible.
 
 Contrôles automatiques terminés : 6 016 tests, typecheck et lint passent ; export Android Metro/Hermes réussi. Les cases ci-dessus restent à valider sur appareil.
+
+---
+
+## 63. CORPS-02 — Silhouette personnelle et intention visuelle
+
+Spec : [CORPS-02](docs/specs/functional/us/corps02-morphologie.md). Branche `feature/corps02-morphologie`, worktree `.claude/worktrees/mon-corps`, inclut CORPS-01 et le dernier dev utilisé au démarrage du lot. Aperçus issus du code : [éditeur](design/mon-corps-2026-09/morphology-editor-qa.png) et [silhouettes](design/mon-corps-2026-09/morphology-detail.png). Ces planches RN Web/SVG ne remplacent pas la recette native.
+
+Chemin : **Musculation → Suivre → Mon corps → Ma silhouette et mes objectifs**. Lancer `npm run mobile` depuis ce worktree et ouvrir le dev build du projet. Migration cloud appliquée ; aucune nouvelle dépendance native ou sync rule.
+
+- [ ] 1. Compte sans historique : départ équilibré, aucune mensuration inventée, aucun objectif créé automatiquement. Lien vers les mensurations fonctionnel.
+- [ ] 2. Face et dos : inspecter les trois bases, sélectionner chaque zone par le dessin et par son nom. Ajuster avec le curseur, les boutons +/− et réinitialiser une zone. Vérifier jonctions et symétrie aux réglages maximaux combinés.
+- [ ] 3. Mode Objectif : créer explicitement la copie, ajuster les sept intentions ; le titre « Illustration d’intention » est visible. Les longueurs et la taille abdominale ne sont pas proposées comme objectifs.
+- [ ] 4. Modifier le départ après création de l’objectif : l’ancien départ reste la base de la comparaison, le message le précise. Recréer l’objectif demande confirmation si des accents existent ; annuler la confirmation garde les accents.
+- [ ] 5. Comparer face/dos : même pose et même échelle, contour en pointillés du départ, silhouette pleine de l’objectif ; bascule départ seul et liste des intentions cohérentes.
+- [ ] 6. Annuler restaure la dernière sauvegarde. Retour d’écran et retour système demandent confirmation si le brouillon est modifié. Le lien vers les mensurations puis retour conserve le brouillon.
+- [ ] 7. Enregistrer, fermer et rouvrir : départ et objectif conservés. Double appui rapide sans doublon. Aucune invitation à recharger l’ancienne version pendant la notification locale de la sauvegarde.
+- [ ] 8. Mode avion : dessins, réglages et sauvegarde restent disponibles. Fermer/rouvrir puis rétablir le réseau et contrôler après resynchronisation, si possible sur un second appareil. Une modification distante arrivée avant la sauvegarde ne doit pas écraser le brouillon silencieusement.
+- [ ] 9. Vérifier mensurations datées, poids et réglages personnels avant/après : aucune donnée réelle modifiée. Une erreur de chargement de mesures ne s’affiche pas comme un historique vide.
+- [ ] 10. FR/EN, thèmes clair/sombre, petit écran, police agrandie, TalkBack : zones nommées, curseur ajustable, boutons utilisables, footer non masqué, pas de geste obligatoire. Mouvement réduit et haptique désactivée respectés.
+
+Contrôles automatiques : **6 192 tests passent**, typecheck et lint complets, export Android réussi. Les cases restent à valider sur appareil.
+
+Le rendu 3D, la calibration à partir de mesures et le programme généré depuis l’objectif ne font pas partie de cette recette.

@@ -854,9 +854,9 @@
       "increase": "Augmenter la quantité",
       "decrease": "Diminuer la quantité",
       "factor": {
-        "0_5": "½ {{portion}}",
         "1": "{{portion}}",
-        "2": "2 × {{portion}}"
+        "2": "2 × {{portion}}",
+        "0_5": "½ {{portion}}"
       },
       "lastTime": "La dernière fois : {{grams}} g",
       "effect": "CE QUE ÇA CHANGE",
@@ -3632,5 +3632,101 @@
       "saturatedFat": "Acides gras saturés"
     },
     "coverage": "Calculé sur {{pct}} % de tes calories : les ajouts sans aliment identifié n'y contribuent pas."
+  },
+  "bodyShape": {
+    "title": "Ma silhouette",
+    "entry": "Ma silhouette et mes objectifs",
+    "subtitle": "Un point de départ. Une intention à explorer.",
+    "illustrationTitle": "Illustration d’intention",
+    "modes": {
+      "baseline": "Départ",
+      "goal": "Objectif",
+      "compare": "Comparer"
+    },
+    "loading": "Chargement de la silhouette…",
+    "saving": "Enregistrement…",
+    "save": "Enregistrer",
+    "saved": "Silhouette enregistrée.",
+    "zones": {
+      "shoulders": "Épaules",
+      "chest": "Poitrine",
+      "waist": "Taille",
+      "hips": "Hanches",
+      "arms": "Bras",
+      "back": "Dos",
+      "glutes": "Fessiers",
+      "thighs": "Cuisses",
+      "calves": "Mollets"
+    },
+    "bases": {
+      "balanced": "Équilibrée",
+      "broad_shoulders": "Épaules larges",
+      "broad_hips": "Hanches larges"
+    },
+    "shapeLevels": {
+      "narrow": "Plus étroite",
+      "slightlyNarrow": "Un peu plus étroite",
+      "base": "Proportion de base",
+      "slightlyWide": "Un peu plus large",
+      "wide": "Plus large"
+    },
+    "goalLevels": {
+      "0": "Conserver",
+      "1": "Accent léger",
+      "2": "Accent modéré",
+      "3": "Accent marqué",
+      "4": "Accent fort"
+    },
+    "shapeControl": "Proportion : {{zone}}",
+    "goalControl": "Intention : {{zone}}",
+    "increase": "Augmenter : {{zone}}",
+    "decrease": "Diminuer : {{zone}}",
+    "resetZone": "Réinitialiser cette zone",
+    "chooseZone": "Zone à ajuster",
+    "chooseNamedZone": "Sélectionner : {{zone}}",
+    "selectHint": "Touche une zone ou sélectionne son nom ci-dessous.",
+    "baseTitle": "Une base qui te ressemble",
+    "baseHint": "Choisis une base, puis ajuste ses proportions.",
+    "baselineHint": "Cette silhouette est un repère visuel que tu ajustes librement. Elle ne remplace pas tes mensurations.",
+    "goalHint": "Une intention visuelle, sans délai ni résultat garanti. Les réglages ne modifient pas tes mesures et ne génèrent pas encore de programme.",
+    "startGoalTitle": "Dessine ton intention",
+    "startGoalHint": "Ton objectif partira d’une copie de ta silhouette actuelle. Tu pourras ensuite accentuer les zones de ton choix.",
+    "createGoal": "Créer mon objectif",
+    "oldBaseline": "Cet objectif utilise une version précédente de ta silhouette de départ.",
+    "recreate": "Repartir de mon départ actuel",
+    "recreateTitle": "Recréer cet objectif ?",
+    "recreateHint": "Les accents de cet objectif seront réinitialisés à partir de ton départ actuel.",
+    "recreateConfirm": "Recréer",
+    "compareHint": "Même pose, même échelle : les deux silhouettes se superposent.",
+    "baselineLegend": "Pointillés · Départ",
+    "goalLegend": "Silhouette pleine · Objectif",
+    "showBaseline": "Voir le départ seul",
+    "showComparison": "Voir la superposition",
+    "intentions": "Mes intentions",
+    "noIntentions": "Aucun accent ajouté pour le moment.",
+    "references": "Mes mensurations, en repères",
+    "referencesHint": "Dernières valeurs enregistrées, sans ajustement automatique de la silhouette.",
+    "noMeasurements": "Aucune mensuration enregistrée.",
+    "measuredOn": "Mesuré le {{date}}",
+    "openMeasurements": "Ouvrir mes mensurations",
+    "leaveTitle": "Quitter sans enregistrer ?",
+    "leaveHint": "Tes modifications de silhouette et d’objectif seront perdues.",
+    "stay": "Continuer à modifier",
+    "discard": "Quitter sans enregistrer",
+    "newVersion": "Une nouvelle version enregistrée est disponible.",
+    "reload": "Recharger la version enregistrée",
+    "reloadTitle": "Recharger la silhouette ?",
+    "reloadHint": "Tes modifications en cours seront remplacées par la version enregistrée.",
+    "reloadConfirm": "Recharger",
+    "unsupported": "Cette silhouette utilise une version plus récente de l’application.",
+    "invalid": "Cette silhouette ne peut pas être lue. Elle a été conservée sans modification.",
+    "errors": {
+      "conflict": "Une autre version a été enregistrée. Recharge-la avant de sauvegarder.",
+      "settings": "Tes réglages ne sont pas encore disponibles. Réessaie après leur chargement.",
+      "invalid": "Cette silhouette ne peut pas être enregistrée. Tes modifications restent à l’écran.",
+      "save": "L’enregistrement a échoué. Tes modifications sont conservées : tu peux réessayer.",
+      "load": "La silhouette enregistrée est momentanément indisponible. Tes modifications restent à l’écran.",
+      "measurements": "Les mensurations sont momentanément indisponibles."
+    }
   }
 }

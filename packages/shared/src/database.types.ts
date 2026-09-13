@@ -2567,6 +2567,7 @@ export type Database = {
         Row: {
           active_pillars: Json
           analytics_enabled: boolean
+          body_visual_state: Json | null
           created_at: string
           cycle_health_connect_enabled: boolean
           cycle_tracking_enabled: boolean
@@ -2588,6 +2589,7 @@ export type Database = {
         Insert: {
           active_pillars?: Json
           analytics_enabled?: boolean
+          body_visual_state?: Json | null
           created_at?: string
           cycle_health_connect_enabled?: boolean
           cycle_tracking_enabled?: boolean
@@ -2609,6 +2611,7 @@ export type Database = {
         Update: {
           active_pillars?: Json
           analytics_enabled?: boolean
+          body_visual_state?: Json | null
           created_at?: string
           cycle_health_connect_enabled?: boolean
           cycle_tracking_enabled?: boolean

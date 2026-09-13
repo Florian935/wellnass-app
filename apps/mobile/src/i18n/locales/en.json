@@ -854,9 +854,9 @@
       "increase": "Increase amount",
       "decrease": "Decrease amount",
       "factor": {
-        "0_5": "½ {{portion}}",
         "1": "{{portion}}",
-        "2": "2 × {{portion}}"
+        "2": "2 × {{portion}}",
+        "0_5": "½ {{portion}}"
       },
       "lastTime": "Last time: {{grams}} g",
       "effect": "WHAT THIS CHANGES",
@@ -3632,5 +3632,101 @@
       "saturatedFat": "Saturated fat"
     },
     "coverage": "Based on {{pct}}% of your calories: quick calorie entries can't contribute."
+  },
+  "bodyShape": {
+    "title": "My silhouette",
+    "entry": "My silhouette and goals",
+    "subtitle": "A starting point. An intention to explore.",
+    "illustrationTitle": "Illustration of intent",
+    "modes": {
+      "baseline": "Starting point",
+      "goal": "Goal",
+      "compare": "Compare"
+    },
+    "loading": "Loading silhouette…",
+    "saving": "Saving…",
+    "save": "Save",
+    "saved": "Silhouette saved.",
+    "zones": {
+      "shoulders": "Shoulders",
+      "chest": "Chest",
+      "waist": "Waist",
+      "hips": "Hips",
+      "arms": "Arms",
+      "back": "Back",
+      "glutes": "Glutes",
+      "thighs": "Thighs",
+      "calves": "Calves"
+    },
+    "bases": {
+      "balanced": "Balanced",
+      "broad_shoulders": "Broad shoulders",
+      "broad_hips": "Broad hips"
+    },
+    "shapeLevels": {
+      "narrow": "Narrower",
+      "slightlyNarrow": "Slightly narrower",
+      "base": "Base proportion",
+      "slightlyWide": "Slightly wider",
+      "wide": "Wider"
+    },
+    "goalLevels": {
+      "0": "Maintain",
+      "1": "Light emphasis",
+      "2": "Moderate emphasis",
+      "3": "Marked emphasis",
+      "4": "Strong emphasis"
+    },
+    "shapeControl": "Proportion: {{zone}}",
+    "goalControl": "Intention: {{zone}}",
+    "increase": "Increase: {{zone}}",
+    "decrease": "Decrease: {{zone}}",
+    "resetZone": "Reset this area",
+    "chooseZone": "Area to adjust",
+    "chooseNamedZone": "Select: {{zone}}",
+    "selectHint": "Tap an area or select its name below.",
+    "baseTitle": "A base that resembles you",
+    "baseHint": "Choose a base, then adjust its proportions.",
+    "baselineHint": "This silhouette is a visual reference you can adjust freely. It does not replace your measurements.",
+    "goalHint": "A visual intention, with no timeline or guaranteed result. These settings do not change your measurements or generate a training plan yet.",
+    "startGoalTitle": "Shape your intention",
+    "startGoalHint": "Your goal will start from a copy of your current silhouette. You can then emphasise the areas you choose.",
+    "createGoal": "Create my goal",
+    "oldBaseline": "This goal uses an earlier version of your starting silhouette.",
+    "recreate": "Use my current starting point",
+    "recreateTitle": "Recreate this goal?",
+    "recreateHint": "This goal’s emphasis settings will be reset using your current starting point.",
+    "recreateConfirm": "Recreate",
+    "compareHint": "Same pose, same scale: both silhouettes are overlaid.",
+    "baselineLegend": "Dashed · Starting point",
+    "goalLegend": "Solid silhouette · Goal",
+    "showBaseline": "Show starting point only",
+    "showComparison": "Show overlay",
+    "intentions": "My intentions",
+    "noIntentions": "No emphasis added yet.",
+    "references": "My measurements as references",
+    "referencesHint": "Latest recorded values, without automatically adjusting your silhouette.",
+    "noMeasurements": "No measurements recorded.",
+    "measuredOn": "Measured on {{date}}",
+    "openMeasurements": "Open my measurements",
+    "leaveTitle": "Leave without saving?",
+    "leaveHint": "Your changes to the silhouette and goal will be lost.",
+    "stay": "Keep editing",
+    "discard": "Leave without saving",
+    "newVersion": "A new saved version is available.",
+    "reload": "Reload saved version",
+    "reloadTitle": "Reload silhouette?",
+    "reloadHint": "Your current changes will be replaced by the saved version.",
+    "reloadConfirm": "Reload",
+    "unsupported": "This silhouette uses a newer version of the app.",
+    "invalid": "This silhouette cannot be read. It has been kept unchanged.",
+    "errors": {
+      "conflict": "Another version was saved. Reload it before saving.",
+      "settings": "Your settings are not available yet. Try again once they have loaded.",
+      "invalid": "This silhouette cannot be saved. Your changes remain on screen.",
+      "save": "Saving failed. Your changes have been kept: you can try again.",
+      "load": "The saved silhouette is temporarily unavailable. Your changes remain on screen.",
+      "measurements": "Measurements are temporarily unavailable."
+    }
   }
 }

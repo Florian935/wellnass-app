@@ -48,7 +48,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 06/08/2026, *
 | **V0.9** | Enrichissements avant lancement *(ajoutée le 28/07/2026)* | Rétention (check-in, objectifs, bilan, joker de streak), mensurations, pas quotidiens, finitions UX de recette | 14 | ~57h |
 | **V1.0** | Lancement store | Publication Play Store (Android) | 1 | — |
 | **V1.1** | Post-lancement | Import de données, planning repas, liste de courses | 4 | ~18h |
-| **[Hors cadrage](#hors-périmètre-de-cadrage--livré-en-cours-de-route)** | Né après le 04/07, déjà livré | Refonte muscu, widgets multi-formes, micronutriments, refonte nutrition… | 17 | *non estimé* |
+| **[Hors cadrage](#hors-périmètre-de-cadrage--livré-en-cours-de-route)** | Né après le 04/07, déjà livré | Refonte muscu, widgets multi-formes, micronutriments, refonte nutrition… | 37 | *non estimé* |
 | **Ultérieur — iOS** | Portage iOS (hors lancement) | App Store + OAuth Apple | 2 | — |
 | | | **Total (périmètre de lancement)** | **210** | **~534h** |
 
@@ -418,6 +418,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | 7.27 | Accueil — pied « la suite » & tirer-pour-rafraîchir | Trois lignes de texte (les prochaines occurrences planifiées, tous piliers) + les liens planning / personnaliser. Premier `RefreshControl` de l'app, branché sur la reprise de synchro PowerSync. | 🟢 | ✅ | **ACCUEIL-05 — livré le 09/09/2026, recetté et clôturé le 10/09/2026** → [spec](../specs/functional/us/accueil05-pied-et-rafraichissement.md) · [plan](../plans/accueil-refonte.md). Du **texte** et non des widgets : répondre par de nouvelles cartes aurait regonflé le registre que 7.21 venait de ramener de 21 à 8. Il n'existait **pas un seul** `RefreshControl` dans toute l'application — le geste est un réflexe, et un écran qui n'y répond pas se lit comme figé ; il force ici la reprise de synchro, utile au retour de connexion. ⚠️ **Écart assumé à la maquette** : la ligne « objectif personnel » n'est pas livrée — un `PersonalGoal` ne porte ni titre ni libellé, la phrase lisible est composée par la carte de `/goals`, et en écrire une seconde version serait la duplication qu'ADR-007 §3 proscrit. À reprendre quand ce libellé sera extrait en brique. |
 | 7.28 | Accueil — amendement ADR-007 & premier test d'écran | Amende ADR-007 §2 : **le plafond porte sur la grille, pas sur le chrome de l'écran**. Premier test d'écran de l'accueil (9 tests). | 🟢 | ✅ | **ACCUEIL-06 — livré le 09/09/2026, recetté et clôturé le 10/09/2026** → [spec](../specs/functional/us/accueil06-adr-et-filet-de-tests.md) · [plan](../plans/accueil-refonte.md). Ne livre aucune fonctionnalité : rend explicites les décisions que les cinq précédentes ont rendues concrètes. Une zone **épinglée** n'est pas un widget — ce qui l'en distingue n'est pas sa taille mais son **contrat** (non masquable, donc garantie) — et elle **coûte plus cher** qu'un widget, pas moins, puisqu'elle est imposée à tout le monde. L'ADR disait « 4-6 widgets de live du jour » ; 7.21 l'avait appliqué comme un plafond d'**information**, d'où les 47 % de remplissage. `MAX_HOME_WIDGETS` **reste à 8** (échange exact `today-session` ↔ `weight`) : le cliquet posé par 7.21 n'est pas consommé, contrairement au 8 → 9 que l'analyse recommandait. L'accueil, écran sur lequel l'app ouvre, était à **0 %** de couverture d'écran alors que les hubs Muscu et Nutrition avaient chacun le leur. |
 | 6.4 | Infobulle de valeur au tap sur les graphiques | Tap sur une courbe ou un histogramme → date complète + valeur exacte. | 🟢 | ✅ | UX-01 — **première idée promue depuis [IDEAS.md](../../IDEAS.md)**. Couvre les 6 surfaces graphiques via 2 composants mutualisés. |
+| 6.5 | Silhouette personnelle et intention visuelle | Mannequin 2D paramétrique, départ et objectif distincts, comparaison et sauvegarde hors-ligne. | 🟢 | ✅ | **CORPS-02 — 13/09/2026** : trois bases, sept proportions et sept intentions, face/dos, curseurs accessibles, mensurations comme repères datés. Document JSON versionné dans user_settings, sauvegarde atomique et refus de conflit local. Migration appliquée ; recette Android §63 en attente. Rendu 3D et génération d’entraînement ultérieurs. |
 | 7.13 | Grille de widgets multi-formes | Généralise la personnalisation du dashboard aux **3 hubs** (accueil, muscu, course) : 16 widgets × 3 formes, réordonnancement, masquage, compaction. | 🟢 | ✅ | WIDGETS-01. Chantier majeur, demande Damien d'après la maquette `FitTrio - Widgets`. |
 | 1.27 | Parcours « 7 jours pour démarrer » | Mini-programme d'activation guidé (7 jours, tous piliers actifs), pour atteindre vite le « aha moment » sans exiger d'historique. | 🟢 | ✅ | **ACTIV-01 — code livré le 03/08/2026** → [spec](../specs/functional/us/activ01-parcours-7-jours.md) · [plan](../plans/activ01-parcours-7-jours.md) · [maquette](../../design/activ01-parcours-7-jours/activ01-parcours-7-jours.html), en recette → [RECETTES.md](../../RECETTES.md). Idée promue depuis [IDEAS.md](../../IDEAS.md) (13/07/2026). Widget d'accueil auto-masquant (`'always'`, wiré dans `isWidgetActive`), aucune notification, 1 colonne additive (`profiles.activation_path_dismissed_at`), aucune sync rule. Distinct de l'onboarding (1.7-1.11). ⚠️ **Contenu des 7 jours = brouillon**, à valider par Florian/Damien. |
 | 7.19 | Widget écran d'accueil Android | Widget du **launcher** Android (hors de l'app) : série, séance du jour, kcal restantes. Dernier candidat non démarré de la 2ᵉ salve d'enrichissements. | 🟡 | ✅ | **LAUNCHER-01 — code livré le 03/08/2026**, en recette → [spec](../specs/functional/us/launcher01-widget-ecran-accueil.md) · [plan](../plans/launcher01-widget-ecran-accueil.md) · [maquette](../../design/launcher01-widget-ecran-accueil/launcher01-widget-ecran-accueil.html) · [RECETTES.md](../../RECETTES.md). Idée promue depuis [IDEAS.md](../../IDEAS.md) (13/07/2026), initialement estimée « le plus cher des 5 » (natif Kotlin). **Recherche technique : révisée à la baisse** — `react-native-android-widget` (JSX → RemoteViews, config plugin Expo, aucun Kotlin écrit à la main) tient la promesse ; spike de compatibilité SDK 57/New Architecture **confirmé sur device** (build + widget affiché). Distinct des 16 widgets **in-app** (WIDGETS-01, 7.13) — vocabulaire « widget launcher » explicitement pour ne pas confondre. Données recalculées hors React (Headless JS, singleton PowerSync partagé), aucune duplication de logique métier (streak/TDEE réutilisés de `@wellness/shared`). ⚠️ **Dépendance native neuve : second build requis** avant recette (comme PARTAGE-01/RUN-F2a/MUSC-F9). |
@@ -472,15 +473,15 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 228 | ~96 % |
+| ✅ Livré | 229 | ~95 % |
 | 🟡 Partiel (5.24, 3.52, 5.40, 3.60) | 4 | ~2 % |
 | ⬜ À faire (9.2, 1.20) | 2 | ~1 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **240** | |
+| **Total périmètre de lancement** | **241** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
-> **CORPS-01, 12/09/2026** enrichit la ligne **6.2**, déjà livrée : compteurs et détail par version inchangés. Code de l'explorateur prêt pour recette Android ; les phases morphologie et objectifs ne sont pas comptées comme livrées.
+> **CORPS-02, 13/09/2026** ajoute **6.5** : silhouette paramétrique 2D, départ et objectif indépendants, comparaison et sauvegarde offline. Code prêt pour recette Android §63. Le rendu 3D et le moteur de programmation restent ultérieurs. CORPS-01 enrichit toujours 6.2 sans ligne supplémentaire.
 
 > **230 → 236 le 09/09/2026** : les **six lignes 7.23 → 7.28** de la refonte de l'accueil
 > (ACCUEIL-01 → 06). Elles ne rallongent pas le périmètre de lancement au sens d'un nouveau
@@ -551,7 +552,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.9 (17) | 15 | 2 | 0 | 0 | 0 | 🆕 **Créée le 28/07/2026** (+2 le 30/07 : 1.25 / 1.26, CYCLE-01) — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. **17 lignes** (9.16 incluse, cf. V0.8). 🟡 = **3.52** (MUSC-F14 : l'éditeur de programme n'a pas de parcours « remplacer ») et **4.37** (NUTR-F2 : vivier limité aux aliments récents) — les 2 seuls trous réels. Les 12 autres 🟡 d'avant le 06/08/2026 étaient de la **dette de recette**, pas du code manquant. |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 3 | 0 | 1 | 0 | 0 | **3 des 4 items livrés le 04/08/2026** (4.27 / 4.28 / 4.29, US REPAS-01) : remontés de V1.1 dans le périmètre courant par arbitrage Florian, le code étant en avance sur le cahier des charges pendant les délais externes de Google. Reste **1.20** (import GPX/CSV), seul item encore ⬜ de cette version. |
-| Hors cadrage (24) | 24 | 0 | 0 | 0 | 0 | **100 % livré.** ⚠️ **24 lignes et non 20** : le total n'avait pas suivi les 4 lignes créées depuis le 05/08 (7.20, 7.21, 1.28, 1.29). Refonte muscu, widgets multi-formes, micronutriments, refonte nutrition, écran « Insights » + dégonflage du Tier 0, mode « vie réelle », journal des zones douloureuses. |
+| Hors cadrage (37) | 36 | 1 | 0 | 0 | 0 | Comptage des lignes au 13/09/2026 : ajouts Accueil, refontes des piliers et CORPS-02 (6.5) inclus. MOTION-01 (3.60) reste partiel. |
 
 - **223 fonctionnalités** dans le périmètre de lancement — **compté, pas estimé** (179 du cadrage + 24 hors cadrage + 17 de V0.9 + 3 remontées de V1.1). L'ancienne mention « ~210 » datait du 28/07/2026 et n'avait pas suivi les 13 lignes créées depuis.
 - **~534 h** de code brut estimées, hors intégration, tests et itérations UX — l'estimation ne couvre pas les 24 items hors cadrage.
@@ -585,6 +586,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**13/09/2026 — CORPS-02 (6.5) : silhouette personnelle et intention visuelle**
+Nouvelle ligne ✅ : départ paramétrique, objectif indépendant, comparaison et sauvegarde offline ; recette Android §63.
+Compteurs : **229 livrés / 4 partiels / 2 à faire sur 241**. Migration additive appliquée, aucune nouvelle sync rule.
 
 **12/09/2026 — MOTION-01 (3.60) : une ligne neuve, 🟡 partiel assumé**
 Périmètre **240** (+1) et 🟡 passe de 3 à 4. La ligne naît directement en 🟡 : **19 effets livrés

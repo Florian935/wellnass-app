@@ -75,4 +75,12 @@ describe('decodeJsonColumns', () => {
   it('gère opData absent', () => {
     expect(decodeJsonColumns('foods', undefined)).toBeUndefined();
   });
+
+  it('déplie le document de silhouette avant son upload JSONB', () => {
+    expect(
+      decodeJsonColumns('user_settings', {
+        body_visual_state: '{"version":1}',
+      }),
+    ).toEqual({ body_visual_state: { version: 1 } });
+  });
 });

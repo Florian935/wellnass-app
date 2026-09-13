@@ -9,6 +9,37 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 13/09/2026 — CORPS-02 : personnaliser sa silhouette et comparer une intention
+
+Branche `feature/corps02-morphologie`, base locale `968539d` (dev `4bab295` + CORPS-01 `6653aaf`).
+
+**Ajouté** — Depuis Mon corps, l’écran « Ma silhouette » propose trois bases, sept proportions
+symétriques, un objectif créé explicitement depuis une copie du départ et une comparaison dans
+la même pose. Face/dos, sélection du dessin ou par nom, curseur ajustable et boutons +/−,
+réinitialisation d’une zone, annulation et sauvegarde explicite. Mensurations comme repères datés,
+sans calibration automatique ni modification des valeurs réelles. FR/EN et thèmes clair/sombre.
+
+**Technique** — Géométrie SVG paramétrique originale (`BodyShapeFigure`, `body-shape-geometry`),
+document Zod versionné partagé, repository dédié à `user_settings.body_visual_state` sous PowerSync.
+Une transaction compare le JSON lu avant d’enregistrer ; erreurs, données futures et illisibles
+restent explicites. Un brouillon n’est jamais remplacé par une mise à jour du hook. Verrou anti-double
+appui et protection du retour sale. Migration additive `20260912235121` appliquée après dry-run,
+types cloud régénérés ; RLS, export et bucket existants, aucune nouvelle sync rule.
+
+**Corrigé en revue** — Conservation de la date du départ capturé lorsque le départ courant revient
+à une ancienne forme ; date correcte d’une forme intermédiaire du brouillon. Boucle d’aisselle
+aux volumes maximaux combinés supprimée. L’écho asynchrone de PowerSync ne propose plus de recharger
+une ancienne lecture après sauvegarde, y compris lors de la normalisation d’un JSON inchangé.
+L’erreur de lecture des mensurations est désormais exposée par le repository et visible ici.
+
+**Validation** — 6 192 tests passent (admin 587, mobile 2 924, shared 2 681), typecheck et lint
+complets, export Android Metro/Hermes réussi. Revue indépendante du stockage, de la géométrie et
+de l’éditeur ; régressions reproduites en rouge puis corrigées. Planches issues du vrai JSX SVG
+et RN Web dans `design/mon-corps-2026-09/`, quatre scénarios d’écran et vingt états de dessin inspectés.
+Recette native en attente : [RECETTES.md §63](RECETTES.md#63-corps-02--silhouette-personnelle-et-intention-visuelle).
+Branche conservée localement. Le rendu 3D, la calibration et la génération d’entraînement restent
+des lots ultérieurs ; aucun déploiement d’application dans cette passe.
+
 ## 12/09/2026 — MUSCU-UX02 : le bilan de séance, et la fin de deux écrans qui se contredisaient
 
 Branche `feature/muscu-ux02-bilan-seance` (commit précédent `d6f2608`). Analyse + maquettes

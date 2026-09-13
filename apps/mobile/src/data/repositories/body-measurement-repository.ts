@@ -55,14 +55,16 @@ function toRow(row: MeasurementDbRow): MeasurementRow | null {
 export function useMeasurements(sinceDate?: string): {
   rows: MeasurementRow[];
   isLoading: boolean;
+  error: unknown;
 } {
   const sql = sinceDate
     ? `SELECT ${SELECT_COLS} FROM body_measurements WHERE deleted_at IS NULL AND log_date >= ? ORDER BY log_date DESC`
     : `SELECT ${SELECT_COLS} FROM body_measurements WHERE deleted_at IS NULL ORDER BY log_date DESC`;
-  const { data, isLoading } = useQuery<MeasurementDbRow>(sql, sinceDate ? [sinceDate] : []);
+  const { data, isLoading, error } = useQuery<MeasurementDbRow>(sql, sinceDate ? [sinceDate] : []);
   return {
     rows: data.map(toRow).filter((r): r is MeasurementRow => r !== null),
     isLoading,
+    error,
   };
 }
 
@@ -70,9 +72,10 @@ export function useMeasurements(sinceDate?: string): {
 export function useLatestMeasurements(): {
   latest: Partial<Record<MeasurementKind, MeasurementPoint>>;
   isLoading: boolean;
+  error: unknown;
 } {
-  const { rows, isLoading } = useMeasurements();
-  return { latest: latestByKind(rows), isLoading };
+  const { rows, isLoading, error } = useMeasurements();
+  return { latest: latestByKind(rows), isLoading, error };
 }
 
 function currentUserId(): string {
