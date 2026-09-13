@@ -2999,6 +2999,10 @@ n'étaient pas les siens**.
 Six chantiers de l'audit ne sont **pas** livrés dans ce lot. Ils ont leur spec, leur plan et,
 pour deux d'entre eux, leurs briques de calcul déjà écrites et testées :
 
+> 📌 **Ils sont désormais aussi dans [BACKLOG.md](BACKLOG.md) (P1, CARDIO-02 → CARDIO-07)**, recopiés
+> le 13/09/2026. C'est volontaire : ce fichier-ci **se vide dès qu'une US est clôturée**, et ces six
+> chantiers n'existaient nulle part ailleurs — ils seraient morts avec la recette.
+
 | Constats | Sujet | État |
 |---|---|---|
 | F2, F3, F39 | Les **quatre portes** vers l'allure de référence + accueil du pilier en 3 questions | Brique de calcul livrée et testée (`referencePaceFromRaceTime`, `referencePaceFromCooperTest`, 8 tests) — **écrans à faire** |
