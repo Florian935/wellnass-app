@@ -162,7 +162,32 @@ la pente de `projectSbd` ; fourchette d'incertitude qui s'élargit avec la surch
 la course (charge estimée) et la nutrition (cible). Sans historique suffisant (< 56 jours, < points
 minimum) : état « pas encore assez de données », aucun chiffre.
 
-## 7. L'app qui comprend — avec IA (désactivée par défaut)
+## 7. L'app qui comprend — avec IA (surface RETIRÉE du build de lancement)
+
+> 🔴 **Décision de Florian, 13/09/2026, après livraison.** La surface IA est **retirée du build de
+> lancement** : l'app est **gratuite en V1**, et `docs/product/ia-integration-analyse.md`
+> (15/07/2026) plaçait l'IA en **palier payant, post-V1**, avec une règle d'or — « le prix du palier
+> doit couvrir le coût IA du user le plus actif ». La livrer gratuite revenait à payer le modèle
+> pour tout le monde, sans palier pour l'absorber. **C'est un manquement de cadrage de ma part** :
+> l'écart au phasage de juillet aurait dû être posé comme une question avant d'être construit, pas
+> noté en §9.
+>
+> **Ce qui est retiré de l'app** : l'écran `meal-photo` et son entrée depuis la scène nutrition, la
+> section « Assistant IA » des Réglages, la reformulation de « Demande-moi », et leur plomberie
+> cliente (`ai-client`, `useAiAvailability`, `ai-photo-queue-store`, `useFoodsByNames`, les deux
+> événements d'analytics `ai_photo_used` / `ai_ask_used`, les blocs i18n `ai` et `mealPhoto`).
+>
+> **Ce qui reste, dormant** : la migration (déjà appliquée sur le cloud), la fonction Edge
+> `supabase/functions/ai-assist`, la brique pure `ai-assist.ts` (le contrat de validation des
+> réponses), et `user_settings.ai_consent_at` déclarée côté client — le schéma local est le miroir
+> de la base, le faire diverger rouvrirait la panne silencieuse de CYCLE-01.
+>
+> **« Demande-moi » (§7.3) est conservée**, dans sa version déterministe : c'est précisément
+> l'inversion d'origine qui le permet — le modèle ne produisait qu'une **formulation**, jamais un
+> chiffre. La carte répond exactement comme avant.
+>
+> La description ci-dessous décrit donc **la plomberie en place**, pas ce que l'app expose
+> aujourd'hui. Elle est conservée pour le jour où le palier payant existera.
 
 ### 7.1 Architecture
 
@@ -197,10 +222,12 @@ carte s'affiche avec une formulation par clés i18n. Chaque réponse montre ses 
 - **i18n** : toutes les chaînes FR + EN, y compris les phrases du brief et les formulations de repli.
 - **Accessibilité** : R1, R10 ; le brief lu et la transcription visible sont équivalents.
 - **Dépendances natives** : **aucune nouvelle**.
-- **Play Store** : ⚠️ l'envoi de photos et d'agrégats de santé à un tiers **se déclare** dans la fiche
-  « Sécurité des données » et la politique de confidentialité, avant la soumission 9.2.
-- **Secrets** : la clé du fournisseur IA doit être posée par un humain
-  (`supabase secrets set ANTHROPIC_API_KEY=…`).
+- **Play Store** : ✅ **plus rien à déclarer** depuis le retrait de la surface (13/09/2026) — l'app
+  n'envoie aucune photo ni agrégat de santé à un tiers. La déclaration « Sécurité des données »
+  redeviendra nécessaire le jour où la surface revient.
+- **Secrets** : ⛔ **plus nécessaire**. La clé du fournisseur n'est pas posée, et la fonction Edge
+  n'est pas déployée — donc rien n'est facturé. Le jour où la surface revient :
+  `supabase secrets set ANTHROPIC_API_KEY=…` puis `supabase functions deploy ai-assist`.
 
 ## 9. Hors périmètre
 

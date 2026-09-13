@@ -48,7 +48,6 @@ const afficher = async (overrides: Partial<Parameters<typeof NutritionStage>[0]>
     onSelectDay: noop,
     onOpenCalendar: noop,
     onSetTarget: noop,
-    onPhoto: noop,
     onSearch: noop,
     onScan: noop,
     onStats: noop,
@@ -184,19 +183,22 @@ describe('les gestes', () => {
     expect(screen.queryByText('Banane')).toBeNull();
   });
 
-  it('la photo, la recherche et le calendrier sont à un tap', async () => {
-    const onPhoto = jest.fn();
+  it('la recherche et le calendrier sont à un tap', async () => {
     const onSearch = jest.fn();
     const onOpenCalendar = jest.fn();
-    await afficher({ onPhoto, onSearch, onOpenCalendar });
+    await afficher({ onSearch, onOpenCalendar });
 
-    await taper(screen.getByLabelText('stage.nutrition.photo'));
     await taper(screen.getByLabelText('stage.nutrition.search'));
     await taper(screen.getByLabelText('journal.calendar.open'));
 
-    expect(onPhoto).toHaveBeenCalledTimes(1);
     expect(onSearch).toHaveBeenCalledTimes(1);
     expect(onOpenCalendar).toHaveBeenCalledTimes(1);
+  });
+
+  it('🔴 aucun bouton de photo : la surface IA a été retirée du build de lancement', async () => {
+    await afficher();
+
+    expect(screen.queryByLabelText('stage.nutrition.photo')).toBeNull();
   });
 
   it('les flèches décalent d’un jour, en franchissant les mois', async () => {

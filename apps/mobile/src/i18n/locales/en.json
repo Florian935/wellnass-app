@@ -3687,48 +3687,9 @@
     },
     "kcal": "Estimated calorie target: {{kcal}} kcal per day"
   },
-  "ai": {
-    "settings": {
-      "title": "AI assistant",
-      "toggle": "Turn on the AI assistant",
-      "what": "What leaves the device: the photo you take, or the already-computed answer to rephrase. Nothing else — not your journal, not your history.",
-      "notKept": "Neither the photo, the question nor the answer is kept. You can turn this off at any time."
-    }
-  },
-  "mealPhoto": {
-    "title": "Meal photo",
-    "hint": "Frame your plate, then tap.",
-    "capture": "Take the photo",
-    "analyzing": "Analysing…",
-    "reviewHint": "Adjust the portions, then add.",
-    "line": "{{grams}} g · {{kcal}} kcal",
-    "unknownFood": "Not in the database — add it by hand",
-    "lowConfidence": "Unsure (under {{percent}}% confidence) — check this line",
-    "total": "Total: {{kcal}} kcal · {{protein}} g protein",
-    "addAll_one": "Add one food",
-    "addAll_other": "Add {{count}} foods",
-    "retake": "Take another photo",
-    "nothingFound": "No food recognised in this photo.",
-    "more": "Increase the portion of {{name}}",
-    "less": "Decrease the portion of {{name}}",
-    "remove": "Remove {{name}}",
-    "consentNeeded": "The AI assistant is off. You can turn it on in Settings: the text there says exactly what leaves your device.",
-    "openSettings": "Open settings",
-    "pending": "A photo is waiting for the network to be analysed.",
-    "retryPending": "Analyse the waiting photo",
-    "errors": {
-      "offline": "No network: your photo is kept and will be offered again as soon as you are back online.",
-      "consent-required": "The AI assistant is off in Settings.",
-      "quota-exceeded": "You have reached today's limit for photo analysis.",
-      "unavailable": "The AI assistant is not available right now.",
-      "refused": "The assistant could not process this photo.",
-      "failed": "The analysis failed. You can retry or enter it by hand."
-    }
-  },
   "ask": {
     "title": "Ask me",
     "offlineMeta": "Answers computed on device",
-    "rephrased": "Wording by the AI assistant — the numbers come from your data.",
     "questions": {
       "today": "Should I train today?",
       "eat": "What should I eat tonight?",
@@ -3921,7 +3882,6 @@
       "missingDay_one": "Nothing logged on {{day}} — filling it in would sharpen your cues",
       "missingDay_other": "Nothing logged on {{day}} ({{count}} gaps this week)",
       "quickAddA11y": "Add {{name}}, {{kcal}} kcal",
-      "photo": "Meal photo",
       "search": "Search"
     }
   }

@@ -9,6 +9,55 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 13/09/2026 (bis) — DASH-01 : la surface IA est retirée du build de lancement
+
+Branche `feature/dash01-dashboards-immersifs`, suite directe de l'entrée du jour. **Décision de
+Florian, après livraison** : l'app est **gratuite en V1**, et
+[`docs/product/ia-integration-analyse.md`](docs/product/ia-integration-analyse.md) (15/07/2026)
+plaçait l'IA en **palier payant, post-V1**, avec une règle d'or — « le prix du palier doit couvrir le
+coût IA du user le plus actif ». Livrée gratuite, elle revenait à payer le modèle pour tout le monde,
+sans palier pour l'absorber.
+
+**Le manquement est de cadrage, pas de code** : l'écart au phasage de juillet aurait dû être posé
+comme une question avant d'être construit. Il était mentionné en §9 de la spec (« abonnement premium
+— les quotas en tiennent lieu »), ce qui n'est pas la même chose que le soumettre.
+
+### Supprimé
+
+- L'écran `app/meal-photo.tsx` et sa route ; le bouton **photo** de la scène nutrition (« Chercher »
+  devient le geste principal, en pleine largeur).
+- La section **« Assistant IA »** des Réglages.
+- La reformulation de « Demande-moi » par un modèle.
+- La plomberie cliente devenue sans appelant : `lib/ai/ai-client.ts`, `hooks/useAiAvailability.ts`,
+  `stores/ai-photo-queue-store.ts`, `useFoodsByNames` (ajoutée pour la photo), les événements
+  d'analytics `ai_photo_used` / `ai_ask_used`, et les blocs i18n `ai` et `mealPhoto` (FR + EN).
+
+### Conservé, dormant
+
+- La **migration** `20260913163130_dash01_ai_consent_usage` : elle est **appliquée sur le cloud**, la
+  retirer du dépôt ferait diverger l'historique CLI de la base réelle.
+- La **fonction Edge** `supabase/functions/ai-assist` — elle ne coûte rien tant qu'elle n'est pas
+  déployée, et aucun secret n'est posé.
+- La brique pure `packages/shared/src/ai-assist.ts` et ses tests : elle porte le **contrat de
+  validation** des réponses du modèle, c'est-à-dire la garantie qu'aucun chiffre affiché n'en vient.
+- `user_settings.ai_consent_at` déclarée côté client (schéma PowerSync, Zod, repository) : le schéma
+  local est le **miroir** de la base ; le faire diverger rouvrirait la panne silencieuse de CYCLE-01
+  le jour où la surface revient.
+
+### Technique / Notes
+
+- **« Demande-moi » ne perd rien** : le modèle ne produisait qu'une **formulation**, jamais un
+  chiffre — c'était l'inversion posée dès la conception (§7.3). La carte répond exactement comme
+  avant, sans réseau, et son test n'a plus un seul mock de réseau : c'en est la preuve.
+- ✅ **Play Store** : la déclaration « Sécurité des données » n'a **plus rien à mentionner** côté
+  envoi à un tiers — l'app ne sort aucune donnée.
+- 💶 **Coût d'API : zéro.** Aucun secret posé, aucune fonction déployée. Le jour où le palier payant
+  existera : `supabase secrets set ANTHROPIC_API_KEY=…` puis `supabase functions deploy ai-assist`,
+  et une décision de modèle (Haiku 4.5 divise la facture par ~5 sur ces deux tâches).
+- RECETTES.md §62 passe de 38 à **37 critères** : la section « assistant IA » est remplacée par un
+  critère qui vérifie l'**absence** de surface.
+- Tests : `packages/shared` 128 fichiers / 2741 tests · `apps/mobile` 184 suites / 3029 tests.
+
 ## 13/09/2026 — DASH-01 : les quatre dashboards passent à la scène, et l'app commence à comprendre
 
 Branche `feature/dash01-dashboards-immersifs`, en **worktree** (trois autres branches actives en

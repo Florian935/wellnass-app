@@ -20,12 +20,12 @@
 > de l'autre. Ses critères **1 à 4** vérifient cela et sont à passer en premier.
 > ⚠️ **Il faut un historique** : la moitié des blocs se taisent délibérément sur un compte neuf.
 >
-> **⑦ une §62 est arrivée** : DASH-01, les dashboards immersifs — la plus grosse du lot, **38
-> critères**, et la seule à toucher les **quatre** écrans d'atterrissage en même temps. 🔴 **Ses
-> critères 37 et 38 attendent deux gestes humains** (poser le secret Anthropic, déployer la fonction
-> Edge) : sans eux, l'assistant IA se dit indisponible — proprement, mais non recettable.
-> ⚠️ **Sa migration est déjà poussée** et **aucune sync rule n'est à déployer** (c'est écrit dans la
-> section, pour une fois que le réflexe ne s'applique pas).
+> **⑦ une §62 est arrivée** : DASH-01, les dashboards immersifs — la plus grosse du lot, **37
+> critères**, et la seule à toucher les **quatre** écrans d'atterrissage en même temps.
+> ✅ **Rien à préparer** : la surface IA a été retirée du build (décision du 13/09/2026), donc ni
+> secret, ni déploiement, ni coût d'API — et son dernier critère vérifie justement cette **absence**.
+> ⚠️ Sa migration est déjà poussée et **aucune sync rule n'est à déployer** (pour une fois que le
+> réflexe ne s'applique pas).
 
 > **⑥ une §61 est arrivée** : MOTION-01, le langage de mouvement. C'est la première US du dépôt qui
 > ne change **ni une donnée, ni un écran** : elle ajoute la couche de réponse qui manquait (appuis,
@@ -3218,22 +3218,20 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 
 ## 62. DASH-01 — Dashboards immersifs (`feature/dash01-dashboards-immersifs`)
 
-> **38 critères.** Spec : [dash01-dashboards-immersifs.md](docs/specs/functional/us/dash01-dashboards-immersifs.md) ·
+> **37 critères.** Spec : [dash01-dashboards-immersifs.md](docs/specs/functional/us/dash01-dashboards-immersifs.md) ·
 > Plan : [dash01-dashboards-immersifs.md](docs/plans/dash01-dashboards-immersifs.md) ·
 > Maquettes : [design/dash-immersifs-2026-09/](design/dash-immersifs-2026-09/) (19 planches, 3 pages).
 >
-> 🔴 **Deux étapes humaines AVANT de recetter la section « Assistant IA » (critères 35 à 38)** :
-> 1. `supabase secrets set ANTHROPIC_API_KEY=sk-ant-…` (compte Anthropic, facturé à l'usage) ;
-> 2. `supabase functions deploy ai-assist`.
-> Sans elles, l'app répond proprement « l'assistant IA n'est pas disponible » — c'est le
-> comportement attendu, mais les critères 35 à 38 ne sont pas recettables.
+> ✅ **Rien à préparer : ni secret, ni déploiement, ni migration à pousser.** La surface IA a été
+> **retirée du build** (décision de Florian du 13/09/2026, spec §7) : l'app n'envoie rien à personne,
+> et il n'y a aucun coût d'API. La carte « Demande-moi » reste, dans sa version **déterministe** —
+> c'est le critère 37.
 >
-> ✅ **La migration est déjà poussée** (`20260913163130_dash01_ai_consent_usage`, cloud, 13/09/2026)
-> et **aucune sync rule n'est à déployer** : `user_settings` est lue en `select *`, et `ai_usage`
-> n'est volontairement pas publiée.
+> ℹ️ La migration `20260913163130_dash01_ai_consent_usage` est appliquée sur le cloud et y reste
+> (colonne + table dormantes) ; **aucune sync rule à déployer**.
 >
 > ⚠️ **Recettable sur un build de la branche** : aucune dépendance native nouvelle
-> (`expo-camera`, `expo-speech`, `expo-file-system` étaient déjà là).
+> (`expo-speech` était déjà là).
 >
 > ⚠️ **Le mouvement se coupe avec MOTION-01** : si « Animations » est désactivé (app ou Android),
 > tout ce qui suit s'affiche **directement à sa valeur finale**. C'est le comportement correct, et
@@ -3326,17 +3324,20 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 - [ ] 36. **« Demande-moi »** : les trois questions répondent **même sans réseau** et sans assistant
       IA activé.
 
-### L'assistant IA (après les deux étapes humaines)
+### L'absence d'IA (décision du 13/09/2026)
 
-- [ ] 37. **Réglages → Assistant IA** : désactivé par défaut, avec le texte de ce qui part. Sans
-      consentement, l'écran photo renvoie vers les Réglages et **n'envoie rien**.
-- [ ] 38. **Consentir, puis photographier une assiette** : des aliments et des grammes, jamais des
-      calories venues du modèle ; ajuster une portion recalcule ; un aliment inconnu de la base est
-      **affiché sans valeur** et ne s'ajoute pas. **En mode avion** : la photo est **gardée** et
-      proposée au retour du réseau, jamais envoyée sans que tu le demandes.
+- [ ] 37. **Aucune surface IA nulle part** : pas de bouton photo dans le journal (le geste principal
+      de la scène nutrition est « Chercher »), **pas de section « Assistant IA »** dans les Réglages,
+      et « Demande-moi » répond **sans jamais mentionner de reformulation**. *Rien ne doit sortir de
+      l'appareil vers un tiers.*
 
 ### 🔴 Ce qui n'est PAS livré — ne pas le chercher
 
+- **La photo de repas et l'assistant IA** : la plomberie existe (migration appliquée, fonction Edge
+  `ai-assist` dans le dépôt), mais **la surface est retirée du build de lancement** — l'app est
+  gratuite en V1 et l'IA était cadrée en palier payant post-V1
+  ([analyse du 15/07/2026](docs/product/ia-integration-analyse.md)). Aucun secret n'est posé, aucune
+  fonction n'est déployée, **aucun coût d'API**. « Demande-moi » reste, en version déterministe.
 - **Le partage de la carte de séance depuis le hub muscu** : il reste sur l'écran de bilan, à un tap
   de plus. Le dupliquer aurait demandé de recharger tout le rapport de séance dans le hub.
 - **L'écart de prédiction 10 km à l'arrivée d'une sortie** : l'app ne garde pas l'historique des

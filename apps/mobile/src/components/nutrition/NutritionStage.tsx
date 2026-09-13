@@ -60,7 +60,6 @@ type Props = {
   onSelectDay: (dayKey: string) => void;
   onOpenCalendar: () => void;
   onSetTarget: () => void;
-  onPhoto: () => void;
   onSearch: () => void;
   onScan: () => void;
   onStats: () => void;
@@ -308,18 +307,10 @@ export function NutritionStage(props: Props) {
       <View style={styles.ctaRow}>
         <StageButton
           pillar="nutrition"
-          icon="camera-outline"
-          label={t('stage.nutrition.photo')}
-          onPress={props.onPhoto}
-          style={styles.flex}
-        />
-        <StageButton
-          pillar="nutrition"
-          variant="glass"
           icon="search"
           label={t('stage.nutrition.search')}
           onPress={props.onSearch}
-          style={styles.searchButton}
+          style={styles.flex}
         />
       </View>
     </PillarStage>
@@ -391,5 +382,4 @@ const styles = StyleSheet.create({
   quickKcal: { fontFamily: fontFamily.mono, fontSize: 10 },
   ctaRow: { flexDirection: 'row', gap: 8 },
   flex: { flex: 1 },
-  searchButton: { width: 112 },
 });

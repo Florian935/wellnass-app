@@ -7,6 +7,15 @@
  * d'aliments de l'app.
  */
 
+/*
+ * ⚠️ **Plus aucun appelant depuis le 13/09/2026.** La surface IA a été retirée du build de lancement
+ * (décision de Florian : l'app est gratuite en V1, et `docs/product/ia-integration-analyse.md` place
+ * l'IA en palier payant post-V1). Ce module reste — pur, testé, sans coût à l'exécution — parce
+ * qu'il porte le **contrat** de validation des réponses du modèle : c'est lui qui garantit qu'aucun
+ * chiffre affiché ne vient d'un modèle. La fonction Edge `supabase/functions/ai-assist` et la
+ * migration correspondante restent en place de la même façon.
+ */
+
 import { z } from 'zod';
 
 /** Plafonds quotidiens par utilisateur, appliqués côté serveur (la vérité) et affichés côté client. */

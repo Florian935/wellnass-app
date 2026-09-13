@@ -316,7 +316,6 @@ export default function NutritionScreen() {
           onSelectDay={setDay}
           onOpenCalendar={() => setCalendarOpen(true)}
           onSetTarget={() => router.push('/nutrition-profile')}
-          onPhoto={() => router.push({ pathname: '/meal-photo', params: { date: day, meal: mealForHour(hour) } })}
           onSearch={() => setAddTarget({ mealKey: mealForHour(hour) })}
           onScan={() => router.push({ pathname: '/food-scan', params: { date: day, meal: mealForHour(hour) } })}
           onStats={() => router.push('/nutrition-stats')}

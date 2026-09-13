@@ -386,14 +386,6 @@ function RootNavigator() {
           }}
         />
         <Stack.Screen
-          name="meal-photo"
-          options={{
-            presentation: 'modal',
-            headerShown: false,
-            title: t('mealPhoto.title'),
-          }}
-        />
-        <Stack.Screen
           name="food-custom"
           options={{
             presentation: 'modal',
