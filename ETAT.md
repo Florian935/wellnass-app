@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 229 livré · 4 partiel · 2 à faire (sur 241)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 230 livré · 4 partiel · 2 à faire (sur 242)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -53,6 +53,7 @@ avant de pouvoir publier.
 | **MUSC-F9** — Décalage d'une séance planifiée en glisser-déposer | `recette` | `feature/muscf9-planning-glisser-deposer` | [3.10] |
 | **MUSCPWR-01** — Module force — intensité relative (%1RM), force relative (DOTS) et total SBD avec projection | `recette` | `feature/muscpwr01-module-force` | — |
 | **MUSCU-UX01** — Refonte UX du pilier Musculation — hub, séance, après-séance, entrée programme | `recette` | `feature/muscu-refonte-ux` | [3.59] |
+| **MUSCU-UX03** — Mode immersif de la séance de musculation — la séance vivante, en plus du mode classique | `recette` | `feature/muscu-ux03-mode-immersif` | [3.61] |
 | **MUSCU-UX02** — Bilan de séance — 3 niveaux de lecture, écran unique récap/historique | `recette` | `feature/muscu-ux02-bilan-seance` | [3.35] |
 | **NUTR-16** — Répartition calorique par repas | `recette` | `feature/nutr16-repartition-repas` | [4.38] |
 | **NUTR-18** — Bilan calorique hebdomadaire | `recette` | `feature/nutr18-bilan-calorique-hebdo` | — |
@@ -82,7 +83,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **60 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, BIEN-01, BILAN-01, CARDIO-UX01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DASH-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, HORAIRE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-UX01, MUSCU-UX02, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **61 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, BIEN-01, BILAN-01, CARDIO-UX01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DASH-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, HORAIRE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX02, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -104,8 +105,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/dash01-dashboards-immersifs` (modifications non commitées) |
-| Commits | 1226 · `main` a **1224** commits de retard sur `dev` |
-| Specs d'US | 147 au total — 85 clôturées, 62 en cours |
+| Commits | 1229 · `main` a **1226** commits de retard sur `dev` |
+| Specs d'US | 148 au total — 85 clôturées, 63 en cours |
 | Migrations | 95/96 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -117,11 +118,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `4d6c7a8`  Merge remote-tracking branch 'origin/dev' into feature/dash01-dashboards-immersifs
 - `622339f`  feat(dash-01): retire la surface IA du build de lancement
+- `683c430`  docs(cardio-ux01): les six chantiers non livres passent au backlog
+- `153307b`  docs(muscu-ux01): recette de la 2e passe validee (8 criteres)
 - `344c790`  chore(etat): regenere ETAT.md apres la vague DASH-01
-- `6537b91`  perf(dash-01): le brief ne monte ses requetes que le matin
-- `17364ca`  docs(dash-01): recette 62, roadmap 7.29, changelog et les 5 evenements
-- `6c3accd`  feat(dash-01): lot 4 — l'assistant IA, desactive par defaut
 
 ---
 

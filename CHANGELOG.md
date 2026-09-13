@@ -57,6 +57,68 @@ comme une question avant d'être construit. Il était mentionné en §9 de la sp
 - RECETTES.md §62 passe de 38 à **37 critères** : la section « assistant IA » est remplacée par un
   critère qui vérifie l'**absence** de surface.
 - Tests : `packages/shared` 128 fichiers / 2741 tests · `apps/mobile` 184 suites / 3029 tests.
+## 13/09/2026 — MUSCU-UX03 : le mode immersif de la séance, **en plus** du classique
+
+La séance était **juste** depuis MUSCU-UX01 et **animée** depuis MOTION-01, mais elle restait
+**muette** : une série moyenne et un record recevaient la même réponse (30 ms de vibration), les
+records n'étaient connus qu'à la clôture, l'effort lui-même était un temps mort pour l'app, et le
+repos — la moitié du temps passé en séance — était le moment où l'on ouvre une autre application.
+
+🔴 **Décision D1 de Florian (13/09)** : l'immersif est un **mode en plus**, pas un remplacement.
+Le mode classique reste **strictement inchangé** ; il ne gagne qu'une pastille de record au repos.
+
+### Ajouté
+
+- **`packages/shared` — 7 briques pures, toutes testées** : `set-feel` (les quatre ressentis et leur
+  correspondance RPE), `barbell` (disques par côté, calcul en centièmes entiers pour éviter les
+  résidus flottants), `workout-verdict` (« vs mardi », à **même rang**), `live-records` (records
+  évalués en mémoire, mêmes règles d'éligibilité que `computeWorkoutRecords`), `session-heat`
+  (chaleur par muscle), `ghost` (tonnage cumulé contre la dernière fois, défi de dernière série),
+  `coach-script` (choix d'une **clé i18n**, aucun texte).
+- **Mode d'affichage de la séance** (`session-mode-store`, `immersive-prefs-store`) : préférences
+  **locales à l'appareil** (`secureStorage`), comme `motion-store`. Feuille de choix au tout premier
+  démarrage, sélecteur sur la scène du hub muscu, ligne dans le menu ⋮ en séance, écran
+  **Réglages › Séance**.
+- **Brief d'entrée en séance** (`app/workout-brief.tsx`), branché sur les **cinq** chemins de
+  démarrage (hub muscu, accueil général, planning, fiche programme, fiche modèle).
+- **Écran immersif** : scène sombre, ruban segmenté par exercice, barre chargée à l'échelle, enjeu
+  « ce serait un record », plan de séance en tiroir (qui **réutilise `ExerciseList`**, sans rien
+  redessiner), effort plein écran au tempo, cadran de reps et ressenti, repos qui respire (veille,
+  verdict, ajustement proposé, plein écran de record, fantôme, corps qui chauffe), cérémonie de fin
+  avec relais nutrition, coach vocal à gabarits FR/EN (`expo-speech`).
+- **Notifications de séance** (`lib/notifications.ts`) : canal Android **« Séance »** distinct de
+  « Rappels », rappel de fin de repos, notification **continue** pendant le repos en arrière-plan,
+  et gestionnaire de premier plan désormais **conditionnel**.
+
+### Modifié
+
+- **`workout.tsx`** reste le **porteur unique de l'état de séance** ; les deux modes n'en sont que
+  des rendus. C'est ce qui permet de basculer classique ↔ immersif **en pleine séance sans rien
+  perdre** (série courante, repos en cours, saisie) — et ce qui garantit que le classique ne bouge pas.
+- **`RestOverlay`** (classique) : pastille ambre de record en tête du repos — le seul ajout de
+  cette US au mode classique (décision D3).
+- **`BodyMap` se scinde** : le dessin passe dans **`BodyMapCanvas`**, sans thème ni i18n, et accepte
+  une prop `heat` (0 → 1 par muscle). Ses trois points de montage historiques rendent à l'identique.
+  Sans cette scission, la carte à partager aurait traîné `useTheme` → repository de réglages →
+  i18next dans une vue capturée hors contexte.
+- **`ShareCard`** : la variante `workout` accepte la chaleur de la séance. **Aucune donnée de santé**.
+- **`CurrentSetCard`** : les suppléments de série sont extraits dans **`SetOptions`**, partagé par les
+  deux modes — plutôt que deux jeux de contrôles à maintenir.
+
+### Technique / Notes
+
+- ⚠️ **« Solide » vaut RPE 7, jamais 8.** `sessionStruggled` classe une séance comme difficile dès
+  un RPE ≥ 8 : mapper la réponse *attendue* d'une bonne série sur 8 aurait **silencieusement**
+  éteint la progression assistée puis déclenché le deload de MUSC-F7. La règle est documentée dans
+  `set-feel.ts`, dans le cadran et dans les critères de recette.
+- ✅ **Aucune migration, aucune sync rule à redéployer, aucune dépendance native nouvelle** : le
+  ressenti s'écrit dans la colonne `rpe` existante, les préférences vivent dans `secureStorage`, et
+  `expo-speech` / `expo-notifications` / `react-native-svg` / Reanimated étaient déjà au projet.
+- Les notifications de séance sont **hors du quota** de 3 notifications immédiates par jour : ce
+  plafond protège des rappels **non sollicités**, or un repos est lancé par l'utilisateur lui-même.
+- **56 critères de recette** en [RECETTES.md](RECETTES.md) §63 ; roadmap **3.61** passée à ✅.
+  **Livré ≠ validé** : la recette device reste à faire.
+
 ## 13/09/2026 — CARDIO-UX01 : les six chantiers non livrés sortent de RECETTES.md
 
 Commit de **suivi seul** — aucun fichier applicatif touché. Clôture de la session CARDIO-UX01 :

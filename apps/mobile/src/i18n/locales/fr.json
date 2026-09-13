@@ -804,9 +804,9 @@
       "increase": "Augmenter la quantité",
       "decrease": "Diminuer la quantité",
       "factor": {
-        "0_5": "½ {{portion}}",
         "1": "{{portion}}",
-        "2": "2 × {{portion}}"
+        "2": "2 × {{portion}}",
+        "0_5": "½ {{portion}}"
       },
       "lastTime": "La dernière fois : {{grams}} g",
       "effect": "CE QUE ÇA CHANGE",
@@ -3128,7 +3128,8 @@
       "sets": "Séries",
       "duration": "Durée",
       "records": "Records battus",
-      "a11y": "Séance du {{date}}, {{exercises}} exercices, {{sets}} séries, {{volume}}"
+      "a11y": "Séance du {{date}}, {{exercises}} exercices, {{sets}} séries, {{volume}}",
+      "bodyA11y": "Schéma des muscles travaillés pendant la séance"
     }
   },
   "suggestion": {
@@ -3883,6 +3884,232 @@
       "missingDay_other": "{{day}} n'a rien de saisi ({{count}} jours à trous cette semaine)",
       "quickAddA11y": "Ajouter {{name}}, {{kcal}} kcal",
       "search": "Chercher"
+    }
+  },
+  "workoutMode": {
+    "label": "Mode",
+    "classic": "Classique",
+    "immersive": "Immersif",
+    "classicDesc": "Tes séries, tes charges, le chrono. Rien d'autre.",
+    "immersiveDesc": "Barre chargée, effort au tempo, repos guidé, fantôme de ta dernière séance.",
+    "sheetTitle": "Comment veux-tu t'entraîner ?",
+    "sheetSubtitle": "Tu pourras changer à tout moment, même en pleine séance.",
+    "remember": "Retenir mon choix",
+    "start": "Commencer en {{mode}}",
+    "hubHint": "Le mode se retient. Il se change ici, ou dans Réglages › Séance.",
+    "switchTitle": "Mode d'affichage",
+    "switchHint": "Même séance, mêmes séries : rien n'est perdu."
+  },
+  "settingsSession": {
+    "title": "Séance",
+    "entry": "Réglages de la séance",
+    "entryDesc": "Mode d'affichage, coach vocal, repos",
+    "defaultMode": "Mode par défaut",
+    "defaultModeHelp": "Utilisé au lancement de chaque séance.",
+    "levelHelp": "Vaut pour les deux modes.",
+    "immersiveSection": "Mode immersif",
+    "coach": "Coach vocal",
+    "coachHelp": "Motivant parle, Sobre ne donne que les chiffres, Muet se tait — les phrases restent écrites à l'écran.",
+    "coachMotivant": "Motivant",
+    "coachSobre": "Sobre",
+    "coachMuet": "Muet",
+    "tempo": "Guide de tempo",
+    "tempoHelp": "L'écran bat au rythme de la répétition pendant l'effort.",
+    "breathing": "Respiration au repos",
+    "ghost": "Fantôme de la dernière séance",
+    "ghostHelp": "Ton tonnage comparé à la dernière fois, série après série.",
+    "sleep": "Veille pendant le repos",
+    "sleepHelp": "Écran assombri quand le téléphone est posé ; réveil au toucher.",
+    "bar": "Poids de la barre",
+    "bothSection": "Pour les deux modes",
+    "restNotification": "Notification de repos",
+    "restNotificationHelp": "Le repos reste visible hors de l'app, et un rappel arrive à la fin."
+  },
+  "immersive": {
+    "stage": {
+      "exerciseIndex": "Exercice {{index}} sur {{total}}",
+      "lastExercise": "Dernier exercice",
+      "lastSet": "Dernière série de la séance",
+      "stake": "{{weight}} : plus lourd que ton record ({{record}})"
+    },
+    "deck": {
+      "nextSet": "{{name}} · série {{index}}",
+      "nextEnd": "Fin de la séance",
+      "launch": "Lancer la série",
+      "validateDirectly": "Valider directement"
+    },
+    "done": {
+      "hint": "Tout est validé. Il ne reste qu’à boucler."
+    },
+    "plan": {
+      "title": "La séance"
+    },
+    "effort": {
+      "tempo": "Descends · Pousse",
+      "target": "{{weight}} × {{reps}}",
+      "tut": "Sous tension {{time}}",
+      "hint": "Touche l’écran à chaque répétition — ou pas : le cadran s’ouvrira sur ton objectif.",
+      "done": "Terminé",
+      "countA11y_one": "{{count}} répétition comptée",
+      "countA11y_other": "{{count}} répétitions comptées"
+    },
+    "dial": {
+      "title": "Combien de répétitions ?",
+      "titleDuration": "Combien de temps ?",
+      "reps_one": "{{count}} répétition",
+      "reps_other": "{{count}} répétitions",
+      "seconds_one": "{{count}} seconde",
+      "seconds_other": "{{count}} secondes",
+      "hint": "Glisse vers le haut ou le bas pour ajuster.",
+      "feelLabel": "Comment c’était ?",
+      "feelHint": "Enregistré comme RPE {{rpe}}",
+      "back": "Reprendre la série"
+    },
+    "feel": {
+      "facile": "Facile",
+      "solide": "Solide",
+      "dur": "Dur",
+      "limite": "Limite"
+    },
+    "bar": {
+      "perSide": "Par côté : {{plates}} · barre {{bar}} {{unit}}",
+      "barOnly": "Barre seule ({{bar}} {{unit}})",
+      "remainder": "+ {{weight}} {{unit}} non chargeable"
+    },
+    "verdict": {
+      "heavier": "+{{delta}}",
+      "heavierDay": "+{{delta}} vs {{day}}",
+      "moreReps_one": "+{{count}} rép",
+      "moreReps_other": "+{{count}} reps",
+      "moreRepsDay_one": "+{{count}} rép vs {{day}}",
+      "moreRepsDay_other": "+{{count}} reps vs {{day}}",
+      "longer": "+{{count}} s",
+      "longerDay": "+{{count}} s vs {{day}}",
+      "equal": "Série validée",
+      "equalDay": "Comme {{day}}",
+      "belowWeight": "{{now}} · {{day}} {{before}}",
+      "belowReps": "{{now}} reps · {{day}} {{before}}",
+      "belowDuration": "{{now}} s · {{day}} {{before}} s",
+      "first": "Première référence posée"
+    },
+    "record": {
+      "title": "Nouveau record",
+      "previous": "Avant : {{weight}}",
+      "close": "Fermer le record",
+      "pillWeight": "Record : {{value}} (avant {{previous}})",
+      "pill1rm": "1RM estimé : {{value}} (avant {{previous}})"
+    },
+    "rest": {
+      "validated": "Série {{index}} validée · {{detail}}",
+      "wake": "Touche pour réveiller",
+      "getReady": "Prépare-toi",
+      "inhale": "Inspire",
+      "exhale": "Expire longtemps",
+      "tabGhost": "Le fantôme de {{day}}",
+      "tabHeat": "Le corps qui chauffe"
+    },
+    "adjust": {
+      "lighter": "Coach : alléger la suivante à {{weight}} ?",
+      "heavier": "Coach : charger la suivante à {{weight}} ?",
+      "keep": "Garder"
+    },
+    "exerciseDone": {
+      "title": "{{name}}, bouclé.",
+      "stats": "{{sets}} séries · {{tonnage}} de volume",
+      "delta_up": "+{{percent}} % de volume vs {{day}}",
+      "delta_down": "−{{percent}} % de volume vs {{day}}",
+      "records_one": "{{count}} record battu",
+      "records_other": "{{count}} records battus"
+    },
+    "challenge": {
+      "reach_one": "{{count}} rép à {{weight}} et {{day}} est battu.",
+      "reach_other": "{{count}} reps à {{weight}} et {{day}} est battu.",
+      "ahead": "{{day}} est déjà battu de {{weight}}."
+    },
+    "ghost": {
+      "lastTime": "la dernière fois",
+      "pillAhead": "+{{weight}} d’avance",
+      "pillBehind": "−{{weight}}",
+      "ahead": "+{{weight}} d’avance",
+      "behind": "−{{weight}} de retard",
+      "caption": "Volume cumulé, face à {{day}}.",
+      "you": "Toi : {{weight}}",
+      "total": "{{day}} en tout : {{weight}}"
+    },
+    "heat": {
+      "legendItem_one": "{{muscle}} · {{count}} série",
+      "legendItem_other": "{{muscle}} · {{count}} séries",
+      "empty": "Valide une série pour commencer à chauffer."
+    },
+    "closing": {
+      "title": "Séance bouclée.",
+      "records_one": "Record",
+      "records_other": "Records",
+      "ghostBeat": "{{day}} battu : +{{percent}} % de volume",
+      "ghostAhead": "{{day}} garde {{percent}} % d’avance",
+      "nutritionRelay": "Nutrition prend le relais : +{{grams}} g de glucides aujourd’hui.",
+      "openSummary": "Voir le bilan"
+    },
+    "notification": {
+      "restOverTitle": "C’est reparti",
+      "restOverBodyEnd": "Dernière série faite — il ne reste qu’à boucler.",
+      "ongoingTitle": "Repos jusqu’à {{time}}"
+    },
+    "brief": {
+      "eyebrow": "Séance du jour",
+      "untitled": "Séance",
+      "sets": "Séries",
+      "stake": "{{exercise}} : {{weight}} prévus, ton record est à {{record}}.",
+      "go": "C’est parti",
+      "edit": "Modifier avant de commencer"
+    }
+  },
+  "coach": {
+    "motivant": {
+      "brief": "On y va. {{exercise}} pour commencer.",
+      "setCue": "{{cue}}",
+      "verdict": {
+        "heavier": "Plus lourd que {{day}} : {{delta}} de mieux.",
+        "moreReps": "{{count}} de plus que {{day}}. Ça monte.",
+        "longer": "{{count}} secondes de plus. Tu tiens mieux.",
+        "equal": "Pareil que {{day}}. Régulier, c’est déjà beaucoup.",
+        "below": "En dessous de {{day}}, et ce n’est pas grave. On enchaîne.",
+        "first": "Première référence posée sur {{exercise}}.",
+        "warmup": ""
+      },
+      "record": {
+        "maxWeight": "{{weight}}. Tu n’avais jamais soulevé ça.",
+        "estimated1rm": "Meilleur 1RM estimé sur {{exercise}}."
+      },
+      "adjust": {
+        "down": "On allège à {{weight}} pour la suivante ?",
+        "up": "Tu as de la marge. {{weight}} sur la suivante ?"
+      },
+      "restPrep": "On y retourne : {{weight}}, {{reps}} répétitions.",
+      "exerciseDone": "{{exercise}} est bouclé. Beau boulot.",
+      "lastSet": "Dernière série. Tout ce qui reste, c’est celle-là.",
+      "sessionEnd": "{{sets}} séries, {{tonnage}} kilos déplacés. C’est fait."
+    },
+    "sobre": {
+      "verdict": {
+        "heavier": "{{delta}} de plus.",
+        "moreReps": "{{count}} de plus.",
+        "longer": "{{count}} secondes de plus.",
+        "equal": "Identique.",
+        "below": "En dessous de {{day}}.",
+        "first": "Pas de référence.",
+        "warmup": ""
+      },
+      "record": {
+        "maxWeight": "Record : {{weight}}.",
+        "estimated1rm": "Record de 1RM estimé."
+      },
+      "adjust": {
+        "down": "{{weight}} sur la suivante.",
+        "up": "{{weight}} sur la suivante."
+      },
+      "restPrep": "{{weight}}, {{reps}} répétitions.",
+      "exerciseDone": "{{exercise}} terminé."
     }
   }
 }

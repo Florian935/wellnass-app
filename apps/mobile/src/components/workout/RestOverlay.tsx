@@ -21,6 +21,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { RestRing } from '@/components/workout/RestRing';
+import { RECORD_AMBER } from '@/components/workout/immersive/theme';
 import { fontFamily } from '@/theme/fonts';
 import type { Palette } from '@/theme/colors';
 
@@ -53,6 +54,14 @@ type RestOverlayProps = {
   onToggleCollapse: () => void;
   /** Fixe le repos de l'exercice courant — le réglage rapide de cet écran. */
   onChangeRest: (seconds: number) => void;
+  /**
+   * Record battu par la série qu'on vient de valider — US MUSCU-UX03, décision D3.
+   *
+   * **Le seul ajout de cette US au mode classique.** Rien d'autre : ni verdict, ni coach, ni
+   * respiration. Apprendre un record à la clôture, une demi-heure plus tard, c'est l'apprendre
+   * trop tard — et c'est vrai même pour qui veut « sa série, point barre ».
+   */
+  recordLabel?: string | null;
   colors: Palette;
 };
 
@@ -78,6 +87,7 @@ export function RestOverlay({
   onExtend,
   onToggleCollapse,
   onChangeRest,
+  recordLabel = null,
   colors,
 }: RestOverlayProps) {
   const { t } = useTranslation();
@@ -126,6 +136,14 @@ export function RestOverlay({
 
       <View style={styles.content}>
         <Text style={[styles.title, { color: colors.panelMuted }]}>{t('workout.restTitle')}</Text>
+
+        {/* La pastille de record — discrète, sans célébration : c'est le contrat du mode classique. */}
+        {recordLabel ? (
+          <View style={[styles.recordPill, { borderColor: `${RECORD_AMBER}66`, backgroundColor: `${RECORD_AMBER}1c` }]}>
+            <Ionicons name="trophy" size={14} color={RECORD_AMBER} />
+            <Text style={[styles.recordPillText, { color: RECORD_AMBER }]}>{recordLabel}</Text>
+          </View>
+        ) : null}
         {/*
           MOTION-01 (M3/M4) : le compte à rebours passe **dans** un anneau qui se vide. Le chiffre
           n'a pas changé — il reste la source d'information — mais il cesse d'être la seule chose à
@@ -222,6 +240,16 @@ const styles = StyleSheet.create({
   // 228 px, et Space Mono avance d'environ 0,6 em par glyphe. À 72 px un repos de dix minutes
   // (« 10:00 », 5 glyphes ≈ 216 px) touchait l'arc ; à 60 px il reste 48 px de marge.
   countdown: { fontFamily: fontFamily.monoBold, fontSize: 60, letterSpacing: -2, lineHeight: 68 },
+  recordPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    borderWidth: 1,
+    borderRadius: 999,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+  },
+  recordPillText: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
   nextCard: { width: '100%', borderRadius: 18, padding: 16, gap: 4, marginTop: 18 },
   nextEyebrow: {
     fontFamily: fontFamily.bodySemi,

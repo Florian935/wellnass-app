@@ -1,0 +1,4 @@
+# Canvas Claude Design seedés : ~2,7 Mo de moteur d'édition embarqué chacun, régénérables à tout
+# moment depuis les .dc.html + canvas.json via `seed-canvas.mjs`. Même règle que design/motion-01.
+1-seance-immersive/seance-immersive.html
+2-seance-vivante/seance-vivante.html

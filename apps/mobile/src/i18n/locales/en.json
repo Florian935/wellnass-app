@@ -804,9 +804,9 @@
       "increase": "Increase amount",
       "decrease": "Decrease amount",
       "factor": {
-        "0_5": "½ {{portion}}",
         "1": "{{portion}}",
-        "2": "2 × {{portion}}"
+        "2": "2 × {{portion}}",
+        "0_5": "½ {{portion}}"
       },
       "lastTime": "Last time: {{grams}} g",
       "effect": "WHAT THIS CHANGES",
@@ -3128,7 +3128,8 @@
       "sets": "Sets",
       "duration": "Time",
       "records": "Records broken",
-      "a11y": "Workout on {{date}}, {{exercises}} exercises, {{sets}} sets, {{volume}}"
+      "a11y": "Workout on {{date}}, {{exercises}} exercises, {{sets}} sets, {{volume}}",
+      "bodyA11y": "Diagram of the muscles worked during the session"
     }
   },
   "suggestion": {
@@ -3883,6 +3884,232 @@
       "missingDay_other": "Nothing logged on {{day}} ({{count}} gaps this week)",
       "quickAddA11y": "Add {{name}}, {{kcal}} kcal",
       "search": "Search"
+    }
+  },
+  "workoutMode": {
+    "label": "Mode",
+    "classic": "Classic",
+    "immersive": "Immersive",
+    "classicDesc": "Your sets, your weights, the clock. Nothing else.",
+    "immersiveDesc": "Loaded bar, tempo-guided effort, guided rest, ghost of your last session.",
+    "sheetTitle": "How do you want to train?",
+    "sheetSubtitle": "You can change any time, even mid-session.",
+    "remember": "Remember my choice",
+    "start": "Start in {{mode}}",
+    "hubHint": "Your choice is remembered. Change it here, or in Settings › Session.",
+    "switchTitle": "Display mode",
+    "switchHint": "Same session, same sets: nothing is lost."
+  },
+  "settingsSession": {
+    "title": "Session",
+    "entry": "Session settings",
+    "entryDesc": "Display mode, voice coach, rest",
+    "defaultMode": "Default mode",
+    "defaultModeHelp": "Used when starting each session.",
+    "levelHelp": "Applies to both modes.",
+    "immersiveSection": "Immersive mode",
+    "coach": "Voice coach",
+    "coachHelp": "Motivating speaks, Plain gives numbers only, Silent says nothing — captions stay on screen.",
+    "coachMotivant": "Motivating",
+    "coachSobre": "Plain",
+    "coachMuet": "Silent",
+    "tempo": "Tempo guide",
+    "tempoHelp": "The screen beats with each rep during the set.",
+    "breathing": "Breathing during rest",
+    "ghost": "Ghost of your last session",
+    "ghostHelp": "Your tonnage against last time, set after set.",
+    "sleep": "Screen dimming during rest",
+    "sleepHelp": "The screen dims when the phone is down; tap to wake.",
+    "bar": "Bar weight",
+    "bothSection": "For both modes",
+    "restNotification": "Rest notification",
+    "restNotificationHelp": "Rest stays visible outside the app, with a reminder when it ends."
+  },
+  "immersive": {
+    "stage": {
+      "exerciseIndex": "Exercise {{index}} of {{total}}",
+      "lastExercise": "Last exercise",
+      "lastSet": "Last set of the session",
+      "stake": "{{weight}}: heavier than your record ({{record}})"
+    },
+    "deck": {
+      "nextSet": "{{name}} · set {{index}}",
+      "nextEnd": "End of session",
+      "launch": "Start the set",
+      "validateDirectly": "Log it directly"
+    },
+    "done": {
+      "hint": "Every set is logged. Only the wrap-up left."
+    },
+    "plan": {
+      "title": "The session"
+    },
+    "effort": {
+      "tempo": "Down · Push",
+      "target": "{{weight}} × {{reps}}",
+      "tut": "Under tension {{time}}",
+      "hint": "Tap the screen on every rep — or don’t: the dial opens on your target.",
+      "done": "Done",
+      "countA11y_one": "{{count}} rep counted",
+      "countA11y_other": "{{count}} reps counted"
+    },
+    "dial": {
+      "title": "How many reps?",
+      "titleDuration": "How long?",
+      "reps_one": "{{count}} rep",
+      "reps_other": "{{count}} reps",
+      "seconds_one": "{{count}} second",
+      "seconds_other": "{{count}} seconds",
+      "hint": "Swipe up or down to adjust.",
+      "feelLabel": "How did it feel?",
+      "feelHint": "Stored as RPE {{rpe}}",
+      "back": "Back to the set"
+    },
+    "feel": {
+      "facile": "Easy",
+      "solide": "Solid",
+      "dur": "Hard",
+      "limite": "Limit"
+    },
+    "bar": {
+      "perSide": "Per side: {{plates}} · {{bar}} {{unit}} bar",
+      "barOnly": "Empty bar ({{bar}} {{unit}})",
+      "remainder": "+ {{weight}} {{unit}} that can’t be loaded"
+    },
+    "verdict": {
+      "heavier": "+{{delta}}",
+      "heavierDay": "+{{delta}} vs {{day}}",
+      "moreReps_one": "+{{count}} rep",
+      "moreReps_other": "+{{count}} reps",
+      "moreRepsDay_one": "+{{count}} rep vs {{day}}",
+      "moreRepsDay_other": "+{{count}} reps vs {{day}}",
+      "longer": "+{{count}}s",
+      "longerDay": "+{{count}}s vs {{day}}",
+      "equal": "Set logged",
+      "equalDay": "Same as {{day}}",
+      "belowWeight": "{{now}} · {{day}} {{before}}",
+      "belowReps": "{{now}} reps · {{day}} {{before}}",
+      "belowDuration": "{{now}}s · {{day}} {{before}}s",
+      "first": "First reference set"
+    },
+    "record": {
+      "title": "New record",
+      "previous": "Before: {{weight}}",
+      "close": "Close the record",
+      "pillWeight": "Record: {{value}} (was {{previous}})",
+      "pill1rm": "Estimated 1RM: {{value}} (was {{previous}})"
+    },
+    "rest": {
+      "validated": "Set {{index}} logged · {{detail}}",
+      "wake": "Tap to wake",
+      "getReady": "Get ready",
+      "inhale": "Breathe in",
+      "exhale": "Breathe out slowly",
+      "tabGhost": "{{day}}’s ghost",
+      "tabHeat": "Muscles warming up"
+    },
+    "adjust": {
+      "lighter": "Coach: drop the next one to {{weight}}?",
+      "heavier": "Coach: push the next one to {{weight}}?",
+      "keep": "Keep it"
+    },
+    "exerciseDone": {
+      "title": "{{name}}, done.",
+      "stats": "{{sets}} sets · {{tonnage}} of volume",
+      "delta_up": "+{{percent}}% volume vs {{day}}",
+      "delta_down": "−{{percent}}% volume vs {{day}}",
+      "records_one": "{{count}} record beaten",
+      "records_other": "{{count}} records beaten"
+    },
+    "challenge": {
+      "reach_one": "{{count}} rep at {{weight}} and {{day}} is beaten.",
+      "reach_other": "{{count}} reps at {{weight}} and {{day}} is beaten.",
+      "ahead": "{{day}} is already beaten by {{weight}}."
+    },
+    "ghost": {
+      "lastTime": "last time",
+      "pillAhead": "+{{weight}} ahead",
+      "pillBehind": "−{{weight}}",
+      "ahead": "+{{weight}} ahead",
+      "behind": "−{{weight}} behind",
+      "caption": "Cumulated volume against {{day}}.",
+      "you": "You: {{weight}}",
+      "total": "{{day}} in total: {{weight}}"
+    },
+    "heat": {
+      "legendItem_one": "{{muscle}} · {{count}} set",
+      "legendItem_other": "{{muscle}} · {{count}} sets",
+      "empty": "Log a set to start warming up."
+    },
+    "closing": {
+      "title": "Session done.",
+      "records_one": "Record",
+      "records_other": "Records",
+      "ghostBeat": "{{day}} beaten: +{{percent}}% volume",
+      "ghostAhead": "{{day}} keeps a {{percent}}% lead",
+      "nutritionRelay": "Nutrition takes over: +{{grams}}g of carbs today.",
+      "openSummary": "See the recap"
+    },
+    "notification": {
+      "restOverTitle": "Back to it",
+      "restOverBodyEnd": "Last set done — only the wrap-up left.",
+      "ongoingTitle": "Resting until {{time}}"
+    },
+    "brief": {
+      "eyebrow": "Today’s session",
+      "untitled": "Session",
+      "sets": "Sets",
+      "stake": "{{exercise}}: {{weight}} planned, your record is {{record}}.",
+      "go": "Let’s go",
+      "edit": "Adjust before starting"
+    }
+  },
+  "coach": {
+    "motivant": {
+      "brief": "Here we go. {{exercise}} to start.",
+      "setCue": "{{cue}}",
+      "verdict": {
+        "heavier": "Heavier than {{day}}: {{delta}} more.",
+        "moreReps": "{{count}} more than {{day}}. It’s going up.",
+        "longer": "{{count}} seconds longer. You’re holding better.",
+        "equal": "Same as {{day}}. Consistent is already a lot.",
+        "below": "Below {{day}}, and that’s fine. Keep going.",
+        "first": "First reference set on {{exercise}}.",
+        "warmup": ""
+      },
+      "record": {
+        "maxWeight": "{{weight}}. You had never lifted that.",
+        "estimated1rm": "Best estimated 1RM on {{exercise}}."
+      },
+      "adjust": {
+        "down": "Drop to {{weight}} for the next one?",
+        "up": "You’ve got room. {{weight}} on the next one?"
+      },
+      "restPrep": "Back to it: {{weight}}, {{reps}} reps.",
+      "exerciseDone": "{{exercise}} is done. Nice work.",
+      "lastSet": "Last set. This is all that’s left.",
+      "sessionEnd": "{{sets}} sets, {{tonnage}} kilos moved. It’s done."
+    },
+    "sobre": {
+      "verdict": {
+        "heavier": "{{delta}} more.",
+        "moreReps": "{{count}} more.",
+        "longer": "{{count}} seconds longer.",
+        "equal": "Identical.",
+        "below": "Below {{day}}.",
+        "first": "No reference.",
+        "warmup": ""
+      },
+      "record": {
+        "maxWeight": "Record: {{weight}}.",
+        "estimated1rm": "Estimated 1RM record."
+      },
+      "adjust": {
+        "down": "{{weight}} on the next one.",
+        "up": "{{weight}} on the next one."
+      },
+      "restPrep": "{{weight}}, {{reps}} reps.",
+      "exerciseDone": "{{exercise}} done."
     }
   }
 }

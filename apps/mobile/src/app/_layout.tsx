@@ -38,6 +38,8 @@ import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMenuAccent } from '@/stores/menu-accent-store';
 import { useMotionPreference } from '@/stores/motion-store';
+import { useImmersivePrefs } from '@/stores/immersive-prefs-store';
+import { useSessionMode } from '@/stores/session-mode-store';
 import { useTrackedMicros } from '@/stores/tracked-micros';
 import { useAppFonts } from '@/theme/fonts';
 import { typography } from '@/theme/typography';
@@ -144,6 +146,9 @@ function RootNavigator() {
     void useTrackedMicros.getState().hydrate();
     void useMenuAccent.getState().hydrate();
     void useMotionPreference.getState().hydrate();
+    // US MUSCU-UX03 : mode de séance + réglages du mode immersif, mêmes préférences d'appareil.
+    void useSessionMode.getState().hydrate();
+    void useImmersivePrefs.getState().hydrate();
   }, []);
 
   // Bootstrap : on n'initialise les réglages par défaut qu'une fois la **synchro
@@ -293,6 +298,20 @@ function RootNavigator() {
             presentation: 'modal',
             headerShown: true,
             title: t('settings.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        {/* Brief d'entrée en séance (US MUSCU-UX03) : plein écran sans en-tête, comme la séance
+            elle-même — c'est le même moment, pas un écran de réglage. */}
+        <Stack.Screen name="workout-brief" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="settings-session"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('settingsSession.title'),
             headerStyle: { backgroundColor: colors.surface },
             headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
             headerTintColor: colors.accent,

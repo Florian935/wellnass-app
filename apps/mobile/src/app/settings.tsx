@@ -435,6 +435,26 @@ export default function SettingsScreen() {
         </View>
       </View>
 
+      {/*
+        Séance (MUSCU-UX03). Le mode d'affichage — classique ou immersif — et les huit interrupteurs
+        du mode immersif vivent sur leur propre écran : ils n'ont de sens qu'ensemble, et les
+        Réglages sont déjà longs. Le **niveau** d'affichage y est repris : il n'était joignable que
+        depuis le menu de la séance en cours, c'est-à-dire au pire moment pour s'y intéresser.
+      */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settingsSession.title')}
+      </Text>
+      <View style={styles.stack}>
+        <Button
+          label={t('settingsSession.entry')}
+          variant="ghost"
+          onPress={() => router.push('/settings-session')}
+        />
+        <Text style={[styles.rowDesc, { color: colors.textMuted }]}>
+          {t('settingsSession.entryDesc')}
+        </Text>
+      </View>
+
       {/* Couleurs des menus : un accent par onglet (Accueil / Muscu / Course / Alimentation) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
         {t('settings.menuColors.title')}

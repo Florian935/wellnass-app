@@ -13,15 +13,16 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { MuscleGroup } from '@wellness/shared';
+import { WORKOUT_DISPLAY_MODES, type MuscleGroup } from '@wellness/shared';
 import { AnimatedNumber, useLocaleSeparators } from '@/components/motion/AnimatedNumber';
 import { PillarStage, useStageTheme } from '@/components/stage/PillarStage';
 import { StageButton } from '@/components/stage/StageButton';
 import { StageIconButton } from '@/components/stage/StageIconButton';
 import { ImpactSilhouette, type SilhouetteZone } from '@/components/stage/matter/ImpactSilhouette';
 import { useLoopActive } from '@/hooks/useLoopActive';
+import { useSessionMode } from '@/stores/session-mode-store';
 import { fontFamily } from '@/theme/fonts';
 
 /** Les six groupes de `MUSCLE_GROUPS` sont exactement les six zones de la silhouette. */
@@ -231,6 +232,12 @@ export function StrengthStage({
         </View>
       ) : null}
 
+      {/* Le mode d'affichage se choisit **juste au-dessus du bouton de départ** (US MUSCU-UX03,
+          R-MO-2) : c'est le seul endroit où la question se pose vraiment, au moment de partir.
+          Les scènes « reprise », « repos », « après-séance » et « premiers pas » n'en portent
+          pas — on n'y démarre pas une séance de programme. */}
+      {scene.kind === 'today' ? <ModeSelector /> : null}
+
       <View style={styles.ctaRow}>
         <StageButton
           pillar="strength"
@@ -261,7 +268,53 @@ const PRIMARY_ICON: Record<StrengthScene['kind'], keyof typeof Ionicons.glyphMap
   onboarding: 'compass-outline',
 };
 
+/**
+ * Le sélecteur **Classique · Immersif** (US MUSCU-UX03, R-MO-2).
+ *
+ * Il écrit la préférence tout de suite : ce n'est pas un choix « pour cette séance », c'est
+ * **le** mode. Le changer ici, c'est le changer partout — et c'est ce qu'on veut, parce que
+ * personne n'ira le chercher dans les Réglages.
+ */
+function ModeSelector() {
+  const { t } = useTranslation();
+  const stage = useStageTheme('strength');
+  const mode = useSessionMode((s) => s.mode);
+  const setMode = useSessionMode((s) => s.setMode);
+
+  return (
+    <View style={[styles.modeRow, { backgroundColor: stage.glass, borderColor: stage.glassBorder }]}>
+      {WORKOUT_DISPLAY_MODES.map((option) => {
+        const selected = option === mode;
+        return (
+          <Pressable
+            key={option}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            onPress={() => setMode(option)}
+            style={[styles.modeItem, selected && { backgroundColor: stage.solid }]}
+          >
+            <Text
+              style={[styles.modeLabel, { color: selected ? stage.onSolid : stage.inkMuted }]}
+            >
+              {t(`workoutMode.${option}`)}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
+  modeRow: { flexDirection: 'row', borderRadius: 13, borderWidth: 1, padding: 3, gap: 3 },
+  modeItem: {
+    flex: 1,
+    minHeight: 38,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modeLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   topRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
   eyebrow: {
     fontFamily: fontFamily.monoBold,

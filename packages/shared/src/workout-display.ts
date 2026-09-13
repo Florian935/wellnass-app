@@ -11,6 +11,25 @@ export function coerceWorkoutDisplayLevel(value: string | null | undefined): Wor
 }
 
 /**
+ * Modes d'affichage de la séance (US MUSCU-UX03) — **orthogonaux aux niveaux** ci-dessus.
+ *
+ * `classic` est l'écran d'origine, inchangé ; `immersive` est la séance vivante (fond sombre, barre
+ * chargée, effort au tempo, repos qui respire, fantôme, coach). Le **niveau** d'affichage continue
+ * de valoir pour les deux : c'est la densité d'information, pas la mise en scène.
+ *
+ * Défaut `classic`, y compris pour un compte existant : personne ne doit voir son écran de séance
+ * changer sans l'avoir demandé (décision D1 de la spec).
+ */
+export const WORKOUT_DISPLAY_MODES = ['classic', 'immersive'] as const;
+export const workoutDisplayModeSchema = z.enum(WORKOUT_DISPLAY_MODES);
+export type WorkoutDisplayMode = z.infer<typeof workoutDisplayModeSchema>;
+
+/** Défaut applicatif : toute valeur absente / illisible retombe sur le mode classique. */
+export function coerceWorkoutDisplayMode(value: string | null | undefined): WorkoutDisplayMode {
+  return value === 'immersive' ? 'immersive' : 'classic';
+}
+
+/**
  * Visibilité des éléments *supplémentaires* de la carte de séance selon le niveau.
  * Les champs cœur (nom, série, reps/durée, charge, lest, consigne du plan,
  * « dernière fois », repos, valider) sont TOUJOURS visibles → hors de cet objet.

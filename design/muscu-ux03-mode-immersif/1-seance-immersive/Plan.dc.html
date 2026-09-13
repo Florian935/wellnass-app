@@ -1,0 +1,149 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #1c150e; }
+    a { color: #e0a97f; }
+    a:hover { color: #f4ecdd; }
+    .ph {
+      width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box;
+      background: #1c150e; color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    }
+    .ic { display: block; flex: none; }
+    .eyebrow {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px;
+      letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a;
+    }
+    /* Arrière-plan : l'écran de série, estompé */
+    .bg { position: absolute; inset: 0; padding: 14px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+    .hd-row { display: flex; align-items: center; justify-content: space-between; height: 28px; }
+    .chrono { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px; }
+    .ribbon { display: flex; gap: 4px; height: 6px; }
+    .seg { height: 6px; border-radius: 3px; background: #362c22; overflow: hidden; }
+    .seg-f { height: 100%; border-radius: 3px; }
+    .bg-name { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.3px; line-height: 1; margin-top: 40px; }
+    .scrim { position: absolute; inset: 0; background: rgba(10,7,4,.66); }
+
+    .sheet {
+      position: absolute; left: 0; right: 0; top: 128px; bottom: 0; box-sizing: border-box;
+      background: #241c14; border-radius: 28px 28px 0 0; border-top: 1px solid #3a2e22;
+      padding: 10px 16px 20px; display: flex; flex-direction: column;
+    }
+    .grab { width: 40px; height: 4px; border-radius: 2px; background: #4a3d30; align-self: center; }
+    .sh-head { display: flex; align-items: baseline; justify-content: space-between; padding: 18px 4px 14px; }
+    .sh-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -.6px; }
+    .sh-s { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px; color: #c9b79a; }
+
+    .list { display: flex; flex-direction: column; gap: 8px; }
+    .row { border-radius: 16px; padding: 11px 12px; display: flex; flex-direction: column; gap: 10px; }
+    .row-main { display: flex; align-items: center; gap: 12px; }
+    .st { width: 30px; height: 30px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; }
+    .st-done { background: rgba(169,186,126,.16); color: #a9ba7e; }
+    .st-cur { border: 2px solid #dd6e40; }
+    .st-cur i { width: 10px; height: 10px; border-radius: 50%; background: #dd6e40; display: block; }
+    .st-todo { border: 1.5px solid #4a3d30; }
+    .txt { flex: 1; min-width: 0; }
+    .name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sub { font-size: 12.5px; color: #c9b79a; margin-top: 2px; display: flex; align-items: center; gap: 6px; }
+    .sub-link { color: #e0a97f; }
+    .more { width: 44px; height: 44px; margin: -7px -6px -7px 0; display: flex; align-items: center; justify-content: center; color: #c9b79a; border-radius: 12px; }
+    .more-open { background: #30271e; color: #f4ecdd; }
+    .rec { height: 24px; padding: 0 8px; border-radius: 999px; background: rgba(224,177,85,.16); color: #e0b155; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 4px; }
+    .row-cur { background: rgba(221,110,64,.09); border: 1.5px solid rgba(221,110,64,.6); }
+    .row-open { background: #1c150e; border: 1px solid #3a2e22; }
+    .acts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding-left: 42px; }
+    .act { height: 44px; border-radius: 12px; background: #30271e; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 11.5px; font-weight: 600; color: #f4ecdd; }
+    .done .name { color: #c9b79a; }
+
+    .add {
+      margin-top: auto; height: 52px; border-radius: 16px; border: 1px dashed #4a3d30;
+      display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 15px; font-weight: 600; color: #e0a97f;
+    }
+  </style>
+</helmet>
+
+<div class="ph">
+  <div class="bg">
+    <div class="hd-row">
+      <svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      <div class="chrono">21:40</div>
+      <svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+    </div>
+    <div class="ribbon">
+      <div class="seg" style="flex: 4 1 0; background: #a9ba7e"></div>
+      <div class="seg" style="flex: 4 1 0"><div class="seg-f" style="width: 50%; background: #dd6e40"></div></div>
+      <div class="seg" style="flex: 3 1 0"></div>
+      <div class="seg" style="flex: 4 1 0"></div>
+      <div class="seg" style="flex: 3 1 0"></div>
+    </div>
+    <div class="bg-name">Développé incliné haltères</div>
+  </div>
+  <div class="scrim"></div>
+
+  <div class="sheet">
+    <div class="grab"></div>
+    <div class="sh-head">
+      <div class="sh-t">Plan de séance</div>
+      <div class="sh-s">6/18 séries · 21 min</div>
+    </div>
+
+    <div class="list">
+      <div class="row done">
+        <div class="row-main">
+          <div class="st st-done"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div>
+          <div class="txt"><div class="name">Développé couché</div><div class="sub">4/4 · 2 335 kg</div></div>
+          <div class="rec"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M12 13v4M8.5 20h7"/></svg>Record</div>
+        </div>
+      </div>
+
+      <div class="row row-cur">
+        <div class="row-main">
+          <div class="st st-cur"><i></i></div>
+          <div class="txt"><div class="name">Développé incliné haltères</div><div class="sub" style="color: #e0a97f">Série 3 sur 4 · en cours</div></div>
+        </div>
+      </div>
+
+      <div class="row row-open">
+        <div class="row-main">
+          <div class="st st-todo"></div>
+          <div class="txt"><div class="name">Écarté à la poulie</div><div class="sub">3 séries · 15 kg</div></div>
+          <div class="more more-open"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></div>
+        </div>
+        <div class="acts">
+          <div class="act"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>Monter</div>
+          <div class="act"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>Descendre</div>
+          <div class="act"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5"/></svg>Plus tard</div>
+          <div class="act"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3-3M20 16H7l3 3"/></svg>Remplacer</div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-main">
+          <div class="st st-todo"></div>
+          <div class="txt"><div class="name">Dips lestés</div><div class="sub">4 séries · +10 kg · <span class="sub-link">superset</span></div></div>
+          <div class="more"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></div>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="row-main">
+          <div class="st st-todo"></div>
+          <div class="txt"><div class="name">Extension triceps à la corde</div><div class="sub">3 séries · 25 kg · <span class="sub-link">superset</span></div></div>
+          <div class="more"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="add"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ajouter un exercice</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

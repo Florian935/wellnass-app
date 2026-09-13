@@ -1,0 +1,322 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #17110b; }
+    a { color: #e0a97f; }
+    a:hover { color: #f4ecdd; }
+    .board { width: 1780px; height: 1880px; box-sizing: border-box; background: #17110b; color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 52px 48px; display: flex; flex-direction: column; gap: 32px; }
+    .ic { display: block; flex: none; }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase; color: #c9b79a; }
+    .h1 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 64px; letter-spacing: -2.4px; line-height: .95; margin-top: 10px; }
+    .h1 em { font-style: normal; color: #dd6e40; }
+    .lede { font-size: 17px; line-height: 1.55; color: #c9b79a; max-width: 900px; margin-top: 16px; }
+    .lede b { color: #f4ecdd; font-weight: 600; }
+    .cols { display: grid; grid-template-columns: repeat(4, 390px); gap: 36px; }
+    .col { display: flex; flex-direction: column; gap: 12px; }
+    .cap-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -.5px; }
+    .cap { font-size: 13.5px; line-height: 1.55; color: #c9b79a; }
+    .cap b { color: #f4ecdd; font-weight: 600; }
+
+    /* ── Téléphones au thème de l'app (clair) ── */
+    .ph { width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; border-radius: 30px; background: #f7eede; color: #33291f; box-shadow: 0 0 0 1px #2c231a; }
+    .lt-eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #786a59; }
+    .hub { position: absolute; inset: 0; padding: 20px 20px 0; display: flex; flex-direction: column; gap: 14px; }
+    .hub-h { display: flex; justify-content: space-between; align-items: center; height: 40px; }
+    .hub-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -.8px; }
+    .hub-c { font-size: 13px; font-weight: 600; color: #b14f2b; }
+    .today { border-radius: 22px; background: #33291f; color: #f0e4d0; padding: 18px; display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden; }
+    .today::before { content: ""; position: absolute; width: 220px; height: 220px; right: -80px; top: -90px; border-radius: 50%; background: radial-gradient(circle, rgba(217,168,136,.28), rgba(217,168,136,0) 70%); }
+    .t-eb { position: relative; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a; }
+    .t-title { position: relative; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.4px; line-height: 1; }
+    .t-meta { position: relative; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; color: #c9b79a; }
+    .seg-dark { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: rgba(0,0,0,.28); }
+    .seg-dark div { height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 14px; font-weight: 600; color: #c9b79a; }
+    .seg-dark .on { background: #f0e4d0; color: #33291f; }
+    .start { position: relative; height: 54px; border-radius: 16px; background: #b14f2b; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; }
+    .hint { font-size: 12.5px; color: #786a59; line-height: 1.45; }
+    .w { border-radius: 18px; background: #fffaf2; border: 1px solid #ece0cd; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .w-t { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #786a59; }
+    .w-v { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.4px; }
+    .days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+    .days div { height: 30px; border-radius: 9px; background: #f3ddd0; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59; }
+    .days .d-on { background: #66714b; color: #fff; }
+    .days .d-today { background: #fff; border: 1.5px solid #b14f2b; color: #b14f2b; }
+
+    /* Choix au premier lancement */
+    .scrim { position: absolute; inset: 0; background: rgba(51,41,31,.55); }
+    .sheet { position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; background: #fffaf2; border-radius: 28px 28px 0 0; padding: 10px 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+    .grab { width: 40px; height: 4px; border-radius: 2px; background: #d9cbb5; align-self: center; }
+    .sh-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 23px; letter-spacing: -.6px; margin-top: 6px; }
+    .sh-s { font-size: 13.5px; color: #786a59; margin-top: -6px; }
+    .opt { border-radius: 20px; border: 1px solid #ece0cd; background: #fffaf2; padding: 12px; display: grid; grid-template-columns: 92px minmax(0, 1fr) 24px; gap: 12px; align-items: center; }
+    .opt-on { border: 2px solid #b14f2b; background: #fff3e8; padding: 11px; }
+    .prev { width: 92px; height: 116px; border-radius: 14px; overflow: hidden; position: relative; }
+    .prev-l { background: #f7eede; border: 1px solid #ece0cd; box-sizing: border-box; padding: 8px 7px; display: flex; flex-direction: column; gap: 5px; }
+    .pl { height: 7px; border-radius: 3px; background: #e3d4bd; }
+    .pc { border-radius: 6px; background: #fffaf2; border: 1px solid #ece0cd; height: 26px; }
+    .pf { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+    .pf div { height: 16px; border-radius: 4px; border: 1px solid #d9cbb5; background: #f7eede; }
+    .pb { height: 14px; border-radius: 4px; background: #b14f2b; }
+    .prev-d { background: radial-gradient(80% 50% at 50% 45%, rgba(221,110,64,.45), rgba(107,0,40,.2) 55%, rgba(28,21,14,0) 80%), #1c150e; }
+    .mini-bb { position: absolute; left: 8px; right: 8px; top: 30px; height: 36px; display: flex; align-items: center; }
+    .mini-bb i { display: block; border-radius: 2px; }
+    .mini-ring { position: absolute; left: 50%; bottom: 10px; width: 34px; height: 34px; margin-left: -17px; border-radius: 50%; border: 3px solid #e0a97f; border-right-color: #3a2e22; }
+    .o-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -.4px; }
+    .o-d { font-size: 13px; line-height: 1.4; color: #786a59; margin-top: 3px; }
+    .o-chip { display: inline-flex; margin-top: 7px; height: 22px; padding: 0 8px; border-radius: 999px; align-items: center; font-size: 11px; font-weight: 700; background: #f3ddd0; color: #a34e2c; }
+    .radio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid #cbbba3; box-sizing: border-box; }
+    .radio-on { border: 7px solid #b14f2b; }
+    .check { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+    .box { width: 22px; height: 22px; border-radius: 6px; background: #b14f2b; display: flex; align-items: center; justify-content: center; }
+    .cta { height: 58px; border-radius: 17px; background: #b14f2b; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 17px; font-weight: 700; }
+
+    /* Réglages */
+    .set { position: absolute; inset: 0; padding: 18px 18px 0; display: flex; flex-direction: column; gap: 14px; }
+    .set-h { display: flex; align-items: center; gap: 10px; height: 36px; }
+    .set-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 25px; letter-spacing: -.6px; }
+    .grp { display: flex; flex-direction: column; gap: 7px; }
+    .seg { display: grid; gap: 4px; padding: 4px; border-radius: 14px; background: #f3ddd0; }
+    .seg div { height: 36px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 600; color: #786a59; }
+    .seg .on { background: #fffaf2; color: #33291f; box-shadow: 0 1px 3px rgba(51,41,31,.15); }
+    .help { font-size: 12px; color: #786a59; }
+    .list { border-radius: 18px; background: #fffaf2; border: 1px solid #ece0cd; overflow: hidden; }
+    .row { height: 46px; display: flex; align-items: center; gap: 10px; padding: 0 14px; border-top: 1px solid #ece0cd; font-size: 14.5px; }
+    .row:first-child { border-top: none; }
+    .row span { flex: 1; }
+    .val { font-size: 13.5px; color: #786a59; display: flex; align-items: center; gap: 6px; }
+    .prem { height: 20px; padding: 0 7px; border-radius: 999px; background: #33291f; color: #f0e4d0; font-size: 10.5px; font-weight: 700; display: flex; align-items: center; }
+    .tg { width: 40px; height: 24px; border-radius: 999px; background: #b14f2b; position: relative; flex: none; }
+    .tg::after { content: ""; position: absolute; right: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; }
+
+    /* Séance classique */
+    .cls { position: absolute; inset: 0; }
+    .c-hd { padding: 12px 20px 10px; display: flex; flex-direction: column; gap: 9px; }
+    .c-row { display: flex; align-items: center; justify-content: space-between; }
+    .c-timer { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 19px; }
+    .c-prog { display: flex; align-items: center; gap: 9px; }
+    .c-track { flex: 1; height: 5px; border-radius: 3px; background: #eadcc6; overflow: hidden; }
+    .c-track i { display: block; height: 5px; width: 11%; background: #b14f2b; }
+    .c-card { margin: 6px 20px 0; border-radius: 18px; background: #fffaf2; border: 1px solid #ece0cd; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .c-name { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 18px; }
+    .c-chips { display: flex; gap: 7px; }
+    .c-chips div { border-radius: 9px; padding: 6px 9px; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; }
+    .menu { position: absolute; left: 0; right: 0; bottom: 0; top: 214px; box-sizing: border-box; background: #fffaf2; border-radius: 28px 28px 0 0; padding: 10px 18px 18px; display: flex; flex-direction: column; gap: 12px; }
+    .m-note { font-size: 12.5px; color: #66714b; font-weight: 600; }
+    .m-row { height: 48px; display: flex; align-items: center; gap: 12px; border-top: 1px solid #ece0cd; font-size: 15px; font-weight: 600; }
+    .m-row span { flex: 1; }
+    .m-fin { height: 50px; border-radius: 15px; background: #b14f2b; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; }
+    .m-out { height: 46px; border-radius: 15px; border: 1px solid #d9cbb5; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; }
+    .m-ab { height: 36px; display: flex; align-items: center; justify-content: center; font-size: 14.5px; font-weight: 600; color: #b23b2e; }
+
+    /* ── Bas de planche ── */
+    .bottom { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 32px; }
+    .panel { border-radius: 24px; background: #1f1810; border: 1px solid #2f261c; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; }
+    .p-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px; }
+    .tb { display: flex; flex-direction: column; }
+    .tr { display: grid; grid-template-columns: 190px minmax(0, 1fr) minmax(0, 1fr); gap: 18px; padding: 9px 0; border-top: 1px solid #2f261c; font-size: 13.5px; line-height: 1.4; }
+    .th { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #a3927a; border-top: none; padding-top: 0; }
+    .tr .k { font-weight: 700; color: #f4ecdd; }
+    .tr .c { color: #c9b79a; }
+    .tr .i { color: #e7dccb; }
+    .todo { color: #e0b155; }
+    .op { border-radius: 18px; padding: 14px 16px; background: #241c14; border: 1px solid #3a2e22; display: flex; flex-direction: column; gap: 6px; }
+    .op-rec { border-color: #dd6e40; background: rgba(221,110,64,.08); }
+    .op-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .op-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 17px; letter-spacing: -.3px; }
+    .op-tag { height: 22px; padding: 0 8px; border-radius: 999px; background: #dd6e40; color: #1c150e; font-size: 11px; font-weight: 800; display: flex; align-items: center; white-space: nowrap; }
+    .op-d { font-size: 13px; line-height: 1.5; color: #c9b79a; }
+    .op-d b { color: #f4ecdd; font-weight: 600; }
+    .note-d { font-size: 13px; line-height: 1.5; color: #a3927a; border-top: 1px dashed #3a2e22; padding-top: 10px; }
+    .note-d b { color: #e0b155; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div>
+    <div class="eb">Séance vivante · deux modes</div>
+    <div class="h1">Un mode <em>en plus</em>, jamais imposé</div>
+    <div class="lede">Certains veulent le coach, la barre chargée et le fantôme. D'autres veulent <b>leur série, point barre</b>. L'écran de séance classique reste donc tel qu'il est ; l'immersif s'ajoute à côté. Même séance, mêmes données : on choisit au lancement, on garde son choix, et on peut <b>basculer en pleine séance sans rien perdre</b>.</div>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="ph">
+        <div class="hub">
+          <div class="hub-h"><div class="hub-t">Musculation</div><div class="hub-c">Personnaliser</div></div>
+          <div class="today">
+            <div class="t-eb">Séance du jour · PPL semaine 3</div>
+            <div class="t-title">Push A</div>
+            <div class="t-meta">5 exercices · 18 séries · ≈ 55 min</div>
+            <div class="seg-dark">
+              <div>Classique</div>
+              <div class="on"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3c1 3 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5.5.3 1.7 1 2.7 2 3.2C11 8.5 11.5 5.5 12 3z"/></svg>Immersif</div>
+            </div>
+            <div class="start">Commencer</div>
+          </div>
+          <div class="hint">Le mode choisi se retient. Il se change ici d'un toucher, ou dans Réglages › Séance.</div>
+          <div class="w">
+            <div class="w-t">Cette semaine · 2 sur 3</div>
+            <div class="days"><div class="d-on">L</div><div>M</div><div class="d-on">M</div><div>J</div><div>V</div><div>S</div><div class="d-today">D</div></div>
+          </div>
+          <div class="w">
+            <div class="w-t">Dernière séance</div>
+            <div class="w-v">Pull A · jeudi · 52 min</div>
+          </div>
+        </div>
+      </div>
+      <div class="cap-t">Le choix vit sur la séance du jour</div>
+      <div class="cap">Sur la carte « Séance du jour », un sélecteur <b>Classique · Immersif</b> juste au-dessus de « Commencer ». Retenu d'une séance à l'autre : on ne se pose la question qu'une fois.</div>
+    </div>
+
+    <div class="col">
+      <div class="ph">
+        <div class="hub">
+          <div class="hub-h"><div class="hub-t">Musculation</div><div class="hub-c">Personnaliser</div></div>
+          <div class="today" style="height: 190px"><div class="t-eb">Séance du jour · PPL semaine 3</div><div class="t-title">Push A</div></div>
+        </div>
+        <div class="scrim"></div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="sh-t">Comment veux-tu t'entraîner ?</div>
+          <div class="sh-s">Tu pourras changer à tout moment, même en pleine séance.</div>
+          <div class="opt">
+            <div class="prev prev-l"><div class="pl" style="width: 60%"></div><div class="pc"></div><div class="pc" style="height: 18px"></div><div style="flex: 1"></div><div class="pf"><div></div><div></div></div><div class="pb"></div></div>
+            <div><div class="o-t">Classique</div><div class="o-d">Tes séries, tes charges, le chrono. Rien d'autre.</div></div>
+            <div class="radio"></div>
+          </div>
+          <div class="opt opt-on">
+            <div class="prev prev-d">
+              <div class="mini-bb"><i style="width: 5px; height: 8px; background: #797169"></i><i style="width: 5px; height: 34px; background: #9e2f26; margin-left: 2px"></i><i style="width: 3px; height: 18px; background: #d9cdb8; margin-left: 1px"></i><i style="flex: 1; height: 3px; background: #a39b90"></i><i style="width: 3px; height: 18px; background: #d9cdb8"></i><i style="width: 5px; height: 34px; background: #9e2f26; margin-left: 1px"></i><i style="width: 5px; height: 8px; background: #797169; margin-left: 2px"></i></div>
+              <div class="mini-ring"></div>
+            </div>
+            <div><div class="o-t">Immersif</div><div class="o-d">Barre chargée, effort au tempo, repos guidé, fantôme de ta dernière séance.</div><div class="o-chip">Coach vocal : abonnement IA</div></div>
+            <div class="radio radio-on"></div>
+          </div>
+          <div class="check"><div class="box"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div>Retenir mon choix</div>
+          <div class="cta">Commencer en immersif</div>
+        </div>
+      </div>
+      <div class="cap-t">La première fois, on demande</div>
+      <div class="cap">Au tout premier « Commencer », une feuille présente les deux modes <b>avec leur aperçu</b>. Rien n'est coché d'office pour un nouvel utilisateur ; <b>un utilisateur existant garde le classique</b> et découvre l'immersif par ce sélecteur.</div>
+    </div>
+
+    <div class="col">
+      <div class="ph">
+        <div class="set">
+          <div class="set-h"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg><div class="set-t">Séance</div></div>
+          <div class="grp">
+            <div class="lt-eb">Mode par défaut</div>
+            <div class="seg" style="grid-template-columns: repeat(2, minmax(0, 1fr))"><div>Classique</div><div class="on">Immersif</div></div>
+          </div>
+          <div class="grp">
+            <div class="lt-eb">Niveau d'affichage</div>
+            <div class="seg" style="grid-template-columns: repeat(3, minmax(0, 1fr))"><div>Simplifiée</div><div class="on">Normale</div><div>Détaillée</div></div>
+            <div class="help">Vaut pour les deux modes.</div>
+          </div>
+          <div class="grp">
+            <div class="lt-eb">Mode immersif</div>
+            <div class="list">
+              <div class="row"><span>Coach vocal</span><div class="val">Motivant<div class="prem">IA</div></div></div>
+              <div class="row"><span>Sons</span><div class="tg"></div></div>
+              <div class="row"><span>Guide de tempo</span><div class="tg"></div></div>
+              <div class="row"><span>Respiration au repos</span><div class="tg"></div></div>
+              <div class="row"><span>Fantôme de la dernière séance</span><div class="tg"></div></div>
+              <div class="row"><span>Veille pendant le repos</span><div class="tg"></div></div>
+            </div>
+          </div>
+          <div class="grp">
+            <div class="lt-eb">Pour les deux modes</div>
+            <div class="list">
+              <div class="row"><span>Notification de repos</span><div class="tg"></div></div>
+              <div class="row"><span>Animations</span><div class="tg"></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="cap-t">Chaque effet se règle</div>
+      <div class="cap">Réglages › Séance regroupe le mode par défaut, le niveau d'affichage (déjà existant) et <b>un interrupteur par mécanique immersive</b>. On peut garder l'immersif sans sons, ou sans fantôme.</div>
+    </div>
+
+    <div class="col">
+      <div class="ph">
+        <div class="cls">
+          <div class="c-hd">
+            <div class="c-row"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><div class="c-timer">08:36</div><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="#33291f"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+            <div class="c-prog"><div class="c-track"><i></i></div><div style="font-family: 'Space Mono', monospace; font-size: 11px; color: #786a59">2/18 séries</div></div>
+          </div>
+          <div class="c-card">
+            <div class="c-name">Développé couché</div>
+            <div class="c-chips"><div style="background: rgba(102,113,75,.14); color: #66714b">80×8</div><div style="background: rgba(102,113,75,.14); color: #66714b">80×8</div><div style="border: 1.5px solid #b14f2b; color: #b14f2b">Série 3/4</div></div>
+          </div>
+        </div>
+        <div class="scrim"></div>
+        <div class="menu">
+          <div class="grab"></div>
+          <div class="sh-t" style="margin-top: 2px">Options de la séance</div>
+          <div class="grp">
+            <div class="lt-eb">Mode d'affichage</div>
+            <div class="seg" style="grid-template-columns: repeat(2, minmax(0, 1fr))"><div class="on">Classique</div><div>Immersif</div></div>
+            <div class="m-note">Même séance, mêmes séries : rien n'est perdu.</div>
+          </div>
+          <div class="grp">
+            <div class="lt-eb">Niveau d'affichage</div>
+            <div class="seg" style="grid-template-columns: repeat(3, minmax(0, 1fr))"><div>Simplifiée</div><div class="on">Normale</div><div>Détaillée</div></div>
+          </div>
+          <div>
+            <div class="m-row"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2.5h5"/></svg><span>Repos sur cet exercice</span><div class="val">120 s</div></div>
+            <div class="m-row"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter un exercice</span></div>
+          </div>
+          <div class="m-fin">Terminer la séance</div>
+          <div class="m-out">Quitter et reprendre plus tard</div>
+          <div class="m-ab">Abandonner</div>
+        </div>
+      </div>
+      <div class="cap-t">Le classique reste, et bascule en séance</div>
+      <div class="cap">L'écran de séance d'aujourd'hui, <b>inchangé</b>. Son menu gagne une ligne : <b>Mode d'affichage</b>. Passer d'un mode à l'autre reprend la série en cours, le repos en cours et tout l'historique de la séance.</div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div class="panel">
+      <div class="p-t">Ce que chaque mode contient</div>
+      <div class="tb">
+        <div class="tr th"><div></div><div>Classique</div><div>Immersif</div></div>
+        <div class="tr"><div class="k">Écran</div><div class="c">Thème de l'app, carte de série, liste des exercices, barre d'action</div><div class="i">Fond sombre de séance, scène et pont, plan de séance en tiroir</div></div>
+        <div class="tr"><div class="k">Saisie</div><div class="c">Champs et − / +</div><div class="i">Barre chargée, cadran de reps, ou « Valider directement »</div></div>
+        <div class="tr"><div class="k">Pendant l'effort</div><div class="c">Rien</div><div class="i">Tempo, compteur de reps, temps sous tension</div></div>
+        <div class="tr"><div class="k">Repos</div><div class="c">Anneau, réductible</div><div class="i">Anneau et respiration, fantôme, corps qui chauffe, veille</div></div>
+        <div class="tr"><div class="k">Records et verdict</div><div class="c todo">À trancher : rien, ou une pastille discrète</div><div class="i">Verdict, record en direct, bilan d'exercice, fin de séance</div></div>
+        <div class="tr"><div class="k">Coach vocal</div><div class="c">—</div><div class="i">Motivant, Sobre ou Muet</div></div>
+        <div class="tr"><div class="k">Notification de repos</div><div class="c">Oui</div><div class="i">Oui</div></div>
+        <div class="tr"><div class="k">Niveaux, données, bilan</div><div class="c">Identiques</div><div class="i">Identiques</div></div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="p-t">Et l'abonnement ?</div>
+      <div class="op op-rec">
+        <div class="op-h"><div class="op-t">A · Immersif gratuit, coach IA payant</div><div class="op-tag">recommandé</div></div>
+        <div class="op-d"><b>Pour :</b> le mode qui retient reste ouvert à tous, et c'est lui qui fait revenir. L'IA a un vrai coût par séance : elle va dans le <b>palier IA</b> déjà prévu. <b>Contre :</b> un argument de moins pour « Premium muscu ».</div>
+      </div>
+      <div class="op">
+        <div class="op-h"><div class="op-t">B · Immersif dans Premium muscu</div></div>
+        <div class="op-d"><b>Pour :</b> un argument fort pour le premier palier, avec 3 séances d'essai. <b>Contre :</b> la rétention ne profite qu'aux abonnés, alors que c'est chez les gratuits qu'on perd le plus.</div>
+      </div>
+      <div class="op">
+        <div class="op-h"><div class="op-t">C · Immersif gratuit, extras payants</div></div>
+        <div class="op-d"><b>Pour :</b> le cœur gratuit, et on vend le coach IA, les cartes à partager personnalisées, le fantôme contre ta meilleure séance. <b>Contre :</b> une offre plus fine à expliquer.</div>
+      </div>
+      <div class="note-d"><b>Quel que soit le choix :</b> la V1 est 100 % gratuite (décision D). Les droits se posent dans RevenueCat dès maintenant, le verrou ne s'active qu'après.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

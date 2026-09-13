@@ -32,6 +32,7 @@ import { useStrengthHub } from '@/data/repositories/strength-hub-repository';
 import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useRouter } from 'expo-router';
+import { useSessionMode } from '@/stores/session-mode-store';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -199,6 +200,10 @@ let boutonsAlerte: { text?: string; onPress?: () => void }[] = [];
 
 beforeEach(() => {
   jest.clearAllMocks();
+  // US MUSCU-UX03, R-MO-3 : la feuille « Comment veux-tu t'entraîner ? » s'interpose au tout
+  // premier démarrage. Ces tests portent sur les chemins **après** ce choix ; le cas de la feuille
+  // a son propre bloc plus bas.
+  useSessionMode.setState({ mode: 'classic', chosen: true, hydrated: true });
   isActiveSpy = undefined;
   boutonsAlerte = [];
   jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, boutons) => {

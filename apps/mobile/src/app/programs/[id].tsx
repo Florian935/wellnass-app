@@ -29,6 +29,7 @@ import { startWorkoutFromSession } from '@/data/repositories/workout-repository'
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useActionLock } from '@/hooks/useActionLock';
+import { briefRouteForSession } from '@/components/workout/immersive/brief-entry';
 import { useUnits } from '@/hooks/useUnits';
 
 // ---------------------------------------------------------------------------
@@ -68,7 +69,13 @@ function ProgramDetailView({ programId }: { programId: string }) {
   // Un programme appartient à l'utilisateur s'il figure dans « Mes programmes ».
   const isOwned = myPrograms.some((p) => p.id === programId);
 
-  const onStartSession = (sessionId: string) =>
+  const onStartSession = (sessionId: string) => {
+    // Mode immersif : le brief annonce la séance puis la crée lui-même (US MUSCU-UX03, §5.1).
+    const brief = briefRouteForSession(sessionId);
+    if (brief) {
+      router.push(brief);
+      return;
+    }
     void lockStart(async () => {
       setStartingSessionId(sessionId);
       try {
@@ -80,6 +87,7 @@ function ProgramDetailView({ programId }: { programId: string }) {
         setStartingSessionId(null);
       }
     });
+  };
 
   const onEdit = () => {
     router.push(`/programs/edit?id=${programId}`);

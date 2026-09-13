@@ -1,0 +1,132 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .board {
+      width: 1200px; height: 1260px; box-sizing: border-box; background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 48px 52px; display: flex; flex-direction: column; gap: 32px;
+    }
+    .ic { display: block; flex: none; }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .intro { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 48px; align-items: end; }
+    .h1 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 60px; letter-spacing: -2.2px; line-height: .95; margin-top: 10px; text-wrap: balance; }
+    .lede { font-size: 16px; line-height: 1.55; color: #5c4d3d; margin-top: 16px; max-width: 700px; }
+    .lede b { color: #33291f; }
+
+    /* La bascule : un échantillon du mode séance */
+    .swatch {
+      border-radius: 22px; background: #1c150e; color: #f4ecdd; padding: 18px 18px 16px; display: flex; flex-direction: column; gap: 10px;
+      background-image: radial-gradient(120% 70% at 50% -20%, rgba(221,110,64,.22) 0%, rgba(221,110,64,0) 60%);
+    }
+    .sw-eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a; }
+    .sw-v { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px; line-height: 1; }
+    .sw-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .sw-c { height: 26px; padding: 0 10px; border-radius: 999px; display: flex; align-items: center; font-size: 12px; font-weight: 700; }
+
+    .flow { display: flex; flex-direction: column; }
+    .fr { display: grid; grid-template-columns: 200px minmax(0, 1fr) minmax(0, 1.25fr); gap: 28px; padding: 15px 0; border-top: 1px solid #e3d4bd; align-items: start; }
+    .fh { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #786a59; border-top: none; padding: 0 0 10px; }
+    .mo { display: flex; gap: 12px; align-items: baseline; }
+    .mo-n { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #b14f2b; width: 14px; flex: none; }
+    .mo-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 18px; letter-spacing: -.4px; line-height: 1.15; }
+    .today { font-size: 13.5px; line-height: 1.5; color: #786a59; }
+    .prop { font-size: 13.5px; line-height: 1.5; color: #33291f; }
+    .prop b { font-weight: 700; }
+
+    .foot { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px; }
+    .panel { border-radius: 20px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; }
+    .panel-keep { background: #efe4d1; }
+    .panel-ask { background: #fffaf2; border: 1px solid #ece0cd; }
+    .h3 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -.5px; }
+    .li { display: grid; grid-template-columns: 8px minmax(0, 1fr); gap: 10px; font-size: 13.5px; line-height: 1.5; }
+    .li::before { content: ""; width: 6px; height: 6px; border-radius: 1px; background: #b14f2b; margin-top: 7px; }
+    .li b { font-weight: 700; }
+    .li span { color: #786a59; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div class="intro">
+    <div>
+      <div class="eb">Musculation · proposition · 13/09/2026</div>
+      <div class="h1">La séance, en immersion</div>
+      <div class="lede">L'écran de séance est devenu juste : le geste est sous le pouce, le repos a son anneau. Mais il reste <b>muet</b>. On valide 18 séries, on bat un record, on boucle un exercice, et l'app répond chaque fois pareil : 30 ms de vibration. La proposition : faire de la séance <b>un mode à part</b>, et donner à chaque moment la réponse qu'il mérite, <b>ni plus ni moins</b>.</div>
+    </div>
+    <div class="swatch">
+      <div class="sw-eb">Le mode séance</div>
+      <div class="sw-v">82,5 kg × 6</div>
+      <div class="sw-chips">
+        <div class="sw-c" style="background: rgba(169,186,126,.16); color: #a9ba7e">+2,5 kg vs mardi</div>
+        <div class="sw-c" style="background: rgba(224,177,85,.16); color: #e0b155">Record · charge max</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow">
+    <div class="fr fh"><div>Moment</div><div>Aujourd'hui</div><div>Proposé</div></div>
+    <div class="fr">
+      <div class="mo"><div class="mo-n">1</div><div class="mo-t">Lancer</div></div>
+      <div class="today">« Commencer » atterrit sur la première série, chrono lancé.</div>
+      <div class="prop"><b>Entrée en séance.</b> Ce qui attend (5 exercices, 18 séries, ≈ 55 min) et l'enjeu du jour s'il y en a un. Puis « C'est parti ».</div>
+    </div>
+    <div class="fr">
+      <div class="mo"><div class="mo-n">2</div><div class="mo-t">Faire la série</div></div>
+      <div class="today">Fond clair de l'app, carte de repères, liste de tous les exercices avec leurs boutons de gestion.</div>
+      <div class="prop"><b>La charge en grand, sur fond sombre.</b> L'app prévient avant de soulever : « 82,5 kg, c'est plus lourd que ton record ». La gestion part dans le plan de séance.</div>
+    </div>
+    <div class="fr">
+      <div class="mo"><div class="mo-n">3</div><div class="mo-t">Valider</div></div>
+      <div class="today">Un enfoncement et 30 ms de vibration. Rien sur ce que valait la série.</div>
+      <div class="prop"><b>Un verdict</b>, face à la même série la dernière fois : « +2,5 kg vs mardi ». Aucun appui ni délai en plus.</div>
+    </div>
+    <div class="fr">
+      <div class="mo"><div class="mo-n">4</div><div class="mo-t">Récupérer</div></div>
+      <div class="today">L'anneau et le nom de l'exercice suivant.</div>
+      <div class="prop">En haut, <b>ce que tu viens de faire</b>. En bas, <b>la charge à préparer</b>. Cinq secondes avant la fin : « Prépare-toi ».</div>
+    </div>
+    <div class="fr">
+      <div class="mo"><div class="mo-n">5</div><div class="mo-t">Battre un record</div></div>
+      <div class="today">Rien pendant la séance : calculé à la clôture, découvert dans le bilan.</div>
+      <div class="prop"><b>En direct.</b> Pastille ambre pour un 1RM estimé ; prise d'écran pour une charge jamais soulevée, une fois par séance au plus.</div>
+    </div>
+    <div class="fr">
+      <div class="mo"><div class="mo-n">6</div><div class="mo-t">Changer d'exercice</div></div>
+      <div class="today">Le focus glisse au suivant, sans rien marquer.</div>
+      <div class="prop"><b>Exercice bouclé :</b> séries, tonnage, écart avec mardi. Le suivant entre avec sa charge et ses repères.</div>
+    </div>
+    <div class="fr">
+      <div class="mo"><div class="mo-n">7</div><div class="mo-t">Finir</div></div>
+      <div class="today">« Séance terminée ? », un bouton, puis le bilan.</div>
+      <div class="prop">« Terminer la séance » reste un appui volontaire. Puis <b>Séance bouclée</b> : durée, tonnage, records, régularité, pendant le calcul des records. Puis le bilan de MUSCU-UX02.</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="panel panel-keep">
+      <div class="h3">Ce qui ne bouge pas</div>
+      <div class="li"><div><b>La barre d'action fixe</b> (R4-1) : mêmes champs, même bouton, au même endroit. Juste plus grands.</div></div>
+      <div class="li"><div><b>Les trois niveaux d'affichage</b>, l'enchaînement superset, les options de série derrière un seul repli.</div></div>
+      <div class="li"><div><b>MOTION-01</b> : anneau de repos, célébration en ressort, durées de vibration. On s'en sert, on ne les refait pas.</div></div>
+      <div class="li"><div><b>Tout le reste</b> (RPE, types de série, note, gestion des séries, menu, clôture explicite) : inventaire ligne à ligne sur la page <b>« Rien ne se perd »</b>.</div></div>
+    </div>
+    <div class="panel panel-ask">
+      <div class="h3">À trancher avec vous</div>
+      <div class="li"><div><b>Fond sombre imposé en séance</b>, même en thème clair ? <span>Proposé : oui. C'est ce qui fait « mode ».</span></div></div>
+      <div class="li"><div><b>L'entrée en séance ajoute un appui.</b> <span>Proposé : sautée à la reprise, et pour une séance libre sans exercice.</span></div></div>
+      <div class="li"><div><b>Un son à la validation</b>, désactivable (navigation-ux §4.2) ? <span>Non maquetté ; utile avec des écouteurs.</span></div></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

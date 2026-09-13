@@ -1,0 +1,214 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #17110b; }
+    a { color: #e0a97f; }
+    a:hover { color: #f4ecdd; }
+    .board { width: 1360px; height: 1260px; box-sizing: border-box; background: #17110b; color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 48px 44px; display: flex; flex-direction: column; gap: 30px; }
+    .ic { display: block; flex: none; }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase; color: #c9b79a; }
+    .h1 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 54px; letter-spacing: -2px; line-height: .95; margin-top: 10px; }
+    .lede { font-size: 16px; line-height: 1.55; color: #c9b79a; max-width: 840px; margin-top: 14px; }
+    .cols { display: grid; grid-template-columns: repeat(3, 390px); gap: 42px; }
+    .col { display: flex; flex-direction: column; gap: 12px; }
+    .cap-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -.5px; }
+    .cap { font-size: 13.5px; line-height: 1.55; color: #c9b79a; }
+    .cap b { color: #f4ecdd; font-weight: 600; }
+    .spec { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; line-height: 1.7; color: #a3927a; border-top: 1px dashed #3a2e22; padding-top: 9px; }
+    .spec b { color: #e0a97f; font-weight: 700; }
+    .ph { width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; border-radius: 30px; background: #1c150e; box-shadow: 0 0 0 1px #2c231a; }
+    .eyebrow { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a; }
+    .wbars { display: flex; align-items: center; gap: 2px; height: 18px; }
+    .wbars span { display: block; width: 3px; height: 6px; border-radius: 2px; background: #e0a97f; animation: wb .9s infinite ease-in-out; }
+    .wbars span:nth-child(2) { animation-delay: .15s; } .wbars span:nth-child(3) { animation-delay: .3s; } .wbars span:nth-child(4) { animation-delay: .45s; } .wbars span:nth-child(5) { animation-delay: .6s; }
+    @keyframes wb { 0%, 100% { height: 4px; } 50% { height: 18px; } }
+
+    /* 1. Dernière série */
+    .last { background: #1c150e; }
+    .ember-bg { position: absolute; left: -30%; right: -30%; bottom: -10%; height: 70%; background: radial-gradient(closest-side, rgba(221,110,64,.5), rgba(107,0,40,.35) 50%, rgba(107,0,40,0) 80%); animation: eb 4s infinite ease-in-out; }
+    @keyframes eb { 0%, 100% { opacity: .55; transform: scale(1); } 50% { opacity: .95; transform: scale(1.06); } }
+    .hd { position: absolute; left: 0; right: 0; top: 0; padding: 14px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+    .hd-row { display: flex; align-items: center; justify-content: space-between; height: 28px; }
+    .chrono { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px; }
+    .ribbon { display: flex; gap: 4px; height: 6px; }
+    .seg { height: 6px; border-radius: 3px; background: #362c22; overflow: hidden; }
+    .hd-meta { display: flex; justify-content: space-between; align-items: center; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a; }
+    .gp { height: 22px; padding: 0 8px; border-radius: 999px; display: flex; align-items: center; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 11.5px; background: rgba(201,183,154,.12); color: #c9b79a; }
+    .stage { position: absolute; left: 0; right: 0; top: 104px; padding: 0 20px; display: flex; flex-direction: column; gap: 14px; }
+    .name { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.1px; line-height: 1; margin-top: 8px; }
+    .challenge { border-radius: 22px; padding: 16px; background: linear-gradient(160deg, rgba(107,0,40,.55), rgba(61,0,23,.55)); border: 1px solid rgba(224,177,85,.35); display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; }
+    .challenge::after { content: ""; position: absolute; top: 0; bottom: 0; width: 40%; background: linear-gradient(90deg, rgba(255,230,190,0), rgba(255,230,190,.14), rgba(255,230,190,0)); animation: shine 3.2s infinite; }
+    @keyframes shine { 0% { left: -45%; } 60%, 100% { left: 110%; } }
+    .ch-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 40px; letter-spacing: -1.4px; line-height: .95; }
+    .ch-t b { color: #e0b155; }
+    .ch-s { font-size: 14px; color: #f0e4d0; }
+    .ch-bar { height: 8px; border-radius: 4px; background: rgba(0,0,0,.35); overflow: hidden; }
+    .ch-bar i { display: block; height: 100%; width: 91%; background: linear-gradient(90deg, #dd6e40, #e0b155); border-radius: 4px; }
+    .ch-l { display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #d9a888; }
+    .bb { height: 110px; display: flex; align-items: center; }
+    .sleeve { width: 16px; height: 14px; background: #797169; border-radius: 3px; }
+    .side { display: flex; align-items: center; gap: 2px; }
+    .bar { flex: 1; height: 7px; background: linear-gradient(180deg, #a39b90, #6d665d); border-radius: 3px; }
+    .collar { width: 7px; height: 22px; background: #a39b90; border-radius: 2px; }
+    .p10 { width: 11px; height: 90px; background: #5c6e3f; border-radius: 4px; }
+    .p125 { width: 6px; height: 40px; background: #8d877d; border-radius: 3px; }
+    .caption { display: flex; gap: 10px; border-radius: 16px; background: rgba(36,28,20,.85); border: 1px solid #3a2e22; padding: 11px 13px; font-size: 14.5px; line-height: 1.4; }
+    .deck { position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; background: rgba(36,28,20,.96); border-top: 1px solid #3a2e22; border-radius: 28px 28px 0 0; padding: 16px 20px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .launch { height: 70px; border-radius: 22px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 20px; font-weight: 800; position: relative; overflow: hidden; box-shadow: 0 0 0 0 rgba(221,110,64,.6); animation: lp 2s infinite; }
+    @keyframes lp { 0% { box-shadow: 0 0 0 0 rgba(221,110,64,.55); } 70% { box-shadow: 0 0 0 16px rgba(221,110,64,0); } 100% { box-shadow: 0 0 0 0 rgba(221,110,64,0); } }
+    .quick { height: 28px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #c9b79a; }
+
+    /* 2. Séance bouclée */
+    .cl { position: absolute; inset: 0; padding: 48px 22px 0; background: radial-gradient(140% 60% at 15% -5%, rgba(221,110,64,.3) 0%, rgba(221,110,64,0) 58%), #1c150e; display: flex; flex-direction: column; gap: 14px; }
+    .in { animation-duration: 9s; animation-iteration-count: infinite; animation-delay: -4.5s; }
+    .slam { animation-name: slam; }
+    @keyframes slam { 0% { opacity: 0; transform: translateY(-26px) scale(1.05); } 4% { opacity: 1; transform: translateY(4px); } 6%, 100% { opacity: 1; transform: none; } }
+    .r1 { animation-name: r1; } .r2 { animation-name: r2; } .r3 { animation-name: r3; } .r4 { animation-name: r4; }
+    @keyframes r1 { 0%, 5% { opacity: 0; transform: translateY(14px); } 10%, 100% { opacity: 1; transform: none; } }
+    @keyframes r2 { 0%, 9% { opacity: 0; transform: translateY(14px); } 14%, 100% { opacity: 1; transform: none; } }
+    @keyframes r3 { 0%, 13% { opacity: 0; transform: translateY(14px); } 18%, 100% { opacity: 1; transform: none; } }
+    @keyframes r4 { 0%, 17% { opacity: 0; transform: translateY(14px); } 22%, 100% { opacity: 1; transform: none; } }
+    .cl-title { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 58px; letter-spacing: -2.4px; line-height: .9; }
+    .cl-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; align-items: center; }
+    .cl-body { height: 200px; border-radius: 20px; background: #241c14; border: 1px solid #3a2e22; display: flex; align-items: center; justify-content: center; gap: 2px; }
+    .fillC { animation: fillC 9s infinite; animation-delay: -4.5s; }
+    .fillS { animation: fillS 9s infinite; animation-delay: -4.5s; }
+    .fillT { animation: fillT 9s infinite; animation-delay: -4.5s; }
+    @keyframes fillC { 0%, 8% { fill: #30271e; } 20%, 100% { fill: #dd6e40; } }
+    @keyframes fillS { 0%, 10% { fill: #30271e; } 24%, 100% { fill: #e0b155; } }
+    @keyframes fillT { 0%, 12% { fill: #30271e; } 26%, 100% { fill: #b14f2b; } }
+    .stats { display: flex; flex-direction: column; }
+    .st { padding: 8px 0; border-top: 1px solid #3a2e22; display: flex; justify-content: space-between; align-items: baseline; }
+    .st:first-child { border-top: none; }
+    .st-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px; }
+    .st-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #c9b79a; }
+    .gres { align-self: flex-start; height: 34px; padding: 0 13px; border-radius: 999px; display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; background: rgba(169,186,126,.14); color: #a9ba7e; }
+    .relay { display: flex; align-items: center; gap: 10px; border-radius: 14px; padding: 10px 12px; background: rgba(169,186,126,.08); border: 1px solid rgba(169,186,126,.25); font-size: 13.5px; line-height: 1.4; }
+    .relay b { color: #a9ba7e; }
+    .go { position: absolute; left: 20px; right: 20px; bottom: 24px; height: 64px; border-radius: 20px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 18px; font-weight: 700; }
+
+    /* 3. Carte à partager */
+    .share { background: #0f0b08; }
+    .card { position: absolute; left: 34px; right: 34px; top: 56px; height: 470px; border-radius: 26px; overflow: hidden; background: radial-gradient(90% 60% at 50% 35%, rgba(221,110,64,.35), rgba(107,0,40,.25) 45%, rgba(23,17,11,0) 75%), #17110b; border: 1px solid #3a2e22; padding: 20px; box-sizing: border-box; display: flex; flex-direction: column; animation: cardIn 7s infinite; animation-delay: -3s; }
+    @keyframes cardIn { 0% { transform: scale(.94) rotate(-1.5deg); opacity: 0; } 8% { transform: scale(1.01) rotate(0); opacity: 1; } 11%, 100% { transform: none; opacity: 1; } }
+    .card-top { display: flex; justify-content: space-between; align-items: baseline; }
+    .card-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1px; }
+    .card-d { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a; }
+    .card-body { flex: 1; display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .card-foot { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; border-top: 1px solid rgba(240,228,208,.12); padding-top: 12px; }
+    .cf-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -.6px; }
+    .cf-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 9.5px; letter-spacing: 1px; text-transform: uppercase; color: #c9b79a; }
+    .card-tag { align-self: center; margin-top: 10px; height: 28px; padding: 0 12px; border-radius: 999px; background: rgba(224,177,85,.16); color: #e0b155; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; }
+    .sh-sheet { position: absolute; left: 0; right: 0; bottom: 0; border-radius: 28px 28px 0 0; background: #241c14; border-top: 1px solid #3a2e22; padding: 14px 20px 20px; display: flex; flex-direction: column; gap: 12px; }
+    .opts { display: flex; gap: 8px; }
+    .opt { height: 34px; padding: 0 12px; border-radius: 999px; background: #1c150e; border: 1px solid #3a2e22; display: flex; align-items: center; font-size: 13px; font-weight: 600; color: #c9b79a; }
+    .opt-on { background: #3a2e22; border-color: #e0a97f; color: #f4ecdd; }
+    .sh-go { height: 60px; border-radius: 18px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 17px; font-weight: 700; }
+    .sh-save { height: 44px; display: flex; align-items: center; justify-content: center; font-size: 14.5px; font-weight: 600; color: #c9b79a; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div>
+    <div class="eb">Séance vivante · la fin</div>
+    <div class="h1">Finir fort, repartir avec une image</div>
+    <div class="lede">La fatigue arrive en fin de séance, et c'est là que la plupart lâchent une série. Ici la dernière série reçoit un défi à sa mesure, la fin ressemble à une arrivée, et ce qu'on a fait devient une image qu'on a envie de garder, ou de montrer.</div>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="ph last">
+        <div class="ember-bg"></div>
+        <div class="hd">
+          <div class="hd-row"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><div class="chrono">49:20</div><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+          <div class="ribbon"><div class="seg" style="flex: 3 1 0; background: #a9ba7e"></div><div class="seg" style="flex: 2 1 0"><div style="width: 50%; height: 100%; background: #dd6e40; border-radius: 3px"></div></div></div>
+          <div class="hd-meta"><span>4/5 séries</span><span class="gp" style="background: rgba(169,186,126,.14); color: #a9ba7e">Mardi +75 kg</span></div>
+        </div>
+        <div class="stage">
+          <div><div class="eyebrow" style="color: #dd6e40">Dernière série de la séance</div><div class="name">Développé militaire</div></div>
+          <div class="challenge">
+            <div class="eyebrow" style="color: #e0b155">Le fantôme de mardi</div>
+            <div class="ch-t"><b>5 reps</b> à 42,5 kg et mardi est battu.</div>
+            <div class="ch-bar"><i></i></div>
+            <div class="ch-l"><span>2 178 kg aujourd'hui</span><span>2 383 mardi</span></div>
+          </div>
+          <div class="bb"><div class="sleeve"></div><div class="side"><div class="p125"></div><div class="p10"></div></div><div class="collar"></div><div class="bar"></div><div class="collar"></div><div class="side"><div class="p10"></div><div class="p125"></div></div><div class="sleeve"></div></div>
+          <div class="caption"><div class="wbars" style="margin-top: 2px"><span></span><span></span><span></span><span></span><span></span></div><div>Dernière série. Sept prévues, cinq suffisent pour passer devant.</div></div>
+        </div>
+        <div class="deck">
+          <div class="launch"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"/></svg>Lancer la dernière</div>
+          <div class="quick">Déjà faite ? Valider directement</div>
+        </div>
+      </div>
+      <div class="cap-t">La dernière série a un enjeu</div>
+      <div class="cap">L'écran chauffe d'un cran, et le fantôme <b>chiffre ce qu'il reste à faire</b> pour passer devant mardi. Un objectif atteignable, calculé sur la charge prévue, jamais une injonction à dépasser ses limites.</div>
+      <div class="spec">reps nécessaires = <b>⌈(mardi − aujourd'hui) ÷ charge⌉</b><br>affiché seulement si <b>≤ prévu + 2</b><br>déjà devant : « mardi est déjà battu de X kg »<br>jamais d'objectif si ressenti précédent « Limite »</div>
+    </div>
+
+    <div class="col">
+      <div class="ph">
+        <div class="cl">
+          <div class="eyebrow in r1">Push A · dimanche 13/09</div>
+          <div class="cl-title in slam">Séance<br>bouclée.</div>
+          <div class="cl-row in r2">
+            <div class="cl-body">
+              <svg width="68" height="116" viewBox="0 0 112 188"><ellipse cx="56" cy="20" rx="13" ry="15" fill="#30271e"/><rect x="42" y="37" width="28" height="10" rx="4" fill="#30271e"/><path d="M40 110h14v72H40z M58 110h14v72H58z" fill="#30271e"/><path d="M38 78h36v30H38z" fill="#4a2a1a"/><path d="M22 58h11v46H22z M79 58h11v46H79z" fill="#30271e"/><path class="fillC" d="M34 48h44v30H34z" fill="#dd6e40"/><path class="fillS" d="M24 46h14v12H24z M74 46h14v12H74z" fill="#e0b155"/></svg>
+              <svg width="68" height="116" viewBox="0 0 112 188"><ellipse cx="56" cy="20" rx="13" ry="15" fill="#30271e"/><rect x="42" y="37" width="28" height="10" rx="4" fill="#30271e"/><path d="M34 48h44v34H34z" fill="#30271e"/><path d="M40 110h14v16H40z M58 110h14v16H58z M40 126h14v30H40z M58 126h14v30H58z M40 156h14v26H40z M58 156h14v26H58z" fill="#30271e"/><path class="fillT" d="M22 58h11v46H22z M79 58h11v46H79z" fill="#b14f2b"/><path class="fillS" d="M24 46h14v12H24z M74 46h14v12H74z" fill="#e0b155"/></svg>
+            </div>
+            <div class="stats">
+              <div class="st"><span class="st-l">Durée</span><span class="st-n">52:10</span></div>
+              <div class="st"><span class="st-l">kg soulevés</span><span class="st-n">2 475</span></div>
+              <div class="st"><span class="st-l">Séries</span><span class="st-n">5/5</span></div>
+              <div class="st"><span class="st-l">Records</span><span class="st-n" style="color: #e0b155">1</span></div>
+            </div>
+          </div>
+          <div class="gres in r3">Mardi battu : +4 % de tonnage</div>
+          <div class="caption in r3" style="background: #241c14"><div class="wbars" style="margin-top: 2px"><span></span><span></span><span></span><span></span><span></span></div><div>Un record au couché, et mardi est derrière toi. Pectoraux et épaules ont bien chauffé.</div></div>
+          <div class="relay in r4"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a9ba7e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"/></svg><div><b>Nutrition prend le relais :</b> jour muscu, +40 g de glucides ce soir.</div></div>
+          <div class="go">Voir le bilan</div>
+        </div>
+      </div>
+      <div class="cap-t">Une arrivée, pas un rapport</div>
+      <div class="cap">Le titre tombe, le corps finit de chauffer, le fantôme rend son verdict, le coach dit la phrase de la journée. Puis <b>les piliers se parlent</b> : la nutrition ajuste ta soirée (MN-04). Le bilan détaillé (MUSCU-UX02) reste à un toucher.</div>
+      <div class="spec">cérémonie <b>2,4 s</b>, jouée pendant le calcul des records<br>vibration <b>140 + 60 + 140 ms</b> · son d'arrivée coupable<br>relais nutrition : seulement si le pilier est <b>activé</b> (décision H)<br>écran en cascade, états finaux si animations coupées</div>
+    </div>
+
+    <div class="col">
+      <div class="ph share">
+        <div class="card">
+          <div class="card-top"><div class="card-t">Push A</div><div class="card-d">13/09/2026</div></div>
+          <div class="card-body">
+            <svg width="120" height="202" viewBox="0 0 112 188"><ellipse cx="56" cy="20" rx="13" ry="15" fill="#2c231a"/><rect x="42" y="37" width="28" height="10" rx="4" fill="#2c231a"/><path d="M40 110h14v72H40z M58 110h14v72H58z" fill="#2c231a"/><path d="M38 78h36v30H38z" fill="#4a2a1a"/><path d="M22 58h11v46H22z M79 58h11v46H79z" fill="#2c231a"/><path d="M34 48h44v30H34z" fill="#dd6e40" style="filter: drop-shadow(0 0 8px rgba(224,160,90,.7))"/><path d="M24 46h14v12H24z M74 46h14v12H74z" fill="#e0b155" style="filter: drop-shadow(0 0 8px rgba(224,177,85,.8))"/></svg>
+            <svg width="120" height="202" viewBox="0 0 112 188"><ellipse cx="56" cy="20" rx="13" ry="15" fill="#2c231a"/><rect x="42" y="37" width="28" height="10" rx="4" fill="#2c231a"/><path d="M34 48h44v34H34z" fill="#2c231a"/><path d="M40 110h14v16H40z M58 110h14v16H58z M40 126h14v30H40z M58 126h14v30H58z M40 156h14v26H40z M58 156h14v26H58z" fill="#2c231a"/><path d="M22 58h11v46H22z M79 58h11v46H79z" fill="#b14f2b"/><path d="M24 46h14v12H24z M74 46h14v12H74z" fill="#e0b155" style="filter: drop-shadow(0 0 8px rgba(224,177,85,.8))"/></svg>
+          </div>
+          <div class="card-foot">
+            <div><div class="cf-n">2 475</div><div class="cf-l">kg</div></div>
+            <div><div class="cf-n">5</div><div class="cf-l">séries</div></div>
+            <div><div class="cf-n" style="color: #e0b155">1</div><div class="cf-l">record</div></div>
+          </div>
+          <div class="card-tag">82,5 kg au couché · record</div>
+        </div>
+        <div class="sh-sheet">
+          <div class="eyebrow">Ta carte de séance</div>
+          <div class="opts"><div class="opt opt-on">Corps</div><div class="opt">Record</div><div class="opt">Chiffres</div></div>
+          <div class="sh-go"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5"/><path d="M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>Partager</div>
+          <div class="sh-save">Enregistrer l'image</div>
+        </div>
+      </div>
+      <div class="cap-t">Le corps devient la carte</div>
+      <div class="cap">La carte partageable de PARTAGE-01 gagne une variante : <b>le corps qui a chauffé</b> aujourd'hui. Aucune donnée de santé, pas de poids du corps : le travail, et le record s'il y en a un.</div>
+      <div class="spec">variantes : <b>Corps · Record · Chiffres</b><br>rendu par <b>react-native-view-shot</b> (déjà au projet)<br>format <b>4:5</b>, fond sombre, marque discrète<br>jamais de partage automatique</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

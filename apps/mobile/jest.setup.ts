@@ -217,7 +217,10 @@ jest.mock('expo-notifications', () => ({
   requestPermissionsAsync: jest.fn().mockResolvedValue({ granted: true }),
   scheduleNotificationAsync: jest.fn().mockResolvedValue('mock-id'),
   cancelScheduledNotificationAsync: jest.fn().mockResolvedValue(undefined),
-  AndroidImportance: { DEFAULT: 3 },
+  // US MUSCU-UX03 : la notification continue du repos se retire par `dismiss`, pas par `cancel`
+  // (elle est déjà affichée, plus en attente).
+  dismissNotificationAsync: jest.fn().mockResolvedValue(undefined),
+  AndroidImportance: { DEFAULT: 3, HIGH: 4 },
   SchedulableTriggerInputTypes: { DATE: 'date', WEEKLY: 'weekly' },
 }));
 
