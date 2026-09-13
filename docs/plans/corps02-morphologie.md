@@ -1,5 +1,28 @@
 # CORPS-02 — Plan d'implémentation
 
+## Correctif de recette — build Windows, 13/09/2026
+
+Journal fourni par Florian : `:app:buildCMakeRelWithDebInfo[arm64-v8a]` échoue dans Ninja,
+après des avertissements de chemins >250 caractères sous le worktree imbriqué. Les fichiers
+intermédiaires natifs doivent être placés dans un répertoire plus court, sans déplacer les sources.
+
+- [x] Identifier le chemin en échec et vérifier le DSL AGP `buildStagingDirectory`.
+- [x] Confirmer le changement avec un init script Gradle local, sans toucher au projet généré :
+  `assembleRelease` réussi sur les quatre ABI en 7 min 26 s.
+- [x] Pérenniser la configuration par un config plugin Expo Windows : cache CMake dans le dossier
+  utilisateur Gradle, séparé par hash du chemin canonique du projet. Autres OS inchangés.
+- [x] Tester l'idempotence et la conservation du Gradle existant : quatre tests, puis vrai prebuild
+  `--no-clean` répété à Gradle identique. Expo 57 nettoie par défaut ; la procédure est corrigée.
+- [x] Compiler avec la commande habituelle `gradlew.bat assembleRelease` : quatre ABI,
+  `BUILD SUCCESSFUL` en 9 min 31 s, sans init script.
+- [x] Vérifier l'APK produit : signature v2 valide et nouvel écran présent dans le bundle.
+  Correctif et procédure documentés, regroupés dans le commit de clôture de l'US.
+
+**Recette humaine — 13/09/2026 :** Florian a testé sur téléphone et validé la version
+« Mon corps » dans la conversation. CORPS-01 et CORPS-02 sont clôturés ; les scénarios de
+recette sont archivés dans `docs/recette/mon-corps-2026-09.md`, sans inventer un passage
+individuel de chaque cas. Autorisation de poursuivre le lot entraînement.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Steps use checkbox syntax.
 
 **Goal:** Permettre de personnaliser une silhouette, comparer une intention et sauvegarder les deux hors-ligne.

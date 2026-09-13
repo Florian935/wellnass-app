@@ -1,6 +1,6 @@
 # Mon corps — maquettes de conception
 
-12/09/2026 · Direction validée par Florian ; premier lot CORPS-01 implémenté, recette Android à effectuer.
+13/09/2026 · Direction et version Android CORPS-01 / CORPS-02 validées par Florian.
 
 Analyse complète : [Mon corps — diagnostic et plan d'évolution](../../docs/product/analyse-mon-corps-2026-09.md).
 
@@ -9,7 +9,13 @@ Analyse complète : [Mon corps — diagnostic et plan d'évolution](../../docs/p
 1. [Explorer les muscles](01-explorer.png) — carte face/dos et détail d'une épaule après sélection / zoom.
 2. [Morphologie et objectifs](02-morphologie-objectifs.png) — silhouette de départ et édition d'une intention visuelle.
 
-Les planches contiennent quatre écrans au total. Elles restent des images statiques de conception ; le premier lot implémente l'exploration avec un dessin vectoriel anatomique ombré. Les mensurations sont des exemples fictifs. La morphologie modifiable et l'éditeur d'objectifs de la seconde planche restent à développer ; la génération ne produit pas leur maillage 3D.
+Les planches contiennent quatre écrans au total. Elles restent des images statiques de conception ; le premier lot implémente l'exploration avec un dessin vectoriel anatomique ombré. Les mensurations sont des exemples fictifs. CORPS-02 implémente désormais la morphologie et les objectifs avec un renderer SVG paramétrique ; aucun maillage 3D n'est livré.
+
+## Rendu de la silhouette
+
+- [Éditeur FR/EN, clair/sombre et petit écran](morphology-editor-qa.png), issu du vrai JSX.
+- [Vingt états de silhouette](morphology-qa.png) et [détail](morphology-detail.png).
+- [Validation globale sur téléphone et scénarios archivés](../../docs/recette/mon-corps-2026-09.md).
 
 ## Rendu du premier lot
 

@@ -9,6 +9,28 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 13/09/2026 — Mon corps : validation sur téléphone et build Windows corrigé
+
+Branche `feature/corps02-morphologie`, commit précédent `a9669e0`.
+
+**Corrigé** — Le build APK échouait dans Ninja à cause des chemins CMake trop longs dans
+le worktree imbriqué. Le config plugin Expo `withWindowsNativeBuild` place les intermédiaires
+de l'application dans le cache utilisateur Gradle, avec un hash séparant les worktrees,
+sur Windows uniquement. Sources, emplacement de l'APK et signature conservés. La procédure
+documente `expo prebuild --no-clean` : Expo 57 recrée les dossiers natifs par défaut.
+
+**Validation** — Quatre tests de régression ajoutés ; 6 196 tests passent (admin 587,
+mobile 2 928, shared 2 681), lint et typecheck complets. Vrai prebuild répété sans duplication
+ni modification du Gradle produit. `gradlew.bat assembleRelease` réussit en 9 min 31 s sur
+les quatre ABI ; signature APK v2 et présence du nouvel écran dans le bundle vérifiées.
+Florian a ensuite testé sur téléphone et validé globalement cette version le 13/09/2026.
+
+**Suivi** — CORPS-01 et CORPS-02 clôturés ; scénarios retirés des recettes en attente et
+archivés avec la validation globale, sans déclarer chaque cas testé individuellement.
+Roadmap et état actualisés, compteurs de fonctionnalités inchangés. Suite autorisée :
+relier les intentions visuelles à des priorités et à des choix d'entraînement expliqués.
+Commit local, sans intégration à dev ni push.
+
 ## 13/09/2026 — CORPS-02 : personnaliser sa silhouette et comparer une intention
 
 Branche `feature/corps02-morphologie`, base locale `968539d` (dev `4bab295` + CORPS-01 `6653aaf`).

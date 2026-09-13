@@ -3,18 +3,20 @@ id: CORPS-02
 titre: "Silhouette personnelle et intention visuelle"
 roadmap: [6.5]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/corps02-morphologie
 maj: 13/09/2026
 ---
 
 # CORPS-02 — Silhouette personnelle et intention visuelle
 
-Code vérifié le 13/09/2026 : 6 192 tests, typecheck, lint et export Android passent. Migration
+Code vérifié le 13/09/2026 : 6 196 tests, typecheck, lint et export Android passent. Migration
 cloud appliquée, types régénérés. Revue indépendante et planches issues du code inspectées :
 [éditeur](../../../../design/mon-corps-2026-09/morphology-editor-qa.png),
 [silhouettes](../../../../design/mon-corps-2026-09/morphology-qa.png).
-Recette native encore en attente, [RECETTES.md §63](../../../../RECETTES.md#63-corps-02--silhouette-personnelle-et-intention-visuelle).
+APK release compilé sur les quatre ABI et signature vérifiée après correction des chemins
+CMake Windows. **Version testée sur téléphone et validée par Florian le 13/09/2026** ; US
+clôturée sur cette validation globale. [Trace et scénarios archivés](../../../recette/mon-corps-2026-09.md).
 
 Suite de l'analyse et des maquettes validées par Florian, puis « ok continue » après CORPS-01. La direction reprend [la deuxième planche](../../../../design/mon-corps-2026-09/02-morphologie-objectifs.png). Ce lot architectural ajoute un profil visuel personnel, un renderer paramétrique et un éditeur. La préférence 2D/3D a été proposée pendant l'analyse ; en l'absence de réponse après un délai de travail indépendant, premier renderer 2D modulable retenu, sans dépendance native nouvelle. La rotation 3D et le moteur de programmation restent séparés.
 

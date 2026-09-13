@@ -71,6 +71,7 @@
       "expo-mail-composer",
       "@react-native-google-signin/google-signin",
       "./plugins/withHealthConnect",
+      "./plugins/withWindowsNativeBuild",
       [
         "react-native-android-widget",
         {

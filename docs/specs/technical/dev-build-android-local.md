@@ -124,6 +124,7 @@ d'« applis de sources inconnues ».
 ### Build
 ```powershell
 cd apps\mobile\android
+$env:NODE_ENV = 'production'
 .\gradlew.bat assembleRelease
 ```
 - 1ᵉʳ build : long (compilation native). Les suivants sont plus rapides (cache Gradle).
@@ -132,6 +133,30 @@ cd apps\mobile\android
   apps\mobile\android\app\build\outputs\apk\release\app-release.apk
   ```
 - Cet APK est **autonome** : le JS est bundlé dedans, aucun besoin de Metro ni du câble ensuite.
+
+### Build depuis un worktree Windows (CORPS-02, 13/09/2026)
+
+Le dossier `android/` est ignoré par Git : un nouveau worktree commence sans projet natif.
+Depuis **son** dossier `apps/mobile`, lancer une fois `npx expo prebuild --platform android --no-install --no-clean`,
+puis utiliser la commande `gradlew.bat assembleRelease` ci-dessus. Le `.env` et la signature des
+builds locaux doivent être présents dans ce worktree avant de générer l'APK.
+
+Un chemin tel que `.claude/worktrees/mon-corps/apps/mobile/android/app/.cxx/...` dépasse parfois
+la limite des chemins d'objets CMake/Ninja. Symptôme constaté : avertissement de longueur >250,
+puis `ninja: error: mkdir(...safeareacontext...)` et échec `:app:buildCMakeRelWithDebInfo[arm64-v8a]`.
+
+Le config plugin [withWindowsNativeBuild.js](../../../apps/mobile/plugins/withWindowsNativeBuild.js)
+place les intermédiaires CMake de l'application sous `<GRADLE_USER_HOME>/cxx/<hash>/app` sur Windows.
+Le hash du chemin canonique du projet isole chaque worktree ; les sources, le chemin de l'APK et
+la signature restent inchangés. Les autres OS conservent leur configuration. Le plugin utilise
+le DSL Android [`buildStagingDirectory`](https://developer.android.com/reference/tools/gradle-api/8.12/com/android/build/api/dsl/Cmake#buildStagingDirectory),
+sans modifier les dépendances ou la nouvelle architecture React Native.
+
+Après récupération de ce correctif sur un projet Android déjà généré, rejouer le prebuild
+**avec `--no-clean`** pour appliquer le plugin, puis reconstruire. **Expo 57 recrée les dossiers
+natifs par défaut** (`expo prebuild --help`) : omettre `--clean` ne suffit plus à les conserver.
+Il n'est pas nécessaire de déplacer
+le worktree ni d'effacer les caches pour ce correctif.
 
 ### ⚠️ Piège monorepo : une modification dans `packages/shared` ne rebundle pas
 

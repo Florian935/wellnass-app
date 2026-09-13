@@ -3,14 +3,17 @@ id: CORPS-01
 titre: "Carte anatomique et explorateur Mon corps"
 roadmap: [6.2]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/corps01-explorateur
-maj: 12/09/2026
+maj: 13/09/2026
 ---
 
 # CORPS-01 — Carte anatomique et explorateur Mon corps
 
 ## Validation et périmètre
+
+Version « Mon corps » testée sur téléphone et validée par Florian le 13/09/2026,
+avec CORPS-02. Clôture sur cette validation globale ; [trace de recette](../../../recette/mon-corps-2026-09.md).
 
 Florian a validé l'analyse et les deux planches le 12/09/2026 (« je valide tout ») et autorisé le démarrage du développement. Cette spécification détaille le premier lot de cette direction : [analyse](../../../product/analyse-mon-corps-2026-09.md), [maquettes](../../../../design/mon-corps-2026-09/README.md).
 
