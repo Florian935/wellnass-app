@@ -109,11 +109,12 @@ reste en tête de file et se rejoue indéfiniment. Or la file est **sérialisée
 écriture ne remonte, **toutes tables confondues** — séances, repas, poids, courses.
 
 Le drapeau (`profile-repository.ts`) **retire les 8 colonnes de l'écriture** tant qu'il vaut
-`false`. Conséquence assumée : les réglages de guidage ne sont pas persistés. Perdre un réglage est
-réparable ; figer la synchro de tout le monde ne l'est pas. Même patron que `ADAPTATION_WRITE_READY`
-(CARDIO-UX01).
+`false`. Perdre un réglage est réparable ; figer la synchro de tout le monde ne l'est pas. Même
+patron que `ADAPTATION_WRITE_READY` (CARDIO-UX01).
 
-**À passer à `true` dans le même geste que `npm run db:push`.**
+✅ **Migration poussée le 13/09/2026, drapeau à `true`.** Il reste en place comme garde-fou
+documentaire : il nomme la dépendance entre ce code et huit colonnes distantes, et donne un point
+de retour immédiat si la migration devait être annulée.
 
 ## 3. Volet A — l'objectif pilote les trois piliers
 

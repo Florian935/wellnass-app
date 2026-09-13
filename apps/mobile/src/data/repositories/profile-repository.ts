@@ -136,8 +136,11 @@ function rowToProfile(row: ProfileDbRow): Profile {
 }
 
 /**
- * 🔴 **Interrupteur de sûreté — US GUID-01.** Passe à `true` DÈS QUE la migration
- * `20260913184252_guid01_guidance_regime_and_training_context` est appliquée sur le cloud.
+ * **Interrupteur de sûreté — US GUID-01.**
+ *
+ * ✅ **Migration appliquée sur le cloud le 13/09/2026** (`npm run db:push`, colonnes confirmées
+ * dans `database.types.ts` après `npm run db:types`). Le drapeau est donc à `true` et les 8
+ * colonnes sont écrites normalement.
  *
  * ── Pourquoi ce drapeau, et pas un `try/catch` ──────────────────────────────────────────────────
  * Les 8 colonnes existent en base **locale** (déclarées dans `powersync/schema.ts`) mais pas encore
@@ -156,10 +159,14 @@ function rowToProfile(row: ProfileDbRow): Profile {
  * fichier de suivi.
  *
  * ⚠️ Tant qu'il vaut `false`, les choix de guidage et de contexte **ne sont pas persistés** —
- * l'interface les propose, la base ne les garde pas. C'est volontaire : perdre un réglage est
+ * l'interface les propose, la base ne les garde pas. C'était volontaire : perdre un réglage est
  * réparable, figer la synchro de tout le monde ne l'est pas.
+ *
+ * Il reste comme **garde-fou documentaire** plutôt que d'être supprimé (même choix que
+ * `ADAPTATION_WRITE_READY`) : il nomme la dépendance entre ce code et huit colonnes distantes, et
+ * il donne un point de retour immédiat si la migration devait être annulée.
  */
-export const GUIDANCE_WRITE_READY = false;
+export const GUIDANCE_WRITE_READY = true;
 
 /** Les colonnes de GUID-01, retirées de l'écriture tant que `GUIDANCE_WRITE_READY` est `false`. */
 const GUIDANCE_COLUMNS = [

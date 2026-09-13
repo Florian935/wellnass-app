@@ -1510,16 +1510,24 @@ export type Database = {
           daily_step_goal: number | null
           deleted_at: string | null
           first_name: string | null
+          guidance_cardio: string | null
+          guidance_nutrition: string | null
+          guidance_regime: string | null
+          guidance_strength: string | null
           height_cm: number | null
           id: string
           main_goal: string | null
+          main_goal_deadline: string | null
           onboarding_completed_at: string | null
           sex: string | null
           start_weight_kg: number | null
           summary_display_level: string | null
           target_weight_kg: number | null
+          training_focus: string | null
+          training_level: string | null
           updated_at: string
           user_id: string
+          weekly_availability: number | null
           weight_kg: number | null
           workout_display_level: string | null
         }
@@ -1530,16 +1538,24 @@ export type Database = {
           daily_step_goal?: number | null
           deleted_at?: string | null
           first_name?: string | null
+          guidance_cardio?: string | null
+          guidance_nutrition?: string | null
+          guidance_regime?: string | null
+          guidance_strength?: string | null
           height_cm?: number | null
           id: string
           main_goal?: string | null
+          main_goal_deadline?: string | null
           onboarding_completed_at?: string | null
           sex?: string | null
           start_weight_kg?: number | null
           summary_display_level?: string | null
           target_weight_kg?: number | null
+          training_focus?: string | null
+          training_level?: string | null
           updated_at?: string
           user_id: string
+          weekly_availability?: number | null
           weight_kg?: number | null
           workout_display_level?: string | null
         }
@@ -1550,16 +1566,24 @@ export type Database = {
           daily_step_goal?: number | null
           deleted_at?: string | null
           first_name?: string | null
+          guidance_cardio?: string | null
+          guidance_nutrition?: string | null
+          guidance_regime?: string | null
+          guidance_strength?: string | null
           height_cm?: number | null
           id?: string
           main_goal?: string | null
+          main_goal_deadline?: string | null
           onboarding_completed_at?: string | null
           sex?: string | null
           start_weight_kg?: number | null
           summary_display_level?: string | null
           target_weight_kg?: number | null
+          training_focus?: string | null
+          training_level?: string | null
           updated_at?: string
           user_id?: string
+          weekly_availability?: number | null
           weight_kg?: number | null
           workout_display_level?: string | null
         }

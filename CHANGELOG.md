@@ -10,7 +10,7 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
-## 13/09/2026 (ter) — GUID-01 : l'objectif se met enfin à servir, et le guidage devient réglable
+## 13/09/2026 (quater) — GUID-01 : l'objectif se met enfin à servir, et le guidage devient réglable
 
 Branche `feature/guid01-objectif-regime-guidage` (depuis `dev`, commit précédent `45b8858d`).
 Analyse et maquettes validées par Florian le 13/09/2026, **traité en un seul lot** là où l'analyse
@@ -93,12 +93,13 @@ dans leur propre formulaire, **relus nulle part**.
 
 ### Technique / Notes
 
-- 🔴 **La migration n'est PAS poussée**, et ce n'est pas le fait de cette US : le cloud porte
-  `20260913182920` (seed CIQUAL v2), appliquée depuis le worktree `nutri-biblio` où son fichier est
-  **non suivi par git**. `db:push` est refusé tant que repo et cloud divergent. **La recette est
-  bloquée là-dessus** — voir [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md) et
-  [`RECETTES.md`](RECETTES.md) §64. Je n'ai pas réparé l'historique : la migration n'est pas la
-  mienne, et un `migration repair` effacerait la trace du travail de quelqu'un d'autre.
+- ✅ **Migration poussée le 13/09/2026**, drapeau `GUIDANCE_WRITE_READY` repassé à `true`, types
+  régénérés (les 8 colonnes apparaissent sur les 3 vues de `profiles`). ⚠️ Le push a d'abord été
+  **refusé** : le cloud portait `20260913182920` (seed CIQUAL v2), appliquée depuis le worktree
+  `nutri-biblio` où son fichier n'était pas encore commité — `db:push` refuse tout tant que repo et
+  cloud divergent. Débloqué **le jour même** par `89396aa0` sur `dev`, qui a versionné ce fichier.
+  Je n'ai pas touché à `migration repair` : la migration n'était pas la mienne, et réparer
+  l'historique de quelqu'un d'autre en effacerait la trace.
 - ✅ **Aucune sync rule à déployer** : `profiles` est déjà publiée en `select *`.
 - **Écarts assumés** : la **génération** d'un plan hebdomadaire n'est pas livrée (le régime guidé
   **sélectionne** un programme éditorial, le duplique et l'active — composer des séances
@@ -109,6 +110,83 @@ dans leur propre formulaire, **relus nulle part**.
   n'existe pas comme calcul livré).
 - **Vérifié** : `typecheck` 3 workspaces à **0**, `lint` à **0** (0 warning), **5 968 tests verts**
   (3 121 Jest + 2 847 Vitest).
+## 13/09/2026 (ter) — NUTRI-UX01 : la bibliothèque d'aliments passe de 80 à 3 244 entrées
+
+Branche `feature/nutri-refonte-ux`. C'était le **seul point resté ouvert** de la refonte du pilier
+Nutrition livrée le 10/09 : la **décision D1** de la spec constatait que le remplissage était
+*matériellement impossible* — le générateur tire toute la nutrition du CSV CIQUAL, non versionné
+(`.gitignore`) et absent de la machine, et produire 700 fiches de mémoire serait **fabriquer des
+données de santé**. Le fichier a été récupéré sur l'entrepôt **recherche.data.gouv.fr**
+(doi:10.57745/RPWYZD — Table Ciqual 2025 de l'**ANSES**, 3 484 aliments, **Licence Ouverte /
+Etalab**, redistribution autorisée avec attribution).
+
+### Ajouté
+
+- Migration `20260913182920_seed_library_foods_ciqual_v2.sql` (2,5 Mo) — upsert idempotent de
+  **3 244 aliments** et **6 488 traductions**, généré par `generate.py --bulk`. Poussée sur le
+  cloud le 13/09, cochée dans [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md).
+  **Aucune valeur nutritionnelle saisie ni devinée** : macros, sous-macros et 31 micronutriments
+  viennent tous du fichier ANSES, en *present-only* (traces / NC / « <x » → omis, jamais 0).
+- `generate.py` : table `BULK_PREPARATION` — CIQUAL **déclare** la cuisson dans son sous-groupe
+  (« viandes cuites », « poissons crus »…), donc `foods.preparation_state` est désormais
+  renseigné pour **498 aliments** (286 crus, 212 cuits) au lieu d'être déduit du nom. Gain non
+  prévu : R6.7 ne reposait jusqu'ici que sur `preparationStateFromName`, un simple repli.
+- `generate.py` : `BULK_PRIORITE` — l'import est trié par catégorie (légumes, fruits, viandes,
+  poissons, laitages, féculents, oléagineux, boissons, puis le reste) et non plus dans l'ordre du
+  fichier, ce qui rend `--limit` utilisable.
+- [`RECETTES.md`](RECETTES.md) §58 : section **J** (7 critères sur la bibliothèque) et section
+  **K** (reste-à-faire). Le prérequis ① (sync rule `water_entries`) est marqué **fait**,
+  confirmé par Florian le 13/09.
+
+### Corrigé — trois défauts du générateur, tous invisibles à 80 lignes
+
+Le mode `--bulk` avait été écrit le 10/09 et testé contre un CSV **synthétique**, faute du
+fichier réel : il validait mes propres suppositions.
+
+- 🔴 **Les libellés de groupes CIQUAL étaient faux.** La table écrit `viandes, oeufs, poissons`
+  (sans ligature œ), `produits laitiers` et `eaux et autres boissons`. Un groupe non reconnu étant
+  **ignoré en silence**, viandes, poissons, laitages et boissons ne seraient **jamais entrés**
+  dans l'import — sans la moindre erreur. Constaté à la première exécution : 0 viande, 0 poisson,
+  0 laitage, 0 boisson sur 1 787 lignes éligibles.
+- 🔴 **Les id de traduction étaient positionnels** (`d2000{n:03d}`) : au-delà de 999 aliments,
+  un premier bloc à 9 caractères — UUID invalide, migration rejetée en bloc. Ils dérivent
+  désormais de l'id de l'aliment, et le `on conflict` vise **`(food_id, lang)`**, la vraie
+  contrainte unique de la table, au lieu de `id` : un changement d'ordre du catalogue ne peut plus
+  réattribuer une traduction à un autre aliment.
+- ⚠️ **`--limit` coupait dans l'ordre du fichier**, trié par code de groupe : il remplissait la
+  base de salades appertisées avant d'atteindre le premier légume.
+
+### Corrigé — le plafond de recherche, devenu faux à cette échelle
+
+- `food-catalog-repository.ts` : le pré-filtre SQL bornait les candidats à **400 lignes avant le
+  classement**, dans un ordre (`last_used`) qui ignore la pertinence. Sur 3 244 aliments, « po »
+  rend 582 candidats et « bo » 453 : **« Pomme » disparaissait à « po » pour revenir à « pom »**.
+  Une liste qui rétrécit quand on *précise* sa recherche donne l'impression d'un moteur cassé.
+  Corrigé en deux temps : les correspondances par **début de nom** passent devant tout le reste
+  dans le tri SQL, et `SQL_SCAN_LIMIT` monte de **400 à 800**.
+- ⚠️ **Piège SQLite rencontré en chemin** : `ORDER BY (CASE WHEN name LIKE …)` lève
+  `ambiguous column name: name`. Un alias de sortie est résolu quand il forme à lui seul un terme
+  du `ORDER BY`, mais **pas à l'intérieur d'une expression**, où `tl.name` et `tfr.name` sont tous
+  deux en portée. Les colonnes sont donc qualifiées explicitement. **Vérifié sur un vrai SQLite**
+  avec 500 leurres : avant, « Pomme » absente des 400 lignes ; après, en rang 1.
+
+### Technique / Notes
+
+- **Données seulement, aucun changement de schéma** : `npm run db:types` ne produit aucun diff.
+- ✅ **Aucune sync rule à déployer** : `foods` et `food_translations` sont déjà dans le bucket de
+  référence (`owner_id is null`). C'est la première migration de cette US qui n'en demande pas.
+- **Vérifié côté cloud par comptage REST** (le warning CLI `pg-delta` dû à l'absence de Docker ne
+  dit rien de l'application du SQL) : 3 246 `foods`, 6 492 `food_translations`, 286
+  `preparation_state = 'raw'`, 212 `'cooked'`.
+- ⚠️ **Dette assumée et tracée** : 3 164 aliments portent `nameEn = nameFr` + `needsTranslation`
+  (CIQUAL est monolingue) et des **portions vides** — pour eux la saisie s'ouvre sur 100 g.
+  Critères 78 et 79 de la recette.
+- ⚠️ **Parité i18n rompue sur `dev`, indépendamment de ce commit** : 4 valeurs vides
+  `coach.{motivant,sobre}.verdict.warmup`. Constaté identique sur `origin/dev` avant fusion —
+  rien d'i18n n'est touché ici.
+- Le CSV et le XLSX CIQUAL restent **non versionnés** (`enrich-ciqual/.gitignore`).
+- Qualité : lint 0, typecheck 0 sur 3 workspaces, `npm run test` 0 (135 fichiers, 2 791 tests
+  côté `shared` + la suite Jest mobile).
 ## 13/09/2026 (bis) — DASH-01 : la surface IA est retirée du build de lancement
 
 Branche `feature/dash01-dashboards-immersifs`, suite directe de l'entrée du jour. **Décision de
