@@ -3582,5 +3582,132 @@
       "saturatedFat": "Acides gras saturés"
     },
     "coverage": "Calculé sur {{pct}} % de tes calories : les ajouts sans aliment identifié n'y contribuent pas."
+  },
+  "stage": {
+    "home": {
+      "timeLeft_one": "Il te reste moins d'une heure pour la garder",
+      "timeLeft_other": "Il te reste environ {{count}} h pour la garder",
+      "jokerLeft_one": "Un joker reste ce mois-ci — le filet, pas l'excuse",
+      "jokerLeft_other": "{{count}} jokers restent ce mois-ci",
+      "jokerNone": "Plus de joker ce mois-ci",
+      "saveStreak": "Sauver ma série",
+      "comeback": "Content de te revoir",
+      "bestStreak_one": "Ta meilleure série : un jour",
+      "bestStreak_other": "Ta meilleure série : {{count}} jours",
+      "gentleRestart": "Reprise en douceur",
+      "normalPlan": "Reprendre le plan normal",
+      "sinceLastVisit": {
+        "title": "Depuis ta dernière visite",
+        "weightDown": "{{delta}} kg de moins sur la balance",
+        "weightUp": "{{delta}} kg de plus sur la balance",
+        "records_one": "Un record battu",
+        "records_other": "{{count}} records battus",
+        "predictionFaster": "Ton 10 km estimé gagne {{seconds}} s",
+        "predictionSlower": "Ton 10 km estimé perd {{seconds}} s"
+      },
+      "goal": {
+        "title": "Ton objectif le plus proche",
+        "deadline_one": "Plus qu'un jour",
+        "deadline_other": "Plus que {{count}} jours",
+        "late": "Échéance dépassée",
+        "progressA11y": "{{percent}} % du chemin",
+        "empty": "Aucun objectif en cours"
+      },
+      "weeklyStory": {
+        "title": "Ta semaine, en trois cartes",
+        "volume": "{{workouts}} séances · {{runs}} sorties",
+        "tonnage": "{{tonnage}} kg soulevés",
+        "distance": "{{distance}} parcourus",
+        "records_one": "Un record battu",
+        "records_other": "{{count}} records battus",
+        "regularity_one": "Un jour actif",
+        "regularity_other": "{{count}} jours actifs",
+        "nutrition": "{{days}} jours dans la cible sur {{logged}} saisis",
+        "change": "{{percent}} % vs la semaine d'avant",
+        "cta": "Voir le bilan"
+      },
+      "ring": {
+        "strength": "Muscu {{done}} sur {{target}}",
+        "strengthOnly_one": "Muscu : une séance",
+        "strengthOnly_other": "Muscu : {{count}} séances",
+        "running": "Course {{done}} sur {{target}}",
+        "runningOnly_one": "Course : une sortie",
+        "runningOnly_other": "Course : {{count}} sorties",
+        "nutrition_one": "Nutrition : un jour saisi sur 7",
+        "nutrition_other": "Nutrition : {{count}} jours saisis sur 7"
+      }
+    },
+    "nutrition": {
+      "remaining": "Il te reste {{kcal}} kcal",
+      "reached": "Objectif atteint",
+      "over": "{{kcal}} kcal au-dessus",
+      "ofTarget": "sur {{kcal}} kcal visées",
+      "noTarget": "Aucun objectif calorique",
+      "trainingBonus": "+{{kcal}} kcal — jour de séance",
+      "macroP": "P",
+      "macroC": "G",
+      "macroF": "L",
+      "macroA11y": "{{macro}} : {{value}} g sur {{goal}} g",
+      "consumedA11y": "{{kcal}} kcal consommées",
+      "missingDay_one": "{{day}} n'a rien de saisi — le compléter affinerait tes repères",
+      "missingDay_other": "{{day}} n'a rien de saisi ({{count}} jours à trous cette semaine)",
+      "quickAddA11y": "Ajouter {{name}}, {{kcal}} kcal",
+      "photo": "Photo du repas",
+      "search": "Chercher"
+    },
+    "running": {
+      "eyebrow": {
+        "resume": "Course en cours",
+        "arrival": "Sortie terminée",
+        "today": "Ta séance du jour",
+        "rest": "Ton pilier course",
+        "onboarding": "Ton pilier course"
+      },
+      "primary": {
+        "resume": "Reprendre",
+        "arrival": "Voir l'analyse",
+        "today": "Démarrer",
+        "rest": "Course libre",
+        "onboarding": "Choisir un programme"
+      },
+      "secondary": {
+        "resume": "Historique",
+        "arrival": "Ma semaine",
+        "today": "Voir le détail",
+        "rest": "Planning",
+        "onboarding": "Course libre"
+      },
+      "inProgress": "{{duration}} déjà courues",
+      "arrivalMeta": "{{duration}} · {{pace}}",
+      "arrivalA11y": "{{distance}} {{unit}} à {{pace}}",
+      "predictionNew": "Nouveau record 5 km — 10 km estimé : {{time}}",
+      "prediction": "10 km estimé : {{time}}",
+      "countdownNow": "C'est l'heure",
+      "countdownIn_one": "Dans une heure environ",
+      "countdownIn_other": "Dans {{count}} heures environ",
+      "countdownPast_one": "Prévue il y a une heure",
+      "countdownPast_other": "Prévue il y a {{count}} heures",
+      "weekLine": "Cette semaine : {{distance}} · {{sessions}}",
+      "splits": {
+        "title": "Km par km",
+        "meta": "{{count}} km pleins",
+        "hint": "Ouvre l'analyse de la sortie",
+        "kmA11y": "Kilomètre {{km}}, {{pace}}",
+        "onPace": "Km {{km}} · {{pace}} — pile sur le rythme",
+        "faster": "Km {{km}} · {{pace}} — {{seconds}} s plus vite",
+        "slower": "Km {{km}} · {{pace}} — {{seconds}} s plus lent",
+        "hintTarget": "Touche un kilomètre — référence : {{pace}} visées",
+        "hintAverage": "Touche un kilomètre — référence : {{pace}} de moyenne"
+      },
+      "predictions": {
+        "title": "Si tu courais demain",
+        "meta": "Depuis ton record 5 km",
+        "a11y": "{{distance}} estimé en {{time}}"
+      },
+      "load": {
+        "title": "Ta charge",
+        "a11y": "Charge {{ratio}}. {{zone}}"
+      }
+    }
   }
 }

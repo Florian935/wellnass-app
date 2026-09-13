@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   COMEBACK_AFTER_DAYS,
+  countdownToSession,
   resolveHomeMoment,
   timeLeftToday,
   type HomeMomentInput,
@@ -89,5 +90,38 @@ describe('timeLeftToday', () => {
 
   it('minuit pile → 24 h', () => {
     expect(timeLeftToday(at(0))).toEqual({ hours: 24, minutes: 0 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Compte à rebours de la séance du jour (US DASH-01, §4.3 — l'heure de HORAIRE-01)
+// ---------------------------------------------------------------------------
+
+describe('countdownToSession', () => {
+  it('annonce les heures qui restent avant l’heure prévue', () => {
+    expect(countdownToSession(15, '18:30:00')).toEqual({ kind: 'in', hours: 3 });
+  });
+
+  it('accepte une heure sans secondes', () => {
+    expect(countdownToSession(7, '09:00')).toEqual({ kind: 'in', hours: 2 });
+  });
+
+  it('« c’est maintenant » pendant l’heure de la séance', () => {
+    // 18 h 05 comme 18 h 55 : on ne dit pas « dans 0 h », on dit que c'est l'heure.
+    expect(countdownToSession(18, '18:30')).toEqual({ kind: 'now' });
+  });
+
+  it('🔴 une heure passée n’invente pas un compte à rebours négatif', () => {
+    expect(countdownToSession(21, '18:30')).toEqual({ kind: 'past', hours: 3 });
+  });
+
+  it('sans heure prévue, rien à dire', () => {
+    expect(countdownToSession(10, null)).toBeNull();
+    expect(countdownToSession(10, '')).toBeNull();
+  });
+
+  it('🔴 une heure illisible ne fait pas planter la scène', () => {
+    expect(countdownToSession(10, 'bientôt')).toBeNull();
+    expect(countdownToSession(10, '99:00')).toBeNull();
   });
 });

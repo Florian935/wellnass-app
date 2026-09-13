@@ -63,3 +63,39 @@ export function timeLeftToday(now: Date): { hours: number; minutes: number } {
   const totalMinutes = Math.max(0, Math.round((midnight.getTime() - now.getTime()) / 60_000));
   return { hours: Math.floor(totalMinutes / 60), minutes: totalMinutes % 60 };
 }
+
+/**
+ * Où en est l'heure prévue d'une séance (US HORAIRE-01) par rapport à l'heure courante.
+ *
+ * Granularité **l'heure**, délibérément : le seul hook d'horloge autorisé côté app est réactif à
+ * l'heure pile (`useCurrentHour`). Une minuterie à la minute ferait re-rendre le hub — et
+ * re-souscrire ses requêtes — soixante fois par heure pour gagner une précision que personne ne
+ * lit sur un compte à rebours de séance.
+ */
+export type SessionCountdown =
+  | { kind: 'in'; hours: number }
+  | { kind: 'now' }
+  | { kind: 'past'; hours: number };
+
+/** `HH:MM[:SS]` → heure (0-23), ou `null` si la chaîne n'en est pas une. */
+function parseHour(scheduledTime: string): number | null {
+  const match = /^(\d{1,2}):(\d{2})(:\d{2})?$/.exec(scheduledTime.trim());
+  if (!match) return null;
+  const hour = Number(match[1]);
+  const minute = Number(match[2]);
+  if (!Number.isInteger(hour) || hour < 0 || hour > 23) return null;
+  if (!Number.isInteger(minute) || minute < 0 || minute > 59) return null;
+  return hour;
+}
+
+export function countdownToSession(
+  nowHour: number,
+  scheduledTime: string | null | undefined,
+): SessionCountdown | null {
+  if (!scheduledTime) return null;
+  const hour = parseHour(scheduledTime);
+  if (hour === null) return null;
+  const diff = hour - nowHour;
+  if (diff === 0) return { kind: 'now' };
+  return diff > 0 ? { kind: 'in', hours: diff } : { kind: 'past', hours: -diff };
+}

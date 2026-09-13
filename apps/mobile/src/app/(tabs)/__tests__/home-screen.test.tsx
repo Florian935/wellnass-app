@@ -23,6 +23,7 @@ import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import HomeScreen from '../index';
 import { useNowAction } from '@/hooks/useNowAction';
+import { useHomeScene } from '@/hooks/useHomeScene';
 import { useRealLifeState } from '@/data/repositories/real-life-repository';
 
 // ---------------------------------------------------------------------------
@@ -48,6 +49,22 @@ jest.mock('@/data/repositories/insights-context', () => ({
 }));
 jest.mock('@/data/repositories/real-life-repository', () => ({
   useRealLifeState: jest.fn(() => ({ activePeriod: null, daysRemaining: null })),
+  startRealLifePeriod: jest.fn(() => Promise.resolve('p-1')),
+}));
+// US DASH-01 — la scène est REELLE dans ce test (c'est l'assemblage qu'on vérifie) ; ce sont ses
+// sources de données qui sont simulées.
+jest.mock('@/hooks/useHomeScene', () => ({ useHomeScene: jest.fn() }));
+jest.mock('@/hooks/useWeekRings', () => ({ useWeekRings: jest.fn(() => []) }));
+jest.mock('@/hooks/useTodayKey', () => ({
+  useTodayKey: () => '2026-09-14',
+  useTodayDate: () => new Date(2026, 8, 14),
+  useCurrentHour: () => 9,
+}));
+jest.mock('@/data/repositories/goal-repository', () => ({
+  useGoals: jest.fn(() => ({ active: [], finished: [], isLoading: false })),
+}));
+jest.mock('@/data/repositories/daily-wellbeing-repository', () => ({
+  saveWellbeing: jest.fn(() => Promise.resolve(true)),
 }));
 jest.mock('@/lib/analytics', () => ({
   ANALYTICS_EVENTS: { dashboardCustomized: 'dashboard_customized' },
@@ -59,9 +76,28 @@ jest.mock('@/components/dashboard/NowCard', () => {
   const { Text } = require('react-native');
   return { NowCard: () => <Text>sonde-now</Text> };
 });
-jest.mock('@/components/dashboard/HomeHeader', () => {
+jest.mock('@/components/dashboard/SinceLastVisitCard', () => {
   const { Text } = require('react-native');
-  return { HomeHeader: () => <Text>sonde-header</Text> };
+  return { SinceLastVisitCard: () => <Text>sonde-depuis</Text> };
+});
+jest.mock('@/components/dashboard/WeeklyStoryCard', () => {
+  const { Text } = require('react-native');
+  return { WeeklyStoryCard: () => <Text>sonde-bilan</Text> };
+});
+jest.mock('@/components/goals/GoalCard', () => {
+  const { Text } = require('react-native');
+  return { GoalCard: () => <Text>sonde-objectif</Text> };
+});
+jest.mock('@/components/SyncStatus', () => {
+  const { Text } = require('react-native');
+  return { SyncStatus: () => <Text>sonde-sync</Text> };
+});
+jest.mock('expo-router', () => {
+  const { View } = require('react-native');
+  return {
+    useRouter: () => ({ push: jest.fn() }),
+    Link: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
+  };
 });
 jest.mock('@/components/dashboard/QuickActions', () => {
   const { Text } = require('react-native');
@@ -115,12 +151,16 @@ jest.mock('@expo/vector-icons', () => {
 });
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
+    // `i18n.language` sert à la date en clair de la scène : sans lui, l'écran ne peut plus la formater.
+    i18n: { language: 'fr' },
     t: (k: string, opts?: Record<string, unknown>) => (opts ? `${k}:${JSON.stringify(opts)}` : k),
   }),
   initReactI18next: { type: '3rdParty', init: () => {} },
 }));
 jest.mock('@/theme/useTheme', () => ({
   useTheme: () => ({
+    // La scène dérive son dégradé du schéma : sans lui, `stageTheme` n'a pas de teinte.
+    scheme: 'light',
     colors: {
       text: '#33291f',
       textMuted: '#96856f',
@@ -134,6 +174,18 @@ jest.mock('@/theme/useTheme', () => ({
 
 const mockUseNowAction = useNowAction as jest.Mock;
 const mockRealLife = useRealLifeState as jest.Mock;
+const mockHomeScene = useHomeScene as jest.Mock;
+
+/** Le moment « journée », celui de très loin le plus fréquent — les autres sont testés sur la scène. */
+const FAITS_DU_JOUR = {
+  moment: 'day' as const,
+  streak: 4,
+  verdict: null,
+  checkinDone: true,
+  hoursLeft: 5,
+  jokersRemaining: 1,
+  isLoading: false,
+};
 
 beforeEach(() => {
   jest.clearAllMocks();
@@ -142,6 +194,7 @@ beforeEach(() => {
     isLoading: false,
   });
   mockRealLife.mockReturnValue({ activePeriod: null, daysRemaining: null });
+  mockHomeScene.mockReturnValue(FAITS_DU_JOUR);
 });
 
 // ---------------------------------------------------------------------------
@@ -151,8 +204,11 @@ describe('les cinq zones', () => {
   it('🔴 monte les quatre zones fixes ET la grille', async () => {
     await render(<HomeScreen />);
 
-    expect(screen.getByText('sonde-header')).toBeTruthy();
+    // La scène a remplacé l'en-tête : elle porte la date, l'accroche et la carte « maintenant ».
+    expect(screen.getByTestId('home-stage')).toBeTruthy();
     expect(screen.getByText('sonde-now')).toBeTruthy();
+    expect(screen.getByText('sonde-depuis')).toBeTruthy();
+    expect(screen.getByText('sonde-bilan')).toBeTruthy();
     expect(screen.getByText(/sonde-quick/)).toBeTruthy();
     expect(screen.getByText(/sonde-grille/)).toBeTruthy();
     expect(screen.getByText('sonde-upnext')).toBeTruthy();
@@ -179,7 +235,7 @@ describe('mode édition', () => {
     expect(screen.queryByText('sonde-now')).toBeNull();
     expect(screen.queryByText(/sonde-quick/)).toBeNull();
     expect(screen.queryByText('sonde-upnext')).toBeNull();
-    expect(screen.queryByText('sonde-header')).toBeNull();
+    expect(screen.queryByTestId('home-stage')).toBeNull();
   });
 
   it('affiche la consigne de déplacement, invisible jusqu’à UX-04', async () => {

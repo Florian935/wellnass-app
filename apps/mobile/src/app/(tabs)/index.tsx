@@ -8,8 +8,10 @@
  * d'atterrissage était le seul à n'avoir aucune priorité.
  *
  * ── Ce qu'il est ─────────────────────────────────────────────────────────────────────────────────
- *   0 · `HomeHeader`   — date en clair + accroche contextuelle          (fixe)
- *   1 · `NowCard`      — la prochaine action, un seul sujet             (épinglée)
+ *   0 · `HomeStage`    — la scène du moment (US DASH-01) : date, accroche, et selon l'heure un
+ *                        check-in, une série en danger, un retour, ou les anneaux de la semaine ;
+ *                        elle porte `NowCard` — la prochaine action, un seul sujet   (fixe)
+ *   1 · `SinceLastVisitCard` · `WeeklyStoryCard` · objectif — ce qui a bougé          (fixes)
  *   2 · `QuickActions` — les quatre gestes du quotidien à un tap        (fixe)
  *   3 · `WidgetGrid`   — la grille personnalisable, densifiée           (personnalisable)
  *   4 · `UpNext`       — « la suite », trois lignes de texte            (fixe)
@@ -25,32 +27,55 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
+import { Link, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { HomeWidgetId, WidgetId, WidgetSize } from '@wellness/shared';
+import {
+  addDays,
+  localDayKey,
+  type HomeWidgetId,
+  type WellbeingLevel,
+  type WidgetId,
+  type WidgetSize,
+} from '@wellness/shared';
 import { Screen } from '@/components/Screen';
+import { SyncStatus } from '@/components/SyncStatus';
 import { DashboardWidget } from '@/components/dashboard/dashboard-widgets';
-import { HomeHeader } from '@/components/dashboard/HomeHeader';
+import { HomeStage, type HomeScene } from '@/components/dashboard/HomeStage';
+import { headlineKey } from '@/components/dashboard/home-headline';
 import { NowCard } from '@/components/dashboard/NowCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { SinceLastVisitCard } from '@/components/dashboard/SinceLastVisitCard';
+import { WeeklyStoryCard } from '@/components/dashboard/WeeklyStoryCard';
+import { GoalCard } from '@/components/goals/GoalCard';
 import { UpNext } from '@/components/dashboard/UpNext';
+import { StageScrollView } from '@/components/stage/StageScrollView';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
+import { useHomeScene } from '@/hooks/useHomeScene';
+import { useWeekRings } from '@/hooks/useWeekRings';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useNowAction } from '@/hooks/useNowAction';
 import { useProfile } from '@/data/repositories/profile-repository';
+import { useGoals } from '@/data/repositories/goal-repository';
+import { saveWellbeing } from '@/data/repositories/daily-wellbeing-repository';
 import { useActivationPath } from '@/data/repositories/activation-path-repository';
 import { useInsights } from '@/data/repositories/insights-repository';
 import { InsightsProvider } from '@/data/repositories/insights-context';
-import { useRealLifeState } from '@/data/repositories/real-life-repository';
+import { startRealLifePeriod, useRealLifeState } from '@/data/repositories/real-life-repository';
 import { useSyncRefresh } from '@/hooks/useSyncRefresh';
+import { useTodayDate } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
+/** Durée d'une reprise en douceur (VIE-01) : une semaine, le temps de reprendre le rythme. */
+const GENTLE_RESTART_DAYS = 7;
+
 export default function HomeScreen() {
   useMenuFocus('home');
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const router = useRouter();
   const { colors } = useTheme();
   const { profile } = useProfile();
   const firstName = profile?.firstName ?? '';
@@ -104,13 +129,95 @@ export default function HomeScreen() {
     setEditing((v) => !v);
   };
 
+  // ── La scène du moment (US DASH-01, §4.1) ─────────────────────────────────────────────────
+  const facts = useHomeScene();
+  const rings = useWeekRings();
+  const today = useTodayDate();
+  const { active: activeGoals } = useGoals();
+  const [savingCheckin, setSavingCheckin] = useState(false);
+
+  const dateLabel = today.toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  });
+  const { key: headline, count } = headlineKey(action);
+  const greeting = t(headline, { count: count ?? 0, name: firstName });
+
+  /**
+   * Le check-in du matin, depuis la scène : **une seule question**, l'énergie. Le formulaire complet
+   * (humeur, stress, poids) reste à un tap, mais réclamer trois curseurs avant le café était le plus
+   * sûr moyen de n'avoir aucun check-in du tout.
+   */
+  const onCheckin = (level: WellbeingLevel) => {
+    setSavingCheckin(true);
+    void saveWellbeing(localDayKey(today), { energy: level })
+      .catch(() => undefined)
+      .finally(() => setSavingCheckin(false));
+  };
+
+  /** Reprise en douceur (VIE-01) : une période « vie réelle » d'une semaine, et la série traverse. */
+  const onGentleRestart = () => {
+    void startRealLifePeriod({
+      startedOn: localDayKey(today),
+      endsOn: localDayKey(addDays(today, GENTLE_RESTART_DAYS)),
+    })
+      .then(() => router.push('/real-life'))
+      .catch(() => router.push('/real-life'));
+  };
+
+  const scene: HomeScene =
+    facts.moment === 'morning'
+      ? {
+          kind: 'morning',
+          checkinDone: facts.checkinDone,
+          verdict: facts.verdict,
+          onCheckin,
+          saving: savingCheckin,
+        }
+      : facts.moment === 'evening-at-risk'
+        ? {
+            kind: 'evening-at-risk',
+            streak: facts.streak,
+            hoursLeft: facts.hoursLeft,
+            jokersRemaining: facts.jokersRemaining,
+            onSave: () => router.push('/planning'),
+          }
+        : facts.moment === 'comeback'
+          ? {
+              kind: 'comeback',
+              bestStreak: facts.streak,
+              onGentle: onGentleRestart,
+              onNormal: () => router.push('/planning'),
+            }
+          : { kind: 'day', rings, streak: facts.streak, verdict: facts.verdict };
+
   const renderWidget = (id: WidgetId, size: WidgetSize) => (
     <DashboardWidget id={id as HomeWidgetId} size={size} />
   );
 
-  return (
-    <Screen edges={['top']}>
-      {editing ? (
+  /** La grille et ses consignes, partagées par les deux modes — c'est le même contenu. */
+  const grid = (
+    <InsightsProvider value={insightsValue}>
+      <WidgetGrid
+        screen="home"
+        editing={editing}
+        renderWidget={renderWidget}
+        onDragActiveChange={setDragging}
+        isActive={isWidgetActive}
+        sizeFor={sizeFor}
+      />
+    </InsightsProvider>
+  );
+
+  /**
+   * Le mode édition **n'a pas de scène** : réorganiser des widgets sous une scène qui, elle, ne se
+   * déplace pas ferait croire qu'elle est déplaçable aussi. C'est la même raison qui masquait déjà
+   * l'en-tête et la carte épinglée (US ACCUEIL-01).
+   */
+  if (editing) {
+    return (
+      <Screen edges={['top']}>
         <View style={styles.editHeader}>
           <View style={styles.editTexts}>
             {/* US UX-04 : le mode édition annonce **comment** déplacer un widget. Le geste
@@ -139,57 +246,95 @@ export default function HomeScreen() {
             </Text>
           </Pressable>
         </View>
-      ) : (
-        <HomeHeader action={action} firstName={firstName} />
-      )}
 
-      <ScrollView
-        contentContainerStyle={styles.blocks}
-        showsVerticalScrollIndicator={false}
-        // Neutralise le défilement pendant un drag actif (maquette / spec 7.2).
-        scrollEnabled={!dragging}
-        refreshControl={
-          // US ACCUEIL-05 : le geste est un réflexe et ne renvoyait rien — il n'existait pas un
-          // seul `RefreshControl` dans l'app. Désactivé en édition, où le geste vertical sert au
-          // glisser-déposer.
-          editing ? undefined : (
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              tintColor={colors.accent}
-              colors={[colors.accent]}
-            />
-          )
-        }
-      >
-        {!editing ? (
-          <>
-            <NowCard />
-            <QuickActions
-              highlightMeal={action.kind === 'meal-due' ? action.meal : undefined}
-            />
-          </>
-        ) : null}
+        <ScrollView
+          contentContainerStyle={styles.blocks}
+          showsVerticalScrollIndicator={false}
+          // Neutralise le défilement pendant un drag actif (maquette / spec 7.2).
+          scrollEnabled={!dragging}
+        >
+          {grid}
+        </ScrollView>
+      </Screen>
+    );
+  }
 
-        {/* US INSIGHTS-01 — un seul provider autour de la grille, pas un par cellule. */}
-        <InsightsProvider value={insightsValue}>
-          <WidgetGrid
-            screen="home"
-            editing={editing}
-            renderWidget={renderWidget}
-            onDragActiveChange={setDragging}
-            isActive={isWidgetActive}
-            sizeFor={sizeFor}
-          />
-        </InsightsProvider>
+  return (
+    <StageScrollView
+      pillar="home"
+      testID="home-screen"
+      scrollEnabled={!dragging}
+      compactTitle={greeting}
+      compactValue={facts.streak > 0 ? t('home.streak.compact', { count: facts.streak }) : undefined}
+      refreshControl={
+        // US ACCUEIL-05 : le geste est un réflexe et ne renvoyait rien — il n'existait pas un
+        // seul `RefreshControl` dans l'app.
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={onRefresh}
+          tintColor={colors.accent}
+          colors={[colors.accent]}
+        />
+      }
+      stage={
+        <HomeStage
+          scene={scene}
+          greeting={greeting}
+          dateLabel={dateLabel}
+          trailing={
+            <>
+              <SyncStatus />
+              <Link href="/settings" asChild>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('settings.title')}
+                  hitSlop={10}
+                  style={styles.avatar}
+                >
+                  <Ionicons name="person-circle-outline" size={24} color={colors.text} />
+                </Pressable>
+              </Link>
+            </>
+          }
+        >
+          <NowCard />
+        </HomeStage>
+      }
+    >
+      {/* §4.5 — ce qui a bougé depuis la dernière visite : la carte se tait si rien n'a bougé. */}
+      <SinceLastVisitCard />
 
-        {!editing ? <UpNext onCustomize={toggleEditing} /> : null}
-      </ScrollView>
-    </Screen>
+      {/* §4.1 — le bilan de la semaine, les deux premiers jours seulement (BILAN-01). */}
+      <WeeklyStoryCard weekday={isoWeekday(today)} onOpen={() => router.push('/review')} />
+
+      {/* §4.1 — l'objectif dont l'échéance est la plus proche (OBJ-01) ; `active` est déjà trié. */}
+      {activeGoals[0] ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('goals.title')}
+          onPress={() => router.push('/goals')}
+        >
+          <GoalCard goal={activeGoals[0]} />
+        </Pressable>
+      ) : null}
+
+      <QuickActions highlightMeal={action.kind === 'meal-due' ? action.meal : undefined} />
+
+      {grid}
+
+      <UpNext onCustomize={toggleEditing} />
+    </StageScrollView>
   );
 }
 
+/** Jour de la semaine, 1 = lundi (l'ISO, pas le `getDay()` de JavaScript qui met dimanche à 0). */
+function isoWeekday(date: Date): number {
+  const day = date.getDay();
+  return day === 0 ? 7 : day;
+}
+
 const styles = StyleSheet.create({
+  avatar: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
   editHeader: {
     flexDirection: 'row',
     alignItems: 'center',

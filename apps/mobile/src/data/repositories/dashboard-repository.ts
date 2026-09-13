@@ -24,6 +24,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@powersync/react';
 import { useTranslation } from 'react-i18next';
 import {
+  daysBetween,
   activeDayKeys,
   addDays,
   averageIntake,
@@ -922,6 +923,68 @@ export function useRecentStrengthRecords(limit = 4): {
     achievedAt: r.achieved_at,
   }));
   return { records, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// useRecordsCount — US DASH-01 (§4.5, « depuis ta dernière visite »)
+// ---------------------------------------------------------------------------
+
+/**
+ * Nombre **total** de records détenus, muscu et course confondus.
+ *
+ * Un compte, pas une liste : la carte « depuis ta dernière visite » compare ce nombre à celui de la
+ * visite précédente pour dire « 2 records battus ». Charger les lignes pour les compter ferait lire
+ * tout l'historique de records à chaque ouverture de l'accueil — l'écran le plus ouvert de l'app.
+ */
+export function useRecordsCount(): { count: number; isLoading: boolean } {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { data, isLoading } = useQuery<{ n: number }>(
+    `SELECT
+       (SELECT COUNT(*) FROM personal_records WHERE user_id = ? AND deleted_at IS NULL)
+     + (SELECT COUNT(*) FROM running_pace_records WHERE deleted_at IS NULL) AS n`,
+    [userId],
+  );
+  return { count: data[0]?.n ?? 0, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// useDaysSinceLastActivity — US DASH-01 (§4.1, le moment « retour »)
+// ---------------------------------------------------------------------------
+
+/**
+ * Jours écoulés depuis la **dernière trace d'activité**, tous piliers confondus — `null` si l'app
+ * n'a jamais rien enregistré (un nouveau compte n'est pas un retour).
+ *
+ * Trois `MAX` plutôt que trois listes : l'accueil n'a besoin que de la date la plus récente, et
+ * charger l'historique complet pour n'en garder qu'une ligne est exactement ce que les widgets
+ * faisaient avant `useStreakData`.
+ *
+ * ⚠️ `finished_at` est un instant **UTC**, `log_date` une clé de jour **locale** : on ramène les
+ * deux premiers au jour local avant de comparer, sinon une séance de 23 h bascule d'un jour.
+ */
+export function useDaysSinceLastActivity(): { days: number | null; isLoading: boolean } {
+  const todayKey = useTodayKey();
+  const { data, isLoading } = useQuery<{
+    workout_at: string | null;
+    run_at: string | null;
+    food_day: string | null;
+  }>(
+    `SELECT
+       (SELECT MAX(finished_at) FROM workouts WHERE deleted_at IS NULL AND finished_at IS NOT NULL) AS workout_at,
+       (SELECT MAX(finished_at) FROM runs     WHERE deleted_at IS NULL AND finished_at IS NOT NULL) AS run_at,
+       (SELECT MAX(log_date)    FROM food_entries WHERE deleted_at IS NULL) AS food_day`,
+  );
+
+  const row = data[0];
+  const keys = [
+    row?.workout_at ? localDayKey(new Date(row.workout_at)) : null,
+    row?.run_at ? localDayKey(new Date(row.run_at)) : null,
+    row?.food_day ?? null,
+  ].filter((k): k is string => k !== null);
+
+  if (keys.length === 0) return { days: null, isLoading };
+  const last = keys.reduce((a, b) => (a > b ? a : b));
+  return { days: Math.max(0, daysBetween(last, todayKey)), isLoading };
 }
 
 // ---------------------------------------------------------------------------

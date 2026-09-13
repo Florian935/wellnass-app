@@ -3582,5 +3582,132 @@
       "saturatedFat": "Saturated fat"
     },
     "coverage": "Based on {{pct}}% of your calories: quick calorie entries can't contribute."
+  },
+  "stage": {
+    "home": {
+      "timeLeft_one": "Less than an hour left to keep it",
+      "timeLeft_other": "About {{count}} h left to keep it",
+      "jokerLeft_one": "One joker left this month — the safety net, not the excuse",
+      "jokerLeft_other": "{{count}} jokers left this month",
+      "jokerNone": "No joker left this month",
+      "saveStreak": "Save my streak",
+      "comeback": "Good to see you again",
+      "bestStreak_one": "Your best streak: one day",
+      "bestStreak_other": "Your best streak: {{count}} days",
+      "gentleRestart": "Gentle restart",
+      "normalPlan": "Back to the normal plan",
+      "sinceLastVisit": {
+        "title": "Since your last visit",
+        "weightDown": "{{delta}} kg down on the scale",
+        "weightUp": "{{delta}} kg up on the scale",
+        "records_one": "One record beaten",
+        "records_other": "{{count}} records beaten",
+        "predictionFaster": "Your estimated 10 km gains {{seconds}} s",
+        "predictionSlower": "Your estimated 10 km loses {{seconds}} s"
+      },
+      "goal": {
+        "title": "Your closest goal",
+        "deadline_one": "One day left",
+        "deadline_other": "{{count}} days left",
+        "late": "Deadline passed",
+        "progressA11y": "{{percent}}% of the way",
+        "empty": "No goal in progress"
+      },
+      "weeklyStory": {
+        "title": "Your week, in three cards",
+        "volume": "{{workouts}} sessions · {{runs}} runs",
+        "tonnage": "{{tonnage}} kg lifted",
+        "distance": "{{distance}} covered",
+        "records_one": "One record beaten",
+        "records_other": "{{count}} records beaten",
+        "regularity_one": "One active day",
+        "regularity_other": "{{count}} active days",
+        "nutrition": "{{days}} days on target out of {{logged}} logged",
+        "change": "{{percent}}% vs the week before",
+        "cta": "See the review"
+      },
+      "ring": {
+        "strength": "Strength {{done}} of {{target}}",
+        "strengthOnly_one": "Strength: one session",
+        "strengthOnly_other": "Strength: {{count}} sessions",
+        "running": "Running {{done}} of {{target}}",
+        "runningOnly_one": "Running: one run",
+        "runningOnly_other": "Running: {{count}} runs",
+        "nutrition_one": "Nutrition: one day logged out of 7",
+        "nutrition_other": "Nutrition: {{count}} days logged out of 7"
+      }
+    },
+    "nutrition": {
+      "remaining": "{{kcal}} kcal left",
+      "reached": "Target reached",
+      "over": "{{kcal}} kcal over",
+      "ofTarget": "of {{kcal}} kcal targeted",
+      "noTarget": "No calorie target",
+      "trainingBonus": "+{{kcal}} kcal — training day",
+      "macroP": "P",
+      "macroC": "C",
+      "macroF": "F",
+      "macroA11y": "{{macro}}: {{value}} g of {{goal}} g",
+      "consumedA11y": "{{kcal}} kcal eaten",
+      "missingDay_one": "Nothing logged on {{day}} — filling it in would sharpen your cues",
+      "missingDay_other": "Nothing logged on {{day}} ({{count}} gaps this week)",
+      "quickAddA11y": "Add {{name}}, {{kcal}} kcal",
+      "photo": "Meal photo",
+      "search": "Search"
+    },
+    "running": {
+      "eyebrow": {
+        "resume": "Run in progress",
+        "arrival": "Run finished",
+        "today": "Today's session",
+        "rest": "Your running pillar",
+        "onboarding": "Your running pillar"
+      },
+      "primary": {
+        "resume": "Resume",
+        "arrival": "See analysis",
+        "today": "Start",
+        "rest": "Free run",
+        "onboarding": "Pick a program"
+      },
+      "secondary": {
+        "resume": "History",
+        "arrival": "My week",
+        "today": "See details",
+        "rest": "Planning",
+        "onboarding": "Free run"
+      },
+      "inProgress": "{{duration}} run so far",
+      "arrivalMeta": "{{duration}} · {{pace}}",
+      "arrivalA11y": "{{distance}} {{unit}} at {{pace}}",
+      "predictionNew": "New 5 km record — estimated 10 km: {{time}}",
+      "prediction": "Estimated 10 km: {{time}}",
+      "countdownNow": "It's time",
+      "countdownIn_one": "In about an hour",
+      "countdownIn_other": "In about {{count}} hours",
+      "countdownPast_one": "Planned an hour ago",
+      "countdownPast_other": "Planned {{count}} hours ago",
+      "weekLine": "This week: {{distance}} · {{sessions}}",
+      "splits": {
+        "title": "Kilometre by kilometre",
+        "meta": "{{count}} full km",
+        "hint": "Opens the run analysis",
+        "kmA11y": "Kilometre {{km}}, {{pace}}",
+        "onPace": "Km {{km}} · {{pace}} — right on pace",
+        "faster": "Km {{km}} · {{pace}} — {{seconds}} s faster",
+        "slower": "Km {{km}} · {{pace}} — {{seconds}} s slower",
+        "hintTarget": "Tap a kilometre — reference: {{pace}} targeted",
+        "hintAverage": "Tap a kilometre — reference: {{pace}} average"
+      },
+      "predictions": {
+        "title": "If you raced tomorrow",
+        "meta": "From your 5 km record",
+        "a11y": "{{distance}} estimated at {{time}}"
+      },
+      "load": {
+        "title": "Your load",
+        "a11y": "Load {{ratio}}. {{zone}}"
+      }
+    }
   }
 }
