@@ -11,27 +11,32 @@
  * le problème 3 de l'audit de juillet, revenu par la porte du cas « pas encore de programme ».
  *
  * ── Ce qu'il est ─────────────────────────────────────────────────────────────────────────────────
- *   1 · `StrengthNowCard`     — la zone **Agir**, quatre états exclusifs, épinglée hors grille
- *   2 · `ProgramProgressBar`  — « semaine 3 sur 8 », le repère que MUSC-F15 calculait sans l'afficher
- *   3 · `SuggestedPrograms`   — trois propositions, seulement quand il n'y a pas de programme
- *   4 · `WidgetGrid`          — la zone **Suivre**, 3 widgets plafonnés et masqués s'ils sont vides
- *   5 · la ligne d'annuaire   — exercices, programmes, templates
+ *   1 · `StrengthStage`      — la scène (US DASH-01) : les quatre états de la zone Agir, plus le
+ *                              moment « après la séance », la silhouette qui encaisse l'impact et
+ *                              le record à portée du jour
+ *   2 · `StrengthWeekCard`   — la semaine séance par séance, touchable
+ *   3 · `NearRecordsCard`    — « à ta portée », les trois records les plus proches
+ *   4 · `ProgramProgressBar` — « semaine 3 sur 8 », le repère que MUSC-F15 calculait sans l'afficher
+ *   5 · `SuggestedPrograms`  — trois propositions, seulement quand il n'y a pas de programme
+ *   6 · `WidgetGrid`         — la zone **Suivre**, 3 widgets plafonnés et masqués s'ils sont vides
  *
  * ⚠️ La zone Agir et la ligne d'annuaire **ne sont pas des widgets** : elles ne consomment aucune
  * place au plafond `MAX_STRENGTH_WIDGETS`. Même distinction que sur l'accueil.
  */
 
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useMemo, useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { StrengthWidgetId, WidgetId, WidgetSize } from '@wellness/shared';
+import { localDayKey, type StrengthWidgetId, type WidgetId, type WidgetSize } from '@wellness/shared';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { NearRecordsCard } from '@/components/strength/NearRecordsCard';
 import { ProgramProgressBar } from '@/components/strength/ProgramProgressBar';
-import { StrengthNowCard } from '@/components/strength/StrengthNowCard';
+import { StrengthStage, type StrengthScene } from '@/components/strength/StrengthStage';
+import { StrengthWeekCard } from '@/components/strength/StrengthWeekCard';
 import { SuggestedPrograms } from '@/components/strength/SuggestedPrograms';
+import { StageScrollView } from '@/components/stage/StageScrollView';
 import { CustomizeButton } from '@/components/widgets/CustomizeButton';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { STRENGTH_WIDGETS } from '@/components/widgets/strength-widgets';
@@ -42,11 +47,19 @@ import {
   useWorkoutHistory,
 } from '@/data/repositories/workout-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
+import { useNearRecords } from '@/data/repositories/records-repository';
 import { useStrengthHub } from '@/data/repositories/strength-hub-repository';
 import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
 import { useActionLock } from '@/hooks/useActionLock';
+import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+
+/** `AAAA-MM-JJ` → `JJ/MM` (découpage direct : `new Date('AAAA-MM-JJ')` décalerait le jour). */
+function dayMonth(dayKey: string): string {
+  const [, mm, dd] = dayKey.split('-');
+  return `${dd}/${mm}`;
+}
 
 export default function StrengthScreen() {
   useMenuFocus('strength');
@@ -54,7 +67,8 @@ export default function StrengthScreen() {
   const { colors } = useTheme();
   const router = useRouter();
 
-  const { state, progress, programName } = useStrengthHub();
+  const { state, progress, programName, todayMuscles } = useStrengthHub();
+  const todayKey = useTodayKey();
   const { profile } = useProfile();
   const [starting, setStarting] = useState(false);
   const lockStart = useActionLock();
@@ -112,101 +126,211 @@ export default function StrengthScreen() {
       }
     });
 
+  // ── La scène (US DASH-01, §4.4) ───────────────────────────────────────────────────────────
+  /**
+   * La séance terminée **aujourd'hui** : le moment d'après, le cinquième état de la scène. Le hub
+   * le rangeait avec les jours de repos — on venait de soulever deux tonnes et l'écran répondait
+   * « repos mérité », sans un chiffre.
+   */
+  const doneTodayWorkout = useMemo(
+    () =>
+      workouts.find(
+        (w) => w.finishedAt != null && localDayKey(new Date(w.finishedAt)) === todayKey,
+      ) ?? null,
+    [workouts, todayKey],
+  );
+
+  const { items: nearRecordItems } = useNearRecords(1);
+  const nearRecord = nearRecordItems[0] ?? null;
+
+  const scene: StrengthScene = useMemo(() => {
+    if (state.kind === 'resume') {
+      return { kind: 'resume', doneSets: state.workout.doneSets, totalSets: state.workout.totalSets };
+    }
+    // L'après-séance prime sur le repos : il n'a de sens que le jour même.
+    if (state.kind !== 'today' && doneTodayWorkout) {
+      return {
+        kind: 'after-session',
+        name: doneTodayWorkout.sessionName,
+        tonnageKg: doneTodayWorkout.volumeKg,
+        exerciseCount: doneTodayWorkout.exerciseCount,
+        recordsBeaten: doneTodayWorkout.recordCount,
+      };
+    }
+    if (state.kind === 'today') {
+      return {
+        kind: 'today',
+        name: state.session.name,
+        orderIndex: state.session.orderIndex,
+        programName: state.session.programName,
+        exerciseCount: state.session.exerciseCount,
+        estimatedMinutes: state.session.estimatedMinutes,
+        previewExercises: state.session.previewExercises,
+      };
+    }
+    if (state.kind === 'rest') {
+      return {
+        kind: 'rest',
+        doneToday: state.doneToday !== null,
+        // Mêmes libellés que la carte qu'elle remplace : « faite le … » / « prochaine le … ».
+        nextLabel: state.doneToday
+          ? t('home.today.doneToday', {
+              name: state.doneToday.name?.trim() || t('stage.strength.session'),
+            })
+          : state.nextUpcoming
+            ? t('home.today.next', {
+                date: dayMonth(state.nextUpcoming.scheduledDate),
+                name: state.nextUpcoming.name?.trim() || t('stage.strength.session'),
+              })
+            : null,
+      };
+    }
+    return { kind: 'onboarding' };
+  }, [state, doneTodayWorkout, t]);
+
+  /** Le geste principal de la scène, un par état — c'est là que le hub agit. */
+  const onPrimary = () => {
+    switch (scene.kind) {
+      case 'resume':
+        return router.push('/workout');
+      case 'after-session':
+        return doneTodayWorkout
+          ? router.push(`/workout-summary?id=${doneTodayWorkout.id}`)
+          : undefined;
+      case 'today':
+        return state.kind === 'today'
+          ? onStartToday(state.session.sessionId, state.session.plannedSessionId)
+          : undefined;
+      case 'rest':
+        return onStartFree();
+      default:
+        return router.push('/programs');
+    }
+  };
+
+  const onSecondary = () => {
+    switch (scene.kind) {
+      case 'onboarding':
+        return onStartFree();
+      case 'today':
+        return router.push('/planning');
+      default:
+        return router.push('/planning');
+    }
+  };
+
   const renderWidget = (id: WidgetId, size: WidgetSize) => {
     const Widget = STRENGTH_WIDGETS[id as StrengthWidgetId];
     return <Widget size={size} />;
   };
 
-  return (
-    <Screen edges={['top']}>
-      <ScreenHeader
-        title={t('pillars.strength')}
-        action={<CustomizeButton editing={editing} onToggle={() => setEditing((v) => !v)} />}
-      />
+  /** La grille et son intertitre — le même contenu dans les deux modes. */
+  const grid = (
+    <WidgetGrid
+      screen="strength"
+      editing={editing}
+      renderWidget={renderWidget}
+      onDragActiveChange={setDragging}
+      isActive={isWidgetActive}
+    />
+  );
 
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-        scrollEnabled={!dragging}
-      >
-        {/* Zone 1 — Agir. Masquée en édition : garder une carte épinglée au-dessus d'une grille
-            qu'on réorganise ferait croire qu'elle est déplaçable aussi. */}
-        {!editing ? (
-          <>
-            <StrengthNowCard
-              state={state}
-              starting={starting}
-              onResume={() => router.push('/workout')}
-              onStartToday={onStartToday}
-              onStartFree={onStartFree}
-              onFromTemplate={() => router.push('/templates')}
-              onBrowsePrograms={() => router.push('/programs')}
-              onOpenPlanning={() => router.push('/planning')}
-            />
-
-            {/* Zone 2 — l'avancement du programme, quand il y en a un. */}
-            {progress && programName ? (
-              <ProgramProgressBar
-                programName={programName}
-                week={progress.week}
-                totalWeeks={progress.totalWeeks}
-                done={progress.done}
-                total={progress.total}
-                ratio={progress.ratio}
-                onPress={() => router.push('/programs')}
-              />
-            ) : null}
-
-            {/* Zone 3 — les propositions, uniquement pour qui n'a pas encore de programme. */}
-            {state.kind === 'onboarding' ? (
-              <SuggestedPrograms
-                displayLevel={profile?.workoutDisplayLevel}
-                onPick={(programId) => router.push(`/programs/${programId}`)}
-                onSeeAll={() => router.push('/programs')}
-              />
-            ) : null}
-          </>
-        ) : null}
-
-        {/* Zone 4 — Suivre. */}
-        {!editing ? (
-          <View style={styles.sectionHead}>
-            <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>
-              {t('strengthHub.followSection')}
-            </Text>
-            <View style={[styles.rule, { backgroundColor: colors.border }]} />
-          </View>
-        ) : null}
-
-        <WidgetGrid
-          screen="strength"
-          editing={editing}
-          renderWidget={renderWidget}
-          onDragActiveChange={setDragging}
-          isActive={isWidgetActive}
+  /**
+   * Le mode édition **n'a pas de scène** : réorganiser des widgets sous une scène qui, elle, ne se
+   * déplace pas ferait croire qu'elle est déplaçable aussi — la raison qui masquait déjà la carte
+   * épinglée (US MUSCU-UX01).
+   */
+  if (editing) {
+    return (
+      <Screen edges={['top']}>
+        <ScreenHeader
+          title={t('pillars.strength')}
+          action={<CustomizeButton editing={editing} onToggle={() => setEditing((v) => !v)} />}
         />
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={!dragging}
+        >
+          {grid}
+        </ScrollView>
+      </Screen>
+    );
+  }
 
-        {/* Zone 5 — l'annuaire, en pied : c'est une destination, pas une action du jour.
-            Il recueille l'entrée « Mes templates » que le widget `strength-templates` portait. */}
-        {!editing ? (
-          <Pressable
-            accessibilityRole="button"
-            onPress={() => router.push({ pathname: '/exercises', params: { mode: 'browse' } })}
-            style={({ pressed }) => [
-              styles.libraryRow,
-              { backgroundColor: colors.surface, borderColor: colors.border },
-              pressed && styles.pressed,
-            ]}
-          >
-            <Ionicons name="library-outline" size={17} color={colors.textMuted} />
-            <Text style={[styles.libraryLabel, { color: colors.text }]} numberOfLines={1}>
-              {t('strengthHub.directory')}
-            </Text>
-            <Ionicons name="chevron-forward" size={16} color={colors.textMuted} />
-          </Pressable>
-        ) : null}
-      </ScrollView>
-    </Screen>
+  return (
+    <StageScrollView
+      pillar="strength"
+      testID="strength-screen"
+      scrollEnabled={!dragging}
+      compactTitle={t('pillars.strength')}
+      compactValue={progress ? t('stage.strength.weekCard.meta', { done: progress.done, planned: progress.total }) : undefined}
+      stage={
+        <StrengthStage
+          scene={scene}
+          muscles={todayMuscles}
+          nearRecord={
+            nearRecord
+              ? { exerciseName: nearRecord.exerciseName, gapKind: nearRecord.gapKind, gap: nearRecord.gap }
+              : null
+          }
+          weekLabel={
+            progress
+              ? t('stage.strength.week', {
+                  week: progress.week,
+                  total: progress.totalWeeks,
+                  done: progress.done,
+                })
+              : null
+          }
+          busy={starting}
+          onPrimary={onPrimary}
+          onSecondary={onSecondary}
+          onPlanning={() => router.push('/planning')}
+          onDirectory={() => router.push({ pathname: '/exercises', params: { mode: 'browse' } })}
+        />
+      }
+    >
+      {/* §4.4 — la semaine, séance par séance : le hub disait « semaine 3 sur 8 » sans jamais dire
+          ce qu'il restait à faire cette semaine. */}
+      <StrengthWeekCard onOpenDay={() => router.push('/planning')} />
+
+      {/* §4.4 — « à ta portée » : MUSC-09 détectait les records sans jamais dire de combien on
+          était loin. */}
+      <NearRecordsCard onOpenExercise={(exerciseId) => router.push(`/exercises/${exerciseId}`)} />
+
+      {/* L'avancement du programme, quand il y en a un. */}
+      {progress && programName ? (
+        <ProgramProgressBar
+          programName={programName}
+          week={progress.week}
+          totalWeeks={progress.totalWeeks}
+          done={progress.done}
+          total={progress.total}
+          ratio={progress.ratio}
+          onPress={() => router.push('/programs')}
+        />
+      ) : null}
+
+      {/* Les propositions, uniquement pour qui n'a pas encore de programme. */}
+      {state.kind === 'onboarding' ? (
+        <SuggestedPrograms
+          displayLevel={profile?.workoutDisplayLevel}
+          onPick={(programId) => router.push(`/programs/${programId}`)}
+          onSeeAll={() => router.push('/programs')}
+        />
+      ) : null}
+
+      <View style={styles.sectionHead}>
+        <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>
+          {t('strengthHub.followSection')}
+        </Text>
+        <View style={[styles.rule, { backgroundColor: colors.border }]} />
+        <CustomizeButton editing={editing} onToggle={() => setEditing((v) => !v)} />
+      </View>
+
+      {grid}
+    </StageScrollView>
   );
 }
 
@@ -220,15 +344,4 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
   },
   rule: { flex: 1, height: 1 },
-  libraryRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 11,
-    borderRadius: 18,
-    borderWidth: 1,
-    paddingVertical: 13,
-    paddingHorizontal: 16,
-  },
-  libraryLabel: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 14 },
-  pressed: { opacity: 0.85 },
 });

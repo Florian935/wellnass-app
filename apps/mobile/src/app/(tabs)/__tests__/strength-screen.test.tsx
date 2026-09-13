@@ -54,6 +54,26 @@ jest.mock('@/data/repositories/profile-repository', () => ({
 jest.mock('@/components/strength/SuggestedPrograms', () => ({
   SuggestedPrograms: () => null,
 }));
+// US DASH-01 : la scène est REELLE ici (c'est l'assemblage qu'on vérifie) ; les deux cartes du
+// corps ont leurs propres tests.
+jest.mock('@/components/strength/StrengthWeekCard', () => {
+  const { Text } = require('react-native');
+  return { StrengthWeekCard: () => <Text>sonde-semaine</Text> };
+});
+jest.mock('@/components/strength/NearRecordsCard', () => {
+  const { Text } = require('react-native');
+  return { NearRecordsCard: () => <Text>sonde-portee</Text> };
+});
+jest.mock('@/data/repositories/records-repository', () => ({
+  useNearRecords: jest.fn(() => ({ items: [], isLoading: false })),
+}));
+jest.mock('@/hooks/useTodayKey', () => ({
+  useTodayKey: () => '2026-09-14',
+  useTodayDate: () => new Date(2026, 8, 14),
+  useCurrentHour: () => 10,
+  useWindowStartUtc: () => '2026-08-01T00:00:00.000Z',
+  useWindowStartKey: () => '2026-08-01',
+}));
 jest.mock('@/hooks/useMenuFocus', () => ({ useMenuFocus: jest.fn() }));
 
 /**
@@ -105,6 +125,8 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/theme/useTheme', () => ({
   useTheme: () => ({
+    // La scène dérive son dégradé du schéma : sans lui, `stageTheme` n'a pas de teinte.
+    scheme: 'light',
     colors: {
       text: '#33291f',
       textMuted: '#786a59',
@@ -157,6 +179,7 @@ const afficher = async (
     state,
     progress: extra.progress ?? null,
     programName: extra.programName ?? null,
+    todayMuscles: ['chest', 'arms'],
     isLoading: false,
   });
   await render(<StrengthScreen />);
@@ -202,9 +225,9 @@ describe('zone Agir', () => {
 
     expect(screen.getByText('workout.resumeTitle')).toBeTruthy();
     // L'avancement réel : sans lui, « reprendre » ne dit pas où on en est.
-    expect(screen.getByText('7/18')).toBeTruthy();
+    expect(screen.getByText('stage.strength.setsProgress:{"done":7,"total":18}')).toBeTruthy();
 
-    await taper(screen.getByText('workout.resume'));
+    await taper(screen.getByLabelText('stage.strength.primary.resume'));
     expect(push).toHaveBeenCalledWith('/workout');
   });
 
@@ -215,7 +238,7 @@ describe('zone Agir', () => {
     // Le défaut corrigé : on savait « 5 exercices », jamais lesquels.
     expect(screen.getByText('Développé couché')).toBeTruthy();
     expect(screen.getByText('strengthHub.today.more:{"count":2}')).toBeTruthy();
-    expect(screen.getByText('strengthHub.minutesShort:{"count":55}')).toBeTruthy();
+    expect(screen.getByText(/strengthHub\.minutesShort/)).toBeTruthy();
   });
 
   it('🔴 une séance du jour SANS nom retombe sur son rang, 1-indexé', async () => {
@@ -228,7 +251,7 @@ describe('zone Agir', () => {
   it('masque la durée estimée quand elle n’est pas calculable', async () => {
     // Mieux vaut ne rien dire qu'annoncer un chiffre inventé.
     await afficher({ kind: 'today', session: sessionDuJour({ estimatedMinutes: null }) });
-    expect(screen.queryByText('strengthHub.estimated')).toBeNull();
+    expect(screen.queryByText(/strengthHub\.minutesShort/)).toBeNull();
   });
 
   it('🔴 un jour de repos est une information, pas un vide', async () => {
@@ -257,7 +280,7 @@ describe('zone Agir', () => {
     // avant pour quelqu'un qui n'avait encore rien fait.
     await afficher({ kind: 'onboarding' });
 
-    await taper(screen.getByText('strengthHub.onboarding.cta'));
+    await taper(screen.getByLabelText('stage.strength.primary.onboarding'));
     expect(push).toHaveBeenCalledWith('/programs');
   });
 });
@@ -270,7 +293,7 @@ describe('démarrer la séance du jour', () => {
   it('crée la séance en la RATTACHANT à la planification', async () => {
     await afficher({ kind: 'today', session: sessionDuJour() });
 
-    await taper(screen.getByText('home.today.cta'));
+    await taper(screen.getByLabelText('stage.strength.primary.today'));
 
     // Sans `plannedSessionId`, l'occurrence resterait « planifiée » puis « manquée » alors que la
     // séance a réellement eu lieu (US Refonte-A).
@@ -282,7 +305,7 @@ describe('démarrer la séance du jour', () => {
     // Seizième site du défaut du 08/08/2026. Un état React ne voit pas le second appui du même
     // cycle de rendu : seul `useActionLock` garde.
     await afficher({ kind: 'today', session: sessionDuJour() });
-    const bouton = screen.getByText('home.today.cta');
+    const bouton = screen.getByLabelText('stage.strength.primary.today');
 
     await act(async () => {
       fireEvent.press(bouton);
@@ -296,11 +319,11 @@ describe('démarrer la séance du jour', () => {
     mockStartFromSession.mockRejectedValueOnce(new Error('boom'));
     await afficher({ kind: 'today', session: sessionDuJour() });
 
-    await taper(screen.getByText('home.today.cta'));
+    await taper(screen.getByLabelText('stage.strength.primary.today'));
     expect(push).not.toHaveBeenCalled();
 
     mockStartFromSession.mockResolvedValueOnce(undefined);
-    await taper(screen.getByText('home.today.cta'));
+    await taper(screen.getByLabelText('stage.strength.primary.today'));
     expect(push).toHaveBeenCalledWith('/workout');
   });
 });
@@ -316,7 +339,7 @@ describe('séance libre', () => {
     mockTemplates.mockReturnValue({ templates: [], isLoading: false });
     await afficher({ kind: 'onboarding' });
 
-    await taper(screen.getByText('workout.freeTitle'));
+    await taper(screen.getByLabelText('stage.strength.secondary.onboarding'));
 
     expect(Alert.alert).not.toHaveBeenCalled();
     expect(mockStartFree).toHaveBeenCalledTimes(1);
@@ -327,7 +350,7 @@ describe('séance libre', () => {
     mockTemplates.mockReturnValue({ templates: [{ id: 't1' }], isLoading: false });
     await afficher({ kind: 'onboarding' });
 
-    await taper(screen.getByText('workout.freeTitle'));
+    await taper(screen.getByLabelText('stage.strength.secondary.onboarding'));
 
     expect(Alert.alert).toHaveBeenCalled();
     expect(mockStartFree).not.toHaveBeenCalled();
@@ -336,7 +359,7 @@ describe('séance libre', () => {
   it('« à blanc » crée la séance et ouvre la saisie', async () => {
     mockTemplates.mockReturnValue({ templates: [{ id: 't1' }], isLoading: false });
     await afficher({ kind: 'onboarding' });
-    await taper(screen.getByText('workout.freeTitle'));
+    await taper(screen.getByLabelText('stage.strength.secondary.onboarding'));
 
     await act(async () => {
       boutonsAlerte.find((b) => b.text === 'workout.freeStart.blank')?.onPress?.();
@@ -349,7 +372,7 @@ describe('séance libre', () => {
   it('« depuis un modèle » n’écrit rien et ouvre la liste', async () => {
     mockTemplates.mockReturnValue({ templates: [{ id: 't1' }], isLoading: false });
     await afficher({ kind: 'onboarding' });
-    await taper(screen.getByText('workout.freeTitle'));
+    await taper(screen.getByLabelText('stage.strength.secondary.onboarding'));
 
     await act(async () => {
       boutonsAlerte.find((b) => b.text === 'workout.freeStart.fromTemplate')?.onPress?.();

@@ -18,9 +18,11 @@
 import { useQuery } from '@powersync/react-native';
 import {
   estimateSessionMinutes,
+  MUSCLE_GROUPS,
   resolveHubState,
   resolveProgramProgress,
   type HubState,
+  type MuscleGroup,
 } from '@wellness/shared';
 import { getAppLanguage } from '@/i18n';
 import { useAuthStore } from '@/stores/auth-store';
@@ -49,6 +51,8 @@ type TodayPlanRow = {
   exercise_order: number;
   target_sets: number | null;
   rest_seconds: number | null;
+  /** Groupe musculaire principal — la silhouette de la scène (US DASH-01) s'allume dessus. */
+  muscle_primary: string | null;
 };
 
 /**
@@ -64,7 +68,8 @@ export const SELECT_TODAY_PLAN = `
          s.name AS session_name, s.order_index,
          COALESCE(tl.name, tfr.name) AS program_name,
          COALESCE(etl.name, etfr.name) AS exercise_name,
-         ep.order_index AS exercise_order, ep.target_sets, ep.rest_seconds
+         ep.order_index AS exercise_order, ep.target_sets, ep.rest_seconds,
+         e.muscle_primary
   FROM planned_sessions ps
   JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
   JOIN programs  p ON p.id = ps.program_id AND p.deleted_at IS NULL
@@ -133,6 +138,14 @@ export const SELECT_PROGRAM_PROGRESS = `
 
 export type StrengthHubData = {
   state: HubState;
+  /**
+   * Groupes musculaires travaillés par la séance du jour — vide s'il n'y en a pas.
+   *
+   * US DASH-01 : c'est ce qui allume la silhouette de la scène. Rendu à côté de l'état plutôt que
+   * dans `HubTodaySession` : la décision (`resolveHubState`) n'en a pas besoin, et la charger dans
+   * son entrée obligerait chaque test de la brique à inventer des muscles.
+   */
+  todayMuscles: MuscleGroup[];
   /** Avancement du programme actif, `null` si aucun programme ou durée inconnue. */
   progress: ReturnType<typeof resolveProgramProgress>;
   /** Nom du programme actif, pour la barre de progression. */
@@ -217,6 +230,11 @@ export function useStrengthHub(): StrengthHubData {
   const next = nextRows[0];
   const progressRow = progressRows[0];
 
+  // Ordre canonique plutôt qu'ordre d'apparition : la silhouette ne doit pas changer d'aspect
+  // parce qu'un exercice a été remonté dans la séance.
+  const muscles = new Set(planRows.map((r) => r.muscle_primary));
+  const todayMuscles = MUSCLE_GROUPS.filter((group) => muscles.has(group));
+
   return {
     state: resolveHubState({
       activeWorkout,
@@ -236,6 +254,7 @@ export function useStrengthHub(): StrengthHubData {
             totalSessions: progressRow.total_count ?? 0,
           })
         : null,
+    todayMuscles,
     programName: program?.name ?? null,
     isLoading,
   };

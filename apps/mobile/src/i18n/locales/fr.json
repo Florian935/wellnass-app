@@ -3637,23 +3637,59 @@
         "nutrition_other": "Nutrition : {{count}} jours saisis sur 7"
       }
     },
-    "nutrition": {
-      "remaining": "Il te reste {{kcal}} kcal",
-      "reached": "Objectif atteint",
-      "over": "{{kcal}} kcal au-dessus",
-      "ofTarget": "sur {{kcal}} kcal visées",
-      "noTarget": "Aucun objectif calorique",
-      "trainingBonus": "+{{kcal}} kcal — jour de séance",
-      "macroP": "P",
-      "macroC": "G",
-      "macroF": "L",
-      "macroA11y": "{{macro}} : {{value}} g sur {{goal}} g",
-      "consumedA11y": "{{kcal}} kcal consommées",
-      "missingDay_one": "{{day}} n'a rien de saisi — le compléter affinerait tes repères",
-      "missingDay_other": "{{day}} n'a rien de saisi ({{count}} jours à trous cette semaine)",
-      "quickAddA11y": "Ajouter {{name}}, {{kcal}} kcal",
-      "photo": "Photo du repas",
-      "search": "Chercher"
+    "strength": {
+      "eyebrow": {
+        "resume": "Séance en cours",
+        "after-session": "Séance faite",
+        "today": "Ta séance du jour",
+        "rest": "Ton pilier muscu",
+        "onboarding": "Pour commencer"
+      },
+      "primary": {
+        "resume": "Reprendre",
+        "after-session": "Voir le bilan",
+        "today": "Démarrer",
+        "rest": "Séance libre",
+        "onboarding": "Voir les programmes"
+      },
+      "secondary": {
+        "resume": "Voir le planning",
+        "after-session": "Ma semaine",
+        "today": "Voir le détail",
+        "rest": "Voir le planning",
+        "onboarding": "Séance libre"
+      },
+      "kg": "kg",
+      "session": "Séance du jour",
+      "freeSession": "Séance libre",
+      "exercises_one": "un exercice",
+      "exercises_other": "{{count}} exercices",
+      "setsProgress": "{{done}} séries sur {{total}}",
+      "tonnageA11y": "{{kg}} kilos soulevés",
+      "afterMeta": "{{name}} · {{exercises}} exercices",
+      "recordsBeaten_one": "Un record battu",
+      "recordsBeaten_other": "{{count}} records battus",
+      "near": {
+        "kg": "{{exercise}} : {{gap}} kg du record",
+        "reps_one": "{{exercise}} : une répétition du record",
+        "reps_other": "{{exercise}} : {{gap}} répétitions du record",
+        "beaten": "{{exercise}} : record égalé — il ne tient qu'à une série"
+      },
+      "week": "Semaine {{week}} sur {{total}} · {{done}} séances faites",
+      "weekCard": {
+        "title": "Ta semaine",
+        "meta": "{{done}} sur {{planned}}",
+        "dayA11y": "{{day}} — {{state}}",
+        "done": "séance faite",
+        "planned": "séance prévue",
+        "empty": "rien de prévu",
+        "rest": "repos"
+      },
+      "reach": {
+        "title": "À ta portée",
+        "meta": "Records de charge",
+        "hint": "Les écarts se calculent sur tes 45 derniers jours"
+      }
     },
     "running": {
       "eyebrow": {
@@ -3708,6 +3744,24 @@
         "title": "Ta charge",
         "a11y": "Charge {{ratio}}. {{zone}}"
       }
+    },
+    "nutrition": {
+      "remaining": "Il te reste {{kcal}} kcal",
+      "reached": "Objectif atteint",
+      "over": "{{kcal}} kcal au-dessus",
+      "ofTarget": "sur {{kcal}} kcal visées",
+      "noTarget": "Aucun objectif calorique",
+      "trainingBonus": "+{{kcal}} kcal — jour de séance",
+      "macroP": "P",
+      "macroC": "G",
+      "macroF": "L",
+      "macroA11y": "{{macro}} : {{value}} g sur {{goal}} g",
+      "consumedA11y": "{{kcal}} kcal consommées",
+      "missingDay_one": "{{day}} n'a rien de saisi — le compléter affinerait tes repères",
+      "missingDay_other": "{{day}} n'a rien de saisi ({{count}} jours à trous cette semaine)",
+      "quickAddA11y": "Ajouter {{name}}, {{kcal}} kcal",
+      "photo": "Photo du repas",
+      "search": "Chercher"
     }
   }
 }
