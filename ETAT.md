@@ -89,9 +89,9 @@ avant de pouvoir publier.
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
 
-<details><summary>P1 finitions (2) · P2 confort (1)</summary>
+<details><summary>P1 finitions (8) · P2 confort (1)</summary>
 
-**P1** — RUN-F3b — Météo de course · CLAV-01 — Le clavier recouvre les formulaires (edge-to-edge)
+**P1** — RUN-F3b — Météo de course · CLAV-01 — Le clavier recouvre les formulaires (edge-to-edge) · CARDIO-02 — Les quatre portes vers l'allure de référence · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect
 
 **P2** — SOCLE-01 — RevenueCat câblé inactif
 
@@ -104,7 +104,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/dash01-dashboards-immersifs` (modifications non commitées) |
-| Commits | 1225 · `main` a **1224** commits de retard sur `dev` |
+| Commits | 1226 · `main` a **1224** commits de retard sur `dev` |
 | Specs d'US | 147 au total — 85 clôturées, 62 en cours |
 | Migrations | 95/96 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -117,11 +117,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `622339f`  feat(dash-01): retire la surface IA du build de lancement
 - `344c790`  chore(etat): regenere ETAT.md apres la vague DASH-01
 - `6537b91`  perf(dash-01): le brief ne monte ses requetes que le matin
 - `17364ca`  docs(dash-01): recette 62, roadmap 7.29, changelog et les 5 evenements
 - `6c3accd`  feat(dash-01): lot 4 — l'assistant IA, desactive par defaut
-- `b8d4805`  feat(dash-01): lot 3 — l'app qui comprend, sans IA
 
 ---
 

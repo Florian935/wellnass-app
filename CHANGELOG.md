@@ -57,6 +57,42 @@ comme une question avant d'être construit. Il était mentionné en §9 de la sp
 - RECETTES.md §62 passe de 38 à **37 critères** : la section « assistant IA » est remplacée par un
   critère qui vérifie l'**absence** de surface.
 - Tests : `packages/shared` 128 fichiers / 2741 tests · `apps/mobile` 184 suites / 3029 tests.
+## 13/09/2026 — CARDIO-UX01 : les six chantiers non livrés sortent de RECETTES.md
+
+Commit de **suivi seul** — aucun fichier applicatif touché. Clôture de la session CARDIO-UX01 :
+la branche `feature/cardio-refonte-ux` est fusionnée dans `dev` et supprimée (locale et distante),
+et il restait deux endroits où la documentation mentait ou allait perdre de l'information.
+
+### Modifié
+- **[BACKLOG.md](BACKLOG.md)** — ajout de **six candidats P1, `CARDIO-02` → `CARDIO-07`** : les
+  chantiers de l'audit du pilier Course qui n'ont **pas** été livrés dans le lot du 10/09/2026
+  (les quatre portes vers l'allure de référence, l'écran de départ et la saisie rétroactive,
+  l'historique filtrable, l'éditeur de séance à trois niveaux, les semaines qui progressent,
+  l'import GPX / Health Connect). Chaque ligne dit **ce qui est déjà livré** — pour quatre d'entre
+  eux, les briques de calcul sont écrites et testées (`referencePaceFromRaceTime`,
+  `createPastRun`, `SELECT_HISTORY` enrichi, `parseSessionLine` + `SESSION_TEMPLATES`,
+  `sessions.week_index`) et **seuls les écrans manquent**.
+  **Pourquoi maintenant** : ces six chantiers ne vivaient que dans [RECETTES.md](RECETTES.md) §59,
+  un fichier dont la règle explicite est de **se vider dès que l'US est clôturée**. `BACKLOG.md`
+  n'en portait **aucune trace** (0 occurrence de « cardio »). Ils seraient morts avec la recette.
+- **[RECETTES.md](RECETTES.md)** — §59 : encart pointant vers les six nouvelles lignes du backlog,
+  pour que la purge de la section ne fasse plus perdre l'information.
+- **[roadmap](docs/roadmap/roadmap.md)** — ligne **5.40** : la note disait encore
+  « 🔴 **Une migration écrite et NON POUSSÉE** […] `ADAPTATION_WRITE_READY` reste à `false` ».
+  C'était **faux depuis le 10/09/2026** : la migration `20260910214329` est appliquée sur le cloud,
+  le drapeau est à `true` et le bouton « Appliquer aujourd'hui » écrit en base. La note porte
+  désormais l'état réel, ainsi que l'épisode du **refus de `db:push`** et le choix de **redater**
+  la migration plutôt que de forcer `--include-all` (qui aurait laissé `schema_migrations` non
+  monotone). La mention des six chantiers renvoie maintenant au backlog, pas seulement à la recette.
+- **[ETAT.md](ETAT.md)** — régénéré.
+
+### Technique / Notes
+- **Branche supprimée** : `feature/cardio-refonte-ux`, locale et distante. Ses quatre commits
+  (`a035e8d`, `542b753`, `407087d`, `e719a47`) sont tous ancêtres de `dev`, vérifié un par un.
+  **Aucun worktree n'avait été créé** pour cette US — elle a été développée dans l'arbre principal.
+- ⚠️ **Signalé, non traité** (appartient à une autre session) : `node scripts/etat.mjs` remonte
+  la migration `20260912235121_corps02_body_visual_state.sql` **absente du registre**
+  [MIGRATIONS.md](supabase/MIGRATIONS.md) et non poussée sur le cloud.
 
 ## 13/09/2026 — DASH-01 : les quatre dashboards passent à la scène, et l'app commence à comprendre
 

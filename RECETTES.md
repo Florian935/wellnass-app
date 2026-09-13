@@ -2554,14 +2554,14 @@ deux exclusions, toutes deux extérieures à cette US :
 - [x] 63. **§57.23 — plus de clé brute dans le menu ⋮.** Ouvrir le menu pendant une séance : le
       titre du sélecteur affiche « Niveau d'affichage » (« Display level » en anglais), plus
       `workout.displayLevel.title`.
-- [ ] 64. ❌ *Tombé le 11/09 (Pixel 6a, en vibreur) — recorrigé, voir §70.*
+- [x] 64. ✅ *Tombé le 11/09, validé le 13/09 après le second correctif (§70).*
       **§57.21 — le retour haptique existe.** Valider une série produit une vibration brève.
       ⚠️ **Deux conditions à vérifier avant de conclure à un échec** : que la vibration système du
       téléphone soit active, et que le téléphone ne soit pas en mode silencieux total. Le correctif
       repasse par l'API `Vibrator` (celle qui marchait déjà pour le planning et le fractionné) au
       lieu de `performAndroidHapticsAsync`, qu'Android ignore sans rien dire quand le réglage
       « vibration au toucher » est coupé.
-- [ ] 65. ❌ *Tombé le 11/09 — même cause, recorrigé, voir §71.*
+- [x] 65. ✅ *Tombé le 11/09, validé le 13/09 après le second correctif (§71).*
       **La fin de repos vibre toujours.** Même correctif, même code : lancer un repos et le
       laisser aller à 0. C'est la vibration qui marchait **avant** cette US — vérifier qu'elle n'a
       pas été perdue en route.
@@ -2575,8 +2575,12 @@ deux exclusions, toutes deux extérieures à cette US :
       désignés, l'onglet « Mon corps » ne doit afficher **qu'un seul** titre « Force » — celui de
       la section repliable, pas deux.
 
-### Correctifs de la 2ᵉ passe de recette — 11/09/2026 (3 constats)
+### Correctifs de la 2ᵉ passe de recette — 11/09/2026 (3 constats) · ✅ validés le 13/09/2026
 
+> ✅ **Les six critères de ce bloc sont validés** (Florian, 13/09/2026), et avec eux les §64 et §65
+> restés en suspens. ⚠️ **Cela ne clôt pas l'US** : les 59 critères d'origine (§57.1 à 57.59)
+> attendent toujours leur passage sur device — c'est le gros de la recette.
+>
 > Sur les huit critères de la passe précédente, **six passent**. Restent les deux haptiques, tombés
 > pour une raison qui n'avait rien à voir avec la première, plus une remarque d'esthétique et **un
 > défaut nouveau, le plus gênant des trois** : le clavier recouvre la barre de saisie (§57.19).
@@ -2586,30 +2590,30 @@ deux exclusions, toutes deux extérieures à cette US :
 > l'edge-to-edge est **forcé** sur Android : `adjustResize` est toujours au manifeste mais ne
 > redimensionne plus la fenêtre. Un montage en colonne correct ne suffit donc plus.
 
-- [ ] 68. 🔴 **§57.19 — le clavier ne recouvre plus la saisie.** En séance, taper dans le champ de
+- [x] 68. 🔴 **§57.19 — le clavier ne recouvre plus la saisie.** En séance, taper dans le champ de
       **charge** puis dans celui des **reps** : la barre (les deux champs **et** « Valider la
       série ») doit rester **entièrement visible au-dessus du clavier**, et on doit lire ce qu'on
       tape. C'est le critère le plus important de cette passe : sans lui, on saisit à l'aveugle.
-- [ ] 69. **Rien ne saute à la fermeture du clavier.** Valider avec le clavier ouvert, puis le
+- [x] 69. **Rien ne saute à la fermeture du clavier.** Valider avec le clavier ouvert, puis le
       fermer (retour arrière du téléphone) : la barre redescend à sa place, sans laisser de bande
       vide en bas ni chevaucher la barre de navigation gestuelle.
-- [ ] 70. 🔴 **§57.21 — le retour haptique à la validation, seconde tentative.** Valider une série
+- [x] 70. 🔴 **§57.21 — le retour haptique à la validation, seconde tentative.** Valider une série
       doit produire une vibration brève et **nette**. ⚠️ Le premier correctif passait par
       `expo-haptics`, qui n'expose pas une « vibration » mais une **forme d'onde à amplitude
       imposée** : `impactAsync('light')` vaut 30 sur 255, soit 12 % de la puissance du moteur
       pendant 50 ms — sous le seuil de perception d'un Pixel 6a. On repasse sur `Vibration` de
       React Native, qui laisse l'amplitude **par défaut du constructeur** : c'est l'API qui
       marchait avant cette US, et celle du guidage de fractionné.
-- [ ] 71. **La fin de repos vibre, et plus fort que la validation.** Lancer un repos, le laisser
+- [x] 71. **La fin de repos vibre, et plus fort que la validation.** Lancer un repos, le laisser
       aller à 0 : la vibration doit être franchement plus longue que celle d'une série validée
       (140 ms contre 30). Les deux doivent se distinguer les yeux fermés — c'est tout l'intérêt
       d'avoir deux niveaux.
-- [ ] 72. **La bande de statistiques est présentable.** Sur une séance à gros tonnage : les quatre
+- [x] 72. **La bande de statistiques est présentable.** Sur une séance à gros tonnage : les quatre
       nombres ont **la même taille de police** (c'était le défaut — chaque cellule rétrécissait
       différemment, la densité finissait deux fois plus petite que la durée), l'unité est en petit
       à côté du nombre, et le tonnage n'a **plus de décimale** (« 5 500 kg », pas « 5 500,0 kg »).
       Les libellés longs passent à la ligne au lieu de rapetisser.
-- [ ] 73. **Non-régression : les autres vibrations de l'app.** Le glisser-déposer du **planning** et
+- [x] 73. **Non-régression : les autres vibrations de l'app.** Le glisser-déposer du **planning** et
       les annonces du **fractionné** vibrent toujours — ils n'ont pas été touchés, mais ils
       partagent le moteur.
 
@@ -2994,6 +2998,10 @@ n'étaient pas les siens**.
 
 Six chantiers de l'audit ne sont **pas** livrés dans ce lot. Ils ont leur spec, leur plan et,
 pour deux d'entre eux, leurs briques de calcul déjà écrites et testées :
+
+> 📌 **Ils sont désormais aussi dans [BACKLOG.md](BACKLOG.md) (P1, CARDIO-02 → CARDIO-07)**, recopiés
+> le 13/09/2026. C'est volontaire : ce fichier-ci **se vide dès qu'une US est clôturée**, et ces six
+> chantiers n'existaient nulle part ailleurs — ils seraient morts avec la recette.
 
 | Constats | Sujet | État |
 |---|---|---|
