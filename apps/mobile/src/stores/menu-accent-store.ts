@@ -74,10 +74,20 @@ type MenuAccentState = {
   colors: Record<MenuKey, string>;
   /** Menu actuellement affiché (piloté par le focus des onglets). */
   activeMenu: MenuKey;
+  /**
+   * US DASH-01 (R4) — l'onglet **réellement au premier plan**, `null` quand un écran empilé le recouvre.
+   *
+   * Distinct de `activeMenu`, qui garde le dernier menu pour ne pas faire clignoter l'accent : c'est
+   * ce champ-ci que lisent les boucles décoratives pour s'arrêter quand on quitte un pilier.
+   */
+  focusedMenu: MenuKey | null;
   hydrated: boolean;
   hydrate: () => Promise<void>;
   setEnabled: (enabled: boolean) => void;
   setActiveMenu: (menu: MenuKey) => void;
+  setFocusedMenu: (menu: MenuKey | null) => void;
+  /** Libère le focus **seulement** s'il appartient encore à ce menu (un autre a pu le prendre entre-temps). */
+  clearFocusedMenu: (menu: MenuKey) => void;
   setColor: (menu: MenuKey, color: string) => void;
   reset: () => void;
 };
@@ -86,6 +96,7 @@ export const useMenuAccent = create<MenuAccentState>((set, get) => ({
   enabled: false,
   colors: { ...DEFAULT_MENU_COLORS },
   activeMenu: 'home',
+  focusedMenu: null,
   hydrated: false,
   hydrate: async () => {
     if (get().hydrated) return;
@@ -107,6 +118,12 @@ export const useMenuAccent = create<MenuAccentState>((set, get) => ({
   },
   setActiveMenu: (menu) => {
     if (get().activeMenu !== menu) set({ activeMenu: menu });
+  },
+  setFocusedMenu: (menu) => {
+    if (get().focusedMenu !== menu) set({ focusedMenu: menu });
+  },
+  clearFocusedMenu: (menu) => {
+    if (get().focusedMenu === menu) set({ focusedMenu: null });
   },
   setColor: (menu, color) => {
     if (!HEX.test(color)) return;

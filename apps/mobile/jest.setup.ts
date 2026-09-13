@@ -353,6 +353,10 @@ jest.mock('react-native-reanimated', () => {
         fn(...args),
 
     interpolate: (value: number) => value,
+    // US DASH-01 — le repli de scène au défilement. En test il n'y a pas de défilement : le gestionnaire
+    // est une fonction vide, et la valeur partagée reste à 0 (scène dépliée, en-tête compact masqué).
+    useAnimatedScrollHandler: () => () => {},
+    useAnimatedReaction: () => {},
     interpolateColor: () => 'rgba(0, 0, 0, 1)',
     Extrapolation: { CLAMP: 'clamp', EXTEND: 'extend', IDENTITY: 'identity' },
     Easing,
