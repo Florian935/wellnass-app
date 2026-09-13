@@ -1,0 +1,181 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #efe4d1; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .board {
+      width: 880px; height: 940px; box-sizing: border-box; background: #efe4d1; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 36px 36px;
+      display: grid; grid-template-columns: 390px minmax(0, 1fr); gap: 40px; align-items: start;
+    }
+    .ic { display: block; flex: none; }
+
+    /* ── Réplique de l'écran actuel (thème clair, valeurs de workout.tsx / CurrentSetCard / SetActionBar) ── */
+    .ph {
+      width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box;
+      background: #f7eede; border-radius: 26px; border: 1px solid #e0d0b6;
+      box-shadow: 0 26px 50px -30px rgba(60,40,20,.5);
+    }
+    .hd { padding: 12px 20px 10px; display: flex; flex-direction: column; gap: 9px; }
+    .hd-row { display: flex; align-items: center; justify-content: space-between; }
+    .timer { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 19px; }
+    .prog { display: flex; align-items: center; gap: 9px; }
+    .track { flex: 1; height: 5px; border-radius: 3px; background: #eadcc6; overflow: hidden; }
+    .fill { height: 5px; width: 11%; background: #b14f2b; border-radius: 3px; }
+    .prog-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59; }
+    .content { padding: 6px 20px 0; display: flex; flex-direction: column; gap: 12px; }
+    .card { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+    .head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
+    .exn { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 18px; letter-spacing: -.3px; line-height: 22px; }
+    .restc { display: flex; align-items: center; gap: 5px; border-radius: 9px; padding: 5px 9px; background: #f3ddd0; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; color: #786a59; }
+    .chips { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .cd { display: flex; align-items: center; gap: 5px; border-radius: 9px; padding: 6px 9px; background: rgba(102,113,75,.14); color: #66714b; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; }
+    .cc { border: 1.5px solid #b14f2b; border-radius: 9px; padding: 5px 10px; color: #b14f2b; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; }
+    .ct { border-radius: 9px; padding: 6px 10px; background: #f3ddd0; color: #786a59; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; }
+    .div { height: 1px; background: #ece0cd; }
+    .refs { display: flex; flex-direction: column; gap: 6px; }
+    .ref { display: flex; align-items: center; gap: 8px; }
+    .rl { width: 82px; flex: none; font-size: 12px; color: #786a59; }
+    .rv { font-family: 'Space Mono', ui-monospace, monospace; font-size: 13px; }
+    .rs { font-weight: 600; font-size: 13px; color: #66714b; }
+    .warm { align-self: flex-start; display: flex; align-items: center; gap: 6px; border-radius: 10px; padding: 7px 11px; background: #f3ddd0; font-size: 12.5px; font-weight: 600; color: #786a59; }
+    .extras { display: flex; align-items: center; gap: 8px; border: 1px solid #ece0cd; border-radius: 12px; padding: 10px 12px; font-size: 13px; color: #786a59; }
+    .lcard { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 14px; }
+    .lcard-cur { border: 2px solid #b14f2b; }
+    .lh { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; }
+    .ln { font-weight: 600; font-size: 15px; }
+    .lc { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 14px; color: #786a59; }
+    .lacts { display: flex; align-items: center; gap: 8px; padding: 9px 16px 12px; border-top: 1px solid #ece0cd; }
+    .arr { display: flex; flex-direction: column; gap: 2px; }
+    .arr span { display: block; width: 26px; height: 16px; border-radius: 5px; background: #f3ddd0; }
+    .ab { padding: 6px 10px; border-radius: 8px; background: #f3ddd0; color: #b14f2b; font-weight: 700; font-size: 11.5px; }
+    .abg { padding: 6px 10px; border-radius: 8px; border: 1px solid #ece0cd; color: #786a59; font-weight: 700; font-size: 11.5px; }
+    .bar {
+      position: absolute; left: 0; right: 0; bottom: 0; background: #fffaf2; border-top: 1px solid #90897d;
+      padding: 12px 20px 12px; display: flex; flex-direction: column; gap: 10px;
+      box-shadow: 0 -8px 24px rgba(51,41,31,.07);
+    }
+    .ctx { display: flex; justify-content: space-between; font-size: 12.5px; }
+    .ctx b { font-weight: 600; }
+    .ctx span { color: #786a59; font-size: 12px; }
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .field { display: flex; align-items: center; gap: 5px; border: 1px solid #ece0cd; border-radius: 14px; padding: 4px; background: #f7eede; }
+    .step { width: 38px; height: 44px; border-radius: 11px; border: 1px solid #ece0cd; background: #fffaf2; display: flex; align-items: center; justify-content: center; }
+    .fc { flex: 1; display: flex; flex-direction: column; align-items: center; }
+    .fn { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 20px; line-height: 24px; }
+    .fu { font-weight: 600; font-size: 9px; letter-spacing: .5px; color: #786a59; }
+    .val { min-height: 56px; border-radius: 16px; background: #b14f2b; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 17px; }
+
+    /* Repères numérotés, alignés sur les notes */
+    .mk {
+      position: absolute; width: 24px; height: 24px; border-radius: 50%; background: #33291f; color: #f7eede;
+      font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11.5px;
+      display: flex; align-items: center; justify-content: center; box-shadow: 0 0 0 3px #f7eede;
+    }
+
+    /* ── Notes ── */
+    .notes { display: flex; flex-direction: column; gap: 18px; padding-top: 6px; }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .h { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.1px; line-height: 1.02; margin-top: 8px; text-wrap: balance; }
+    .lede { font-size: 14px; line-height: 1.55; color: #5c4d3d; margin-top: 10px; }
+    .note { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 12px; align-items: start; }
+    .nm { width: 24px; height: 24px; border-radius: 50%; background: #33291f; color: #f7eede; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11.5px; display: flex; align-items: center; justify-content: center; }
+    .nt { font-size: 14px; line-height: 1.5; color: #33291f; }
+    .nt b { font-weight: 700; }
+    .nt span { color: #786a59; }
+    .keep { border-top: 1px solid #dccbb0; padding-top: 16px; font-size: 13px; line-height: 1.55; color: #5c4d3d; }
+    .keep b { color: #33291f; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div class="ph">
+    <div class="hd">
+      <div class="hd-row">
+        <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        <div class="timer">08:36</div>
+        <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="#33291f"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+      </div>
+      <div class="prog"><div class="track"><div class="fill"></div></div><div class="prog-l">2/18 séries</div></div>
+    </div>
+    <div class="content">
+      <div class="card">
+        <div class="head">
+          <div class="exn">Développé couché</div>
+          <div class="restc"><svg class="ic" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2.5h5"/></svg>120 s</div>
+        </div>
+        <div class="chips">
+          <div class="cd"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>80×8</div>
+          <div class="cd"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>80×8</div>
+          <div class="cc">Série 3/4</div>
+          <div class="ct">4</div>
+          <svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div class="div"></div>
+        <div class="refs">
+          <div class="ref"><div class="rl">Dernière fois</div><div class="rv">77,5 kg × 8/8/7/6</div></div>
+          <div class="ref"><div class="rl">Prévu</div><div class="rv">82,5 kg</div></div>
+          <div class="ref"><div class="rl">Suggestion</div><div class="rs">Essaie 80 kg ou 8 reps</div></div>
+        </div>
+        <div class="warm"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3c1 3 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-4 2.5-5.5.3 1.7 1 2.7 2 3.2C11 8.5 11.5 5.5 12 3z"/></svg>Échauffement</div>
+        <div class="extras"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M18 7h2M4 17h3M12 17h8"/><circle cx="15.5" cy="7" r="2.2"/><circle cx="9.5" cy="17" r="2.2"/></svg><span style="flex: 1">Type de série, intensité, note, superset</span><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+      </div>
+      <div class="lcard lcard-cur">
+        <div class="lh"><div class="ln">Développé couché</div><div class="lc">2/4</div></div>
+        <div class="lacts"><div class="arr"><span></span><span></span></div><div class="ab">Plus tard</div><div class="abg">Remplacer</div></div>
+      </div>
+      <div class="lcard">
+        <div class="lh"><div class="ln">Développé incliné haltères</div><div class="lc">0/4</div></div>
+        <div class="lacts"><div class="arr"><span></span><span></span></div><div class="ab">Plus tard</div><div class="abg">Remplacer</div></div>
+      </div>
+    </div>
+    <div class="bar">
+      <div class="ctx"><b>Développé couché</b><span>Série 3/4</span></div>
+      <div class="fields">
+        <div class="field">
+          <div class="step"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg></div>
+          <div class="fc"><div class="fn">6</div><div class="fu">REPS</div></div>
+          <div class="step"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+        <div class="field">
+          <div class="step"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14"/></svg></div>
+          <div class="fc"><div class="fn">82.5</div><div class="fu">KG</div></div>
+          <div class="step"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+        </div>
+      </div>
+      <div class="val">Valider la série</div>
+    </div>
+
+    <div class="mk" style="left: 352px; top: 40px">1</div>
+    <div class="mk" style="left: 352px; top: 222px">2</div>
+    <div class="mk" style="left: 352px; top: 478px">3</div>
+    <div class="mk" style="left: 352px; top: 718px">4</div>
+    <div class="mk" style="left: 352px; top: 790px">5</div>
+  </div>
+
+  <div class="notes">
+    <div>
+      <div class="eb">Aujourd'hui · écran de séance</div>
+      <div class="h">Juste, mais muet</div>
+      <div class="lede">MUSCU-UX01 a remis le geste sous le pouce et MOTION-01 a donné un anneau au repos. Il manque la réponse : la série moyenne et le record reçoivent exactement la même.</div>
+    </div>
+    <div class="note"><div class="nm">1</div><div class="nt"><b>Aucun seuil d'entrée.</b> « Commencer » atterrit ici, chrono lancé. <span>Rien ne dit ce qui attend, ni ce qui se joue aujourd'hui.</span></div></div>
+    <div class="note"><div class="nm">2</div><div class="nt"><b>Les repères sont là, l'enjeu non.</b> 82,5 kg dépasse le record de 80 kg ; l'écran ne le sait pas. <span>Les records ne sont calculés qu'à la clôture.</span></div></div>
+    <div class="note"><div class="nm">3</div><div class="nt"><b>La gestion reste affichée pendant l'effort.</b> Flèches, « Plus tard », « Remplacer » : sur chaque exercice restant, à chaque série.</div></div>
+    <div class="note"><div class="nm">4</div><div class="nt"><b>Ce qu'on va soulever tient dans deux champs de 20 px</b>, sur le fond clair de l'app. <span>L'écran le plus regardé du pilier ressemble à un formulaire.</span></div></div>
+    <div class="note"><div class="nm">5</div><div class="nt"><b>Valider : un enfoncement et 30 ms de vibration.</b> Pas de comparaison avec la dernière fois. Et en fin d'exercice, le focus glisse au suivant sans rien marquer.</div></div>
+    <div class="keep"><b>Ce qu'on garde tel quel :</b> la barre d'action fixe (règle R4-1), les trois niveaux d'affichage, l'enchaînement superset, l'anneau de repos, les durées de vibration calibrées pour un Pixel 6a.</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

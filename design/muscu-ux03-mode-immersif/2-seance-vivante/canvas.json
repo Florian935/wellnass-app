@@ -1,0 +1,95 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1400,
+      "h": 1400,
+      "title": "La séance vivante"
+    },
+    {
+      "file": "Prototype.dc.html",
+      "x": 1520,
+      "y": 0,
+      "w": 760,
+      "h": 920,
+      "title": "Prototype jouable (son conseillé)",
+      "is_interactive": true
+    },
+    {
+      "file": "Modes.dc.html",
+      "x": 2400,
+      "y": 0,
+      "w": 1780,
+      "h": 1880,
+      "title": "Deux modes : classique et immersif"
+    },
+    {
+      "file": "SerieDirect.dc.html",
+      "x": 0,
+      "y": 2040,
+      "w": 1360,
+      "h": 1260,
+      "title": "Pendant l'effort"
+    },
+    {
+      "file": "ReposVivant.dc.html",
+      "x": 1480,
+      "y": 2040,
+      "w": 1360,
+      "h": 1270,
+      "title": "Pendant le repos"
+    },
+    {
+      "file": "Final.dc.html",
+      "x": 2960,
+      "y": 2040,
+      "w": 1360,
+      "h": 1260,
+      "title": "La fin"
+    },
+    {
+      "file": "Coach.dc.html",
+      "x": 0,
+      "y": 3470,
+      "w": 1400,
+      "h": 1720,
+      "title": "Le coach"
+    },
+    {
+      "file": "Fil.dc.html",
+      "x": 1520,
+      "y": 3470,
+      "w": 1360,
+      "h": 1270,
+      "title": "Le fil qui ne casse pas"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-lecture",
+      "x": 0,
+      "y": -150,
+      "w": 620,
+      "text": "Commence par la vue d'ensemble, puis joue le prototype, son allumé : le coach parle, la barre claque, le repos respire."
+    },
+    {
+      "id": "note-modes",
+      "x": 2400,
+      "y": -150,
+      "w": 620,
+      "text": "Nouveau : l'immersif devient un mode en plus. Le classique reste, avec la bascule en pleine séance et les options d'abonnement."
+    },
+    {
+      "id": "note-planches",
+      "x": 0,
+      "y": 1900,
+      "w": 620,
+      "text": "Les planches bougent en boucle, dans l'ordre d'une séance : l'effort, le repos, la fin. En dessous, le coach et ce qui retient hors de l'app."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

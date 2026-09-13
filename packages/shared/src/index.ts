@@ -43,6 +43,14 @@ export * from './exercise-filter';
 export * from './exercise-variant';
 export * from './workout';
 export * from './workout-display';
+// US MUSCU-UX03 — mode immersif : les briques de calcul de la séance vivante.
+export * from './set-feel';
+export * from './barbell';
+export * from './workout-verdict';
+export * from './live-records';
+export * from './session-heat';
+export * from './ghost';
+export * from './coach-script';
 export * from './workout-comparison';
 export * from './workout-feeling';
 export * from './strength-planning';

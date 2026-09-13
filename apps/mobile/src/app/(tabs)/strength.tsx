@@ -23,7 +23,7 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { StrengthWidgetId, WidgetId, WidgetSize } from '@wellness/shared';
@@ -45,6 +45,9 @@ import { useProfile } from '@/data/repositories/profile-repository';
 import { useStrengthHub } from '@/data/repositories/strength-hub-repository';
 import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
 import { useActionLock } from '@/hooks/useActionLock';
+import { briefRouteForSession } from '@/components/workout/immersive/brief-entry';
+import { SessionModeSheet } from '@/components/workout/immersive/SessionModeSheet';
+import { useSessionMode } from '@/stores/session-mode-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -60,6 +63,14 @@ export default function StrengthScreen() {
   const lockStart = useActionLock();
   const [editing, setEditing] = useState(false);
   const [dragging, setDragging] = useState(false);
+  // US MUSCU-UX03, R-MO-3 : la question du mode, posée **une seule fois**, et seulement à
+  // quelqu'un qui n'a encore rien fait. `pendingStart` retient l'action à rejouer après le choix.
+  const modeChosen = useSessionMode((state) => state.chosen);
+  const setSessionMode = useSessionMode((state) => state.setMode);
+  const [pendingStart, setPendingStart] = useState<(() => void) | null>(null);
+  // Une fois la question posée, elle ne se repose pas dans la même session d'écran — sinon
+  // « ne pas retenir mon choix » bouclerait à l'infini sur la feuille.
+  const modeAsked = useRef(false);
 
   // ── Widgets conditionnels ─────────────────────────────────────────────────────────────────
   // Le défaut corrigé : sans ce prédicat, une tuile sans donnée réserve quand même sa case et
@@ -73,7 +84,16 @@ export default function StrengthScreen() {
     return true;
   };
 
+  /** Faut-il poser la question du mode avant de démarrer ? (R-MO-3) */
+  const askMode = (run: () => void): boolean => {
+    if (modeAsked.current || modeChosen || workouts.length > 0) return false;
+    modeAsked.current = true;
+    setPendingStart(() => run);
+    return true;
+  };
+
   const onStartFree = () => {
+    if (askMode(onStartFree)) return;
     // Le choix « à blanc / depuis un template » n'a de sens que si des templates existent.
     if (templates.length === 0) {
       void lockStart(async () => {
@@ -99,7 +119,15 @@ export default function StrengthScreen() {
   // `starting` ne pilote que l'affichage : la garde est portée par `useActionLock`. Un état React
   // ne voit pas un second appui du même cycle de rendu — sans le verrou, deux appuis créaient
   // DEUX séances, dont une orpheline que rien ne rouvrirait.
-  const onStartToday = (sessionId: string, plannedSessionId: string) =>
+  const onStartToday = (sessionId: string, plannedSessionId: string) => {
+    if (askMode(() => onStartToday(sessionId, plannedSessionId))) return;
+    // Mode immersif : on annonce la séance **avant** de la créer (US MUSCU-UX03, §5.1). Le brief
+    // porte lui-même le démarrage, pour que le chrono parte sur « C'est parti ».
+    const brief = briefRouteForSession(sessionId, plannedSessionId);
+    if (brief) {
+      router.push(brief);
+      return;
+    }
     void lockStart(async () => {
       setStarting(true);
       try {
@@ -111,6 +139,7 @@ export default function StrengthScreen() {
         setStarting(false);
       }
     });
+  };
 
   const renderWidget = (id: WidgetId, size: WidgetSize) => {
     const Widget = STRENGTH_WIDGETS[id as StrengthWidgetId];
@@ -206,6 +235,20 @@ export default function StrengthScreen() {
           </Pressable>
         ) : null}
       </ScrollView>
+
+      {/* La question du mode, posée une seule fois (R-MO-3). Elle rejoue ensuite l'action qui
+          l'avait déclenchée : l'utilisateur voulait démarrer, pas régler quelque chose. */}
+      <SessionModeSheet
+        visible={pendingStart !== null}
+        onClose={() => setPendingStart(null)}
+        onPick={(mode, remember) => {
+          setSessionMode(mode, { remember });
+          const run = pendingStart;
+          setPendingStart(null);
+          run?.();
+        }}
+        colors={colors}
+      />
     </Screen>
   );
 }

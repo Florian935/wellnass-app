@@ -28,6 +28,30 @@ import * as Notifications from 'expo-notifications';
 export const REMINDERS_CHANNEL_ID = 'reminders';
 
 /**
+ * Canal Android « Séance » — US MUSCU-UX03, spec §5.15.
+ *
+ * Distinct de « Rappels » à dessein : un utilisateur qui coupe les rappels quotidiens ne coupe pas
+ * pour autant le signal de fin de repos qu'il vient lui-même de lancer. Deux canaux, deux
+ * interrupteurs dans les réglages Android — c'est précisément à quoi servent les canaux.
+ */
+export const SESSION_CHANNEL_ID = 'session';
+
+/** Identifiant stable du rappel de fin de repos (au plus un en attente). */
+export const REST_REMINDER_ID = 'rest-over';
+
+/** Identifiant de la notification continue affichée pendant le repos, app en arrière-plan. */
+export const REST_ONGOING_ID = 'rest-ongoing';
+
+/**
+ * Marqueur posé dans `content.data` des notifications **de séance**.
+ *
+ * ⚠️ Sans lui, le gestionnaire ci-dessous afficherait la fin de repos **par-dessus l'écran de
+ * repos lui-même** : l'app est au premier plan, elle a déjà vibré et affiché « C'est reparti », et
+ * une bannière viendrait redire la même chose en masquant la série suivante.
+ */
+export const SESSION_NOTIFICATION_MARKER = 'sessionRest';
+
+/**
  * Identifiant stable du rappel « série en danger ». Réutiliser le même id à
  * chaque planification garantit qu'au plus **un** rappel streak est en attente
  * (idempotence : re-planifier remplace l'existant).
@@ -73,14 +97,22 @@ export interface ReminderContent {
 /**
  * Affiche les notifications même lorsque l'app est au premier plan (bannière +
  * liste, sans son ni badge). Enregistré une seule fois au chargement du module.
+ *
+ * **Une exception** (US MUSCU-UX03) : les notifications de séance marquées
+ * `SESSION_NOTIFICATION_MARKER` ne s'affichent **pas** au premier plan — l'écran de repos a déjà
+ * dit tout ce qu'elles disent. Elles existent pour l'utilisateur qui a quitté l'app.
  */
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowBanner: true,
-    shouldShowList: true,
-    shouldPlaySound: false,
-    shouldSetBadge: false,
-  }),
+  handleNotification: async (notification) => {
+    const isSessionNotification =
+      notification.request.content.data?.kind === SESSION_NOTIFICATION_MARKER;
+    return {
+      shouldShowBanner: !isSessionNotification,
+      shouldShowList: !isSessionNotification,
+      shouldPlaySound: false,
+      shouldSetBadge: false,
+    };
+  },
 });
 
 /**
@@ -98,6 +130,7 @@ export async function ensurePermissionAndChannel(): Promise<boolean> {
         name: 'Rappels',
         importance: Notifications.AndroidImportance.DEFAULT,
       });
+      await ensureSessionChannel();
     }
 
     const current = await Notifications.getPermissionsAsync();
@@ -242,5 +275,107 @@ export async function presentNow(id: string, content: ReminderContent): Promise<
     return true;
   } catch {
     return false;
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Séance (US MUSCU-UX03, spec §5.15)
+// ---------------------------------------------------------------------------
+
+/**
+ * Crée le canal « Séance » s'il n'existe pas. Importance **haute** : la fin d'un repos est un
+ * signal qu'on attend, contrairement à un rappel quotidien.
+ */
+export async function ensureSessionChannel(): Promise<void> {
+  if (Platform.OS !== 'android') return;
+  try {
+    await Notifications.setNotificationChannelAsync(SESSION_CHANNEL_ID, {
+      name: 'Séance',
+      importance: Notifications.AndroidImportance.HIGH,
+    });
+  } catch {
+    // no-op : module indisponible.
+  }
+}
+
+/**
+ * (Re)planifie le rappel de fin de repos.
+ *
+ * **Hors quota** (décisions D14/D3) : le plafond de 3 notifications par jour protège des rappels
+ * *non sollicités* ; un repos est lancé par l'utilisateur, à la seconde près, et l'attendre est
+ * précisément ce qu'il fait. Le compter dans le quota reviendrait à couper la troisième série
+ * d'une séance de dix.
+ */
+export async function scheduleRestReminder(input: {
+  at: Date;
+  title: string;
+  body: string;
+}): Promise<void> {
+  try {
+    await ensureSessionChannel();
+    await Notifications.scheduleNotificationAsync({
+      identifier: REST_REMINDER_ID,
+      content: {
+        title: input.title,
+        body: input.body,
+        data: { kind: SESSION_NOTIFICATION_MARKER },
+      },
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DATE,
+        date: input.at,
+        channelId: SESSION_CHANNEL_ID,
+      },
+    });
+  } catch {
+    // no-op : permission refusée / échéance passée / module indisponible.
+  }
+}
+
+/** Annule le rappel de fin de repos. Idempotent, ne lève jamais. */
+export async function cancelRestReminder(): Promise<void> {
+  try {
+    await Notifications.cancelScheduledNotificationAsync(REST_REMINDER_ID);
+  } catch {
+    // no-op : rien à annuler.
+  }
+}
+
+/**
+ * Affiche la notification **continue** du repos (app en arrière-plan).
+ *
+ * `sticky` la rend non balayable : elle disparaît quand le repos finit, pas avant — c'est le
+ * principe d'une notification d'état, et c'est ce qui permet de revenir dans la séance d'un
+ * toucher. **Pas de décompte à la seconde** : une heure d'affichage ne coûte rien tant qu'on
+ * n'oblige pas l'OS à redessiner soixante fois par minute (§11).
+ */
+export async function presentRestOngoing(content: ReminderContent): Promise<void> {
+  try {
+    await ensureSessionChannel();
+    await Notifications.scheduleNotificationAsync({
+      identifier: REST_ONGOING_ID,
+      content: {
+        title: content.title,
+        body: content.body,
+        sticky: true,
+        data: { kind: SESSION_NOTIFICATION_MARKER },
+      },
+      trigger: { channelId: SESSION_CHANNEL_ID },
+    });
+  } catch {
+    // no-op.
+  }
+}
+
+/** Retire la notification continue du repos, qu'elle soit affichée ou encore en attente. */
+export async function dismissRestOngoing(): Promise<void> {
+  try {
+    await Notifications.dismissNotificationAsync(REST_ONGOING_ID);
+  } catch {
+    // no-op.
+  }
+  try {
+    await Notifications.cancelScheduledNotificationAsync(REST_ONGOING_ID);
+  } catch {
+    // no-op.
   }
 }

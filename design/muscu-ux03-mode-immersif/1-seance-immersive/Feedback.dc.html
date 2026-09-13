@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .board {
+      width: 1320px; height: 1240px; box-sizing: border-box; background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 44px 40px; display: flex; flex-direction: column; gap: 28px;
+    }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .h1 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 44px; letter-spacing: -1.5px; line-height: 1; margin-top: 8px; }
+    .lede { font-size: 15px; line-height: 1.55; color: #5c4d3d; max-width: 780px; margin-top: 12px; }
+
+    .tb { display: flex; flex-direction: column; }
+    .tr { display: grid; grid-template-columns: 210px 86px 350px 150px minmax(0, 1fr); gap: 20px; align-items: start; padding: 12px 0; border-top: 1px solid #e3d4bd; }
+    .th { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #786a59; border-top: none; padding-top: 0; }
+    .m { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 16px; letter-spacing: -.3px; line-height: 1.2; }
+    .lvl { display: inline-block; margin-top: 4px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: .8px; text-transform: uppercase; }
+    .freq { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px; }
+    .d { font-size: 13.5px; line-height: 1.45; }
+    .d span { color: #786a59; }
+    .vib { display: flex; align-items: center; gap: 8px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; }
+    .bars { display: flex; align-items: center; gap: 3px; }
+    .bars i { display: block; height: 10px; border-radius: 2px; background: #33291f; }
+    .new { font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 10.5px; font-weight: 700; color: #b14f2b; }
+    .cp { display: flex; flex-direction: column; gap: 3px; }
+    .cp-fr { display: inline-flex; align-self: flex-start; height: 28px; align-items: center; padding: 0 11px; border-radius: 999px; background: #1c150e; font-size: 12.5px; font-weight: 700; }
+    .cp-en { font-size: 12px; color: #786a59; font-style: italic; padding-left: 4px; }
+    .row-strong { background: linear-gradient(90deg, rgba(224,177,85,.12), rgba(224,177,85,0) 70%); }
+
+    .bottom { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 36px; }
+    .h2 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px; margin-bottom: 12px; }
+    .rules { display: flex; flex-direction: column; gap: 12px; }
+    .rule { font-size: 14px; line-height: 1.5; }
+    .rule b { font-weight: 700; }
+    .tech { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 20px 22px; display: flex; flex-direction: column; gap: 10px; }
+    .tech-i { font-size: 13.5px; line-height: 1.5; color: #33291f; }
+    .tech-i b { font-weight: 700; }
+    .tech-i code { font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; background: #f3ddd0; border-radius: 4px; padding: 0 4px; color: #8a3c1f; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div>
+    <div class="eb">Les réponses de l'app, et leur dosage</div>
+    <div class="h1">Rare, donc fort</div>
+    <div class="lede">L'immersion ne vient pas de la quantité d'effets, mais de leur hiérarchie. Plus un moment est fréquent, plus sa réponse est brève ; plus il est rare, plus il a le droit de prendre l'écran. Budget calculé pour une séance de 18 séries.</div>
+  </div>
+
+  <div class="tb">
+    <div class="tr th"><div>Moment</div><div>Par séance</div><div>À l'écran</div><div>Vibration</div><div>Texte · FR / EN</div></div>
+
+    <div class="tr">
+      <div><div class="m">Entrée en séance</div><div class="lvl" style="color: #786a59">seuil</div></div>
+      <div class="freq">1</div>
+      <div class="d">Le brief : ce qui attend et l'enjeu du jour, s'il y en a un. <span>Sautée quand on reprend une séance en cours.</span></div>
+      <div class="vib">—</div>
+      <div class="cp"><div class="cp-fr" style="color: #e0b155">L'enjeu du jour</div><div class="cp-en">Today's challenge</div></div>
+    </div>
+
+    <div class="tr">
+      <div><div class="m">Série validée</div><div class="lvl" style="color: #786a59">réponse</div></div>
+      <div class="freq">18</div>
+      <div class="d">La pastille de la série encaisse, le verdict monte au-dessus du pont puis passe en tête du repos.</div>
+      <div class="vib"><span class="bars"><i style="width: 6px"></i></span>30 ms</div>
+      <div class="cp"><div class="cp-fr" style="color: #a9ba7e">+2,5 kg vs mardi</div><div class="cp-en">+2.5 kg vs Tuesday</div></div>
+    </div>
+
+    <div class="tr">
+      <div><div class="m">Repos, 5 s avant la fin</div><div class="lvl" style="color: #786a59">réponse</div></div>
+      <div class="freq">15</div>
+      <div class="d">L'anneau vire au vert (déjà en place) et « de repos » devient « Prépare-toi ». <span>On se remet sous la barre avant le signal, pas après.</span></div>
+      <div class="vib"><span class="bars"><i style="width: 3px"></i></span>15 ms <span class="new">nouveau</span></div>
+      <div class="cp"><div class="cp-fr" style="color: #a9ba7e">Prépare-toi</div><div class="cp-en">Get ready</div></div>
+    </div>
+
+    <div class="tr">
+      <div><div class="m">Record de performance</div><div class="lvl" style="color: #b47f31">événement</div></div>
+      <div class="freq">0 – 4</div>
+      <div class="d">Le verdict passe en ambre. <span>1RM estimé battu sans charge nouvelle : ça compte, ça ne prend pas l'écran.</span></div>
+      <div class="vib"><span class="bars"><i style="width: 28px"></i></span>140 ms</div>
+      <div class="cp"><div class="cp-fr" style="color: #e0b155">Record · 1RM estimé 104 kg</div><div class="cp-en">Record · est. 1RM 104 kg</div></div>
+    </div>
+
+    <div class="tr row-strong">
+      <div><div class="m">Charge max battue</div><div class="lvl" style="color: #b47f31">célébration</div></div>
+      <div class="freq">0 – 2</div>
+      <div class="d">Prise d'écran de 2,6 s pendant le repos : ressort, deux ondes, ancien record. <span>Le repos continue dessous ; un toucher la ferme.</span></div>
+      <div class="vib"><span class="bars"><i style="width: 28px"></i><i style="width: 16px"></i></span>140 + 80 ms <span class="new">nouveau</span></div>
+      <div class="cp"><div class="cp-fr" style="color: #e0b155">Plus lourd que jamais au développé couché.</div><div class="cp-en">Heaviest ever on bench press.</div></div>
+    </div>
+
+    <div class="tr">
+      <div><div class="m">Exercice bouclé</div><div class="lvl" style="color: #b14f2b">transition</div></div>
+      <div class="freq">4</div>
+      <div class="d">Bilan de l'exercice (séries, tonnage, écart) ; le suivant entre par la droite avec sa charge.</div>
+      <div class="vib"><span class="bars"><i style="width: 28px"></i></span>140 ms</div>
+      <div class="cp"><div class="cp-fr" style="color: #a9ba7e">Exercice bouclé · 4 % vs mardi</div><div class="cp-en">Exercise done · 4% vs Tuesday</div></div>
+    </div>
+
+    <div class="tr">
+      <div><div class="m">Dernier exercice, dernière série</div><div class="lvl" style="color: #b14f2b">transition</div></div>
+      <div class="freq">2</div>
+      <div class="d">Le surtitre de la scène passe en accent. <span>Aucun autre effet : c'est le mot qui porte.</span></div>
+      <div class="vib">—</div>
+      <div class="cp"><div class="cp-fr" style="color: #dd6e40">Dernière série de la séance</div><div class="cp-en">Last set of the session</div></div>
+    </div>
+
+    <div class="tr row-strong">
+      <div><div class="m">Séance bouclée</div><div class="lvl" style="color: #b47f31">célébration</div></div>
+      <div class="freq">1</div>
+      <div class="d">Écran de clôture : le titre tombe, les chiffres montent, records et régularité rappelés. <span>Couvre le calcul des records, puis mène au bilan.</span></div>
+      <div class="vib"><span class="bars"><i style="width: 28px"></i></span>140 ms</div>
+      <div class="cp"><div class="cp-fr" style="color: #f4ecdd">Séance bouclée.</div><div class="cp-en">Session done.</div></div>
+    </div>
+  </div>
+
+  <div class="bottom">
+    <div>
+      <div class="h2">Cinq règles pour que ça ne devienne jamais trop</div>
+      <div class="rules">
+        <div class="rule"><b>Un seul plein écran par séance.</b> La première charge max battue a sa prise d'écran ; les suivantes passent en pastille. Ce qui arrive trois fois n'est plus un événement.</div>
+        <div class="rule"><b>Pas de record sans passé.</b> Sur un exercice jamais fait, la séance pose des références et ne célèbre rien. Sinon une première séance vaudrait quinze records.</div>
+        <div class="rule"><b>Un fait, jamais un jugement.</b> Pas de « Bravo », pas de point d'exclamation, pas de rouge sur une série en dessous. Pas de confettis (MOTION-01 §5), pas de badge (décision C).</div>
+        <div class="rule"><b>Rien ne bloque le geste.</b> Aucun moment n'attend un appui pour continuer. La barre d'action ne bouge pas (R4-1) et reste utilisable pendant chaque effet.</div>
+        <div class="rule"><b>Le mouvement ne porte aucune information.</b> Animations coupées ou « réduire les animations » : mêmes textes, états finaux directs. La vibration reste.</div>
+      </div>
+    </div>
+    <div class="tech">
+      <div class="h2" style="margin-bottom: 2px">Ce que ça demande au code</div>
+      <div class="tech-i"><b>Aucune migration, aucune sync rule.</b> Tout se calcule sur des données déjà locales.</div>
+      <div class="tech-i"><b>Records en direct :</b> les meilleurs records des exercices de la séance sont lus une fois au lancement, puis comparés en mémoire à chaque validation avec les règles de <code>computeWorkoutRecords</code>. L'écriture reste à la clôture (<code>evaluateWorkoutRecords</code>) : dévalider une série retire sa pastille, rien à défaire en base.</div>
+      <div class="tech-i"><b>Verdict :</b> <code>useLastPerformance</code> est déjà lu par l'écran pour « Dernière fois ».</div>
+      <div class="tech-i"><b>Effets :</b> primitives MOTION-01 réutilisées (<code>PressableScale</code>, <code>CelebrationCard</code>, <code>RestRing</code>, <code>AnimatedNumber</code>, <code>StaggerIn</code>). Deux durées de vibration nouvelles dans <code>haptics.ts</code>.</div>
+      <div class="tech-i"><b>i18n :</b> une trentaine de clés FR + EN, pluriels compris.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -1,0 +1,194 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .board {
+      width: 1320px; height: 1270px; box-sizing: border-box; background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 44px 40px; display: flex; flex-direction: column; gap: 28px;
+    }
+    .ic { display: block; flex: none; }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .h1 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 44px; letter-spacing: -1.5px; line-height: 1; margin-top: 8px; }
+    .lede { font-size: 15px; line-height: 1.55; color: #5c4d3d; max-width: 820px; margin-top: 12px; }
+    .cols { display: grid; grid-template-columns: repeat(3, 390px); gap: 36px; align-items: start; }
+    .col { display: flex; flex-direction: column; gap: 12px; }
+    .cap-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 18px; letter-spacing: -.4px; }
+    .cap { font-size: 13.5px; line-height: 1.5; color: #5c4d3d; }
+    .cap b { color: #33291f; }
+
+    .ph { width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; border-radius: 26px; background: radial-gradient(130% 55% at 50% -12%, rgba(221,110,64,.13) 0%, rgba(221,110,64,0) 62%), #1c150e; color: #f4ecdd; box-shadow: 0 26px 50px -30px rgba(60,40,20,.55); }
+    .crop { width: 390px; height: 360px; position: relative; overflow: hidden; box-sizing: border-box; border-radius: 26px; background: #1c150e; color: #f4ecdd; box-shadow: 0 26px 50px -30px rgba(60,40,20,.55); }
+    .eyebrow { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a; }
+    .hd { position: absolute; left: 0; right: 0; top: 0; padding: 14px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+    .hd-row { display: flex; align-items: center; justify-content: space-between; height: 28px; }
+    .chrono { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px; }
+    .ribbon { display: flex; gap: 4px; height: 6px; }
+    .seg { height: 6px; border-radius: 3px; background: #362c22; overflow: hidden; }
+    .seg-f { height: 100%; border-radius: 3px; background: #dd6e40; }
+    .hd-meta { display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a; }
+    .stage { position: absolute; left: 0; right: 0; top: 96px; bottom: 274px; padding: 0 20px; display: flex; flex-direction: column; justify-content: center; gap: 18px; }
+    .ex-name { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 36px; letter-spacing: -1.2px; line-height: 1; margin-top: 8px; text-wrap: balance; }
+    .ss-tag { align-self: flex-start; height: 32px; box-sizing: border-box; border-radius: 10px; padding: 0 10px; display: flex; align-items: center; gap: 7px; background: rgba(224,169,127,.12); color: #e0a97f; font-size: 13px; font-weight: 600; }
+    .ss-pair { display: flex; align-items: center; gap: 8px; }
+    .ss-dot { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; }
+    .ss-on { background: #dd6e40; color: #1c150e; }
+    .ss-off { border: 1.5px solid #4a3d30; color: #c9b79a; }
+    .ss-line { width: 22px; height: 2px; background: #4a3d30; border-radius: 1px; }
+    .ss-name { font-size: 13px; color: #c9b79a; }
+    .pills { display: flex; align-items: center; gap: 7px; }
+    .pill { height: 34px; box-sizing: border-box; border-radius: 11px; padding: 0 11px; display: flex; align-items: center; gap: 5px; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12.5px; }
+    .pill-done { background: rgba(169,186,126,.14); color: #a9ba7e; }
+    .pill-cur { border: 1.5px solid #dd6e40; color: #dd6e40; }
+    .pill-todo { background: #30271e; color: #c9b79a; }
+    .ref { display: flex; align-items: baseline; gap: 10px; }
+    .ref-l { width: 96px; flex: none; font-size: 12.5px; color: #c9b79a; }
+    .ref-v { font-family: 'Space Mono', ui-monospace, monospace; font-size: 14px; }
+
+    .deck { position: absolute; left: 0; right: 0; bottom: 0; height: 274px; box-sizing: border-box; background: #241c14; border-top: 1px solid #3a2e22; border-radius: 28px 28px 0 0; padding: 0 20px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .deck-crop { height: 234px; }
+    .peek { height: 50px; flex: none; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #3a2e22; font-size: 13.5px; white-space: nowrap; overflow: hidden; }
+    .peek-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #c9b79a; }
+    .ctx { display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px; color: #c9b79a; margin-top: 2px; }
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .field { height: 92px; box-sizing: border-box; border-radius: 18px; background: #1c150e; border: 1px solid #3a2e22; padding: 5px; display: flex; align-items: center; gap: 2px; }
+    .field-opt { border-style: dashed; border-color: #4a3d30; }
+    .step { width: 34px; height: 52px; flex: none; border-radius: 12px; background: #30271e; display: flex; align-items: center; justify-content: center; color: #f4ecdd; }
+    .fv { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .fv-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px; line-height: 1; }
+    .fv-empty { color: #797169; }
+    .fv-u { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #c9b79a; }
+    .validate { height: 64px; border-radius: 20px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 18px; font-weight: 700; }
+    .float-v { position: absolute; left: 0; right: 0; bottom: 290px; display: flex; justify-content: center; }
+    .verdict { height: 34px; box-sizing: border-box; padding: 0 14px; border-radius: 999px; display: flex; align-items: center; gap: 6px; background: #2e3322; color: #c4d49c; font-size: 14px; font-weight: 700; box-shadow: 0 10px 24px -8px rgba(0,0,0,.6); }
+    .crop-top { position: absolute; left: 20px; right: 20px; top: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .crop-name { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -.8px; line-height: 1; }
+    .crop-ref { font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; color: #c9b79a; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div>
+    <div class="eb">Rien ne se perd · superset et types de série</div>
+    <div class="h1">Les enchaînements gardent leurs règles</div>
+    <div class="lede">Le superset lié enchaîne toujours sans repos, et le bouton le dit avant l'appui. Les séries à la durée et au poids du corps gardent leurs champs : le lest reste facultatif, en pointillés. Seul le verdict s'ajoute, adapté à l'unité.</div>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="ph">
+        <div class="hd">
+          <div class="hd-row"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><div class="chrono">41:10</div><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+          <div class="ribbon"><div class="seg" style="flex: 4 1 0; background: #a9ba7e"></div><div class="seg" style="flex: 4 1 0; background: #a9ba7e"></div><div class="seg" style="flex: 3 1 0; background: #a9ba7e"></div><div class="seg" style="flex: 4 1 0"><div class="seg-f" style="width: 25%"></div></div><div class="seg" style="flex: 3 1 0"><div class="seg-f" style="width: 33%"></div></div></div>
+          <div class="hd-meta"><span>Push A</span><span>13/18 séries</span></div>
+        </div>
+        <div class="stage">
+          <div><div class="eyebrow">Exercice 4 sur 5 · Pectoraux · Triceps</div><div class="ex-name">Dips lestés</div></div>
+          <div class="ss-pair">
+            <div class="ss-dot ss-on">A</div><div class="ss-line"></div><div class="ss-dot ss-off">B</div>
+            <div class="ss-name">Superset avec Extension triceps à la corde</div>
+          </div>
+          <div class="pills">
+            <div class="pill pill-done"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>+10×8</div>
+            <div class="pill pill-cur">Série 2</div><div class="pill pill-todo">3</div><div class="pill pill-todo">4</div>
+          </div>
+          <div class="ref"><div class="ref-l">Dernière fois</div><div class="ref-v">+7,5 kg × 8 / 8 / 7 / 7</div></div>
+        </div>
+        <div class="deck">
+          <div class="peek"><span class="peek-l">Puis, sans repos</span>Extension triceps · série 2</div>
+          <div class="ctx"><span>Série 2 sur 4</span><span>Repos après le B</span></div>
+          <div class="fields">
+            <div class="field"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">8</div><div class="fv-u">Reps</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+            <div class="field field-opt"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">10</div><div class="fv-u">Lest</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+          </div>
+          <div class="validate">Valider — puis enchaîner<svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        </div>
+      </div>
+      <div class="cap-t">A — Avant l'appui</div>
+      <div class="cap">Le lien est visible sur la scène (A — B) et le bouton garde son libellé actuel : <b>« Valider — puis enchaîner »</b>. Le « Ensuite » du pont annonce le partenaire au lieu du repos.</div>
+    </div>
+
+    <div class="col">
+      <div class="ph">
+        <div class="hd">
+          <div class="hd-row"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><div class="chrono">41:36</div><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+          <div class="ribbon"><div class="seg" style="flex: 4 1 0; background: #a9ba7e"></div><div class="seg" style="flex: 4 1 0; background: #a9ba7e"></div><div class="seg" style="flex: 3 1 0; background: #a9ba7e"></div><div class="seg" style="flex: 4 1 0"><div class="seg-f" style="width: 50%"></div></div><div class="seg" style="flex: 3 1 0"><div class="seg-f" style="width: 33%"></div></div></div>
+          <div class="hd-meta"><span>Push A</span><span>14/18 séries</span></div>
+        </div>
+        <div class="stage">
+          <div><div class="eyebrow">Exercice 5 sur 5 · Triceps</div><div class="ex-name">Extension triceps à la corde</div></div>
+          <div class="ss-pair">
+            <div class="ss-dot" style="background: rgba(169,186,126,.18); color: #a9ba7e"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div><div class="ss-line"></div><div class="ss-dot ss-on">B</div>
+            <div class="ss-name">Superset avec Dips lestés</div>
+          </div>
+          <div class="pills">
+            <div class="pill pill-done"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>25×12</div>
+            <div class="pill pill-cur">Série 2</div><div class="pill pill-todo">3</div>
+          </div>
+        </div>
+        <div class="float-v"><div class="verdict"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Dips : +2,5 kg vs mardi</div></div>
+        <div class="deck">
+          <div class="peek"><span class="peek-l">Puis</span>Repos 1:30, puis Dips · série 3</div>
+          <div class="ctx"><span>Série 2 sur 3</span><span>Repos 1:30</span></div>
+          <div class="fields">
+            <div class="field"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">12</div><div class="fv-u">Reps</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+            <div class="field"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">25</div><div class="fv-u">kg</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+          </div>
+          <div class="validate">Valider la série</div>
+        </div>
+      </div>
+      <div class="cap-t">B — Juste après, sans repos</div>
+      <div class="cap">La scène bascule sur le partenaire, <b>à la même série</b>. Pas d'écran de repos : le verdict du Dips flotte 1,2 s au-dessus du pont, puis s'efface. Le repos se lance après le B. Partenaire retiré de la séance : « Superset sans partenaire — repos normal », comme aujourd'hui.</div>
+    </div>
+
+    <div class="col">
+      <div class="crop">
+        <div class="crop-top">
+          <div class="eyebrow">Type : durée</div>
+          <div class="crop-name">Gainage planche</div>
+          <div class="crop-ref">Dernière fois : 1:15 / 1:10 / 1:00</div>
+        </div>
+        <div class="deck deck-crop">
+          <div class="ctx" style="margin-top: 14px"><span>Série 2 sur 3</span><span>Verdict : « +10 s vs mardi »</span></div>
+          <div class="fields">
+            <div class="field"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">1:20</div><div class="fv-u">Durée</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+            <div class="field field-opt"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n fv-empty">—</div><div class="fv-u">Lest</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+          </div>
+          <div class="validate">Valider la série</div>
+        </div>
+      </div>
+      <div class="cap-t">Durée</div>
+      <div class="cap">Champs inchangés : durée en m:ss au pas de 5 s, lest facultatif. Verdict en secondes. <b>Jamais de record</b> sur une série à la durée, comme le calcul actuel.</div>
+
+      <div class="crop" style="margin-top: 14px">
+        <div class="crop-top">
+          <div class="eyebrow">Type : poids de corps</div>
+          <div class="crop-name">Tractions</div>
+          <div class="crop-ref">Dernière fois : 8 / 7 / 6</div>
+        </div>
+        <div class="deck deck-crop">
+          <div class="ctx" style="margin-top: 14px"><span>Série 1 sur 3</span><span>Verdict : « +1 rép vs jeudi »</span></div>
+          <div class="fields">
+            <div class="field"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">9</div><div class="fv-u">Reps</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+            <div class="field field-opt"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n fv-empty">—</div><div class="fv-u">Lest</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+          </div>
+          <div class="validate">Valider la série</div>
+        </div>
+      </div>
+      <div class="cap-t">Poids de corps</div>
+      <div class="cap">Reps × lest facultatif, comme aujourd'hui. Un lest ajouté reste éligible aux records ; sans lest, le verdict compte les répétitions.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

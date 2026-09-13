@@ -11,7 +11,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { formatDayFull } from '@wellness/shared';
+import { computeSessionHeat, formatDayFull, type SetType } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -19,6 +19,7 @@ import { ShareCardSheet } from '@/components/share/ShareCardSheet';
 import { TextField } from '@/components/TextField';
 import { WorkoutReport } from '@/components/workout/report/WorkoutReport';
 import { useWorkoutReport } from '@/data/repositories/workout-report-repository';
+import { useSessionMuscles } from '@/data/repositories/immersive-repository';
 import { useWorkoutHistory } from '@/data/repositories/workout-repository';
 import { createTemplateFromWorkout } from '@/data/repositories/workout-template-repository';
 import { useUnits } from '@/hooks/useUnits';
@@ -41,6 +42,24 @@ export default function WorkoutSummaryScreen() {
   // dédupliqué entre deux instances du hook — le laisser relire doublait les 9 requêtes (spec R11).
   // Il alimente aussi la carte de partage et la garde du bouton « modèle ».
   const { report, isLoading } = useWorkoutReport(workoutId);
+
+  // Le corps travaillé, pour la carte à partager (US MUSCU-UX03, §5.13). Une image vaut mieux
+  // que trois chiffres pour dire ce qu'on vient de faire — et elle ne contient aucune donnée
+  // de santé, ce qui la rend partageable sans y réfléchir.
+  const reportExercises = report?.exercises ?? [];
+  const sessionMuscles = useSessionMuscles(reportExercises.map((e) => e.exerciseId));
+  const sessionHeat = computeSessionHeat(
+    reportExercises.flatMap((exercise) =>
+      exercise.sets.map((set) => ({
+        exerciseId: exercise.exerciseId,
+        // `ReportSet.setType` est une chaîne libre (le bilan relit des lignes historiques qui
+        // peuvent porter un type disparu du code) ; seule la valeur `warmup` compte ici.
+        setType: set.setType as SetType,
+        done: set.done,
+      })),
+    ),
+    sessionMuscles,
+  );
 
   const [savingAsTemplate, setSavingAsTemplate] = useState(false);
   const [templateName, setTemplateName] = useState('');
@@ -163,6 +182,7 @@ export default function WorkoutSummaryScreen() {
                     : units.formatWeight(record.value)
                 }`,
             ),
+            heat: sessionHeat,
           }}
           accessibilityLabel={t('share.workout.a11y', {
             date: formatDayFull(workout.startedAt),

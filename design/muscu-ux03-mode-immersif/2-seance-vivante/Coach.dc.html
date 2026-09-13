@@ -1,0 +1,227 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #17110b; }
+    a { color: #e0a97f; }
+    a:hover { color: #f4ecdd; }
+    .board { width: 1400px; height: 1720px; box-sizing: border-box; background: #17110b; color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 48px 48px; display: flex; flex-direction: column; gap: 30px; }
+    .ic { display: block; flex: none; }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase; color: #c9b79a; }
+    .h1 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 54px; letter-spacing: -2px; line-height: .95; margin-top: 10px; }
+    .lede { font-size: 16px; line-height: 1.55; color: #c9b79a; max-width: 860px; margin-top: 14px; }
+    .lede b { color: #f4ecdd; font-weight: 600; }
+    .main { display: grid; grid-template-columns: minmax(0, 1fr) 390px 390px; gap: 36px; align-items: start; }
+
+    /* Script d'une séance */
+    .tl { display: flex; flex-direction: column; }
+    .tl-h { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -.5px; margin-bottom: 10px; }
+    .it { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 14px; padding: 11px 0; border-top: 1px solid #2c231a; }
+    .it-w { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #e0a97f; line-height: 1.4; padding-top: 2px; }
+    .it-q { font-size: 14px; line-height: 1.45; color: #f4ecdd; }
+    .it-s { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 5px; }
+    .src { height: 20px; padding: 0 7px; border-radius: 999px; display: flex; align-items: center; font-size: 10.5px; font-weight: 700; background: #241c14; color: #c9b79a; border: 1px solid #3a2e22; }
+
+    .col { display: flex; flex-direction: column; gap: 12px; }
+    .cap-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -.5px; }
+    .cap { font-size: 13.5px; line-height: 1.55; color: #c9b79a; }
+    .cap b { color: #f4ecdd; font-weight: 600; }
+
+    .ph { width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; border-radius: 30px; background: radial-gradient(120% 50% at 85% -8%, rgba(221,110,64,.22) 0%, rgba(221,110,64,0) 60%), #1c150e; box-shadow: 0 0 0 1px #2c231a; }
+    .eyebrow { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a; }
+    .wbars { display: flex; align-items: center; gap: 2px; height: 18px; }
+    .wbars span { display: block; width: 3px; height: 6px; border-radius: 2px; background: #e0a97f; animation: wb .9s infinite ease-in-out; }
+    .wbars span:nth-child(2) { animation-delay: .15s; } .wbars span:nth-child(3) { animation-delay: .3s; } .wbars span:nth-child(4) { animation-delay: .45s; } .wbars span:nth-child(5) { animation-delay: .6s; }
+    @keyframes wb { 0%, 100% { height: 4px; } 50% { height: 18px; } }
+    .big-bars { display: flex; align-items: center; gap: 4px; height: 70px; }
+    .big-bars span { display: block; width: 6px; border-radius: 3px; background: linear-gradient(180deg, #e0b155, #dd6e40); animation: bb 1.1s infinite ease-in-out; }
+    @keyframes bb { 0%, 100% { height: 10px; } 50% { height: 64px; } }
+
+    .brief { position: absolute; inset: 0; padding: 56px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+    .b-title { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 62px; letter-spacing: -2.6px; line-height: .92; }
+    .voice { margin-top: 12px; border-radius: 24px; background: #241c14; border: 1px solid #3a2e22; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+    .v-top { display: flex; align-items: center; justify-content: space-between; }
+    .v-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #e0a97f; }
+    .v-mode { height: 26px; padding: 0 9px; border-radius: 999px; background: #3a2e22; font-size: 12px; font-weight: 700; display: flex; align-items: center; }
+    .line { font-size: 16.5px; line-height: 1.45; opacity: .25; animation-duration: 9s; animation-iteration-count: infinite; }
+    .l1 { animation-name: l1; } .l2 { animation-name: l2; } .l3 { animation-name: l3; }
+    @keyframes l1 { 0% { opacity: .25; } 5%, 92% { opacity: 1; } 100% { opacity: .25; } }
+    @keyframes l2 { 0%, 30% { opacity: .25; } 35%, 92% { opacity: 1; } 100% { opacity: .25; } }
+    @keyframes l3 { 0%, 60% { opacity: .25; } 65%, 92% { opacity: 1; } 100% { opacity: .25; } }
+    .line b { color: #e0b155; font-weight: 700; }
+    .v-foot { display: flex; gap: 8px; }
+    .chip { height: 34px; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; background: #1c150e; border: 1px solid #3a2e22; color: #c9b79a; }
+    .go { position: absolute; left: 20px; right: 20px; bottom: 24px; height: 64px; border-radius: 20px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 19px; font-weight: 700; }
+    .ctx-row { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+    .ctx { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #c9b79a; }
+    .ctx i { width: 6px; height: 6px; border-radius: 50%; background: #e0a97f; flex: none; }
+
+    /* Ajustement en direct */
+    .hd { position: absolute; left: 0; right: 0; top: 0; padding: 14px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+    .hd-row { display: flex; align-items: center; justify-content: space-between; height: 28px; }
+    .chrono { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px; }
+    .ribbon { display: flex; gap: 4px; height: 6px; }
+    .seg { height: 6px; border-radius: 3px; background: #362c22; overflow: hidden; }
+    .top { position: absolute; left: 20px; right: 20px; top: 88px; display: flex; align-items: center; justify-content: space-between; }
+    .done-v { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px; }
+    .feel-tag { height: 30px; padding: 0 11px; border-radius: 999px; display: flex; align-items: center; font-size: 12.5px; font-weight: 700; background: rgba(178,59,46,.18); color: #f0a49b; }
+    .ring { position: absolute; left: 50%; top: 150px; width: 180px; height: 180px; margin-left: -90px; }
+    .ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+    .ring-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .ring-n { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 38px; letter-spacing: -1px; }
+    .caption { position: absolute; left: 20px; right: 20px; top: 350px; display: flex; gap: 10px; border-radius: 16px; background: #241c14; border: 1px solid #3a2e22; padding: 12px 14px; font-size: 14.5px; line-height: 1.45; }
+    .cap2 { animation: capSwap 8s infinite steps(1); }
+    .cap1 { animation: capSwap1 8s infinite steps(1); }
+    @keyframes capSwap1 { 0% { opacity: 1; } 62% { opacity: 0; } 100% { opacity: 1; } }
+    @keyframes capSwap { 0% { opacity: 0; } 62% { opacity: 1; } 100% { opacity: 0; } }
+    .sugg { position: absolute; left: 20px; right: 20px; top: 440px; border-radius: 18px; background: rgba(224,169,127,.1); border: 1px solid rgba(224,169,127,.35); padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; animation: suggLife 8s infinite; }
+    @keyframes suggLife { 0%, 8% { opacity: 0; transform: translateY(12px); } 14%, 58% { opacity: 1; transform: none; } 64%, 100% { opacity: 0; transform: translateY(-6px); } }
+    .sugg-t { font-size: 14px; font-weight: 600; }
+    .sugg-s { font-size: 12.5px; color: #c9b79a; }
+    .sugg-b { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+    .sb { height: 44px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 14.5px; font-weight: 700; }
+    .sb-yes { background: #dd6e40; color: #1c150e; animation: yesPress 8s infinite; }
+    @keyframes yesPress { 0%, 50% { transform: none; } 54% { transform: scale(.94); filter: brightness(.9); } 58%, 100% { transform: none; } }
+    .sb-no { border: 1px solid #4a3d30; color: #c9b79a; }
+    .next { position: absolute; left: 20px; right: 20px; top: 590px; border-radius: 20px; background: #241c14; border: 1px solid #3a2e22; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .swap { position: relative; height: 38px; }
+    .swap div { position: absolute; left: 0; top: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1px; line-height: 1.05; }
+    .sw-a { animation: capSwap1 8s infinite steps(1); }
+    .sw-b { animation: capSwap 8s infinite steps(1); color: #e0a97f; }
+    .bbar { height: 60px; display: flex; align-items: center; }
+    .sleeve { width: 12px; height: 10px; background: #797169; border-radius: 3px; }
+    .side { display: flex; align-items: center; gap: 2px; }
+    .bar { flex: 1; height: 5px; background: #8d877d; border-radius: 3px; }
+    .collar { width: 5px; height: 16px; background: #a39b90; border-radius: 2px; }
+    .p25 { width: 9px; height: 58px; background: #9e2f26; border-radius: 3px; }
+    .p5 { width: 6px; height: 34px; background: #d9cdb8; border-radius: 3px; }
+    .p125 { width: 4px; height: 22px; background: #8d877d; border-radius: 2px; animation: pOut 8s infinite; }
+    @keyframes pOut { 0%, 58% { opacity: 1; width: 4px; } 62%, 100% { opacity: 0; width: 0; } }
+
+    /* Architecture */
+    .arch { border-radius: 26px; background: #1f1810; border: 1px solid #2f261c; padding: 24px 26px; display: flex; flex-direction: column; gap: 18px; }
+    .arch-h { display: flex; justify-content: space-between; align-items: baseline; gap: 20px; }
+    .arch-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px; }
+    .arch-s { font-size: 13.5px; color: #c9b79a; max-width: 620px; line-height: 1.5; }
+    .flow { display: grid; grid-template-columns: 1fr 28px 1fr 28px 1fr 28px 1fr; align-items: stretch; }
+    .node { border-radius: 18px; background: #241c14; border: 1px solid #3a2e22; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px; }
+    .node-w { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; }
+    .node-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.3px; }
+    .node-d { font-size: 12.5px; line-height: 1.5; color: #c9b79a; }
+    .arrow { display: flex; align-items: center; justify-content: center; color: #6d6154; }
+    .rules { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; }
+    .rule-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 16px; letter-spacing: -.3px; margin-bottom: 6px; }
+    .rule-d { font-size: 13px; line-height: 1.55; color: #c9b79a; }
+    .rule-d b { color: #f4ecdd; font-weight: 600; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div>
+    <div class="eb">Séance vivante · le coach</div>
+    <div class="h1">Le coach qui te connaît</div>
+    <div class="lede">Une voix dans les écouteurs, qui ne récite pas des généralités mais <b>ta</b> séance : ce que tu as fait mardi, la consigne de l'exercice, le record en jeu, le ressenti que tu viens de donner. Elle parle aux moments qui comptent et se tait le reste du temps. Chaque réplique est aussi écrite à l'écran.</div>
+  </div>
+
+  <div class="main">
+    <div class="tl">
+      <div class="tl-h">Une séance, réplique par réplique</div>
+      <div class="it"><div class="it-w">Avant de commencer</div><div><div class="it-q">« Mardi, tu as calé à 7 reps sur la dernière série de couché. Aujourd'hui 82,5 kg : ton record est en jeu. »</div><div class="it-s"><span class="src">historique</span><span class="src">programme</span><span class="src">records</span></div></div></div>
+      <div class="it"><div class="it-w">Lancer la série</div><div><div class="it-q">« Omoplates serrées, pieds ancrés. »</div><div class="it-s"><span class="src">consignes de la fiche exercice</span></div></div></div>
+      <div class="it"><div class="it-w">Série validée</div><div><div class="it-q">« Cinq kilos de plus que mardi. Respire, expire long. »</div><div class="it-s"><span class="src">verdict</span></div></div></div>
+      <div class="it"><div class="it-w">Ressenti « Limite »</div><div><div class="it-q">« C'était limite : je te propose 80 kg pour la dernière, pour garder la qualité. »</div><div class="it-s"><span class="src">ressenti</span><span class="src">règle de progression</span></div></div></div>
+      <div class="it"><div class="it-w">7 s avant la fin du repos</div><div><div class="it-q">« On y retourne : 80 kilos, 8 répétitions. »</div><div class="it-s"><span class="src">série suivante</span></div></div></div>
+      <div class="it"><div class="it-w">Record</div><div><div class="it-q">« Nouveau record. Plus lourd que jamais au couché. »</div><div class="it-s"><span class="src">records</span></div></div></div>
+      <div class="it"><div class="it-w">Exercice bouclé</div><div><div class="it-q">« Couché bouclé, 4 % au-dessus de mardi. Place au militaire. »</div><div class="it-s"><span class="src">bilan d'exercice</span></div></div></div>
+      <div class="it"><div class="it-w">Dernière série</div><div><div class="it-q">« Cinq reps à 42,5 et mardi est battu. »</div><div class="it-s"><span class="src">fantôme</span></div></div></div>
+      <div class="it"><div class="it-w">Séance bouclée</div><div><div class="it-q">« Un record et 4 % de tonnage en plus. Pectoraux et épaules ont chauffé : pense à tes glucides ce soir. »</div><div class="it-s"><span class="src">bilan</span><span class="src">nutrition, jour muscu</span></div></div></div>
+    </div>
+
+    <div class="col">
+      <div class="ph">
+        <div class="brief">
+          <div class="eyebrow">Séance du jour · PPL semaine 3</div>
+          <div class="b-title">Push A</div>
+          <div class="voice">
+            <div class="v-top"><div class="v-l">Le mot du coach</div><div class="v-mode">Motivant</div></div>
+            <div style="display: flex; justify-content: center"><div class="big-bars"><span style="animation-delay: 0s"></span><span style="animation-delay: .12s"></span><span style="animation-delay: .24s"></span><span style="animation-delay: .36s"></span><span style="animation-delay: .48s"></span><span style="animation-delay: .6s"></span><span style="animation-delay: .72s"></span><span style="animation-delay: .84s"></span><span style="animation-delay: .96s"></span><span style="animation-delay: .5s"></span><span style="animation-delay: .3s"></span></div></div>
+            <div class="line l1">Mardi, tu as calé à 7 reps sur la dernière série de couché.</div>
+            <div class="line l2">Aujourd'hui le programme prévoit <b>82,5 kg</b> : ton record est en jeu.</div>
+            <div class="line l3">Contrôle la descente, le reste suivra.</div>
+            <div class="v-foot"><div class="chip">Réécouter</div><div class="chip">Sans voix</div></div>
+          </div>
+          <div class="ctx-row">
+            <div class="ctx"><i></i>Ta musique baisse le temps de la phrase</div>
+            <div class="ctx"><i></i>Script préparé hors ligne pour toute la séance</div>
+          </div>
+          <div class="go">C'est parti<svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+        </div>
+      </div>
+      <div class="cap-t">Le brief, en 10 secondes</div>
+      <div class="cap">Avant la première série, le coach dit <b>une seule chose importante</b> tirée de ton historique. Il parle par-dessus la musique, baissée le temps de la phrase, et tout reste lisible sans le son.</div>
+    </div>
+
+    <div class="col">
+      <div class="ph" style="background: radial-gradient(90% 40% at 50% 30%, rgba(224,169,127,.10) 0%, rgba(224,169,127,0) 70%), #1c150e">
+        <div class="hd">
+          <div class="hd-row"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg><div class="chrono">09:31</div><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+          <div class="ribbon"><div class="seg" style="flex: 3 1 0"><div style="width: 66%; height: 100%; background: #dd6e40; border-radius: 3px"></div></div><div class="seg" style="flex: 2 1 0"></div></div>
+        </div>
+        <div class="top"><div><div class="eyebrow">Série 2 validée</div><div class="done-v">82,5 kg × 6</div></div><div class="feel-tag">Ressenti : limite</div></div>
+        <div class="ring">
+          <svg width="180" height="180" viewBox="0 0 180 180"><circle cx="90" cy="90" r="85" fill="none" stroke="#3a2e22" stroke-width="7"/><circle cx="90" cy="90" r="85" fill="none" stroke="#e0a97f" stroke-width="7" stroke-linecap="round" stroke-dasharray="534" stroke-dashoffset="190"/></svg>
+          <div class="ring-c"><div class="ring-n">1:18</div><div style="font-size: 12.5px; color: #c9b79a">de repos</div></div>
+        </div>
+        <div class="caption">
+          <div class="wbars" style="margin-top: 3px"><span></span><span></span><span></span><span></span><span></span></div>
+          <div style="position: relative; flex: 1; min-height: 42px">
+            <div class="cap1" style="position: absolute; inset: 0">C'était limite : je te propose 80 kg pour la dernière, pour garder la qualité.</div>
+            <div class="cap2" style="position: absolute; inset: 0">Va pour 80 kilos. Huit répétitions propres valent mieux que six arrachées.</div>
+          </div>
+        </div>
+        <div class="sugg">
+          <div><div class="sugg-t">Alléger la dernière série ?</div><div class="sugg-s">Proposé parce que tu as répondu « Limite ». Tu décides.</div></div>
+          <div class="sugg-b"><div class="sb sb-yes">80 kg × 8</div><div class="sb sb-no">Garder 82,5</div></div>
+        </div>
+        <div class="next">
+          <div class="eyebrow">Ensuite · série 3 sur 3</div>
+          <div class="swap"><div class="sw-a">82,5 kg × 7</div><div class="sw-b">80 kg × 8</div></div>
+          <div class="bbar"><div class="sleeve"></div><div class="side"><div class="p125"></div><div class="p5"></div><div class="p25"></div></div><div class="collar"></div><div class="bar"></div><div class="collar"></div><div class="side"><div class="p25"></div><div class="p5"></div><div class="p125"></div></div><div class="sleeve"></div></div>
+        </div>
+      </div>
+      <div class="cap-t">L'ajustement en direct</div>
+      <div class="cap">Le ressenti « Limite » déclenche <b>une proposition</b>, jamais une décision : alléger la série suivante, en un toucher. « Facile » propose l'inverse. La barre se décharge sous tes yeux.</div>
+    </div>
+  </div>
+
+  <div class="arch">
+    <div class="arch-h">
+      <div class="arch-t">Comment ça marche, sans jamais faire attendre</div>
+      <div class="arch-s">Pas d'appel à l'IA pendant la séance : le réseau d'une salle est capricieux et une voix qui arrive 3 s trop tard ne sert à rien. Le script entier est préparé au lancement, puis joué sur le téléphone.</div>
+    </div>
+    <div class="flow">
+      <div class="node"><div class="node-w" style="color: #e0a97f">au lancement · en ligne</div><div class="node-t">Agrégats minimaux</div><div class="node-d">Séance prévue, dernière même séance, records en jeu, consignes des exercices. Ni poids du corps ni nutrition brute.</div></div>
+      <div class="arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="node"><div class="node-w" style="color: #e0a97f">proxy serveur</div><div class="node-t">Edge Function → Claude</div><div class="node-d">Clé jamais dans l'app, quotas, inférence en Europe. Un appel par séance, de l'ordre du centime (analyse IA §4).</div></div>
+      <div class="arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="node"><div class="node-w" style="color: #a9ba7e">sur le téléphone</div><div class="node-t">Script de séance</div><div class="node-d">≈ 25 répliques avec variantes et trous (« {kg} kilos ») : brief, consignes, verdicts, ajustements, record, fin.</div></div>
+      <div class="arrow"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      <div class="node"><div class="node-w" style="color: #a9ba7e">pendant la séance · hors ligne</div><div class="node-t">Événement → réplique → voix</div><div class="node-d">Une règle locale choisit la réplique, la synthèse vocale du téléphone la dit (expo-speech, déjà utilisée par la course).</div></div>
+    </div>
+    <div class="rules">
+      <div><div class="rule-t">Sans réseau ou sans consentement</div><div class="rule-d">Le coach existe quand même : <b>des phrases gabarits</b> FR et EN, plus sobres, avec les mêmes trous. L'IA enrichit le ton et la mémoire, elle n'est jamais une condition.</div></div>
+      <div><div class="rule-t">Trois caractères, un interrupteur</div><div class="rule-d"><b>Motivant</b>, <b>Sobre</b> (chiffres seulement) ou <b>Muet</b>. Option « seulement avec écouteurs ». Jamais de parole pendant l'effort, sauf la consigne au lancement.</div></div>
+      <div><div class="rule-t">Garde-fous</div><div class="rule-d">Aucun avis médical, aucune douleur interprétée : renvoi vers un professionnel. Consentement IA séparé. Palier IA de RevenueCat, donc <b>après la V1</b> (analyse IA §5 à §7).</div></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

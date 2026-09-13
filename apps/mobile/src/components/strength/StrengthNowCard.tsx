@@ -21,7 +21,8 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { HubState } from '@wellness/shared';
+import { WORKOUT_DISPLAY_MODES, type HubState } from '@wellness/shared';
+import { useSessionMode } from '@/stores/session-mode-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -68,6 +69,45 @@ function PrimaryButton({
     >
       <Text style={[styles.primaryLabel, { color: colors.panel }]}>{label}</Text>
     </Pressable>
+  );
+}
+
+/**
+ * Le sélecteur **Classique · Immersif** (US MUSCU-UX03, R-MO-2).
+ *
+ * Il écrit la préférence tout de suite : ce n'est pas un choix « pour cette séance », c'est
+ * **le** mode. Le changer ici, c'est le changer partout — et c'est ce qu'on veut, parce que
+ * personne n'ira le chercher dans les Réglages.
+ */
+function ModeSelector({ colors }: { colors: ReturnType<typeof useTheme>['colors'] }) {
+  const { t } = useTranslation();
+  const mode = useSessionMode((s) => s.mode);
+  const setMode = useSessionMode((s) => s.setMode);
+
+  return (
+    <View style={[styles.modeRow, { backgroundColor: colors.panelText + '1f' }]}>
+      {WORKOUT_DISPLAY_MODES.map((option) => {
+        const selected = option === mode;
+        return (
+          <Pressable
+            key={option}
+            accessibilityRole="button"
+            accessibilityState={{ selected }}
+            onPress={() => void setMode(option)}
+            style={[styles.modeItem, selected && { backgroundColor: colors.panelAccent }]}
+          >
+            <Text
+              style={[
+                styles.modeLabel,
+                { color: selected ? colors.panel : colors.panelMuted },
+              ]}
+            >
+              {t(`workoutMode.${option}`)}
+            </Text>
+          </Pressable>
+        );
+      })}
+    </View>
   );
 }
 
@@ -177,6 +217,12 @@ export function StrengthNowCard({
             ) : null}
           </View>
         ) : null}
+
+        {/* Le mode d'affichage se choisit **juste au-dessus du bouton** (US MUSCU-UX03, R-MO-2) :
+            c'est le seul endroit où la question se pose vraiment — au moment de partir. Les états
+            « reprise », « repos » et « premiers pas » n'en portent pas : on n'y démarre pas une
+            séance de programme. */}
+        <ModeSelector colors={colors} />
 
         <PrimaryButton
           disabled={starting}
@@ -301,6 +347,9 @@ export function StrengthNowCard({
 }
 
 const styles = StyleSheet.create({
+  modeRow: { flexDirection: 'row', borderRadius: 12, padding: 3, gap: 3 },
+  modeItem: { flex: 1, minHeight: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  modeLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   panel: { borderRadius: 22, padding: 20, gap: 14 },
   card: { borderRadius: 22, borderWidth: 1, padding: 18, gap: 14 },
   headRow: { flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 },

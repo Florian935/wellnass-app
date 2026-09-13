@@ -11,7 +11,15 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **12/09/2026 (bis)** — **61 sections**.
+> Dernière mise à jour : **13/09/2026** — **62 sections**.
+>
+> **⑦ une §62 est arrivée** : MUSCU-UX03, le **mode immersif** de la séance de musculation.
+> 🔴 **Son premier critère est que le mode classique n'ait bougé en rien** : l'immersif est un
+> mode **en plus**, pas un remplacement (décision D1 de Florian). Le classique ne gagne qu'une
+> seule chose, la pastille de record au repos.
+> ✅ **Aucune migration, aucune sync rule, aucune dépendance native** → recettable sur un build
+> de la branche. ⚠️ **Il faut un historique** : verdict, fantôme, records en direct et défi de
+> dernière série se taisent sur un compte neuf — c'est le comportement attendu.
 >
 > **② une §60 est arrivée** : MUSCU-UX02, le bilan de séance — suite directe de MUSCU-UX01 (§57).
 > 🔴 **Son cœur n'est pas l'ergonomie mais l'ISO** : le récap de fin de séance et l'écran
@@ -3206,3 +3214,174 @@ L'analyse listait 45 effets, **19 sont dans ce lot**. Les 26 autres, et pourquoi
 
 **Reste à faire, sans obstacle identifié** — M2, M5, M6, M9, M10 · C3 à C10 · N3, N5 à N9 ·
 A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branchements.
+
+## 62. MUSCU-UX03 — Mode immersif de la séance (`feature/muscu-ux03-mode-immersif`)
+
+> **56 critères.** Spec : [muscu-ux03-mode-immersif.md](docs/specs/functional/us/muscu-ux03-mode-immersif.md) ·
+> Plan : [muscu-ux03-mode-immersif.md](docs/plans/muscu-ux03-mode-immersif.md) ·
+> Maquettes : [design/muscu-ux03-mode-immersif/](design/muscu-ux03-mode-immersif/) (2 toiles, dont un
+> prototype jouable).
+>
+> ✅ **Aucune migration, aucune sync rule à redéployer, aucune dépendance native neuve.** Le mode et
+> ses réglages vivent dans `secureStorage` ; le ressenti s'écrit dans la colonne `rpe` existante ;
+> `expo-speech`, `expo-notifications`, `react-native-svg` et Reanimated étaient déjà là. **Recettable
+> sur un build de la branche.**
+>
+> 🔴 **Le premier critère est le plus important : le mode classique ne doit avoir bougé en rien.**
+> C'est tout le contrat de l'US (décision D1). S'il tombe, le reste de la section n'a plus d'intérêt.
+> Le classique gagne **une seule chose** : la pastille de record en tête du repos (critères 7-8).
+>
+> ⚠️ **Il faut un historique pour voir la moitié de l'immersif.** Verdict, fantôme, records en direct
+> et défi de dernière série comparent à la **dernière séance terminée du même exercice** : sur un
+> compte neuf, ils se taisent — **c'est le comportement attendu**, pas un bug. Prévoir deux séances
+> du même programme à quelques minutes d'intervalle pour les déclencher.
+>
+> ⚠️ **Le mode par défaut est Classique.** Pour recetter l'immersif, le choisir explicitement :
+> sélecteur de la carte « Séance du jour », menu ⋮ en séance, ou Réglages › Séance.
+
+### 🔴 Le classique n'a pas bougé — à passer en premier
+
+- [ ] **1.** Mode **Classique**, niveau **Simplifiée** puis **Normale** puis **Détaillée** : l'écran
+  de séance est identique à avant (carte de contexte, liste des exercices, barre d'action fixe,
+  repos plein écran). Aucun fond sombre, aucune voix, aucun cadran, aucun brief.
+- [ ] **2.** Superset, échauffement, RPE/RIR, note d'exercice, « Plus tard », « Remplacer »,
+  dé-validation sans repos, « + Série » : tout se comporte comme avant.
+- [ ] **3.** Le **niveau d'affichage** (profil) vaut pour les **deux** modes et reste synchronisé
+  entre appareils ; le **mode**, lui, est local à l'appareil.
+
+### Choix du mode
+
+- [ ] **4.** Compte neuf (aucune séance terminée), premier « Commencer » : la feuille
+  « Comment veux-tu t'entraîner ? » s'ouvre, **rien n'est coché**, « Retenir mon choix » l'est.
+- [ ] **5.** Compte **avec historique** : la feuille ne s'ouvre jamais, le mode reste Classique.
+- [ ] **6.** Le sélecteur **Classique · Immersif** de la carte « Séance du jour » change le mode et
+  le retient **après redémarrage de l'app**.
+- [ ] **7.** Menu ⋮ en pleine séance → « Mode d'affichage » : la bascule garde les **séries
+  validées**, la **série courante**, le **repos en cours** (l'échéance ne repart pas de zéro) et les
+  valeurs en cours de saisie.
+- [ ] **8.** Réglages › Séance : chaque interrupteur agit et survit au redémarrage.
+
+### Classique — la pastille de record (le seul ajout)
+
+- [ ] **9.** Battre la **charge max** d'un exercice **qui a déjà un record** : pastille ambre
+  « Record : … (avant …) » **en tête de l'écran de repos**, avec vibration. Aucune voix, aucun plein
+  écran, aucun verdict.
+- [ ] **10.** Premier passage sur un exercice **jamais fait** : aucune pastille (on n'invente pas un
+  record sur une première fois).
+
+### Immersif — la séance
+
+- [ ] **11.** Fond **sombre** en thème clair comme en thème sombre. La surcharge « Couleurs des
+  menus » ne s'y applique pas — c'est voulu.
+- [ ] **12.** Le **ruban segmenté** de l'en-tête a un segment par exercice, large comme son nombre de
+  séries ; il vire au vert quand un exercice est bouclé.
+- [ ] **13.** « Ensuite » (pont ou repos) ouvre le **plan de séance** : aller à un exercice,
+  dé-valider **sans relancer le repos**, supprimer, « + Série », monter, descendre, « Plus tard »,
+  « Remplacer », « Ajouter un exercice ». Tout doit fonctionner comme dans la liste classique.
+- [ ] **14.** Les trois niveaux montrent exactement le tableau §4.4 de la spec (écart au prévu,
+  suggestion, échauffement, options de série, enjeu).
+- [ ] **15.** Le **brief** s'affiche en immersif pour une séance de programme lancée depuis
+  l'**accueil du pilier**, l'**accueil général**, le **planning** et la **fiche programme**, ainsi
+  que pour une séance issue d'un **modèle**. Jamais pour une séance libre, jamais à la reprise.
+- [ ] **16.** 🔴 Ouvrir le brief, **attendre deux minutes**, puis « C'est parti » : le chrono de la
+  séance démarre **à zéro** (rien n'est créé tant qu'on n'a pas dit oui). Revenir en arrière depuis
+  le brief ne laisse **aucune séance active** derrière soi.
+
+### Barre chargée, effort, cadran
+
+- [ ] **17.** Développé couché à **82,5 kg** : « Par côté : 25 + 5 + 1,25 · barre 20 kg ».
+- [ ] **18.** Réglages › Séance, barre à **15 kg** : le calcul change (« 25 + 15 + 1,25 · barre 15 kg »).
+- [ ] **19.** Exercice à **haltères** ou sur **machine** : aucune barre dessinée.
+- [ ] **20.** Charge **inférieure ou égale** à la barre : « Barre seule ». Reste non chargeable :
+  « + 0,5 kg non chargeable ».
+- [ ] **21.** « Lancer la série » : l'écran passe en plein cadre et **bat au tempo**. Toucher le
+  cercle compte une rép et vibre ; la **8ᵉ** rép sur un objectif de 7 passe en **or**.
+- [ ] **22.** Réglages › « Guide de tempo » coupé : l'écran d'effort ne bat plus, tout le reste est
+  identique.
+- [ ] **23.** « Terminé » : le cadran s'ouvre sur les **reps comptées** ; **sans aucun comptage**,
+  sur l'**objectif**. Le glissé vertical avance cran par cran et vibre.
+- [ ] **24.** 🔴 Choisir **« Solide »** enregistre **RPE 7** (visible au niveau Détaillée). La séance
+  suivante propose toujours une **progression** sur cet exercice — MUSC-F7 ne doit **pas** se
+  déclencher. *(Un RPE 8 ici couperait silencieusement la progression assistée.)*
+- [ ] **25.** Choisir **« Limite »** enregistre RPE 10 et propose **−2,5 kg** sur la série suivante
+  du même exercice ; « Garder » ne change rien. Choisir **« Facile »** propose **+2,5 kg**.
+- [ ] **26.** Aucun ajustement proposé sur un **échauffement**, ni si la charge suivante tomberait
+  **sous la barre à vide**, ni s'il n'y a pas de série suivante.
+- [ ] **27.** « Valider directement » (pont) valide la série **sans** effort ni cadran, avec les
+  valeurs des champs.
+- [ ] **28.** Série **à la durée** : l'effort affiche un **compte à rebours** ; à zéro, le cadran
+  s'ouvre tout seul avec la durée atteinte.
+
+### Retours après la série
+
+- [ ] **29.** Verdicts du tableau §5.3 : « +2,5 kg vs mardi », « +1 rép vs mardi », « Comme mardi »,
+  « 6 reps · mardi 8 », « Première référence posée ». **Aucun rouge** sur une série en dessous.
+- [ ] **30.** Une référence de **plus de 7 jours** est nommée par sa **date** (« vs 02/08 »), pas par
+  son jour.
+- [ ] **31.** **Charge max battue** : plein écran de record pendant le repos (ressort, deux ondes,
+  ancien record). Un toucher le ferme, le **repos continue dessous**, il se ferme seul au bout de
+  ~2,6 s.
+- [ ] **32.** Une **deuxième** charge max dans la même séance → **pastille** seulement (le plein
+  écran ne se joue qu'une fois par séance).
+- [ ] **33.** **1RM estimé** battu sans charge max → pastille ambre « 1RM estimé ».
+- [ ] **34.** Les records **enregistrés à la clôture** sont les mêmes qu'en mode classique pour une
+  séance identique. *(⚠️ écart connu et assumé : un exercice sans record antérieur n'est **pas**
+  célébré en séance mais apparaît bien dans les records du bilan.)*
+
+### Le repos
+
+- [ ] **35.** Disque de **respiration** (2 s inspire / 3 s expire), « Prépare-toi » à T−5 s, trois
+  vibrations à T−3, T−2, T−1, vibration longue à la fin.
+- [ ] **36.** **Veille** : 20 s sans toucher → écran noir, chiffres braise, « Touche pour réveiller ».
+  Réveil au toucher **et automatiquement à T−5 s**. Réglage « Veille » coupé → jamais de veille.
+- [ ] **37.** Réduire le repos (chevron) : la barre compacte se pose **au-dessus du pont** sans le
+  recouvrir, et la série suivante reste réglable pendant que le temps tourne.
+- [ ] **38.** Onglet **« Le fantôme de mardi »** : écart chiffré et courbe cohérents avec les séries
+  faites (vérifier à la main sur 2 séries). Réglage « Fantôme » coupé → onglet et pastille absents.
+- [ ] **39.** Onglet **« Le corps qui chauffe »** : les pectoraux chauffent sur un développé couché,
+  et la **légende écrite** nomme les deux muscles les plus chauds avec leur nombre de séries.
+- [ ] **40.** **Exercice bouclé** : carte en tête du repos (séries, tonnage, écart en % vs la
+  dernière fois, records), puis « Ensuite » présente l'exercice suivant.
+- [ ] **41.** **Dernière série** derrière le fantôme : défi « N reps à X kg et mardi est battu » avec
+  N correct. Devant : « mardi est déjà battu de X kg ». Après un ressenti **« Limite »** sur la série
+  précédente : **aucun défi**.
+
+### Coach vocal
+
+- [ ] **42.** **Motivant** : voix audible, phrases complètes. **Sobre** : chiffres seuls, et rien au
+  brief ni en fin de séance. **Muet** : aucune voix, **les légendes écrites restent**.
+- [ ] **43.** Aucune parole **pendant l'effort** en dehors de la consigne dite au lancement ; une
+  nouvelle réplique **coupe** la précédente.
+- [ ] **44.** App en **anglais** : répliques écrites et voix en anglais.
+
+### Fin de séance
+
+- [ ] **45.** « Terminer la séance » : la **cérémonie** s'affiche pendant la clôture (titre, corps
+  chauffé, durée, tonnage, séries, records, verdict du fantôme), puis « Voir le bilan » ouvre le
+  bilan MUSCU-UX02.
+- [ ] **46.** **Relais nutrition** présent **seulement** si le pilier Nutrition est actif **et** que
+  le bonus glucides du jour est non nul. Pilier coupé → aucune ligne, pas même grisée.
+- [ ] **47.** Carte à partager du bilan : **schéma corporel chauffé** + tonnage, séries, record.
+  **Aucune donnée de santé** (ni poids du corps, ni nutrition).
+
+### Le fil (notifications)
+
+- [ ] **48.** Immersif, app en **arrière-plan** pendant le repos : notification **continue**
+  « Repos jusqu'à 18:42 · … » (non sonore, non balayable), puis rappel **« C'est reparti »** à
+  l'échéance.
+- [ ] **49.** App au **premier plan** : la notification de fin de repos ne s'affiche **jamais** par
+  dessus l'écran de repos.
+- [ ] **50.** « Passer » ou « +15 s » dans l'app : le rappel est annulé / replanifié en conséquence.
+- [ ] **51.** **Classique** : aucune notification de repos tant que le réglage est désactivé (défaut).
+- [ ] **52.** 🔴 Une séance de 18 séries **ne consomme pas** le quota de 3 notifications immédiates
+  par jour : un rappel du soir (streak, repas) arrive quand même.
+
+### Transverse
+
+- [ ] **53.** **Mode avion** toute la séance : tout fonctionne, voix comprise (si une voix est
+  installée sur l'appareil).
+- [ ] **54.** Réglage **« Animations »** coupé (ou « réduire les animations » du système) : mêmes
+  informations, sans battement, sans ondes, sans pulsation.
+- [ ] **55.** Unités en **livres** : disques américains (45/35/25/10/5/2,5 lb), barre 45 lb, verdicts
+  et tonnages en lb.
+- [ ] **56.** Aucune **clé brute** affichée (`immersive.…`, `coach.…`) en FR comme en EN.

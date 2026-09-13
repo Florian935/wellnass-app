@@ -1,0 +1,130 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #1c150e; }
+    a { color: #e0a97f; }
+    a:hover { color: #f4ecdd; }
+    .ph {
+      width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box;
+      background: radial-gradient(120% 50% at 85% -8%, rgba(221,110,64,.22) 0%, rgba(221,110,64,0) 60%), #1c150e;
+      color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif;
+      padding: 16px 20px 0; display: flex; flex-direction: column;
+    }
+    .ic { display: block; flex: none; }
+    .eyebrow {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px;
+      letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a;
+    }
+    .top { height: 28px; display: flex; align-items: center; justify-content: space-between; }
+    .hd-btn { width: 44px; height: 44px; margin: -8px; display: flex; align-items: center; justify-content: center; color: #f4ecdd; }
+
+    .intro { margin-top: 26px; display: flex; flex-direction: column; gap: 6px; }
+    .title {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 60px; letter-spacing: -2.4px; line-height: .95; margin-top: 4px;
+    }
+    .meta { display: flex; align-items: center; gap: 8px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; color: #f4ecdd; margin-top: 6px; }
+    .dot { width: 3px; height: 3px; border-radius: 50%; background: #797169; }
+    .mus { font-size: 14px; color: #e0a97f; }
+
+    .stake {
+      margin-top: 20px; border-radius: 20px; padding: 16px 16px 15px;
+      background: rgba(224,177,85,.07); border: 1px solid rgba(224,177,85,.32);
+      display: flex; flex-direction: column; gap: 6px;
+    }
+    .stake-eb { display: flex; align-items: center; gap: 7px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #e0b155; }
+    .stake-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -.5px; line-height: 1.1; }
+    .stake-s { font-size: 13.5px; color: #c9b79a; line-height: 1.4; }
+
+    .list-h { margin-top: 20px; display: flex; justify-content: space-between; align-items: baseline; }
+    .list { margin-top: 6px; display: flex; flex-direction: column; }
+    .row { height: 50px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #2c231a; }
+    .row:last-child { border-bottom: none; }
+    .row-n { width: 16px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; color: #797169; }
+    .row-main { flex: 1; min-width: 0; }
+    .row-name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .row-sub { font-size: 12px; color: #c9b79a; margin-top: 1px; }
+    .row-w { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; }
+    .row-w-rec { color: #e0b155; }
+
+    .foot {
+      position: absolute; left: 0; right: 0; bottom: 0; padding: 36px 20px 16px;
+      background: linear-gradient(180deg, rgba(28,21,14,0) 0%, #1c150e 34%);
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .go {
+      height: 64px; border-radius: 20px; background: #dd6e40; color: #1c150e;
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      font-size: 19px; font-weight: 700; box-shadow: 0 14px 32px -12px rgba(221,110,64,.7);
+    }
+    .ghost { height: 44px; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 600; color: #c9b79a; }
+  </style>
+</helmet>
+
+<div class="ph">
+  <div class="top">
+    <div class="hd-btn"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div>
+    <div class="eyebrow">Semaine 3 · séance 1 sur 3</div>
+  </div>
+
+  <div class="intro">
+    <div class="eyebrow">Séance du jour · PPL 4 semaines</div>
+    <div class="title">Push A</div>
+    <div class="meta"><span>5 exercices</span><span class="dot"></span><span>18 séries</span><span class="dot"></span><span>≈ 55 min</span></div>
+    <div class="mus">Pectoraux · Épaules · Triceps</div>
+  </div>
+
+  <div class="stake">
+    <div class="stake-eb"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 3.6M16 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 13v4M8.5 20h7"/></svg>L'enjeu du jour</div>
+    <div class="stake-t">Développé couché à 82,5 kg</div>
+    <div class="stake-s">Le programme le prévoit en série 3. Ton record est à 80 kg : s'il passe, c'est le nouveau.</div>
+  </div>
+
+  <div class="list-h">
+    <div class="eyebrow">Au programme</div>
+    <div class="eyebrow" style="letter-spacing: .6px">Dernière fois : mardi 08/09</div>
+  </div>
+  <div class="list">
+    <div class="row">
+      <div class="row-n">1</div>
+      <div class="row-main"><div class="row-name">Développé couché</div><div class="row-sub">4 séries · 6 à 8 reps</div></div>
+      <div class="row-w row-w-rec">82,5 kg</div>
+    </div>
+    <div class="row">
+      <div class="row-n">2</div>
+      <div class="row-main"><div class="row-name">Développé incliné haltères</div><div class="row-sub">4 séries · 10 reps</div></div>
+      <div class="row-w">26 kg</div>
+    </div>
+    <div class="row">
+      <div class="row-n">3</div>
+      <div class="row-main"><div class="row-name">Écarté à la poulie</div><div class="row-sub">3 séries · 12 reps</div></div>
+      <div class="row-w">15 kg</div>
+    </div>
+    <div class="row">
+      <div class="row-n">4</div>
+      <div class="row-main"><div class="row-name">Dips lestés</div><div class="row-sub">4 séries · 8 reps · en superset</div></div>
+      <div class="row-w">+10 kg</div>
+    </div>
+    <div class="row">
+      <div class="row-n">5</div>
+      <div class="row-main"><div class="row-name">Extension triceps à la corde</div><div class="row-sub">3 séries · 12 reps · en superset</div></div>
+      <div class="row-w">25 kg</div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="go">C'est parti<svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+    <div class="ghost">Modifier avant de commencer</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

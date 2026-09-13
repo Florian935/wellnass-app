@@ -25,7 +25,7 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { useKeepAwake } from 'expo-keep-awake';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -37,6 +37,15 @@ import { RestOverlay } from '@/components/workout/RestOverlay';
 import { SessionMenuSheet } from '@/components/workout/SessionMenuSheet';
 import { SetActionBar } from '@/components/workout/SetActionBar';
 import { SupersetPickerModal } from '@/components/workout/SupersetPickerModal';
+import { ImmersiveWorkout } from '@/components/workout/immersive/ImmersiveWorkout';
+import { referenceDayLabel } from '@/components/workout/immersive/day-label';
+import { immersivePalette } from '@/components/workout/immersive/theme';
+import { useCoachVoice } from '@/components/workout/immersive/useCoachVoice';
+import type {
+  ImmersiveRuntime,
+  SessionFeedback,
+  ValidateOverride,
+} from '@/components/workout/immersive/types';
 import {
   addSet,
   cancelWorkout,
@@ -62,13 +71,40 @@ import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { maybePushRecords } from '@/data/repositories/notification-repository';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { usePriorWeekAdherence } from '@/data/repositories/planned-session-repository';
+import {
+  useExerciseBests,
+  useSessionCards,
+  useSessionMuscles,
+  useSessionReferences,
+} from '@/data/repositories/immersive-repository';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
+import { useIsAppActive } from '@/hooks/useIsAppActive';
+import {
+  cancelRestReminder,
+  dismissRestOngoing,
+  presentRestOngoing,
+  scheduleRestReminder,
+} from '@/lib/notifications';
 import { hapticConfirm, hapticMilestone } from '@/lib/haptics';
+import { useImmersivePrefs, type ImmersivePrefs } from '@/stores/immersive-prefs-store';
+import { useSessionMode } from '@/stores/session-mode-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
-import { computeProgressionSuggestion, type WorkoutDisplayLevel } from '@wellness/shared';
+import {
+  applyLiveSet,
+  computeProgressionSuggestion,
+  computeSetVerdict,
+  evaluateLiveRecord,
+  feelToRpe,
+  pickCoachLine,
+  setTonnage,
+  type ExerciseBests,
+  type LiveRecord,
+  type SetFeel,
+  type WorkoutDisplayLevel,
+} from '@wellness/shared';
 
 /** Repos par défaut (s) quand l'exercice n'a ni override de session ni valeur planifiée. */
 const DEFAULT_REST_SECONDS = 90;
@@ -232,10 +268,12 @@ export default function WorkoutScreen() {
   // est toujours au manifeste mais ne redimensionne plus rien. Sans ce décalage, la barre de saisie
   // passe SOUS le clavier — on tape une charge sans voir ce qu'on tape (recette §57.19).
   const keyboardHeight = useKeyboardHeight();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const units = useUnits();
   const router = useRouter();
+  // `plan=1` : arrivée depuis « Modifier avant de commencer » (brief, US MUSCU-UX03).
+  const { plan: openPlanParam } = useLocalSearchParams<{ plan?: string }>();
 
   const { workout: active } = useActiveWorkout();
   const { profile } = useProfile();
@@ -277,6 +315,48 @@ export default function WorkoutScreen() {
   const allExerciseNotes = useExerciseNotes();
   const supersetPairs = useSupersetPairs(active?.id ?? '');
 
+  // ── Mode immersif (US MUSCU-UX03) ────────────────────────────────────────────────────────────
+  // Tout l'état de séance reste **ici** : le mode ne change que le rendu. C'est ce qui permet de
+  // basculer classique ↔ immersif en pleine séance sans rien perdre (spec R-MO-4).
+  const sessionMode = useSessionMode((s) => s.mode);
+  // Le store étale les réglages à sa racine (une clé JSON, huit champs) : on le relit en entier et
+  // on reconstitue l'objet que les composants attendent.
+  const prefsStore = useImmersivePrefs();
+  const immersivePrefs: ImmersivePrefs = {
+    coach: prefsStore.coach,
+    tempo: prefsStore.tempo,
+    breathing: prefsStore.breathing,
+    ghost: prefsStore.ghost,
+    sleep: prefsStore.sleep,
+    barKg: prefsStore.barKg,
+    restNotificationImmersive: prefsStore.restNotificationImmersive,
+    restNotificationClassic: prefsStore.restNotificationClassic,
+  };
+  const immersive = sessionMode === 'immersive';
+
+  const exerciseIds = entries.map((entry) => entry.exerciseId);
+  const references = useSessionReferences(exerciseIds);
+  const storedBests = useExerciseBests(exerciseIds);
+  const sessionMuscles = useSessionMuscles(exerciseIds);
+  const sessionCards = useSessionCards(exerciseIds);
+  const speak = useCoachVoice(immersive && immersivePrefs.coach !== 'muet');
+
+  const [feedback, setFeedback] = useState<SessionFeedback | null>(null);
+  /**
+   * Meilleures valeurs **battues pendant la séance**, par-dessus celles lues en base. Sans ce
+   * cumul, deux séries de plus en plus lourdes annonceraient toutes les deux un record.
+   */
+  const [liveBests, setLiveBests] = useState<Record<string, ExerciseBests>>({});
+  const [recordsCount, setRecordsCount] = useState(0);
+  /** Le plein écran de record ne se joue qu'**une fois par séance** (spec §5.4). */
+  const [takeoverUsed, setTakeoverUsed] = useState(false);
+  /**
+   * Le seul ajout du mode **classique** (décision D3) : une pastille de record pendant le repos.
+   * Apprendre un record à la clôture, une demi-heure plus tard, c'est l'apprendre trop tard — et
+   * c'est vrai quel que soit le mode. Tout le reste de l'immersif reste hors du classique.
+   */
+  const [classicRecord, setClassicRecord] = useState<LiveRecord | null>(null);
+
   // Décompte du repos : recalcule le restant chaque seconde ; à 0 → retour haptique + fin.
   useEffect(() => {
     if (restEndsAt === null) return;
@@ -294,6 +374,64 @@ export default function WorkoutScreen() {
     const id = setInterval(tick, 1000);
     return () => clearInterval(id);
   }, [restEndsAt]);
+
+  /**
+   * Le rappel de fin de repos — US MUSCU-UX03, spec §5.15.
+   *
+   * Piloté par l'échéance et non par la validation : à ce moment-là, `current` désigne déjà la
+   * série **suivante**, donc la notification peut annoncer ce qui vient (« 82,5 kg × 7 »). Toute
+   * modification du repos (prolongé, passé, terminé) change `restEndsAt` et **replanifie**.
+   *
+   * Le réglage diffère par mode : activé en immersif, désactivé en classique. Et comme un repos
+   * est lancé par l'utilisateur lui-même, cette notification est **hors quota** (le plafond de 3
+   * rappels quotidiens protège des notifications non sollicitées, ce qui n'est pas le cas ici).
+   */
+  const restReminderOn = immersive
+    ? immersivePrefs.restNotificationImmersive
+    : immersivePrefs.restNotificationClassic;
+  const nextLabelForReminder = current
+    ? `${current.entry.exerciseName} · ${
+        current.set.setType === 'duration'
+          ? formatMmSs(current.set.durationSeconds ?? 0)
+          : `${units.formatWeight(current.set.weightKg)} × ${current.set.reps ?? '—'}`
+      }`
+    : null;
+
+  useEffect(() => {
+    if (restEndsAt === null || !restReminderOn) {
+      void cancelRestReminder();
+      return;
+    }
+    void scheduleRestReminder({
+      at: new Date(restEndsAt),
+      title: t('immersive.notification.restOverTitle'),
+      body: nextLabelForReminder ?? t('immersive.notification.restOverBodyEnd'),
+    });
+    return () => {
+      void cancelRestReminder();
+    };
+  }, [restEndsAt, restReminderOn, nextLabelForReminder, t]);
+
+  /**
+   * La notification **continue** du repos : elle n'existe que quand l'app est en arrière-plan —
+   * c'est-à-dire exactement quand l'écran de repos ne peut plus rien dire. Au premier plan, elle
+   * ferait doublon avec l'anneau. Retirée dès le retour, et dès la fin du repos.
+   */
+  const appActive = useIsAppActive();
+  useEffect(() => {
+    if (restEndsAt === null || appActive || !restReminderOn) {
+      void dismissRestOngoing();
+      return;
+    }
+    const until = new Date(restEndsAt).toLocaleTimeString(i18n.language, {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+    void presentRestOngoing({
+      title: t('immersive.notification.ongoingTitle', { time: until }),
+      body: nextLabelForReminder ?? t('immersive.notification.restOverBodyEnd'),
+    });
+  }, [appActive, restEndsAt, restReminderOn, nextLabelForReminder, i18n.language, t]);
 
   const currentSetId = current?.set.id;
 
@@ -424,6 +562,10 @@ export default function WorkoutScreen() {
     setRestOverride((prev) => ({ ...prev, [current.entry.exerciseId]: Math.max(0, seconds) }));
   };
 
+  /** Vrai quand l'exercice se charge sur une barre : c'est le seul cas où des disques existent. */
+  const showBarbellFor = (exerciseId: string) =>
+    sessionCards[exerciseId]?.equipment === 'barbell';
+
   /** Réglage rapide du repos — ouvert depuis le menu ou l'écran de repos. */
   const openRestPicker = () => {
     Alert.alert(t('workout.menu.rest'), t('workout.restPickerMessage'), [
@@ -435,24 +577,47 @@ export default function WorkoutScreen() {
     ]);
   };
 
-  const onValidate = () => {
+  /**
+   * Valide la série courante.
+   *
+   * `override` n'est passé que par le **cadran** du mode immersif, qui valide avec ses propres
+   * chiffres (reps comptées, durée mesurée, ressenti). Sans lui, le comportement est **exactement**
+   * celui d'avant : les valeurs des champs, telles quelles.
+   */
+  const onValidate = (override?: ValidateOverride) => {
     if (!current) return;
     const parsed = Number(displayReps);
-    const reps = displayReps.trim() === '' || Number.isNaN(parsed) ? null : parsed;
+    const typedReps = displayReps.trim() === '' || Number.isNaN(parsed) ? null : parsed;
+    const reps = override?.reps !== undefined ? override.reps : typedReps;
+    const weightKg = override?.weightKg !== undefined ? override.weightKg : displayWeightKg;
+    const durationSeconds =
+      override?.durationSeconds !== undefined ? override.durationSeconds : displayDurationSeconds;
+    const feel: SetFeel | null = override?.feel ?? null;
+
     // Persistance selon le type : une série à la durée enregistre `durationSeconds` (reps non
     // pertinent → null) ; les autres enregistrent `reps` et laissent `durationSeconds` inchangé.
-    const patch: WorkoutSetPatch = { weightKg: displayWeightKg, done: true };
+    const patch: WorkoutSetPatch = { weightKg, done: true };
     if (current.set.setType === 'duration') {
       patch.reps = null;
-      patch.durationSeconds = displayDurationSeconds;
+      patch.durationSeconds = durationSeconds;
     } else {
       patch.reps = reps;
     }
+    // Le ressenti s'écrit dans la colonne `rpe` **existante** — aucune migration, et l'historique,
+    // la progression et le deload de MUSC-F7 continuent de le lire comme avant.
+    // ⚠️ « Solide » vaut 7, jamais 8 : voir `packages/shared/src/set-feel.ts`.
+    if (feel) patch.rpe = feelToRpe(feel);
     void updateSet(current.set.id, patch);
 
     // Le retour que la spec navigation-ux §4.2 demandait sans qu'il existe : discret, parce qu'il
     // se répète 30 à 40 fois dans l'heure.
     hapticConfirm();
+
+    // Les records en direct valent pour **les deux modes** : le classique n'en fait qu'une
+    // pastille discrète au repos (décision D3), l'immersif en fait une célébration.
+    const record = evaluateRecord({ reps, weightKg });
+    if (immersive) buildFeedback({ reps, weightKg, durationSeconds, feel }, record);
+    else setClassicRecord(record);
 
     // Superset : si l'exercice a un partenaire lié avec une série au même rang pas encore validée,
     // on bascule directement dessus SANS repos. `partner.set.done` reflète l'état de CE rendu
@@ -475,6 +640,179 @@ export default function WorkoutScreen() {
     setRestEndsAt(() => Date.now() + currentRest * 1000);
     setRestTotal(currentRest);
     setFocusOverride(null);
+  };
+
+  /**
+   * Le record que cette série vient de battre, ou `null` — **et rien n'est écrit** : les lignes
+   * `personal_records` restent produites à la clôture par `evaluateWorkoutRecords`, seule source.
+   *
+   * Les meilleures valeurs battues **pendant** la séance priment sur celles de la base : sans ce
+   * cumul, deux séries de plus en plus lourdes annonceraient toutes les deux « plus lourd que
+   * jamais ».
+   */
+  const evaluateRecord = (values: { reps: number | null; weightKg: number | null }) => {
+    if (!current) return null;
+    const exerciseId = current.entry.exerciseId;
+    const bests = liveBests[exerciseId] ??
+      storedBests[exerciseId] ?? { maxWeightKg: null, estimated1rm: null };
+    const liveSet = {
+      setType: current.set.setType,
+      reps: values.reps,
+      weightKg: values.weightKg,
+      done: true,
+    };
+    const record = evaluateLiveRecord(liveSet, bests);
+    setLiveBests((previous) => ({ ...previous, [exerciseId]: applyLiveSet(bests, liveSet) }));
+    if (record) {
+      setRecordsCount((n) => n + 1);
+      hapticMilestone();
+    }
+    return record;
+  };
+
+  // ── Ce que la validation produit en mode immersif (verdict, coach, ajustement) ───────────────
+  /**
+   * Construit le retour affiché pendant le repos. Tout est calculé **en mémoire**, à partir des
+   * références lues une fois au lancement : rien n'est écrit, donc dé-valider une série et la
+   * revalider recalcule proprement, sans ligne parasite.
+   */
+  const buildFeedback = (
+    values: {
+      reps: number | null;
+      weightKg: number | null;
+      durationSeconds: number | null;
+      feel: SetFeel | null;
+    },
+    record: ReturnType<typeof evaluateRecord>,
+  ) => {
+    if (!current) return;
+    const exerciseId = current.entry.exerciseId;
+    const reference = references[exerciseId];
+    const referenceSetAtRank = reference?.sets[current.rang] ?? null;
+
+    const verdict = computeSetVerdict({
+      current: {
+        setType: current.set.setType,
+        reps: values.reps,
+        weightKg: values.weightKg,
+        durationSeconds: values.durationSeconds,
+      },
+      reference: referenceSetAtRank
+        ? {
+            setType: referenceSetAtRank.setType,
+            reps: referenceSetAtRank.reps,
+            weightKg: referenceSetAtRank.weightKg,
+            durationSeconds: referenceSetAtRank.durationSeconds ?? null,
+          }
+        : null,
+      finishedAt: reference?.finishedAt ?? null,
+    });
+
+    const takeover = Boolean(record && record.type === 'max_weight' && !takeoverUsed);
+    if (takeover) {
+      setTakeoverUsed(true);
+      // Vibration double pour la seule célébration plein écran de la séance.
+      setTimeout(hapticMilestone, 180);
+    }
+
+    // Exercice bouclé : cette série était-elle la dernière non validée de son exercice ?
+    const remaining = current.entry.sets.filter((set, rank) => !set.done && rank !== current.rang);
+    const exerciseDone =
+      remaining.length === 0
+        ? (() => {
+            const tonnageToday =
+              current.entry.sets.reduce(
+                (total, set, rank) =>
+                  total +
+                  (rank === current.rang
+                    ? setTonnage({
+                        setType: current.set.setType,
+                        reps: values.reps,
+                        weightKg: values.weightKg,
+                      })
+                    : set.done
+                      ? setTonnage(set)
+                      : 0),
+                0,
+              ) ?? 0;
+            const tonnageBefore = (reference?.sets ?? []).reduce(
+              (total, set) => total + setTonnage(set),
+              0,
+            );
+            return {
+              name: current.entry.exerciseName,
+              sets: current.entry.sets.filter((set, rank) => set.done || rank === current.rang).length,
+              tonnage: tonnageToday,
+              deltaPercent:
+                tonnageBefore > 0
+                  ? ((tonnageToday - tonnageBefore) / tonnageBefore) * 100
+                  : null,
+              records: record ? 1 : 0,
+            };
+          })()
+        : null;
+
+    // Ajustement : proposition, jamais décision (spec §5.8).
+    const nextSet = current.entry.sets[current.rang + 1];
+    const step = units.system === 'imperial' ? 2.26796 : 2.5;
+    const adjust =
+      nextSet &&
+      !nextSet.done &&
+      current.set.setType !== 'warmup' &&
+      values.weightKg !== null &&
+      (values.feel === 'limite' || values.feel === 'facile')
+        ? (() => {
+            const direction = values.feel === 'limite' ? ('down' as const) : ('up' as const);
+            const target =
+              direction === 'down'
+                ? Math.round((values.weightKg! - step) * 100) / 100
+                : Math.round((values.weightKg! + step) * 100) / 100;
+            // Jamais sous la barre à vide, jamais sous zéro.
+            const floor = showBarbellFor(exerciseId) ? immersivePrefs.barKg : 0;
+            return target > floor ? { weightKg: target, direction } : null;
+          })()
+        : null;
+
+    // Une réplique, par ordre d'importance : un record écrase un bilan d'exercice, qui écrase un
+    // verdict de série. Un échauffement ne mérite aucune des trois.
+    const coachEvent = record ? 'record' : exerciseDone ? 'exerciseDone' : 'verdict';
+    const coachVariant = record
+      ? record.type === 'max_weight'
+        ? 'maxWeight'
+        : 'estimated1rm'
+      : exerciseDone
+        ? null
+        : verdict.kind;
+    const coach = verdict.kind === 'warmup' && !record ? null : pickCoachLine({
+      event: coachEvent,
+      character: immersivePrefs.coach,
+      variant: coachVariant,
+      vars: {
+        weight: units.formatWeight(values.weightKg ?? 0),
+        reps: values.reps ?? 0,
+        delta: units.formatWeight(Math.abs(verdict.deltaKg ?? 0)),
+        count: Math.abs(verdict.deltaReps ?? 0),
+        day: referenceDayLabel(reference?.finishedAt, verdict.dayKind, i18n.language) ?? '',
+        exercise: current.entry.exerciseName,
+      },
+    });
+    speak(coach);
+
+    setFeedback({
+      doneLabel:
+        current.set.setType === 'duration'
+          ? formatMmSs(values.durationSeconds ?? 0)
+          : `${units.formatWeight(values.weightKg)} × ${values.reps ?? '—'}`,
+      setIndex: current.rang + 1,
+      verdict,
+      dayLabel: referenceDayLabel(reference?.finishedAt, verdict.dayKind, i18n.language),
+      record,
+      takeover,
+      exerciseName: current.entry.exerciseName,
+      exerciseDone,
+      adjust,
+      coach,
+    });
   };
 
   const confirmAbandon = () => {
@@ -500,8 +838,15 @@ export default function WorkoutScreen() {
   // Verrou de clôture — sans lui, deux appuis rapides tombent dans le même cycle de rendu :
   // la séance était clôturée deux fois, les records réévalués deux fois (donc deux notifications
   // identiques possibles) et la navigation jouée deux fois. Voir `useActionLock`.
-  const doFinish = () =>
+  /**
+   * @param navigate Faux en mode immersif : la **cérémonie de fin** occupe l'écran pendant que la
+   *   clôture et l'évaluation des records travaillent, et c'est « Voir le bilan » qui navigue
+   *   (spec MUSCU-UX03 §5.13). En classique, rien ne change : on part au résumé.
+   */
+  const doFinish = (navigate = true) =>
     void lockFinish(async () => {
+      void cancelRestReminder();
+      void dismissRestOngoing();
       // 1. Clôture de la séance : doit réussir (statut 'completed').
       await finishWorkout(workoutId);
       // 2. Records : enrichissement best-effort. Un échec ne doit jamais bloquer la navigation.
@@ -512,7 +857,7 @@ export default function WorkoutScreen() {
         console.warn('Échec du calcul des records (ignoré, best-effort) :', error);
       }
       // 3. Navigation vers le résumé, quoi qu'il advienne à l'étape 2.
-      router.replace({ pathname: '/workout-summary', params: { id: workoutId } });
+      if (navigate) router.replace({ pathname: '/workout-summary', params: { id: workoutId } });
     });
 
   const hasAnyDone = entries.some((entry) => entry.sets.some((set) => set.done));
@@ -521,12 +866,13 @@ export default function WorkoutScreen() {
     if (!hasAnyDone) {
       Alert.alert(t('workout.finishNoSetsTitle'), t('workout.finishNoSetsMessage'), [
         { text: t('common.cancel'), style: 'cancel' },
-        { text: t('workout.finishAnyway'), onPress: doFinish },
+        { text: t('workout.finishAnyway'), onPress: () => doFinish() },
       ]);
       return;
     }
     hapticMilestone();
-    doFinish();
+    // En immersif, la cérémonie prend l'écran : elle navigue elle-même, une fois lue.
+    doFinish(!immersive);
   };
 
   // Gestion des séries depuis la liste (dé-validation volontairement sans repos : seule la barre
@@ -569,6 +915,140 @@ export default function WorkoutScreen() {
           ?.set.done === false,
       )
     : false;
+
+  // ── Le rendu immersif ────────────────────────────────────────────────────────────────────────
+  // Il ne lit ni n'écrit rien : il reçoit **l'état de cet écran** et le met en scène. C'est ce qui
+  // permet de basculer de mode en pleine séance sans perdre une valeur, et ce qui garantit que le
+  // mode classique — tout ce qui suit — reste strictement inchangé.
+  if (immersive) {
+    const runtime: ImmersiveRuntime = {
+      workoutId,
+      entries,
+      current,
+      currentExerciseId,
+      level: displayLevel,
+      colors: immersivePalette,
+      units,
+
+      elapsed,
+      totalSets,
+      doneSets,
+
+      displayReps,
+      displayWeightKg,
+      displayDurationSeconds,
+      durationValue,
+      applyEdit,
+
+      setChips: currentSetChips,
+      lastPerfLabel: formatLastPerf(lastPerf, units),
+      suggestionLabel,
+      plannedLabel,
+      deltaLabel,
+      deltaPositive: (deltaRounded ?? 0) >= 0,
+      currentSetType: current?.set.setType ?? 'normal',
+      onSetType: (type) => {
+        if (current) void updateSet(current.set.id, { setType: type });
+      },
+      rpe: current?.set.rpe ?? null,
+      onSetRpe: (value) => {
+        if (current) void updateSet(current.set.id, { rpe: value });
+      },
+      note: displayNote,
+      onChangeNote,
+      onBlurNote,
+      supersetLink,
+      chainsToSuperset,
+      onRequestLinkSuperset: () => setSupersetPickerOpen(true),
+      onUnlinkSuperset: () => {
+        if (current) void unlinkSupersetPair(workoutId, current.entry.exerciseId);
+      },
+
+      onValidate,
+      onFinish,
+      onLeave,
+      onOpenMenu: () => setMenuOpen(true),
+      onAddSet: (exerciseId) => void addSet(workoutId, exerciseId),
+      onSelectExercise: (exerciseId) => setFocusOverride({ exerciseId }),
+      onToggleSetDone,
+      onRemoveSet: (setId) => void removeSet(setId),
+      onReorder: (exerciseId, direction) => void reorderExercise(workoutId, exerciseId, direction),
+      onSendLater: (exerciseId) => void sendExerciseToEnd(workoutId, exerciseId),
+      onReplace: (exerciseId) =>
+        router.push({ pathname: '/exercises', params: { replaceExerciseId: exerciseId } }),
+      onAddExercise: () => router.push('/exercises'),
+      exerciseNotes: allExerciseNotes,
+      supersetPairs,
+
+      rest: {
+        active: restEndsAt !== null,
+        secondsLeft: restLeft,
+        totalSeconds: restTotal,
+        restSeconds: currentRest,
+        collapsed: restCollapsed,
+        onToggleCollapse: () => setRestCollapsed((collapsed) => !collapsed),
+        onSkip: () => setRestEndsAt(null),
+        onExtend: () => {
+          setRestEndsAt((end) => (end ?? Date.now()) + 15000);
+          setRestTotal((total) => total + 15);
+        },
+        onChangeRest: onSetRest,
+      },
+
+      references,
+      bests: { ...storedBests, ...liveBests },
+      muscles: sessionMuscles,
+      feedback,
+      recordsCount,
+      prefs: immersivePrefs,
+      speak,
+      onAcceptAdjust: () => {
+        // « Proposition, jamais décision » : accepter ne fait que **pré-remplir** la série
+        // suivante. Rien n'est écrit en base tant qu'elle n'est pas validée.
+        if (feedback?.adjust && currentSetId) {
+          applyEdit({ weightKg: feedback.adjust.weightKg });
+        }
+        setFeedback((previous) => (previous ? { ...previous, adjust: null } : previous));
+      },
+      onDismissAdjust: () =>
+        setFeedback((previous) => (previous ? { ...previous, adjust: null } : previous)),
+      onDismissTakeover: () =>
+        setFeedback((previous) => (previous ? { ...previous, takeover: false } : previous)),
+      showBarbell: Boolean(current && showBarbellFor(current.entry.exerciseId)),
+      cue: current ? (sessionCards[current.entry.exerciseId]?.cue ?? null) : null,
+      openPlanOnMount: openPlanParam === '1',
+      goToSummary: () =>
+        router.replace({ pathname: '/workout-summary', params: { id: workoutId } }),
+    };
+
+    return (
+      <>
+        <ImmersiveWorkout runtime={runtime} />
+        <SupersetPickerModal
+          visible={supersetPickerOpen}
+          onClose={() => setSupersetPickerOpen(false)}
+          candidates={supersetCandidates}
+          onPick={onPickSupersetPartner}
+          colors={immersivePalette}
+        />
+        <SessionMenuSheet
+          visible={menuOpen}
+          onClose={() => setMenuOpen(false)}
+          level={displayLevel}
+          onChangeLevel={(lvl) => void upsertProfile({ workoutDisplayLevel: lvl })}
+          mode={sessionMode}
+          onChangeMode={(next) => void useSessionMode.getState().setMode(next)}
+          restSeconds={currentRest}
+          onOpenRest={openRestPicker}
+          onAddExercise={() => router.push('/exercises')}
+          onFinish={onFinish}
+          onLeave={onLeave}
+          onAbandon={confirmAbandon}
+          colors={immersivePalette}
+        />
+      </>
+    );
+  }
 
   return (
     <SafeAreaView
@@ -780,6 +1260,19 @@ export default function WorkoutScreen() {
           }}
           onToggleCollapse={() => setRestCollapsed((c) => !c)}
           onChangeRest={onSetRest}
+          recordLabel={
+            classicRecord
+              ? t(
+                  classicRecord.type === 'max_weight'
+                    ? 'immersive.record.pillWeight'
+                    : 'immersive.record.pill1rm',
+                  {
+                    value: units.formatWeight(classicRecord.value),
+                    previous: units.formatWeight(classicRecord.previous),
+                  },
+                )
+              : null
+          }
           colors={colors}
         />
       ) : null}
@@ -797,6 +1290,8 @@ export default function WorkoutScreen() {
         onClose={() => setMenuOpen(false)}
         level={displayLevel}
         onChangeLevel={(lvl) => void upsertProfile({ workoutDisplayLevel: lvl })}
+        mode={sessionMode}
+        onChangeMode={(next) => void useSessionMode.getState().setMode(next)}
         restSeconds={currentRest}
         onOpenRest={openRestPicker}
         onAddExercise={() => router.push('/exercises')}

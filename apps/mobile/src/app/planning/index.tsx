@@ -32,6 +32,7 @@ import { EmptyState } from '@/components/EmptyState';
 import { PainSignalBanner } from '@/components/planning/PainSignalBanner';
 import { SessionConflictBanner } from '@/components/planning/SessionConflictBanner';
 import { Screen } from '@/components/Screen';
+import { briefRouteForSession } from '@/components/workout/immersive/brief-entry';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
   markPlannedSessionDone,
@@ -265,6 +266,12 @@ export default function PlanningScreen() {
     const sessionId = selected.sessionId;
     const plannedSessionId = selected.id;
     closeSheet();
+    // Mode immersif : le brief annonce la séance puis la crée lui-même (US MUSCU-UX03, §5.1).
+    const brief = briefRouteForSession(sessionId, plannedSessionId);
+    if (brief) {
+      router.push(brief);
+      return;
+    }
     try {
       await startWorkoutFromSession(sessionId, { plannedSessionId });
       router.push('/workout');

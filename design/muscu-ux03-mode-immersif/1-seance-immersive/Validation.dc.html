@@ -1,0 +1,212 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .board {
+      width: 1320px; height: 1420px; box-sizing: border-box; background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 44px 40px; display: flex; flex-direction: column; gap: 30px;
+    }
+    .ic { display: block; flex: none; }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .h1 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 44px; letter-spacing: -1.5px; line-height: 1; margin: 8px 0 0; }
+    .lede { font-size: 15px; line-height: 1.55; color: #5c4d3d; max-width: 760px; margin-top: 12px; }
+
+    .frames { display: grid; grid-template-columns: repeat(3, 390px); gap: 36px; }
+    .fcol { display: flex; flex-direction: column; gap: 14px; }
+    .crop {
+      width: 390px; height: 460px; position: relative; overflow: hidden; border-radius: 24px; box-sizing: border-box;
+      background: #1c150e; color: #f4ecdd; box-shadow: 0 24px 44px -28px rgba(60,40,20,.55);
+    }
+    .cap-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 18px; letter-spacing: -.4px; }
+    .cap-t span { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #b14f2b; margin-right: 8px; letter-spacing: 0; }
+    .cap { font-size: 13.5px; line-height: 1.5; color: #5c4d3d; }
+    .spec { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; line-height: 1.7; color: #786a59; border-top: 1px dashed #dccbb0; padding-top: 8px; }
+    .spec b { color: #33291f; }
+
+    /* Éléments d'écran (mode séance) */
+    .dk-eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a; }
+    .up { position: absolute; left: 20px; right: 20px; top: 36px; display: flex; flex-direction: column; gap: 16px; }
+    .pills { display: flex; align-items: center; gap: 7px; }
+    .pill { height: 34px; box-sizing: border-box; border-radius: 11px; padding: 0 11px; display: flex; align-items: center; gap: 5px; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12.5px; }
+    .pill-done { background: rgba(169,186,126,.14); color: #a9ba7e; }
+    .pill-cur { border: 1.5px solid #dd6e40; color: #dd6e40; }
+    .pill-todo { background: #30271e; color: #c9b79a; }
+    .pill-pop { background: rgba(169,186,126,.26); color: #c4d49c; transform: scale(1.12); box-shadow: 0 0 0 5px rgba(169,186,126,.12); }
+    .ref { display: flex; align-items: baseline; gap: 10px; }
+    .ref-l { width: 96px; flex: none; font-size: 12.5px; color: #c9b79a; }
+    .ref-v { font-family: 'Space Mono', ui-monospace, monospace; font-size: 14px; }
+    .ref-hl { background: #3a2e22; border-radius: 4px; padding: 0 4px; }
+
+    .deck {
+      position: absolute; left: 0; right: 0; bottom: 0; height: 274px; box-sizing: border-box;
+      background: #241c14; border-top: 1px solid #3a2e22; border-radius: 28px 28px 0 0;
+      padding: 0 20px 18px; display: flex; flex-direction: column; gap: 10px;
+    }
+    .peek { height: 50px; flex: none; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #3a2e22; font-size: 13.5px; }
+    .peek-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #c9b79a; }
+    .ctx { display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px; color: #c9b79a; margin-top: 2px; }
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .field { height: 92px; box-sizing: border-box; border-radius: 18px; background: #1c150e; border: 1px solid #3a2e22; padding: 5px; display: flex; align-items: center; gap: 2px; }
+    .step { width: 34px; height: 52px; flex: none; border-radius: 12px; background: #30271e; display: flex; align-items: center; justify-content: center; color: #f4ecdd; }
+    .fv { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .fv-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px; line-height: 1; }
+    .fv-u { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #c9b79a; }
+    .validate { height: 64px; border-radius: 20px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 18px; font-weight: 700; position: relative; }
+    .validate-press { transform: scale(.97); background: #c9623a; box-shadow: none; }
+    .touch { position: absolute; left: 58%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; border-radius: 50%; background: rgba(255,250,242,.28); box-shadow: 0 0 0 10px rgba(255,250,242,.1); }
+    .float-verdict {
+      position: absolute; left: 0; right: 0; bottom: 290px; display: flex; justify-content: center;
+    }
+    .verdict { height: 34px; box-sizing: border-box; padding: 0 14px; border-radius: 999px; display: flex; align-items: center; gap: 6px; background: #2e3322; color: #c4d49c; font-size: 14px; font-weight: 700; box-shadow: 0 10px 24px -8px rgba(0,0,0,.6); }
+    .hd { position: absolute; left: 0; right: 0; top: 0; padding: 14px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+    .hd-row { display: flex; align-items: center; justify-content: space-between; height: 28px; }
+    .chrono { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px; }
+    .ribbon { display: flex; gap: 4px; height: 6px; }
+    .seg { height: 6px; border-radius: 3px; background: #362c22; overflow: hidden; }
+    .seg-f { height: 100%; border-radius: 3px; }
+    .hd-meta { display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a; }
+    .rest { position: absolute; left: 0; right: 0; top: 108px; display: flex; flex-direction: column; align-items: center; }
+    .done-v { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1px; line-height: 1; margin-top: 6px; }
+    .verdict-in { margin-top: 10px; height: 30px; box-sizing: border-box; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; gap: 6px; background: rgba(169,186,126,.14); color: #a9ba7e; font-size: 13px; font-weight: 700; }
+    .ring { position: relative; width: 248px; height: 248px; margin-top: 18px; }
+    .ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+    .ring-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+    .ring-n { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 58px; letter-spacing: -2px; line-height: 1; }
+    .ring-l { font-size: 12.5px; color: #c9b79a; }
+
+    /* ── Tableau des verdicts ── */
+    .vt-head { display: flex; align-items: baseline; justify-content: space-between; gap: 24px; }
+    .h2 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -.8px; }
+    .vt-note { font-size: 13px; color: #786a59; max-width: 560px; line-height: 1.5; }
+    .vt { display: flex; flex-direction: column; margin-top: 12px; }
+    .vr { display: grid; grid-template-columns: 380px 360px minmax(0, 1fr); gap: 24px; align-items: center; padding: 10px 0; border-top: 1px solid #e3d4bd; }
+    .vr-h { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #786a59; border-top: none; padding-top: 0; }
+    .vs { font-size: 14px; line-height: 1.4; }
+    .vc { justify-self: start; height: 30px; box-sizing: border-box; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; gap: 6px; background: #1c150e; font-size: 13px; font-weight: 700; }
+    .vton { font-size: 13px; color: #786a59; line-height: 1.4; }
+    .vton b { color: #33291f; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div>
+    <div class="eb">Moment 3 · valider une série</div>
+    <div class="h1">Chaque série reçoit une réponse</div>
+    <div class="lede">Répété 30 à 40 fois par séance, ce moment ne peut rien coûter : aucune attente ajoutée, aucun appui de plus. Il gagne seulement une information, la seule qui compte à ce moment-là : ce que valait la série face à la dernière fois.</div>
+  </div>
+
+  <div class="frames">
+    <div class="fcol">
+      <div class="crop">
+        <div class="up">
+          <div class="pills">
+            <div class="pill pill-done"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>80×8</div>
+            <div class="pill pill-cur">Série 2</div>
+            <div class="pill pill-todo">3</div>
+            <div class="pill pill-todo">4</div>
+          </div>
+          <div class="ref"><div class="ref-l">Dernière fois</div><div class="ref-v">77,5 kg × 8 / <span class="ref-hl">8</span> / 7 / 6</div></div>
+        </div>
+        <div class="deck">
+          <div class="peek"><span class="peek-l">Ensuite</span>Développé incliné haltères</div>
+          <div class="ctx"><span>Série 2 sur 4</span><span>Repos 2:00</span></div>
+          <div class="fields">
+            <div class="field"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">8</div><div class="fv-u">Reps</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+            <div class="field"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">80</div><div class="fv-u">kg</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+          </div>
+          <div class="validate validate-press">Valider la série<div class="touch"></div></div>
+        </div>
+      </div>
+      <div class="cap-t"><span>T 0</span>L'appui</div>
+      <div class="cap">La série est enregistrée au moment de l'appui, avant tout mouvement. Le bouton s'enfonce, le téléphone vibre brièvement.</div>
+      <div class="spec"><b>PressableScale</b> 0,97 · <b>hapticConfirm()</b> 30 ms — déjà en place</div>
+    </div>
+
+    <div class="fcol">
+      <div class="crop">
+        <div class="up">
+          <div class="pills">
+            <div class="pill pill-done"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>80×8</div>
+            <div class="pill pill-pop"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>80×8</div>
+            <div class="pill pill-todo">3</div>
+            <div class="pill pill-todo">4</div>
+          </div>
+          <div class="ref"><div class="ref-l">Dernière fois</div><div class="ref-v">77,5 kg × 8 / <span class="ref-hl">8</span> / 7 / 6</div></div>
+        </div>
+        <div class="float-verdict"><div class="verdict"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>+2,5 kg vs mardi</div></div>
+        <div class="deck">
+          <div class="peek"><span class="peek-l">Ensuite</span>Développé incliné haltères</div>
+          <div class="ctx"><span>Série 2 sur 4</span><span>Repos 2:00</span></div>
+          <div class="fields">
+            <div class="field"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">8</div><div class="fv-u">Reps</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+            <div class="field"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">80</div><div class="fv-u">kg</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+          </div>
+          <div class="validate"><svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg>Valider la série</div>
+        </div>
+      </div>
+      <div class="cap-t"><span>T +120 ms</span>L'impact</div>
+      <div class="cap">La pastille de la série se remplit et encaisse le coup. Le verdict monte au-dessus du pont : l'écart avec la même série, la dernière fois.</div>
+      <div class="spec">pastille <b>spring 420/18</b> (l'impact) · verdict <b>+12 px → 0</b>, 200 ms</div>
+    </div>
+
+    <div class="fcol">
+      <div class="crop">
+        <div class="hd">
+          <div class="hd-row">
+            <svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+            <div class="chrono">07:24</div>
+            <svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+          </div>
+          <div class="ribbon">
+            <div class="seg" style="flex: 4 1 0"><div class="seg-f" style="width: 50%; background: #dd6e40"></div></div>
+            <div class="seg" style="flex: 4 1 0"></div><div class="seg" style="flex: 3 1 0"></div><div class="seg" style="flex: 4 1 0"></div><div class="seg" style="flex: 3 1 0"></div>
+          </div>
+          <div class="hd-meta"><span>Push A</span><span>2/18 séries</span></div>
+        </div>
+        <div class="rest">
+          <div class="dk-eb">Série 2 validée</div>
+          <div class="done-v">80 kg × 8</div>
+          <div class="verdict-in"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>+2,5 kg vs mardi</div>
+          <div class="ring">
+            <svg width="248" height="248" viewBox="0 0 248 248"><circle cx="124" cy="124" r="119" fill="none" stroke="#3a2e22" stroke-width="10"/><circle cx="124" cy="124" r="119" fill="none" stroke="#e0a97f" stroke-width="10" stroke-linecap="round" stroke-dasharray="747.7" stroke-dashoffset="4"/></svg>
+            <div class="ring-c"><div class="ring-n">2:00</div><div class="ring-l">de repos</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="cap-t"><span>T +450 ms</span>Le repos prend le relais</div>
+      <div class="cap">L'écran de repos monte depuis le pont et garde le verdict en tête. Rien à fermer, rien à confirmer : le verdict reste lisible pendant toute la récupération.</div>
+      <div class="spec">montée <b>280 ms</b> · anneau <b>linear</b> sur la durée · superset : pas de repos, le verdict reste 1,2 s au-dessus du pont</div>
+    </div>
+  </div>
+
+  <div>
+    <div class="vt-head">
+      <div class="h2">Le verdict : un fait, pas un compliment</div>
+      <div class="vt-note">Base de comparaison : la même série (même rang) de la dernière séance terminée sur cet exercice, déjà lue par l'écran. « mardi » si c'était il y a moins de 7 jours, sinon la date (« vs 02/08 »).</div>
+    </div>
+    <div class="vt">
+      <div class="vr vr-h"><div>Situation</div><div>Ce qui s'affiche</div><div>Ton et retour</div></div>
+      <div class="vr"><div class="vs">Plus lourd qu'à la même série la dernière fois</div><div class="vc" style="color: #a9ba7e">+2,5 kg vs mardi</div><div class="vton"><b>Vert.</b> Vibration courte habituelle.</div></div>
+      <div class="vr"><div class="vs">Même charge, plus de répétitions</div><div class="vc" style="color: #a9ba7e">+1 rép vs mardi</div><div class="vton"><b>Vert.</b></div></div>
+      <div class="vr"><div class="vs">Exactement pareil</div><div class="vc" style="color: #c9b79a">Comme mardi</div><div class="vton"><b>Neutre.</b> Tenir, c'est déjà une information.</div></div>
+      <div class="vr"><div class="vs">En dessous de la dernière fois</div><div class="vc" style="color: #c9b79a">6 reps · mardi 8</div><div class="vton"><b>Neutre, jamais rouge.</b> Le chiffre suffit ; pas de jugement.</div></div>
+      <div class="vr"><div class="vs">Record de performance (1RM estimé)</div><div class="vc" style="color: #e0b155">Record · 1RM estimé 104 kg</div><div class="vton"><b>Ambre.</b> Vibration longue (140 ms). Pas de prise d'écran.</div></div>
+      <div class="vr"><div class="vs">Charge jamais soulevée sur cet exercice</div><div class="vc" style="color: #e0b155">Record · charge max</div><div class="vton"><b>Prise d'écran</b> (moment 5), puis cette pastille.</div></div>
+      <div class="vr"><div class="vs">Première fois sur cet exercice</div><div class="vc" style="color: #c9b79a">Première référence posée</div><div class="vton"><b>Neutre.</b> Aucune célébration : pas de record sans passé.</div></div>
+      <div class="vr"><div class="vs">Série d'échauffement</div><div class="vc" style="color: #797169">Échauffement</div><div class="vton">Aucun verdict, aucun record.</div></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

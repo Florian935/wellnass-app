@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #1c150e; }
+    a { color: #e0a97f; }
+    a:hover { color: #f4ecdd; }
+    .ph {
+      width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box;
+      background: radial-gradient(90% 40% at 50% 46%, rgba(224,169,127,.10) 0%, rgba(224,169,127,0) 70%), #1c150e;
+      color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    }
+    .ic { display: block; flex: none; }
+    .eyebrow {
+      font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px;
+      letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a;
+    }
+    .hd { position: absolute; left: 0; right: 0; top: 0; padding: 14px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+    .hd-row { display: flex; align-items: center; justify-content: space-between; height: 28px; }
+    .hd-btn { width: 44px; height: 44px; margin: -8px; display: flex; align-items: center; justify-content: center; color: #f4ecdd; }
+    .chrono { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px; letter-spacing: .5px; }
+    .ribbon { display: flex; gap: 4px; height: 6px; }
+    .seg { height: 6px; border-radius: 3px; background: #362c22; overflow: hidden; }
+    .seg-f { height: 100%; border-radius: 3px; }
+    .hd-meta { display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a; }
+
+    .body { position: absolute; left: 0; right: 0; top: 108px; padding: 0 20px; display: flex; flex-direction: column; align-items: center; }
+    .done-v {
+      font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800;
+      font-size: 34px; letter-spacing: -1px; line-height: 1; margin-top: 6px;
+    }
+    .verdict {
+      margin-top: 10px; height: 30px; box-sizing: border-box; padding: 0 12px; border-radius: 999px;
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(169,186,126,.14); color: #a9ba7e; font-size: 13px; font-weight: 700;
+    }
+
+    .ring { position: relative; width: 248px; height: 248px; margin-top: 18px; }
+    .ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+    .ring-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .ring-n { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 58px; letter-spacing: -2px; line-height: 1; }
+    .ring-l { font-size: 12.5px; color: #c9b79a; }
+
+    .next {
+      align-self: stretch; margin-top: 18px; border-radius: 22px; padding: 15px 18px 16px;
+      background: #241c14; border: 1px solid #3a2e22; display: flex; flex-direction: column; gap: 4px;
+    }
+    .next-top { display: flex; justify-content: space-between; align-items: center; }
+    .next-adj { font-size: 13px; font-weight: 600; color: #e0a97f; }
+    .next-name { font-size: 14.5px; font-weight: 600; color: #c9b79a; margin-top: 4px; }
+    .next-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.1px; line-height: 1.05; }
+    .next-rec { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #e0b155; margin-top: 4px; }
+
+    .actions { align-self: stretch; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+    .btn {
+      height: 52px; border-radius: 16px; border: 1px solid rgba(240,228,208,.32);
+      display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700;
+    }
+    .always {
+      position: absolute; left: 20px; right: 20px; bottom: 22px; height: 46px; box-sizing: border-box;
+      border: 1px dashed rgba(240,228,208,.28); border-radius: 15px; padding: 0 14px;
+      display: flex; align-items: center; gap: 10px; font-size: 12.5px; color: #c9b79a;
+    }
+  </style>
+</helmet>
+
+<div class="ph">
+  <div class="hd">
+    <div class="hd-row">
+      <div class="hd-btn"><svg class="ic" width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+      <div class="chrono">07:24</div>
+      <div class="hd-btn"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+    </div>
+    <div class="ribbon">
+      <div class="seg" style="flex: 4 1 0"><div class="seg-f" style="width: 50%; background: #dd6e40"></div></div>
+      <div class="seg" style="flex: 4 1 0"></div>
+      <div class="seg" style="flex: 3 1 0"></div>
+      <div class="seg" style="flex: 4 1 0"></div>
+      <div class="seg" style="flex: 3 1 0"></div>
+    </div>
+    <div class="hd-meta"><span>Push A</span><span>2/18 séries</span></div>
+  </div>
+
+  <div class="body">
+    <div class="eyebrow">Série 2 validée</div>
+    <div class="done-v">80 kg × 8</div>
+    <div class="verdict"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>+2,5 kg vs mardi</div>
+
+    <div class="ring">
+      <svg width="248" height="248" viewBox="0 0 248 248">
+        <circle cx="124" cy="124" r="119" fill="none" stroke="#3a2e22" stroke-width="10"/>
+        <circle cx="124" cy="124" r="119" fill="none" stroke="#e0a97f" stroke-width="10" stroke-linecap="round" stroke-dasharray="747.7" stroke-dashoffset="299"/>
+      </svg>
+      <div class="ring-c">
+        <div class="ring-n">1:12</div>
+        <div class="ring-l">de repos</div>
+      </div>
+    </div>
+
+    <div class="next">
+      <div class="next-top"><div class="eyebrow">Ensuite · série 3 sur 4</div><div class="next-adj">Ajuster</div></div>
+      <div class="next-name">Développé couché</div>
+      <div class="next-t">82,5 kg × 6</div>
+      <div class="next-rec"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 3.6M16 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 13v4M8.5 20h7"/></svg>Plus lourd que ton record de 80 kg</div>
+    </div>
+
+    <div class="actions">
+      <div class="btn">+15 s</div>
+      <div class="btn">Passer</div>
+    </div>
+  </div>
+
+  <div class="always">
+    <svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2.5h5"/></svg>
+    Passer à 150 s de repos sur cet exercice
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

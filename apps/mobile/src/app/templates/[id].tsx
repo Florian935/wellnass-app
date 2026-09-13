@@ -6,6 +6,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { TemplateComposer } from '@/components/templates/TemplateComposer';
 import { useActionLock } from '@/hooks/useActionLock';
+import { briefRouteForTemplate } from '@/components/workout/immersive/brief-entry';
 import {
   deleteWorkoutTemplate,
   duplicateWorkoutTemplate,
@@ -55,7 +56,13 @@ function TemplateDetailView({ templateId }: { templateId: string }) {
   // Les états `starting` / `duplicating` / `deleting` ne pilotent que l'affichage ; la garde
   // contre le double appui est portée par `useActionLock` (un état React ne voit pas un second
   // appui du même cycle de rendu — voir le hook).
-  const onStart = () =>
+  const onStart = () => {
+    // Mode immersif : le brief annonce la séance puis la crée lui-même (US MUSCU-UX03, §5.1).
+    const brief = briefRouteForTemplate(templateId);
+    if (brief) {
+      router.push(brief);
+      return;
+    }
     void lockStart(async () => {
       setStarting(true);
       try {
@@ -67,6 +74,7 @@ function TemplateDetailView({ templateId }: { templateId: string }) {
         setStarting(false);
       }
     });
+  };
 
   const onDuplicate = () =>
     void lockDuplicate(async () => {
