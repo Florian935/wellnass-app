@@ -3687,6 +3687,63 @@
     },
     "kcal": "Cible calorique estimée : {{kcal}} kcal par jour"
   },
+  "ai": {
+    "settings": {
+      "title": "Assistant IA",
+      "toggle": "Activer l'assistant IA",
+      "what": "Ce qui part : la photo que tu prends, ou la réponse déjà calculée à reformuler. Rien d'autre — ni ton journal, ni ton historique.",
+      "notKept": "Ni la photo, ni la question, ni la réponse ne sont conservées. Tu peux désactiver à tout moment."
+    }
+  },
+  "mealPhoto": {
+    "title": "Photo du repas",
+    "hint": "Cadre ton assiette, puis appuie.",
+    "capture": "Prendre la photo",
+    "analyzing": "Analyse en cours…",
+    "reviewHint": "Ajuste les portions, puis ajoute.",
+    "line": "{{grams}} g · {{kcal}} kcal",
+    "unknownFood": "Pas dans la base — à ajouter à la main",
+    "lowConfidence": "Peu sûr (moins de {{percent}} % de confiance) — vérifie cette ligne",
+    "total": "Total : {{kcal}} kcal · {{protein}} g de protéines",
+    "addAll_one": "Ajouter un aliment",
+    "addAll_other": "Ajouter {{count}} aliments",
+    "retake": "Reprendre une photo",
+    "nothingFound": "Aucun aliment reconnu sur cette photo.",
+    "more": "Augmenter la portion de {{name}}",
+    "less": "Diminuer la portion de {{name}}",
+    "remove": "Retirer {{name}}",
+    "consentNeeded": "L'assistant IA est désactivé. Tu peux l'activer dans les Réglages : le texte y dit exactement ce qui part.",
+    "openSettings": "Ouvrir les réglages",
+    "pending": "Une photo attend le réseau pour être analysée.",
+    "retryPending": "Analyser la photo en attente",
+    "errors": {
+      "offline": "Pas de réseau : ta photo est gardée et te sera reproposée dès que la connexion revient.",
+      "consent-required": "L'assistant IA est désactivé dans les Réglages.",
+      "quota-exceeded": "Tu as atteint la limite du jour pour l'analyse de photos.",
+      "unavailable": "L'assistant IA n'est pas disponible pour le moment.",
+      "refused": "L'assistant n'a pas pu traiter cette photo.",
+      "failed": "L'analyse a échoué. Tu peux réessayer ou saisir à la main."
+    }
+  },
+  "ask": {
+    "title": "Demande-moi",
+    "offlineMeta": "Réponses calculées sur l'appareil",
+    "rephrased": "Formulation par l'assistant IA — les chiffres, eux, viennent de tes données.",
+    "questions": {
+      "today": "Je m'entraîne aujourd'hui ?",
+      "eat": "Qu'est-ce que je mange ce soir ?",
+      "week": "Où j'en suis cette semaine ?"
+    },
+    "answers": {
+      "todayRest": "Les signaux sont au rouge : une journée plus calme te servira plus qu'une séance forcée.",
+      "todayOk": "Rien ne ressort : ta séance prévue tient.",
+      "todayPush": "Tout est au vert : c'est le bon jour pour pousser.",
+      "todayUnknown": "Pas assez de données pour trancher — écoute-toi.",
+      "eatRemaining": "Il te reste {{kcal}} kcal et {{protein}} g de protéines pour la journée.",
+      "eatNoTarget": "Aucun objectif calorique réglé : difficile de dire. Tu peux en définir un dans ton profil nutrition.",
+      "week": "{{workouts}} séances et {{runs}} sorties cette semaine, {{days}} jours actifs."
+    }
+  },
   "stage": {
     "home": {
       "timeLeft_one": "Il te reste moins d'une heure pour la garder",

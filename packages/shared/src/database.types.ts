@@ -74,6 +74,44 @@ export type Database = {
           },
         ]
       }
+      ai_usage: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          kind: string
+          updated_at: string
+          usage_date: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          kind: string
+          updated_at?: string
+          usage_date?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          updated_at?: string
+          usage_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics_events: {
         Row: {
           app_version: string | null
@@ -2566,7 +2604,9 @@ export type Database = {
       user_settings: {
         Row: {
           active_pillars: Json
+          ai_consent_at: string | null
           analytics_enabled: boolean
+          body_visual_state: Json | null
           created_at: string
           cycle_health_connect_enabled: boolean
           cycle_tracking_enabled: boolean
@@ -2587,7 +2627,9 @@ export type Database = {
         }
         Insert: {
           active_pillars?: Json
+          ai_consent_at?: string | null
           analytics_enabled?: boolean
+          body_visual_state?: Json | null
           created_at?: string
           cycle_health_connect_enabled?: boolean
           cycle_tracking_enabled?: boolean
@@ -2608,7 +2650,9 @@ export type Database = {
         }
         Update: {
           active_pillars?: Json
+          ai_consent_at?: string | null
           analytics_enabled?: boolean
+          body_visual_state?: Json | null
           created_at?: string
           cycle_health_connect_enabled?: boolean
           cycle_tracking_enabled?: boolean

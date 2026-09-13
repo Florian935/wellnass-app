@@ -55,6 +55,7 @@ jest.mock('@/data/repositories/real-life-repository', () => ({
 // sources de données qui sont simulées.
 jest.mock('@/hooks/useHomeScene', () => ({
   useHomeScene: jest.fn(),
+  useAskQuestions: jest.fn(() => []),
   useMorningBriefFacts: jest.fn(() => ({
     verdict: null,
     todaySession: null,
@@ -67,6 +68,10 @@ jest.mock('@/hooks/useHomeScene', () => ({
 jest.mock('@/components/dashboard/MorningBriefCard', () => {
   const { Text } = require('react-native');
   return { MorningBriefCard: () => <Text>sonde-brief</Text> };
+});
+jest.mock('@/components/ask/AskCard', () => {
+  const { Text } = require('react-native');
+  return { AskCard: () => <Text>sonde-demande</Text> };
 });
 jest.mock('@/hooks/useWeekRings', () => ({ useWeekRings: jest.fn(() => []) }));
 jest.mock('@/hooks/useTodayKey', () => ({

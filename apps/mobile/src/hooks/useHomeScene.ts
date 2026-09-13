@@ -11,8 +11,13 @@
  */
 
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
+  explainReadiness,
+  localDateFromDayKey,
+  localDayKey,
   resolveHomeMoment,
+  startOfWeek,
   timeLeftToday,
   type BriefFacts,
   type HomeMoment,
@@ -29,10 +34,13 @@ import {
 } from '@/data/repositories/dashboard-repository';
 import { useNearRecords } from '@/data/repositories/records-repository';
 import { useRealLifeState } from '@/data/repositories/real-life-repository';
+import { useRunHistory } from '@/data/repositories/run-repository';
+import { useWorkoutHistory } from '@/data/repositories/workout-repository';
+import type { AskQuestion } from '@/components/ask/AskCard';
 import { useTodayWellbeing } from '@/data/repositories/daily-wellbeing-repository';
 import { useNotificationPrefs } from '@/data/repositories/notification-repository';
 import { useJokersRemaining } from '@/data/repositories/streak-joker-repository';
-import { useCurrentHour, useTodayDate } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayDate, useTodayKey } from '@/hooks/useTodayKey';
 
 export type HomeSceneFacts = {
   moment: HomeMoment;
@@ -121,4 +129,65 @@ export function useHomeScene(): HomeSceneFacts {
     jokersRemaining,
     isLoading: streakLoading,
   };
+}
+
+/**
+ * US DASH-01 (§7.3) — les **trois questions du moment**, avec leur réponse **déjà calculée**.
+ *
+ * C'est l'inversion qui fait toute la fonctionnalité : le client répond, le modèle ne fait que
+ * formuler. Sans IA, sans réseau, sans consentement, ces trois réponses s'affichent telles quelles —
+ * et aucun chiffre affiché ne sort jamais d'un modèle (R7).
+ */
+export function useAskQuestions(readiness: ReadinessResult): AskQuestion[] {
+  const { t } = useTranslation();
+  const { kcal, effectiveTarget, macros } = useNutritionSummary();
+  const proteinTarget = useProteinTarget();
+  const { workouts } = useWorkoutHistory();
+  const { runs } = useRunHistory();
+  const { last7 } = useStreakData();
+  const todayKey = useTodayKey();
+
+  return useMemo(() => {
+    const weekStartKey = localDayKey(startOfWeek(localDateFromDayKey(todayKey)));
+    const inWeek = (iso: string | null) => iso != null && localDayKey(new Date(iso)) >= weekStartKey;
+
+    const verdict = readiness.show ? readiness.verdict : null;
+    const remainingKcal = effectiveTarget != null ? Math.max(0, effectiveTarget - kcal) : null;
+    const remainingProtein = proteinTarget != null ? Math.max(0, Math.round(proteinTarget - macros.p)) : null;
+
+    return [
+      {
+        key: 'today',
+        label: t('ask.questions.today'),
+        answer: t(verdict ? `ask.answers.today${capitalize(verdict)}` : 'ask.answers.todayUnknown'),
+        explanation: explainReadiness(readiness),
+      },
+      {
+        key: 'eat',
+        label: t('ask.questions.eat'),
+        answer:
+          remainingKcal != null && remainingProtein != null
+            ? t('ask.answers.eatRemaining', { kcal: remainingKcal, protein: remainingProtein })
+            : t('ask.answers.eatNoTarget'),
+        explanation: null,
+      },
+      {
+        key: 'week',
+        label: t('ask.questions.week'),
+        answer: t('ask.answers.week', {
+          workouts: workouts.filter((w) => inWeek(w.finishedAt)).length,
+          runs: runs.filter((r) => inWeek(r.finishedAt)).length,
+          days: last7.filter((day) => day.active).length,
+        }),
+        explanation: null,
+      },
+    ];
+    // La série n'entre pas dans les réponses : la scène la dit déjà, et la répéter ici la
+    // transformerait en injonction.
+  }, [t, readiness, effectiveTarget, kcal, proteinTarget, macros.p, workouts, runs, last7, todayKey]);
+}
+
+/** `rest` → `Rest` : la clé i18n de la réponse suit le verdict. */
+function capitalize(value: string): string {
+  return value.charAt(0).toUpperCase() + value.slice(1);
 }

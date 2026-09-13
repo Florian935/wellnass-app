@@ -56,7 +56,8 @@ import { UpNext } from '@/components/dashboard/UpNext';
 import { StageScrollView } from '@/components/stage/StageScrollView';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
-import { useHomeScene, useMorningBriefFacts } from '@/hooks/useHomeScene';
+import { AskCard } from '@/components/ask/AskCard';
+import { useAskQuestions, useHomeScene, useMorningBriefFacts } from '@/hooks/useHomeScene';
 import { useWeekRings } from '@/hooks/useWeekRings';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useNowAction } from '@/hooks/useNowAction';
@@ -148,6 +149,8 @@ export default function HomeScreen() {
   });
   // §6.2 — les faits du brief : lus toute la journée, affichés le matin seulement.
   const briefFacts = useMorningBriefFacts(action, facts.verdict);
+  // §7.3 — les trois questions du moment, réponses calculées ici : le modèle ne fait que formuler.
+  const askQuestions = useAskQuestions(facts.readiness);
   const { key: headline, count } = headlineKey(action);
   const greeting = t(headline, { count: count ?? 0, name: firstName });
 
@@ -331,6 +334,9 @@ export default function HomeScreen() {
           <GoalCard goal={activeGoals[0]} />
         </Pressable>
       ) : null}
+
+      {/* §7.3 — « Demande-moi ». Sans IA, sans réseau, sans consentement : mêmes réponses. */}
+      <AskCard questions={askQuestions} />
 
       <QuickActions highlightMeal={action.kind === 'meal-due' ? action.meal : undefined} />
 

@@ -935,6 +935,33 @@ export default function SettingsScreen() {
         )}
       </View>
 
+      {/* US DASH-01 §7.1 — l'assistant IA. **Opt-in strict** : c'est le seul réglage de l'app qui
+          fasse SORTIR une donnée vers un tiers, et le texte doit dire exactement quoi avant le
+          « oui ». Un horodatage, pas un booléen : le RGPD demande de savoir QUAND. */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('ai.settings.title')}
+      </Text>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.row}>
+          <View style={styles.rowGrow}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>{t('ai.settings.toggle')}</Text>
+            <Text style={[styles.rowDesc, { color: colors.textMuted }]}>{t('ai.settings.what')}</Text>
+          </View>
+          <Switch
+            value={settings?.aiConsentAt != null}
+            onValueChange={(next) =>
+              void updateSettings({ aiConsentAt: next ? new Date().toISOString() : null })
+            }
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('ai.settings.toggle')}
+          />
+        </View>
+        <View style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+          <Text style={[styles.rowDesc, { color: colors.textMuted }]}>{t('ai.settings.notKept')}</Text>
+        </View>
+      </View>
+
       {/* Statistiques d'usage — opt-out (US 9.10, RGPD) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
         {t('settings.analytics.title')}
