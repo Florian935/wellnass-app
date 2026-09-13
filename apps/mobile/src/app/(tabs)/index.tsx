@@ -162,6 +162,11 @@ export default function HomeScreen() {
   const onCheckin = (level: WellbeingLevel) => {
     setSavingCheckin(true);
     void saveWellbeing(localDayKey(today), { energy: level })
+      // §5 — l'événement mesure un **geste**, jamais la valeur saisie : le niveau d'énergie est une
+      // donnée de santé, il ne sort pas de l'appareil.
+      .then((written) => {
+        if (written) void track(ANALYTICS_EVENTS.homeCheckinDone);
+      })
       .catch(() => undefined)
       .finally(() => setSavingCheckin(false));
   };
@@ -191,7 +196,10 @@ export default function HomeScreen() {
             streak: facts.streak,
             hoursLeft: facts.hoursLeft,
             jokersRemaining: facts.jokersRemaining,
-            onSave: () => router.push('/planning'),
+            onSave: () => {
+              void track(ANALYTICS_EVENTS.streakSavedEvening);
+              router.push('/planning');
+            },
           }
         : facts.moment === 'comeback'
           ? {

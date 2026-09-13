@@ -9,6 +9,102 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 13/09/2026 — DASH-01 : les quatre dashboards passent à la scène, et l'app commence à comprendre
+
+Branche `feature/dash01-dashboards-immersifs`, en **worktree** (trois autres branches actives en
+parallèle). Analyse + trois passes de maquettes validées par Florian le 13/09/2026 (canvas de 19
+planches, 3 pages), puis **GO explicite pour tout livrer en une seule vague** — « fait TOUT d'un seul
+coup, d'une seule vague », recette finale unique (§62, 38 critères).
+
+**Le problème de départ.** Les quatre écrans d'atterrissage — accueil et les trois piliers — étaient
+les seuls de l'app à n'avoir **aucune identité** : le même empilement de cartes blanches, quatre
+fois, avec le même en-tête, la même grille et les mêmes rayons. Rien ne disait sur quel pilier on se
+trouvait, et rien ne donnait envie d'y rester. Chacun a désormais **sa couleur, sa matière et son
+moment** : le niveau qui monte (nutrition), la trace parcourue (course), la silhouette qui encaisse
+(muscu), les anneaux qui respirent (accueil).
+
+**Le second problème, plus profond : l'app calculait sans jamais expliquer.** Le verdict de forme, la
+cible calorique, les chronos prédits, la projection de force — tous étaient affichés comme des
+chiffres tombés du ciel. Ils portent maintenant un « **Pourquoi ?** » qui montre les étapes du calcul
+et un niveau de confiance, et acceptent un « ce n'est pas ça » qui **atténue localement** la règle
+contestée.
+
+### Ajouté
+
+**Le socle des scènes** (`components/stage/`) — `PillarStage` (dégradé, arrivée en fondu court, un
+emplacement « matière »), `StageScrollView` (repli au défilement et bandeau compact, masqué aux
+lecteurs d'écran tant que la scène est dépliée), `StageButton`, `StageIconButton`, `DenseTile`, et
+les **quatre matières** : `FillLevel`, `FlowTrace`, `ImpactSilhouette`, `BreathRings`.
+
+**Nutrition** — `NutritionStage` remplace cinq blocs par une surface : en-tête, navigation de jour,
+trame de semaine, bilan du jour et macros. Niveau **plafonné au filet de cible** (jamais de
+débordement, le texte dit l'excédent), sept verres de la semaine, **brouillard de confiance** sur les
+jours sans saisie, ajout rapide des récents.
+
+**Course** — `RunStage` garde les quatre états de `resolveRunHubState` et leur ajoute **l'arrivée**
+(sortie terminée aujourd'hui). Compte à rebours de la séance à l'heure (`countdownToSession`,
+HORAIRE-01). Trois cartes remontent au hub : **km par km** de la dernière sortie, **chronos prédits**
+(Riegel) et **charge** (ACWR) — trois données qui existaient déjà mais vivaient à trois écrans de là.
+
+**Musculation** — `StrengthStage` ajoute le moment **après la séance** (tonnage qui roule, exercices,
+records battus) et allume la silhouette sur les muscles du jour (`SELECT_TODAY_PLAN` remonte
+`muscle_primary`). Plus la **semaine séance par séance** touchable, « **à ta portée** » (les trois
+records les plus proches, via `useNearRecords`) et « **Et si…** ».
+
+**Accueil** — `HomeStage` à quatre moments (`resolveHomeMoment`) : check-in du matin, série en danger
+le soir, retour après une absence, anneaux de la semaine sinon. `NowCard` est posée sur la scène. Le
+corps gagne « **depuis ta dernière visite** », le **bilan de la semaine** en cartes (les deux premiers
+jours), l'**objectif** le plus proche, le **brief du matin** lu par `expo-speech`, et « **Demande-moi** ».
+
+**L'assistant IA, désactivé par défaut** — migration `20260913163130_dash01_ai_consent_usage`
+(`user_settings.ai_consent_at`, table `ai_usage`), fonction Edge `supabase/functions/ai-assist`,
+écran `meal-photo`, carte `AskCard`, section de consentement dans les Réglages.
+
+### Modifié
+
+- Les quatre écrans de `app/(tabs)/` sont réécrits autour de `StageScrollView`. Le **mode édition**
+  des grilles n'a délibérément **pas** de scène : réorganiser des widgets sous une surface fixe
+  ferait croire qu'elle se déplace aussi.
+- `HomeHeader` disparaît ; son seul calcul utile (`headlineKey`) devient `dashboard/home-headline.ts`.
+- `useMinimalWeekTargets` cède sa dérivation de cible protéique à **`useProteinTarget`** : le brief du
+  matin en avait besoin, c'était la cinquième copie de cette chaîne qui menaçait.
+- Cinq événements d'analytics (spec §5) : `home_checkin_done`, `weekly_recap_card`,
+  `streak_saved_evening`, `ai_photo_used`, `ai_ask_used` — des **gestes**, jamais un contenu.
+
+### Technique / Notes
+
+- **Aucun chiffre affiché ne sort d'un modèle** (R7). La photo de repas rend des **aliments et des
+  grammes** ; les calories viennent du catalogue local, donc une portion ajustée recalcule tout et un
+  aliment inconnu s'affiche **sans valeur** plutôt que faux. « Demande-moi » calcule la réponse côté
+  client et le modèle ne fait que la **formuler** : sans IA, sans réseau, sans consentement, les mêmes
+  réponses s'affichent.
+- **Quatre gardes côté serveur avant tout appel** — JWT, consentement, quota (table `ai_usage`,
+  `service_role` seule), taille — et le compteur n'est incrémenté **qu'après** une réponse. Ni la
+  photo, ni la question, ni la réponse ne sont conservées.
+- **Une migration poussée, aucune sync rule à déployer** : `user_settings` est lue en `select *`, et
+  `ai_usage` n'est volontairement pas publiée. Le réflexe « migration ⇒ sync rule à la main » ne vaut
+  que pour une table **synchronisée** — la note est au registre.
+- **L'horloge** : `useCurrentHour` reste la seule source autorisée dans un hook. D'où un compte à
+  rebours **à l'heure** (« dans ~3 h ») plutôt qu'à la minute — une minuterie à la minute ferait
+  re-rendre l'écran le plus ouvert de l'app soixante fois par heure et re-souscrirait ses requêtes.
+- **Le « bug visuel » de la maquette est corrigé** (décision D6) : la silhouette encaisse **un seul**
+  impact à l'arrivée, et la scène part de 35 % d'opacité au lieu de zéro — repartir du vide à chaque
+  changement d'onglet se lisait comme un clignotement.
+- **Écarts assumés**, listés en fin de §62 : partage de séance laissé sur l'écran de bilan, **écart**
+  de prédiction 10 km non calculable (l'app ne garde pas l'historique des records — la scène affiche
+  l'estimation courante et dit quand elle vient de cette sortie), compte à rebours à l'heure.
+- **La migration voisine `20260912235121_corps02_body_visual_state`** (branche corps02) est reprise à
+  l'identique dans cette branche : le cloud l'avait déjà, et le CLI refusait de pousser tant qu'elle
+  manquait à l'historique local. Même fichier, même contenu — la fusion de corps02 ne créera pas de
+  conflit.
+- 🔴 **Deux gestes humains restent** : `supabase secrets set ANTHROPIC_API_KEY=…` et
+  `supabase functions deploy ai-assist`. Sans eux, l'app répond « l'assistant IA n'est pas
+  disponible » — proprement, mais les critères 37–38 de la §62 ne sont pas recettables.
+- 🔴 **Play Store** : la déclaration « Sécurité des données » devra mentionner l'envoi **facultatif**
+  d'une photo à un fournisseur d'IA (opt-in, non conservée) avant publication.
+- Tests : `packages/shared` 128 fichiers / 2741 tests · `apps/mobile` 185 suites / 3036 tests.
+  Typecheck et lint verts.
+
 ## 12/09/2026 — MUSCU-UX02 : le bilan de séance, et la fin de deux écrans qui se contredisaient
 
 Branche `feature/muscu-ux02-bilan-seance` (commit précédent `d6f2608`). Analyse + maquettes

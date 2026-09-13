@@ -10,12 +10,14 @@
  * un bilan affiché en permanence cesse d'être un rendez-vous et devient du décor.
  */
 
+import { useEffect } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { buildWeeklyStory, type StoryCard } from '@wellness/shared';
 import { StaggerIn } from '@/components/motion/StaggerIn';
 import { DenseTile } from '@/components/stage/DenseTile';
 import { useWeeklyReview } from '@/data/repositories/weekly-review-repository';
+import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { resolveDecisionSubject } from '@/lib/decision-subject';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -37,7 +39,15 @@ export function WeeklyStoryCard({ weekday, onOpen }: Props) {
   const { review } = useWeeklyReview();
 
   const cards = buildWeeklyStory(review);
-  if (weekday > STORY_LAST_WEEKDAY || cards.length === 0) return null;
+  const shown = weekday <= STORY_LAST_WEEKDAY && cards.length > 0;
+
+  // §5 — une impression par montage, pas par rendu : la carte se re-rend à chaque synchro, et
+  // compter les rendus ferait passer un bilan regardé une fois pour vingt.
+  useEffect(() => {
+    if (shown) void track(ANALYTICS_EVENTS.weeklyRecapCard);
+  }, [shown]);
+
+  if (!shown) return null;
 
   return (
     <DenseTile
