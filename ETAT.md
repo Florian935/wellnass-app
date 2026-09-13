@@ -105,7 +105,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/nutri-refonte-ux` (modifications non commitées) |
-| Commits | 1232 · `main` a **1230** commits de retard sur `dev` |
+| Commits | 1233 · `main` a **1230** commits de retard sur `dev` |
 | Specs d'US | 148 au total — 85 clôturées, 63 en cours |
 | Migrations | 96/97 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -118,11 +118,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `89396aa`  feat(nutri-ux01): la bibliotheque passe de 80 a 3 244 aliments (import CIQUAL)
 - `3596ce5`  Merge remote-tracking branch 'origin/dev' into feature/dash01-dashboards-immersifs
 - `4d6c7a8`  Merge remote-tracking branch 'origin/dev' into feature/dash01-dashboards-immersifs
 - `cebc428`  merge: integre dev (DASH-01) dans MUSCU-UX03, renumerote en §63
 - `622339f`  feat(dash-01): retire la surface IA du build de lancement
-- `559c4b2`  feat(muscu-ux03): mode immersif de la seance — un mode EN PLUS du classique
 
 ---
 
