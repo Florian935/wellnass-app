@@ -104,8 +104,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/dash01-dashboards-immersifs` (modifications non commitées) |
-| Commits | 1229 · `main` a **1226** commits de retard sur `dev` |
+| Branche courante | `dev` (modifications non commitées) |
+| Commits | 1232 · `main` a **1229** commits de retard sur `dev` |
 | Specs d'US | 148 au total — 85 clôturées, 63 en cours |
 | Migrations | 95/96 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -118,11 +118,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `3596ce5`  Merge remote-tracking branch 'origin/dev' into feature/dash01-dashboards-immersifs
 - `4d6c7a8`  Merge remote-tracking branch 'origin/dev' into feature/dash01-dashboards-immersifs
+- `cebc428`  merge: integre dev (DASH-01) dans MUSCU-UX03, renumerote en §63
 - `622339f`  feat(dash-01): retire la surface IA du build de lancement
-- `683c430`  docs(cardio-ux01): les six chantiers non livres passent au backlog
-- `153307b`  docs(muscu-ux01): recette de la 2e passe validee (8 criteres)
-- `344c790`  chore(etat): regenere ETAT.md apres la vague DASH-01
+- `559c4b2`  feat(muscu-ux03): mode immersif de la seance — un mode EN PLUS du classique
 
 ---
 
