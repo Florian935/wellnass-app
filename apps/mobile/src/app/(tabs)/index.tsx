@@ -47,7 +47,7 @@ import { HomeStage, type HomeScene } from '@/components/dashboard/HomeStage';
 import { headlineKey } from '@/components/dashboard/home-headline';
 import { NowCard } from '@/components/dashboard/NowCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
-import { MorningBriefCard } from '@/components/dashboard/MorningBriefCard';
+import { MorningBrief } from '@/components/dashboard/MorningBrief';
 import { SinceLastVisitCard } from '@/components/dashboard/SinceLastVisitCard';
 import { WeeklyStoryCard } from '@/components/dashboard/WeeklyStoryCard';
 import { GoalCard } from '@/components/goals/GoalCard';
@@ -57,7 +57,7 @@ import { StageScrollView } from '@/components/stage/StageScrollView';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { AskCard } from '@/components/ask/AskCard';
-import { useAskQuestions, useHomeScene, useMorningBriefFacts } from '@/hooks/useHomeScene';
+import { useAskQuestions, useHomeScene } from '@/hooks/useHomeScene';
 import { useWeekRings } from '@/hooks/useWeekRings';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useNowAction } from '@/hooks/useNowAction';
@@ -147,8 +147,6 @@ export default function HomeScreen() {
     day: 'numeric',
     month: 'long',
   });
-  // §6.2 — les faits du brief : lus toute la journée, affichés le matin seulement.
-  const briefFacts = useMorningBriefFacts(action, facts.verdict);
   // §7.3 — les trois questions du moment, réponses calculées ici : le modèle ne fait que formuler.
   const askQuestions = useAskQuestions(facts.readiness);
   const { key: headline, count } = headlineKey(action);
@@ -323,7 +321,11 @@ export default function HomeScreen() {
       {/* §6.2 — le brief du matin, lu à voix haute. Le matin seulement : une « revue du matin »
           affichée à 19 h n'est plus un rendez-vous, c'est du remplissage. */}
       {facts.moment === 'morning' ? (
-        <MorningBriefCard facts={briefFacts} speechLanguage={i18n.language === 'en' ? 'en-GB' : 'fr-FR'} />
+        <MorningBrief
+          action={action}
+          verdict={facts.verdict}
+          speechLanguage={i18n.language === 'en' ? 'en-GB' : 'fr-FR'}
+        />
       ) : null}
 
       {/* §4.5 — ce qui a bougé depuis la dernière visite : la carte se tait si rien n'a bougé. */}

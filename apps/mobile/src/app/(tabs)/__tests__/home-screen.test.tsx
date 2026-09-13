@@ -56,18 +56,10 @@ jest.mock('@/data/repositories/real-life-repository', () => ({
 jest.mock('@/hooks/useHomeScene', () => ({
   useHomeScene: jest.fn(),
   useAskQuestions: jest.fn(() => []),
-  useMorningBriefFacts: jest.fn(() => ({
-    verdict: null,
-    todaySession: null,
-    nearRecord: null,
-    proteinGapG: null,
-    streak: 4,
-    realLifeActive: false,
-  })),
 }));
-jest.mock('@/components/dashboard/MorningBriefCard', () => {
+jest.mock('@/components/dashboard/MorningBrief', () => {
   const { Text } = require('react-native');
-  return { MorningBriefCard: () => <Text>sonde-brief</Text> };
+  return { MorningBrief: () => <Text>sonde-brief</Text> };
 });
 jest.mock('@/components/ask/AskCard', () => {
   const { Text } = require('react-native');
