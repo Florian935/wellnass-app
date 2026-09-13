@@ -1,0 +1,160 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .br { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+    .mo { font-family: 'Space Mono', ui-monospace, monospace; }
+    .kicker { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .rule { height: 1px; background: #e2d3bc; }
+
+    /* Les quatre atmospheres : chaque vignette respire selon SA physique */
+    .atmo { position: relative; height: 96px; border-radius: 16px; overflow: hidden; }
+    .atmo-in { position: absolute; inset: 0; }
+    .a-breathe { animation: mBreathe 4.8s ease-in-out infinite; }
+    .a-slam { animation: mSlam 2.6s cubic-bezier(.2,.9,.3,1) infinite; }
+    .a-flow { animation: mFlow 2.4s linear infinite; }
+    .a-fill { animation: mFill 3.6s cubic-bezier(.22,.61,.36,1) infinite; transform-origin: bottom; }
+    @keyframes mBreathe { 0%, 100% { transform: scale(1); opacity: .5; } 50% { transform: scale(1.06); opacity: .8; } }
+    @keyframes mSlam { 0%, 40% { transform: translateY(-16px); opacity: 0; } 48% { transform: translateY(0); opacity: 1; } 53% { transform: translateY(-4px); } 58%, 100% { transform: translateY(0); opacity: 1; } }
+    @keyframes mFlow { 0% { background-position-x: 0; } 100% { background-position-x: 28px; } }
+    @keyframes mFill { 0% { transform: scaleY(.12); } 55%, 82% { transform: scaleY(.74); } 100% { transform: scaleY(.12); } }
+  </style>
+</helmet>
+
+<div style="width: 1200px; height: 1280px; box-sizing: border-box; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 46px 48px; display: flex; flex-direction: column; gap: 26px;">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+    <div style="max-width: 800px;">
+      <div class="kicker">FitTrio · refonte des dashboards · 12/09/2026</div>
+      <h1 class="br" style="font-weight: 800; font-size: 50px; letter-spacing: -1.7px; line-height: 1; margin: 10px 0 0;">Un pilier, une atmosphère</h1>
+      <p style="font-size: 15.5px; line-height: 1.55; color: #786a59; margin: 12px 0 0; max-width: 740px; text-wrap: pretty;">Les quatre dashboards sont aujourd'hui <strong style="color: #33291f;">le même écran répété quatre fois</strong> : même squelette, même beige, même damier de tuiles à moitié vides. Ce qui suit n'ajoute pas d'information — ça change le contenant. Une <strong style="color: #33291f;">scène</strong> par pilier, dense et colorée, à la place de l'en-tête et des trois cartes qu'elle absorbe.</p>
+    </div>
+    <div style="flex: none; text-align: right;">
+      <div class="kicker">Lecture</div>
+      <div style="font-size: 13px; color: #786a59; line-height: 1.5; margin-top: 6px; max-width: 250px;">Cette planche, puis «&nbsp;Avant&nbsp;», puis les quatre écrans. Tout bouge en boucle : le mouvement fait partie de la proposition.</div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <div>
+    <div class="kicker">Le constat — tout est déjà mesuré dans le dépôt</div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 14px;">
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 8px;">
+        <div class="br" style="font-weight: 800; font-size: 44px; letter-spacing: -1.8px; line-height: 1; color: #b14f2b;">47 %</div>
+        <div style="font-size: 13px; line-height: 1.45; color: #786a59;">de remplissage moyen des widgets d'accueil, mesuré carte par carte. Le chiffre est dans <strong style="color: #33291f;">ADR-007</strong>, qui conclut : «&nbsp;moins de widgets <em>et</em> moins d'information, sur exactement la même surface&nbsp;».</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 8px;">
+        <div class="br" style="font-weight: 800; font-size: 44px; letter-spacing: -1.8px; line-height: 1; color: #b14f2b;">6</div>
+        <div style="font-size: 13px; line-height: 1.45; color: #786a59;">zones de chrome traversées avant la première donnée sur le hub muscu : en-tête, carte d'action, barre de programme, libellé de section, grille, ligne d'annuaire.</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 8px;">
+        <div class="br" style="font-weight: 800; font-size: 44px; letter-spacing: -1.8px; line-height: 1; color: #b14f2b;">0 / 4</div>
+        <div style="font-size: 13px; line-height: 1.45; color: #786a59;">dashboard porte sa couleur. <code class="mo" style="font-size: 12px;">DEFAULT_MENU_COLORS</code> existe — bordeaux, bleu, vert — mais le réglage est <strong style="color: #33291f;">éteint par défaut</strong>, stocké sur l'appareil, et ne teinte que l'icône d'onglet.</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 8px;">
+        <div class="br" style="font-weight: 800; font-size: 44px; letter-spacing: -1.8px; line-height: 1; color: #b14f2b;">1</div>
+        <div style="font-size: 13px; line-height: 1.45; color: #786a59;">écran animé dans toute l'app — le glisser-déposer du planning. Reanimated 4.5 et expo-haptics sont installés et ne servent qu'à ça.</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="kicker">Le parti pris — trois gestes, aucun écran de plus</div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 14px;">
+      <div style="background: #33291f; color: #f0e4d0; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="mo" style="font-size: 11px; letter-spacing: 1.4px; color: #c9b79a;">GESTE A</div>
+        <div class="br" style="font-weight: 700; font-size: 25px; letter-spacing: -.8px; line-height: 1.1;">La scène remplace l'en-tête</div>
+        <div style="font-size: 13.5px; line-height: 1.5; color: #c9b79a;">Chaque dashboard s'ouvre sur une surface pleine largeur, sans bordure, hors grille : la couleur du pilier, un chiffre en 56–72 px, l'action du jour, et une matière animée. C'est le <strong style="color: #f0e4d0;">seul</strong> endroit où l'on dépense de l'encre — et il absorbe trois à quatre zones existantes.</div>
+      </div>
+      <div style="background: #33291f; color: #f0e4d0; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="mo" style="font-size: 11px; letter-spacing: 1.4px; color: #c9b79a;">GESTE B</div>
+        <div class="br" style="font-weight: 700; font-size: 25px; letter-spacing: -.8px; line-height: 1.1;">On fusionne au lieu d'empiler</div>
+        <div style="font-size: 13.5px; line-height: 1.5; color: #c9b79a;">Une tuile dense vaut trois tuiles à 47 %. Les plafonds ne bougent pas — 8 à l'accueil, 3 en muscu, 4 en course — mais <strong style="color: #f0e4d0;">la densité d'une carte n'est pas plafonnée</strong>, et ADR-007 écrit noir sur blanc qu'elle ne doit pas l'être.</div>
+      </div>
+      <div style="background: #33291f; color: #f0e4d0; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="mo" style="font-size: 11px; letter-spacing: 1.4px; color: #c9b79a;">GESTE C</div>
+        <div class="br" style="font-weight: 700; font-size: 25px; letter-spacing: -.8px; line-height: 1.1;">La grille devient un rythme</div>
+        <div style="font-size: 13.5px; line-height: 1.5; color: #c9b79a;">Fini le damier uniforme : une scène, une bande large, deux petites, une ligne. Le regard a un point d'entrée et une sortie. La personnalisation survit — elle réordonne un rythme au lieu d'un échiquier.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="flex: 1; display: flex; flex-direction: column;">
+    <div class="kicker">Les quatre atmosphères — la couleur, la physique, le contraste</div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 14px;">
+
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="atmo" style="background: radial-gradient(120% 140% at 22% 18%, #fffaf2 0%, #f3ddd0 55%, #e9cbae 100%);">
+          <div class="atmo-in a-breathe" style="display: flex; align-items: center; justify-content: center;">
+            <div style="width: 58px; height: 58px; border-radius: 50%; border: 3px solid #b14f2b;"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 11px; height: 11px; border-radius: 50%; background: #c0562f;"></div>
+          <div class="br" style="font-weight: 700; font-size: 17px; letter-spacing: -.4px;">Accueil</div>
+        </div>
+        <div style="font-size: 12.5px; line-height: 1.45; color: #786a59;"><strong style="color: #33291f;">Le souffle.</strong> Le seul écran à rester en clair : il respire pendant que les trois piliers plongent. C'est ce qui fait qu'on <em>sent</em> le changement d'onglet.</div>
+        <div class="mo" style="font-size: 11px; color: #786a59; border-top: 1px solid #ece0cd; padding-top: 9px;">#c0562f · blanc 4,55:1 ✓ AA</div>
+      </div>
+
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="atmo" style="background: linear-gradient(155deg, #6b0028 0%, #3d0017 100%);">
+          <div class="atmo-in" style="display: flex; align-items: center; justify-content: center;">
+            <div class="a-slam" style="width: 70px; height: 13px; border-radius: 4px; background: #f2c8d4;"></div>
+          </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 11px; height: 11px; border-radius: 50%; background: #6b0028;"></div>
+          <div class="br" style="font-weight: 700; font-size: 17px; letter-spacing: -.4px;">Musculation</div>
+        </div>
+        <div style="font-size: 12.5px; line-height: 1.45; color: #786a59;"><strong style="color: #33291f;">L'impact.</strong> Bordeaux profond. Court, franc, sans traîner : le geste est déjà fini quand l'œil arrive. Ressort raide, amplitude faible, haptique.</div>
+        <div class="mo" style="font-size: 11px; color: #786a59; border-top: 1px solid #ece0cd; padding-top: 9px;">#6b0028 · blanc 12,7:1 ✓ AAA</div>
+      </div>
+
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="atmo" style="background: linear-gradient(155deg, #2f6fc0 0%, #15315c 100%);">
+          <div class="atmo-in a-flow" style="background-image: repeating-linear-gradient(90deg, rgba(214,232,255,.9) 0 10px, rgba(214,232,255,0) 10px 28px); background-size: 28px 3px; background-repeat: repeat-x; background-position-y: center;"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 11px; height: 11px; border-radius: 50%; background: #2f6fc0;"></div>
+          <div class="br" style="font-weight: 700; font-size: 17px; letter-spacing: -.4px;">Course</div>
+        </div>
+        <div style="font-size: 12.5px; line-height: 1.45; color: #786a59;"><strong style="color: #33291f;">Le flux.</strong> Bleu nuit. Rien ne démarre ni ne s'arrête : ça défile, à vitesse constante, sans jamais d'à-coup ni de rebond.</div>
+        <div class="mo" style="font-size: 11px; color: #786a59; border-top: 1px solid #ece0cd; padding-top: 9px;">#2f6fc0 · blanc 5,05:1 ✓ AA</div>
+      </div>
+
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+        <div class="atmo" style="background: linear-gradient(155deg, #45602c 0%, #22301a 100%);">
+          <div class="atmo-in a-fill" style="background: linear-gradient(180deg, #86a760 0%, #5c7a3f 100%);"></div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <div style="width: 11px; height: 11px; border-radius: 50%; background: #5c7a3f;"></div>
+          <div class="br" style="font-weight: 700; font-size: 17px; letter-spacing: -.4px;">Nutrition</div>
+        </div>
+        <div style="font-size: 12.5px; line-height: 1.45; color: #786a59;"><strong style="color: #33291f;">Le remplissage.</strong> Vert. Ça monte et ça se pose. <strong style="color: #33291f;">Jamais de rebond</strong> : une jauge qui dépasse afficherait, une fraction de seconde, un chiffre faux.</div>
+        <div class="mo" style="font-size: 11px; color: #786a59; border-top: 1px solid #ece0cd; padding-top: 9px;">#5c7a3f · blanc 4,87:1 ✓ AA</div>
+      </div>
+
+    </div>
+
+    <div style="margin-top: auto; padding-top: 22px;">
+      <div class="rule" style="margin-bottom: 14px;"></div>
+      <div style="font-size: 14px; line-height: 1.55; color: #786a59; max-width: 1010px;"><strong class="br" style="color: #33291f; font-weight: 700;">La règle qui tient le tout :</strong> le mouvement ne porte jamais d'information. Coupez-le — réglage «&nbsp;réduire les animations&nbsp;» compris — et chaque écran dit exactement la même chose. C'est ce qui permet d'en mettre partout sans rien devoir à personne. Les quatre courbes et les sept durées sont déjà spécifiées dans la planche <em>Motion</em> ; rien ici ne demande un module natif de plus.</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

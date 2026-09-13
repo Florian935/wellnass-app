@@ -1,0 +1,320 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+
+    .ph {
+      --bg: #f7eede; --sf: #fffaf2; --sfa: #f3ddd0; --bd: #ece0cd; --tx: #33291f;
+      --mut: #786a59; --trk: #eadcc6; --acc: #b14f2b;
+      --pm: #6b0028; --pc: #2f6fc0; --pn: #5c7a3f; --pa: #c0562f; --ok: #66714b; --amb: #b47f31;
+    }
+    .ph[data-theme="dark"] {
+      --bg: #1c150e; --sf: #30271e; --sfa: #3a2e22; --bd: #3a2e22; --tx: #f4ecdd;
+      --mut: #c9b79a; --trk: #362c22; --acc: #dd6e40;
+      --pm: #e07a98; --pc: #6fa8ef; --pn: #a9ba7e; --pa: #dd6e40; --ok: #a9ba7e; --amb: #e0b155;
+    }
+
+    .br { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+    .mo { font-family: 'Space Mono', ui-monospace, monospace; }
+    .eyebrow { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
+    .card { background: var(--sf); border: 1px solid var(--bd); border-radius: 22px; box-sizing: border-box; }
+    .tap { cursor: pointer; transition: transform 90ms ease-out; }
+    .tap:active { transform: scale(.94); }
+
+    .a-wave { animation: aWave 7000ms linear infinite; }
+    @keyframes aWave { from { transform: translateX(0); } to { transform: translateX(-160px); } }
+
+    /* ── Le viseur : les coins respirent, une ligne balaie — rien d'autre ne bouge ── */
+    .corner { animation: corner 2400ms ease-in-out infinite; }
+    @keyframes corner { 0%, 100% { transform: scale(1); } 50% { transform: scale(.97); } }
+    .scanline { animation: scan 2200ms cubic-bezier(.45,0,.55,1) infinite; }
+    @keyframes scan { 0% { top: 22%; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 74%; opacity: 0; } }
+    .flash { animation: flash 320ms ease-out both; }
+    @keyframes flash { from { opacity: .9; } to { opacity: 0; } }
+
+    /* ── L'analyse : le contour se trace autour de chaque aliment ── */
+    .trace { stroke-dasharray: 600; animation: trace 1300ms cubic-bezier(.22,.61,.36,1) backwards; }
+    @keyframes trace { from { stroke-dashoffset: 600; } to { stroke-dashoffset: 0; } }
+    .chip { animation: chipIn 380ms cubic-bezier(.2,.9,.3,1.2) backwards; }
+    @keyframes chipIn { from { opacity: 0; transform: translateY(8px) scale(.92); } }
+    .sheet { animation: sheetUp 420ms cubic-bezier(.22,.61,.36,1) 250ms backwards; }
+    @keyframes sheetUp { from { transform: translateY(100%); } }
+    .pulse-dot { animation: pulseDot 1100ms ease-in-out infinite; }
+    @keyframes pulseDot { 0%, 100% { opacity: .35; } 50% { opacity: 1; } }
+
+    /* ── Le repas se verse dans la jauge : les aliments tombent, le niveau monte, une ride ── */
+    .level-pour { animation: levelPour 1200ms cubic-bezier(.22,.61,.36,1) 650ms backwards; }
+    @keyframes levelPour { from { height: 36.3%; } }
+    .drop { animation: drop 800ms cubic-bezier(.55,0,.8,.4) both; }
+    @keyframes drop { 0% { opacity: 0; transform: translateY(-40px) scale(1); } 20% { opacity: 1; } 100% { opacity: 0; transform: translateY(190px) scale(.5); } }
+    .ripple { animation: ripple 1300ms cubic-bezier(.22,.61,.36,1) 1400ms both; }
+    @keyframes ripple { from { transform: scaleX(.2); opacity: .9; } to { transform: scaleX(1.6); opacity: 0; } }
+    .toast { animation: toast 420ms cubic-bezier(.22,.61,.36,1) 1500ms backwards; }
+    @keyframes toast { from { opacity: 0; transform: translateY(12px); } }
+    .odo-rise { animation: odoRise 1200ms cubic-bezier(.22,.61,.36,1) 650ms backwards; }
+    @keyframes odoRise { from { opacity: .3; filter: blur(2px); } }
+  </style>
+</helmet>
+
+<div class="ph" data-theme="{{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--tx); font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <!-- ════════════════ 1 · LA SCÈNE NUTRITION — avant ou après la photo ════════════════ -->
+  <sc-if value="{{isScene}}" hint-placeholder-val="{{ true }}">
+    <div style="position: relative; overflow: hidden; height: 440px; flex: none; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; background: #22301a; color: #ffffff;">
+      <div class="{{levelClass}}" style="position: absolute; left: 0; right: 0; bottom: 0; height: {{levelH}}; background: linear-gradient(180deg, #4a6c2e 0%, #3a5622 100%);">
+        <svg class="a-wave" width="550" height="14" viewBox="0 0 550 14" preserveAspectRatio="none" style="position: absolute; left: 0; top: -7px;"><path d="M0 7c20-7 40-7 60 0s40 7 60 0 40-7 60 0 40 7 60 0 40-7 60 0 40 7 60 0 40-7 60 0 40 7 60 0 40-7 60 0" fill="none" stroke="#a9ba7e" stroke-width="2"></path></svg>
+        <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+          <div class="ripple" style="position: absolute; left: 50%; top: -9px; width: 220px; margin-left: -110px; height: 18px; border-radius: 50%; border: 2px solid #e8f0d6;"></div>
+        </sc-if>
+      </div>
+      <div style="position: absolute; left: 20px; right: 20px; top: 150px; border-top: 1.5px dashed rgba(232,240,214,.45);"></div>
+      <div class="mo" style="position: absolute; right: 20px; top: 132px; font-size: 10px; color: #c3d6a5;">cible 2 180</div>
+
+      <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+        <div class="drop" style="position: absolute; left: 70px; top: 180px; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 5px 10px; background: #ffd0bd; color: #4a1e0e; animation-delay: 0ms;">Saumon</div>
+        <div class="drop" style="position: absolute; left: 160px; top: 170px; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 5px 10px; background: #f2d9a3; color: #4a3510; animation-delay: 140ms;">Riz</div>
+        <div class="drop" style="position: absolute; left: 230px; top: 186px; font-size: 12px; font-weight: 700; border-radius: 999px; padding: 5px 10px; background: #c3e39f; color: #23380f; animation-delay: 280ms;">Brocoli</div>
+      </sc-if>
+
+      <div style="position: relative; height: 100%; box-sizing: border-box; padding: 20px; display: flex; flex-direction: column;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <div class="eyebrow" style="color: #c3d6a5;">Aujourd'hui · 19 h 48</div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="16" rx="2.5"></rect><path d="M3.5 10h17M8 3.5v3M16 3.5v3"></path></svg>
+        </div>
+        <div style="margin-top: 150px;">
+          <div class="br {{odoClass}}" style="font-weight: 800; font-size: 66px; letter-spacing: -3px; word-spacing: .18em; line-height: 1;">{{kcalText}}</div>
+          <div class="br" style="font-weight: 700; font-size: 17px; letter-spacing: -.4px; margin-top: 8px;">{{remainText}}</div>
+        </div>
+        <div style="margin-top: auto; display: flex; gap: 8px;">
+          <div class="tap" onClick="{{openCamera}}" style="flex: 1; height: 52px; border-radius: 14px; background: #ffffff; color: #2e4419; display: flex; align-items: center; justify-content: center; gap: 9px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2e4419" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.5-2h5.6l1.5 2h2.2A1.5 1.5 0 0 1 20 8.5v9A1.5 1.5 0 0 1 18.5 19h-13A1.5 1.5 0 0 1 4 17.5z"></path><circle cx="12" cy="13" r="3.4"></circle></svg>
+            <span style="font-weight: 700; font-size: 15px;">Photographier le repas</span>
+          </div>
+          <div class="tap" style="width: 52px; height: 52px; border-radius: 14px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.25); display: flex; align-items: center; justify-content: center;">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="m20 20-4.2-4.2"></path></svg>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 16px 20px 0;">
+      <div class="card" style="padding: 6px 0;">
+        <div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px;">
+          <div style="width: 32px; height: 32px; border-radius: 10px; background: var(--sfa); display: flex; align-items: center; justify-content: center; flex: none;"><span class="br" style="font-weight: 800; font-size: 13px; color: var(--amb);">D</span></div>
+          <div style="flex: 1;"><div style="font-size: 13.5px; font-weight: 600;">Déjeuner</div><div style="font-size: 11.5px; color: var(--mut);">Poulet, riz basmati, brocoli</div></div>
+          <div class="mo" style="font-size: 13px; font-weight: 700;">680</div>
+        </div>
+        <div style="height: 1px; background: var(--bd); margin: 0 16px;"></div>
+        <div style="display: flex; align-items: center; gap: 12px; padding: 11px 16px;">
+          <div style="width: 32px; height: 32px; border-radius: 10px; background: var(--sfa); display: flex; align-items: center; justify-content: center; flex: none;"><span class="br" style="font-weight: 800; font-size: 13px; color: var(--amb);">D</span></div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 6px;"><span style="font-size: 13.5px; font-weight: 600;">Dîner</span>
+              <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}"><span class="mo" style="font-size: 9.5px; border-radius: 5px; padding: 1px 5px; background: var(--sfa); color: var(--mut);">photo · modifiable</span></sc-if>
+            </div>
+            <div style="font-size: 11.5px; color: var(--mut);">{{dinnerItems}}</div>
+          </div>
+          <div class="mo" style="font-size: 13px; font-weight: 700;">{{dinnerKcal}}</div>
+        </div>
+      </div>
+      <sc-if value="{{isDone}}" hint-placeholder-val="{{ false }}">
+        <div class="toast" style="display: flex; align-items: center; gap: 10px; border-radius: 14px; background: #33291f; color: #f0e4d0; padding: 11px 14px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a9ba7e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><path d="M5 12.5 10 17 19 7"></path></svg>
+          <span style="flex: 1; font-size: 12.5px;">Dîner ajouté · {{mealKcal}} kcal</span>
+          <span class="tap" onClick="{{reset}}" style="font-size: 12.5px; font-weight: 700; color: #e0b155;">Annuler</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{isStart}}" hint-placeholder-val="{{ true }}">
+        <div style="font-size: 12.5px; line-height: 1.45; color: var(--mut); padding: 0 4px;">Une photo au-dessus de l'assiette : l'app reconnaît les aliments, estime les portions et te laisse corriger avant d'ajouter.</div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <!-- ════════════════ 2 · LE VISEUR ════════════════ -->
+  <sc-if value="{{isCam}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; background: radial-gradient(90% 70% at 50% 45%, #3a2b1e 0%, #1a130d 70%, #0d0906 100%); color: #ffffff; z-index: 3;">
+
+      <!-- La photo : une assiette dessinée, pas une vraie image -->
+      <svg width="330" height="330" viewBox="0 0 300 300" style="position: absolute; left: 30px; top: 190px;">
+        <circle cx="150" cy="150" r="132" fill="#f1e8da"></circle>
+        <circle cx="150" cy="150" r="112" fill="none" stroke="#ddd0bc" stroke-width="2"></circle>
+        <path d="M150 88c36-15 88-8 102 24 12 26-10 52-47 56-31 3-58-12-66-37-4-15-1-35 11-43z" fill="#e8845f"></path>
+        <path d="M168 96c14 20 16 44 8 66M196 92c12 22 14 48 6 72M224 100c9 20 10 42 3 60" fill="none" stroke="#f6b89a" stroke-width="3" stroke-linecap="round"></path>
+        <ellipse cx="104" cy="192" rx="62" ry="40" fill="#faf5ea"></ellipse>
+        <g fill="#e6dccb"><circle cx="84" cy="182" r="2"></circle><circle cx="100" cy="176" r="2"></circle><circle cx="118" cy="188" r="2"></circle><circle cx="92" cy="200" r="2"></circle><circle cx="126" cy="204" r="2"></circle><circle cx="76" cy="198" r="2"></circle><circle cx="140" cy="190" r="2"></circle></g>
+        <g><path d="M196 238l6-22M214 240l2-24M232 236l-4-22" stroke="#9bbf72" stroke-width="6" stroke-linecap="round"></path>
+          <circle cx="198" cy="210" r="17" fill="#5e8c3a"></circle><circle cx="216" cy="200" r="19" fill="#4f7a30"></circle><circle cx="236" cy="212" r="16" fill="#5e8c3a"></circle><circle cx="222" cy="220" r="14" fill="#6a9a44"></circle></g>
+        <sc-if value="{{showTrace}}" hint-placeholder-val="{{ false }}">
+          <ellipse class="trace" cx="198" cy="128" rx="66" ry="48" fill="none" stroke="#ffd0bd" stroke-width="2.5" stroke-dasharray="7 6" style="animation-delay: 0ms;"></ellipse>
+          <ellipse class="trace" cx="104" cy="192" rx="72" ry="50" fill="none" stroke="#f2d9a3" stroke-width="2.5" stroke-dasharray="7 6" style="animation-delay: 200ms;"></ellipse>
+          <ellipse class="trace" cx="217" cy="214" rx="42" ry="38" fill="none" stroke="#c3e39f" stroke-width="2.5" stroke-dasharray="7 6" style="animation-delay: 400ms;"></ellipse>
+        </sc-if>
+      </svg>
+
+      <div style="position: absolute; left: 0; right: 0; top: 0; padding: 20px; display: flex; align-items: center; justify-content: space-between;">
+        <div class="tap" onClick="{{reset}}" style="width: 44px; height: 44px; border-radius: 50%; background: rgba(255,255,255,.12); display: flex; align-items: center; justify-content: center;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+        </div>
+        <span style="font-size: 13px; font-weight: 600; color: rgba(255,255,255,.85);">{{camHint}}</span>
+        <div style="width: 44px;"></div>
+      </div>
+
+      <sc-if value="{{isAim}}" hint-placeholder-val="{{ true }}">
+        <div class="corner" style="position: absolute; left: 36px; right: 36px; top: 170px; height: 370px;">
+          <div style="position: absolute; left: 0; top: 0; width: 34px; height: 34px; border-left: 3px solid #ffffff; border-top: 3px solid #ffffff; border-top-left-radius: 14px;"></div>
+          <div style="position: absolute; right: 0; top: 0; width: 34px; height: 34px; border-right: 3px solid #ffffff; border-top: 3px solid #ffffff; border-top-right-radius: 14px;"></div>
+          <div style="position: absolute; left: 0; bottom: 0; width: 34px; height: 34px; border-left: 3px solid #ffffff; border-bottom: 3px solid #ffffff; border-bottom-left-radius: 14px;"></div>
+          <div style="position: absolute; right: 0; bottom: 0; width: 34px; height: 34px; border-right: 3px solid #ffffff; border-bottom: 3px solid #ffffff; border-bottom-right-radius: 14px;"></div>
+        </div>
+        <div class="scanline" style="position: absolute; left: 50px; right: 50px; height: 2px; border-radius: 1px; background: linear-gradient(90deg, rgba(195,227,159,0), #c3e39f, rgba(195,227,159,0)); box-shadow: 0 0 14px #c3e39f;"></div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 34px; display: flex; flex-direction: column; align-items: center; gap: 18px;">
+          <div style="display: flex; gap: 6px;">
+            <span style="font-size: 12px; font-weight: 700; border-radius: 999px; padding: 6px 12px; background: #ffffff; color: #1a130d;">Photo</span>
+            <span style="font-size: 12px; font-weight: 600; border-radius: 999px; padding: 6px 12px; background: rgba(255,255,255,.12);">Code-barres</span>
+            <span style="font-size: 12px; font-weight: 600; border-radius: 999px; padding: 6px 12px; background: rgba(255,255,255,.12);">Texte</span>
+          </div>
+          <div class="tap" onClick="{{shoot}}" style="width: 76px; height: 76px; border-radius: 50%; border: 4px solid #ffffff; display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+            <div style="width: 58px; height: 58px; border-radius: 50%; background: #ffffff;"></div>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isAnalyse}}" hint-placeholder-val="{{ false }}">
+        <div class="flash" style="position: absolute; inset: 0; background: #ffffff; pointer-events: none;"></div>
+        <div style="position: absolute; left: 0; right: 0; bottom: 60px; display: flex; justify-content: center;">
+          <div style="display: flex; align-items: center; gap: 10px; border-radius: 999px; padding: 11px 16px; background: rgba(0,0,0,.45);">
+            <span class="pulse-dot" style="width: 8px; height: 8px; border-radius: 50%; background: #c3e39f;"></span>
+            <span style="font-size: 13px; font-weight: 600;">{{analyseText}}</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isQueued}}" hint-placeholder-val="{{ false }}">
+        <div style="position: absolute; left: 20px; right: 20px; bottom: 30px; border-radius: 22px; background: #fffaf2; color: #33291f; padding: 18px; display: flex; flex-direction: column; gap: 10px;" class="sheet">
+          <div class="br" style="font-weight: 800; font-size: 20px; letter-spacing: -.5px;">Photo gardée.</div>
+          <div style="font-size: 13px; line-height: 1.45; color: #786a59;">Tu es hors ligne : l'analyse partira toute seule au retour du réseau, et tu recevras la proposition à valider. Rien n'est ajouté sans toi.</div>
+          <div class="tap" onClick="{{reset}}" style="height: 46px; border-radius: 13px; background: #33291f; color: #fffaf2; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">Revenir au journal</div>
+        </div>
+      </sc-if>
+
+      <!-- ════════════════ 3 · CE QUI A ÉTÉ RECONNU ════════════════ -->
+      <sc-if value="{{isDetect}}" hint-placeholder-val="{{ false }}">
+        <div class="chip" style="position: absolute; left: 200px; top: 212px; animation-delay: 300ms;">
+          <div style="border-radius: 12px; background: #ffd0bd; color: #4a1e0e; padding: 6px 10px; box-shadow: 0 6px 16px rgba(0,0,0,.3);"><div style="font-size: 12.5px; font-weight: 700;">Saumon · 290 kcal</div><div class="mo" style="font-size: 9.5px;">~140 g · sûr à 91 %</div></div>
+        </div>
+        <div class="chip" style="position: absolute; left: 24px; top: 432px; animation-delay: 450ms;">
+          <div style="border-radius: 12px; background: #f2d9a3; color: #4a3510; padding: 6px 10px; box-shadow: 0 6px 16px rgba(0,0,0,.3);"><div style="font-size: 12.5px; font-weight: 700;">Riz basmati · {{rizKcal}} kcal</div><div class="mo" style="font-size: 9.5px;">~{{rizG}} g · portion à vérifier</div></div>
+        </div>
+        <div class="chip" style="position: absolute; left: 232px; top: 470px; animation-delay: 600ms;">
+          <div style="border-radius: 12px; background: #c3e39f; color: #23380f; padding: 6px 10px; box-shadow: 0 6px 16px rgba(0,0,0,.3);"><div style="font-size: 12.5px; font-weight: 700;">Brocoli · 30 kcal</div><div class="mo" style="font-size: 9.5px;">~90 g · sûr à 95 %</div></div>
+        </div>
+
+        <div class="sheet" style="position: absolute; left: 0; right: 0; bottom: 0; background: #fffaf2; color: #33291f; border-top-left-radius: 26px; border-top-right-radius: 26px; padding: 10px 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="width: 40px; height: 5px; border-radius: 3px; background: #eadcc6; align-self: center;"></div>
+          <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+            <div>
+              <div class="mo" style="font-size: 10px; letter-spacing: 1.2px; color: #786a59;">DÎNER · 3 ALIMENTS</div>
+              <div class="br" style="font-weight: 800; font-size: 30px; letter-spacing: -1.2px; line-height: 1.05;">{{mealKcal}} kcal</div>
+            </div>
+            <div class="mo" style="font-size: 11px; color: #786a59; text-align: right;">P {{mealP}} g · G {{mealG}} g<br>L 16 g</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 12px; border-radius: 14px; background: #f7ead6; padding: 10px 12px;">
+            <div style="flex: 1;"><div style="font-size: 13px; font-weight: 700;">Riz basmati</div><div style="font-size: 11.5px; color: #8a6419;">La portion est la moins sûre : ajuste-la.</div></div>
+            <div class="tap" onClick="{{rizMinus}}" style="width: 38px; height: 38px; border-radius: 11px; background: #fffaf2; border: 1px solid #e9cfa0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700;">−</div>
+            <span class="mo" style="font-size: 13px; font-weight: 700; width: 46px; text-align: center;">{{rizG}} g</span>
+            <div class="tap" onClick="{{rizPlus}}" style="width: 38px; height: 38px; border-radius: 11px; background: #fffaf2; border: 1px solid #e9cfa0; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700;">+</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <div class="tap" onClick="{{addMeal}}" style="flex: 1; height: 50px; border-radius: 14px; background: #3a5622; color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;">Ajouter au dîner</div>
+            <div class="tap" style="width: 104px; height: 50px; border-radius: 14px; border: 1px solid #ece0cd; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px;">Corriger</div>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isScene}}" hint-placeholder-val="{{ true }}">
+    <div style="margin-top: auto; height: 64px; flex: none; background: var(--sf); border-top: 1px solid var(--bd); display: flex; align-items: center; padding: 0 8px;">
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"></path></svg><span style="font-size: 11px; font-weight: 600; color: var(--mut);">Accueil</span></div>
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="1.9" stroke-linecap="round"><path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"></path></svg><span style="font-size: 11px; font-weight: 600; color: var(--mut);">Muscu</span></div>
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 19.5c0-3 3-3.6 6-4.1s6-1.1 6-4.1-3-3.7-6-3.7"></path><circle cx="6" cy="19.5" r="1.7"></circle><circle cx="18" cy="5.1" r="1.7"></circle></svg><span style="font-size: 11px; font-weight: 600; color: var(--mut);">Course</span></div>
+      <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--pn)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 8-5 13-12 13H5c0-8 5-13 12-13z"></path><path d="M5 20c2-5 5-8 9.5-10"></path></svg><span style="font-size: 11px; font-weight: 600; color: var(--pn);">Nutrition</span></div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"reseau":{"editor":"enum","options":["en ligne","hors ligne"],"default":"en ligne"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const offline = (this.props.reseau ?? 'en ligne') === 'hors ligne';
+    const step = st.step || 'scene';
+    const riz = st.riz ?? 160;
+    const TARGET = 2180;
+    const BASE = 1200;
+
+    const rizKcal = Math.round(riz * 1.31);
+    const mealKcal = 290 + rizKcal + 30;
+    const mealP = 31 + Math.round(riz * 0.03) + 3;
+    const mealG = Math.round(riz * 0.28) + 4;
+    const done = step === 'done';
+    const consumed = done ? BASE + mealKcal : BASE;
+    const SPAN = 290 / 440;
+    const levelH = (Math.min(consumed / TARGET, 1) * SPAN * 100).toFixed(1) + '%';
+    const fmt = (n) => (n >= 1000 ? Math.floor(n / 1000) + ' ' + String(n % 1000).padStart(3, '0') : String(n));
+
+    const shoot = () => {
+      this.setState({ step: 'analyse' });
+      setTimeout(() => {
+        if ((this.state || {}).step !== 'analyse') return;
+        this.setState({ step: offline ? 'queued' : 'detect' });
+      }, offline ? 700 : 1500);
+    };
+
+    return {
+      theme: this.props.theme ?? 'light',
+      isScene: step === 'scene' || done,
+      isStart: step === 'scene',
+      isDone: done,
+      isCam: step === 'camera' || step === 'analyse' || step === 'detect' || step === 'queued',
+      isAim: step === 'camera',
+      isAnalyse: step === 'analyse',
+      isQueued: step === 'queued',
+      isDetect: step === 'detect',
+      showTrace: step === 'analyse' || step === 'detect',
+      camHint: step === 'detect' ? '3 aliments reconnus' : (offline ? 'Hors ligne · la photo sera gardée' : 'Au-dessus de l’assiette'),
+      analyseText: offline ? 'Photo gardée pour plus tard' : 'Je reconnais les aliments…',
+      levelClass: done ? 'level-pour' : '',
+      levelH: levelH,
+      odoClass: done ? 'odo-rise' : '',
+      kcalText: fmt(consumed),
+      remainText: 'Il te reste ' + fmt(Math.max(0, TARGET - consumed)) + ' kcal',
+      dinnerItems: done ? 'Saumon, riz basmati, brocoli' : 'Rien pour l’instant',
+      dinnerKcal: done ? String(mealKcal) : '—',
+      rizKcal: rizKcal,
+      rizG: riz,
+      mealKcal: mealKcal,
+      mealP: mealP,
+      mealG: mealG,
+      openCamera: () => this.setState({ step: 'camera' }),
+      shoot: shoot,
+      rizMinus: () => this.setState({ riz: Math.max(80, ((this.state || {}).riz ?? 160) - 20) }),
+      rizPlus: () => this.setState({ riz: Math.min(260, ((this.state || {}).riz ?? 160) + 20) }),
+      addMeal: () => this.setState({ step: 'done' }),
+      reset: () => this.setState({ step: 'scene', riz: 160 }),
+    };
+  }
+}
+</script>
+</body>
+</html>
