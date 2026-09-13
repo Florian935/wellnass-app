@@ -86,7 +86,7 @@ export function computeRunRecords(points: ReadonlyArray<GpsPoint>): Partial<Reco
 // ---------------------------------------------------------------------------
 
 /** Exposant de Riegel : la fatigue s'accumule plus vite que la distance. */
-const RIEGEL_EXPONENT = 1.06;
+export const RIEGEL_EXPONENT = 1.06;
 
 /** Distance source unique des prédictions (spec R1) — déjà la référence de l'app (VMA, `running-paces.ts`). */
 const PREDICTION_SOURCE: RecordDistanceKey = '5k';
