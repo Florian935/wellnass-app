@@ -75,6 +75,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **CORPS-03** — Priorités confirmées et lecture du programme | `code` | `feature/corps03-priorites-entrainement` | — |
 | **NUTRI-UX01** — Refonte UX du pilier Nutrition — objectif juste, geste de saisie, journal, suivi, planning | `code` | `feature/nutri-refonte-ux` | [4.41] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
@@ -102,9 +103,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/corps02-morphologie` (modifications non commitées) |
-| Commits | 1218 · `main` a **1212** commits de retard sur `dev` |
-| Specs d'US | 148 au total — 87 clôturées, 61 en cours |
+| Branche courante | `feature/corps03-priorites-entrainement` (modifications non commitées) |
+| Commits | 1219 · `main` a **1212** commits de retard sur `dev` |
+| Specs d'US | 149 au total — 87 clôturées, 62 en cours |
 | Migrations | 95/95 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -114,11 +115,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `6449901`  fix(android): fiabiliser le build Windows et clore Mon corps
 - `a9669e0`  feat(corps): personnaliser la silhouette et comparer un objectif
 - `968539d`  merge: reprendre le socle Mon corps pour la morphologie
 - `6653aaf`  feat(corps): ajouter la carte anatomique et Mon corps
 - `4bab295`  merge: integre dev (MUSCU-UX02) dans MOTION-01, renumerote en §61
-- `a49683d`  docs(motion-01): spec alignee sur le livre, recette, roadmap, changelog
 
 ---
 

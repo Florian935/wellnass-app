@@ -9,6 +9,15 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 13/09/2026 — CORPS-03 : cadrage du lien entre silhouette et entraînement
+
+Branche `feature/corps03-priorites-entrainement`, base `6449901b` incluant la version Android
+validée. Suite autorisée par Florian : spécification, plan et maquette de trois états préparés
+avant code. Premier incrément du lot entraînement : 1 à 3 priorités confirmées et enregistrées
+séparément du dessin, lecture factuelle du programme actif, associations fines/générales
+distinctes et accès aux exercices/programme. L'adaptation automatique des séances est un
+incrément suivant. Aucune fonctionnalité supplémentaire livrée par ce commit documentaire.
+
 ## 13/09/2026 — Mon corps : validation sur téléphone et build Windows corrigé
 
 Branche `feature/corps02-morphologie`, commit précédent `a9669e0`.
