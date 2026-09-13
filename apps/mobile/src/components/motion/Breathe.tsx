@@ -44,6 +44,11 @@ type BreatheProps = {
    */
   pointerEvents?: 'none' | 'auto' | 'box-none' | 'box-only';
   style?: StyleProp<ViewStyle>;
+  /**
+   * US DASH-01 (R4) — `false` arrête la respiration même app active : l'écran qui la porte n'a plus le
+   * focus. Vrai par défaut, pour les appelants de MOTION-01 qui ne savent rien du focus.
+   */
+  active?: boolean;
 };
 
 export function Breathe({
@@ -52,6 +57,7 @@ export function Breathe({
   duration = DURATION.ambient,
   pointerEvents,
   style,
+  active = true,
 }: BreatheProps) {
   const reduced = useAppReducedMotion();
   const focused = useIsAppActive();
@@ -61,7 +67,7 @@ export function Breathe({
   // `useFocusEffect` : ce dernier lève hors conteneur de navigation, ce qu'un halo décoratif n'a
   // aucune raison d'imposer à l'écran qui l'héberge. Voir l'en-tête du hook.
   useEffect(() => {
-    if (reduced || !focused) {
+    if (reduced || !focused || !active) {
       cancelAnimation(scale);
       scale.value = 1;
       return;
@@ -76,7 +82,7 @@ export function Breathe({
       cancelAnimation(scale);
       scale.value = 1;
     };
-  }, [duration, focused, reduced, scale, scaleTo]);
+  }, [active, duration, focused, reduced, scale, scaleTo]);
 
   const animatedStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 

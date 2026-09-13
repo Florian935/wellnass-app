@@ -1,11 +1,14 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  countdownToSession,
   estimateRunMinutes,
+  formatDurationHms,
+  formatHoursMinutes,
   localDayKey,
+  resolveRacePredictions,
   resolveRunHubState,
   resolveRunWeek,
   startOfWeek,
@@ -14,10 +17,6 @@ import {
   type WidgetId,
   type WidgetSize,
 } from '@wellness/shared';
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
-import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
 import { CustomizeButton } from '@/components/widgets/CustomizeButton';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { RUNNING_WIDGETS } from '@/components/widgets/running-widgets';
@@ -34,13 +33,17 @@ import { useRunnerProfile } from '@/data/repositories/running-profile-repository
 import { useSessionAdaptation } from '@/data/repositories/session-adaptation-repository';
 import { SessionAdaptationCard } from '@/components/running/SessionAdaptationCard';
 import { RunWeekBand } from '@/components/running/RunWeekBand';
+import { RunStage, type RunScene } from '@/components/running/RunStage';
+import { RunSplitsCard } from '@/components/running/RunSplitsCard';
+import { RunPredictionsCard } from '@/components/running/RunPredictionsCard';
+import { RunLoadCard } from '@/components/running/RunLoadCard';
+import { StageScrollView } from '@/components/stage/StageScrollView';
+import { useRunningRecords } from '@/data/repositories/running-record-repository';
 import { formatIntervalBlockSummary } from '@/running/interval-summary';
 import { sessionPaceLabelText } from '@/running/session-pace-label';
 import { useAuthStore } from '@/stores/auth-store';
-import { useTodayKey } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 import { useUnits } from '@/hooks/useUnits';
-import { fontFamily } from '@/theme/fonts';
-import { useTheme } from '@/theme/useTheme';
 
 /**
  * Hub du pilier Course (refondu par US CARDIO-UX01, R2a + R3).
@@ -63,7 +66,6 @@ import { useTheme } from '@/theme/useTheme';
 export default function RunningScreen() {
   useMenuFocus('running');
   const { t } = useTranslation();
-  const { colors } = useTheme();
   const router = useRouter();
   const units = useUnits();
   const todayKey = useTodayKey();
@@ -206,6 +208,121 @@ export default function RunningScreen() {
 
   const adaptation = useSessionAdaptation(todaySession?.sessionType ?? null, userId);
 
+  // ── La scène (US DASH-01, §4.3) ───────────────────────────────────────────────────────────
+  const hour = useCurrentHour();
+  const { records } = useRunningRecords();
+
+  /**
+   * Une sortie terminée **aujourd'hui** : le moment « arrivée », le cinquième état de la scène.
+   * L'ancien hub le rangeait avec les jours de repos — on venait de courir une heure et l'écran
+   * répondait « rien de prévu ».
+   */
+  const arrivalRun = useMemo(
+    () =>
+      runs.find((r) => r.finishedAt != null && localDayKey(new Date(r.finishedAt)) === todayKey) ??
+      null,
+    [runs, todayKey],
+  );
+
+  const lastFinishedRun = useMemo(() => runs.find((r) => r.finishedAt != null) ?? null, [runs]);
+
+  const prediction10k = useMemo(
+    () => resolveRacePredictions(records).find((p) => p.distanceKey === '10k') ?? null,
+    [records],
+  );
+
+  const scene: RunScene = useMemo(() => {
+    if (hubState.kind === 'resume') {
+      return {
+        kind: 'resume',
+        distanceLabel: units.formatDistance((hubState.run.distanceM ?? 0) / 1000),
+        durationLabel: formatHoursMinutes(hubState.run.durationSeconds ?? 0),
+      };
+    }
+    // L'arrivée prime sur le repos : elle n'a de sens que le jour même.
+    if (hubState.kind !== 'today' && arrivalRun) {
+      return {
+        kind: 'arrival',
+        distanceKm: (arrivalRun.distanceM ?? 0) / 1000,
+        distanceUnit: units.distanceSymbol,
+        paceLabel: units.formatPace(arrivalRun.avgPaceSPerKm),
+        durationLabel: formatHoursMinutes(arrivalRun.durationSeconds ?? 0),
+        prediction10kLabel: prediction10k ? formatDurationHms(prediction10k.predictedSeconds) : null,
+        // Le record de 5 km qui porte l'estimation vient-il de cette sortie ?
+        prediction10kIsNew:
+          records.find((r) => r.distanceKey === '5k')?.runId === arrivalRun.id,
+      };
+    }
+    if (hubState.kind === 'today') {
+      const session = hubState.session;
+      return {
+        kind: 'today',
+        typeLabel: session.sessionType
+          ? t(`running.sessionType.${session.sessionType}`)
+          : t('running.hub.freeRun'),
+        segments: session.segmentSummaries,
+        volumeLabel:
+          session.totalDistanceM != null
+            ? units.formatDistance(session.totalDistanceM / 1000)
+            : null,
+        estimatedMinutes: session.estimatedMinutes,
+        paceLabel: todayPaceLabel,
+        scheduledTime: todaySession?.scheduledTime ?? null,
+        countdown: countdownToSession(hour, todaySession?.scheduledTime ?? null),
+        instructions: session.instructions,
+      };
+    }
+    if (hubState.kind === 'rest') {
+      return {
+        kind: 'rest',
+        doneToday: !!hubState.doneToday,
+        nextLabel: hubState.nextUpcoming
+          ? t('running.hub.nextOn', {
+              date: formatDayKeyShort(hubState.nextUpcoming.scheduledDate),
+              type: hubState.nextUpcoming.sessionType
+                ? t(`running.sessionType.${hubState.nextUpcoming.sessionType}`)
+                : t('running.hub.freeRun'),
+            })
+          : null,
+      };
+    }
+    return { kind: 'onboarding' };
+  }, [hubState, arrivalRun, prediction10k, records, units, t, todayPaceLabel, todaySession?.scheduledTime, hour]);
+
+  /** Le geste principal de la scène, un par état — c'est là que le hub agit. */
+  const onPrimary = () => {
+    switch (scene.kind) {
+      case 'resume':
+        return router.push('/run/active');
+      case 'arrival':
+        return arrivalRun ? router.push(`/run/analysis?id=${arrivalRun.id}`) : undefined;
+      case 'today':
+        return router.push({
+          pathname: '/run',
+          params: { plannedSessionId: hubToday?.plannedSessionId ?? '' },
+        });
+      case 'rest':
+        return router.push('/run');
+      default:
+        return router.push('/running-programs');
+    }
+  };
+
+  const onSecondary = () => {
+    switch (scene.kind) {
+      case 'resume':
+        return router.push('/running-history');
+      case 'arrival':
+        return router.push('/running-history');
+      case 'today':
+        return router.push('/planning');
+      case 'rest':
+        return router.push('/planning');
+      default:
+        return router.push('/run');
+    }
+  };
+
   const renderWidget = (id: WidgetId, size: WidgetSize) => {
     const Widget = RUNNING_WIDGETS[id as RunningWidgetId];
     return <Widget size={size} />;
@@ -232,225 +349,65 @@ export default function RunningScreen() {
   };
 
   return (
-    <Screen edges={['top']}>
-      <ScreenHeader
-        title={t('pillars.running')}
-        subtitle={t('pillarScreens.running.tagline')}
-        action={
-          <View style={styles.headerActions}>
-            {/* F1 — le profil entre dans le pilier. */}
-            <Button
-              label={t('running.profile.title')}
-              variant="ghost"
-              onPress={() => router.push('/running-profile')}
-            />
-            <CustomizeButton editing={editing} onToggle={() => setEditing((v) => !v)} />
-          </View>
+    <StageScrollView
+      pillar="running"
+      testID="running-screen"
+      scrollEnabled={!dragging}
+      compactTitle={t('pillars.running')}
+      compactValue={units.formatDistance(week.distanceM / 1000)}
+      stage={
+        <RunStage
+          scene={scene}
+          weekDistanceLabel={units.formatDistance(week.distanceM / 1000)}
+          weekSessionsLabel={t('running.week.count', {
+            done: week.doneCount,
+            total: week.plannedCount,
+          })}
+          onPrimary={onPrimary}
+          onSecondary={onSecondary}
+          onProfile={() => router.push('/running-profile')}
+          onHistory={() => router.push('/running-history')}
+        />
+      }
+    >
+      {/* La carte d'adaptation garde sa place en tête du corps : elle propose de MODIFIER la
+          séance que la scène vient d'annoncer (F36). */}
+      <SessionAdaptationCard proposal={adaptation} plannedSessionId={todaySession?.id ?? null} />
+
+      {/* §4.3 — le km par km de la dernière sortie, jusqu'ici enterré dans l'analyse d'une course. */}
+      <RunSplitsCard
+        runId={lastFinishedRun?.id ?? null}
+        plannedSessionId={lastFinishedRun?.plannedSessionId ?? null}
+        onOpen={() =>
+          lastFinishedRun ? router.push(`/run/analysis?id=${lastFinishedRun.id}`) : undefined
         }
       />
 
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-        scrollEnabled={!dragging}
-      >
-        {/* ── Zone Agir : un seul état, jamais deux cartes (R3-1) ─────────────────────── */}
-        {hubState.kind === 'resume' ? (
-          <Card>
-            <View style={styles.cardHeader}>
-              <Ionicons name="walk" size={18} color={colors.accent} />
-              <Text style={[styles.cardTitle, { color: colors.text }]}>
-                {t('running.resume.title')}
-              </Text>
-            </View>
-            <Text style={[styles.cardText, { color: colors.textMuted }]}>
-              {t('running.resume.subtitle')}
-            </Text>
-            <Button label={t('running.resume.cta')} onPress={() => router.push('/run/active')} />
-          </Card>
-        ) : hubState.kind === 'today' ? (
-          <TodayCard
-            session={hubState.session}
-            paceLabel={todayPaceLabel}
-            onStart={() =>
-              router.push({
-                pathname: '/run',
-                params: { plannedSessionId: hubState.session.plannedSessionId },
-              })
-            }
-            onDetail={() => router.push('/planning')}
-          />
-        ) : hubState.kind === 'rest' ? (
-          <Card>
-            <View style={styles.cardHeader}>
-              <Ionicons name="navigate-outline" size={18} color={colors.accent} />
-              <Text style={[styles.cardTitle, { color: colors.text }]}>
-                {hubState.doneToday
-                  ? t('running.hub.doneTodayTitle')
-                  : t('running.hub.restTitle')}
-              </Text>
-            </View>
-            <Text style={[styles.cardText, { color: colors.textMuted }]}>
-              {hubState.nextUpcoming
-                ? t('running.hub.nextOn', {
-                    date: formatDayKeyShort(hubState.nextUpcoming.scheduledDate),
-                    type: hubState.nextUpcoming.sessionType
-                      ? t(`running.sessionType.${hubState.nextUpcoming.sessionType}`)
-                      : t('running.hub.freeRun'),
-                  })
-                : t('running.hub.nothingPlanned')}
-            </Text>
-            <Button label={t('running.hub.freeRunCta')} onPress={() => router.push('/run')} />
-          </Card>
-        ) : (
-          <Card>
-            <View style={styles.cardHeader}>
-              <Ionicons name="flag-outline" size={18} color={colors.accent} />
-              <Text style={[styles.cardTitle, { color: colors.text }]}>
-                {t('running.hub.onboardingTitle')}
-              </Text>
-            </View>
-            <Text style={[styles.cardText, { color: colors.textMuted }]}>
-              {t('running.hub.onboardingBody')}
-            </Text>
-            <Button
-              label={t('running.hub.pickProgram')}
-              onPress={() => router.push('/running-programs')}
-            />
-            <Button
-              label={t('running.hub.freeRunCta')}
-              variant="ghost"
-              onPress={() => router.push('/run')}
-            />
-          </Card>
-        )}
+      <RunPredictionsCard onOpen={() => router.push('/running-history')} />
+      <RunLoadCard onOpen={() => router.push('/running-history')} />
 
-        {/* ── La carte d'adaptation, qui AGIT désormais (F36) ─────────────────────────── */}
-        <SessionAdaptationCard
-          proposal={adaptation}
-          plannedSessionId={todaySession?.id ?? null}
-        />
+      {/* Ma semaine (F37) — le détail jour par jour, dont la scène ne donne que la ligne. */}
+      <RunWeekBand week={week} />
 
-        {/* ── Ma semaine (F37) ───────────────────────────────────────────────────────── */}
-        <RunWeekBand week={week} />
+      <View style={styles.customizeRow}>
+        <CustomizeButton editing={editing} onToggle={() => setEditing((v) => !v)} />
+      </View>
 
-        {/* Grille de widgets personnalisable (modules course, filtrés par pilier running). */}
-        <WidgetGrid
-          screen="running"
-          editing={editing}
-          renderWidget={renderWidget}
-          isActive={isWidgetActive}
-          onDragActiveChange={setDragging}
-        />
-      </ScrollView>
-    </Screen>
+      {/* Grille de widgets personnalisable (modules course, filtrés par pilier running). */}
+      <WidgetGrid
+        screen="running"
+        editing={editing}
+        renderWidget={renderWidget}
+        isActive={isWidgetActive}
+        onDragActiveChange={setDragging}
+      />
+    </StageScrollView>
   );
 }
 
 // ---------------------------------------------------------------------------
 // Carte de la séance du jour
 // ---------------------------------------------------------------------------
-
-/**
- * La séance du jour, avec **son contenu** (R3, état B).
- *
- * La carte précédente annonçait la cible chiffrée et la consigne, mais jamais la **structure** ni
- * le **volume réel** ni la **durée estimée** — c'est-à-dire les trois choses qu'on regarde pour
- * décider si on part maintenant.
- */
-function TodayCard({
-  session,
-  paceLabel,
-  onStart,
-  onDetail,
-}: {
-  session: RunHubTodaySession;
-  paceLabel: string | null;
-  onStart: () => void;
-  onDetail: () => void;
-}) {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
-  const units = useUnits();
-
-  const typeLabel = session.sessionType
-    ? t(`running.sessionType.${session.sessionType}`)
-    : t('running.hub.freeRun');
-
-  return (
-    <View style={[styles.todayCard, { backgroundColor: colors.panel }]}>
-      <View style={styles.cardHeader}>
-        <Ionicons name="calendar-outline" size={18} color={colors.panelAccent} />
-        <Text style={[styles.todayOverline, { color: colors.panelMuted }]}>
-          {t('running.plannedToday.title')}
-        </Text>
-      </View>
-
-      <Text style={[styles.todayTitle, { color: colors.panelText }]}>{typeLabel}</Text>
-
-      {/* La structure, lisible d'un coup d'œil avant de partir. */}
-      {session.segmentSummaries.length > 0 ? (
-        <View style={styles.chips}>
-          {session.segmentSummaries.map((summary, index) => (
-            <View
-              key={`${summary}-${index}`}
-              style={[styles.chip, { backgroundColor: 'rgba(240,228,208,0.12)' }]}
-            >
-              <Text style={[styles.chipLabel, { color: colors.panelText }]}>{summary}</Text>
-            </View>
-          ))}
-        </View>
-      ) : null}
-
-      <View style={styles.todayStats}>
-        {session.totalDistanceM != null ? (
-          <View style={styles.todayStat}>
-            <Text style={[styles.todayStatLabel, { color: colors.panelMuted }]}>
-              {t('running.hub.volume')}
-            </Text>
-            <Text style={[styles.todayStatValue, { color: colors.panelText }]}>
-              {units.formatDistance(session.totalDistanceM / 1000)}
-            </Text>
-          </View>
-        ) : null}
-        {session.estimatedMinutes != null ? (
-          <View style={styles.todayStat}>
-            <Text style={[styles.todayStatLabel, { color: colors.panelMuted }]}>
-              {t('running.hub.estimated')}
-            </Text>
-            <Text style={[styles.todayStatValue, { color: colors.panelText }]}>
-              {t('running.hub.minutes', { count: session.estimatedMinutes })}
-            </Text>
-          </View>
-        ) : null}
-        {paceLabel ? (
-          <View style={styles.todayStat}>
-            <Text style={[styles.todayStatLabel, { color: colors.panelMuted }]}>
-              {t('running.paceGuidance.targetLabel')}
-            </Text>
-            <Text style={[styles.todayStatValue, { color: colors.panelText }]}>{paceLabel}</Text>
-          </View>
-        ) : null}
-      </View>
-
-      {/* La consigne rédigée — ce qui fait la différence entre une distance et une séance. */}
-      {session.instructions ? (
-        <View style={[styles.instructions, { borderLeftColor: colors.panelAccent }]}>
-          <Text style={[styles.instructionsText, { color: colors.panelText }]}>
-            {session.instructions}
-          </Text>
-        </View>
-      ) : null}
-
-      <View style={styles.todayActions}>
-        <View style={styles.todayActionMain}>
-          <Button label={t('running.plannedToday.startCta')} onPress={onStart} />
-        </View>
-        <Button label={t('running.hub.seeDetail')} variant="ghost" onPress={onDetail} />
-      </View>
-    </View>
-  );
-}
 
 /** `AAAA-MM-JJ` + n jours → `AAAA-MM-JJ`, en calendrier local (jamais `new Date('AAAA-MM-JJ')`). */
 function addDaysToKey(key: string, days: number): string {
@@ -468,35 +425,8 @@ function formatDayKeyShort(key: string): string {
 }
 
 const styles = StyleSheet.create({
-  scroll: { gap: 14, paddingBottom: 24 },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  cardHeader: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  cardTitle: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.3 },
-  cardText: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
+  /** Le bouton « personnaliser » vit au-dessus de la grille, pas dans un en-tête disparu. */
+  customizeRow: { flexDirection: 'row', justifyContent: 'flex-end' },
 
   // Carte de la séance du jour — panneau inversé, comme la séance du jour côté muscu.
-  todayCard: { borderRadius: 22, padding: 18, gap: 12 },
-  todayOverline: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  todayTitle: { fontFamily: fontFamily.displayBold, fontSize: 22, letterSpacing: -0.5 },
-  chips: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
-  chip: { borderRadius: 8, paddingHorizontal: 9, paddingVertical: 5 },
-  chipLabel: { fontFamily: fontFamily.bodyMedium, fontSize: 12 },
-  todayStats: { flexDirection: 'row', flexWrap: 'wrap', gap: 16 },
-  todayStat: { gap: 1 },
-  todayStatLabel: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 11,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  todayStatValue: { fontFamily: fontFamily.monoBold, fontSize: 17 },
-  instructions: { borderLeftWidth: 2, paddingLeft: 10 },
-  instructionsText: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 19, fontStyle: 'italic' },
-  todayActions: { gap: 8 },
-  todayActionMain: { width: '100%' },
 });

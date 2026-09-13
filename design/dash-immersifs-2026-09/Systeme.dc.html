@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .br { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+    .mo { font-family: 'Space Mono', ui-monospace, monospace; }
+    .kicker { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .rule { height: 1px; background: #e2d3bc; }
+    .code { font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; background: #f3ddd0; border-radius: 5px; padding: 2px 6px; }
+
+    /* Les quatre physiques, rejouees en miniature */
+    .a-breathe { animation: sBreathe 4800ms ease-in-out infinite; }
+    .a-slam { animation: sSlam 2600ms cubic-bezier(.2,.9,.3,1) infinite; }
+    .a-comet { animation: sComet 3200ms linear infinite; }
+    .a-wave { animation: sWave 7000ms linear infinite; }
+    @keyframes sBreathe { 0%, 100% { transform: scale(1); opacity: .6; } 50% { transform: scale(1.06); opacity: .95; } }
+    @keyframes sSlam { 0%, 34% { opacity: .22; } 41% { opacity: .95; } 46% { opacity: .5; } 51% { opacity: .82; } 64%, 100% { opacity: .22; } }
+    @keyframes sComet { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1000; } }
+    @keyframes sWave { from { transform: translateX(0); } to { transform: translateX(-160px); } }
+  </style>
+</helmet>
+
+<div style="width: 1200px; height: 1220px; box-sizing: border-box; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 46px 48px; display: flex; flex-direction: column; gap: 26px;">
+
+  <div>
+    <div class="kicker">Le socle · ce qui s'écrit une seule fois</div>
+    <h1 class="br" style="font-weight: 800; font-size: 44px; letter-spacing: -1.5px; line-height: 1; margin: 10px 0 0;">Quatre primitives, aucun module natif</h1>
+    <p style="font-size: 15px; line-height: 1.55; color: #786a59; margin: 11px 0 0; max-width: 940px; text-wrap: pretty;">Les quatre écrans qui précèdent ne sont pas quatre chantiers : ce sont quatre <em>remplissages</em> des mêmes composants. Reanimated&nbsp;4.5, react-native-svg et expo-haptics sont déjà installés — <strong style="color: #33291f;">rien ici ne demande un nouveau build EAS</strong>. Les durées et les courbes sont celles déjà arrêtées dans la planche Motion.</p>
+  </div>
+
+  <div class="rule"></div>
+
+  <div>
+    <div class="kicker">Les quatre primitives</div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 14px;">
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="mo" style="font-size: 13px; font-weight: 700; color: #b14f2b;">&lt;PillarStage&gt;</div>
+        <div style="font-size: 13px; line-height: 1.45; color: #786a59;">La scène : pleine largeur, hors grille, coins bas arrondis à 30, dégradé de la couleur du pilier, et un <em>slot matière</em> qui reçoit le SVG animé. Elle prend la place de <span class="code">ScreenHeader</span>.</div>
+        <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid #ece0cd; font-size: 12px; color: #786a59;">Écrit 1 fois · utilisé 4 fois</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="mo" style="font-size: 13px; font-weight: 700; color: #b14f2b;">&lt;StageNumber&gt;</div>
+        <div style="font-size: 13px; line-height: 1.45; color: #786a59;">Le grand chiffre de la scène. Il <strong style="color: #33291f;">roule depuis l'ancienne valeur</strong> quand la donnée change — sur un worklet, jamais via l'état React : un compteur à 60&nbsp;Hz en <span class="code">setState</span> ferait ramer l'écran qu'il devait embellir.</div>
+        <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid #ece0cd; font-size: 12px; color: #786a59;">Durée <span class="mo">data · 420 ms</span></div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="mo" style="font-size: 13px; font-weight: 700; color: #b14f2b;">&lt;DenseTile&gt;</div>
+        <div style="font-size: 13px; line-height: 1.45; color: #786a59;">La tuile qui accepte <strong style="color: #33291f;">trois informations au lieu d'une</strong> : un chiffre dominant, une trame de 7 jours, une ligne de contexte, séparées par des filets. C'est elle qui règle les 47&nbsp;%.</div>
+        <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid #ece0cd; font-size: 12px; color: #786a59;">Remplace 3 tuiles par écran</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 10px;">
+        <div class="mo" style="font-size: 13px; font-weight: 700; color: #b14f2b;">usePillarTint()</div>
+        <div style="font-size: 13px; line-height: 1.45; color: #786a59;">La couleur du pilier, <strong style="color: #33291f;">allumée par défaut</strong> et promue de <span class="code">secureStorage</span> vers <span class="code">user_settings</span> — donc synchronisée d'un appareil à l'autre. Le réglage existant devient «&nbsp;revenir à une seule couleur&nbsp;».</div>
+        <div style="margin-top: auto; padding-top: 8px; border-top: 1px solid #ece0cd; font-size: 12px; color: #786a59;">1 migration · 1 réglage inversé</div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="kicker">Les quatre scènes, côte à côte — c'est ce qu'on voit en changeant d'onglet</div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; margin-top: 14px;">
+
+      <div style="height: 168px; border-radius: 20px; overflow: hidden; position: relative; background: radial-gradient(130% 120% at 18% 8%, #fffaf2 0%, #e9c9a9 100%); padding: 16px; box-sizing: border-box;">
+        <div class="a-breathe" style="position: absolute; width: 150px; height: 150px; border-radius: 50%; background: rgba(192,86,47,.22); top: -40px; right: -34px;"></div>
+        <div class="mo" style="position: relative; font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; color: #786a59;">Accueil · le souffle</div>
+        <div class="br" style="position: relative; font-weight: 800; font-size: 40px; letter-spacing: -1.7px; margin-top: 26px; color: #33291f;">J14</div>
+        <div style="position: relative; font-size: 12px; color: #786a59; margin-top: 6px;">3 piliers, 1 série</div>
+      </div>
+
+      <div style="height: 168px; border-radius: 20px; overflow: hidden; position: relative; background: linear-gradient(158deg, #6b0028 0%, #2d0011 100%); padding: 16px; box-sizing: border-box;">
+        <div class="a-slam" style="position: absolute; right: 18px; top: 34px; width: 84px; height: 84px; border-radius: 50%; background: #ff9ec0;"></div>
+        <div class="mo" style="position: relative; font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; color: #e2a8bd;">Muscu · l'impact</div>
+        <div class="br" style="position: relative; font-weight: 800; font-size: 40px; letter-spacing: -1.7px; margin-top: 26px; color: #ffffff;">Push A</div>
+        <div style="position: relative; font-size: 12px; color: #e2a8bd; margin-top: 6px;">18 séries · ~52 min</div>
+      </div>
+
+      <div style="height: 168px; border-radius: 20px; overflow: hidden; position: relative; background: linear-gradient(162deg, #2f6fc0 0%, #0f2547 100%); padding: 16px; box-sizing: border-box;">
+        <svg width="280" height="168" viewBox="0 0 280 168" style="position: absolute; left: 0; top: 0;">
+          <path d="M-10 130C24 104 44 152 74 128S128 62 162 88s40 74 82 52 52-72 92-58" fill="none" stroke="#ffffff" stroke-width="1.6" opacity=".16"></path>
+          <path class="a-comet" d="M-10 130C24 104 44 152 74 128S128 62 162 88s40 74 82 52 52-72 92-58" pathLength="1000" fill="none" stroke="#b7d6ff" stroke-width="2.6" stroke-dasharray="120 880"></path>
+        </svg>
+        <div class="mo" style="position: relative; font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; color: #a8c8f0;">Course · le flux</div>
+        <div class="br" style="position: relative; font-weight: 800; font-size: 40px; letter-spacing: -1.7px; margin-top: 26px; color: #ffffff;">8,0 km</div>
+        <div style="position: relative; font-size: 12px; color: #a8c8f0; margin-top: 6px;">45 min · 5:42 /km</div>
+      </div>
+
+      <div style="height: 168px; border-radius: 20px; overflow: hidden; position: relative; background: #22301a; padding: 16px; box-sizing: border-box;">
+        <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 68%; background: linear-gradient(180deg, #4a6c2e 0%, #3a5622 100%);">
+          <svg class="a-wave" width="440" height="12" viewBox="0 0 440 12" preserveAspectRatio="none" style="position: absolute; left: 0; top: -6px;">
+            <path d="M0 6c20-6 40-6 60 0s40 6 60 0 40-6 60 0 40 6 60 0 40-6 60 0 40 6 60 0 40-6 60 0" fill="none" stroke="#a9ba7e" stroke-width="2.2"></path>
+          </svg>
+        </div>
+        <div class="mo" style="position: relative; font-size: 9px; letter-spacing: 1.4px; text-transform: uppercase; color: #c3d6a5;">Nutrition · le remplissage</div>
+        <div class="br" style="position: relative; font-weight: 800; font-size: 40px; letter-spacing: -1.7px; margin-top: 26px; color: #ffffff;">1 480</div>
+        <div style="position: relative; font-size: 12px; color: #c3d6a5; margin-top: 6px;">sur 2 180 kcal</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="flex: 1; display: flex; gap: 18px; align-items: stretch;">
+
+    <div style="flex: 1.35; background: #33291f; color: #f0e4d0; border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 14px;">
+      <div class="mo" style="font-size: 11px; letter-spacing: 1.4px; color: #c9b79a;">CE QUI NE CHANGE PAS</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 22px;">
+        <div>
+          <div class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">Les plafonds de widgets</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;">8 / 3 / 4, verrouillés par des tests. On densifie les tuiles, on n'en ajoute aucune.</div>
+        </div>
+        <div>
+          <div class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">La personnalisation</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;">Le glisser-déposer et le masquage survivent tels quels : la scène est épinglée, la grille reste la grille.</div>
+        </div>
+        <div>
+          <div class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">« Réduire les animations »</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;"><span class="mo" style="font-size: 11.5px;">useReducedMotion()</span> rend l'état final, sans transition. Rien ne disparaît de l'écran.</div>
+        </div>
+        <div>
+          <div class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">Le contraste WCAG AA</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;">Les 4 couleurs de pilier passent AA en blanc dessus (4,55 à 12,7:1). Rien de ce qui a été gagné par CONF-07 n'est repris.</div>
+        </div>
+        <div>
+          <div class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">L'offline</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;">Aucune donnée nouvelle : tout ce qu'affichent ces écrans est déjà calculé et déjà en SQLite local.</div>
+        </div>
+        <div>
+          <div class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">Le mouvement après l'état</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;">L'état change d'abord, le mouvement décore ensuite. Jamais une attente ajoutée — y compris 40 fois par séance.</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="flex: 1; background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 12px;">
+      <div class="kicker">Découpage proposé</div>
+      <div style="display: flex; flex-direction: column; gap: 11px;">
+        <div style="display: flex; gap: 11px;">
+          <div class="mo" style="flex: none; width: 22px; height: 22px; border-radius: 50%; background: #33291f; color: #f0e4d0; font-size: 11px; display: flex; align-items: center; justify-content: center;">1</div>
+          <div style="font-size: 13px; line-height: 1.45; color: #786a59;"><strong style="color: #33291f;">Le socle.</strong> <span class="code">theme/motion.ts</span>, les 4 primitives, la teinte de pilier allumée et synchronisée. Zéro écran modifié — mais tout le reste en dépend.</div>
+        </div>
+        <div style="display: flex; gap: 11px;">
+          <div class="mo" style="flex: none; width: 22px; height: 22px; border-radius: 50%; background: #6b0028; color: #ffffff; font-size: 11px; display: flex; align-items: center; justify-content: center;">2</div>
+          <div style="font-size: 13px; line-height: 1.45; color: #786a59;"><strong style="color: #33291f;">Muscu.</strong> Le pilier le plus mûr, et celui qui vient d'être refondu : c'est là qu'on vérifie que la scène tient sur les 4 états de <span class="code">StrengthNowCard</span>.</div>
+        </div>
+        <div style="display: flex; gap: 11px;">
+          <div class="mo" style="flex: none; width: 22px; height: 22px; border-radius: 50%; background: #5c7a3f; color: #ffffff; font-size: 11px; display: flex; align-items: center; justify-content: center;">3</div>
+          <div style="font-size: 13px; line-height: 1.45; color: #786a59;"><strong style="color: #33291f;">Nutrition.</strong> Le plus gros gain — 1 224 lignes à dégonfler — et le plus gros risque : c'est l'écran le plus utilisé au quotidien.</div>
+        </div>
+        <div style="display: flex; gap: 11px;">
+          <div class="mo" style="flex: none; width: 22px; height: 22px; border-radius: 50%; background: #2f6fc0; color: #ffffff; font-size: 11px; display: flex; align-items: center; justify-content: center;">4</div>
+          <div style="font-size: 13px; line-height: 1.45; color: #786a59;"><strong style="color: #33291f;">Course, puis accueil.</strong> La course pour la trace GPS ; l'accueil en dernier, parce que sa scène cite les trois autres et doit s'accorder avec elles.</div>
+        </div>
+      </div>
+      <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid #ece0cd; font-size: 12.5px; line-height: 1.45; color: #786a59;">Le chiffrage n'est pas posé ici : il appartient au plan d'implémentation, une fois la direction validée.</div>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

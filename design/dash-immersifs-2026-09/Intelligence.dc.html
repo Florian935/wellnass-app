@@ -1,0 +1,187 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .br { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+    .mo { font-family: 'Space Mono', ui-monospace, monospace; }
+    .kicker { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .rule { height: 1px; background: #e2d3bc; }
+    .us { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; background: #f3ddd0; color: #33291f; border-radius: 5px; padding: 2px 6px; white-space: nowrap; }
+    .pill { font-size: 11px; font-weight: 600; border-radius: 999px; padding: 3px 9px; white-space: nowrap; }
+    .yes { background: #f7ead6; color: #8a6419; }
+    .no { background: #e7ecdc; color: #4d5a33; }
+    .prem { background: #33291f; color: #f0e4d0; }
+    .g-card { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; overflow: hidden; display: flex; flex-direction: column; }
+    .g-stage { height: 150px; position: relative; overflow: hidden; }
+    .g-body { padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+    .kv { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 12px; padding: 10px 0; border-top: 1px solid #ece0cd; font-size: 13px; align-items: baseline; }
+
+    .orb-halo { position: absolute; border-radius: 50%; background: conic-gradient(from 0deg, #c0562f, #e0b155, #6b0028, #2f6fc0, #5c7a3f, #c0562f); filter: blur(10px); animation: spin 8s linear infinite, breathe 4800ms ease-in-out infinite; }
+    .orb-core { position: absolute; border-radius: 50%; background: radial-gradient(circle at 34% 28%, #fffaf2 0%, #f6d6b8 45%, #d9855a 100%); }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes breathe { 0%, 100% { scale: 1; } 50% { scale: 1.06; } }
+    .wbar { width: 3px; border-radius: 2px; background: #33291f; animation: wbar 640ms ease-in-out infinite; }
+    @keyframes wbar { 0%, 100% { height: 5px; } 50% { height: 22px; } }
+    .fan { animation: fan 4200ms cubic-bezier(.22,.61,.36,1) infinite; }
+    @keyframes fan { 0%, 100% { d: path('M130 70 L250 40 L250 90 Z'); } 50% { d: path('M130 70 L250 22 L250 104 Z'); } }
+    .med { animation: med 4200ms cubic-bezier(.22,.61,.36,1) infinite; }
+    @keyframes med { 0%, 100% { d: path('M130 70 L250 65'); } 50% { d: path('M130 70 L250 63'); } }
+    .scan { animation: scan 2200ms cubic-bezier(.45,0,.55,1) infinite; }
+    @keyframes scan { 0% { top: 20%; opacity: 0; } 12%, 88% { opacity: 1; } 100% { top: 80%; opacity: 0; } }
+    .chipin { animation: chipin 3200ms ease-out infinite; }
+    @keyframes chipin { 0%, 6% { opacity: 0; transform: translateY(6px); } 16%, 94% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; } }
+  </style>
+</helmet>
+
+<div style="width: 1200px; height: 1640px; box-sizing: border-box; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 46px 48px; display: flex; flex-direction: column; gap: 24px;">
+
+  <div style="max-width: 900px;">
+    <div class="kicker">V3 · l'app qui comprend · 13/09/2026</div>
+    <h1 class="br" style="font-weight: 800; font-size: 50px; letter-spacing: -1.7px; line-height: 1; margin: 10px 0 0;">L'app qui comprend</h1>
+    <p style="font-size: 15.5px; line-height: 1.55; color: #786a59; margin: 12px 0 0; text-wrap: pretty;">Les modèles d'aujourd'hui voient, écoutent et parlent. FitTrio n'a pas besoin d'un chatbot de plus posé à côté de ses écrans : il a besoin que <strong style="color: #33291f;">ses dashboards comprennent</strong>. Quatre gestes, tous branchés sur des calculs qui existent déjà — et un cinquième, « Pourquoi ? », qui les rend dignes de confiance.</p>
+  </div>
+
+  <!-- La règle d'or -->
+  <div style="background: #33291f; color: #f0e4d0; border-radius: 24px; padding: 24px 26px; display: flex; gap: 34px; align-items: center;">
+    <div style="flex: 1.1;">
+      <div class="mo" style="font-size: 11px; letter-spacing: 1.4px; color: #c9b79a;">LA RÈGLE D'OR</div>
+      <div class="br" style="font-weight: 800; font-size: 34px; letter-spacing: -1.1px; line-height: 1.08; margin-top: 8px;">L'IA comprend et formule.<br>Le calcul décide.</div>
+      <div style="font-size: 13.5px; line-height: 1.5; color: #c9b79a; margin-top: 10px;">Aucun chiffre affiché n'est produit par un modèle. Il sort d'une fonction testée de <span class="mo" style="font-size: 12px;">@wellness/shared</span> ; le modèle traduit une phrase en paramètres, ou des résultats en phrase.</div>
+    </div>
+    <div style="flex: 1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+      <div><div class="br" style="font-weight: 700; font-size: 17px;">Explicable</div><div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 4px;">Chaque réponse montre ses sources et son calcul, en une touche.</div></div>
+      <div><div class="br" style="font-weight: 700; font-size: 17px;">Contestable</div><div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 4px;">« Ce n'est pas ça » baisse le poids d'une règle — jamais d'un garde-fou.</div></div>
+      <div><div class="br" style="font-weight: 700; font-size: 17px;">Dispensable</div><div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 4px;">Hors ligne ou sans consentement, l'écran reste entier. L'IA s'ajoute, elle ne remplace rien.</div></div>
+    </div>
+  </div>
+
+  <!-- Les quatre gestes -->
+  <div>
+    <div class="kicker">Quatre gestes — chacun a son téléphone interactif au-dessus</div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; margin-top: 14px;">
+
+      <div class="g-card">
+        <div class="g-stage" style="background: radial-gradient(130% 120% at 82% 0%, #fff6e8, #efc39c); display: flex; align-items: center; justify-content: center; gap: 18px;">
+          <div style="position: relative; width: 70px; height: 70px;"><div class="orb-halo" style="inset: -4px;"></div><div class="orb-core" style="inset: 9px;"></div></div>
+          <div style="display: flex; align-items: center; gap: 3px; height: 26px;"><div class="wbar" style="animation-delay: 0ms;"></div><div class="wbar" style="animation-delay: 120ms;"></div><div class="wbar" style="animation-delay: 240ms;"></div><div class="wbar" style="animation-delay: 60ms;"></div><div class="wbar" style="animation-delay: 300ms;"></div><div class="wbar" style="animation-delay: 180ms;"></div><div class="wbar" style="animation-delay: 420ms;"></div></div>
+        </div>
+        <div class="g-body">
+          <div class="br" style="font-weight: 700; font-size: 19px; letter-spacing: -.5px;">Le brief du matin</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #786a59;">24 secondes lues à voix haute, avec la transcription qui s'allume et ses sources. <strong style="color: #33291f;">Existe en version sans IA</strong> : phrases à clés i18n à partir des faits calculés, synthèse vocale locale.</div>
+          <div style="display: flex; gap: 5px; flex-wrap: wrap;"><span class="us">TRI-03</span><span class="us">MUSC-09</span><span class="us">expo-speech</span></div>
+          <div style="margin-top: auto; display: flex; gap: 5px; flex-wrap: wrap;"><span class="pill no">sans réseau</span><span class="pill no">zéro natif</span><span class="pill no">gratuit possible</span></div>
+        </div>
+      </div>
+
+      <div class="g-card">
+        <div class="g-stage" style="background: #fffaf2; padding: 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 8px; border-bottom: 1px solid #ece0cd;">
+          <div style="height: 34px; border-radius: 10px; border: 1px solid #ece0cd; display: flex; align-items: center; padding: 0 10px; font-size: 12px; font-weight: 600;">Que manger ce soir ?</div>
+          <div class="chipin" style="border-radius: 12px; background: #f3ddd0; padding: 9px 10px; display: flex; align-items: center; justify-content: space-between;"><div><div style="font-size: 12px; font-weight: 700;">Saumon, riz, brocoli</div><div class="mo" style="font-size: 9px; color: #786a59;">530 kcal · 36 g P</div></div><span style="font-size: 11px; font-weight: 700; background: #5c7a3f; color: #ffffff; border-radius: 8px; padding: 5px 8px;">Ajouter</span></div>
+          <div class="chipin" style="border-radius: 12px; background: #f3ddd0; padding: 9px 10px; animation-delay: 200ms;"><div style="font-size: 12px; font-weight: 700;">Omelette, pain complet</div></div>
+        </div>
+        <div class="g-body">
+          <div class="br" style="font-weight: 700; font-size: 19px; letter-spacing: -.5px;">Demande-moi</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #786a59;">Trois questions du moment plutôt qu'un chat vide. La réponse est <strong style="color: #33291f;">une carte qui agit</strong> — ajouter, planifier, alléger — construite avec les fonctions de l'app comme outils.</div>
+          <div style="display: flex; gap: 5px; flex-wrap: wrap;"><span class="us">NUTR-F2</span><span class="us">GARDE-01</span><span class="us">MUSC-F7</span></div>
+          <div style="margin-top: auto; display: flex; gap: 5px; flex-wrap: wrap;"><span class="pill yes">réseau</span><span class="pill yes">consentement</span><span class="pill prem">premium</span></div>
+        </div>
+      </div>
+
+      <div class="g-card">
+        <div class="g-stage" style="background: linear-gradient(158deg, #6b0028, #2d0011);">
+          <svg width="100%" height="150" viewBox="0 0 270 140" preserveAspectRatio="none" style="position: absolute; inset: 0;">
+            <path d="M20 110 L60 100 L95 88 L130 70" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"></path>
+            <path class="fan" d="M130 70 L250 40 L250 90 Z" style="fill: rgba(255,158,192,.35);"></path>
+            <path class="med" d="M130 70 L250 65" style="fill: none; stroke: #ff9ec0; stroke-width: 2.5; stroke-dasharray: 5 5;"></path>
+            <circle cx="130" cy="70" r="5" fill="#ffffff"></circle>
+          </svg>
+          <div style="position: absolute; left: 16px; bottom: 12px; display: flex; gap: 4px;"><span style="font-size: 10.5px; font-weight: 700; border-radius: 7px; padding: 4px 8px; background: rgba(255,255,255,.18); color: #ffffff;">3</span><span style="font-size: 10.5px; font-weight: 700; border-radius: 7px; padding: 4px 8px; background: #ffffff; color: #6b0028;">4</span><span style="font-size: 10.5px; font-weight: 700; border-radius: 7px; padding: 4px 8px; background: rgba(255,255,255,.18); color: #ffffff;">5</span></div>
+        </div>
+        <div class="g-body">
+          <div class="br" style="font-weight: 700; font-size: 19px; letter-spacing: -.5px;">Et si…</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #786a59;">On touche son futur : séances, sommeil, protéines. La projection s'ouvre en <strong style="color: #33291f;">éventail d'incertitude</strong>, et montre ce que ça change sur les autres piliers. Les leviers marchent sans IA ; elle ne sert qu'à comprendre « et si je passais à 4 séances ? ».</div>
+          <div style="display: flex; gap: 5px; flex-wrap: wrap;"><span class="us">MUSCPWR-01</span><span class="us">GARDE-01</span><span class="us">idée 25/07</span></div>
+          <div style="margin-top: auto; display: flex; gap: 5px; flex-wrap: wrap;"><span class="pill no">leviers hors ligne</span><span class="pill no">zéro natif</span><span class="pill prem">premium</span></div>
+        </div>
+      </div>
+
+      <div class="g-card">
+        <div class="g-stage" style="background: radial-gradient(90% 80% at 50% 45%, #3a2b1e, #0d0906);">
+          <svg width="120" height="120" viewBox="0 0 300 300" style="position: absolute; left: 50%; top: 15px; margin-left: -60px;">
+            <circle cx="150" cy="150" r="132" fill="#f1e8da"></circle>
+            <path d="M150 88c36-15 88-8 102 24 12 26-10 52-47 56-31 3-58-12-66-37-4-15-1-35 11-43z" fill="#e8845f"></path>
+            <ellipse cx="104" cy="192" rx="62" ry="40" fill="#faf5ea"></ellipse>
+            <circle cx="206" cy="210" r="22" fill="#5e8c3a"></circle><circle cx="230" cy="214" r="18" fill="#4f7a30"></circle>
+          </svg>
+          <div class="scan" style="position: absolute; left: 60px; right: 60px; height: 2px; background: #c3e39f; box-shadow: 0 0 12px #c3e39f;"></div>
+          <div class="chipin" style="position: absolute; right: 16px; top: 22px; font-size: 10.5px; font-weight: 700; border-radius: 8px; padding: 4px 7px; background: #ffd0bd; color: #4a1e0e;">Saumon · 91 %</div>
+          <div class="chipin" style="position: absolute; left: 14px; bottom: 18px; font-size: 10.5px; font-weight: 700; border-radius: 8px; padding: 4px 7px; background: #f2d9a3; color: #4a3510; animation-delay: 250ms;">Riz · à vérifier</div>
+        </div>
+        <div class="g-body">
+          <div class="br" style="font-weight: 700; font-size: 19px; letter-spacing: -.5px;">L'assiette en photo</div>
+          <div style="font-size: 12.5px; line-height: 1.45; color: #786a59;">Un 4ᵉ mode dans la feuille d'ajout, à côté du scan. Chaque aliment dit <strong style="color: #33291f;">à quel point il est sûr</strong> ; la portion la moins sûre se règle au doigt. Hors ligne, la photo attend. Rien n'entre au journal sans validation.</div>
+          <div style="display: flex; gap: 5px; flex-wrap: wrap;"><span class="us">expo-camera</span><span class="us">food-scan</span><span class="us">idée IDEAS</span></div>
+          <div style="margin-top: auto; display: flex; gap: 5px; flex-wrap: wrap;"><span class="pill yes">réseau</span><span class="pill no">zéro natif</span><span class="pill prem">premium</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Pourquoi ? -->
+  <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 20px 22px; display: flex; gap: 28px; align-items: center;">
+    <div style="flex: none; width: 88px; height: 88px; border-radius: 26px; background: #33291f; display: flex; align-items: center; justify-content: center;">
+      <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#f0e4d0" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.5 9.2a2.6 2.6 0 0 1 5 .8c0 1.8-2.5 2.2-2.5 4M12 17.2h.01"></path></svg>
+    </div>
+    <div style="flex: 1;">
+      <div class="br" style="font-weight: 800; font-size: 24px; letter-spacing: -.7px;">Et partout : « Pourquoi ? »</div>
+      <div style="font-size: 13.5px; line-height: 1.55; color: #786a59; margin-top: 6px;">Sur n'importe quel chiffre calculé — une projection, un verdict, une cible — une touche ouvre <strong style="color: #33291f;">d'où il sort</strong> : les étapes du calcul, les données utilisées, la confiance qu'on peut lui accorder. Et quand une donnée manque, l'écran ne la dessine pas pleine : la barre devient pointillée et l'app nomme <em>la</em> donnée qui l'aiderait le plus. C'est le principe « explicable et contestable » noté dans IDEAS le 25/07, appliqué aux dashboards.</div>
+    </div>
+    <div style="flex: none; display: flex; flex-direction: column; gap: 6px;"><span class="pill no">sans IA</span><span class="pill no">sans réseau</span><span class="pill no">gratuit</span></div>
+  </div>
+
+  <div style="flex: 1; display: flex; gap: 16px;">
+    <div style="flex: 1.3; background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px 22px;">
+      <div class="kicker" style="margin-bottom: 6px;">Ce que ça coûte vraiment</div>
+      <div class="kv"><div style="grid-column: span 4; font-weight: 700;">Serveur</div><div style="grid-column: span 8; color: #786a59;">Un proxy Edge Function Supabase : la clé du modèle ne vit jamais dans l'app. Rate-limit et plafond de dépense par utilisateur.</div></div>
+      <div class="kv"><div style="grid-column: span 4; font-weight: 700;">Données de santé</div><div style="grid-column: span 8; color: #786a59;">Consentement séparé, minimisation, inférence en Europe. Sans consentement, les quatre écrans restent entiers.</div></div>
+      <div class="kv"><div style="grid-column: span 4; font-weight: 700;">Modules natifs</div><div style="grid-column: span 8; color: #786a59;">Aucun pour les quatre gestes : caméra et synthèse vocale sont déjà installées. La <strong style="color: #33291f;">dictée vocale</strong> et un effet de parallaxe au gyroscope demanderaient, eux, un nouveau build.</div></div>
+      <div class="kv"><div style="grid-column: span 4; font-weight: 700;">Palier</div><div style="grid-column: span 8; color: #786a59;">L'intelligence de croisement est la frontière payante (ADR-003) — donc post-V1, RevenueCat étant inactif au lancement.</div></div>
+      <div class="kv"><div style="grid-column: span 4; font-weight: 700; color: #b14f2b;">Play Store</div><div style="grid-column: span 8; color: #786a59;"><strong style="color: #33291f;">Ne pas mêler au lancement.</strong> Partager des données de santé avec un tiers se déclare dans la fiche « Sécurité des données » : à faire après la 9.2, le seul bloquant restant, pas pendant.</div></div>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 16px;">
+      <div style="background: #33291f; color: #f0e4d0; border-radius: 22px; padding: 18px 20px;">
+        <div class="mo" style="font-size: 11px; letter-spacing: 1.4px; color: #c9b79a;">CE QU'ON NE FERA PAS</div>
+        <div style="display: flex; flex-direction: column; gap: 7px; margin-top: 10px; font-size: 13px; line-height: 1.4;">
+          <span>Pas de mascotte ni d'avatar qui parle.</span>
+          <span>Pas de chat qui remplace les écrans.</span>
+          <span>Pas de conseil médical ni de diagnostic.</span>
+          <span>Rien d'écrit dans le journal sans ta validation.</span>
+          <span>Pas d'IA activée par défaut.</span>
+        </div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px 20px; flex: 1;">
+        <div class="kicker">Ordre proposé</div>
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px; font-size: 13px; line-height: 1.4; color: #786a59;">
+          <span><strong style="color: #33291f;">1 · sans IA</strong> — « Pourquoi ? », les leviers du « Et si », le brief à clés. Zéro réseau, zéro consentement.</span>
+          <span><strong style="color: #33291f;">2 · après le lancement</strong> — proxy, consentement, puis la photo.</span>
+          <span><strong style="color: #33291f;">3 · ensuite</strong> — « Demande-moi ».</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

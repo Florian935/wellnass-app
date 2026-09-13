@@ -82,6 +82,10 @@ const user_settings = new Table({
   // (`cycle_tracking_enabled`, `daily_step_goal` sur `profiles`) ont causé des pannes SILENCIEUSES
   // — écriture en échec, erreur avalée, réglage qui ne s'enregistre pas sans le moindre message.
   sbd_lifts: column.text,
+  // US DASH-01 §7 — instant du consentement à l'assistant IA (NULL = jamais consenti). 🔴 Sixième
+  // colonne de cette table à devoir être déclarée ici : absente, l'écriture échoue et
+  // `void updateSettings()` avale l'erreur — l'interrupteur revient à « éteint » sans message.
+  ai_consent_at: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

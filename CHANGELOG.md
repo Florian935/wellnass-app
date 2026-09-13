@@ -9,6 +9,201 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 13/09/2026 — MUSCU-UX03 : le mode immersif de la séance, **en plus** du classique
+
+La séance était **juste** depuis MUSCU-UX01 et **animée** depuis MOTION-01, mais elle restait
+**muette** : une série moyenne et un record recevaient la même réponse (30 ms de vibration), les
+records n'étaient connus qu'à la clôture, l'effort lui-même était un temps mort pour l'app, et le
+repos — la moitié du temps passé en séance — était le moment où l'on ouvre une autre application.
+
+🔴 **Décision D1 de Florian (13/09)** : l'immersif est un **mode en plus**, pas un remplacement.
+Le mode classique reste **strictement inchangé** ; il ne gagne qu'une pastille de record au repos.
+
+### Ajouté
+
+- **`packages/shared` — 7 briques pures, toutes testées** : `set-feel` (les quatre ressentis et leur
+  correspondance RPE), `barbell` (disques par côté, calcul en centièmes entiers pour éviter les
+  résidus flottants), `workout-verdict` (« vs mardi », à **même rang**), `live-records` (records
+  évalués en mémoire, mêmes règles d'éligibilité que `computeWorkoutRecords`), `session-heat`
+  (chaleur par muscle), `ghost` (tonnage cumulé contre la dernière fois, défi de dernière série),
+  `coach-script` (choix d'une **clé i18n**, aucun texte).
+- **Mode d'affichage de la séance** (`session-mode-store`, `immersive-prefs-store`) : préférences
+  **locales à l'appareil** (`secureStorage`), comme `motion-store`. Feuille de choix au tout premier
+  démarrage, sélecteur sur la scène du hub muscu, ligne dans le menu ⋮ en séance, écran
+  **Réglages › Séance**.
+- **Brief d'entrée en séance** (`app/workout-brief.tsx`), branché sur les **cinq** chemins de
+  démarrage (hub muscu, accueil général, planning, fiche programme, fiche modèle).
+- **Écran immersif** : scène sombre, ruban segmenté par exercice, barre chargée à l'échelle, enjeu
+  « ce serait un record », plan de séance en tiroir (qui **réutilise `ExerciseList`**, sans rien
+  redessiner), effort plein écran au tempo, cadran de reps et ressenti, repos qui respire (veille,
+  verdict, ajustement proposé, plein écran de record, fantôme, corps qui chauffe), cérémonie de fin
+  avec relais nutrition, coach vocal à gabarits FR/EN (`expo-speech`).
+- **Notifications de séance** (`lib/notifications.ts`) : canal Android **« Séance »** distinct de
+  « Rappels », rappel de fin de repos, notification **continue** pendant le repos en arrière-plan,
+  et gestionnaire de premier plan désormais **conditionnel**.
+
+### Modifié
+
+- **`workout.tsx`** reste le **porteur unique de l'état de séance** ; les deux modes n'en sont que
+  des rendus. C'est ce qui permet de basculer classique ↔ immersif **en pleine séance sans rien
+  perdre** (série courante, repos en cours, saisie) — et ce qui garantit que le classique ne bouge pas.
+- **`RestOverlay`** (classique) : pastille ambre de record en tête du repos — le seul ajout de
+  cette US au mode classique (décision D3).
+- **`BodyMap` se scinde** : le dessin passe dans **`BodyMapCanvas`**, sans thème ni i18n, et accepte
+  une prop `heat` (0 → 1 par muscle). Ses trois points de montage historiques rendent à l'identique.
+  Sans cette scission, la carte à partager aurait traîné `useTheme` → repository de réglages →
+  i18next dans une vue capturée hors contexte.
+- **`ShareCard`** : la variante `workout` accepte la chaleur de la séance. **Aucune donnée de santé**.
+- **`CurrentSetCard`** : les suppléments de série sont extraits dans **`SetOptions`**, partagé par les
+  deux modes — plutôt que deux jeux de contrôles à maintenir.
+
+### Technique / Notes
+
+- ⚠️ **« Solide » vaut RPE 7, jamais 8.** `sessionStruggled` classe une séance comme difficile dès
+  un RPE ≥ 8 : mapper la réponse *attendue* d'une bonne série sur 8 aurait **silencieusement**
+  éteint la progression assistée puis déclenché le deload de MUSC-F7. La règle est documentée dans
+  `set-feel.ts`, dans le cadran et dans les critères de recette.
+- ✅ **Aucune migration, aucune sync rule à redéployer, aucune dépendance native nouvelle** : le
+  ressenti s'écrit dans la colonne `rpe` existante, les préférences vivent dans `secureStorage`, et
+  `expo-speech` / `expo-notifications` / `react-native-svg` / Reanimated étaient déjà au projet.
+- Les notifications de séance sont **hors du quota** de 3 notifications immédiates par jour : ce
+  plafond protège des rappels **non sollicités**, or un repos est lancé par l'utilisateur lui-même.
+- **56 critères de recette** en [RECETTES.md](RECETTES.md) §63 ; roadmap **3.61** passée à ✅.
+  **Livré ≠ validé** : la recette device reste à faire.
+
+## 13/09/2026 — CARDIO-UX01 : les six chantiers non livrés sortent de RECETTES.md
+
+Commit de **suivi seul** — aucun fichier applicatif touché. Clôture de la session CARDIO-UX01 :
+la branche `feature/cardio-refonte-ux` est fusionnée dans `dev` et supprimée (locale et distante),
+et il restait deux endroits où la documentation mentait ou allait perdre de l'information.
+
+### Modifié
+- **[BACKLOG.md](BACKLOG.md)** — ajout de **six candidats P1, `CARDIO-02` → `CARDIO-07`** : les
+  chantiers de l'audit du pilier Course qui n'ont **pas** été livrés dans le lot du 10/09/2026
+  (les quatre portes vers l'allure de référence, l'écran de départ et la saisie rétroactive,
+  l'historique filtrable, l'éditeur de séance à trois niveaux, les semaines qui progressent,
+  l'import GPX / Health Connect). Chaque ligne dit **ce qui est déjà livré** — pour quatre d'entre
+  eux, les briques de calcul sont écrites et testées (`referencePaceFromRaceTime`,
+  `createPastRun`, `SELECT_HISTORY` enrichi, `parseSessionLine` + `SESSION_TEMPLATES`,
+  `sessions.week_index`) et **seuls les écrans manquent**.
+  **Pourquoi maintenant** : ces six chantiers ne vivaient que dans [RECETTES.md](RECETTES.md) §59,
+  un fichier dont la règle explicite est de **se vider dès que l'US est clôturée**. `BACKLOG.md`
+  n'en portait **aucune trace** (0 occurrence de « cardio »). Ils seraient morts avec la recette.
+- **[RECETTES.md](RECETTES.md)** — §59 : encart pointant vers les six nouvelles lignes du backlog,
+  pour que la purge de la section ne fasse plus perdre l'information.
+- **[roadmap](docs/roadmap/roadmap.md)** — ligne **5.40** : la note disait encore
+  « 🔴 **Une migration écrite et NON POUSSÉE** […] `ADAPTATION_WRITE_READY` reste à `false` ».
+  C'était **faux depuis le 10/09/2026** : la migration `20260910214329` est appliquée sur le cloud,
+  le drapeau est à `true` et le bouton « Appliquer aujourd'hui » écrit en base. La note porte
+  désormais l'état réel, ainsi que l'épisode du **refus de `db:push`** et le choix de **redater**
+  la migration plutôt que de forcer `--include-all` (qui aurait laissé `schema_migrations` non
+  monotone). La mention des six chantiers renvoie maintenant au backlog, pas seulement à la recette.
+- **[ETAT.md](ETAT.md)** — régénéré.
+
+### Technique / Notes
+- **Branche supprimée** : `feature/cardio-refonte-ux`, locale et distante. Ses quatre commits
+  (`a035e8d`, `542b753`, `407087d`, `e719a47`) sont tous ancêtres de `dev`, vérifié un par un.
+  **Aucun worktree n'avait été créé** pour cette US — elle a été développée dans l'arbre principal.
+- ⚠️ **Signalé, non traité** (appartient à une autre session) : `node scripts/etat.mjs` remonte
+  la migration `20260912235121_corps02_body_visual_state.sql` **absente du registre**
+  [MIGRATIONS.md](supabase/MIGRATIONS.md) et non poussée sur le cloud.
+
+## 13/09/2026 — DASH-01 : les quatre dashboards passent à la scène, et l'app commence à comprendre
+
+Branche `feature/dash01-dashboards-immersifs`, en **worktree** (trois autres branches actives en
+parallèle). Analyse + trois passes de maquettes validées par Florian le 13/09/2026 (canvas de 19
+planches, 3 pages), puis **GO explicite pour tout livrer en une seule vague** — « fait TOUT d'un seul
+coup, d'une seule vague », recette finale unique (§62, 38 critères).
+
+**Le problème de départ.** Les quatre écrans d'atterrissage — accueil et les trois piliers — étaient
+les seuls de l'app à n'avoir **aucune identité** : le même empilement de cartes blanches, quatre
+fois, avec le même en-tête, la même grille et les mêmes rayons. Rien ne disait sur quel pilier on se
+trouvait, et rien ne donnait envie d'y rester. Chacun a désormais **sa couleur, sa matière et son
+moment** : le niveau qui monte (nutrition), la trace parcourue (course), la silhouette qui encaisse
+(muscu), les anneaux qui respirent (accueil).
+
+**Le second problème, plus profond : l'app calculait sans jamais expliquer.** Le verdict de forme, la
+cible calorique, les chronos prédits, la projection de force — tous étaient affichés comme des
+chiffres tombés du ciel. Ils portent maintenant un « **Pourquoi ?** » qui montre les étapes du calcul
+et un niveau de confiance, et acceptent un « ce n'est pas ça » qui **atténue localement** la règle
+contestée.
+
+### Ajouté
+
+**Le socle des scènes** (`components/stage/`) — `PillarStage` (dégradé, arrivée en fondu court, un
+emplacement « matière »), `StageScrollView` (repli au défilement et bandeau compact, masqué aux
+lecteurs d'écran tant que la scène est dépliée), `StageButton`, `StageIconButton`, `DenseTile`, et
+les **quatre matières** : `FillLevel`, `FlowTrace`, `ImpactSilhouette`, `BreathRings`.
+
+**Nutrition** — `NutritionStage` remplace cinq blocs par une surface : en-tête, navigation de jour,
+trame de semaine, bilan du jour et macros. Niveau **plafonné au filet de cible** (jamais de
+débordement, le texte dit l'excédent), sept verres de la semaine, **brouillard de confiance** sur les
+jours sans saisie, ajout rapide des récents.
+
+**Course** — `RunStage` garde les quatre états de `resolveRunHubState` et leur ajoute **l'arrivée**
+(sortie terminée aujourd'hui). Compte à rebours de la séance à l'heure (`countdownToSession`,
+HORAIRE-01). Trois cartes remontent au hub : **km par km** de la dernière sortie, **chronos prédits**
+(Riegel) et **charge** (ACWR) — trois données qui existaient déjà mais vivaient à trois écrans de là.
+
+**Musculation** — `StrengthStage` ajoute le moment **après la séance** (tonnage qui roule, exercices,
+records battus) et allume la silhouette sur les muscles du jour (`SELECT_TODAY_PLAN` remonte
+`muscle_primary`). Plus la **semaine séance par séance** touchable, « **à ta portée** » (les trois
+records les plus proches, via `useNearRecords`) et « **Et si…** ».
+
+**Accueil** — `HomeStage` à quatre moments (`resolveHomeMoment`) : check-in du matin, série en danger
+le soir, retour après une absence, anneaux de la semaine sinon. `NowCard` est posée sur la scène. Le
+corps gagne « **depuis ta dernière visite** », le **bilan de la semaine** en cartes (les deux premiers
+jours), l'**objectif** le plus proche, le **brief du matin** lu par `expo-speech`, et « **Demande-moi** ».
+
+**L'assistant IA, désactivé par défaut** — migration `20260913163130_dash01_ai_consent_usage`
+(`user_settings.ai_consent_at`, table `ai_usage`), fonction Edge `supabase/functions/ai-assist`,
+écran `meal-photo`, carte `AskCard`, section de consentement dans les Réglages.
+
+### Modifié
+
+- Les quatre écrans de `app/(tabs)/` sont réécrits autour de `StageScrollView`. Le **mode édition**
+  des grilles n'a délibérément **pas** de scène : réorganiser des widgets sous une surface fixe
+  ferait croire qu'elle se déplace aussi.
+- `HomeHeader` disparaît ; son seul calcul utile (`headlineKey`) devient `dashboard/home-headline.ts`.
+- `useMinimalWeekTargets` cède sa dérivation de cible protéique à **`useProteinTarget`** : le brief du
+  matin en avait besoin, c'était la cinquième copie de cette chaîne qui menaçait.
+- Cinq événements d'analytics (spec §5) : `home_checkin_done`, `weekly_recap_card`,
+  `streak_saved_evening`, `ai_photo_used`, `ai_ask_used` — des **gestes**, jamais un contenu.
+
+### Technique / Notes
+
+- **Aucun chiffre affiché ne sort d'un modèle** (R7). La photo de repas rend des **aliments et des
+  grammes** ; les calories viennent du catalogue local, donc une portion ajustée recalcule tout et un
+  aliment inconnu s'affiche **sans valeur** plutôt que faux. « Demande-moi » calcule la réponse côté
+  client et le modèle ne fait que la **formuler** : sans IA, sans réseau, sans consentement, les mêmes
+  réponses s'affichent.
+- **Quatre gardes côté serveur avant tout appel** — JWT, consentement, quota (table `ai_usage`,
+  `service_role` seule), taille — et le compteur n'est incrémenté **qu'après** une réponse. Ni la
+  photo, ni la question, ni la réponse ne sont conservées.
+- **Une migration poussée, aucune sync rule à déployer** : `user_settings` est lue en `select *`, et
+  `ai_usage` n'est volontairement pas publiée. Le réflexe « migration ⇒ sync rule à la main » ne vaut
+  que pour une table **synchronisée** — la note est au registre.
+- **L'horloge** : `useCurrentHour` reste la seule source autorisée dans un hook. D'où un compte à
+  rebours **à l'heure** (« dans ~3 h ») plutôt qu'à la minute — une minuterie à la minute ferait
+  re-rendre l'écran le plus ouvert de l'app soixante fois par heure et re-souscrirait ses requêtes.
+- **Le « bug visuel » de la maquette est corrigé** (décision D6) : la silhouette encaisse **un seul**
+  impact à l'arrivée, et la scène part de 35 % d'opacité au lieu de zéro — repartir du vide à chaque
+  changement d'onglet se lisait comme un clignotement.
+- **Écarts assumés**, listés en fin de §62 : partage de séance laissé sur l'écran de bilan, **écart**
+  de prédiction 10 km non calculable (l'app ne garde pas l'historique des records — la scène affiche
+  l'estimation courante et dit quand elle vient de cette sortie), compte à rebours à l'heure.
+- **La migration voisine `20260912235121_corps02_body_visual_state`** (branche corps02) est reprise à
+  l'identique dans cette branche : le cloud l'avait déjà, et le CLI refusait de pousser tant qu'elle
+  manquait à l'historique local. Même fichier, même contenu — la fusion de corps02 ne créera pas de
+  conflit.
+- 🔴 **Deux gestes humains restent** : `supabase secrets set ANTHROPIC_API_KEY=…` et
+  `supabase functions deploy ai-assist`. Sans eux, l'app répond « l'assistant IA n'est pas
+  disponible » — proprement, mais les critères 37–38 de la §62 ne sont pas recettables.
+- 🔴 **Play Store** : la déclaration « Sécurité des données » devra mentionner l'envoi **facultatif**
+  d'une photo à un fournisseur d'IA (opt-in, non conservée) avant publication.
+- Tests : `packages/shared` 128 fichiers / 2741 tests · `apps/mobile` 185 suites / 3036 tests.
+  Typecheck et lint verts.
+
 ## 12/09/2026 — MUSCU-UX02 : le bilan de séance, et la fin de deux écrans qui se contredisaient
 
 Branche `feature/muscu-ux02-bilan-seance` (commit précédent `d6f2608`). Analyse + maquettes

@@ -28,6 +28,13 @@ export const ANALYTICS_EVENTS = {
   dataExported: 'data_exported',
   helpOpened: 'help_opened',
   bugReported: 'bug_reported',
+  // US DASH-01 §5 — les cinq événements de rétention des dashboards immersifs. Ils ne mesurent que
+  // des **gestes**, jamais un contenu : aucun aliment, aucune question, aucune valeur.
+  homeCheckinDone: 'home_checkin_done',
+  weeklyRecapCard: 'weekly_recap_card',
+  streakSavedEvening: 'streak_saved_evening',
+  aiPhotoUsed: 'ai_photo_used',
+  aiAskUsed: 'ai_ask_used',
 } as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];

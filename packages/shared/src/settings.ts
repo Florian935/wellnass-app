@@ -172,6 +172,15 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
    * Chaque clé est **facultative** : un total partiel n'est jamais présenté comme un total (R11).
    */
   sbdLifts: sbdLiftsSchema.default(emptySbdLifts()),
+
+  /**
+   * US DASH-01 (§7) — consentement à l'**assistant IA**, sous forme d'instant ISO.
+   *
+   * `null` = jamais consenti, et c'est le défaut : rien ne sort de l'appareil tant que l'utilisateur
+   * n'a pas lu ce qui part et dit oui. Un **horodatage** plutôt qu'un booléen parce que le RGPD
+   * demande de pouvoir dire *quand* le consentement a été donné ; révoquer repose `null`.
+   */
+  aiConsentAt: z.string().nullable().default(null),
 });
 
 export type UserSettingsRow = z.infer<typeof userSettingsRowSchema>;

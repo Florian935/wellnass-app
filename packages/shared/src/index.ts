@@ -139,3 +139,13 @@ export * from './session-muscle-split';
 export * from './rep-ranges';
 export * from './session-comparison';
 export * from './workout-report';
+// US DASH-01 (roadmap 7.29) — dashboards immersifs : tout ce qui décide ce qu'affichent les scènes.
+export * from './dashboard-moment';
+export * from './since-last-visit';
+export * from './weekly-story';
+export * from './near-record';
+export * from './what-if';
+export * from './explain';
+export * from './morning-brief';
+export * from './data-confidence';
+export * from './ai-assist';

@@ -36,7 +36,7 @@ const ACUTE_WINDOW_DAYS = 7;
 const CHRONIC_WINDOW_DAYS = 28;
 
 /** Seuil de la zone de risque (spec R4) — standard sport-science (méthode de Foster). */
-const ACWR_RISK_THRESHOLD = 1.3;
+export const ACWR_RISK_THRESHOLD = 1.3;
 
 /**
  * Charge d'une séance (méthode session-RPE, Foster) : RPE × durée en minutes. Une séance sans
@@ -55,7 +55,7 @@ export function sessionLoad(session: {
 export type AcwrZone = 'low' | 'safe' | 'risk';
 
 /** Borne basse de la zone saine (spec R5 de META-19 / R3 de RUN-18) — sous ce seuil, sous-entraînement. */
-const ACWR_LOW_THRESHOLD = 0.8;
+export const ACWR_LOW_THRESHOLD = 0.8;
 
 /** Résultat de l'ACWR combiné — `null` si aucune charge chronique (spec R6). */
 export type AcwrResult = { ratio: number; zone: AcwrZone; showAlert: boolean };
