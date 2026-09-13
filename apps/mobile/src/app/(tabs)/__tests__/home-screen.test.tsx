@@ -53,7 +53,21 @@ jest.mock('@/data/repositories/real-life-repository', () => ({
 }));
 // US DASH-01 — la scène est REELLE dans ce test (c'est l'assemblage qu'on vérifie) ; ce sont ses
 // sources de données qui sont simulées.
-jest.mock('@/hooks/useHomeScene', () => ({ useHomeScene: jest.fn() }));
+jest.mock('@/hooks/useHomeScene', () => ({
+  useHomeScene: jest.fn(),
+  useMorningBriefFacts: jest.fn(() => ({
+    verdict: null,
+    todaySession: null,
+    nearRecord: null,
+    proteinGapG: null,
+    streak: 4,
+    realLifeActive: false,
+  })),
+}));
+jest.mock('@/components/dashboard/MorningBriefCard', () => {
+  const { Text } = require('react-native');
+  return { MorningBriefCard: () => <Text>sonde-brief</Text> };
+});
 jest.mock('@/hooks/useWeekRings', () => ({ useWeekRings: jest.fn(() => []) }));
 jest.mock('@/hooks/useTodayKey', () => ({
   useTodayKey: () => '2026-09-14',
@@ -177,10 +191,22 @@ const mockRealLife = useRealLifeState as jest.Mock;
 const mockHomeScene = useHomeScene as jest.Mock;
 
 /** Le moment « journée », celui de très loin le plus fréquent — les autres sont testés sur la scène. */
+const COMPOSANTE_INDISPONIBLE = { state: 'unavailable' as const };
+
 const FAITS_DU_JOUR = {
   moment: 'day' as const,
   streak: 4,
   verdict: null,
+  // Le score de forme complet : c'est lui que « Pourquoi ? » détaille (§6.1).
+  readiness: {
+    show: false,
+    verdict: null,
+    load: COMPOSANTE_INDISPONIBLE,
+    nutrition: COMPOSANTE_INDISPONIBLE,
+    wellbeing: COMPOSANTE_INDISPONIBLE,
+    negativeCount: 0,
+    availableCount: 0,
+  },
   checkinDone: true,
   hoursLeft: 5,
   jokersRemaining: 1,
@@ -212,6 +238,16 @@ describe('les cinq zones', () => {
     expect(screen.getByText(/sonde-quick/)).toBeTruthy();
     expect(screen.getByText(/sonde-grille/)).toBeTruthy();
     expect(screen.getByText('sonde-upnext')).toBeTruthy();
+  });
+
+  it('🔴 le brief du matin ne s’affiche QUE le matin', async () => {
+    // Une « revue du matin » affichée à 19 h n'est plus un rendez-vous, c'est du remplissage.
+    await render(<HomeScreen />);
+    expect(screen.queryByText('sonde-brief')).toBeNull();
+
+    mockHomeScene.mockReturnValue({ ...FAITS_DU_JOUR, moment: 'morning', checkinDone: true });
+    await render(<HomeScreen />);
+    expect(screen.getByText('sonde-brief')).toBeTruthy();
   });
 
   it('🔴 n’affiche plus le NOM DE L’APPLICATION en titre', async () => {

@@ -715,25 +715,37 @@ export function useStreakData(windowDays = 30): StreakData {
  * Les cibles sont **dérivées du plan réel**, jamais inventées : la moitié des séances effectivement
  * planifiées cette semaine (plancher à 1), une sortie libre, et la cible protéines telle quelle.
  */
+/**
+ * Cible de **protéines du jour**, en grammes — `null` si le profil ne permet pas de la calculer.
+ *
+ * La saisie manuelle prime, sinon elle se dérive de la cible calorique du jour et des ratios de
+ * l'objectif. Extraite de `useMinimalWeekTargets` le 13/09/2026 (US DASH-01) : le brief du matin en
+ * a besoin lui aussi, et c'était la cinquième copie de cette chaîne qui menaçait.
+ */
+export function useProteinTarget(): number | null {
+  const { nutritionProfile } = useNutritionProfile();
+  const todayKey = useTodayKey();
+  const { effectiveTarget } = useDayCalorieTarget(todayKey);
+  const objective = nutritionProfile?.objective ?? null;
+
+  // `null` si le profil est incomplet — on n'invente pas un chiffre (cas limite de la spec §5).
+  return (
+    nutritionProfile?.manualProteinG ??
+    (effectiveTarget != null && objective != null
+      ? macroGramsFromCalories(effectiveTarget, defaultMacroRatios(objective)).protein
+      : null)
+  );
+}
+
 export function useMinimalWeekTargets(): MinimalWeekTargets {
   const { settings } = useSettings();
-  const { nutritionProfile } = useNutritionProfile();
   const todayKey = useTodayKey();
 
   const weekStart = localDayKey(startOfWeek(localDateFromDayKey(todayKey)));
   const weekEnd = localDayKey(addDays(localDateFromDayKey(weekStart), 6));
   const { data } = useQuery<{ n: number }>(SELECT_WEEK_STRENGTH_SESSIONS, [weekStart, weekEnd]);
 
-  const { effectiveTarget } = useDayCalorieTarget(todayKey);
-  const objective = nutritionProfile?.objective ?? null;
-  // La saisie manuelle prime, sinon la cible dérivée du jour. `null` si le profil est incomplet — on
-  // n'invente pas un chiffre (cas limite de la spec §5).
-  const proteinTargetG =
-    nutritionProfile?.manualProteinG ??
-    (effectiveTarget != null && objective != null
-      ? macroGramsFromCalories(effectiveTarget, defaultMacroRatios(objective)).protein
-      : null);
-
+  const proteinTargetG = useProteinTarget();
   const active = resolveActivePillars(settings?.activePillars);
 
   return minimalWeekTargets({

@@ -23,7 +23,7 @@ export function ringDashOffset(progress: number, radius: number): number {
 }
 
 type Props = {
-  rings: ReadonlyArray<Ring>;
+  rings: readonly Ring[];
   size?: number;
   active: boolean;
 };

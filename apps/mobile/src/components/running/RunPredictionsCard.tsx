@@ -10,11 +10,22 @@
  * afficher — la carte se tait plutôt que d'inventer une estimation.
  */
 
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { formatDurationHms, resolveRacePredictions, type RecordDistanceKey } from '@wellness/shared';
+import {
+  explainRacePrediction,
+  formatDurationHms,
+  resolveRacePredictions,
+  type RacePrediction,
+  type RecordDistanceKey,
+} from '@wellness/shared';
+import { ExplainButton } from '@/components/explain/ExplainButton';
+import { ExplainSheet } from '@/components/explain/ExplainSheet';
+import { PressableScale } from '@/components/motion/PressableScale';
 import { DenseTile } from '@/components/stage/DenseTile';
 import { useRunningRecords } from '@/data/repositories/running-record-repository';
+import { useTodayDate } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -33,6 +44,9 @@ export function RunPredictionsCard({ onOpen }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { records } = useRunningRecords();
+  const today = useTodayDate();
+  // §6.1 — la prédiction ouverte dans « Pourquoi ? », ou `null` quand la feuille est fermée.
+  const [explained, setExplained] = useState<RacePrediction | null>(null);
 
   const predictions = resolveRacePredictions(records);
   if (predictions.length === 0) return null;
@@ -46,9 +60,11 @@ export function RunPredictionsCard({ onOpen }: Props) {
     >
       <View style={styles.row}>
         {predictions.map((prediction) => (
-          <View
+          <PressableScale
             key={prediction.distanceKey}
-            accessible
+            haptic="select"
+            onPress={() => setExplained(prediction)}
+            accessibilityRole="button"
             accessibilityLabel={t('stage.running.predictions.a11y', {
               distance: t(DISTANCE_LABEL[prediction.distanceKey]),
               time: formatDurationHms(prediction.predictedSeconds),
@@ -61,9 +77,35 @@ export function RunPredictionsCard({ onOpen }: Props) {
             <Text style={[styles.time, { color: colors.text }]} numberOfLines={1}>
               {formatDurationHms(prediction.predictedSeconds)}
             </Text>
-          </View>
+          </PressableScale>
         ))}
       </View>
+
+      {/* Une estimation sans son origine est un chiffre magique : Riegel, depuis le record 5 km. */}
+      <ExplainButton
+        onPress={() => setExplained(predictions[0] ?? null)}
+        color={colors.textMuted}
+        subject={t('stage.running.predictions.title')}
+      />
+
+      <ExplainSheet
+        visible={explained !== null}
+        title={
+          explained
+            ? `${t(DISTANCE_LABEL[explained.distanceKey])} · ${formatDurationHms(explained.predictedSeconds)}`
+            : ''
+        }
+        explanation={explained ? explainRacePrediction(explained, today.toISOString()) : null}
+        // Les secondes brutes ne se lisent pas : chaque étape est rendue dans sa propre unité.
+        formatValue={(step) =>
+          step.value == null
+            ? null
+            : step.key === 'explain.race.riegel'
+              ? step.value.toFixed(2)
+              : formatDurationHms(step.value)
+        }
+        onClose={() => setExplained(null)}
+      />
     </DenseTile>
   );
 }

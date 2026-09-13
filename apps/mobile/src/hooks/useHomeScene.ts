@@ -14,14 +14,21 @@ import { useMemo } from 'react';
 import {
   resolveHomeMoment,
   timeLeftToday,
+  type BriefFacts,
   type HomeMoment,
+  type NowAction,
+  type ReadinessResult,
   type ReadinessVerdict,
 } from '@wellness/shared';
 import {
   useDaysSinceLastActivity,
+  useNutritionSummary,
+  useProteinTarget,
   useReadiness,
   useStreakData,
 } from '@/data/repositories/dashboard-repository';
+import { useNearRecords } from '@/data/repositories/records-repository';
+import { useRealLifeState } from '@/data/repositories/real-life-repository';
 import { useTodayWellbeing } from '@/data/repositories/daily-wellbeing-repository';
 import { useNotificationPrefs } from '@/data/repositories/notification-repository';
 import { useJokersRemaining } from '@/data/repositories/streak-joker-repository';
@@ -32,6 +39,8 @@ export type HomeSceneFacts = {
   streak: number;
   /** Verdict du score de forme (TRI-03), `null` tant qu'aucune composante n'est calculable. */
   verdict: ReadinessVerdict | null;
+  /** Le résultat complet — c'est lui que « Pourquoi ? » détaille (§6.1). */
+  readiness: ReadinessResult;
   checkinDone: boolean;
   /**
    * Heures restantes avant minuit — la seule chose qui compte quand la série est en jeu.
@@ -44,6 +53,37 @@ export type HomeSceneFacts = {
   jokersRemaining: number;
   isLoading: boolean;
 };
+
+/**
+ * Les faits du **brief du matin** (§6.2), assemblés à partir de ce que l'accueil sait déjà.
+ *
+ * Séparé de `useHomeScene` pour ne monter ses requêtes (record à portée, protéines) que le matin :
+ * le brief ne se rend qu'à ce moment-là, et l'accueil est l'écran le plus ouvert de l'app.
+ */
+export function useMorningBriefFacts(action: NowAction, verdict: ReadinessVerdict | null): BriefFacts {
+  const { current: streak } = useStreakData();
+  const { items: nearRecords } = useNearRecords(1);
+  const { macros } = useNutritionSummary();
+  const proteinTarget = useProteinTarget();
+  const { inRealLifePeriod } = useRealLifeState();
+
+  const near = nearRecords[0];
+  return {
+    verdict,
+    todaySession:
+      action.kind === 'session-today'
+        ? { title: action.training.name, time: action.training.scheduledTime }
+        : null,
+    // Un record déjà égalé n'est pas « à portée » : il est atteint, la phrase n'aurait pas de sens.
+    nearRecord:
+      near && near.gapKind !== 'beaten'
+        ? { exerciseName: near.exerciseName, gapKind: near.gapKind, gap: near.gap }
+        : null,
+    proteinGapG: proteinTarget != null ? Math.max(0, proteinTarget - macros.p) : null,
+    streak,
+    realLifeActive: inRealLifePeriod,
+  };
+}
 
 export function useHomeScene(): HomeSceneFacts {
   const hour = useCurrentHour();
@@ -75,6 +115,7 @@ export function useHomeScene(): HomeSceneFacts {
     moment,
     streak,
     verdict: readiness.show ? readiness.verdict : null,
+    readiness,
     checkinDone: checkin !== null,
     hoursLeft: timeLeftToday(now).hours,
     jokersRemaining,

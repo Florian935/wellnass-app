@@ -3583,6 +3583,110 @@
     },
     "coverage": "Calculé sur {{pct}} % de tes calories : les ajouts sans aliment identifié n'y contribuent pas."
   },
+  "explain": {
+    "title": "D'où sort ce chiffre",
+    "cta": "Pourquoi ?",
+    "unavailable": "Ce chiffre n'a pas encore d'explication : il manque des données pour le détailler.",
+    "confidence": {
+      "high": "Confiance élevée — les données couvrent la période",
+      "medium": "Confiance moyenne — une partie des données manque",
+      "low": "Confiance faible — trop peu de données, à prendre comme un ordre de grandeur"
+    },
+    "disagreeTitle": "Ça ne correspond pas à ce que tu vis ?",
+    "disagree": "{{rule}} : ce n'est pas ça",
+    "ruleRestore": "{{rule}} : finalement si",
+    "ruleMuted": "atténuée à {{percent}} %",
+    "rules": {
+      "sleep": "L'effet du sommeil",
+      "protein": "L'effet des protéines"
+    },
+    "readiness": {
+      "load": {
+        "positive": "Charge d'entraînement dans le vert",
+        "neutral": "Charge d'entraînement habituelle",
+        "negative": "Charge d'entraînement au-dessus de ton habitude",
+        "unavailable": "Charge d'entraînement : pas assez d'historique"
+      },
+      "nutrition": {
+        "positive": "Apports alignés sur ta cible",
+        "neutral": "Apports dans la moyenne",
+        "negative": "Apports nettement sous ta cible",
+        "unavailable": "Apports : trop peu de jours saisis"
+      },
+      "wellbeing": {
+        "positive": "Énergie et stress au vert sur tes derniers check-ins",
+        "neutral": "Énergie et stress dans la moyenne",
+        "negative": "Énergie basse ou stress élevé sur tes derniers check-ins",
+        "unavailable": "Bien-être : aucun check-in récent"
+      },
+      "verdict": {
+        "rest": "{{negative}} signal sur {{available}} au rouge : repos conseillé",
+        "ok": "Aucun signal au rouge sur {{available}} : forme correcte",
+        "push": "Aucun signal au rouge sur {{available}}, et au moins un au vert : prêt à pousser"
+      }
+    },
+    "whatIf": {
+      "slope": "Ta progression actuelle, par semaine",
+      "sessions": "Effet des séances en plus ou en moins",
+      "recovery": "Effet du sommeil et des protéines",
+      "overreachOn": "Surcharge détectée : la projection est réduite",
+      "overreachOff": "Pas de surcharge détectée"
+    },
+    "race": {
+      "source": "Ton record sur 5 km, en secondes",
+      "riegel": "Formule de Riegel, exposant",
+      "result": "Chrono estimé sur {{distance}}, en secondes"
+    },
+    "kcal": {
+      "tdee": "Ta dépense estimée sur la journée",
+      "objective": "Ajustement lié à ton objectif",
+      "trainingDay": "Bonus du jour d'entraînement",
+      "target": "Ta cible du jour"
+    }
+  },
+  "brief": {
+    "title": "Ton brief du matin",
+    "listen": "Écouter",
+    "stop": "Arrêter",
+    "gentle": "Période tranquille : fais ce que tu peux, la série tient.",
+    "verdict": {
+      "rest": "Les signaux disent de lever le pied aujourd'hui.",
+      "ok": "Rien de particulier à signaler : journée normale.",
+      "push": "Tout est au vert : tu peux pousser aujourd'hui."
+    },
+    "sessionAt": "{{title}} est prévue à {{time}}.",
+    "session": "{{title}} t'attend aujourd'hui.",
+    "nearRecordKg": "{{exercise}} : tu es à {{gap}} kg de ton record.",
+    "nearRecordReps": "{{exercise}} : il te manque {{gap}} répétitions pour le record.",
+    "protein": "Il te manque environ {{grams}} g de protéines sur la journée.",
+    "streak": "Tu en es à {{days}} jours d'affilée."
+  },
+  "whatIf": {
+    "title": "Et si…",
+    "horizon": "À {{count}} semaines",
+    "projected": "{{kg}} kg au total",
+    "range": "Entre {{low}} et {{high}} kg",
+    "overreach": "Ce rythme avec peu de sommeil, c'est de la surcharge : la projection en tient compte.",
+    "needPoints_one": "Encore une mesure de force et la projection devient possible.",
+    "needPoints_other": "Encore {{count}} mesures de force et la projection devient possible.",
+    "needDays_one": "Encore un jour d'historique et la projection devient possible.",
+    "needDays_other": "Encore {{count}} jours d'historique et la projection devient possible.",
+    "sessions": "Séances par semaine",
+    "sessionsMore": "Une séance de plus",
+    "sessionsLess": "Une séance de moins",
+    "sleep": "Sommeil",
+    "sleepShort": "Comme d'habitude",
+    "sleepLong": "Plus long",
+    "protein": "Protéines",
+    "proteinBase": "Comme d'habitude",
+    "proteinHigh": "Plus hautes",
+    "load": {
+      "safe": "Charge estimée : {{ratio}} — zone saine",
+      "watch": "Charge estimée : {{ratio}} — à surveiller",
+      "risk": "Charge estimée : {{ratio}} — zone de risque"
+    },
+    "kcal": "Cible calorique estimée : {{kcal}} kcal par jour"
+  },
   "stage": {
     "home": {
       "timeLeft_one": "Il te reste moins d'une heure pour la garder",

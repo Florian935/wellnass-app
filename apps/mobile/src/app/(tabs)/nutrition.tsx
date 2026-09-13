@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import {
   DEFAULT_MEAL_KEYS,
   computeAge,
+  explainCalorieTarget,
   effectiveActivityLevel,
   mealForHour,
   effectiveNutritionObjective,
@@ -47,6 +48,7 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { MacroSuggestionCard } from '@/components/nutrition/MacroSuggestionCard';
+import { ExplainSheet } from '@/components/explain/ExplainSheet';
 import { NutritionStage, type QuickFood } from '@/components/nutrition/NutritionStage';
 import { StageScrollView } from '@/components/stage/StageScrollView';
 import type { MacroKey } from '@/components/nutrition/MacroTriple';
@@ -101,6 +103,8 @@ export default function NutritionScreen() {
   // R2.1 / R3.1 — les deux feuilles du journal. `addTarget` porte le repas visé : `null` ferme.
   const [addTarget, setAddTarget] = useState<{ mealKey: string } | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
+  // §6.1 — « Pourquoi ? » sur la cible du jour : TDEE, objectif, bonus de séance.
+  const [explainOpen, setExplainOpen] = useState(false);
 
   // Entrée sélectionnée pour le détail (4.34) — tap sur une entrée du journal.
   const [detailEntry, setDetailEntry] = useState<JournalEntry | null>(null);
@@ -149,7 +153,6 @@ export default function NutritionScreen() {
   const {
     effectiveTarget,
     trainingBonus,
-    bonusSource,
     isTrainingDay: trainingApplies,
     isLoading: targetLoading,
   } = useDayCalorieTarget(day);
@@ -309,6 +312,7 @@ export default function NutritionScreen() {
           targetMacros={targetMacros}
           trainingBonusKcal={trainingApplies && !targetLoading ? trainingBonus : 0}
           quickFoods={quickFoods}
+          onExplainTarget={effectiveTarget != null ? () => setExplainOpen(true) : undefined}
           onSelectDay={setDay}
           onOpenCalendar={() => setCalendarOpen(true)}
           onSetTarget={() => router.push('/nutrition-profile')}
@@ -462,6 +466,25 @@ export default function NutritionScreen() {
         onClose={() => setAddTarget(null)}
       />
       ) : null}
+
+      {/* §6.1 — d'où sort la cible du jour. Les étapes viennent de la brique, pas de l'écran :
+          elles ne peuvent donc pas diverger du chiffre affiché. */}
+      <ExplainSheet
+        visible={explainOpen}
+        title={t('journal.balance.target')}
+        explanation={
+          tdeeValue != null && target != null && effectiveTarget != null
+            ? explainCalorieTarget({
+                tdee: tdeeValue,
+                objectiveDeltaKcal: target - tdeeValue,
+                trainingDayBonusKcal: trainingApplies && !targetLoading ? trainingBonus : 0,
+                target: effectiveTarget,
+                profileComplete: profile?.weightKg != null && profile?.heightCm != null && age != null,
+              })
+            : null
+        }
+        onClose={() => setExplainOpen(false)}
+      />
 
       {/* R3.1 — calendrier mensuel : la spec §4.7 le prévoyait, il n'existait pas. */}
       {calendarOpen ? (

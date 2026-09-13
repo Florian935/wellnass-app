@@ -35,6 +35,7 @@ import { NearRecordsCard } from '@/components/strength/NearRecordsCard';
 import { ProgramProgressBar } from '@/components/strength/ProgramProgressBar';
 import { StrengthStage, type StrengthScene } from '@/components/strength/StrengthStage';
 import { StrengthWeekCard } from '@/components/strength/StrengthWeekCard';
+import { WhatIfCard } from '@/components/strength/WhatIfCard';
 import { SuggestedPrograms } from '@/components/strength/SuggestedPrograms';
 import { StageScrollView } from '@/components/stage/StageScrollView';
 import { CustomizeButton } from '@/components/widgets/CustomizeButton';
@@ -298,6 +299,10 @@ export default function StrengthScreen() {
       {/* §4.4 — « à ta portée » : MUSC-09 détectait les records sans jamais dire de combien on
           était loin. */}
       <NearRecordsCard onOpenExercise={(exerciseId) => router.push(`/exercises/${exerciseId}`)} />
+
+      {/* §6.3 — « Et si… » : trois leviers, un moteur déterministe, et l'éventail d'incertitude
+          affiché avec le chiffre. La carte dit ce qui manque quand l'historique est trop court. */}
+      <WhatIfCard baselineSessions={progress ? progress.total / Math.max(1, progress.totalWeeks) : 3} />
 
       {/* L'avancement du programme, quand il y en a un. */}
       {progress && programName ? (

@@ -23,7 +23,7 @@ export type SilhouetteZone = 'chest' | 'shoulders' | 'arms' | 'back' | 'legs' | 
 const REST_OPACITY = 0.38;
 const PEAK_OPACITY = 0.9;
 
-type Props = { zones: ReadonlyArray<SilhouetteZone>; play: boolean; color: string };
+type Props = { zones: readonly SilhouetteZone[]; play: boolean; color: string };
 
 export function ImpactSilhouette({ zones, play, color }: Props) {
   const reduced = useAppReducedMotion();

@@ -17,6 +17,7 @@ import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { ReadinessVerdict, WellbeingLevel } from '@wellness/shared';
+import { ExplainButton } from '@/components/explain/ExplainButton';
 import { AnimatedNumber, useLocaleSeparators } from '@/components/motion/AnimatedNumber';
 import { PressableScale } from '@/components/motion/PressableScale';
 import { PillarStage, useStageTheme } from '@/components/stage/PillarStage';
@@ -61,11 +62,20 @@ type Props = {
   dateLabel: string;
   /** Posé à droite de la date : la pastille de synchro et l'accès aux réglages. */
   trailing?: ReactNode;
+  /** Ouvre « Pourquoi ? » sur le verdict de forme (§6.1) — absent quand il n'y a pas de verdict. */
+  onExplainVerdict?: () => void;
   /** La carte « maintenant » (`NowCard`), posée sur la scène : l'action du moment. */
   children?: ReactNode;
 };
 
-export function HomeStage({ scene, greeting, dateLabel, trailing, children }: Props) {
+export function HomeStage({
+  scene,
+  greeting,
+  dateLabel,
+  trailing,
+  onExplainVerdict,
+  children,
+}: Props) {
   const { t } = useTranslation();
   const stage = useStageTheme('home');
   const active = useLoopActive('home');
@@ -97,9 +107,18 @@ export function HomeStage({ scene, greeting, dateLabel, trailing, children }: Pr
             <>
               <Text style={[styles.line, { color: stage.ink }]}>{t('wellbeing.checkinDone')}</Text>
               {scene.verdict ? (
-                <Text style={[styles.verdict, { color: stage.ink }]}>
-                  {t(`home.readiness.verdict.${scene.verdict}.title`)}
-                </Text>
+                <View style={styles.verdictRow}>
+                  <Text style={[styles.verdict, { color: stage.ink }]}>
+                    {t(`home.readiness.verdict.${scene.verdict}.title`)}
+                  </Text>
+                  {onExplainVerdict ? (
+                    <ExplainButton
+                      onPress={onExplainVerdict}
+                      color={stage.inkMuted}
+                      subject={t('home.readiness.eyebrow')}
+                    />
+                  ) : null}
+                </View>
               ) : null}
             </>
           ) : (
@@ -212,6 +231,13 @@ export function HomeStage({ scene, greeting, dateLabel, trailing, children }: Pr
                 <Text style={[styles.hint, { color: stage.inkMuted }]} numberOfLines={2}>
                   {t(`home.readiness.verdict.${scene.verdict}.title`)}
                 </Text>
+                {onExplainVerdict ? (
+                  <ExplainButton
+                    onPress={onExplainVerdict}
+                    color={stage.inkMuted}
+                    subject={t('home.readiness.eyebrow')}
+                  />
+                ) : null}
               </View>
             ) : null}
           </View>

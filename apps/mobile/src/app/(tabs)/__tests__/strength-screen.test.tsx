@@ -64,6 +64,10 @@ jest.mock('@/components/strength/NearRecordsCard', () => {
   const { Text } = require('react-native');
   return { NearRecordsCard: () => <Text>sonde-portee</Text> };
 });
+jest.mock('@/components/strength/WhatIfCard', () => {
+  const { Text } = require('react-native');
+  return { WhatIfCard: () => <Text>sonde-etsi</Text> };
+});
 jest.mock('@/data/repositories/records-repository', () => ({
   useNearRecords: jest.fn(() => ({ items: [], isLoading: false })),
 }));

@@ -27,6 +27,7 @@ import {
   startOfWeek,
   weekLoggingConfidence,
 } from '@wellness/shared';
+import { ExplainButton } from '@/components/explain/ExplainButton';
 import { AnimatedNumber, useLocaleSeparators } from '@/components/motion/AnimatedNumber';
 import { PressableScale } from '@/components/motion/PressableScale';
 import { PillarStage, useStageTheme } from '@/components/stage/PillarStage';
@@ -54,6 +55,8 @@ type Props = {
   targetMacros: Macros | null;
   trainingBonusKcal: number;
   quickFoods: readonly QuickFood[];
+  /** Ouvre « Pourquoi ? » sur la cible calorique (§6.1) — absent quand il n'y a pas de cible. */
+  onExplainTarget?: () => void;
   onSelectDay: (dayKey: string) => void;
   onOpenCalendar: () => void;
   onSetTarget: () => void;
@@ -230,7 +233,16 @@ export function NutritionStage(props: Props) {
             />
             <Text style={[styles.unit, { color: stage.inkMuted }]}>{t('nutrition.kcal')}</Text>
           </View>
-          <Text style={[styles.status, { color: stage.ink }]}>{status}</Text>
+          <View style={styles.statusRow}>
+            <Text style={[styles.status, { color: stage.ink }]}>{status}</Text>
+            {targetKcal !== null && props.onExplainTarget ? (
+              <ExplainButton
+                onPress={props.onExplainTarget}
+                color={stage.inkMuted}
+                subject={t('journal.balance.target')}
+              />
+            ) : null}
+          </View>
           {targetKcal === null ? (
             <Pressable onPress={props.onSetTarget} accessibilityRole="button" hitSlop={8}>
               <Text style={[styles.link, { color: stage.accent }]}>{t('journal.setTarget')}</Text>
@@ -353,6 +365,7 @@ const styles = StyleSheet.create({
   bigRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
   big: { fontFamily: fontFamily.displayXBold, fontSize: 60, letterSpacing: -2.6, lineHeight: 64 },
   unit: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
+  statusRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   status: { fontFamily: fontFamily.displayBold, fontSize: 17, letterSpacing: -0.4 },
   link: { fontFamily: fontFamily.bodyBold, fontSize: 14, textDecorationLine: 'underline' },
   chip: { alignSelf: 'flex-start', borderRadius: 999, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 4 },

@@ -23,6 +23,8 @@ jest.mock('@/data/repositories/running-record-repository', () => ({
 }));
 jest.mock('@/hooks/useTodayKey', () => ({
   useWindowStartKey: jest.fn((days: number) => (days === 7 ? '2026-08-06' : '2026-07-16')),
+  // La confiance d'une prédiction dépend de l'âge du record : l'horloge est figée ici.
+  useTodayDate: () => new Date(2026, 7, 12),
 }));
 
 jest.mock('@expo/vector-icons', () => {

@@ -33,6 +33,7 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'r
 import { useTranslation } from 'react-i18next';
 import {
   addDays,
+  explainReadiness,
   localDayKey,
   type HomeWidgetId,
   type WellbeingLevel,
@@ -46,14 +47,16 @@ import { HomeStage, type HomeScene } from '@/components/dashboard/HomeStage';
 import { headlineKey } from '@/components/dashboard/home-headline';
 import { NowCard } from '@/components/dashboard/NowCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
+import { MorningBriefCard } from '@/components/dashboard/MorningBriefCard';
 import { SinceLastVisitCard } from '@/components/dashboard/SinceLastVisitCard';
 import { WeeklyStoryCard } from '@/components/dashboard/WeeklyStoryCard';
 import { GoalCard } from '@/components/goals/GoalCard';
+import { ExplainSheet } from '@/components/explain/ExplainSheet';
 import { UpNext } from '@/components/dashboard/UpNext';
 import { StageScrollView } from '@/components/stage/StageScrollView';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
-import { useHomeScene } from '@/hooks/useHomeScene';
+import { useHomeScene, useMorningBriefFacts } from '@/hooks/useHomeScene';
 import { useWeekRings } from '@/hooks/useWeekRings';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useNowAction } from '@/hooks/useNowAction';
@@ -135,12 +138,16 @@ export default function HomeScreen() {
   const today = useTodayDate();
   const { active: activeGoals } = useGoals();
   const [savingCheckin, setSavingCheckin] = useState(false);
+  // §6.1 — « Pourquoi ? » sur le verdict de forme : les étapes viennent de la brique, pas d'ici.
+  const [explainOpen, setExplainOpen] = useState(false);
 
   const dateLabel = today.toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
   });
+  // §6.2 — les faits du brief : lus toute la journée, affichés le matin seulement.
+  const briefFacts = useMorningBriefFacts(action, facts.verdict);
   const { key: headline, count } = headlineKey(action);
   const greeting = t(headline, { count: count ?? 0, name: firstName });
 
@@ -281,6 +288,7 @@ export default function HomeScreen() {
           scene={scene}
           greeting={greeting}
           dateLabel={dateLabel}
+          onExplainVerdict={facts.verdict ? () => setExplainOpen(true) : undefined}
           trailing={
             <>
               <SyncStatus />
@@ -301,6 +309,12 @@ export default function HomeScreen() {
         </HomeStage>
       }
     >
+      {/* §6.2 — le brief du matin, lu à voix haute. Le matin seulement : une « revue du matin »
+          affichée à 19 h n'est plus un rendez-vous, c'est du remplissage. */}
+      {facts.moment === 'morning' ? (
+        <MorningBriefCard facts={briefFacts} speechLanguage={i18n.language === 'en' ? 'en-GB' : 'fr-FR'} />
+      ) : null}
+
       {/* §4.5 — ce qui a bougé depuis la dernière visite : la carte se tait si rien n'a bougé. */}
       <SinceLastVisitCard />
 
@@ -323,6 +337,13 @@ export default function HomeScreen() {
       {grid}
 
       <UpNext onCustomize={toggleEditing} />
+
+      <ExplainSheet
+        visible={explainOpen}
+        title={t('home.readiness.eyebrow')}
+        explanation={explainReadiness(facts.readiness)}
+        onClose={() => setExplainOpen(false)}
+      />
     </StageScrollView>
   );
 }

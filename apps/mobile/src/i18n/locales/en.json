@@ -3583,6 +3583,110 @@
     },
     "coverage": "Based on {{pct}}% of your calories: quick calorie entries can't contribute."
   },
+  "explain": {
+    "title": "Where this number comes from",
+    "cta": "Why?",
+    "unavailable": "This number has no explanation yet: there isn't enough data to break it down.",
+    "confidence": {
+      "high": "High confidence — the data covers the period",
+      "medium": "Medium confidence — some data is missing",
+      "low": "Low confidence — too little data, treat it as a ballpark"
+    },
+    "disagreeTitle": "Doesn't match what you experience?",
+    "disagree": "{{rule}}: that's not it",
+    "ruleRestore": "{{rule}}: actually it is",
+    "ruleMuted": "toned down to {{percent}}%",
+    "rules": {
+      "sleep": "The effect of sleep",
+      "protein": "The effect of protein"
+    },
+    "readiness": {
+      "load": {
+        "positive": "Training load in the green",
+        "neutral": "Training load as usual",
+        "negative": "Training load above your usual",
+        "unavailable": "Training load: not enough history"
+      },
+      "nutrition": {
+        "positive": "Intake in line with your target",
+        "neutral": "Intake around average",
+        "negative": "Intake well below your target",
+        "unavailable": "Intake: too few logged days"
+      },
+      "wellbeing": {
+        "positive": "Energy and stress in the green on your recent check-ins",
+        "neutral": "Energy and stress around average",
+        "negative": "Low energy or high stress on your recent check-ins",
+        "unavailable": "Wellbeing: no recent check-in"
+      },
+      "verdict": {
+        "rest": "{{negative}} of {{available}} signals in the red: rest advised",
+        "ok": "No signal in the red out of {{available}}: decent shape",
+        "push": "No signal in the red out of {{available}}, and at least one in the green: ready to push"
+      }
+    },
+    "whatIf": {
+      "slope": "Your current weekly progress",
+      "sessions": "Effect of sessions added or removed",
+      "recovery": "Effect of sleep and protein",
+      "overreachOn": "Overreaching detected: the projection is scaled down",
+      "overreachOff": "No overreaching detected"
+    },
+    "race": {
+      "source": "Your 5 km record, in seconds",
+      "riegel": "Riegel formula, exponent",
+      "result": "Estimated time over {{distance}}, in seconds"
+    },
+    "kcal": {
+      "tdee": "Your estimated daily expenditure",
+      "objective": "Adjustment for your goal",
+      "trainingDay": "Training-day bonus",
+      "target": "Your target for the day"
+    }
+  },
+  "brief": {
+    "title": "Your morning brief",
+    "listen": "Listen",
+    "stop": "Stop",
+    "gentle": "Easy period: do what you can, the streak holds.",
+    "verdict": {
+      "rest": "The signals say to ease off today.",
+      "ok": "Nothing particular to report: a normal day.",
+      "push": "Everything is green: you can push today."
+    },
+    "sessionAt": "{{title}} is planned at {{time}}.",
+    "session": "{{title}} is waiting for you today.",
+    "nearRecordKg": "{{exercise}}: you are {{gap}} kg off your record.",
+    "nearRecordReps": "{{exercise}}: {{gap}} reps short of your record.",
+    "protein": "You are about {{grams}} g of protein short today.",
+    "streak": "You are on a {{days}}-day streak."
+  },
+  "whatIf": {
+    "title": "What if…",
+    "horizon": "In {{count}} weeks",
+    "projected": "{{kg}} kg total",
+    "range": "Between {{low}} and {{high}} kg",
+    "overreach": "That pace on short sleep is overreaching: the projection accounts for it.",
+    "needPoints_one": "One more strength measure and the projection becomes possible.",
+    "needPoints_other": "{{count}} more strength measures and the projection becomes possible.",
+    "needDays_one": "One more day of history and the projection becomes possible.",
+    "needDays_other": "{{count}} more days of history and the projection becomes possible.",
+    "sessions": "Sessions per week",
+    "sessionsMore": "One more session",
+    "sessionsLess": "One less session",
+    "sleep": "Sleep",
+    "sleepShort": "As usual",
+    "sleepLong": "Longer",
+    "protein": "Protein",
+    "proteinBase": "As usual",
+    "proteinHigh": "Higher",
+    "load": {
+      "safe": "Estimated load: {{ratio}} — safe zone",
+      "watch": "Estimated load: {{ratio}} — keep an eye on it",
+      "risk": "Estimated load: {{ratio}} — risk zone"
+    },
+    "kcal": "Estimated calorie target: {{kcal}} kcal per day"
+  },
   "stage": {
     "home": {
       "timeLeft_one": "Less than an hour left to keep it",
