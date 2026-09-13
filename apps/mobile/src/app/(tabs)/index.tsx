@@ -45,6 +45,7 @@ import { SyncStatus } from '@/components/SyncStatus';
 import { DashboardWidget } from '@/components/dashboard/dashboard-widgets';
 import { HomeStage, type HomeScene } from '@/components/dashboard/HomeStage';
 import { headlineKey } from '@/components/dashboard/home-headline';
+import { GoalConflictBanner } from '@/components/dashboard/GoalConflictBanner';
 import { NowCard } from '@/components/dashboard/NowCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { MorningBrief } from '@/components/dashboard/MorningBrief';
@@ -347,6 +348,11 @@ export default function HomeScreen() {
 
       {/* §7.3 — « Demande-moi ». Sans IA, sans réseau, sans consentement : mêmes réponses. */}
       <AskCard questions={askQuestions} />
+
+      {/* US GUID-01 — la contradiction entre objectifs. Carte CONDITIONNELLE : elle n'apparaît que
+          s'il y a réellement une tension, et ne consomme donc aucune place au plafond de widgets
+          (ADR-007 §2 : le catalogue se surface « quand il a quelque chose à dire »). */}
+      <GoalConflictBanner />
 
       <QuickActions highlightMeal={action.kind === 'meal-due' ? action.meal : undefined} />
 

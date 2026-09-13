@@ -16,6 +16,11 @@ export * from './units';
 export * from './age';
 export * from './chart-tooltip';
 export * from './password';
+// US GUID-01 — le régime de guidage, les défauts par objectif et les contradictions.
+export * from './guidance';
+export * from './goal-defaults';
+export * from './goal-conflicts';
+export * from './program-ranking';
 export * from './profile';
 export * from './settings';
 export * from './activation-path';

@@ -371,6 +371,18 @@ function RootNavigator() {
             headerTintColor: colors.accent,
           }}
         />
+        {/* US GUID-01 — le pilier Musculation gagne enfin un profil, comme les deux autres. */}
+        <Stack.Screen
+          name="strength-profile"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('strengthProfile.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
         <Stack.Screen
           name="running-profile"
           options={{

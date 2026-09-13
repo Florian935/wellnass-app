@@ -46,6 +46,8 @@ import {
   type PlannedSessionItem,
 } from '@/data/repositories/planned-session-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
+import { useGuidance } from '@/data/guidance';
+import { useAutoMove } from '@/stores/auto-move-store';
 import {
   startWorkoutFromSession,
   useActiveWorkout,
@@ -117,6 +119,63 @@ export default function PlanningScreen() {
   // US COLLIS-01 — conflits de séquençage de la semaine affichée. Rend [] tant que le réglage
   // opt-in est éteint (désactivé par défaut, décision H).
   const { conflicts } = useSessionConflicts(weekStart);
+  /**
+   * US GUID-01 — que fait-on de ces conflits ? Le régime de la **course** gouverne : c'est la
+   * séance de course qui se déplace (la muscu est l'ancre du programme).
+   *
+   * ⚠️ `useSessionConflicts` rend déjà `[]` quand le réglage `sessionConflictsEnabled` est éteint.
+   * Le régime module donc ce qui est **déjà activé** — il ne rallume jamais rien. Un réglage qu'un
+   * autre réglage peut outrepasser n'est plus un réglage.
+   */
+  const conflictDisposition = useGuidance('running').disposition('sessionConflict');
+  // US GUID-01 — l'état des déplacements décidés d'office vit dans un **store**, pas dans cet
+  // écran : `/planning` est une route empilée, et un `useState` était perdu à chaque aller-retour,
+  // ce qui faisait redéplacer une séance dont l'utilisateur venait d'annuler le déplacement.
+  const autoMoved = useAutoMove((s) => s.moved);
+  const refusedAutoMove = useAutoMove((s) => s.refused);
+  /** Écritures en cours — évite de lancer deux fois le même déplacement avant que la base réponde. */
+  const autoInFlight = useRef<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (conflictDisposition !== 'apply') return;
+
+    /**
+     * 🔴 **Un seul conflit par passe**, et ce n'est pas une optimisation.
+     *
+     * `findFallbackDay` choisit un jour libre dans l'**instantané courant**. Traiter deux conflits
+     * d'affilée sans laisser `conflicts` se recalculer entre les deux ferait converger les deux
+     * courses vers le **même** jour de repli — précisément la situation que le moteur s'interdit de
+     * proposer. On en applique un, la recomputation enchaîne le suivant.
+     */
+    const next = conflicts.find(
+      (c) =>
+        c.suggestedDayKey !== null &&
+        !autoMoved[c.runSessionId] &&
+        !refusedAutoMove.includes(c.runSessionId) &&
+        !autoInFlight.current.has(c.runSessionId),
+    );
+    if (!next || next.suggestedDayKey === null) return;
+
+    const id = next.runSessionId;
+    const from = next.runDayKey;
+    const target = next.suggestedDayKey;
+    autoInFlight.current.add(id);
+
+    void reschedulePlannedSession(id, target)
+      .then(() => {
+        autoInFlight.current.delete(id);
+        useAutoMove.getState().remember(id, { from, to: target, conflict: next });
+      })
+      // Un échec d'écriture ne doit pas laisser croire au déplacement — et surtout pas repartir au
+      // rendu suivant : `conflicts` change d'identité à chaque rendu, une erreur persistante
+      // boucleraient sans fin. On marque la séance comme à ne plus retenter.
+      // ⚠️ `.catch` et non le second argument de `.then` : la forme à deux arguments n'attrape pas
+      // ce que le premier lève. Garde-fou `no-uncaught-void-then` du dépôt.
+      .catch(() => {
+        autoInFlight.current.delete(id);
+        useAutoMove.getState().markFailed(id);
+      });
+  }, [conflictDisposition, conflicts, autoMoved, refusedAutoMove]);
   const painSignals = useWeekPainSignals(weekStart);
   /** Zones mesurées à l'écran (coordonnées absolues) — fraîches à chaque début de geste. */
   const zonesRef = useRef<DropZone[]>([]);
@@ -412,15 +471,38 @@ export default function PlanningScreen() {
                     </View>
                   ) : null}
                 </View>
-                {conflicts
-                  .filter((c) => c.runDayKey === dayKey)
-                  .map((c) => (
-                    <SessionConflictBanner
-                      key={c.runSessionId}
-                      conflict={c}
-                      onSwap={(target) => void reschedulePlannedSession(c.runSessionId, target)}
-                    />
-                  ))}
+                {/* Régime autonome : la détection continue de tourner, rien ne s'affiche. */}
+                {conflictDisposition === 'silent'
+                  ? null
+                  : conflicts
+                      .filter((c) => c.runDayKey === dayKey)
+                      .map((c) => (
+                        <SessionConflictBanner
+                          key={c.runSessionId}
+                          conflict={c}
+                          onSwap={(target) => void reschedulePlannedSession(c.runSessionId, target)}
+                        />
+                      ))}
+
+                {/* Les annonces du régime guidé — rendues sur le jour d'ARRIVÉE, depuis
+                    l'instantané : le conflit d'origine n'existe plus. */}
+                {conflictDisposition === 'silent'
+                  ? null
+                  : Object.entries(autoMoved)
+                      .filter(([, moved]) => moved.to === dayKey)
+                      .map(([runSessionId, moved]) => (
+                        <SessionConflictBanner
+                          key={`moved-${runSessionId}`}
+                          conflict={moved.conflict}
+                          onSwap={() => undefined}
+                          appliedToDayKey={moved.to}
+                          onUndo={() => {
+                            void reschedulePlannedSession(runSessionId, moved.from);
+                            // Oublie le déplacement ET l'interdit : un refus est une décision.
+                            useAutoMove.getState().refuse(runSessionId);
+                          }}
+                        />
+                      ))}
                 {/* US DOUL-01 — un fait daté, sans action, sur la séance concernée (R4). */}
                 {dayItems.map((item) => {
                   const signal = painSignals.get(item.id);

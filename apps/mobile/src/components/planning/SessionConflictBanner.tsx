@@ -13,6 +13,14 @@
  *
  * Sans jour de repli, le bandeau **reste** et dit pourquoi — informer même quand on ne peut rien
  * proposer, c'est la dégradation propre de « jamais un blocage ».
+ *
+ * ── US GUID-01 : deux voix, une seule carte ─────────────────────────────────────────────────────
+ * En régime **accompagné**, le bandeau pose une question (« la déplacer ? ») ; en régime **guidé**,
+ * il annonce un fait accompli (« je l'ai déplacée ») et offre d'annuler. Même composant, parce que
+ * c'est la même information — seule change la personne qui a tranché.
+ *
+ * L'annonce **porte toujours sa sortie** (règle de rédaction §7 de la spec) : une app qui décide
+ * sans permettre de revenir en arrière n'est plus un guidage, c'est une contrainte.
  */
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -33,18 +41,31 @@ function weekdayKeyOf(dayKey: string): string {
 export function SessionConflictBanner({
   conflict,
   onSwap,
+  appliedToDayKey = null,
+  onUndo,
 }: {
   conflict: SessionConflict;
   onSwap: (dayKey: string) => void;
+  /** Régime guidé : le jour vers lequel la séance a DÉJÀ été déplacée. `null` = mode proposition. */
+  appliedToDayKey?: string | null;
+  onUndo?: () => void;
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
-  const title = t('planning.conflict.title');
-  const body = t('planning.conflict.body', {
-    legSets: conflict.legSets,
-    runType: t(`running.sessionType.${conflict.runType}`),
-  });
+  const applied = appliedToDayKey !== null;
+
+  const title = applied ? t('planning.conflict.appliedTitle') : t('planning.conflict.title');
+  const body = applied
+    ? t('planning.conflict.appliedBody', {
+        day: t(`common.weekday.${weekdayKeyOf(appliedToDayKey)}`),
+        legSets: conflict.legSets,
+        runType: t(`running.sessionType.${conflict.runType}`),
+      })
+    : t('planning.conflict.body', {
+        legSets: conflict.legSets,
+        runType: t(`running.sessionType.${conflict.runType}`),
+      });
   const suggested = conflict.suggestedDayKey;
   const swapLabel =
     suggested === null ? null : t('planning.conflict.swap', { day: t(`common.weekday.${weekdayKeyOf(suggested)}`) });
@@ -64,7 +85,18 @@ export function SessionConflictBanner({
         <Text style={[styles.title, { color: colors.warnText }]}>{title}</Text>
         <Text style={[styles.body, { color: colors.warnText }]}>{body}</Text>
       </View>
-      {suggested !== null && swapLabel !== null ? (
+      {applied ? (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('planning.conflict.undo')}
+          onPress={() => onUndo?.()}
+          style={[styles.button, { backgroundColor: colors.warnText }]}
+        >
+          <Text style={[styles.buttonText, { color: colors.surface }]}>
+            {t('planning.conflict.undo')}
+          </Text>
+        </Pressable>
+      ) : suggested !== null && swapLabel !== null ? (
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={swapLabel}

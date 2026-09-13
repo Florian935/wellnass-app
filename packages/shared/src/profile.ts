@@ -1,4 +1,11 @@
 import { z } from 'zod';
+import {
+  guidanceRegimeSchema,
+  trainingFocusSchema,
+  trainingLevelSchema,
+  MAX_WEEKLY_AVAILABILITY,
+  MIN_WEEKLY_AVAILABILITY,
+} from './guidance';
 import { syncFieldsSchema, utcTimestampSchema } from './sync';
 import { workoutDisplayLevelSchema } from './workout-display';
 
@@ -58,6 +65,52 @@ export const profileRowSchema = syncFieldsSchema.extend({
    * → ramené au défaut (`DEFAULT_STEP_GOAL`) à la lecture, comme `workoutDisplayLevel`.
    */
   dailyStepGoal: z.number().int().positive().nullable().default(null),
+
+  /**
+   * US GUID-01 — l'**échéance** optionnelle de l'objectif principal (AAAA-MM-JJ), demandée à
+   * l'étape 3 de l'onboarding. `null` est le cas normal : la plupart des gens n'ont pas de date.
+   */
+  mainGoalDeadline: z.string().nullable().default(null),
+
+  /**
+   * US GUID-01 — discipline visée quand `mainGoal` vaut `performance` (décision D2).
+   * `null` quand la question n'a pas lieu d'être (un seul pilier d'entraînement actif) ou n'a pas
+   * été posée.
+   */
+  trainingFocus: trainingFocusSchema.nullable().default(null),
+
+  /**
+   * US GUID-01 volet B — niveau d'entraînement **déclaré**.
+   *
+   * 🔴 À ne pas confondre avec `workoutDisplayLevel` : jusqu'à cette US, la muscu utilisait ce
+   * dernier comme **proxy** d'expérience pour trier les programmes suggérés, faute d'avoir jamais
+   * posé la question. `null` = jamais demandé, et le repli reste ce proxy (spec §4.2).
+   */
+  trainingLevel: trainingLevelSchema.nullable().default(null),
+
+  /** US GUID-01 volet B — jours d'entraînement disponibles par semaine. `null` = jamais demandé. */
+  weeklyAvailability: z
+    .number()
+    .int()
+    .min(MIN_WEEKLY_AVAILABILITY)
+    .max(MAX_WEEKLY_AVAILABILITY)
+    .nullable()
+    .default(null),
+
+  /**
+   * US GUID-01 volet C — le **régime de guidage** global, choisi à l'étape 4 de l'onboarding.
+   * `null` = la question n'a jamais été posée → `assisted` appliqué, **affiché comme repli**.
+   */
+  guidanceRegime: guidanceRegimeSchema.nullable().default(null),
+
+  /**
+   * Surcharges par pilier. `null` = **hérite** du régime global ; le global ne réécrit jamais une
+   * surcharge (spec §9). Réglées dans l'écran de profil du pilier concerné, jamais dans la liste
+   * des réglages — qui compte déjà 18 sections et 11 interrupteurs.
+   */
+  guidanceStrength: guidanceRegimeSchema.nullable().default(null),
+  guidanceCardio: guidanceRegimeSchema.nullable().default(null),
+  guidanceNutrition: guidanceRegimeSchema.nullable().default(null),
 
   /** Horodatage de fin d'onboarding (null = onboarding non terminé). */
   onboardingCompletedAt: utcTimestampSchema.nullable().default(null),

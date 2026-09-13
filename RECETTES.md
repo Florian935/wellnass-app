@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **13/09/2026 (bis)** — **63 sections**.
+> Dernière mise à jour : **13/09/2026 (ter)** — **64 sections**.
 >
 > **⑧ une §63 est arrivée** : MUSCU-UX03, le **mode immersif** de la séance de musculation.
 > 🔴 **Son premier critère est que le mode classique n'ait bougé en rien** : l'immersif est un
@@ -3533,3 +3533,112 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 - [ ] **55.** Unités en **livres** : disques américains (45/35/25/10/5/2,5 lb), barre 45 lb, verdicts
   et tonnages en lb.
 - [ ] **56.** Aucune **clé brute** affichée (`immersive.…`, `coach.…`) en FR comme en EN.
+
+---
+
+## 64. GUID-01 — Objectif utile et régime de guidage (`feature/guid01-objectif-regime-guidage`)
+
+[Spec](docs/specs/functional/us/guid01-objectif-regime-guidage.md) ·
+[plan](docs/plans/guid01-objectif-regime-guidage.md) ·
+[analyse](docs/product/analyse-objectif-guidage-2026-09.md) ·
+[maquettes](design/objectif-guidage-2026-09/) · roadmap **1.30**
+
+> 🔴 **À LIRE AVANT DE COMMENCER — la migration n'est PAS poussée.**
+> `npm run db:push` est **refusé** : le cloud porte une migration (`20260913182920`,
+> seed CIQUAL v2) qui n'existe dans **aucun commit** — elle a été appliquée depuis le worktree
+> `nutri-biblio`, où son fichier est encore **non suivi par git**. Le CLI refuse donc de pousser
+> quoi que ce soit tant que repo et cloud divergent.
+> **Tant que ce n'est pas réglé, cette recette ne peut pas démarrer** : les huit colonnes existent
+> en local (SQLite) mais pas sur le cloud, et la remontée d'un profil serait rejetée par Postgres.
+> **Ce qu'il faut faire, et par qui :** que la personne qui tient `nutri-biblio` **commite** son
+> fichier de migration, puis `npm run db:push` passera. Je n'y touche pas : réparer l'historique
+> d'une migration qui n'est pas la mienne effacerait la trace de son travail.
+> 🔴 **Puis passer `GUIDANCE_WRITE_READY` à `true`** dans
+> `apps/mobile/src/data/repositories/profile-repository.ts`. Tant qu'il vaut `false`, **aucun
+> réglage de guidage n'est enregistré** : l'interrupteur existe parce que, sans lui, une écriture
+> rejetée par le cloud fige la file de synchro de **toutes** les tables (PowerSync la sérialise).
+> **Les critères 1 à 21 et 32 ne peuvent pas être validés tant que ce drapeau est à `false`.**
+> ✅ **Aucune sync rule à déployer** ensuite : `profiles` est déjà publiée en `select *`.
+
+> ⚠️ **Il faut un compte NEUF** pour les critères 1 à 6 (l'onboarding ne rejoue pas tout seul —
+> passer par Réglages → **Rejouer l'onboarding**).
+
+### L'onboarding
+
+- [ ] **1.** Compte neuf, onboarding complet : l'**étape 4 demande le guidage**, plus le niveau
+  d'affichage. Le parcours compte toujours **5 étapes** (4 si la nutrition est coupée).
+- [ ] **2.** Étape 3, chaque objectif affiche **ce qu'il décide** (« +300 kcal · progression en
+  charge · endurance »), et ces mentions **changent** selon les piliers actifs.
+- [ ] **3.** Choisir **Performance** avec muscu **et** course actifs → la question « Performance en
+  quoi ? » apparaît. Avec un seul des deux → elle **n'apparaît pas**.
+- [ ] **4.** Les chips d'échéance (3 mois / 6 mois / 1 an) se sélectionnent et se désélectionnent ;
+  « Pas de date » est le défaut.
+- [ ] **5.** Récapitulatif : la ligne **Guidage** affiche le régime choisi. En ayant **passé**
+  l'étape 4, elle affiche « Accompagné » **avec la mention « Déduit de ton objectif »**.
+- [ ] **6.** La carte sombre **« Ta première action »** pointe le bon pilier (muscu > course >
+  nutrition) et son bouton mène au bon endroit.
+
+### Le régime, vu de l'intérieur
+
+- [ ] **7.** 🔴 **Régime guidé + collision de séances** (il faut une séance jambes lourde la veille
+  d'un fractionné, et `Réglages → Détecteur de collisions` **activé**) : la séance est
+  **déplacée toute seule**, et le bandeau annonce « Je l'ai déplacée à … ».
+- [ ] **8.** Le bouton **« Annuler le déplacement »** de ce bandeau remet la séance à sa place —
+  **et elle n'est pas re-déplacée dans la foulée**.
+- [ ] **9.** **Régime accompagné**, même situation : la séance **ne bouge pas**, le bandeau propose
+  « Déplacer à … ».
+- [ ] **10.** **Régime autonome**, même situation : **aucun bandeau** sur le planning.
+- [ ] **11.** 🔴 **`Détecteur de collisions` désactivé + régime guidé** : **rien ne bouge**, aucun
+  bandeau. Le régime ne rallume jamais un réglage éteint.
+- [ ] **12.** Changer le régime **global** après avoir posé une surcharge dans un pilier : la
+  **surcharge gagne**, elle n'est pas écrasée.
+
+### Les programmes
+
+- [ ] **13.** Compte neuf sans programme, hub Muscu : toucher une suggestion ouvre la feuille
+  **« Deux questions, et on affine »**. Y répondre **change le tri** des propositions.
+- [ ] **14.** La feuille **ne revient plus** ensuite. « Plus tard » la referme **sans rien écrire**
+  (le profil muscu affiche toujours « Pas encore renseigné »).
+- [ ] **15.** Déclarer **« Je suis confirmé »** puis mettre le niveau d'affichage sur **Simplifiée** :
+  les suggestions restent **avancées**. (C'est le bug historique : l'affichage servait de proxy.)
+- [ ] **16.** Déclarer **1 jour / semaine** : la liste des suggestions **n'est jamais vide**.
+- [ ] **17.** **Régime guidé**, compte neuf, muscu actif : le récapitulatif propose **« Je pose
+  “<nom>” dans ton planning »**, et le toucher rend le programme **actif** dans le hub.
+
+### Les profils de pilier
+
+- [ ] **18.** **Réglages → Profil musculation** existe et s'ouvre (écran neuf).
+- [ ] **19.** Les écrans de profil **Course** et **Nutrition** portent le sélecteur de régime, en
+  haut. ⚠️ Le profil **Musculation n'en a pas**, et c'est voulu : aucun moteur muscu ne lit encore
+  le régime, un curseur y décrirait des comportements qui ne se produisent pas.
+- [ ] **20.** Tant qu'on n'a pas touché le sélecteur d'un pilier, il affiche **« Hérité de ton
+  réglage général »** (ou « Déduit de ton objectif » si l'étape 4 a été passée). Après un toucher,
+  **plus aucune mention**.
+- [ ] **21.** Le texte sous le sélecteur **change** avec le régime choisi, et parle bien **du
+  pilier** affiché.
+
+### Les contradictions
+
+- [ ] **22.** Régler objectif principal = **Prise de masse** et objectif nutritionnel = **Sèche** :
+  la carte « Tes deux objectifs se contredisent » apparaît sur l'**accueil**.
+- [ ] **23.** **« Pourquoi je te dis ça »** déplie une explication, et se replie.
+- [ ] **24.** **« Garder mon objectif »** met la nutrition en prise de masse ; **« Garder ce
+  réglage »** met l'objectif principal en perte de poids. La carte disparaît dans les deux cas.
+- [ ] **25.** 🔴 **« Cette règle ne me correspond pas »** fait disparaître la carte, et elle **ne
+  revient pas après un redémarrage complet de l'app** (le conflit, lui, existe toujours).
+- [ ] **26.** **Régime autonome** (nutrition) : la carte **n'apparaît pas**, même avec le conflit.
+- [ ] **27.** Poser **deux** conflits à la fois (masse + sèche **et** masse + marathon) : **une
+  seule** carte à l'écran.
+
+### Transverse
+
+- [ ] **28.** Bascule **FR ↔ EN** sur les 6 écrans touchés (objectif, guidage, récap, feuille de
+  contexte, profil muscu, carte de contradiction) : **aucune clé brute**, aucun texte tronqué.
+- [ ] **29.** **Mode avion** : changer de régime, répondre aux deux questions et rejeter une règle
+  fonctionnent. Tout est **retrouvé** au retour du réseau (et après redémarrage).
+- [ ] **30.** **Police système à 1,5×** : les trois cartes de régime, la feuille et le segment
+  restent lisibles et cliquables.
+- [ ] **31.** **TalkBack** sur l'étape 4 : chaque régime s'annonce avec son libellé **et** sa
+  description ; le segment des profils annonce l'état sélectionné.
+- [ ] **32.** Compte **existant** (déjà onboardé) : son niveau d'affichage n'a **pas changé**, et
+  son régime s'affiche comme **déduit** tant qu'il n'y touche pas.

@@ -1,61 +1,58 @@
 /**
  * US MUSCU-UX01 — trois programmes proposés d'emblée au compte neuf.
+ * US GUID-01 — le tri ne repose plus sur une préférence d'affichage.
  *
  * Sans programme actif, le hub ne proposait rien à choisir : il fallait repérer une petite tuile
  * parmi sept, ouvrir la bibliothèque, puis trier. Trois propositions immédiates suppriment cette
  * étape pour l'écrasante majorité des cas.
  *
- * ── Sur quoi elles sont triées — et ce qu'on n'a pas ─────────────────────────────────────────────
- * ⚠️ La spec annonçait d'abord un tri « sur le niveau et la fréquence déclarés à l'onboarding ».
- * Vérification faite, **le profil ne stocke ni l'un ni l'autre** : l'onboarding demande un objectif
- * (`mainGoal`) et un niveau d'**affichage de séance** (`workoutDisplayLevel`), qui décrit la densité
- * de l'écran de séance, pas l'expérience du pratiquant.
+ * ── Ce que GUID-01 a corrigé ────────────────────────────────────────────────────────────────────
+ * L'en-tête de ce fichier disait, depuis MUSCU-UX01 : « la spec annonçait un tri sur le niveau et
+ * la fréquence déclarés à l'onboarding. Vérification faite, **le profil ne stocke ni l'un ni
+ * l'autre** […] on utilise `workoutDisplayLevel` comme **proxy assumé** de l'expérience ».
  *
- * On utilise donc ce qui existe réellement :
- *  - `workoutDisplayLevel` comme **proxy assumé** de l'expérience — l'onboarding le présente
- *    lui-même en ces termes (« Simplifiée — idéal pour débuter ») ;
- *  - à défaut, les programmes **débutants d'abord**, ce qui est le bon défaut pour quelqu'un qui
- *    n'a encore rien fait dans l'app.
+ * Ce constat n'est plus vrai : `training_level` et `weekly_availability` existent, demandés devant
+ * la bibliothèque (et non à l'onboarding — décision D6, la question a besoin d'un objet visible).
+ * Le proxy survit en **dernier repli**, pour ne pas dégrader les comptes qui n'ont pas répondu.
  *
- * Demander une vraie fréquence hebdomadaire à l'onboarding améliorerait nettement ce tri — c'est
- * une US à part, pas un ajout discret ici.
+ * Le tri lui-même vit dans `@wellness/shared` (`program-ranking`), pur et testé : un composant
+ * n'est pas l'endroit où l'on fige une règle métier qu'on veut pouvoir vérifier.
  */
 
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { ProgramLevel, WorkoutDisplayLevel } from '@wellness/shared';
-import { useProgramLibrary, type ProgramListItem } from '@/data/repositories/program-repository';
+import {
+  preferredProgramLevel,
+  rankSuggestedPrograms,
+  type TrainingLevel,
+  type WorkoutDisplayLevel,
+} from '@wellness/shared';
+import { useProgramLibrary } from '@/data/repositories/program-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 /** Nombre de propositions — trois : assez pour choisir, assez peu pour ne pas retrier. */
 const SUGGESTION_COUNT = 3;
 
-/**
- * Niveau de programme visé selon le niveau d'affichage choisi à l'onboarding.
- * Proxy assumé (voir l'en-tête) : c'est le seul signal d'expérience dont on dispose.
- */
-function preferredLevel(display: WorkoutDisplayLevel | null | undefined): ProgramLevel {
-  if (display === 'detailed') return 'advanced';
-  if (display === 'normal') return 'intermediate';
-  return 'beginner';
-}
-
-/** Ordre de repli quand le niveau visé ne donne pas assez de programmes. */
-const LEVEL_FALLBACK: Record<ProgramLevel, ProgramLevel[]> = {
-  beginner: ['beginner', 'intermediate', 'advanced'],
-  intermediate: ['intermediate', 'beginner', 'advanced'],
-  advanced: ['advanced', 'intermediate', 'beginner'],
-};
-
 type Props = {
+  /** Le vrai signal — `null` tant que la question n'a pas été posée. */
+  trainingLevel: TrainingLevel | null | undefined;
+  /** Le proxy historique, conservé en dernier repli. */
   displayLevel: WorkoutDisplayLevel | null | undefined;
+  /** Jours d'entraînement disponibles par semaine, si déclarés. */
+  weeklyAvailability: number | null | undefined;
   onPick: (programId: string) => void;
   onSeeAll: () => void;
 };
 
-export function SuggestedPrograms({ displayLevel, onPick, onSeeAll }: Props) {
+export function SuggestedPrograms({
+  trainingLevel,
+  displayLevel,
+  weeklyAvailability,
+  onPick,
+  onSeeAll,
+}: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   // Toute la bibliothèque muscu : le tri se fait ici, pas en SQL — trois requêtes filtrées par
@@ -65,15 +62,11 @@ export function SuggestedPrograms({ displayLevel, onPick, onSeeAll }: Props) {
 
   if (isLoading || programs.length === 0) return null;
 
-  const wanted = preferredLevel(displayLevel);
-  const order = LEVEL_FALLBACK[wanted];
-  const ranked = [...programs].sort((a, b) => {
-    const rank = (p: ProgramListItem) =>
-      p.level ? order.indexOf(p.level) : order.length; // niveau inconnu en dernier
-    const diff = rank(a) - rank(b);
-    return diff !== 0 ? diff : a.name.localeCompare(b.name);
-  });
-  const suggestions = ranked.slice(0, SUGGESTION_COUNT);
+  const context = { trainingLevel, displayLevel, weeklyAvailability };
+  // Le libellé de section et le tri viennent du MÊME calcul : deux sources auraient divergé au
+  // premier changement, et l'en-tête aurait annoncé un niveau que la liste ne respecte pas.
+  const wanted = preferredProgramLevel(context);
+  const suggestions = rankSuggestedPrograms(programs, context).slice(0, SUGGESTION_COUNT);
 
   return (
     <View style={styles.wrap}>

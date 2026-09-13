@@ -1469,17 +1469,39 @@
     },
     "goal": {
       "title": "Ton objectif",
-      "subtitle": "Oriente les recommandations. Tu peux le changer quand tu veux.",
+      "subtitle": "Il règle tes calories, tes programmes et ton volume de course. Tu peux le changer quand tu veux.",
       "options": {
         "muscle": "Prise de masse",
         "weightloss": "Perte de poids",
         "performance": "Performance",
         "health": "Santé générale"
+      },
+      "focusLabel": "Performance en quoi ?",
+      "deadlineLabel": "As-tu une date en tête ?",
+      "noDeadline": "Pas de date",
+      "horizons": {
+        "90": "3 mois",
+        "180": "6 mois",
+        "365": "1 an"
+      },
+      "hints": {
+        "nutrition": {
+          "bulk": "+300 kcal",
+          "cut": "−400 kcal",
+          "weightloss": "−250 kcal",
+          "maintain": "calories tenues"
+        },
+        "strength": {
+          "load": "progression en charge",
+          "maintain": "maintien de charge",
+          "volume": "régularité avant charge"
+        },
+        "cardio": {
+          "endurance": "endurance",
+          "frequency": "fréquence avant intensité",
+          "structured": "séances structurées"
+        }
       }
-    },
-    "displayLevel": {
-      "title": "Niveau d'affichage",
-      "subtitle": "Choisis la quantité d'infos pendant tes séances. Modifiable ensuite dans les réglages."
     },
     "summary": {
       "title": "C'est prêt !",
@@ -1487,7 +1509,29 @@
       "pillars": "Piliers actifs",
       "none": "Non défini",
       "note": "Ton profil est enregistré et synchronisé de façon sécurisée. Tu peux commencer à utiliser l'app.",
-      "cta": "C'est parti"
+      "cta": "C'est parti",
+      "titleNamed": "C'est prêt, {{name}} !",
+      "firstActionEyebrow": "Ta première action",
+      "firstAction": {
+        "strength": {
+          "title": "Choisir ton programme muscu",
+          "body": "Des programmes t'attendent, triés pour ton objectif. Deux questions rapides affineront la sélection.",
+          "cta": "Voir les programmes",
+          "guidedTitle": "Je pose « {{name}} » dans ton planning",
+          "guidedBody": "Trié pour ton objectif et ta semaine. Tu pourras en changer à tout moment depuis le hub Musculation.",
+          "guidedCta": "Poser ce programme"
+        },
+        "running": {
+          "title": "Poser ta première sortie",
+          "body": "Choisis un programme de course, ou pars sur une sortie libre dès aujourd'hui.",
+          "cta": "Ouvrir la course"
+        },
+        "nutrition": {
+          "title": "Noter ton premier repas",
+          "body": "Ton budget du jour est déjà calculé. Une saisie suffit à le voir vivre.",
+          "cta": "Ouvrir le journal"
+        }
+      }
     },
     "activity": {
       "title": "À quel point bouges-tu ?",
@@ -1500,6 +1544,10 @@
         "active": "6 à 7 séances par semaine, ou un travail physique",
         "very_active": "Travail de force et entraînement quotidien"
       }
+    },
+    "guidance": {
+      "title": "À quel point veux-tu que l'app décide pour toi ?",
+      "subtitle": "Ce n'est pas une question de quantité de messages, mais de qui tranche."
     }
   },
   "auth": {
@@ -1932,7 +1980,8 @@
       "edit": "Modifier mon profil",
       "nutrition": "Profil nutritionnel",
       "running": "Profil coureur",
-      "relaunchOnboarding": "Relancer l'onboarding"
+      "relaunchOnboarding": "Relancer l'onboarding",
+      "strength": "Profil musculation"
     },
     "pillars": {
       "title": "Piliers actifs",
@@ -2736,7 +2785,10 @@
       "title": "Séance jambes lourde la veille",
       "body": "{{legSets}} séries sur les jambes la veille, puis « {{runType}} » le lendemain. Tes jambes n’auront pas récupéré.",
       "swap": "Déplacer au {{day}}",
-      "noSlot": "Aucun autre jour libre cette semaine."
+      "noSlot": "Aucun autre jour libre cette semaine.",
+      "appliedTitle": "Séance déplacée",
+      "appliedBody": "Je l'ai déplacée à {{day}} : {{legSets}} séries sur les jambes tombaient la veille de ton {{runType}}.",
+      "undo": "Annuler le déplacement"
     },
     "timeLabel": "Heure de la séance",
     "timeNone": "Pas d'heure définie",
@@ -4110,6 +4162,118 @@
       },
       "restPrep": "{{weight}}, {{reps}} répétitions.",
       "exerciseDone": "{{exercise}} terminé."
+    }
+  },
+  "guidance": {
+    "sectionTitle": "Guidage",
+    "recommended": "Recommandé",
+    "previewLabel": "Ce que tu verrais",
+    "derivedFromGoal": "Déduit de ton objectif",
+    "inheritedFromGlobal": "Hérité de ton réglage général",
+    "focus": {
+      "strength": "En force",
+      "endurance": "En course"
+    },
+    "regimes": {
+      "guided": {
+        "label": "Guidé",
+        "description": "L'app décide et t'annonce ce qu'elle a changé.",
+        "preview": "« J'ai déplacé ta séance Jambes à jeudi. »"
+      },
+      "assisted": {
+        "label": "Accompagné",
+        "description": "L'app propose, tu tranches.",
+        "preview": "« Ta séance Jambes tombe la veille du fractionné. La déplacer ? »"
+      },
+      "autonomous": {
+        "label": "Autonome",
+        "description": "L'app se tait. Tu vas chercher ce que tu veux, quand tu veux.",
+        "preview": "Rien ne s'affiche. Tout reste consultable dans Insights."
+      }
+    },
+    "safety": {
+      "title": "Trois alertes passent toujours",
+      "body": "Quel que soit ton choix : charge critique, douleur répétée, déficit sévère prolongé. Elles s'affichent une fois, sans insister."
+    },
+    "pillarEffect": {
+      "running": {
+        "guided": "Une collision avec la muscu déplace la séance, et l'app te l'annonce.",
+        "assisted": "Une collision avec la muscu te vaut une proposition de déplacement.",
+        "autonomous": "Rien ne s'affiche de lui-même. Les analyses restent dans Insights."
+      },
+      "nutrition": {
+        "guided": "Les contradictions entre tes objectifs te sont signalées sur l'accueil.",
+        "assisted": "Les contradictions entre tes objectifs te sont signalées sur l'accueil.",
+        "autonomous": "Aucune carte de contradiction ne s'affiche. Tes réglages restent tels quels."
+      }
+    }
+  },
+  "trainingContext": {
+    "sheetTitle": "Deux questions, et on affine",
+    "sheetSubtitle": "Pour te proposer des programmes qui tiennent dans ta semaine.",
+    "levelLabel": "Ton expérience",
+    "daysLabel": "Jours d'entraînement par semaine",
+    "daysA11y": "{{count}} jours par semaine",
+    "submit": "C'est noté",
+    "later": "Plus tard",
+    "levelUnset": "Pas encore renseigné : les suggestions retombent sur ton niveau d'affichage.",
+    "levels": {
+      "beginner": {
+        "label": "Je débute",
+        "hint": "Moins d'un an de pratique régulière"
+      },
+      "intermediate": {
+        "label": "Je suis régulier",
+        "hint": "Un à trois ans, technique en place"
+      },
+      "advanced": {
+        "label": "Je suis confirmé",
+        "hint": "Plus de trois ans, charges élevées"
+      }
+    }
+  },
+  "strengthProfile": {
+    "title": "Profil musculation",
+    "goalSection": "Ton objectif",
+    "editGoal": "Modifier dans mon profil"
+  },
+  "goalConflict": {
+    "title": "Tes deux objectifs se contredisent.",
+    "why": "Pourquoi je te dis ça",
+    "keepMainGoal": "Garder mon objectif",
+    "keepPillarGoal": "Garder ce réglage",
+    "dismiss": "Cette règle ne me correspond pas",
+    "rules": {
+      "bulkVsCut": {
+        "body": "Ton objectif principal dit {{left}}. Ta nutrition est réglée sur {{right}}. L'un des deux ne se réalisera pas.",
+        "why": "Prendre de la masse demande un surplus calorique ; ton objectif nutritionnel impose un déficit. Les deux réglages vivent sur deux écrans différents, rien ne les confrontait jusqu'ici."
+      },
+      "enduranceVsMass": {
+        "body": "Ton objectif principal dit {{left}}, et tu prépares un {{right}}. Sur douze semaines, l'un freine l'autre.",
+        "why": "Le volume d'endurance d'une préparation longue distance contrarie la prise de masse — c'est l'interférence que l'app mesure déjà sur ta charge réelle."
+      }
+    },
+    "values": {
+      "goal": {
+        "muscle": "prise de masse",
+        "weightloss": "perte de poids",
+        "performance": "performance",
+        "health": "santé générale"
+      },
+      "nutrition": {
+        "bulk": "prise de masse",
+        "cut": "sèche",
+        "weightloss": "perte de poids",
+        "maintain": "maintien"
+      },
+      "running": {
+        "5k": "5 km",
+        "10k": "10 km",
+        "semi": "semi-marathon",
+        "marathon": "marathon",
+        "perte_poids": "perte de poids",
+        "endurance": "endurance"
+      }
     }
   }
 }

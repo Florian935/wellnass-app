@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Objectif et niveau de guidage — planches de conception</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --txt:#33291f; --sub:#5c4a35; --mut:#8a7458; --mut2:#96856f;
+  --acc:#c0562f; --acc-dk:#a34e2c; --acc-tint:#f3ddd0;
+  --panel:#33291f; --p-txt:#f0e4d0; --p-mut:#c9b79a; --p-acc:#d9a888;
+  --surf:#fffaf2; --scr:#fffcf7;
+  --bd:#ece0cd; --bd2:#e0d0b6; --track:#eadcc6;
+  --grn:#7c8a5b; --grn-tint:#eaeedd;
+  --warn:#b4452c;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+body{
+  font-family:'Hanken Grotesk',system-ui,sans-serif;
+  color:var(--txt);
+  background:linear-gradient(160deg,#f2e7d7 0%,#e7d9c3 55%,#dfd0b8 100%);
+}
+
+/* ---------- Planches ---------- */
+.planche{width:1280px;padding:44px 48px 52px;display:none}
+.planche:target{display:block}
+body.all .planche{display:block}
+.ph-head{margin-bottom:26px;max-width:900px}
+.ph-kick{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--acc-dk);margin-bottom:7px}
+.ph-title{font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:30px;letter-spacing:-1px;line-height:1.1}
+.ph-sub{font-size:14px;color:var(--sub);margin-top:7px;line-height:1.5}
+.row{display:flex;gap:40px;align-items:flex-start}
+
+/* ---------- Téléphone ---------- */
+.phone{
+  width:360px;height:812px;flex:none;
+  background:var(--scr);border-radius:34px;
+  box-shadow:0 26px 54px -18px rgba(60,40,20,.5), 0 2px 0 rgba(255,255,255,.6) inset;
+  overflow:hidden;display:flex;flex-direction:column;position:relative;
+}
+.caption{width:360px;flex:none;margin-top:15px;font-size:12.5px;line-height:1.5;color:var(--sub)}
+.caption b{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;color:var(--txt);display:block;margin-bottom:2px;font-size:13.5px}
+.col{display:flex;flex-direction:column;align-items:flex-start}
+
+.sbar{height:30px;flex:0 0 30px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;font-family:'Space Mono',monospace;font-size:10.5px;color:var(--mut)}
+.sbar .dots{display:flex;gap:3px;align-items:center}
+.sbar .dots i{width:4px;height:4px;border-radius:50%;background:var(--mut);display:block;font-style:normal}
+.body{flex:1;padding:0 20px 18px;overflow:hidden;display:flex;flex-direction:column}
+
+/* ---------- Onboarding ---------- */
+.steps{display:flex;gap:5px;margin:6px 0 20px}
+.steps i{height:3px;flex:1;border-radius:2px;background:var(--track);display:block}
+.steps i.on{background:var(--acc)}
+.h1{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:25px;letter-spacing:-.8px;line-height:1.14}
+.h1 .lo{color:var(--mut2)}
+.sub{font-size:13.5px;color:var(--mut);line-height:1.48;margin-top:8px}
+.stepno{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1.4px;color:var(--mut2);text-transform:uppercase}
+
+.opt{
+  border:1.6px solid var(--bd);background:var(--surf);border-radius:15px;
+  padding:13px 15px;display:flex;gap:12px;align-items:flex-start;margin-bottom:9px;
+}
+.opt.sel{border-color:var(--acc);background:var(--acc-tint)}
+.opt .txts{flex:1;min-width:0}
+.opt .lb{font-weight:700;font-size:14.5px;letter-spacing:-.1px}
+.opt .hint{font-size:11.8px;color:var(--mut);margin-top:3px;line-height:1.42}
+.opt.sel .hint{color:var(--acc-dk)}
+.dot{width:19px;height:19px;border-radius:50%;border:1.6px solid var(--bd2);flex:0 0 19px;margin-top:2px;position:relative}
+.opt.sel .dot{border-color:var(--acc);background:var(--acc)}
+.opt.sel .dot::after{content:'';position:absolute;inset:4.5px;border-radius:50%;background:#fff}
+
+.foot{margin-top:auto;padding-top:14px;display:flex;flex-direction:column;gap:9px}
+.btn{
+  height:46px;border-radius:13px;background:var(--acc);color:#fff;font-weight:700;font-size:14.5px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 10px 22px -9px rgba(192,86,47,.62);
+}
+.btn.ghost{background:transparent;color:var(--mut);box-shadow:none;font-weight:600;height:34px;font-size:13.5px}
+.btn.sec{background:var(--surf);color:var(--txt);border:1.5px solid var(--bd2);box-shadow:none}
+
+.chips{display:flex;gap:8px;margin-top:9px}
+.chip{
+  border:1.5px solid var(--bd2);background:var(--surf);border-radius:11px;
+  padding:9px 13px;font-size:12.5px;font-weight:600;color:var(--sub);
+}
+.chip.on{background:var(--panel);border-color:var(--panel);color:var(--p-txt)}
+.lbl{font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--mut2);margin:18px 0 8px}
+
+.badge{
+  display:inline-block;font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:1.1px;
+  text-transform:uppercase;padding:3px 7px;border-radius:5px;
+  background:var(--acc);color:#fff;vertical-align:middle;margin-left:7px;
+}
+.badge.soft{background:var(--track);color:var(--mut)}
+.badge.grn{background:var(--grn);color:#fff}
+
+/* Aperçu miniature d'un régime */
+.prev{margin-top:10px;border-radius:10px;padding:9px 11px;background:#fff;border:1px solid var(--bd);font-size:11.4px;line-height:1.42;color:var(--sub)}
+.prev .who{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--mut2);display:block;margin-bottom:3px}
+.prev.mute{background:repeating-linear-gradient(135deg,#f7f0e5,#f7f0e5 6px,#f2e9db 6px,#f2e9db 12px);color:var(--mut2);font-style:italic}
+
+.note{
+  margin-top:12px;border-radius:11px;padding:10px 12px;background:var(--grn-tint);
+  border:1px solid #cfd8b8;font-size:11.4px;line-height:1.45;color:#4d5735;
+}
+.note b{color:#3c4528}
+
+/* ---------- Cartes de contenu ---------- */
+.card{background:var(--surf);border:1px solid var(--bd);border-radius:16px;padding:14px 15px;margin-bottom:11px}
+.card.dark{background:var(--panel);border:none;color:var(--p-txt);position:relative;overflow:hidden}
+.card.dark::after{content:'';position:absolute;right:-44px;top:-44px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(192,86,47,.5) 0%,rgba(192,86,47,0) 70%)}
+.card.dark .ct{color:#fff}
+.card .ct{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:15px;letter-spacing:-.3px}
+.card .cs{font-size:12.4px;color:var(--mut);line-height:1.48;margin-top:5px}
+.card.dark .cs{color:var(--p-mut)}
+.rowline{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--bd)}
+.rowline:last-child{border-bottom:none}
+.rowline .k{font-size:12.6px;color:var(--mut)}
+.rowline .v{font-size:12.6px;font-weight:700;text-align:right}
+.deduit{font-family:'Space Mono',monospace;font-size:8.5px;letter-spacing:.8px;text-transform:uppercase;color:var(--mut2);display:block;font-weight:400;margin-top:1px}
+
+/* ---------- Barre d'onglets ---------- */
+.tabs{height:58px;flex:0 0 58px;border-top:1px solid var(--bd);display:flex;background:var(--surf)}
+.tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:9.5px;color:var(--mut2);font-weight:600}
+.tab .ic{width:17px;height:17px;border-radius:5px;background:var(--mut2);opacity:.42}
+.tab.on{color:var(--acc)}
+.tab.on .ic{background:var(--acc);opacity:1}
+
+/* ---------- Carte de décision ---------- */
+.dec{border-radius:16px;padding:14px 15px;margin-bottom:11px;border:1.6px solid}
+.dec.done{background:var(--acc-tint);border-color:#e0b49b}
+.dec.ask{background:var(--surf);border-color:var(--acc)}
+.dec .dt{font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:15px;line-height:1.25;letter-spacing:-.3px}
+.dec .dd{font-size:12.3px;color:var(--sub);line-height:1.48;margin-top:6px}
+.dec .acts{display:flex;gap:8px;margin-top:12px}
+.dec .acts .btn{height:38px;border-radius:11px;font-size:13px;flex:1}
+.why{
+  margin-top:10px;padding-top:9px;border-top:1px dashed #dcc6b3;
+  font-size:11.2px;color:var(--acc-dk);display:flex;align-items:center;gap:5px;font-weight:600;
+}
+.empty{
+  border:1.5px dashed var(--bd2);border-radius:14px;padding:22px 15px;text-align:center;
+  color:var(--mut2);font-size:12px;font-style:italic;line-height:1.5;background:rgba(255,255,255,.4);
+}
+
+/* Planning miniature */
+.week{display:flex;gap:5px;margin-top:4px}
+.day{flex:1;border:1px solid var(--bd);background:var(--surf);border-radius:9px;padding:7px 4px;text-align:center}
+.day .dn{font-family:'Space Mono',monospace;font-size:8.5px;color:var(--mut2);text-transform:uppercase;letter-spacing:.6px}
+.day .dv{font-size:9.5px;font-weight:700;margin-top:4px;line-height:1.25;min-height:22px;display:flex;align-items:center;justify-content:center}
+.day.acc{background:var(--acc-tint);border-color:#e0b49b;color:var(--acc-dk)}
+.day.moved{background:var(--panel);border-color:var(--panel);color:var(--p-txt)}
+.day.dim .dv{color:var(--mut2);font-weight:500}
+
+/* Segment 3 positions */
+.seg{display:flex;background:var(--track);border-radius:12px;padding:3px;gap:3px}
+.seg div{flex:1;text-align:center;padding:9px 4px;border-radius:9px;font-size:12.3px;font-weight:600;color:var(--mut)}
+.seg div.on{background:var(--scr);color:var(--txt);font-weight:700;box-shadow:0 2px 6px rgba(60,40,20,.13)}
+
+.ul{margin-top:11px}
+.ul div{display:flex;gap:9px;font-size:12.2px;line-height:1.46;color:var(--sub);margin-bottom:7px}
+.ul span{color:var(--acc);font-weight:700;flex:0 0 auto}
+
+.warnbox{
+  border:1px solid #e6c3b6;background:#fbeee8;border-radius:12px;padding:11px 12px;margin-top:12px;
+  font-size:11.5px;line-height:1.46;color:#8d3f26;
+}
+.warnbox b{display:block;font-family:'Bricolage Grotesque',sans-serif;font-size:12.3px;margin-bottom:3px;color:var(--warn)}
+</style>
+</head>
+<body>
+
+<!-- ============ PLANCHE 1 — Le parcours ============ -->
+<section class="planche" id="p1">
+  <div class="ph-head">
+    <div class="ph-kick">Planche 1 / 3 · Onboarding</div>
+    <h1 class="ph-title">Le parcours — à nombre d'écrans constant</h1>
+    <p class="ph-sub">L'étape 3 gagne une échéance. L'étape 4 change de question sans changer de place : « Niveau d'affichage » devient le régime de guidage, et l'affichage s'en déduit. Le récapitulatif pose enfin la première action promise par la roadmap 1.11.</p>
+  </div>
+
+  <div class="row">
+
+    <!-- Écran 1 : objectif + échéance -->
+    <div class="col">
+      <div class="phone">
+        <div class="sbar"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+        <div class="body">
+          <div class="stepno">Étape 3 sur 5</div>
+          <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i></i><i></i></div>
+          <div class="h1">Ton objectif</div>
+          <p class="sub">Il règle tes calories, tes programmes et ton volume de course. Tu peux le changer quand tu veux.</p>
+
+          <div style="margin-top:18px">
+            <div class="opt sel">
+              <div class="txts">
+                <div class="lb">Prise de masse</div>
+                <div class="hint">+300 kcal · hypertrophie · course plafonnée</div>
+              </div>
+              <div class="dot"></div>
+            </div>
+            <div class="opt">
+              <div class="txts">
+                <div class="lb">Perte de poids</div>
+                <div class="hint">−250 kcal · maintien de charge · endurance</div>
+              </div>
+              <div class="dot"></div>
+            </div>
+            <div class="opt">
+              <div class="txts">
+                <div class="lb">Performance</div>
+                <div class="hint">En force ou en course — on précise juste après</div>
+              </div>
+              <div class="dot"></div>
+            </div>
+            <div class="opt">
+              <div class="txts">
+                <div class="lb">Santé générale</div>
+                <div class="hint">Régularité · micronutriments · volume modéré</div>
+              </div>
+              <div class="dot"></div>
+            </div>
+          </div>
+
+          <div class="lbl">As-tu une date en tête&nbsp;?</div>
+          <div class="chips">
+            <div class="chip on">Pas de date</div>
+            <div class="chip">Choisir une échéance</div>
+          </div>
+
+          <div class="foot">
+            <div class="btn">Continuer</div>
+            <div class="btn ghost">Passer</div>
+          </div>
+        </div>
+      </div>
+      <p class="caption"><b>1 · Objectif + échéance</b>Chaque option montre ce qu'elle décide vraiment. Aujourd'hui, « Performance » et « Santé générale » donnent la même app, à l'octet près — ici elles portent des conséquences distinctes. L'échéance reste optionnelle.</p>
+    </div>
+
+    <!-- Écran 2 : régime de guidage -->
+    <div class="col">
+      <div class="phone">
+        <div class="sbar"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+        <div class="body">
+          <div class="stepno">Étape 4 sur 5</div>
+          <div class="steps"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i></i></div>
+          <div class="h1">À quel point veux-tu<br>que l'app <span class="lo">décide pour toi</span>&nbsp;?</div>
+          <p class="sub">Ce n'est pas une question de quantité de messages, mais de qui tranche.</p>
+
+          <div style="margin-top:16px">
+            <div class="opt">
+              <div class="txts">
+                <div class="lb">Guidé</div>
+                <div class="hint">L'app décide et t'annonce ce qu'elle a changé.</div>
+                <div class="prev"><span class="who">Ce que tu verrais</span>« J'ai déplacé ta séance Jambes à jeudi. »</div>
+              </div>
+              <div class="dot"></div>
+            </div>
+
+            <div class="opt sel">
+              <div class="txts">
+                <div class="lb">Accompagné<span class="badge">Recommandé</span></div>
+                <div class="hint">L'app propose, tu tranches.</div>
+                <div class="prev"><span class="who">Ce que tu verrais</span>« Ta séance Jambes tombe la veille du fractionné. La déplacer&nbsp;? »</div>
+              </div>
+              <div class="dot"></div>
+            </div>
+
+            <div class="opt">
+              <div class="txts">
+                <div class="lb">Autonome</div>
+                <div class="hint">L'app se tait. Tu vas chercher ce que tu veux.</div>
+                <div class="prev mute"><span class="who">Ce que tu verrais</span>Rien. Tout reste dans Insights.</div>
+              </div>
+              <div class="dot"></div>
+            </div>
+          </div>
+
+          <div class="note"><b>Trois alertes passent toujours</b>, quel que soit ton choix : charge critique, douleur répétée, déficit sévère prolongé. On ne te laisse pas te blesser en silence.</div>
+
+          <div class="foot">
+            <div class="btn">Continuer</div>
+            <div class="btn ghost">Passer</div>
+          </div>
+        </div>
+      </div>
+      <p class="caption"><b>2 · Le régime de guidage</b>Remplace « Niveau d'affichage », qui était un réglage d'interface déguisé en question de profil — et qui sert aujourd'hui de faux signal d'expérience au tri des programmes. La densité d'écran se déduit du régime et reste réglable ensuite.</p>
+    </div>
+
+    <!-- Écran 3 : récap + première action -->
+    <div class="col">
+      <div class="phone">
+        <div class="sbar"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+        <div class="body">
+          <div class="h1" style="margin-top:14px">C'est prêt, Florian&nbsp;!</div>
+          <p class="sub">Voici ta configuration. Tu peux tout ajuster dans les réglages.</p>
+
+          <div class="card" style="margin-top:18px">
+            <div class="rowline"><span class="k">Piliers actifs</span><span class="v">Muscu · Course · Nutrition</span></div>
+            <div class="rowline"><span class="k">Objectif</span><span class="v">Prise de masse</span></div>
+            <div class="rowline"><span class="k">Guidage</span><span class="v">Accompagné<span class="deduit">Déduit de ton objectif</span></span></div>
+            <div class="rowline"><span class="k">Objectif calorique</span><span class="v">2 840 kcal<span class="deduit">Déduit · niveau d'activité</span></span></div>
+          </div>
+
+          <div class="lbl">Ta première action</div>
+          <div class="card dark">
+            <div class="ct">Choisir ton programme muscu</div>
+            <div class="cs">Trois programmes d'hypertrophie t'attendent, triés pour ton objectif. Il te reste deux questions&nbsp;: depuis combien de temps tu t'entraînes, et combien de jours par semaine.</div>
+            <div class="btn" style="margin-top:13px;height:40px;font-size:13.5px">Voir les trois programmes</div>
+          </div>
+
+          <div class="card">
+            <div class="ct" style="font-size:13.5px">Puis, dans les 7 jours</div>
+            <div class="cs">Le parcours « 7 jours pour démarrer » te proposera une petite action par jour. Rien d'obligatoire.</div>
+          </div>
+
+          <div class="foot">
+            <div class="btn">C'est parti</div>
+          </div>
+        </div>
+      </div>
+      <p class="caption"><b>3 · Récapitulatif + première action</b>La roadmap 1.11 promet une « suggestion de première action » ; la cartographie d'ACTIV-01 a constaté le 03/08/2026 qu'elle n'existe pas. Avec l'objectif et le régime, on sait quoi proposer — et les deux questions manquantes (niveau, disponibilité) sont posées ici, devant la bibliothèque, pas à l'onboarding.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ PLANCHE 2 — Une décision, trois régimes ============ -->
+<section class="planche" id="p2">
+  <div class="ph-head">
+    <div class="ph-kick">Planche 2 / 3 · Le cœur de la proposition</div>
+    <h1 class="ph-title">Une seule décision, vue dans les trois régimes</h1>
+    <p class="ph-sub">Même situation, même jour, même utilisateur : une séance Jambes programmée la veille d'un fractionné — c'est exactement ce que COLLIS-01 détecte déjà. Ce qui change n'est pas le nombre de messages, c'est qui tranche.</p>
+  </div>
+
+  <div class="row">
+
+    <!-- Guidé -->
+    <div class="col">
+      <div class="phone">
+        <div class="sbar"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+        <div class="body">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin:10px 0 3px">
+            <div class="h1" style="font-size:21px">Cette semaine</div>
+            <span class="badge">Guidé</span>
+          </div>
+          <p class="sub" style="margin-top:2px">Semaine 3 · Prise de masse</p>
+
+          <div class="lbl">Ton planning</div>
+          <div class="week">
+            <div class="day dim"><div class="dn">Lun</div><div class="dv">Pecs</div></div>
+            <div class="day dim"><div class="dn">Mar</div><div class="dv">—</div></div>
+            <div class="day dim"><div class="dn">Mer</div><div class="dv">Dos</div></div>
+            <div class="day moved"><div class="dn">Jeu</div><div class="dv">Jambes</div></div>
+            <div class="day acc"><div class="dn">Ven</div><div class="dv">Frac&shy;tionné</div></div>
+            <div class="day dim"><div class="dn">Sam</div><div class="dv">—</div></div>
+            <div class="day dim"><div class="dn">Dim</div><div class="dv">Sortie</div></div>
+          </div>
+
+          <div class="dec done" style="margin-top:18px">
+            <div class="dt">J'ai déplacé ta séance Jambes<br>de mercredi à jeudi.</div>
+            <div class="dd">Elle tombait la veille de ton fractionné. Tes quadriceps auraient encaissé deux fois en 24 heures.</div>
+            <div class="why">▸ Pourquoi j'ai décidé ça</div>
+            <div class="acts">
+              <div class="btn sec">Annuler le déplacement</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:4px">
+            <div class="ct" style="font-size:13.5px">Aujourd'hui — Dos</div>
+            <div class="cs">5 exercices · environ 55 min · charges pré-remplies depuis ta dernière séance.</div>
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab on"><span class="ic"></span>Accueil</div>
+          <div class="tab"><span class="ic"></span>Muscu</div>
+          <div class="tab"><span class="ic"></span>Course</div>
+          <div class="tab"><span class="ic"></span>Alim</div>
+        </div>
+      </div>
+      <p class="caption"><b>Guidé — l'app décide et annonce</b>Le planning est <b style="display:inline">déjà</b> à jour quand l'écran s'ouvre. Une seule action reste possible : annuler. La justification est là, mais repliée — on n'oblige personne à lire un raisonnement pour avancer.</p>
+    </div>
+
+    <!-- Accompagné -->
+    <div class="col">
+      <div class="phone">
+        <div class="sbar"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+        <div class="body">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin:10px 0 3px">
+            <div class="h1" style="font-size:21px">Cette semaine</div>
+            <span class="badge soft">Accompagné</span>
+          </div>
+          <p class="sub" style="margin-top:2px">Semaine 3 · Prise de masse</p>
+
+          <div class="lbl">Ton planning</div>
+          <div class="week">
+            <div class="day dim"><div class="dn">Lun</div><div class="dv">Pecs</div></div>
+            <div class="day dim"><div class="dn">Mar</div><div class="dv">—</div></div>
+            <div class="day acc"><div class="dn">Mer</div><div class="dv">Jambes</div></div>
+            <div class="day dim"><div class="dn">Jeu</div><div class="dv">—</div></div>
+            <div class="day acc"><div class="dn">Ven</div><div class="dv">Frac&shy;tionné</div></div>
+            <div class="day dim"><div class="dn">Sam</div><div class="dv">—</div></div>
+            <div class="day dim"><div class="dn">Dim</div><div class="dv">Sortie</div></div>
+          </div>
+
+          <div class="dec ask" style="margin-top:18px">
+            <div class="dt">Ta séance Jambes tombe la veille de ton fractionné.</div>
+            <div class="dd">Tes quadriceps encaisseraient deux fois en 24 heures. Je peux la déplacer à jeudi, qui est libre.</div>
+            <div class="why">▸ Pourquoi je te dis ça</div>
+            <div class="acts">
+              <div class="btn">Déplacer à jeudi</div>
+              <div class="btn sec">Laisser</div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:4px">
+            <div class="ct" style="font-size:13.5px">Aujourd'hui — Dos</div>
+            <div class="cs">5 exercices · environ 55 min.</div>
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab on"><span class="ic"></span>Accueil</div>
+          <div class="tab"><span class="ic"></span>Muscu</div>
+          <div class="tab"><span class="ic"></span>Course</div>
+          <div class="tab"><span class="ic"></span>Alim</div>
+        </div>
+      </div>
+      <p class="caption"><b>Accompagné — l'app propose, tu tranches</b>Le défaut. Le planning n'a pas bougé ; deux boutons de même poids visuel, dont un « Laisser » qui n'est pas un bouton de honte. C'est déjà, à peu de chose près, ce que COLLIS-01 sait produire.</p>
+    </div>
+
+    <!-- Autonome -->
+    <div class="col">
+      <div class="phone">
+        <div class="sbar"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+        <div class="body">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;margin:10px 0 3px">
+            <div class="h1" style="font-size:21px">Cette semaine</div>
+            <span class="badge soft">Autonome</span>
+          </div>
+          <p class="sub" style="margin-top:2px">Semaine 3 · Prise de masse</p>
+
+          <div class="lbl">Ton planning</div>
+          <div class="week">
+            <div class="day dim"><div class="dn">Lun</div><div class="dv">Pecs</div></div>
+            <div class="day dim"><div class="dn">Mar</div><div class="dv">—</div></div>
+            <div class="day acc"><div class="dn">Mer</div><div class="dv">Jambes</div></div>
+            <div class="day dim"><div class="dn">Jeu</div><div class="dv">—</div></div>
+            <div class="day acc"><div class="dn">Ven</div><div class="dv">Frac&shy;tionné</div></div>
+            <div class="day dim"><div class="dn">Sam</div><div class="dv">—</div></div>
+            <div class="day dim"><div class="dn">Dim</div><div class="dv">Sortie</div></div>
+          </div>
+
+          <div style="margin-top:18px">
+            <div class="empty">Rien ne s'affiche ici.<br>La collision est détectée, elle attend dans Insights.</div>
+          </div>
+
+          <div class="card" style="margin-top:12px">
+            <div class="ct" style="font-size:13.5px">Aujourd'hui — Dos</div>
+            <div class="cs">5 exercices · environ 55 min · RPE, types de séries et notes affichés.</div>
+          </div>
+
+          <div class="warnbox">
+            <b>Ce qui passera quand même</b>
+            Charge critique, même douleur trois fois en deux semaines, déficit sévère prolongé. Une fois, sobrement, sans répétition.
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab on"><span class="ic"></span>Accueil</div>
+          <div class="tab"><span class="ic"></span>Muscu</div>
+          <div class="tab"><span class="ic"></span>Course</div>
+          <div class="tab"><span class="ic"></span>Alim</div>
+        </div>
+      </div>
+      <p class="caption"><b>Autonome — l'app se tait</b>Le cadre pointillé est une <b style="display:inline">annotation de maquette</b>, pas un composant : à l'écran, il n'y a littéralement rien. L'analyse continue de tourner et reste consultable. Seules les trois alertes de sécurité franchissent ce régime.</p>
+    </div>
+
+  </div>
+</section>
+
+<!-- ============ PLANCHE 3 — Réglage et contradiction ============ -->
+<section class="planche" id="p3">
+  <div class="ph-head">
+    <div class="ph-kick">Planche 3 / 3 · Réglage et intégration</div>
+    <h1 class="ph-title">Où ça se règle, et ce que l'intégration détecte</h1>
+    <p class="ph-sub">Le curseur vit dans le pilier qu'il gouverne, jamais dans la liste des réglages — qui compte déjà 18 sections et 11 interrupteurs. Et la carte de contradiction est le plus petit morceau démontrable du différenciateur : les piliers se parlent.</p>
+  </div>
+
+  <div class="row">
+
+    <!-- Curseur dans le profil de pilier -->
+    <div class="col">
+      <div class="phone">
+        <div class="sbar"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+        <div class="body">
+          <div class="h1" style="font-size:21px;margin-top:12px">Profil musculation</div>
+
+          <div class="lbl">Guidage</div>
+          <div class="seg">
+            <div>Guidé</div>
+            <div class="on">Accompagné</div>
+            <div>Autonome</div>
+          </div>
+          <div style="font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:.9px;text-transform:uppercase;color:var(--mut2);margin-top:9px">Déduit de ton objectif — jamais choisi</div>
+
+          <div class="card" style="margin-top:13px">
+            <div class="ct" style="font-size:13.5px">À ce niveau, en musculation</div>
+            <div class="ul">
+              <div><span>›</span>Une stagnation sur 3 séances te propose un deload.</div>
+              <div><span>›</span>Une douleur déclarée propose un exercice de remplacement.</div>
+              <div><span>›</span>Une collision avec la course propose un déplacement.</div>
+              <div><span>›</span>L'écran de séance affiche la densité « normale ».</div>
+            </div>
+          </div>
+
+          <div class="lbl">Ton contexte</div>
+          <div class="card">
+            <div class="rowline"><span class="k">Expérience</span><span class="v">Confirmé</span></div>
+            <div class="rowline"><span class="k">Disponibilité</span><span class="v">4 jours / semaine</span></div>
+            <div class="rowline"><span class="k">Objectif principal</span><span class="v">Prise de masse<span class="deduit">Réglé dans ton profil</span></span></div>
+          </div>
+
+          <div class="warnbox">
+            <b>Ce qui ne se coupe jamais</b>
+            Trois signaux de sécurité s'affichent quel que soit ce réglage. Ils ne sont pas désactivables — c'est la contrepartie de pouvoir tout couper ailleurs.
+          </div>
+        </div>
+      </div>
+      <p class="caption"><b>5 · Le curseur, dans son pilier</b>Deux nouveautés de fond : la mention « <b style="display:inline">déduit</b>, jamais choisi » — le motif inventé pendant NUTRI-UX01 pour ne pas refaire le bug des 614 kcal — et le bloc « Ton contexte », qui rend enfin visibles l'expérience et la disponibilité que la muscu ne stocke pas aujourd'hui.</p>
+    </div>
+
+    <!-- Carte de contradiction -->
+    <div class="col">
+      <div class="phone">
+        <div class="sbar"><span>9:41</span><span class="dots"><i></i><i></i><i></i></span></div>
+        <div class="body">
+          <div class="h1" style="font-size:21px;margin-top:12px">Bonjour Florian</div>
+          <p class="sub" style="margin-top:2px">Jeudi 17 septembre</p>
+
+          <div class="dec ask" style="margin-top:16px">
+            <div class="dt">Tes deux objectifs se contredisent.</div>
+            <div class="dd">Ton objectif principal dit <b>Prise de masse</b>. Ta nutrition est réglée sur <b>Sèche</b>, à −400 kcal. L'un des deux ne se réalisera pas.</div>
+            <div class="why">▸ Pourquoi je te dis ça</div>
+            <div class="acts">
+              <div class="btn">Garder la masse</div>
+              <div class="btn sec">Garder la sèche</div>
+            </div>
+            <div class="btn ghost" style="margin-top:4px;justify-content:flex-start;padding:0">Cette règle ne me correspond pas</div>
+          </div>
+
+          <div class="card">
+            <div class="ct" style="font-size:13.5px">Maintenant — Dos</div>
+            <div class="cs">5 exercices · environ 55 min.</div>
+          </div>
+
+          <div class="card">
+            <div class="ct" style="font-size:13.5px">Budget du jour</div>
+            <div class="cs">1 180 kcal restantes · protéines 84 / 150 g</div>
+          </div>
+        </div>
+        <div class="tabs">
+          <div class="tab on"><span class="ic"></span>Accueil</div>
+          <div class="tab"><span class="ic"></span>Muscu</div>
+          <div class="tab"><span class="ic"></span>Course</div>
+          <div class="tab"><span class="ic"></span>Alim</div>
+        </div>
+      </div>
+      <p class="caption"><b>6 · La contradiction, enfin dite</b>Aujourd'hui les deux réglages coexistent en silence, sur deux écrans différents. La carte est <b style="display:inline">explicable</b> (« pourquoi je te dis ça ») et <b style="display:inline">contestable</b> — « cette règle ne me correspond pas » baisse son poids, conformément au principe noté dans IDEAS le 25/07/2026.</p>
+    </div>
+
+    <!-- Légende / rappel des décisions -->
+    <div class="col" style="flex:0 0 360px">
+      <div style="width:360px;background:var(--panel);color:var(--p-txt);border-radius:22px;padding:24px 24px 26px;box-shadow:0 26px 54px -18px rgba(60,40,20,.5)">
+        <div style="font-family:'Space Mono',monospace;font-size:9.5px;letter-spacing:1.8px;text-transform:uppercase;color:var(--p-acc);margin-bottom:11px">Ce que ces planches supposent</div>
+        <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700;font-size:21px;letter-spacing:-.6px;line-height:1.2;color:#fff7ec">Sept décisions ouvertes</div>
+        <div style="font-size:12.4px;line-height:1.55;color:var(--p-mut);margin-top:11px">Les maquettes tranchent visuellement ce que l'analyse laisse ouvert. Elles ne valent pas décision.</div>
+
+        <div style="margin-top:18px;font-size:12.2px;line-height:1.5">
+          <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(240,228,208,.16)"><b style="font-family:'Space Mono',monospace;color:var(--p-acc);flex:0 0 26px">D1</b><span style="color:var(--p-mut)">L'axe est « qui décide », pas « combien de messages ».</span></div>
+          <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(240,228,208,.16)"><b style="font-family:'Space Mono',monospace;color:var(--p-acc);flex:0 0 26px">D2</b><span style="color:var(--p-mut)">« Performance » appelle une question de discipline, pas un 5ᵉ objectif.</span></div>
+          <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(240,228,208,.16)"><b style="font-family:'Space Mono',monospace;color:var(--p-acc);flex:0 0 26px">D3</b><span style="color:var(--p-mut)">Un curseur par pilier, pas un curseur global.</span></div>
+          <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(240,228,208,.16)"><b style="font-family:'Space Mono',monospace;color:var(--p-acc);flex:0 0 26px">D4</b><span style="color:var(--p-mut)">Le guidage remplace « Niveau d'affichage » à l'étape 4.</span></div>
+          <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(240,228,208,.16)"><b style="font-family:'Space Mono',monospace;color:var(--p-acc);flex:0 0 26px">D5</b><span style="color:var(--p-mut)">Trois alertes de sécurité ignorent le mode Autonome.</span></div>
+          <div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid rgba(240,228,208,.16)"><b style="font-family:'Space Mono',monospace;color:var(--p-acc);flex:0 0 26px">D6</b><span style="color:var(--p-mut)">Niveau et disponibilité se demandent devant la bibliothèque.</span></div>
+          <div style="display:flex;gap:10px;padding:9px 0"><b style="font-family:'Space Mono',monospace;color:var(--p-acc);flex:0 0 26px">D7</b><span style="color:var(--p-mut)">Le lot A passe avant le lancement.</span></div>
+        </div>
+      </div>
+      <p class="caption" style="margin-top:15px"><b>Statut</b>Images de conception du 13/09/2026, non validées. Thème clair uniquement : le thème sombre, les grandes polices, les cibles tactiles et le parcours TalkBack restent à maquetter avant toute livraison.</p>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  // Sans ancre, on affiche les trois planches à la suite (lecture au navigateur).
+  if (!location.hash) document.body.classList.add('all');
+</script>
+</body>
+</html>

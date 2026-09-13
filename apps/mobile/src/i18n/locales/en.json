@@ -1469,17 +1469,39 @@
     },
     "goal": {
       "title": "Your goal",
-      "subtitle": "Shapes recommendations. You can change it anytime.",
+      "subtitle": "It sets your calories, your programmes and your running volume. You can change it whenever you like.",
       "options": {
         "muscle": "Build muscle",
         "weightloss": "Lose weight",
         "performance": "Performance",
         "health": "General health"
+      },
+      "focusLabel": "Performance at what?",
+      "deadlineLabel": "Do you have a date in mind?",
+      "noDeadline": "No date",
+      "horizons": {
+        "90": "3 months",
+        "180": "6 months",
+        "365": "1 year"
+      },
+      "hints": {
+        "nutrition": {
+          "bulk": "+300 kcal",
+          "cut": "−400 kcal",
+          "weightloss": "−250 kcal",
+          "maintain": "calories held"
+        },
+        "strength": {
+          "load": "adding load",
+          "maintain": "holding load",
+          "volume": "consistency before load"
+        },
+        "cardio": {
+          "endurance": "endurance",
+          "frequency": "frequency before intensity",
+          "structured": "structured sessions"
+        }
       }
-    },
-    "displayLevel": {
-      "title": "Display level",
-      "subtitle": "Choose how much info you see during sessions. Changeable later in settings."
     },
     "summary": {
       "title": "All set!",
@@ -1487,7 +1509,29 @@
       "pillars": "Active pillars",
       "none": "Not set",
       "note": "Your profile is saved and securely synced. You can start using the app.",
-      "cta": "Let's go"
+      "cta": "Let's go",
+      "titleNamed": "All set, {{name}}!",
+      "firstActionEyebrow": "Your first step",
+      "firstAction": {
+        "strength": {
+          "title": "Pick your strength programme",
+          "body": "Programmes are waiting, sorted for your goal. Two quick questions will sharpen the selection.",
+          "cta": "See the programmes",
+          "guidedTitle": "I'll set up “{{name}}” for you",
+          "guidedBody": "Sorted for your goal and your week. You can swap it any time from the Strength hub.",
+          "guidedCta": "Set up this programme"
+        },
+        "running": {
+          "title": "Plan your first run",
+          "body": "Pick a running programme, or just head out for a free run today.",
+          "cta": "Open running"
+        },
+        "nutrition": {
+          "title": "Log your first meal",
+          "body": "Your daily budget is already worked out. One entry is enough to see it move.",
+          "cta": "Open the log"
+        }
+      }
     },
     "activity": {
       "title": "How active are you?",
@@ -1500,6 +1544,10 @@
         "active": "6 to 7 sessions a week, or physical work",
         "very_active": "Heavy physical work and daily training"
       }
+    },
+    "guidance": {
+      "title": "How much should the app decide for you?",
+      "subtitle": "This isn't about how many messages you get — it's about who makes the call."
     }
   },
   "auth": {
@@ -1932,7 +1980,8 @@
       "edit": "Edit my profile",
       "nutrition": "Nutrition profile",
       "running": "Runner profile",
-      "relaunchOnboarding": "Restart onboarding"
+      "relaunchOnboarding": "Restart onboarding",
+      "strength": "Strength profile"
     },
     "pillars": {
       "title": "Active pillars",
@@ -2736,7 +2785,10 @@
       "title": "Heavy leg session the day before",
       "body": "{{legSets}} leg sets the day before, then “{{runType}}” the next day. Your legs will not have recovered.",
       "swap": "Move to {{day}}",
-      "noSlot": "No other free day this week."
+      "noSlot": "No other free day this week.",
+      "appliedTitle": "Session moved",
+      "appliedBody": "I moved it to {{day}}: {{legSets}} leg sets landed the day before your {{runType}}.",
+      "undo": "Undo the move"
     },
     "timeLabel": "Session time",
     "timeNone": "No time set",
@@ -4110,6 +4162,118 @@
       },
       "restPrep": "{{weight}}, {{reps}} reps.",
       "exerciseDone": "{{exercise}} done."
+    }
+  },
+  "guidance": {
+    "sectionTitle": "Guidance",
+    "recommended": "Recommended",
+    "previewLabel": "What you'd see",
+    "derivedFromGoal": "Inferred from your goal",
+    "inheritedFromGlobal": "Inherited from your general setting",
+    "focus": {
+      "strength": "At strength",
+      "endurance": "At running"
+    },
+    "regimes": {
+      "guided": {
+        "label": "Guided",
+        "description": "The app decides, and tells you what it changed.",
+        "preview": "“I moved your Legs session to Thursday.”"
+      },
+      "assisted": {
+        "label": "Assisted",
+        "description": "The app suggests, you decide.",
+        "preview": "“Your Legs session lands the day before intervals. Move it?”"
+      },
+      "autonomous": {
+        "label": "On my own",
+        "description": "The app stays quiet. You go looking when you want to.",
+        "preview": "Nothing shows up. It's all still there in Insights."
+      }
+    },
+    "safety": {
+      "title": "Three alerts always come through",
+      "body": "Whatever you choose: critical load, repeated pain, prolonged severe deficit. They show once, without pushing."
+    },
+    "pillarEffect": {
+      "running": {
+        "guided": "A clash with strength work moves the session, and the app tells you.",
+        "assisted": "A clash with strength work gets you a suggestion to move it.",
+        "autonomous": "Nothing appears on its own. The analyses stay in Insights."
+      },
+      "nutrition": {
+        "guided": "Contradictions between your goals are flagged on the home screen.",
+        "assisted": "Contradictions between your goals are flagged on the home screen.",
+        "autonomous": "No contradiction card appears. Your settings stay as they are."
+      }
+    }
+  },
+  "trainingContext": {
+    "sheetTitle": "Two questions, and we'll sharpen this",
+    "sheetSubtitle": "So we can suggest programmes that fit your week.",
+    "levelLabel": "Your experience",
+    "daysLabel": "Training days per week",
+    "daysA11y": "{{count}} days per week",
+    "submit": "Got it",
+    "later": "Later",
+    "levelUnset": "Not set yet — suggestions fall back on your display level.",
+    "levels": {
+      "beginner": {
+        "label": "I'm starting out",
+        "hint": "Under a year of regular training"
+      },
+      "intermediate": {
+        "label": "I train regularly",
+        "hint": "One to three years, technique in place"
+      },
+      "advanced": {
+        "label": "I'm experienced",
+        "hint": "Over three years, heavy loads"
+      }
+    }
+  },
+  "strengthProfile": {
+    "title": "Strength profile",
+    "goalSection": "Your goal",
+    "editGoal": "Change it in my profile"
+  },
+  "goalConflict": {
+    "title": "Your two goals contradict each other.",
+    "why": "Why I'm telling you this",
+    "keepMainGoal": "Keep my goal",
+    "keepPillarGoal": "Keep this setting",
+    "dismiss": "This rule doesn't fit me",
+    "rules": {
+      "bulkVsCut": {
+        "body": "Your main goal says {{left}}. Your nutrition is set to {{right}}. One of the two won't happen.",
+        "why": "Building mass needs a calorie surplus; your nutrition goal enforces a deficit. The two settings live on different screens, and nothing put them side by side until now."
+      },
+      "enduranceVsMass": {
+        "body": "Your main goal says {{left}}, and you're training for a {{right}}. Over twelve weeks, one holds the other back.",
+        "why": "The endurance volume of long-distance training works against building mass — it's the interference the app already measures on your actual load."
+      }
+    },
+    "values": {
+      "goal": {
+        "muscle": "building mass",
+        "weightloss": "losing weight",
+        "performance": "performance",
+        "health": "general health"
+      },
+      "nutrition": {
+        "bulk": "building mass",
+        "cut": "cutting",
+        "weightloss": "losing weight",
+        "maintain": "maintenance"
+      },
+      "running": {
+        "5k": "5 km",
+        "10k": "10 km",
+        "semi": "half marathon",
+        "marathon": "marathon",
+        "perte_poids": "weight loss",
+        "endurance": "endurance"
+      }
     }
   }
 }

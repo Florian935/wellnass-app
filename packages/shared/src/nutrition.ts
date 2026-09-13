@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { addDays, localDayKey } from './date';
+import { pillarDefaults } from './goal-defaults';
 import type { Goal, Sex } from './profile';
 import { syncFieldsSchema } from './sync';
 
@@ -16,16 +17,16 @@ export const NUTRITION_OBJECTIVES = ['bulk', 'cut', 'maintain', 'weightloss'] as
 export const nutritionObjectiveSchema = z.enum(NUTRITION_OBJECTIVES);
 export type NutritionObjective = z.infer<typeof nutritionObjectiveSchema>;
 
-/** Objectif nutritionnel par défaut dérivé de l'objectif d'entraînement (première ouverture). */
+/**
+ * Objectif nutritionnel par défaut dérivé de l'objectif d'entraînement (première ouverture).
+ *
+ * ⚠️ **Signature et résultats inchangés** — huit sites appellent cette fonction, tous sous la forme
+ * `nutritionProfile?.objective ?? objectiveFromGoal(...)`. Depuis GUID-01, elle n'est plus qu'un
+ * adaptateur au-dessus de `pillarDefaults`, pour que la matrice objectif × pilier ait **une seule**
+ * source de vérité. Un `switch` de plus ici, et les deux auraient divergé à la première évolution.
+ */
 export function objectiveFromGoal(goal: Goal | null): NutritionObjective {
-  switch (goal) {
-    case 'muscle':
-      return 'bulk';
-    case 'weightloss':
-      return 'weightloss';
-    default:
-      return 'maintain';
-  }
+  return pillarDefaults(goal).nutrition.objective;
 }
 
 /**

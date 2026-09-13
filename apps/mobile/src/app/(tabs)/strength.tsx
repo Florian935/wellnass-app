@@ -37,6 +37,7 @@ import { StrengthStage, type StrengthScene } from '@/components/strength/Strengt
 import { StrengthWeekCard } from '@/components/strength/StrengthWeekCard';
 import { WhatIfCard } from '@/components/strength/WhatIfCard';
 import { SuggestedPrograms } from '@/components/strength/SuggestedPrograms';
+import { TrainingContextSheet } from '@/components/strength/TrainingContextSheet';
 import { StageScrollView } from '@/components/stage/StageScrollView';
 import { CustomizeButton } from '@/components/widgets/CustomizeButton';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
@@ -47,7 +48,7 @@ import {
   startWorkoutFromSession,
   useWorkoutHistory,
 } from '@/data/repositories/workout-repository';
-import { useProfile } from '@/data/repositories/profile-repository';
+import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { useNearRecords } from '@/data/repositories/records-repository';
 import { useStrengthHub } from '@/data/repositories/strength-hub-repository';
 import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
@@ -83,6 +84,9 @@ export default function StrengthScreen() {
   const modeChosen = useSessionMode((state) => state.chosen);
   const setSessionMode = useSessionMode((state) => state.setMode);
   const [pendingStart, setPendingStart] = useState<(() => void) | null>(null);
+  // US GUID-01 — la feuille « niveau + disponibilité », et le programme qu'on ouvrira juste après.
+  const [contextSheetVisible, setContextSheetVisible] = useState(false);
+  const [pendingProgramId, setPendingProgramId] = useState<string | null>(null);
   // Une fois la question posée, elle ne se repose pas dans la même session d'écran — sinon
   // « ne pas retenir mon choix » bouclerait à l'infini sur la feuille.
   const modeAsked = useRef(false);
@@ -349,8 +353,20 @@ export default function StrengthScreen() {
       {/* Les propositions, uniquement pour qui n'a pas encore de programme. */}
       {state.kind === 'onboarding' ? (
         <SuggestedPrograms
+          trainingLevel={profile?.trainingLevel}
           displayLevel={profile?.workoutDisplayLevel}
-          onPick={(programId) => router.push(`/programs/${programId}`)}
+          weeklyAvailability={profile?.weeklyAvailability}
+          onPick={(programId) => {
+            // US GUID-01 — la question de contexte se pose ici, devant la bibliothèque, et pas
+            // avant : c'est le moment où elle a un objet visible (décision D6). Elle ne bloque
+            // pas le parcours — on ouvre le programme dès qu'elle est refermée.
+            if (profile != null && profile.trainingLevel == null) {
+              setPendingProgramId(programId);
+              setContextSheetVisible(true);
+              return;
+            }
+            router.push(`/programs/${programId}`);
+          }}
           onSeeAll={() => router.push('/programs')}
         />
       ) : null}
@@ -367,6 +383,28 @@ export default function StrengthScreen() {
 
       {/* La question du mode, posée une seule fois (US MUSCU-UX03, R-MO-3). Elle rejoue ensuite
           l'action qui l'avait déclenchée : l'utilisateur voulait démarrer, pas régler quelque chose. */}
+      {/* US GUID-01 — les deux questions manquantes, posées devant la bibliothèque. Elle rejoue
+          ensuite l'action qui l'avait déclenchée : l'utilisateur voulait voir un programme, pas
+          remplir un formulaire. Même patron que la feuille de mode ci-dessous. */}
+      <TrainingContextSheet
+        visible={contextSheetVisible}
+        onClose={() => {
+          // « Plus tard » n'écrit rien : `null` reste « pas de réponse », jamais « débutant ».
+          setContextSheetVisible(false);
+          const target = pendingProgramId;
+          setPendingProgramId(null);
+          if (target) router.push(`/programs/${target}`);
+        }}
+        onSubmit={(level, weeklyAvailability) => {
+          void upsertProfile({ trainingLevel: level, weeklyAvailability });
+          setContextSheetVisible(false);
+          const target = pendingProgramId;
+          setPendingProgramId(null);
+          if (target) router.push(`/programs/${target}`);
+        }}
+        colors={colors}
+      />
+
       <SessionModeSheet
         visible={pendingStart !== null}
         onClose={() => setPendingStart(null)}

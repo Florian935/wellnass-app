@@ -9,6 +9,106 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+
+## 13/09/2026 (ter) — GUID-01 : l'objectif se met enfin à servir, et le guidage devient réglable
+
+Branche `feature/guid01-objectif-regime-guidage` (depuis `dev`, commit précédent `45b8858d`).
+Analyse et maquettes validées par Florian le 13/09/2026, **traité en un seul lot** là où l'analyse
+proposait cinq volets. Roadmap **1.30** (ligne neuve).
+
+### Le problème, en trois chiffres vérifiés dans le code
+
+L'onboarding demandait un objectif en promettant qu'il « oriente les recommandations ».
+`main_goal` était lu à **8 endroits**, et les 8 étaient le même appel `objectiveFromGoal(...)` — le
+repli de l'objectif nutritionnel, et seulement tant que le profil nutritionnel n'avait pas été
+ouvert. Musculation : zéro lecture. Course : zéro lecture. `performance` et `health` tombaient dans
+le même `default`, donc **deux options sur quatre** donnaient une application identique à celle de
+quelqu'un ayant appuyé sur « Passer ». `runner_profiles.objective` et `.level` : écrits, affichés
+dans leur propre formulaire, **relus nulle part**.
+
+### Ajouté
+
+- **`packages/shared/src/guidance.ts`** — la couche de politique, pure et testée. Trois régimes
+  (`guided` / `assisted` / `autonomous`) → une **disposition** (`apply` / `propose` / `silent`).
+  L'axe est **qui décide**, pas *combien de messages* : graduer le volume aurait fabriqué un mode
+  « l'app me harcèle », coupé en dix jours. `effectiveRegime` / `hasChosenRegime` généralisent le
+  motif **appliqué ≠ choisi** de NUTRI-UX01. `SAFETY_DECISIONS` : trois signaux (ACWR critique,
+  douleur répétée, déficit sévère) qui franchissent **tous** les régimes et ne sont **jamais**
+  appliqués d'office.
+- **`goal-defaults.ts`** — la matrice objectif × pilier, source de vérité unique.
+  `objectiveFromGoal` n'en est plus qu'un adaptateur (signature et 5 résultats **inchangés**,
+  figés par test).
+- **`goal-conflicts.ts`** — 2 règles de contradiction (masse ↔ déficit, masse ↔ longue distance),
+  rendues comme **identifiants**, jamais comme du texte.
+- **`program-ranking.ts`** — le tri des suggestions, sorti du composant pour être testable.
+- **Écrans** : `(onboarding)/guidance.tsx` (neuf), `strength-profile.tsx` (neuf — la musculation
+  n'avait **aucun** écran de profil), `TrainingContextSheet`, `GuidanceSelector`,
+  `GoalConflictCard` + `GoalConflictBanner`.
+- **Stores** : `dismissed-rules-store` (rejet durable d'une règle, `secureStorage`),
+  `auto-move-store` (déplacements décidés d'office).
+- **Migration** `20260913184252` — 8 colonnes additives **toutes nullable** sur `profiles`, sans
+  aucun `default` : `null` doit vouloir dire « jamais répondu », jamais « valeur par défaut ».
+- **Deux tests de garde qui manquaient au dépôt** : `profile-columns-guard.test.ts` (toute clé de
+  `ProfileInput` a bien sa colonne dans les **trois** endroits — migration, `powersync/schema.ts`,
+  repository) et `locale-parity.test.ts` (parité FR ↔ EN, décision de cadrage G, que **rien** ne
+  vérifiait).
+
+### Modifié
+
+- `(onboarding)/goal.tsx` : chaque objectif affiche **ce qu'il décide** (issu de `pillarDefaults`,
+  pas d'un texte parallèle qui divergerait), + échéance optionnelle et question de discipline
+  conditionnelle pour « Performance ».
+- `(onboarding)/summary.tsx` : ligne Guidage avec mention de repli, et carte « Ta première action »
+  — qui referme le trou de la **roadmap 1.11**, constaté absent par ACTIV-01 le 03/08/2026.
+- `SuggestedPrograms.tsx` : trie sur `training_level` ; `workoutDisplayLevel` n'est plus qu'un
+  **dernier repli**. Son en-tête documentait ce détournement depuis MUSCU-UX01.
+- `planning/index.tsx` : les collisions respectent la disposition (déplacement + annonce +
+  annulation en guidé). ⚠️ `sessionConflictsEnabled` **reste maître** — le régime module ce qui est
+  déjà activé, il ne rallume jamais rien.
+- `settings.tsx` : lien vers le profil musculation, et `WorkoutLevelPreview` y est **déplacé**
+  depuis l'écran d'onboarding supprimé, plutôt que laissé mort.
+
+### Supprimé
+
+- `(onboarding)/displayLevel.tsx` — **remplacé** par l'écran de guidage, à la même étape. Le
+  parcours garde le même nombre d'écrans (décision de cadrage F intacte). Le réglage survit dans
+  Réglages ; le niveau d'affichage se **déduit** désormais du régime.
+
+### Corrigé en revue de code (4 constats, avant commit)
+
+- 🔴 **BLOQUANT — la file de synchro.** Une écriture d'une des 8 colonnes mettait en file une op
+  PowerSync que le cloud rejette (`column does not exist`) ; `connector.ts` relance l'erreur **sans
+  compléter la transaction**, qui se rejoue indéfiniment. La file étant **sérialisée**, c'est la
+  remontée de **toutes** les tables qui se figeait. → drapeau **`GUIDANCE_WRITE_READY`** (patron
+  `ADAPTATION_WRITE_READY` de CARDIO-UX01), qui retire les 8 colonnes de l'écriture. **À passer à
+  `true` dans le même geste que `db:push`.**
+- **L'annulation d'un déplacement était défaite** au premier aller-retour sur l'écran : `/planning`
+  est une route empilée, l'état local était perdu au remontage et l'effet redéplaçait la séance. →
+  `auto-move-store`.
+- **Deux collisions traitées dans la même passe pouvaient atterrir le même jour** : le jour de repli
+  est choisi dans l'instantané courant. → **un seul conflit par passe**, la recomputation enchaîne.
+- **Le sélecteur du profil Musculation décrivait trois comportements inexistants** — aucun moteur
+  muscu ne lit encore le régime. C'était le défaut même que cette US corrige. → sélecteur retiré du
+  profil muscu, textes de nutrition réécrits pour ne décrire que ce qui est câblé.
+
+### Technique / Notes
+
+- 🔴 **La migration n'est PAS poussée**, et ce n'est pas le fait de cette US : le cloud porte
+  `20260913182920` (seed CIQUAL v2), appliquée depuis le worktree `nutri-biblio` où son fichier est
+  **non suivi par git**. `db:push` est refusé tant que repo et cloud divergent. **La recette est
+  bloquée là-dessus** — voir [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md) et
+  [`RECETTES.md`](RECETTES.md) §64. Je n'ai pas réparé l'historique : la migration n'est pas la
+  mienne, et un `migration repair` effacerait la trace du travail de quelqu'un d'autre.
+- ✅ **Aucune sync rule à déployer** : `profiles` est déjà publiée en `select *`.
+- **Écarts assumés** : la **génération** d'un plan hebdomadaire n'est pas livrée (le régime guidé
+  **sélectionne** un programme éditorial, le duplique et l'active — composer des séances
+  reviendrait à inventer des données d'entraînement) ; `carbTarget` est **déclaré et testé mais non
+  câblé** (le bonus des jours d'entraînement est déjà automatique et piloté par un réglage
+  utilisateur : le passer sous le régime aurait été une régression pour le mode par défaut, et
+  aurait fait qu'un réglage en outrepasse un autre) ; **2 règles de contradiction sur 3** (RN-17
+  n'existe pas comme calcul livré).
+- **Vérifié** : `typecheck` 3 workspaces à **0**, `lint` à **0** (0 warning), **5 968 tests verts**
+  (3 121 Jest + 2 847 Vitest).
 ## 13/09/2026 (bis) — DASH-01 : la surface IA est retirée du build de lancement
 
 Branche `feature/dash01-dashboards-immersifs`, suite directe de l'entrée du jour. **Décision de

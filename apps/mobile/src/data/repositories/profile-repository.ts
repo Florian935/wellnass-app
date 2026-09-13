@@ -46,6 +46,14 @@ export type ProfileInput = Pick<
   | 'workoutDisplayLevel'
   | 'summaryDisplayLevel'
   | 'dailyStepGoal'
+  | 'mainGoalDeadline'
+  | 'trainingFocus'
+  | 'trainingLevel'
+  | 'weeklyAvailability'
+  | 'guidanceRegime'
+  | 'guidanceStrength'
+  | 'guidanceCardio'
+  | 'guidanceNutrition'
   | 'onboardingCompletedAt'
   | 'activationPathDismissedAt'
 >;
@@ -65,6 +73,14 @@ type ProfileDbRow = {
   workout_display_level: string | null;
   summary_display_level: string | null;
   daily_step_goal: number | null;
+  main_goal_deadline: string | null;
+  training_focus: string | null;
+  training_level: string | null;
+  weekly_availability: number | null;
+  guidance_regime: string | null;
+  guidance_strength: string | null;
+  guidance_cardio: string | null;
+  guidance_nutrition: string | null;
   onboarding_completed_at: string | null;
   activation_path_dismissed_at: string | null;
   created_at: string;
@@ -100,6 +116,17 @@ function rowToProfile(row: ProfileDbRow): Profile {
       row.summary_display_level ?? row.workout_display_level,
     ),
     dailyStepGoal: row.daily_step_goal,
+    // US GUID-01 — lues telles quelles : `null` veut dire « jamais répondu », et c'est une
+    // information. Le repli est appliqué par `effectiveRegime()` / `pillarDefaults()`, jamais ici —
+    // sinon l'interface ne pourrait plus distinguer un choix d'un défaut (leçon NUTRI-UX01 R1.3).
+    mainGoalDeadline: row.main_goal_deadline,
+    trainingFocus: row.training_focus as Profile['trainingFocus'],
+    trainingLevel: row.training_level as Profile['trainingLevel'],
+    weeklyAvailability: row.weekly_availability,
+    guidanceRegime: row.guidance_regime as Profile['guidanceRegime'],
+    guidanceStrength: row.guidance_strength as Profile['guidanceStrength'],
+    guidanceCardio: row.guidance_cardio as Profile['guidanceCardio'],
+    guidanceNutrition: row.guidance_nutrition as Profile['guidanceNutrition'],
     onboardingCompletedAt: row.onboarding_completed_at,
     activationPathDismissedAt: row.activation_path_dismissed_at,
     createdAt: row.created_at,
@@ -107,6 +134,44 @@ function rowToProfile(row: ProfileDbRow): Profile {
     deletedAt: row.deleted_at,
   };
 }
+
+/**
+ * 🔴 **Interrupteur de sûreté — US GUID-01.** Passe à `true` DÈS QUE la migration
+ * `20260913184252_guid01_guidance_regime_and_training_context` est appliquée sur le cloud.
+ *
+ * ── Pourquoi ce drapeau, et pas un `try/catch` ──────────────────────────────────────────────────
+ * Les 8 colonnes existent en base **locale** (déclarées dans `powersync/schema.ts`) mais pas encore
+ * sur le cloud : `npm run db:push` est refusé tant que l'historique distant porte une migration
+ * qu'aucun commit ne contient (voir `supabase/MIGRATIONS.md`).
+ *
+ * Sans ce garde-fou, la panne ne serait **pas** limitée à cette US. L'écriture locale réussit, donc
+ * PowerSync met en file une opération `PATCH` portant `guidance_regime` & co ; PostgREST la rejette
+ * (`column does not exist`) ; `connector.ts` relance l'erreur **sans compléter la transaction**,
+ * qui reste en tête de file et se rejoue indéfiniment. Or la file est **sérialisée** : plus aucune
+ * écriture ne remonte — séances, repas, poids, courses, toutes tables confondues. Un compte neuf
+ * est pire encore (`PUT` avec les 8 colonnes dès le premier `upsertProfile`).
+ *
+ * Même garde-fou explicite que `ADAPTATION_WRITE_READY` (CARDIO-UX01), pour la même raison : le
+ * coût d'un oubli est disproportionné, et il doit se voir dans le code, pas seulement dans un
+ * fichier de suivi.
+ *
+ * ⚠️ Tant qu'il vaut `false`, les choix de guidage et de contexte **ne sont pas persistés** —
+ * l'interface les propose, la base ne les garde pas. C'est volontaire : perdre un réglage est
+ * réparable, figer la synchro de tout le monde ne l'est pas.
+ */
+export const GUIDANCE_WRITE_READY = false;
+
+/** Les colonnes de GUID-01, retirées de l'écriture tant que `GUIDANCE_WRITE_READY` est `false`. */
+const GUIDANCE_COLUMNS = [
+  'main_goal_deadline',
+  'training_focus',
+  'training_level',
+  'weekly_availability',
+  'guidance_regime',
+  'guidance_strength',
+  'guidance_cardio',
+  'guidance_nutrition',
+] as const;
 
 /** Convertit un patch de domaine (camelCase) → colonnes SQLite (snake_case). */
 function inputToColumns(input: Partial<ProfileInput>): Record<string, unknown> {
@@ -122,12 +187,28 @@ function inputToColumns(input: Partial<ProfileInput>): Record<string, unknown> {
   if ('workoutDisplayLevel' in input) columns['workout_display_level'] = input.workoutDisplayLevel;
   if ('summaryDisplayLevel' in input) columns['summary_display_level'] = input.summaryDisplayLevel;
   if ('dailyStepGoal' in input) columns['daily_step_goal'] = input.dailyStepGoal;
+  if ('mainGoalDeadline' in input) columns['main_goal_deadline'] = input.mainGoalDeadline;
+  if ('trainingFocus' in input) columns['training_focus'] = input.trainingFocus;
+  if ('trainingLevel' in input) columns['training_level'] = input.trainingLevel;
+  if ('weeklyAvailability' in input) columns['weekly_availability'] = input.weeklyAvailability;
+  if ('guidanceRegime' in input) columns['guidance_regime'] = input.guidanceRegime;
+  if ('guidanceStrength' in input) columns['guidance_strength'] = input.guidanceStrength;
+  if ('guidanceCardio' in input) columns['guidance_cardio'] = input.guidanceCardio;
+  if ('guidanceNutrition' in input) columns['guidance_nutrition'] = input.guidanceNutrition;
   if ('onboardingCompletedAt' in input) {
     columns['onboarding_completed_at'] = input.onboardingCompletedAt;
   }
   if ('activationPathDismissedAt' in input) {
     columns['activation_path_dismissed_at'] = input.activationPathDismissedAt;
   }
+
+  // Voir `GUIDANCE_WRITE_READY` : tant que la migration n'est pas sur le cloud, ces colonnes sont
+  // retirées de l'écriture — un réglage perdu vaut mieux qu'une file de synchro figée pour TOUTES
+  // les tables. On filtre la **sortie** et jamais `input`, qui appartient à l'appelant.
+  if (!GUIDANCE_WRITE_READY) {
+    for (const column of GUIDANCE_COLUMNS) delete columns[column];
+  }
+
   return columns;
 }
 
