@@ -50,29 +50,57 @@ BULK_LIMIT = BULK_LIMIT or 900
 # sert à ranger, pas à qualifier. Un groupe non listé est ignoré — mieux vaut une base plus
 # petite qu'une base où les légumes sont classés en boissons.
 BULK_GROUPS = {
-    'viandes, œufs, poissons': 'meat',
+    # 🔴 Libellés RELEVÉS dans la table 2025, pas devinés. Trois pièges vérifiés le 13/09/2026 :
+    # « oeufs » s'y écrit sans ligature (pas « œufs »), les laitages sont « produits laitiers »
+    # tout court, et les boissons « eaux et autres boissons ». Un libellé faux ne lève aucune
+    # erreur : le groupe est simplement ignoré, et la catégorie disparaît de l'import en silence.
+    'viandes, oeufs, poissons': 'meat',
     'produits céréaliers': 'starchy',
-    'légumes': 'vegetables',
-    'fruits, légumes, légumineuses et oléagineux': 'fruits',
-    'produits laitiers et assimilés': 'dairy',
-    'lait et produits laitiers': 'dairy',
-    'boissons': 'drinks',
+    'fruits, légumes, légumineuses et oléagineux': 'vegetables',
+    'produits laitiers': 'dairy',
+    'eaux et autres boissons': 'drinks',
     'entrées et plats composés': 'other',
     'aides culinaires et ingrédients divers': 'other',
     'matières grasses': 'other',
     'produits sucrés': 'other',
     'glaces et sorbets': 'other',
+    # 'aliments infantiles' : volontairement absent — l'app ne vise pas les nourrissons.
 }
 
 # Sous-groupes qui affinent le rangement quand le groupe est trop large.
 BULK_SUBGROUPS = {
-    'poissons': 'fish', 'mollusques et crustacés': 'fish',
-    'fruits': 'fruits', 'légumes': 'vegetables',
-    'fruits à coque et graines oléagineuses': 'nuts', 'légumineuses': 'starchy',
-    'pommes de terre et autres tubercules': 'starchy',
-    'pâtes, riz et céréales': 'starchy', 'pains et viennoiseries': 'starchy',
-    'œufs': 'meat', 'viandes': 'meat', 'charcuteries': 'meat', 'volailles': 'meat',
+    'poissons crus': 'fish', 'poissons cuits': 'fish',
+    'produits à base de poissons et produits de la mer': 'fish',
+    'mollusques et crustacés crus': 'fish', 'mollusques et crustacés cuits': 'fish',
+    'viandes crues': 'meat', 'viandes cuites': 'meat', 'oeufs': 'meat',
+    'charcuteries et alternatives végétales': 'meat', 'autres produits à base de viande': 'meat',
+    'fruits': 'fruits', 'légumes': 'vegetables', 'algues': 'vegetables',
+    'fruits à coque et graines oléagineuses': 'nuts',
+    'légumineuses': 'starchy', 'pommes de terre et autres tubercules': 'starchy',
+    'pâtes, riz et céréales': 'starchy', 'pains et assimilés': 'starchy',
+    'farines': 'starchy', 'céréales de petit-déjeuner': 'starchy',
+    'produits laitiers frais et alternatives végétales': 'dairy',
+    'fromages et alternatives végétales': 'dairy', 'laits': 'dairy',
+    'crèmes et spécialités à base de crème': 'dairy',
+    'boissons sans alcool': 'drinks', 'eaux': 'drinks', 'boisson alcoolisées': 'drinks',
+    # 'huiles de poissons' n'est PAS ici : c'est une matière grasse, pas un poisson. Absente de
+    # cette table, elle retombe sur son groupe -> 'other'. Le silence est ici le bon comportement.
 }
+
+# CIQUAL DÉCLARE la cuisson dans le sous-groupe. C'est une source bien meilleure que la lecture
+# du nom (`preparationStateFromName`), qui n'est qu'un filet de sécurité : 100 g de poulet cru et
+# 100 g de poulet cuit, ce n'est pas le même apport, et l'écart passe inaperçu au journal.
+BULK_PREPARATION = {
+    'viandes crues': 'raw', 'poissons crus': 'raw', 'mollusques et crustacés crus': 'raw',
+    'viandes cuites': 'cooked', 'poissons cuits': 'cooked',
+    'mollusques et crustacés cuits': 'cooked',
+}
+
+# Ordre d'import : les aliments bruts du quotidien AVANT les plats préparés. Le CSV est trié par
+# code de groupe, si bien qu'un `--limit` appliqué dans l'ordre du fichier remplissait la base de
+# salades appertisées et n'atteignait jamais les légumes. L'ordre ci-dessous rend `--limit`
+# utilisable : couper à 300 donne une base cohérente, pas un rayon traiteur.
+BULK_PRIORITE = ['vegetables', 'fruits', 'meat', 'fish', 'dairy', 'starchy', 'nuts', 'drinks', 'other']
 
 catalog = json.load(open(os.path.join(HERE, 'foods-catalog.json'), encoding='utf-8'))
 COL = json.load(open(os.path.join(HERE, 'mapping-columns.json'), encoding='utf-8'))
@@ -144,10 +172,8 @@ def bulk_extend(catalog, rows, limit):
     def bulk_id(code):
         return f"d4{int(code):06d}-0000-4000-8000-000000000000"
 
-    ajoutes = 0
+    candidats = []
     for r in rows[1:]:
-        if ajoutes >= limit:
-            break
         code = r[6].strip()
         if not code or code in connus:
             continue
@@ -162,6 +188,14 @@ def bulk_extend(catalog, rows, limit):
         nom = (r[7] or '').strip()
         if not nom:
             continue
+        candidats.append((categorie, sous_groupe, code, nom))
+
+    # Tri stable et déterministe : priorité de catégorie, puis nom. Deux exécutions sur le même
+    # CSV produisent exactement le même catalogue — sans quoi `--limit` serait un tirage au sort.
+    candidats.sort(key=lambda c: (BULK_PRIORITE.index(c[0]), c[3]))
+
+    ajoutes = 0
+    for categorie, sous_groupe, code, nom in candidats[:limit]:
         catalog.append({
             'id': bulk_id(code),
             'nameFr': nom,
@@ -170,6 +204,7 @@ def bulk_extend(catalog, rows, limit):
             'nameEn': nom,
             'needsTranslation': True,
             'category': categorie,
+            'preparationState': BULK_PREPARATION.get(sous_groupe),
             'portions': '[]',
             'ciqualCode': code,
             'new': True,
@@ -210,17 +245,25 @@ def micjson(r):
 def food_row_mic(r):
     """Ligne foods avec micronutrients en ligne (pour la migration upsert)."""
     b = r['base']
-    return (f"  ('{r['id']}', null, 'library', '{r['category']}', null, {num(b['kcal'])}, "
+    # État de cuisson : renseigné uniquement quand CIQUAL le DÉCLARE (sous-groupe « viandes cuites »,
+    # « poissons crus »…). Ailleurs on laisse null, et l'app retombe sur la lecture du nom.
+    prep = f"'{r['preparationState']}'" if r.get('preparationState') else 'null'
+    return (f"  ('{r['id']}', null, 'library', '{r['category']}', null, {prep}, {num(b['kcal'])}, "
             f"{num(b['protein'])}, {num(b['carbs'])}, {num(b['sugars'])}, {num(b['fat'])}, "
             f"{num(b['satfat'])}, {num(b['fiber'])}, '{r['portions']}', '{micjson(r)}', now(), now())")
 
 
 # --- migration idempotente (upsert) : biblio d'aliments 100 % CIQUAL ---
+# 🔴 L'id de traduction dérive de celui de l'aliment, il n'est PLUS positionnel. L'ancienne
+# forme `d2000{n:03d}` avait deux défauts qui ne se voyaient qu'à grande échelle : au-delà de
+# 999 aliments elle produisait `d20001000-…`, soit 9 caractères dans le premier bloc — un UUID
+# invalide, et la migration entière rejetée ; et surtout un simple changement d'ordre du catalogue
+# réattribuait l'id d'une traduction à un AUTRE aliment.
 trs = []
-for i, r in enumerate(recs):
-    n = i + 1
-    trs.append(f"  ('d2000{n:03d}-0001-4000-8000-000000000000', '{r['id']}', null, 'fr', {sq(r['nameFr'])}, now(), now())")
-    trs.append(f"  ('d3000{n:03d}-0002-4000-8000-000000000000', '{r['id']}', null, 'en', {sq(r['nameEn'])}, now(), now())")
+for r in recs:
+    prefixe = r['id'][:8]
+    trs.append(f"  ('{prefixe}-0001-4000-8000-000000000000', '{r['id']}', null, 'fr', {sq(r['nameFr'])}, now(), now())")
+    trs.append(f"  ('{prefixe}-0002-4000-8000-000000000000', '{r['id']}', null, 'en', {sq(r['nameEn'])}, now(), now())")
 
 mig = [
     "-- Bibliothèque d'aliments — données CIQUAL 2025 (ANSES, Licence Ouverte / Etalab).",
@@ -228,11 +271,13 @@ mig = [
     "-- Migration volontairement IDEMPOTENTE (upsert) : réconcilie les aliments existants sur le cloud",
     "-- et se rejoue sans effet de bord au db:reset. Attribution : Table Ciqual, ANSES.",
     "",
-    ("insert into public.foods (id, owner_id, source, category, barcode, kcal_per_100g, protein_per_100g, "
+    ("insert into public.foods (id, owner_id, source, category, barcode, preparation_state, "
+     "kcal_per_100g, protein_per_100g, "
      "carbs_per_100g, sugars_per_100g, fat_per_100g, saturated_fat_per_100g, fiber_per_100g, portions, "
      "micronutrients, created_at, updated_at)\nvalues\n" + ",\n".join(food_row_mic(r) for r in recs) +
      "\non conflict (id) do update set\n"
      "  source = excluded.source, category = excluded.category, barcode = excluded.barcode,\n"
+     "  preparation_state = excluded.preparation_state,\n"
      "  kcal_per_100g = excluded.kcal_per_100g, protein_per_100g = excluded.protein_per_100g,\n"
      "  carbs_per_100g = excluded.carbs_per_100g, sugars_per_100g = excluded.sugars_per_100g,\n"
      "  fat_per_100g = excluded.fat_per_100g, saturated_fat_per_100g = excluded.saturated_fat_per_100g,\n"
@@ -240,7 +285,7 @@ mig = [
      "  micronutrients = excluded.micronutrients, updated_at = now();"),
     ("insert into public.food_translations (id, food_id, owner_id, lang, name, created_at, updated_at)\n"
      "values\n" + ",\n".join(trs) +
-     "\non conflict (id) do update set name = excluded.name, updated_at = now();"),
+     "\non conflict (food_id, lang) do update set name = excluded.name, updated_at = now();"),
 ]
 open(os.path.join(HERE, 'migration.sql'), 'w', encoding='utf-8').write("\n\n".join(mig) + "\n")
 

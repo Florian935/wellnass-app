@@ -2647,7 +2647,8 @@ deux exclusions, toutes deux extérieures à cette US :
 >
 > 🔴 **DEUX PRÉREQUIS AVANT DE COMMENCER — dans cet ordre.**
 >
-> **① Déployer la sync rule PowerSync.** `water_entries` est une **table neuve**. Coller
+> **① Déployer la sync rule PowerSync — ✅ FAIT, confirmé par Florian le 13/09/2026.**
+> `water_entries` est une **table neuve**. Coller
 > [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le dashboard
 > PowerSync (Settings → Sync Rules) puis **Deploy**. Sans ce geste, les verres bus restent
 > **locaux** et ne remontent jamais — *sans aucune erreur visible*. Étape déjà oubliée **trois
@@ -2658,6 +2659,11 @@ deux exclusions, toutes deux extérieures à cette US :
 > `water_entries`, `foods.preparation_state`, `meal_plan_entries.food_id`/`quantity_g`,
 > `nutrition_profiles.water_target_ml`/`glass_size_ml`. Un APK antérieur écrira dans des
 > colonnes qui n'existent pas chez lui — et **avalera l'erreur**.
+>
+> **③ La bibliothèque est passée à 3 244 aliments le 13/09/2026** (import CIQUAL, section K).
+> C'est une donnée de référence : rien à installer, elle **descend par la synchro**. À la
+> première ouverture après le build, laisser la synchro finir — ~3 200 aliments et ~6 500
+> traductions arrivent une fois, puis plus rien.
 >
 > ⚠️ **Trois sessions ont travaillé la même semaine** (accueil, musculation, course). Cette US
 > vit dans un worktree isolé et ne touche que le pilier nutrition, mais au merge : vérifier que
@@ -2822,14 +2828,39 @@ deux exclusions, toutes deux extérieures à cette US :
 - [ ] 69. Le **widget nutrition de l'accueil** ouvre toujours le bon repas selon l'heure.
 - [ ] 70. **Aucun texte anglais** n'apparaît en français, et inversement (basculer la langue).
 
-### J. Ce qui reste ouvert après cette recette
+### J. La bibliothèque d'aliments — import CIQUAL du 13/09/2026
 
-- [ ] 71. 🔴 **La bibliothèque compte toujours 80 aliments.** Ce n'est pas un défaut de l'US :
-      le remplissage exige le CSV CIQUAL, non versionné et absent de la machine. L'outillage est
-      livré (`generate.py --bulk`), la procédure est en spec §9 — **c'est le premier
-      reste-à-faire du pilier, et il ne demande aucun développement**.
-- [ ] 72. La **traduction EN** des aliments importés reste à faire (CIQUAL est monolingue) :
-      le script annonce le nombre concerné à chaque import.
+> **80 → 3 244 aliments** (table CIQUAL 2025 de l'ANSES, Licence Ouverte). Toute la nutrition
+> vient du fichier ANSES : **aucune valeur saisie à la main**. Ces critères n'existaient pas à
+> la livraison du 10/09 — le lot était alors impossible, faute du fichier source.
+
+- [ ] 71. Chercher **« courgette »**, **« cabillaud »**, **« emmental »**, **« lentilles »**,
+      **« jus d'orange »** : chacun existe. Aucun n'était dans les 80 aliments d'avant — c'est
+      précisément le « mur au deuxième repas » que l'audit décrivait.
+- [ ] 72. 🔴 **Taper lettre par lettre : « p », « po », « pom », « pomme ».** La liste se
+      **resserre** à chaque lettre, sans jamais faire disparaître un résultat déjà vu. Un
+      aliment qui s'affiche puis s'efface quand on **précise** sa recherche = le plafond de
+      balayage a sauté ; c'est le défaut que l'import a révélé et que cette livraison corrige.
+- [ ] 73. La recherche reste **immédiate** — aucun blanc perceptible — malgré les 3 244 entrées.
+- [ ] 74. Chercher **« boeuf »** puis **« saumon »** : les versions **crues** et **cuites** sont
+      distinguées par le badge cru / cuit. L'information vient désormais de CIQUAL (498 aliments
+      la portent) et non plus de la lecture du nom.
+- [ ] 75. Ajouter un aliment importé au journal, ouvrir son détail : les **micronutriments** sont
+      renseignés. Un nutriment absent de CIQUAL doit rester **absent**, jamais affiché à 0.
+- [ ] 76. ⚠️ Un aliment importé n'a **pas de portion usuelle** : la quantité s'ouvre sur 100 g
+      et le stepper fonctionne normalement. C'est **attendu** (CIQUAL ne fournit pas de
+      portions), pas un défaut — voir 78.
+- [ ] 77. Les 80 aliments d'origine sont **intacts** : « Poulet (blanc, cuit) » garde son nom
+      retouché, sa traduction anglaise et sa portion « 1 blanc = 120 g ». L'import **ajoute**,
+      il ne réécrit pas.
+
+### K. Ce qui reste ouvert après cette recette
+
+- [ ] 78. La **traduction EN de 3 164 noms** reste à faire : CIQUAL est monolingue, donc en
+      anglais ces aliments s'affichent en français. Dette **tracée** (marqueur
+      `needsTranslation`, comptée à chaque import), pas un oubli — décision G.
+- [ ] 79. Les **portions usuelles** des aliments importés (voir 76), à compléter au fil de
+      l'eau : patron dans la migration `…nutrf2_portions_reference_aliments.sql`.
 ---
 
 ## 59. CARDIO-UX01 — Refonte UX du pilier Course (`feature/cardio-refonte-ux`)

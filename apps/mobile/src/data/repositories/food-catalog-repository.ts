@@ -25,8 +25,14 @@ import { useTranslation } from 'react-i18next';
 import { foldDiacritics, rankFoodMatches, type SearchableItem } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 
-/** Nombre maximal de lignes remontées de SQLite avant classement. */
-const SQL_SCAN_LIMIT = 400;
+/**
+ * Nombre maximal de lignes remontées de SQLite avant classement.
+ *
+ * Relevé de 400 à 800 le 13/09/2026, quand la bibliothèque est passée de 80 à 3 244 aliments
+ * (import CIQUAL). À deux lettres, le `LIKE` dépasse largement l'ancien plafond — « bo » rend
+ * 453 candidats, « po » 582 — et tout ce qui dépassait était coupé **avant** le classement.
+ */
+const SQL_SCAN_LIMIT = 800;
 /** Nombre maximal de lignes rendues à l'écran. */
 export const SEARCH_RESULT_LIMIT = 40;
 /** Taille de la liste « habitudes » (récents + favoris) affichée sans recherche. */
@@ -166,12 +172,19 @@ export function useCatalogSearch(
   // sait pas ignorer les accents —, donc on ne l'utilise que comme filtre grossier, et on garde
   // une deuxième chance en mémoire pour les termes accentués (`foldDiacritics`).
   const like = `%${trimmed}%`;
+  // 🔴 Les correspondances par **début de nom** passent devant, avant même l'historique.
+  // Sans cette clause, le plafond coupait dans un ordre qui ignore la pertinence : sur une base
+  // de 3 244 aliments, « pomme » pouvait disparaître à « po » puis réapparaître à « pom ».
+  // Une liste qui rétrécit quand on précise sa recherche donne l'impression d'un moteur cassé.
+  const prefixe = `${trimmed}%`;
   const { data: foods, isLoading: loadingFoods } = useQuery<FoodRow>(
     active
       ? `${SELECT_CANDIDATES} AND (COALESCE(tl.name, tfr.name) LIKE ? COLLATE NOCASE)
-         ORDER BY last_used DESC NULLS LAST LIMIT ?`
+         ORDER BY (CASE WHEN COALESCE(tl.name, tfr.name) LIKE ? COLLATE NOCASE THEN 0 ELSE 1 END),
+                  last_used DESC NULLS LAST, COALESCE(tl.name, tfr.name) COLLATE NOCASE
+         LIMIT ?`
       : `${SELECT_CANDIDATES} ORDER BY name COLLATE NOCASE LIMIT ?`,
-    active ? [lang, like, SQL_SCAN_LIMIT] : [lang, SQL_SCAN_LIMIT],
+    active ? [lang, like, prefixe, SQL_SCAN_LIMIT] : [lang, SQL_SCAN_LIMIT],
   );
 
   const { data: recipes, isLoading: loadingRecipes } = useQuery<RecipeRow>(
