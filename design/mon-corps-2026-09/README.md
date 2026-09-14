@@ -17,6 +17,16 @@ Les planches contiennent quatre écrans au total. Elles restent des images stati
 - [Vingt états de silhouette](morphology-qa.png) et [détail](morphology-detail.png).
 - [Validation globale sur téléphone et scénarios archivés](../../docs/recette/mon-corps-2026-09.md).
 
+## Priorités et entraînement — CORPS-03
+
+- [Maquette de conception](training-priorities.html) et [planche](training-priorities.png) :
+  suggestion à confirmer, lecture du programme et objectif modifié en sombre. Valeurs fictives.
+- [Contrôle du vrai JSX](training-qa.png), reproductible avec
+  `node design/mon-corps-2026-09/render-training-qa.cjs` : FR/EN, clair/sombre et 320 px.
+- [Grande police à 320 px](training-qa-large-text.png), via la même commande avec `--large-text`.
+  Approximation RN Web du texte à ×1,6, sans débordement constaté ; le réglage Android et
+  TalkBack restent à recetter sur téléphone. Les données de programme sont fictives.
+
 ## Rendu du premier lot
 
 - [Contrôle clair / sombre et articulations](anatomy-qa.png), issu du vrai composant `AnatomyFigure`.

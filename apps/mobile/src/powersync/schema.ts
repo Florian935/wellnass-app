@@ -84,6 +84,7 @@ const user_settings = new Table({
   sbd_lifts: column.text,
   // US CORPS-02 — document visuel versionné, sérialisé en JSON dans SQLite.
   body_visual_state: column.text,
+  body_training_state: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

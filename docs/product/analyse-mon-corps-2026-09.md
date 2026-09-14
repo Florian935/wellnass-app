@@ -1,6 +1,13 @@
 # Mon corps — analyse et proposition d'évolution
 
-Date : 12/09/2026. Statut : **proposition de cadrage**, à discuter ; ce document n'est pas une spécification validée ni une fonctionnalité livrée.
+Analyse initiale du 12/09/2026, direction validée par Florian. Le diagnostic ci-dessous décrit
+le code avant refonte. Au 13/09/2026, **CORPS-01 et CORPS-02 sont implémentés et validés sur
+téléphone**. CORPS-03 réalise le premier incrément du lot 3 : priorités confirmées et lecture
+du programme. L'adaptation automatique avec contraintes reste l'incrément suivant.
+
+Suivi courant : [CORPS-01](../specs/functional/us/corps01-explorateur.md),
+[CORPS-02](../specs/functional/us/corps02-morphologie.md),
+[CORPS-03](../specs/functional/us/corps03-priorites-entrainement.md).
 
 Demande : remplacer le schéma humain actuel par un modèle anatomique élégant, explorer les muscles au toucher, personnaliser la morphologie et exprimer des objectifs visuels qui pourront orienter un entraînement.
 

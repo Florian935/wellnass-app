@@ -118,6 +118,12 @@ it('distingue une erreur de lecture du catalogue vide et conserve la sélection 
   expect(data).toHaveBeenLastCalledWith('chest', '');
 });
 
+it('ouvre les priorités depuis Mon corps', async () => {
+  await show();
+  await tap(screen.getByRole('button', { name: 'Mes priorités d’entraînement' }));
+  expect(push).toHaveBeenCalledWith('/body-training');
+});
+
 it('permet de zoomer avec les boutons, borne le zoom et recentre à la sélection suivante', async () => {
   await show();
   for (let i = 0; i < 4; i++) await tap(screen.getByRole('button', { name: 'Agrandir la silhouette' }));

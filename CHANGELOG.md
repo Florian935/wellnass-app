@@ -9,6 +9,42 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 14/09/2026 — CORPS-03 : priorités confirmées et lecture du programme
+
+Branche `feature/corps03-priorites-entrainement`, base `ceb9d0c4`.
+
+**Ajouté** — Depuis Mon corps et un objectif enregistré dans Ma silhouette, l'utilisateur
+peut confirmer de une à trois priorités, les revoir ou les effacer. Le dessin suggère des zones
+sans enregistrer un choix à sa place. La copie de l'objectif source et la date de confirmation
+restent visibles ; un nouvel objectif invite à revoir la sélection. Le programme actif est lu
+localement : séries prévues sur un passage dans ses séances, associations par muscle précis
+séparées des groupes généraux, séries inconnues signalées, détail des biceps/triceps et
+quadriceps/ischios. Liens vers chaque muscle et vers l'éditeur existant du programme.
+
+**Technique** — Document JSON versionné distinct dans `user_settings`, migration additive,
+schéma PowerSync et décodage JSON à l'upload. Confirmation/effacement atomiques avec comparaison
+des deux documents relus, protection du brouillon, des comptes et de l'écho local. Aucun
+programme, mensuration ou réglage visuel modifié ; aucune dépendance native nouvelle.
+L'adaptation automatique des séances reste un incrément suivant.
+
+**Migration** — Cloud à jour après application de `20260913204247` uniquement ; types générés
+et registre actualisés. Trois migrations déjà appliquées par d'autres branches ont été reprises
+à l'identique depuis `origin/dev` (`1869dffa`) pour aligner l'historique local, sans réexécution
+ni import de leur code applicatif. Les types reflètent aussi ces ajouts cloud préexistants.
+
+**Validation et revue** — 6 267 tests passent (admin 587, mobile 2 981, shared 2 699), lint et
+typecheck complets. Revue métier/SQLite puis UI : encodage des nouveaux textes corrigé, rappel
+de l'objectif distinct entre consultation et révision, test dédié et comptes localisés.
+Aucun point restant dans les revues. Captures issues du JSX contrôlées en FR/EN, clair/sombre,
+320 px et texte ×1,6 via RN Web ; TalkBack et comportement sur téléphone restent à recetter.
+Build Android final `assembleRelease` réussi en 1 min 31 s, quatre ABI, signature APK v2
+vérifiée et bundle final identique à celui de l'APK, dernière correction incluse.
+
+**Suivi** — CORPS-03 passe en recette (§64), nouvelle ligne 6.6 : 230 livrés / 4 partiels /
+2 à faire sur 242. La validation Android antérieure concerne toujours CORPS-01/02 uniquement.
+Liens des recettes archivées corrigés et analyse initiale replacée dans son contexte historique.
+Travail conservé sur la branche locale, sans intégration dans dev ni push.
+
 ## 13/09/2026 — CORPS-03 : cadrage du lien entre silhouette et entraînement
 
 Branche `feature/corps03-priorites-entrainement`, base `6449901b` incluant la version Android

@@ -37,7 +37,9 @@ const JSON_COLUMNS: Record<string, readonly string[]> = {
   foods: ['micronutrients', 'portions'],
   menstrual_daily_logs: ['symptoms'],
   nutrition_profiles: ['allergens', 'meals', 'restrictions'],
-  user_settings: ['active_pillars', 'dashboard_layout', 'notifications', 'body_visual_state'],
+  user_settings: [
+    'active_pillars', 'dashboard_layout', 'notifications', 'body_visual_state', 'body_training_state',
+  ],
 };
 
 /**

@@ -133,3 +133,4 @@ export * from './rep-ranges';
 export * from './session-comparison';
 export * from './workout-report';
 export * from './body-visual';
+export * from './body-training';

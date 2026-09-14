@@ -59,6 +59,10 @@ function BodyExplorerContent({ incoming, context, full, reduced }: {
           onPress={() => router.push('/body-shape')} style={[styles.context, { backgroundColor: colors.surfaceAlt, minHeight: 48 }]}>
           <Text style={[styles.contextText, { color: colors.accent }]}>{t('bodyShape.entry')}</Text>
         </Pressable>
+        <Pressable accessibilityRole="button" accessibilityLabel={t('bodyTraining.entry')}
+          onPress={() => router.push('/body-training')} style={[styles.context, { backgroundColor: colors.surfaceAlt, minHeight: 48 }]}>
+          <Text style={[styles.contextText, { color: colors.accent }]}>{t('bodyTraining.entry')}</Text>
+        </Pressable>
         {context ? <View style={[styles.context, { backgroundColor: colors.surfaceAlt }]}>
           <Text style={[styles.contextText, { color: colors.text }]}>{t(`bodyExplorer.context.${context}`)}</Text>
           <Text style={[styles.contextHint, { color: colors.textMuted }]}>{t('bodyExplorer.contextHint')}</Text>

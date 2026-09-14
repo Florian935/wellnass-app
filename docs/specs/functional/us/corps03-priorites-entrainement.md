@@ -1,11 +1,11 @@
 ---
 id: CORPS-03
 titre: "Priorités confirmées et lecture du programme"
-roadmap: []
+roadmap: [6.6]
 catalogue: []
-etape: code
+etape: recette
 branche: feature/corps03-priorites-entrainement
-maj: 13/09/2026
+maj: 14/09/2026
 ---
 
 # CORPS-03 — De la silhouette à l'entraînement
@@ -23,6 +23,8 @@ des séances avec prise en compte du matériel, de l'expérience et du temps dis
    Ma silhouette lorsque l'objectif est enregistré et le brouillon propre. Ouvre `/body-training`.
 2. Sans objectif enregistré : expliquer le lien et proposer **Créer mon objectif visuel**.
    Aucune priorité persistée automatiquement. Document visuel illisible/futur/erreur : état explicite.
+   Si des priorités avaient déjà été confirmées, les conserver à l'écran avec leur ancien
+   objectif et le lien de création ; leur effacement reste possible, une nouvelle confirmation attend un objectif.
 3. Montrer le mannequin objectif, un rappel **Illustration d'intention** et sept zones cochables.
    Présélection suggérée : au plus trois accents strictement positifs, par importance graphique
    décroissante puis ordre canonique. L'utilisateur peut choisir d'autres zones, de une à trois.

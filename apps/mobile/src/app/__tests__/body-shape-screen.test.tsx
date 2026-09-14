@@ -3,7 +3,7 @@ import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { usePreventRemove } from 'expo-router/react-navigation';
 import { useBodyVisual, saveBodyVisual } from '@/data/repositories/body-visual-repository';
-import { createBodyVisualDocument, prepareBodyVisualSave } from '@wellness/shared';
+import { createBodyVisualDocument, createBodyVisualGoal, prepareBodyVisualSave } from '@wellness/shared';
 import BodyShapeScreen from '../body-shape';
 
 const mockPush = jest.fn();
@@ -47,6 +47,20 @@ beforeEach(() => {
 afterEach(() => { jest.restoreAllMocks(); });
 const tap = async (name: string) => { await fireEvent.press(screen.getByRole('button', { name })); };
 const tab = async (name: string) => { await fireEvent.press(screen.getByRole('tab', { name })); };
+
+it('ouvre les priorités uniquement depuis un objectif enregistré et un brouillon propre', async () => {
+  const draft = createBodyVisualDocument(); draft.goal = createBodyVisualGoal(draft);
+  const doc = prepareBodyVisualSave(draft, null, '2026-09-13T12:00:00.000Z');
+  data.mockReturnValue({ document: doc, raw: JSON.stringify(doc), status: 'ready', isLoading: false, error: null });
+  await render(<BodyShapeScreen />);
+  await tap('Passer à l’entraînement'); expect(mockPush).toHaveBeenCalledWith('/body-training');
+  await tap('Augmenter : Épaules');
+  expect(screen.queryByRole('button', { name: 'Passer à l’entraînement' })).toBeNull();
+  await tap('Annuler'); expect(screen.getByRole('button', { name: 'Passer à l’entraînement' })).toBeTruthy();
+  data.mockReturnValue({ document: doc, raw: JSON.stringify(doc), status: 'ready', isLoading: false, error: new Error('read') });
+  await screen.rerender(<BodyShapeScreen />);
+  expect(screen.queryByRole('button', { name: 'Passer à l’entraînement' })).toBeNull();
+});
 
 it('ouvre un départ sans mesures et ne sauvegarde que sur action explicite', async () => {
   await render(<BodyShapeScreen />);

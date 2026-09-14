@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **13/09/2026** — **61 sections**.
+> Dernière mise à jour : **14/09/2026** — **62 sections**.
 >
 > **② une §60 est arrivée** : MUSCU-UX02, le bilan de séance — suite directe de MUSCU-UX01 (§57).
 > 🔴 **Son cœur n'est pas l'ergonomie mais l'ISO** : le récap de fin de séance et l'écran
@@ -3207,3 +3207,27 @@ L'analyse listait 45 effets, **19 sont dans ce lot**. Les 26 autres, et pourquoi
 **Reste à faire, sans obstacle identifié** — M2, M5, M6, M9, M10 · C3 à C10 · N3, N5 à N9 ·
 A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branchements.
 ---
+
+## 64. CORPS-03 — Priorités confirmées et lecture du programme
+
+Spec : [CORPS-03](docs/specs/functional/us/corps03-priorites-entrainement.md).
+Branche `feature/corps03-priorites-entrainement`, worktree `.claude/worktrees/mon-corps`.
+La validation précédente concernait CORPS-01 / CORPS-02 ; ce nouvel écran attend sa propre recette.
+
+Chemin : **Musculation → Suivre → Mon corps → Mes priorités d'entraînement**.
+Un objectif visuel enregistré permet de confirmer les priorités ; un programme muscu actif
+permet ensuite de consulter leur présence dans les séances du modèle.
+
+- [ ] 1. Sans objectif enregistré, l'écran propose de créer l'objectif visuel. Aucun choix n'est enregistré automatiquement. Un objectif sans accent ne suggère aucune zone.
+- [ ] 2. Avec plusieurs accents : la suggestion propose jusqu'à trois zones. Choisir de une à trois zones, y compris une autre que la suggestion ; un quatrième choix est empêché et les zones restent décochables. Confirmer explicitement.
+- [ ] 3. La date et les priorités confirmées apparaissent. Modifier puis Annuler retrouve la dernière confirmation. Retour système et retour d'écran demandent confirmation quand des choix ont changé.
+- [ ] 4. Enregistrer la silhouette avec un objectif différent : les anciennes priorités restent présentes et l'écran invite à les revoir. Modifier seulement le départ courant, sans recréer l'objectif, ne remplace pas les priorités.
+- [ ] 5. Effacer les priorités demande confirmation ; annuler conserve les données. Après effacement, l'ancienne confirmation ne réapparaît pas pendant le rafraîchissement local. L'objectif visuel reste intact.
+- [ ] 6. Mode avion : confirmer, fermer et rouvrir l'application, puis rétablir le réseau. Priorités et dessin restent conservés et séparés. Vérifier l'isolation entre deux comptes. Un changement concurrent ne doit pas effacer silencieusement un brouillon.
+- [ ] 7. Programme actif : nom et nombre de séances corrects. Les comptes portent sur un passage dans toutes les séances, pas une semaine ni le réalisé. Échauffements exclus ; poids de corps inclus. Séries inconnues distinctes de zéro.
+- [ ] 8. Vérifier un exercice biceps + triceps et un exercice quadriceps + ischios : chaque ligne compte une fois dans sa zone. Les sous-muscles réellement renseignés sont nommés. Un tag large « jambes » reste une association générale, jamais des séries fines de fessiers inventées.
+- [ ] 9. Vérifier programme absent, programme vide et erreur de lecture. Les liens vers le programme et chaque muscle fonctionnent. Aucun exercice, charge, nombre de séries, planning ou programme actif n'est modifié par une confirmation de priorités.
+- [ ] 10. FR/EN, clair/sombre, petit écran, police agrandie et TalkBack : choix cochables annoncés, boutons accessibles, cartes et libellés lisibles. Aucun geste obligatoire.
+
+L'adaptation automatique d'un programme, le dosage des séries et les prévisions de transformation
+physique ne font pas partie de cet incrément.

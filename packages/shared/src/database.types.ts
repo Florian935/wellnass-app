@@ -74,6 +74,44 @@ export type Database = {
           },
         ]
       }
+      ai_usage: {
+        Row: {
+          count: number
+          created_at: string
+          id: string
+          kind: string
+          updated_at: string
+          usage_date: string
+          user_id: string
+        }
+        Insert: {
+          count?: number
+          created_at?: string
+          id?: string
+          kind: string
+          updated_at?: string
+          usage_date?: string
+          user_id: string
+        }
+        Update: {
+          count?: number
+          created_at?: string
+          id?: string
+          kind?: string
+          updated_at?: string
+          usage_date?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_usage_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics_events: {
         Row: {
           app_version: string | null
@@ -1472,16 +1510,24 @@ export type Database = {
           daily_step_goal: number | null
           deleted_at: string | null
           first_name: string | null
+          guidance_cardio: string | null
+          guidance_nutrition: string | null
+          guidance_regime: string | null
+          guidance_strength: string | null
           height_cm: number | null
           id: string
           main_goal: string | null
+          main_goal_deadline: string | null
           onboarding_completed_at: string | null
           sex: string | null
           start_weight_kg: number | null
           summary_display_level: string | null
           target_weight_kg: number | null
+          training_focus: string | null
+          training_level: string | null
           updated_at: string
           user_id: string
+          weekly_availability: number | null
           weight_kg: number | null
           workout_display_level: string | null
         }
@@ -1492,16 +1538,24 @@ export type Database = {
           daily_step_goal?: number | null
           deleted_at?: string | null
           first_name?: string | null
+          guidance_cardio?: string | null
+          guidance_nutrition?: string | null
+          guidance_regime?: string | null
+          guidance_strength?: string | null
           height_cm?: number | null
           id: string
           main_goal?: string | null
+          main_goal_deadline?: string | null
           onboarding_completed_at?: string | null
           sex?: string | null
           start_weight_kg?: number | null
           summary_display_level?: string | null
           target_weight_kg?: number | null
+          training_focus?: string | null
+          training_level?: string | null
           updated_at?: string
           user_id: string
+          weekly_availability?: number | null
           weight_kg?: number | null
           workout_display_level?: string | null
         }
@@ -1512,16 +1566,24 @@ export type Database = {
           daily_step_goal?: number | null
           deleted_at?: string | null
           first_name?: string | null
+          guidance_cardio?: string | null
+          guidance_nutrition?: string | null
+          guidance_regime?: string | null
+          guidance_strength?: string | null
           height_cm?: number | null
           id?: string
           main_goal?: string | null
+          main_goal_deadline?: string | null
           onboarding_completed_at?: string | null
           sex?: string | null
           start_weight_kg?: number | null
           summary_display_level?: string | null
           target_weight_kg?: number | null
+          training_focus?: string | null
+          training_level?: string | null
           updated_at?: string
           user_id?: string
+          weekly_availability?: number | null
           weight_kg?: number | null
           workout_display_level?: string | null
         }
@@ -2566,7 +2628,9 @@ export type Database = {
       user_settings: {
         Row: {
           active_pillars: Json
+          ai_consent_at: string | null
           analytics_enabled: boolean
+          body_training_state: Json | null
           body_visual_state: Json | null
           created_at: string
           cycle_health_connect_enabled: boolean
@@ -2588,7 +2652,9 @@ export type Database = {
         }
         Insert: {
           active_pillars?: Json
+          ai_consent_at?: string | null
           analytics_enabled?: boolean
+          body_training_state?: Json | null
           body_visual_state?: Json | null
           created_at?: string
           cycle_health_connect_enabled?: boolean
@@ -2610,7 +2676,9 @@ export type Database = {
         }
         Update: {
           active_pillars?: Json
+          ai_consent_at?: string | null
           analytics_enabled?: boolean
+          body_training_state?: Json | null
           body_visual_state?: Json | null
           created_at?: string
           cycle_health_connect_enabled?: boolean

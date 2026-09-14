@@ -217,6 +217,8 @@ export function BodyShapeEditor({ source }: { source: ReturnType<typeof useBodyV
           </View> : null}
         </>}
         <Text style={[styles.note, mutedStyle]}>{t(goalMode ? 'bodyShape.goalHint' : 'bodyShape.baselineHint')}</Text>
+        {saved?.goal?.savedAt && !dirty && !disabled && !changedElsewhere && !pendingEcho && !failure
+          ? action(t('bodyTraining.shapeEntry'), () => router.push('/body-training')) : null}
         <BodyMeasurementReferences />
       </ScrollView>
       <View style={[styles.footer, { borderColor: colors.border }]}>

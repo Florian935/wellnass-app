@@ -83,4 +83,12 @@ describe('decodeJsonColumns', () => {
       }),
     ).toEqual({ body_visual_state: { version: 1 } });
   });
+
+  it('deplie les priorites d entrainement avant leur upload JSONB', () => {
+    expect(
+      decodeJsonColumns('user_settings', {
+        body_training_state: '{"version":1,"priorities":["arms"]}',
+      }),
+    ).toEqual({ body_training_state: { version: 1, priorities: ['arms'] } });
+  });
 });

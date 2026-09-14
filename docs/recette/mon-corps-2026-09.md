@@ -14,7 +14,7 @@ lint et typecheck passent après le correctif Windows. Texte de la checklist d'o
 ---
 ## 62. CORPS-01 — Carte anatomique et explorateur Mon corps
 
-Spec : [CORPS-01](docs/specs/functional/us/corps01-explorateur.md). Branche `feature/corps01-explorateur`, worktree `.claude/worktrees/mon-corps`. Premier lot local, non intégré à dev dans cette passe. Aperçu du dessin : [clair / sombre / articulations](design/mon-corps-2026-09/anatomy-qa.png).
+Spec : [CORPS-01](../specs/functional/us/corps01-explorateur.md). Branche `feature/corps01-explorateur`, worktree `.claude/worktrees/mon-corps`. Premier lot local, non intégré à dev dans cette passe. Aperçu du dessin : [clair / sombre / articulations](../../design/mon-corps-2026-09/anatomy-qa.png).
 
 Lancer le serveur depuis ce worktree (`npm run mobile`) et utiliser le dev build Android du projet. Chemin principal : **Musculation → Suivre → Mon corps**. Il s'agit de l'explorateur de muscles ; la personnalisation de morphologie et l'éditeur d'objectifs sont suivis séparément en §63, branche `feature/corps02-morphologie` qui inclut CORPS-01.
 
@@ -34,7 +34,7 @@ Contrôles automatiques terminés : 6 016 tests, typecheck et lint passent ; exp
 
 ## 63. CORPS-02 — Silhouette personnelle et intention visuelle
 
-Spec : [CORPS-02](docs/specs/functional/us/corps02-morphologie.md). Branche `feature/corps02-morphologie`, worktree `.claude/worktrees/mon-corps`, inclut CORPS-01 et le dernier dev utilisé au démarrage du lot. Aperçus issus du code : [éditeur](design/mon-corps-2026-09/morphology-editor-qa.png) et [silhouettes](design/mon-corps-2026-09/morphology-detail.png). Ces planches RN Web/SVG ne remplacent pas la recette native.
+Spec : [CORPS-02](../specs/functional/us/corps02-morphologie.md). Branche `feature/corps02-morphologie`, worktree `.claude/worktrees/mon-corps`, inclut CORPS-01 et le dernier dev utilisé au démarrage du lot. Aperçus issus du code : [éditeur](../../design/mon-corps-2026-09/morphology-editor-qa.png) et [silhouettes](../../design/mon-corps-2026-09/morphology-detail.png). Ces planches RN Web/SVG ne remplacent pas la recette native.
 
 Chemin : **Musculation → Suivre → Mon corps → Ma silhouette et mes objectifs**. Lancer `npm run mobile` depuis ce worktree et ouvrir le dev build du projet. Migration cloud appliquée ; aucune nouvelle dépendance native ou sync rule.
 
