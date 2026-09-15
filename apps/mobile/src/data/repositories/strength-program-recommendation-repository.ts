@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from '@powersync/react';
 import {
   DEFAULT_SEGMENT_KIND,
@@ -27,6 +27,11 @@ export type StrengthProgramCandidateResult = {
 };
 
 type StrengthProgramReadResult = Pick<StrengthProgramCandidateResult, 'candidates' | 'error'>;
+
+type StrengthProgramSignalRow = {
+  id: string;
+  signal: string;
+};
 
 /**
  * Une seule requête réactive signale toute modification susceptible de changer un candidat.
@@ -541,17 +546,17 @@ export async function readStrengthProgramCandidates(
 export function useStrengthProgramCandidates(): StrengthProgramCandidateResult {
   const userId = useAuthStore((state) => state.session?.user.id ?? null);
   const { i18n } = useTranslation();
-  const { data, isLoading: signalLoading, error: signalError } = useQuery<{
-    id: string;
-    signal: string;
-  }>(SELECT_STRENGTH_PROGRAM_CANDIDATE_SIGNAL, [userId]);
-  const signal = useMemo(
-    () => data.map((row) => `${row.id}:${row.signal}`).join('|'),
-    [data],
-  );
-  const readKey = `${userId ?? ''}\u0000${i18n.language}\u0000${signal}`;
-  const [state, setState] = useState<StrengthProgramReadResult & { readKey: string | null }>({
-    readKey: null,
+  const { data, isLoading: signalLoading, error: signalError } =
+    useQuery<StrengthProgramSignalRow>(SELECT_STRENGTH_PROGRAM_CANDIDATE_SIGNAL, [userId]);
+  const contextKey = `${userId ?? ''}\u0000${i18n.language}`;
+  const [state, setState] = useState<
+    StrengthProgramReadResult & {
+      contextKey: string | null;
+      emission: StrengthProgramSignalRow[] | null;
+    }
+  >({
+    contextKey: null,
+    emission: null,
     candidates: [],
     error: null,
   });
@@ -562,18 +567,22 @@ export function useStrengthProgramCandidates(): StrengthProgramCandidateResult {
     let active = true;
     void readStrengthProgramCandidates(userId, i18n.language)
       .then((result) => {
-        if (active) setState({ ...result, readKey });
+        if (active) setState({ ...result, contextKey, emission: data });
       })
       .catch((error: unknown) => {
-        if (active) setState({ candidates: [], error: asError(error), readKey });
+        if (active) {
+          setState({ candidates: [], error: asError(error), contextKey, emission: data });
+        }
       });
     return () => {
       active = false;
     };
-  }, [i18n.language, readKey, signalError, signalLoading, userId]);
+  }, [contextKey, data, i18n.language, signalError, signalLoading, userId]);
 
   if (signalLoading) return { candidates: [], isLoading: true, error: null };
   if (signalError) return { candidates: [], isLoading: false, error: asError(signalError) };
-  if (state.readKey !== readKey) return { candidates: [], isLoading: true, error: null };
+  if (state.contextKey !== contextKey || state.emission !== data) {
+    return { candidates: [], isLoading: true, error: null };
+  }
   return { candidates: state.candidates, isLoading: false, error: state.error };
 }

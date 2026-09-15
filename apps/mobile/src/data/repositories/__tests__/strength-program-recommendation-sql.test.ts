@@ -1,4 +1,4 @@
-import { renderHook, waitFor } from '@testing-library/react-native';
+import { act, renderHook, waitFor } from '@testing-library/react-native';
 import { useQuery } from '@powersync/react';
 import { fingerprintStrengthProgram } from '@wellness/shared';
 
@@ -9,18 +9,21 @@ import {
 } from '../strength-program-recommendation-repository';
 import { getTestDb, resetTestDb, seed, testPowerSync } from '@/test-utils/sqlite-harness';
 
+let mockUserId = 'user-1';
+let mockLanguage = 'en-GB';
+
 jest.mock('@/powersync/system', () => ({
   powerSync: require('@/test-utils/sqlite-harness').testPowerSync,
   connector: {},
 }));
 
 jest.mock('@/stores/auth-store', () => ({
-  useAuthStore: (selector: (state: { session: { user: { id: string } } }) => unknown) =>
-    selector({ session: { user: { id: 'user-1' } } }),
+  useAuthStore: (selector: (state: { session: { user: { id: string } } | null }) => unknown) =>
+    selector({ session: mockUserId ? { user: { id: mockUserId } } : null }),
 }));
 
 jest.mock('react-i18next', () => ({
-  useTranslation: () => ({ i18n: { language: 'en-GB' } }),
+  useTranslation: () => ({ i18n: { language: mockLanguage } }),
 }));
 
 type OwnerId = string | null;
@@ -214,6 +217,8 @@ async function signalRows() {
 
 beforeEach(() => {
   resetTestDb();
+  mockUserId = 'user-1';
+  mockLanguage = 'en-GB';
   jest.mocked(useQuery).mockReset();
 });
 
@@ -473,5 +478,77 @@ describe('useStrengthProgramCandidates', () => {
     await waitFor(() => expect(result.current.isLoading).toBe(false));
     expect(result.current).toEqual({ candidates: [], isLoading: false, error: failure });
     transaction.mockRestore();
+  });
+
+  it('relit le snapshot a chaque nouvelle emission PowerSync meme si le signal agrege est identique', async () => {
+    seedProgram('candidate');
+    seedProgramTranslation('candidate', null, 'fr', 'Avant');
+    const firstEmission = await signalRows();
+    let emission = firstEmission;
+    jest.mocked(useQuery).mockImplementation(() => ({
+      data: emission, isLoading: false, isFetching: false, error: undefined,
+    }));
+    const transaction = jest.spyOn(testPowerSync, 'readTransaction');
+    const hook = await renderHook(() => useStrengthProgramCandidates());
+    await waitFor(() => expect(hook.result.current.isLoading).toBe(false));
+    expect(hook.result.current.candidates[0]?.program.name).toBe('Avant');
+    expect(transaction).toHaveBeenCalledTimes(1);
+
+    getTestDb().prepare("UPDATE program_translations SET name = 'Apres' WHERE program_id = 'candidate'").run();
+    emission = firstEmission.map((row) => ({ ...row }));
+    expect(emission).not.toBe(firstEmission);
+    expect(emission).toEqual(firstEmission);
+
+    await act(async () => {
+      hook.rerender(undefined as unknown as React.ReactNode);
+    });
+
+    await waitFor(() => expect(hook.result.current.candidates[0]?.program.name).toBe('Apres'));
+    expect(transaction).toHaveBeenCalledTimes(2);
+    transaction.mockRestore();
+    await hook.unmount();
+  });
+
+  it('ignore une lecture ancienne terminee apres un changement de langue', async () => {
+    seedProgram('candidate');
+    seedProgramTranslation('candidate', null, 'en', 'English');
+    seedProgramTranslation('candidate', null, 'fr', 'Francais');
+    const emission = await signalRows();
+    jest.mocked(useQuery).mockImplementation(() => ({
+      data: emission, isLoading: false, isFetching: false, error: undefined,
+    }));
+    const actualReadTransaction = testPowerSync.readTransaction.bind(testPowerSync);
+    let readCount = 0;
+    let completedReads = 0;
+    let releaseFirst: (() => void) | undefined;
+    const transaction = jest.spyOn(testPowerSync, 'readTransaction').mockImplementation(async (read) => {
+      readCount += 1;
+      if (readCount === 1) {
+        await new Promise<void>((resolve) => {
+          releaseFirst = resolve;
+        });
+      }
+      const value = await actualReadTransaction(read);
+      completedReads += 1;
+      return value;
+    });
+    const hook = await renderHook(() => useStrengthProgramCandidates());
+    await waitFor(() => expect(readCount).toBe(1));
+
+    mockLanguage = 'fr';
+    await act(async () => {
+      hook.rerender(undefined as unknown as React.ReactNode);
+    });
+    await waitFor(() => expect(hook.result.current.isLoading).toBe(false));
+    expect(hook.result.current.candidates[0]?.program.name).toBe('Francais');
+    expect(readCount).toBe(2);
+
+    await act(async () => {
+      releaseFirst?.();
+    });
+    await waitFor(() => expect(completedReads).toBe(2));
+    expect(hook.result.current.candidates[0]?.program.name).toBe('Francais');
+    transaction.mockRestore();
+    await hook.unmount();
   });
 });
