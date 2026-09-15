@@ -23,7 +23,10 @@
       "fri": "V",
       "sat": "S",
       "sun": "D"
-    }
+    },
+    "save": "Enregistrer",
+    "delete": "Supprimer",
+    "done": "Terminer"
   },
   "sync": {
     "connected": "Synchronisé",
@@ -441,7 +444,8 @@
     "home": "Accueil",
     "strength": "Muscu",
     "running": "Course",
-    "nutrition": "Alim"
+    "nutrition": "Alim",
+    "lab": "Labo"
   },
   "pillars": {
     "strength": "Musculation",
@@ -494,7 +498,11 @@
         "label": "Bonus jour d'entraînement",
         "fixed": "Forfait",
         "auto": "Auto (dépense course)",
-        "hint": "Forfait : bonus fixe les jours de séance. Auto : suit la dépense estimée des courses ; le forfait sert alors de repli les jours muscu."
+        "activities": "Selon ce que tu fais",
+        "hint_fixed": "Ta cible ne bouge pas : ton niveau d'activité compte déjà ton sport.",
+        "hint_auto": "Un bonus les jours de séance, suivant la dépense estimée de tes courses.",
+        "hint_activities": "Une cible de base hors sport, et chaque séance ou activité ajoute ce qu'elle a coûté (bas de la fourchette).",
+        "doubleCount": "Ton sport est compté deux fois : ton niveau d'activité l'inclut déjà, et le bonus l'ajoute par-dessus. Le mode « Selon ce que tu fais » corrige ça."
       },
       "trainingBonus": "Bonus jour d'entraînement (kcal)",
       "trainingBonusHint": "Ajouté à l'objectif les jours avec une séance de muscu ou une course. En mode Auto, sert de repli les jours muscu. 0 = désactivé.",
@@ -504,7 +512,15 @@
       },
       "incomplete": "Renseigne ton poids, ta taille et ta date de naissance pour calculer ton besoin calorique.",
       "completeProfile": "Compléter mon profil",
-      "tdeeHint": "Ce que ton corps dépense en une journée, repos et activité compris — estimé d'après ton poids, ta taille, ton âge et ton niveau d'activité."
+      "tdeeHint": "Ce que ton corps dépense en une journée, repos et activité compris — estimé d'après ton poids, ta taille, ton âge et ton niveau d'activité.",
+      "sportFree": {
+        "label": "Hors sport, tu es plutôt…",
+        "seated": "Assis",
+        "standing": "Debout",
+        "physical": "Physique",
+        "hint": "Ta journée type sans entraînement : bureau, debout souvent, ou métier physique.",
+        "hintDefault": "Jamais renseigné — « Debout » est appliqué par défaut. Choisis ton cas pour une cible juste."
+      }
     },
     "macros": {
       "title": "Répartition des macros",
@@ -2108,7 +2124,8 @@
       "goals": "Objectifs",
       "wellbeing": "Bien-être",
       "review": "Bilan de la semaine",
-      "hint": "Vos journaux personnels, accessibles quand vous en avez besoin — sans encombrer l’accueil."
+      "hint": "Vos journaux personnels, accessibles quand vous en avez besoin — sans encombrer l’accueil.",
+      "activities": "Mes autres activités"
     },
     "conflicts": {
       "title": "Séquençage des séances",
@@ -2917,7 +2934,13 @@
     "a11yIndicatorTab": "Afficher la courbe : {{indicator}}",
     "closeSheet": "Fermer le check-in",
     "windowAll": "Tout",
-    "windowDays": "{{count}} j"
+    "windowDays": "{{count}} j",
+    "sleepLabel": "Nuit",
+    "sleepHint": "La nuit qui vient de se terminer",
+    "sleepNone": "non renseignée",
+    "sleepClear": "effacer",
+    "sleepLess": "Quinze minutes de sommeil en moins",
+    "sleepMore": "Quinze minutes de sommeil en plus"
   },
   "measurements": {
     "title": "Mensurations",
@@ -3695,6 +3718,17 @@
       "objective": "Ajustement lié à ton objectif",
       "trainingDay": "Bonus du jour d'entraînement",
       "target": "Ta cible du jour"
+    },
+    "energy": {
+      "resting": "Ton corps au repos : {{value}} kcal/h (âge, taille, poids, sexe)",
+      "restingFallback": "Ton corps au repos : {{value}} kcal/h — estimation par défaut, il manque l'âge ou la taille",
+      "met": "L'intensité de l'effort : {{value}} MET",
+      "minutes": "Le temps actif compté : {{value}} min",
+      "result": "Ce que l'effort ajoute : ≈ {{value}} kcal (entre {{low}} et {{high}})",
+      "watch": "Ta montre affiche plus ? Elle compte aussi les {{kcal}} kcal que tu aurais dépensées au repos pendant ce temps — elles sont déjà dans ta cible.",
+      "level": "Ton niveau n'entre pas dans le calcul : il agit à travers les charges, le rythme et le ressenti.",
+      "device": "Chiffre lu sur ta montre : {{value}} kcal actives",
+      "target": "Ce que ta cible retient : {{value}} kcal, le bas de la fourchette"
     }
   },
   "brief": {
@@ -4274,6 +4308,615 @@
         "perte_poids": "perte de poids",
         "endurance": "endurance"
       }
+    }
+  },
+  "activity": {
+    "title": "Ajouter une activité",
+    "editTitle": "Modifier l'activité",
+    "listTitle": "Mes autres activités",
+    "listSubtitle": "Tout ce qui n'est ni une séance de muscu, ni une course.",
+    "listItemA11y": "{{type}}, {{date}}",
+    "addCta": "Ajouter une activité",
+    "habits": "Tes habituelles",
+    "type": "Type d'activité",
+    "showAll": "Tout voir",
+    "showLess": "Voir moins",
+    "duration": "Durée",
+    "durationMinus": "Réduire la durée de 5 minutes",
+    "durationPlus": "Augmenter la durée de 5 minutes",
+    "intensityLabel": "Intensité",
+    "distance": "Distance (km) · facultatif",
+    "distancePlaceholder": "ex. 30",
+    "deviceKcal": "Calories actives de ta montre · facultatif",
+    "deviceKcalPlaceholder": "ex. 812",
+    "estimateDetail": "{{type}}, {{intensity}} — d'après ton profil et la durée.",
+    "save": "Enregistrer",
+    "empty": {
+      "title": "Aucune autre activité",
+      "body": "Vélo, natation, rando, sport co : note-les ici pour qu'elles comptent dans ta série, ta charge et ta cible calorique."
+    },
+    "delete": {
+      "title": "Supprimer cette activité ?",
+      "body": "Elle ne comptera plus ni dans ta série, ni dans ta charge, ni dans ta cible du jour."
+    },
+    "types": {
+      "bike": "Vélo",
+      "swim": "Natation",
+      "walk": "Marche",
+      "hike": "Randonnée",
+      "row": "Rameur",
+      "yoga": "Yoga",
+      "team_sport": "Sport co",
+      "racket": "Tennis / padel",
+      "bike_indoor": "Vélo d'appart",
+      "elliptical": "Elliptique",
+      "pilates": "Pilates",
+      "dance": "Danse",
+      "basketball": "Basket",
+      "handball": "Handball",
+      "badminton": "Badminton",
+      "squash": "Squash",
+      "climbing": "Escalade",
+      "boxing": "Boxe",
+      "martial_arts": "Arts martiaux",
+      "hiit": "HIIT / circuit",
+      "ski": "Ski",
+      "other": "Autre"
+    },
+    "intensity": {
+      "light": {
+        "label": "Tranquille",
+        "hint": "tu peux chanter"
+      },
+      "moderate": {
+        "label": "Soutenu",
+        "hint": "tu peux parler"
+      },
+      "vigorous": {
+        "label": "Intense",
+        "hint": "quelques mots à la fois"
+      }
+    },
+    "saved": {
+      "title": "{{type}} ajouté",
+      "subtitle": "{{duration}} · {{intensity}}",
+      "effects": "Ce que ça change",
+      "target": "Ta cible du jour",
+      "targetDetail": "Elle passe à {{target}} kcal (bas de la fourchette).",
+      "targetNoProfile": "Complète ton profil nutrition pour voir l'effet sur ta cible.",
+      "targetOff": "Ta cible ne bouge pas",
+      "targetOffDetail": "Ton niveau d'activité compte déjà ton sport. Passe en « Selon ce que tu fais » pour qu'elle suive tes dépenses réelles.",
+      "streak": "Ta série",
+      "streakDetail": "Aujourd'hui compte comme jour actif.",
+      "streakValue": "{{count}} j",
+      "load": "Ta charge de la semaine",
+      "loadDetail": "Ressenti {{rpe}} × {{minutes}} min.",
+      "healthConnect": "Health Connect",
+      "healthConnectOn": "Séance ajoutée, sans calories.",
+      "healthConnectOff": "Désactivé — rien n'est envoyé.",
+      "edit": "Modifier l'activité"
+    }
+  },
+  "energy": {
+    "title": "Dépense estimée",
+    "a11y": "Dépense estimée : environ {{kcal}} kilocalories",
+    "range": "entre {{low}} et {{high}} kcal · ta cible retient {{low}}",
+    "confidence": {
+      "high": "confiance haute",
+      "medium": "confiance moyenne",
+      "low": "confiance basse"
+    },
+    "explainCta": "D'où vient ce chiffre ?",
+    "explainTitle": "Dépense estimée · {{kcal}} kcal",
+    "fromDevice": "Chiffre de ta montre — repris tel quel.",
+    "dayEffect": "Ta cible du jour monte de {{kcal}} kcal et passe à {{target}}.",
+    "missingWeight": {
+      "title": "Il manque ton poids",
+      "body": "Sans poids, aucune dépense ne peut être estimée — et en inventer un donnerait un chiffre faux mais crédible.",
+      "cta": "Me peser"
+    },
+    "kinds": {
+      "strength": "Musculation",
+      "run": "Course"
+    },
+    "strength": {
+      "detail": "{{duration}} min actives · ressenti {{rpe}}/10 · repos ~{{rest}} min"
+    },
+    "run": {
+      "detail": "{{km}} km",
+      "detailClimb": "{{km}} km · +{{climb}} m de dénivelé comptés",
+      "detailNoGps": "Sans distance : estimée sur la durée et le ressenti."
+    },
+    "day": {
+      "title": "Ta journée en énergie",
+      "total": "≈ {{kcal}} kcal dépensées",
+      "empty": "Rien d'enregistré aujourd'hui. Une séance, une course ou une activité feront monter ta cible.",
+      "estimated": "≈ {{kcal}} kcal",
+      "base": "Socle hors sport + objectif",
+      "fromActivity": "Tes dépenses du jour",
+      "target": "Cible du jour",
+      "remaining": "Il te reste",
+      "notFollowing": "Ta cible ne suit pas encore tes dépenses réelles. La régler.",
+      "notFollowingCta": "Régler la cible calorique"
+    },
+    "settings": {
+      "title": "Calories dépensées",
+      "label": "Afficher les calories dépensées",
+      "hint": "Masquées, ta cible s'ajuste quand même : on retire l'affichage, pas le calcul."
+    }
+  },
+  "lab": {
+    "title": "Le Labo",
+    "subtitle": "Là où tes piliers se croisent.",
+    "tabs": {
+      "week": "Semaine",
+      "composer": "Composer",
+      "why": "Pourquoi ?",
+      "known": "Acquis"
+    },
+    "pillars": {
+      "sleep": "Sommeil"
+    },
+    "stage": {
+      "week": "Ta semaine, en vrai",
+      "composer": "Ta formule, en projet",
+      "why": "L’enquête",
+      "known": "Ce que tu sais de toi",
+      "hint": "Glisse pour tourner autour · touche un disque pour t’en approcher",
+      "hintFocus": "Touche le vide pour revenir à l’ensemble",
+      "fallback": "La 3D n’a pas démarré : voici les mêmes disques, en 2D."
+    },
+    "scene": {
+      "brand": "FITTRIO",
+      "plate": "SÉANCE",
+      "outings": "SORTIES / SEM",
+      "kmOf": "SUR {{total}} KM"
+    },
+    "week": {
+      "lead_one": "Une chose à régler cette semaine.",
+      "lead_other": "{{count}} choses à régler cette semaine.",
+      "leadReady": "Tout est prêt à appliquer.",
+      "leadClear": "Ta semaine est calée.",
+      "where": "Où tu en es",
+      "grid": "Ta semaine",
+      "gridLegend": "plein = fait · pointillé = prévu",
+      "strength": "{{done}} sur {{planned}} séances",
+      "running": "{{done}} sur {{planned}} km",
+      "protein": "Protéines",
+      "proteinValue": "{{value}} sur {{target}} g/kg",
+      "proteinEmpty": "rien de saisi cette semaine",
+      "loggedDays_one": "{{count}} jour saisi",
+      "loggedDays_other": "{{count}} jours saisis",
+      "nights": "{{good}} sur {{logged}} nuits au-dessus de 7 h",
+      "nightsEmpty": "aucune nuit saisie",
+      "lastNight": "dernière nuit : {{value}}",
+      "lastNightEmpty": "note ta nuit au check-in",
+      "next": "prochaine : {{day}}, {{name}}",
+      "noNext": "plus rien de prévu d’ici dimanche",
+      "session": "séance",
+      "run": "course",
+      "proposals": "Le Labo te propose",
+      "toFix_one": "1 à régler",
+      "toFix_other": "{{count}} à régler",
+      "allClear": "tout est réglé",
+      "empty": "Rien à signaler : tes piliers se tiennent.",
+      "apply_one": "Appliquer ce changement à mon plan",
+      "apply_other": "Appliquer {{count}} changements à mon plan",
+      "staged": "Prêt",
+      "applied": "Dans ton plan",
+      "remove": "retirer",
+      "km": "{{value}} km"
+    },
+    "proposals": {
+      "overtraining": {
+        "kind": "garde-fou",
+        "title": "{{streakDays}} jours d’affilée sans repos",
+        "text": "La charge s’accumule sans jour off. Place un repos dans la semaine : c’est lui qui fait progresser.",
+        "done": "À toi de choisir le jour de repos dans le planning.",
+        "action": "Ouvrir mon planning",
+        "changeTitle": "Planning",
+        "changeDetail": "Choisir un jour de repos",
+        "changeWhere": "Planning"
+      },
+      "loadRisk": {
+        "kind": "garde-fou",
+        "title": "Ta charge a bondi (ratio {{ratio}})",
+        "text": "Ta semaine pèse nettement plus que tes quatre dernières. Allège la séance intense du jour plutôt que de la sauter.",
+        "done": "La séance du jour sera allégée de 25 % de répétitions.",
+        "action": "Alléger la séance du jour",
+        "changeTitle": "Séance du jour",
+        "changeDetail": "25 % de répétitions en moins, aujourd’hui seulement",
+        "changeWhere": "Accueil, Musculation, Course"
+      },
+      "deficitVolume": {
+        "kind": "garde-fou",
+        "title": "Déficit de {{deficitPct}} % avec un gros volume",
+        "text": "Manger nettement sous ta cible pendant une grosse semaine de musculation coûte de la force. Revois ta cible ou allège la semaine.",
+        "done": "À revoir dans tes cibles nutritionnelles.",
+        "action": "Voir mes cibles",
+        "changeTitle": "Nutrition",
+        "changeDetail": "Revoir la cible calorique",
+        "changeWhere": "Nutrition"
+      },
+      "collision": {
+        "kind": "collision",
+        "title": "Jambes la veille de ta séance de qualité",
+        "text": "{{legSets}} séries de jambes la veille : la séance du lendemain part avec des jambes lourdes. Le Labo peut la décaler.",
+        "done": "Séance de course décalée : 48 h après les jambes.",
+        "action": "Décaler la course",
+        "changeTitle": "Course · cette semaine",
+        "changeDetail": "Séance déplacée au {{toDayKey}}",
+        "changeWhere": "Accueil, Course, Planning"
+      },
+      "shortNight": {
+        "kind": "nuit courte",
+        "title": "Nuit courte avant une séance intense",
+        "text": "Tu as dormi moins de 6 h. Garde la séance, mais allège-la : c’est ce que l’app propose déjà après une nuit courte.",
+        "done": "Séance allégée de 25 % de répétitions, aujourd’hui seulement.",
+        "action": "Alléger aujourd’hui",
+        "changeTitle": "Séance du jour",
+        "changeDetail": "25 % de répétitions en moins, aujourd’hui seulement",
+        "changeWhere": "Accueil, Course"
+      },
+      "protein": {
+        "kind": "manque",
+        "title": "Protéines à {{gPerKg}} g/kg",
+        "text": "Ta cible est {{targetMin}} g/kg : il te manque environ {{missingG}} g par jour. L’app peut te proposer quoi ajouter.",
+        "done": "À compléter dans tes repas.",
+        "action": "Voir quoi ajouter",
+        "changeTitle": "Nutrition",
+        "changeDetail": "Compléter les protéines du jour",
+        "changeWhere": "Nutrition"
+      },
+      "carbs": {
+        "kind": "carburant",
+        "title": "Glucides à {{gPerKg}} g/kg avant tes séances dures",
+        "text": "Il reste {{hardSessions}} séance(s) dure(s) cette semaine et tes glucides sont sous la borne de {{targetMin}} g/kg.",
+        "done": "À ajuster les jours durs.",
+        "action": "Voir mes glucides",
+        "changeTitle": "Nutrition",
+        "changeDetail": "Augmenter les glucides les jours durs",
+        "changeWhere": "Nutrition"
+      }
+    },
+    "composer": {
+      "sessions_one": "{{count}} séance / sem",
+      "sessions_other": "{{count}} séances / sem",
+      "outings_one": "{{count}} sortie / sem",
+      "outings_other": "{{count}} sorties / sem",
+      "gPerKg": "{{value}} g/kg",
+      "sleepValue": {
+        "short": "moins de 7 h",
+        "long": "7 h et plus"
+      },
+      "lever": {
+        "strengthSessions": "Séances de musculation",
+        "runningFrequency": "Sorties de course",
+        "proteinGPerKg": "Cible de protéines",
+        "objective": "Objectif nutritionnel",
+        "sleep": "Nuits"
+      },
+      "decrease": "Diminuer : {{lever}}",
+      "increase": "Augmenter : {{lever}}",
+      "step": {
+        "strengthSessions": {
+          "up": "Une séance de musculation de plus",
+          "down": "Une séance de musculation de moins"
+        },
+        "runningFrequency": {
+          "up": "Une sortie de plus",
+          "down": "Une sortie de moins"
+        },
+        "proteinGPerKg": {
+          "up": "Monter la cible de protéines",
+          "down": "Baisser la cible de protéines"
+        },
+        "objective": {
+          "up": "Objectif plus généreux",
+          "down": "Objectif plus restrictif"
+        },
+        "sleep": {
+          "up": "Dormir 7 h et plus",
+          "down": "Dormir moins de 7 h"
+        }
+      },
+      "best": "Le réglage le plus rentable",
+      "bestEffect": "+{{value}} kg de total, à 8 semaines",
+      "levers": "Leviers",
+      "reset": "Revenir à mes réglages",
+      "crossings": "Ce que ça croise",
+      "noCrossing": "Rien ne se gêne dans cette formule.",
+      "honest": "Projections calculées sur ta pente réelle, avec des coefficients fixes et lisibles. Aucune projection de chrono : aucun calcul validé ne relie une dose à un temps de course.",
+      "sbd": "Total force à {{weeks}} semaines",
+      "kg": "{{value}} kg",
+      "range": "entre {{low}} et {{high}} kg",
+      "deltaKg": "{{value}} kg vs tes réglages",
+      "noHistory": "Pas encore assez d’historique de force pour projeter.",
+      "load": "Charge (aigu / chronique)",
+      "loadZone": {
+        "safe": "zone saine",
+        "watch": "à surveiller",
+        "risk": "au-dessus du seuil"
+      },
+      "kcal": "Cible du jour",
+      "weightChange": "{{value}} kg attendus en {{weeks}} semaines",
+      "protein": "Protéines",
+      "gPerDay": "{{value}} g / jour",
+      "proteinStatus": {
+        "low": "sous la fourchette de ton objectif",
+        "in": "dans la fourchette",
+        "high": "au-dessus de la fourchette"
+      },
+      "carbs": "Glucides",
+      "carbsRange": "{{min}} à {{max}} g/kg",
+      "carbsNote": "selon ton volume de course",
+      "apply_one": "Appliquer ce réglage",
+      "apply_other": "Appliquer ces {{count}} réglages",
+      "notWritable": "Les séances de musculation se règlent dans ton programme : le Labo ne les écrit pas à ta place.",
+      "change": {
+        "runningFrequency": "{{from}} → {{to}} sorties par semaine",
+        "proteinGPerKg": "{{from}} → {{to}} g/kg",
+        "objective": "Nouvel objectif : {{to}}"
+      },
+      "changeWhere": {
+        "runningFrequency": "Course",
+        "proteinGPerKg": "Nutrition",
+        "objective": "Accueil, Nutrition"
+      }
+    },
+    "crossings": {
+      "overreach": {
+        "title": "Surcharge : {{extraSessions}} séances de plus sur des nuits courtes",
+        "text": "Ce garde-fou n’est pas contestable : plus de charge avec moins de sommeil, la progression s’inverse."
+      },
+      "loadRisk": {
+        "title": "Charge au-dessus du seuil (ratio {{ratio}})",
+        "text": "Au-delà de 1,3, le risque de blessure monte plus vite que le gain."
+      },
+      "loadWatch": {
+        "title": "Charge à surveiller (ratio {{ratio}})",
+        "text": "Rien d’alarmant, mais la montée est nette : garde un œil sur ta récupération."
+      },
+      "deficitHeavyWeek": {
+        "title": "Déficit et semaine chargée",
+        "text": "Un déficit de {{kcalDelta}} kcal avec une semaine dense coûte de la force si les protéines ne suivent pas."
+      },
+      "proteinLow": {
+        "title": "Protéines sous ta cible",
+        "text": "{{gPerKg}} g/kg pour une cible à {{targetMin}} : la musculation ne rend pas ce qu’elle pourrait."
+      },
+      "proteinStrength": {
+        "title": "Protéines × musculation",
+        "text": "À {{gPerKg}} g/kg, tes séances sont couvertes."
+      },
+      "sleepSupports": {
+        "title": "Nuits × entraînement",
+        "text": "Des nuits de 7 h et plus soutiennent une semaine exigeante."
+      }
+    },
+    "why": {
+      "lead": "Quand une courbe cale, le Labo cherche la cause dans tous tes piliers.",
+      "emptyTitle": "Rien ne cale en ce moment.",
+      "emptyBody": "Le Labo surveille ta force, ton allure et ton poids. Dès qu’une courbe s’aplatit, l’enquête s’ouvre ici.",
+      "eightWeeks": "huit dernières semaines",
+      "suspects": "Ce qui pèse, dans tes données",
+      "suspectsMeta": "du plus au moins probable",
+      "noSuspect": "Aucun facteur connu n’a bougé sur la période.",
+      "level": {
+        "strong": "fort",
+        "medium": "moyen",
+        "weak": "faible"
+      },
+      "cleared": "Écarté : {{list}}.",
+      "missing": "Pas jugeable faute de données : {{list}}.",
+      "fixInWeek": "Le régler dans ta semaine →",
+      "toSettle": "Pour trancher",
+      "measureFirstTitle": "D’abord mesurer, pas restreindre",
+      "measureFirstBody": "Pas d’expérience sur les calories. Saisis aussi tes week-ends pendant deux semaines : c’est l’écart le plus fréquent entre le journal et la réalité.",
+      "startExperiment": "Lancer l’expérience (4 semaines)",
+      "alreadyRunning": "Déjà en cours",
+      "honest": "Des associations trouvées dans tes données, pas des preuves. L’expérience tranche.",
+      "kg": "{{value}} kg"
+    },
+    "questions": {
+      "liftPlateau": {
+        "title": "Ma force stagne",
+        "detected": "{{exerciseName}} : {{valueKg}} kg depuis {{weeksFlat}} semaines"
+      },
+      "paceFade": {
+        "title": "Mes séances de qualité ralentissent",
+        "detected": "{{recentPace}} contre {{previousPace}} avant, soit {{deltaS}} s/km de plus"
+      },
+      "weightPlateau": {
+        "title": "Mon poids ne bouge plus",
+        "detected": "{{avgKg}} kg à ±{{rangeKg}} depuis {{weeks}} semaines"
+      }
+    },
+    "suspects": {
+      "legsBeforeQuality": {
+        "title": "Jambes la veille d’une séance de qualité",
+        "proof": "{{count}} fois sur {{runs}} ces trois semaines",
+        "short": "jambes la veille"
+      },
+      "proteinLow": {
+        "title": "Protéines sous la cible",
+        "proof": "{{gPerKg}} g/kg pour une cible à {{targetMin}}",
+        "short": "protéines"
+      },
+      "deficit": {
+        "title": "Déficit calorique marqué",
+        "proof": "{{avgKcal}} kcal pour une cible à {{targetKcal}} ({{deficitPct}} % sous)",
+        "short": "déficit"
+      },
+      "sleepShort": {
+        "title": "Nuits courtes",
+        "proof": "{{avgMinutes}} minutes en moyenne",
+        "short": "sommeil"
+      },
+      "loadHigh": {
+        "title": "Charge en hausse",
+        "proof": "{{changePct}} % de charge en plus qu’avant",
+        "short": "charge"
+      },
+      "weekendSurplus": {
+        "title": "Week-ends au-dessus de ta cible",
+        "proof": "+{{surplusKcal}} kcal en moyenne samedi et dimanche",
+        "short": "week-ends"
+      },
+      "journalGaps": {
+        "title": "Jours sans saisie",
+        "proof": "{{gaps}} jours sur {{days}} sans repas saisi",
+        "short": "journal incomplet"
+      },
+      "carbsLowHardDays": {
+        "title": "Glucides bas les jours de qualité",
+        "proof": "{{gPerKg}} g/kg pour une borne à {{targetMin}}",
+        "short": "glucides"
+      }
+    },
+    "experiments": {
+      "legs48h": {
+        "title": "Jambes 48 h avant la séance de qualité",
+        "text": "Quatre semaines, deux « essai » et deux « habitude », dans un ordre tiré au sort. Le Labo mesure l’allure de tes séances de qualité, sans rien te demander de saisir."
+      },
+      "carbsHardDays": {
+        "title": "Glucides au-dessus de la borne les jours durs",
+        "text": "Quatre semaines, l’ordre tiré au sort. Le Labo compare l’allure de tes séances de qualité entre les semaines suivies et les autres."
+      },
+      "earlierBedtime": {
+        "title": "Se coucher plus tôt les veilles de séance",
+        "text": "Quatre semaines, l’ordre tiré au sort. Le Labo compare ton énergie déclarée entre les semaines à 7 h 30 et les autres."
+      }
+    },
+    "known": {
+      "lead": "Ton Labo apprend de toi.",
+      "subtitle": "Chaque chose apprise remplace une règle générale par tes propres chiffres.",
+      "running": "Expériences en cours",
+      "sealed": "verdict scellé jusqu’au bout",
+      "title": "Ce que le Labo sait de toi",
+      "whatFor": "et à quoi ça sert",
+      "empty": "Rien d’acquis pour l’instant : il faut quelques semaines de données.",
+      "day": "J{{day}} / {{total}}",
+      "arm": {
+        "test": "Cette semaine : on essaie.",
+        "usual": "Cette semaine : comme d’habitude."
+      },
+      "startsOn": "démarre le {{date}}",
+      "stop": "arrêter l’expérience",
+      "status": {
+        "verified": "vérifié par expérience",
+        "contrary": "l’essai t’a desservi",
+        "noEffect": "aucun effet net",
+        "inconclusive": "pas assez de mesures",
+        "solid": "lien solide",
+        "probable": "probable",
+        "noLink": "pas de lien",
+        "learning": "en cours d’apprentissage"
+      },
+      "fromExperiment": "Mesuré par une expérience, semaines tirées au sort.",
+      "fromCases": "{{exposed}} cas contre {{other}} — association, pas une preuve.",
+      "usedBy": {
+        "shortNight": "Sert à alléger tes séances après une nuit courte.",
+        "collision": "Sert au détecteur de collisions entre séances.",
+        "carbs": "Sert à tes cibles de glucides les jours durs.",
+        "protein": "Sert à ta cible de protéines.",
+        "loadRisk": "Sert au garde-fou de charge.",
+        "deficitVolume": "Sert au garde-fou déficit × volume.",
+        "overtraining": "Sert au garde-fou de récupération."
+      },
+      "learning_one": "{{count}} association en cours d’apprentissage : il faut {{needed}} cas de chaque côté.",
+      "learning_other": "{{count}} associations en cours d’apprentissage : il faut {{needed}} cas de chaque côté."
+    },
+    "knowledge": {
+      "legs48h": {
+        "experiment": "Espacer les jambes de 48 h change ton allure de {{delta}} s/km"
+      },
+      "carbsHardDays": {
+        "experiment": "Monter les glucides les jours durs change ton allure de {{delta}} s/km"
+      },
+      "earlierBedtime": {
+        "experiment": "Te coucher plus tôt change ton énergie de {{delta}} point"
+      },
+      "shortNightPace": {
+        "association": "Une nuit sous 6 h te coûte {{delta}} s/km à la séance suivante"
+      },
+      "heavyLegsPace": {
+        "association": "Des jambes lourdes la veille te coûtent {{delta}} s/km"
+      },
+      "carbsPace": {
+        "association": "Des glucides sous la borne te coûtent {{delta}} s/km"
+      }
+    },
+    "apply": {
+      "weekTitle": "Ce qui change dans ta semaine",
+      "formulaTitle": "Ce qui change dans tes réglages",
+      "where": "Visible dans : {{list}}",
+      "note": "Rien d’autre ne bouge. Hors ligne, c’est enregistré sur le téléphone et synchronisé plus tard.",
+      "later": "Pas maintenant",
+      "confirm": "Appliquer à mon plan",
+      "weekSubtitle_one": "1 changement, appliqué tout de suite",
+      "weekSubtitle_other": "{{count}} changements, appliqués tout de suite",
+      "formulaSubtitle_one": "1 réglage, appliqué tout de suite",
+      "formulaSubtitle_other": "{{count}} réglages, appliqués tout de suite",
+      "error": "Impossible d’appliquer : réessaie dans un instant."
+    }
+  },
+  "aiLab": {
+    "title": "Labo IA",
+    "subtitle": "Évaluer ce qu'un modèle rend sur tes données",
+    "warning": {
+      "title": "🔬 Surface de test — données factices uniquement",
+      "body": "Le modèle utilisé ici est un palier gratuit : le fournisseur peut se servir des requêtes pour entraîner ses modèles. N'utilise ce labo que sur un compte repeuplé avec le jeu de données de test."
+    },
+    "consent": {
+      "title": "Le labo est désactivé",
+      "body": "Aucune donnée ne part tant que tu n'as pas activé le labo dans les réglages.",
+      "action": "Ouvrir les réglages"
+    },
+    "context": {
+      "title": "Ce qui est envoyé",
+      "subtitle": "Un résumé chiffré des {{days}} derniers jours. Aucun nom, aucune note, aucune trace GPS.",
+      "show": "Voir le détail exact",
+      "hide": "Masquer",
+      "empty": "Rien à envoyer pour l'instant.",
+      "noData": "Ton journal est vide sur la période : les réponses seront pauvres. Rejoue le script de jeu de données."
+    },
+    "ask": {
+      "title": "La question",
+      "placeholder": "Pose ta question, ou choisis-en une ci-dessus…",
+      "send": "Demander",
+      "quota": "{{quota}} questions par jour."
+    },
+    "questions": {
+      "weeklyReview": "Fais-moi le bilan de ma période.",
+      "whyStalling": "Pourquoi je stagne en musculation ?",
+      "nutritionCheck": "Est-ce que je mange assez pour ce que je m'entraîne ?",
+      "nextWeek": "Qu'est-ce que je devrais changer la semaine prochaine ?",
+      "crossPillar": "Quel lien vois-tu entre ma course, ma muscu et mon alimentation ?",
+      "blindSpot": "Quel est mon angle mort ?"
+    },
+    "result": {
+      "meta": "{{provider}} · {{model}} — {{used}}/{{quota}} questions utilisées aujourd'hui."
+    },
+    "errors": {
+      "consent-required": "Le labo n'est pas activé dans les réglages.",
+      "quota-exceeded": "Limite du jour atteinte. Réessaie demain.",
+      "offline": "Pas de réseau, ou la fonction n'est pas déployée.",
+      "unavailable": "Aucune clé de fournisseur n'est posée côté serveur.",
+      "refused": "Le modèle a refusé de répondre à cette question.",
+      "misconfigured": "La configuration du fournisseur est invalide.",
+      "failed": "La demande a échoué."
+    },
+    "settings": {
+      "title": "Labo IA",
+      "toggle": "Activer le labo IA",
+      "subtitle": "Envoie un résumé chiffré de tes données à un modèle, pour évaluer ses réponses.",
+      "disclaimer": "Désactivé par défaut. Ce qui part : des agrégats (volumes, moyennes, allures, poids), jamais ton nom, tes notes ni tes traces GPS. Le fournisseur gratuit utilisé pour les tests peut réutiliser ces requêtes pour entraîner ses modèles : n'active ce labo que sur des données factices.",
+      "open": "Ouvrir le labo",
+      "confirmTitle": "Activer le labo IA ?",
+      "confirmBody": "Un résumé chiffré de tes données quittera l'appareil vers un fournisseur tiers à chaque question. Le palier gratuit utilisé pour les tests peut s'en servir pour entraîner ses modèles. À n'activer que sur des données factices.",
+      "cancel": "Annuler",
+      "accept": "J'active"
     }
   }
 }

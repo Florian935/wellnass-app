@@ -40,8 +40,24 @@ export type WellbeingIndicator = (typeof WELLBEING_INDICATORS)[number];
 /** Un niveau valide de l'échelle, 1 à 5. */
 export type WellbeingLevel = 1 | 2 | 3 | 4 | 5;
 
-/** Ce que l'utilisateur a saisi — les 3 champs sont indépendants et facultatifs (décision D3). */
-export type WellbeingCheckinInput = Partial<Record<WellbeingIndicator, number | null | undefined>>;
+/**
+ * US LABO-01 — la **nuit qui précède** le check-in, en minutes. Facultative, indépendante des trois
+ * indicateurs (même décision D3). Bornée à 14 h : au-delà, c'est une erreur de saisie, pas une nuit.
+ * Le pas de saisie est d'un quart d'heure — la précision d'une montre n'apporte rien à ce qu'on en fait.
+ */
+export const SLEEP_MINUTES_MIN = 0;
+export const SLEEP_MINUTES_MAX = 14 * 60;
+export const SLEEP_MINUTES_STEP = 15;
+
+/** Ce que l'utilisateur a saisi — les champs sont indépendants et facultatifs (décision D3). */
+export type WellbeingCheckinInput = Partial<Record<WellbeingIndicator, number | null | undefined>> & {
+  sleepMinutes?: number | null;
+};
+
+/** Vrai si la durée est une nuit exploitable (entier, 0 à 14 h). */
+export function isSleepMinutes(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= SLEEP_MINUTES_MIN && value <= SLEEP_MINUTES_MAX;
+}
 
 /** Une ligne `daily_wellbeing` telle qu'elle existe en base locale. */
 export type LocalWellbeing = WellbeingCheckinInput & {
@@ -74,7 +90,9 @@ export function isWellbeingLevel(value: unknown): value is WellbeingLevel {
  * indicateur d'une ligne existante doit rester possible).
  */
 export function isEmptyCheckin(input: WellbeingCheckinInput): boolean {
-  return !WELLBEING_INDICATORS.some((indicator) => isWellbeingLevel(input[indicator]));
+  // US LABO-01 : une nuit seule suffit à faire un check-in — c'est souvent la seule chose qu'on
+  // retient au réveil.
+  return !WELLBEING_INDICATORS.some((indicator) => isWellbeingLevel(input[indicator])) && !isSleepMinutes(input.sleepMinutes);
 }
 
 /**

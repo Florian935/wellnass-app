@@ -56,6 +56,8 @@ export type Palette = {
   pillarStrength: string;
   pillarRunning: string;
   pillarNutrition: string;
+  /** US LABO-01 — la couleur du Labo : le doré du socle, assombri pour rester lisible en clair. */
+  pillarLab: string;
 };
 
 export const palettes: Record<ColorScheme, Palette> = {
@@ -97,6 +99,7 @@ export const palettes: Record<ColorScheme, Palette> = {
     pillarStrength: '#6b0028', // 12,2 / surface
     pillarRunning: '#2a64ad', // 5,18 / fond — #2f6fc0 de maquette : 4,39
     pillarNutrition: '#52703a', // 4,88 / fond — #5c7a3f de maquette : 4,23
+    pillarLab: '#7a5714', // 5,0 / fond — le doré #8a6419 tombait à 4,33
   },
   dark: {
     background: '#1c150e',
@@ -134,5 +137,6 @@ export const palettes: Record<ColorScheme, Palette> = {
     pillarStrength: '#e07a98', // 5,16 / surface — #6b0028 : 1,15
     pillarRunning: '#6fa8ef', // 5,94 / surface
     pillarNutrition: '#a9ba7e', // 6,98 / surface
+    pillarLab: '#e0b155', // doré du socle — 8,4 / fond
   },
 };

@@ -10,6 +10,418 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 15/09/2026 (ter) — IA-LAB-01 : un labo pour enfin *voir* ce que l'IA rend sur nos données
+
+Demande de Florian, 15/09 : « si je veux intégrer de l'IA gratuite pour faire des tests dans un
+premier temps, c'est possible ? », puis « implémente de l'IA Gemini en mode gratuit […] tu me
+donneras un script SQL pour drop toutes mes données d'entraînement […] et on en régénère avec un
+dataset bien complet ». Livré **d'un seul lot**, directement sur `dev`, pour une recette unique.
+Roadmap **7.31** (ligne neuve) · [spec](docs/specs/functional/us/ialab01-labo-ia.md) ·
+[plan](docs/plans/ialab01-labo-ia.md) · [RECETTES.md §67](RECETTES.md) (40 critères).
+
+### Le constat de départ
+
+L'[analyse du 15/07/2026](docs/product/ia-integration-analyse.md) avait tout chiffré — coûts,
+architecture, RGPD, monétisation, phasage — et permis de trancher que l'IA serait un palier payant
+post-V1. Puis le 13/09, la surface IA de DASH-01 a été retirée du build de lancement, à raison :
+l'app est gratuite en V1, le modèle ne l'était pas.
+
+Mais ce retrait a emporté le seul moyen d'évaluer quoi que ce soit. Il restait un dossier complet sur
+une fonctionnalité que **personne n'avait jamais vue tourner** : un budget, un phasage, une fonction
+Edge non déployée, et zéro réponse lue. Ce lot referme cet angle mort, à coût nul.
+
+### 🔴 Le point qui a décidé de tout le reste
+
+Le palier gratuit de Google AI Studio **peut utiliser les requêtes pour entraîner ses modèles**.
+Ce n'est pas un défaut de configuration : c'est la contrepartie du gratuit, et elle ne se désactive
+qu'en activant la facturation. Or ce qui partirait ici, ce sont des poids, des repas, de l'activité
+physique — des données relevant de la santé, pour lesquelles le §5 de l'analyse exige justement la
+non-utilisation pour l'entraînement.
+
+D'où la règle qui structure le lot : **le gratuit se teste sur des données factices, jamais sur un
+compte réel**. Le script de remise à plat n'est pas un confort de recette, c'est la **condition**
+d'usage de la surface.
+
+Second constat, qui vaut d'être écrit parce qu'il est contre-intuitif : **le gratuit ne fait pas
+économiser d'argent**. Une campagne de recette de 500 bilans en Haiku revient à ~4 $. Ce qu'il fait
+gagner, c'est de ne pas avoir à choisir un fournisseur, ouvrir un compte facturé ni négocier un DPA
+avant d'avoir la moindre idée de ce que l'IA rend.
+
+### Ajouté
+
+- **`docs/product/ia-integration-analyse.md` §7 « Tester en gratuit avant d'engager un budget »** —
+  section neuve (§7→8, §8→9, §9→10 décalées ; aucune référence externe au-delà du §6, vérifié).
+  Comparatif des huit paliers gratuits du marché relevés au 15/09 (Gemini, Groq, Mistral, Cerebras,
+  GitHub Models, Cloudflare, OpenRouter), le piège de l'entraînement sur nos données, ce que le
+  gratuit économise et ce qu'il n'économise pas, et le phasage en trois temps.
+- **`packages/shared/src/ai-context.ts`** — le type `AiSnapshot` et `buildAiContext`. C'est **la
+  minimisation RGPD écrite en code** : une liste blanche de ce qui a le droit de quitter l'appareil.
+  En sont volontairement absents l'identité, la date de naissance (seul l'âge sort), tout texte libre
+  (notes de séance, d'exercice, journal de douleur) et toute trace GPS — une trace de course, c'est
+  une adresse de domicile. 12 tests, dont un **test-garde de liste blanche** qui échoue dès qu'un
+  champ est ajouté, pour forcer la question plutôt que de la laisser passer.
+- **`supabase/functions/ai-assist/providers.ts`** — adaptateurs Gemini (`generateContent`) et
+  Anthropic (`/v1/messages`), en `fetch` pur. Le fournisseur se déduit de la clé posée, ou se force
+  par `AI_PROVIDER`.
+- **`supabase/functions/ai-assist/index.ts`** — troisième type d'appel, `coach` : contexte agrégé +
+  question libre, avec une consigne système portant les garde-fous de sécurité (pas de diagnostic,
+  pas de chiffre inventé, aveu explicite quand la donnée manque).
+- **`apps/mobile/src/data/repositories/ai-context-repository.ts`** — assemblage de l'instantané
+  depuis SQLite. Câblage pur : aucune règle métier n'y vit.
+- **`apps/mobile/src/app/ai-lab.tsx`** et **`components/AiLabSection.tsx`** — l'écran et son opt-in.
+- **`supabase/scripts/ia-purge-et-dataset.sql`** — remise à plat + 120 jours d'historique inventé.
+- **Bloc i18n `aiLab`** FR + EN (parité vérifiée par `locale-parity.test.ts`).
+
+### Modifié
+
+- **`packages/shared/src/ai-assist.ts`** — quota `coach: 20` (plus bas que `ask: 30` alors que c'est
+  le mode d'exploration : une analyse coûte dix fois le contexte d'une reformulation, et le palier
+  gratuit plafonne autour de 1 500 appels/jour **pour tout le projet**).
+- **`apps/mobile/src/lib/ai/ai-client.ts`** — **restauré** depuis `622339f2^` (il avait été supprimé
+  le 13/09), étendu : type `coach`, remontée de `provider`/`model`, code d'erreur `misconfigured`.
+- **`settings.tsx`** et **`_layout.tsx`** — la section et la route.
+
+### Technique / Notes
+
+- **Le fournisseur est devenu un réglage.** `AI_PROVIDER=gemini|anthropic`, `GEMINI_MODEL` /
+  `ANTHROPIC_MODEL` pour épingler une version. L'app ne connaît qu'un nom de fonction : basculer
+  Gemini → Claude ne touche pas une ligne de mobile. C'est ce qui rend l'exploration gratuite **non
+  jetable** — le proxy, les gardes, le prompt et surtout le choix de ce qu'on envoie sont conservés.
+- **Modèle par défaut `gemini-flash-latest`**, et non un numéro. Google renomme ses modèles Flash
+  plusieurs fois par an (3.5 → 3.7 → 3.8 en 2026) : un identifiant figé finit en 404 sans que
+  personne n'ait rien changé.
+- 🔴 **Exception assumée : le détail des erreurs 4xx du fournisseur remonte au client.** La règle
+  générale reste « le message du fournisseur ne sort jamais » (il peut décrire de l'infrastructure).
+  Les 400/401/403/404 d'un fournisseur d'inférence décrivent **notre configuration** — modèle
+  inconnu, clé révoquée — jamais l'utilisateur. Sans eux, une faute de frappe dans `GEMINI_MODEL`
+  est indiscernable d'une panne depuis le téléphone. Le 429 et les 5xx restent opaques.
+- 🔴 **Exception assumée : la réponse est affichée brute.** DASH-01 R7 posait qu'aucun chiffre
+  affiché ne vient d'un modèle ; ici c'est la sortie non filtrée qu'on évalue, et la masquer viderait
+  l'exercice. Corollaire : cette réponse ne peut **jamais** être réutilisée par un écran produit.
+- **Le jeu de données plante six signaux connus** (stagnation du développé couché, chute calorique,
+  fatigue, angle mort épaules/bras/gainage, allure dégradée, plateau de poids) qui forment **une
+  seule histoire** : un déficit trop agressif sur un volume maintenu. Un jeu aléatoire n'aurait rien
+  prouvé — le modèle a toujours quelque chose à dire, et sans vérité de référence une réponse d'IA
+  se commente mais **ne se note pas**.
+- **Le script résout les exercices par nom, pas par UUID.** Les identifiants du `seed.sql` ne sont
+  pas fiables : le seed n'est joué que par `db:reset`, qui suppose Docker — que personne n'a. Le
+  contenu du cloud vient du back-office, avec d'autres identifiants. Repli sur « n'importe quel
+  exercice de ce groupe musculaire », échec bruyant si la bibliothèque est vide.
+- **Le script s'adapte à une base dont LABO-01 n'est pas poussée** (`sleep_minutes`,
+  `lab_experiments` étaient encore non cochées dans `MIGRATIONS.md`) : détection par
+  `information_schema` / `to_regclass`, et dégradation du signal S3 plutôt qu'un échec à mi-parcours.
+- **Hard delete et non soft delete** dans le script : les sync rules filtrent `deleted_at is null`,
+  donc un soft delete ferait bien disparaître les lignes de l'appareil — mais elles s'accumuleraient
+  sur le cloud à chaque rejeu, et « remis à plat » cesserait d'être vrai.
+- **Deux bornes de fenêtre** dans le repository (`windowIso` **et** `windowDayKey`) : les tables de
+  journal sont datées en date locale, celles d'événement en instant UTC. Les comparer entre elles
+  « marche » lexicographiquement en SQLite et donne un résultat faux d'un jour selon le fuseau.
+- ✅ **Aucune migration, aucune sync rule, aucune dépendance native, aucun nouveau build.**
+  `ai_consent_at` et `ai_usage` datent de DASH-01. L'APK existant suffit.
+- ⚠️ **Trois gestes humains avant recette** : créer la clé Gemini gratuite,
+  `supabase functions deploy ai-assist`, jouer le script SQL. Sans clé posée, la fonction répond
+  `ai_unavailable` et **rien n'est facturé** — c'est l'état par défaut du dépôt.
+- **Vérifications** : `npm run typecheck` (3 workspaces) ✅ · `npm run test` — 2 988 tests Vitest +
+  3 215 tests Jest sur 196 suites, exit 0 lu **sans pipe** ✅ · `npm run lint` ✅.
+
+
+## 15/09/2026 (bis) — LABO-01 : Le Labo, là où tes piliers se croisent
+
+Écrit le 15/09 dans un **worktree isolé** (`feature/labo01-labo`, depuis `1869dffa`) parce que trois
+autres sessions travaillaient en parallèle sur le dépôt, puis **reporté sur `dev` par une fusion à
+trois points** — jamais par copie de fichier : douze fichiers étaient touchés des deux côtés, et une
+copie aurait effacé le travail des autres sessions en silence. Le worktree et sa branche ont ensuite
+été supprimés. **Une seule vague** sur demande explicite de Florian (« on va tout coder ICI d'un seul
+coup sec, d'une seule vague et avant le Play Store »), après quatre allers-retours de design validés
+à l'écran. Roadmap **7.30** (ligne neuve) · [spec](docs/specs/functional/us/labo01-labo.md) ·
+[plan](docs/plans/labo01-labo.md) · [ADR-008](docs/adr/ADR-008-scene-3d-composant-dom.md) ·
+[analyse](docs/product/analyse-labo-2026-09.md) · [maquettes et prototype jouable](design/labo-2026-09/).
+
+### La question posée, et ce qu'elle a changé
+
+Florian, 15/09 : « il faut qu'il y ait un **intérêt à venir dans le labo**, pas que ce soit uniquement
+un joujou ». Une belle scène 3D sans usage se visite une fois. D'où la règle qui structure tout
+l'écran : **tout part de la semaine en cours et se termine par un geste qui écrit dans le plan**.
+
+Et son corollaire, qui a coûté la ligne la plus vendeuse du prototype : 🔴 **« 10 km −25 s » n'est
+PAS livré.** Ce chiffre sortait d'un coefficient inventé. **Aucun calcul validé de l'app ne relie une
+dose d'entraînement à un temps de course** — l'écran n'affiche donc aucune projection d'allure ni de
+chrono, et le dit en toutes lettres (`lab.composer.honest`). Tout le reste vient de moteurs déjà
+recettés : DASH-01 (« Et si… »), MUSCPWR-01, META-19, MN-02, MN-06, FUEL-01, GARDE-01, COLLIS-01,
+CARDIO-UX01. **Aucune analyse nouvelle n'est calculée** : le Labo est la **maison** des 28 analyses
+inter-piliers déjà livrées, qui n'en avaient aucune.
+
+### Ajouté
+
+- **Quatre moteurs purs** dans `packages/shared`, testés sous Vitest, **100 % de couverture** :
+  - `lab-week.ts` — la semaine réelle (lundi → dimanche) et **7 familles de propositions** dans un
+    ordre de priorité fixe (`overtraining`, `loadRisk`, `deficitVolume`, `collision`, `shortNight`,
+    `protein`, `carbs`), plafonnées à 5 (`LAB_MAX_PROPOSALS`) : au-delà, la liste cesse d'être une
+    liste de choses à faire. Chaque proposition porte **le chiffre qui la justifie** et **un geste**.
+  - `lab-composer.ts` — `LabDoses`, `stepDose`, `composeLab` (projection de force via `projectWhatIf`,
+    ratio de charge, cible calorique, protéines, glucides, croisements), `bestLabSteps`.
+    ⚠️ `protein: 'base'` est passé à `whatIfConsequences` : ici le levier est une **cible**, pas un
+    complément — l'autre valeur aurait compté les protéines deux fois.
+  - `lab-investigations.ts` — `buildLabQuestions()` : détecte `liftPlateau` / `paceFade` /
+    `weightPlateau`, classe **8 familles de suspects** en comparant les 21 derniers jours aux 21
+    précédents (`LAB_WINDOW_DAYS`), et sépare les facteurs **écartés** de ceux qu'on ne peut **pas
+    juger faute de données** — un facteur non mesurable n'est pas un facteur innocent.
+  - `lab-experiments.ts` — tirage des semaines, progression, **verdict scellé**, adhérence mesurée
+    sans saisie supplémentaire, `buildLabKnowledge()` (cartes d'association avec minimum de cas).
+- **L'écran** `app/(tabs)/lab.tsx` : onglet dédié (icône `aperture`, accent `pillarLab`), scène 3D en
+  tête, quatre onglets (Semaine · Composer · Pourquoi ? · Acquis), état « prêt » / « appliqué ».
+- **La scène 3D** `components/lab/scene/` — portage à l'identique du prototype validé (three.js
+  r128) : `engine.js` (podium, pile de disques de fonte, piste avec ses lumières de pacing, assiette
+  compartimentée, sept lampes-nuits, médailles de croisement, post-production), `LabScene3D.dom.tsx`
+  (composant DOM Expo `'use dom'`), `LabScene2D.tsx` (repli SVG) et `scene-state.ts` — **les mappers
+  purs où tout ce que la scène décide a été sorti**, pour être testable.
+- **`LabApplySheet.tsx`** — la feuille « ce qui change dans ton plan » : le changement, son pilier, et
+  **les écrans où ça se verra**. C'est elle qui porte la confiance dans cet écran.
+- **Les repositories** `lab-repository.ts` (fenêtre `LAB_HISTORY_DAYS = 56`, deux requêtes SQL neuves)
+  et `lab-experiment-repository.ts`.
+- **Deux migrations** : `daily_wellbeing.sleep_minutes smallint check 0..840` nullable, et la table
+  `lab_experiments` (RLS, soft delete, **index unique partiel** — une seule expérience en cours par
+  modèle) + sa publication `powersync`.
+- **Six suites de tests** : `scene-state.test.ts` (16), `lab-format.test.ts` (12),
+  `lab-screen.test.tsx` (20), `lab-experiment-write.test.ts` (5), `checkin-sleep.test.tsx` (7), plus
+  les quatre suites Vitest des moteurs.
+- **Documentation** : spec, plan, **ADR-008**, RECETTES **§66** (43 critères), registre des migrations,
+  ligne de roadmap 7.30 et son entrée de journal.
+
+### Modifié
+
+- **`WellbeingCheckinSheet.tsx` — la note de nuit** (BIEN-01). Health Connect « sommeil » restant
+  écarté, c'est la seule source de cette donnée. Facultative comme le reste (décision D3), pas d'un
+  quart d'heure, bornée à 14 h. 🔴 **Le premier « + » pose 7 h, pas 15 min** : monter de 0 à 7 h par
+  quarts d'heure demanderait 28 appuis, et la feuille ne serait jamais remplie. ✅ **Déclaration Play
+  « Health apps » inchangée à 6 types**, aucun délai externe ajouté.
+- `wellbeing.ts` — bornes de sommeil, `isSleepMinutes`, et `isEmptyCheckin` accepte désormais un
+  check-in **qui ne contient qu'une nuit**.
+- `session-adaptation.ts` — `REPS_REDUCTION_PCT` et `PACE_SLOWDOWN_S_PER_KM` exportés : le Labo
+  annonce le même allègement que celui que l'app applique, au lieu d'en réécrire un.
+- `theme/colors.ts` (`pillarLab` clair **et** sombre), `theme/stage.ts`, `stores/menu-accent-store.ts`,
+  `components/AccentHalo.tsx`, `app/settings.tsx`, `app/(tabs)/_layout.tsx`, `i18n/locales/{fr,en}.json`
+  (section `lab.*` complète, `tabs.lab`, `wellbeing.sleep*`).
+- `jest.config.js` — `**/*.dom.tsx` exclu de la couverture, avec la raison écrite dans le fichier : un
+  composant DOM n'est pas exécuté par React Native mais chargé dans une WebView, avec `document` et
+  WebGL ; le monter sous jest-expo ne testerait rien de ce qu'il fait.
+- `apps/mobile/package.json` — `three@0.128.0` et `@types/three@0.128.0`.
+
+### Corrigé
+
+- 🔴 **`data-export.ts` — `lab_experiments` manquait à l'export RGPD**, et c'est **un garde-fou qui
+  l'a attrapé**, pas une relecture : le test de complétude (`data-export.test.ts`) échoue dès qu'une
+  table du schéma PowerSync n'est ni exportée ni explicitement exclue. Sans lui, l'archive aurait
+  contenu les **mesures** d'une expérience **sans son protocole** (l'ordre tiré au sort des semaines)
+  — donc des chiffres qu'on ne peut plus interpréter. Même raisonnement que `real_life_periods`.
+
+### 🔴 Corrigé en revue de code, avant commit — et ce n'était pas mineur
+
+Une relecture critique du diff a sorti **3 défauts bloquants** et 8 importants. Tous les bloquants
+sont corrigés, et les correctifs sont figés par des tests.
+
+1. **Une expérience terminée restait `running` à vie — son modèle n'était plus jamais relançable.**
+   La fin des 4 semaines est calculée **par date** (`experimentProgress`), jamais écrite ; le seul
+   écrivain de statut était `stopLabExperiment`. Conséquence en cascade : « déjà en cours » affiché
+   pour toujours dans l'onglet « Pourquoi ? », lien « arrêter » disparu de « Acquis » (il ne
+   s'affiche que tant que le verdict est scellé) — donc **aucun chemin dans l'app** pour refaire un
+   essai. Et une relance depuis un autre appareil aurait été rejetée par l'index unique à l'upload,
+   **figeant toute la file PowerSync**. Corrigé sur les trois plans : un troisième statut
+   `finished` (la migration n'étant pas poussée, elle a simplement été amendée), un
+   `finishLabExperiment()` appelé avant toute relance, et « en cours » qui se lit désormais sur le
+   **verdict scellé**, pas sur la colonne.
+2. **Le widget « énergie » de l'accueil effaçait la nuit qui venait d'être saisie.**
+   `saveWellbeing` reconstruisait **toutes** les colonnes avant de `patch` : un appel partiel
+   (`{ energy }`) remettait le reste à `null`. Le défaut est antérieur à cette US — il effaçait déjà
+   humeur et stress — mais LABO-01 en élargissait considérablement la portée, le sommeil alimentant
+   quatre mécanismes du Labo. Une mise à jour n'écrit désormais **que les champs présents** dans
+   l'entrée ; effacer volontairement reste possible (la feuille envoie ses clés avec `null`), c'est
+   **deviner** qui ne l'est plus.
+3. **Aucun garde-fou d'écriture avant migration.** Le champ « Nuit » vit dans le check-in de
+   bien-être, un **écran partagé** : n'importe qui installant le prochain build et tapant « + » sur
+   sa nuit — sans jamais ouvrir le Labo — aurait mis en file une opération que le cloud rejette, et
+   **PowerSync sérialise la file**, donc figé la remontée de **toutes** les tables. Ajout de
+   `LAB_WRITE_READY` (patron `ADAPTATION_WRITE_READY` de CARDIO-UX01), à `false` : le champ n'est pas
+   rendu et les expériences ne peuvent pas être lancées. 🔴 **À passer à `true` dans le même geste
+   que `npm run db:push`.**
+
+Cinq « importants » corrigés dans la foulée :
+
+4. **Crash possible de l'écran.** `lab-investigations.ts` faisait `fit!.slope` en invoquant un index
+   unique par jour sur `body_weight_entries` **qui n'existe pas** (`create index`, pas `create unique
+   index`) — et `logWeight` fait un read-then-write que deux appareils hors ligne dédoublent. Six
+   pesées le même jour suffisaient à lever un `TypeError` et à emporter tout le Labo. Garde ajoutée.
+5. **R9 n'était pas implémenté** : l'onglet Labo n'avait pas de `href: … : null` et **ne disparaissait
+   jamais**, contrairement aux trois piliers. Le critère de recette §66.1 aurait échoué tel quel.
+6. **La feuille promettait une écriture de protéines qui n'avait pas lieu.** Sans poids connu,
+   `applyFormula` n'écrit rien (R5, à raison) — mais le réglage était quand même proposé, listé dans
+   « ce qui change dans ton plan », confirmé et validé par une vibration. Exactement la confiance que
+   R4 sert à construire. Le levier est désormais exclu de la feuille dans ce cas.
+7. **Aucune gestion d'erreur sur les quatre gestes qui écrivent** : une rejection (séance supprimée
+   entre-temps par la synchro, hors ligne) fermait la feuille sans rien dire, et l'utilisateur croyait
+   son plan modifié. C'est la leçon **CONF-06**, énoncée deux fichiers plus loin dans le check-in et
+   perdue ici sur le geste le plus engageant de l'écran. La feuille reste ouverte avec un message,
+   et les échecs hors feuille s'affichent dans le corps.
+8. **La scène contredisait le chiffre qu'elle illustre** : `state.kc === -250 ? 0.9 : 0.78` faisait
+   tomber `bulk` (+300) et `cut` (−400) dans la **même** portion. Passer de « maintien » à « prise de
+   masse » montait la carte calorique de +300 kcal **et rétrécissait l'assiette**. Comparaison par
+   signe désormais.
+
+Plus quatre finitions : date affichée en JJ/MM au lieu de `2026-09-21`, seuil des 7 h lu depuis
+`GOOD_NIGHT_MINUTES` au lieu d'être redupliqué en dur, `km` et `kg` passés par l'i18n, et un
+`dispose()` qui fait enfin ce que son commentaire promettait (parcours de la scène, géométries,
+matériaux et **textures** libérés, écouteurs `window` retirés, contexte WebGL rendu) — trois éléments
+qui ne fuient pas aujourd'hui parce que la WebView est détruite au démontage, mais dont le commentaire
+affirmait l'inverse de ce que le code faisait.
+
+### ⚠️ Constats de revue NON corrigés, à traiter après la recette
+
+- **Un acquis peut se désapprendre.** `LAB_HISTORY_DAYS = 56` est une fenêtre **glissante**, et le
+  verdict d'une expérience est recalculé à chaque rendu depuis cette fenêtre. Une expérience dure
+  28 jours : elle n'a donc que 28 jours de marge avant que ses premières semaines en sortent, après
+  quoi l'adhérence retombe, les observations sont écartées et une carte « vérifié » redevient « pas
+  assez de mesures ». Corriger proprement demande de **figer le verdict** à la clôture (ou d'étendre
+  la fenêtre à la plus ancienne expérience), ce qui touche le modèle : à faire dans un second temps.
+- **`useLabHistory()` est instancié deux fois** (`useLabQuestions` + `useLabKnowledge`), soit ~24
+  abonnements SQL live au lieu de ~12, sur l'écran qui porte aussi la WebView 3D — à l'opposé de ce
+  que l'en-tête du fichier annonce. À mémoïser.
+- **Sans aucune protéine saisie, l'assiette de la scène est servie à 100 %** : « aucune donnée » et
+  « cible atteinte » produisent la même image (le texte, lui, dit bien « rien de saisi »).
+- **L'allègement du Labo écrase une adaptation d'allure existante** : `applyAdaptationForToday` est
+  toujours appelé avec `paceSlowdownSPerKm: null`, donc un ralentissement déjà posé par CARDIO-UX01
+  disparaît — sans que la feuille l'ait annoncé.
+- **Le garde-fou de charge ne peut pas se déclencher pour un mono-pilier** : `lab-week.ts` l'ouvre dès
+  qu'un pilier d'entraînement est actif, mais sa source (`useTrainingLoadAlert`) ne renvoie un ratio
+  que si les **deux** le sont. La famille `loadRisk` annoncée en R3 est donc morte pour un coureur
+  seul : à aligner, ou à dire dans la spec.
+- Plus menus : `LabStage` n'a pas de chien de garde si la WebView ne démarre **ni** ne signale
+  d'erreur ; « − » depuis l'état vide pose aussi 7 h ; le titre d'une question affiche la clé brute
+  (`squat`) si la ligne d'exercice manque ; `lab.proposals.{deficitVolume,protein,carbs}.change*` sont
+  des clés i18n mortes (ces familles passent toujours par une action `open`).
+
+### Technique — notes et points d'attention
+
+- 🔴 **ADR-008 — la scène 3D est un composant DOM Expo**, pas une réécriture `expo-gl` /
+  react-three-fiber. `expo-gl` n'expose **pas de canvas 2D** : toutes les textures dessinées (le « 25 »
+  de la pelouse, les gravures des disques, les chiffres du pacer) et la post-production auraient été à
+  refaire, pour rendre *moins* que ce qui était déjà validé. Contraintes tenues : l'état qui franchit
+  le pont est **sérialisable et testé comme tel** (une fonction ou un `undefined` traverse sans erreur
+  **et sans valeur**), la scène est de **hauteur fixe** (une WebView imbriquée dans une liste qui
+  défile vole les gestes), elle décide **elle-même** de son repli 2D, et l'app lui **pousse tous ses
+  textes** (`setLabels`) — aucune chaîne en dur, FR+EN.
+- ⚠️ `@expo/dom-webview` est déjà fourni par `expo` 57 : **aucun `react-native-webview` à ajouter**.
+- ⚠️ **Le bundle Android embarque bien la scène** : `expo export --platform android` produit
+  `www.bundle/<hash>.html` + ≈ 1 Mo de JS (three compris) à côté du bundle Hermes. C'est la preuve que
+  le Labo marche **hors ligne**.
+- ⚠️ **Le bundling web échoue** (`Unable to resolve module better-sqlite3`) : le rendu statique tire le
+  build **Node** d'`op-sqlite`, et le paquet n'est installé nulle part. **Antérieur à cette US et
+  indépendant d'elle** — constaté à l'identique sur `dev` avant le report. Non corrigé ici.
+- 🔴 **2 migrations À POUSSER** (`20260915151307`, `20260915151316`) et **1 sync rule à déployer à la
+  main** : `lab_experiments` est une table neuve — sans ce geste, une expérience lancée **ne survit pas
+  à une resynchro**. Étape déjà oubliée sur BIEN-01, VIE-01 et RUN-F2c. ⚠️ Leurs horodatages
+  (`1513xx`) sont **antérieurs** à ceux de DEPENSE-01 (`1658xx`) déjà appliqués sur le cloud : le
+  `db:push` jouera donc une migration **hors ordre**, à lire attentivement dans le `db:push:dry`.
+  ✅ `daily_wellbeing` est lue en `select *` → rien à changer pour la colonne de sommeil.
+- 🔴 **Un build est requis avant recette** : `three` est une dépendance neuve, l'APK existant ne suffit
+  pas. Même contrainte que PARTAGE-01, RUN-F2a, MUSC-F9, LAUNCHER-01.
+- ⚠️ **Les séances de musculation se dosent mais ne s'écrivent pas** (`LAB_WRITABLE_LEVERS`) : elles
+  viennent du programme, et les écrire ici les ferait diverger **en silence** de la séance réellement
+  proposée chaque jour. L'écran le dit. De même, la cible de protéines **n'est pas écrite sans poids
+  connu** — convertir des g/kg sans poids reviendrait à inventer le poids.
+- ⚠️ **Aucune expérience sur les calories** : quand le poids stagne, le Labo propose de **mesurer**
+  (saisir aussi les week-ends), jamais de restreindre.
+- ⚠️ **Les trois artefacts du Labo** (toile v2, planches de direction, prototype jouable) ne sont plus
+  en ligne — disparus côté compte, sans rapport avec ce commit. **Rien n'est perdu** : les sources sont
+  dans `design/labo-2026-09/`.
+- **Vérifié sur `dev`**, chantiers voisins compris : typecheck 3 workspaces à **0**, lint à **0**,
+  **6 795 tests verts** (587 admin + 3 220 mobile + 2 988 shared). Commit précédent : `1869dffa`.
+- ⚠️ **Ce commit ne contient que LABO-01**, sur décision de Florian : les fichiers propres aux
+  chantiers **AUTRE-01 / DEPENSE-00 / DEPENSE-01** et **CORPS-03/04** restent non commités dans le
+  working tree de `dev`. Les fichiers **partagés** (i18n, `settings.tsx`, `powersync/schema.ts`,
+  `data-export.ts`, RECETTES, roadmap, IDEAS, registre des migrations) portent en revanche les deux
+  contributions — ils étaient inséparables.
+
+
+## 15/09/2026 — DEPENSE / AUTRE-01 : ce que coûte une séance, et les activités que l'app ignorait
+
+Travaillé **directement sur `dev`** à la demande de Florian (« reste sur la branche dev »), en
+**une seule passe** sans validation intermédiaire (la recette sert de filet, cf. lot du 09/09).
+Cadrage : [analyse-depense-activites-2026-09.md](docs/product/analyse-depense-activites-2026-09.md)
+et la toile [design/depense-activites-2026-09/](design/depense-activites-2026-09/), produites le
+matin même. Roadmap **4.42 · 4.43 · 4.44** (lignes neuves).
+
+### Le défaut, en trois chiffres vérifiés dans le code
+
+1. **Le sport était compté deux fois dans la cible calorique.** `tdee()` = métabolisme × facteur
+   d'activité, et les paliers de ce facteur sont définis par la **fréquence d'entraînement**
+   (RN-03 : « modéré » dès 3 séances/semaine). Le mode `auto` (RN-02) ajoutait la dépense des
+   courses par-dessus. Profil de référence (80 kg, 30 ans, 4 × 10 km/semaine) : **3 229 kcal/j vus
+   par l'app contre ~2 848 réels — 2 667 kcal/semaine d'écart, soit 95 % du déficit d'une sèche**.
+2. **La dépense d'une course n'était affichée nulle part** : `estimateRunCalories` existait depuis
+   RN-01 (recettée le 16/07/2026), mais `run/summary.tsx` ne contenait aucune calorie. Elle valait
+   **0 sur tapis** (pas de distance), **ignorait le dénivelé** (trail 15 km / D+ 800 estimé comme du
+   plat) et utilisait la **dernière pesée même pour les jours passés**.
+3. **L'app ne connaissait que deux types d'activité, partout** : série, jour d'entraînement, charge
+   ACWR, temps d'entraînement, Health Connect. Trois heures de vélo = un jour de repos, série cassée.
+
+### Ajouté
+
+- **`packages/shared/src/energy.ts`** — le moteur, pur et testé à 100 %. Une seule formule pour les
+  trois sources : `(MET − 1) × métabolisme de repos par heure × heures actives`. Le « − 1 » retire le
+  repos, **déjà compté dans la cible** (convention *nette* de RN-01, généralisée). 🔴 **Le niveau
+  d'entraînement n'entre pas dans le calcul**, et un test le fige : un confirmé dépense plus parce
+  qu'il soulève plus lourd et court plus vite — ce que les entrées mesurent déjà. Musculation : MET
+  déduit du ressenti (3,5 / 5,0 / 6,0) et de la densité (+1,5 si repos < 60 s), **temps actif
+  plafonné à 4 min par série** — sans ce plafond, une séance oubliée ouverte (clôture auto à 3 h)
+  ajoutait > 1 000 kcal à la cible du jour. Course : RN-01 + **dénivelé en kilomètres-effort**
+  (100 m = 1 km) + repli MET **sans distance**. Tout sort en `{kcal, low, high, confidence}`.
+- **`packages/shared/src/activity.ts`** — catalogue de 22 sports (MET × 3 intensités, sollicitation,
+  `ExerciseType` Health Connect relevé dans `react-native-health-connect`, pas deviné), ligne Zod,
+  et « tes habituelles » (seuil à 2 occurrences : une saisie unique n'est pas une habitude).
+- **`weightAtDate`** (`bodyweight.ts`) — le poids **à la date**, pas le dernier connu. C'est ce qui
+  empêche une perte de 6 kg de réécrire l'estimation des sorties d'il y a deux mois, et l'adhérence
+  calorique passée avec.
+- **`explainEnergy`** — alimente la feuille « D'où sort ce chiffre » de DASH-01, avec les deux
+  phrases qui désamorcent les malentendus garantis : la montre (elle compte le repos, déjà dans la
+  cible) et le niveau (il n'entre pas).
+- **Table `activities`** + repository + écran de saisie (`app/activity.tsx`) avec son état « **ce que
+  ça change** » (cible, série, charge, Health Connect), et historique (`app/activities.tsx`).
+- **Cartes de dépense** en fin de séance de muscu et de course, **carte « Ta journée en énergie »**
+  dans le journal nutrition (socle → dépenses → cible → reste).
+- **Troisième mode de cible** « Selon ce que tu fais » : socle **hors sport** (`sportFreeTdee`) +
+  dépenses réelles au **bas de leur fourchette**. Avertissement de double comptage affiché aux
+  utilisateurs en mode `auto` déclarés « modérément actifs » ou plus.
+- **Réglage « Afficher les calories dépensées »** (défaut : oui). 🔴 Masquer **n'éteint pas le
+  calcul** : on retire l'affichage, pas le moteur — sinon un réglage d'affichage changerait en
+  silence ce qu'on peut manger.
+
+### Modifié
+
+- **Série** (`DayActivity.other`), **jour d'entraînement**, **charge** (ACWR, garde-fou, score de
+  forme) et **temps d'entraînement** comptent désormais les autres activités. Aucun gating par
+  pilier sur la charge : une activité n'appartient à aucun pilier, et une sortie vélo fatigue autant
+  que le reste.
+- `dayCalorieBonus` accepte un troisième mode. **`fixed` et `auto` sont inchangés à la ligne près**,
+  figés par des tests de non-régression.
+- Export RGPD : `activities` ajoutée (attrapée par le test de complétude, comme `session_intervals`
+  en août).
+
+### Technique / Notes
+
+- **3 migrations poussées** le 15/09 : `activities` (+ publication), `sport_free_level`,
+  `show_energy_estimates`. 🔴 **Sync rule à coller à la main** — table neuve.
+- ⚠️ **Push débloqué sans toucher à l'historique d'autrui** : le cloud portait `20260913204247`
+  (CORPS-03), appliquée depuis un worktree où son fichier n'est pas commité sur `dev`. Le fichier a
+  été **récupéré localement depuis sa branche** pour que le CLI retrouve son historique — ni
+  `migration repair`, ni appropriation (précédent GUID-01 du 13/09).
+- **Trois défauts attrapés par les tests-gardes du dépôt**, tous réels : une colonne inexistante
+  (`workouts.title`) dans une requête SQL, l'export RGPD incomplet, et un `void … .then()` sans
+  `.catch`.
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0, **6 048 tests verts** (3 125 Jest +
+  2 923 Vitest), 100 % de couverture sur `energy.ts` et `activity.ts`.
+- **Specs écrites avec le code** (raccourci assumé et tracé dans chacune) : DEPENSE-01, AUTRE-01,
+  DEPENSE-00. **33 critères de recette** en [RECETTES.md](RECETTES.md) §65.
+
 ## 13/09/2026 (quater) — GUID-01 : l'objectif se met enfin à servir, et le guidage devient réglable
 
 Branche `feature/guid01-objectif-regime-guidage` (depuis `dev`, commit précédent `45b8858d`).

@@ -22,6 +22,144 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [15/09/2026] ✅ **La dépense d'une séance, et l'activité qu'on note à la main** — **promue en US et
+  livrée le jour même** (DEPENSE-01 · AUTRE-01 · DEPENSE-00/02/03, roadmap 4.42-4.44, recette
+  [RECETTES.md §65](RECETTES.md)). Demande de Florian, 15/09 — deux idées qui se rejoignent : **(1)** estimer la dépense calorique à la fin
+  d'une séance de muscu ou de course, d'après son contenu et le profil (âge, taille, poids, sexe),
+  et la croiser avec la nutrition du jour ; **(2)** saisir une **autre activité** (vélo, natation…)
+  avec type, durée et intensité, pour la même estimation. _État vérifié dans le code :_ la course a
+  déjà une estimation (RN-01) branchée sur la cible (RN-02) mais **jamais affichée**, nulle sur
+  tapis et sans dénivelé ; la **muscu n'a qu'un forfait aveugle** ; et l'app ne connaît que
+  **deux types d'activité** partout (série, charge, jour d'entraînement, Health Connect).
+  _Point dur n° 1 :_ **le sport est déjà compté une fois** dans le facteur d'activité de la cible,
+  et le bonus Auto le rajoute — jusqu'à **95 % du déficit d'une sèche effacé**. D'où le découpage
+  proposé : **phase A montrer** (moteur, fin de séance, activités manuelles) sans toucher la cible,
+  **phase B piloter** (socle hors sport + dépense réelle). ⏰ _Décision qui presse, hors code :_ des
+  calories ou des séances de montre dans Health Connect imposent de compléter la déclaration santé
+  **avant** son dépôt (LANCE-00), sinon re-déclaration et ~2 semaines de délai.
+  **Analyse, formules, plan en 5 lots et décisions D1-D9 :
+  [docs/product/analyse-depense-activites-2026-09.md](docs/product/analyse-depense-activites-2026-09.md)**
+  · maquettes et prototype jouable : [design/depense-activites-2026-09/](design/depense-activites-2026-09/).
+  ❗ Pas P0 : à placer après LANCE-01.
+
+- [14/09/2026] 🔍 **Le Labo — là où tes piliers se croisent** (demande de Florian, 13/09 ; v2 le
+  14/09 après son retour) : « labo » **au sens figuré**, l'endroit où l'on compose et croise tous ses
+  piliers activés — il n'existe aujourd'hui aucun écran qui réunit les trois. Quatre gestes :
+  **Composer** (les leviers de tous les piliers sur un écran, croisements et garde-fous en direct),
+  **Croiser** (deux leviers face à face sur ses propres données, « pas de lien » compris),
+  **Tester** (expérience sur soi), **Retenir** (découvertes, ressenti, bilan de cycle). Image
+  centrale : la **triade**, les scènes des trois piliers en cercles qui se chevauchent (DA de
+  DASH-01) ; la v1 « fioles et chimie » est abandonnée et archivée. Donne une maison à ~87 analyses
+  inter-piliers et aux idées 5, 7, 8, 9, 31, 34, 36 du carnet d'innovation. Rouvre C (côté
+  motivation) et D (« Compose avec moi » payant). **Analyse, 14 écrans, prototype 3D et décisions
+  D1-D6 : [docs/product/analyse-labo-2026-09.md](docs/product/analyse-labo-2026-09.md)** ·
+  maquettes : [design/labo-2026-09/](design/labo-2026-09/). ❗ Pas P0 : après LANCE-01.
+
+### Salve « carnet d'innovation » (13/09/2026) — 22 idées retenues au tri
+
+- [13/09/2026] 🔍 **Note — source des lignes ci-dessous** : idéation demandée par Florian (« des
+  fonctionnalités vraiment innovantes : IA, visualisations, 3D, presque inimaginables »), 38 idées et 10
+  maquettes, **triées par Florian le jour même : 22 retenues, 16 retirées** (archivées plus bas). Parmi
+  les 22, **(27) Vitesse de barre à la caméra est déjà retenue pour le BACKLOG** (VBT-01, archivée
+  plus bas en ✅) : il en reste 21 ici.
+  _Constat directeur :_ en 2026 le coach IA conversationnel est devenu un standard du marché
+  (MyFitnessPal, Fitbit, Oura, Whoop, Strava — qui expose même ses données à Claude par MCP) ; notre
+  différenciation ne sera donc pas un chatbot, mais le fait de voir **les 3 piliers + sommeil + cycle +
+  douleurs dans une même base locale**. Trois règles proposées pour toute US « intelligente » : les
+  piliers se parlent · le moteur calcule, l'IA raconte · la preuve avant la promesse.
+  **Analyse complète (fiches, horizons, choix des modèles, décisions D1-D7) :
+  [docs/product/analyse-innovation-2026-09.md](docs/product/analyse-innovation-2026-09.md)** ·
+  maquettes : [design/innovation-2026-09/](design/innovation-2026-09/). Les numéros entre parenthèses
+  sont ceux de la planche. ❗ **Rien de tout ça n'est P0** : à reprendre après LANCE-01.
+
+- [13/09/2026] 🔍 **(23) Le Réservoir — glucides seulement** : jauge de glycogène estimée sur la
+  journée, qui se vide aux séances, se remplit aux glucides et prévient avant le fractionné (« ajoute
+  ~60 g de glucides avant 16 h 30 »), avec projection avec / sans collation et « d'où vient ce chiffre ».
+  **Périmètre tranché par Florian le 13/09/2026 : glucides seulement** — l'extension aux protéines et
+  aux lipides a été étudiée puis abandonnée. Surtout une **surface** sur des briques livrées ou
+  cataloguées : FUEL-01, MN-04, NUTR-16, NUTR-F2, RN-07/08. _Points durs :_ estimation affichée comme
+  telle ; heure réelle des repas fragile (commencer par le repas) ; aucune injonction ; opt-in. Détail :
+  analyse §5. **Dans le top 3 recommandé.**
+
+- [13/09/2026] 🔍 **(18) Le Fantôme** : courir contre soi-même d'il y a N semaines sur le même
+  parcours, écart en mètres et en secondes à l'écran et à la voix. Tout existe déjà (trace GPS,
+  annonces RUN-F2a, cible en direct RUN-F2b) : **sans réseau ni IA**. **Dans le top 3 recommandé.**
+
+- [13/09/2026] 🔍 **(5) L'Enquête** : « Pourquoi je stagne ? » — un agent utilise le
+  [catalogue d'analyses](docs/product/analyses-donnees.md) comme outils et rend un dossier : pistes
+  classées par force, **pistes écartées affichées**, une expérience à tenter. Les chiffres viennent du
+  moteur local, le modèle ne reçoit que des agrégats. Recommandée comme **première US IA** (pose le
+  proxy, le consentement, et réveille SOCLE-01). _Recoupe :_ [[integration-ia]], [[analyses-croisees-poussees]].
+
+- [13/09/2026] 🆕 **(6) Le Conseil des trois** : quand les objectifs se contredisent, trois voix
+  (Muscu, Course, Assiette) plaident chiffres à l'appui ; le moteur chiffre deux compromis avec
+  fourchettes ; on tranche ou on répond « cette règle ne me correspond pas ». _Recoupe :_
+  [[objectif-hybride-unifie]], [[recommandations-explicables-contestables]], §6 de
+  [l'analyse objectif & guidage](docs/product/analyse-objectif-guidage-2026-09.md).
+
+- [13/09/2026] 🆕 **(7) Labo N=1** : expériences protocolées sur soi — alternance tirée au sort, à
+  l'aveugle quand c'est possible (déca préparé par un proche) — avec verdict, intervalle d'incertitude et
+  effets de bord. Caféine avant le fractionné, créatine, heure de séance, glucides la veille. Statistique
+  locale, pas d'IA. Demande de l'historique (H2).
+
+- [13/09/2026] 🆕 **(31) Météo intérieure** : prévisions de forme à 7 jours, fourchette qui s'élargit
+  avec le temps, depuis la charge prévue, le sommeil, le cycle et les apports planifiés ; « fenêtre
+  record » et « pourquoi mercredi est gris ». Prolonge TRI-03, GARDE-01, COLLIS-01 vers l'avenir.
+
+- [13/09/2026] 🆕 **(8) Carte des leviers** : graphe personnel de corrélations (épaisseur = force,
+  pointillé = incertain, « corrélation, pas encore cause ») ; un appui envoie le lien au Labo N=1 pour
+  le tester. _Recoupe :_ [[analyses-croisees-poussees]].
+
+- [13/09/2026] 🆕 **(1) Carte de fatigue croisée** : les muscles « chauffent » avec la muscu **et** la
+  course, puis refroidissent selon un modèle de récupération que l'apport protéique module. Fitbod ne le
+  fait qu'en muscu. _Recoupe :_ [l'analyse Mon corps](docs/product/analyse-mon-corps-2026-09.md).
+
+- [13/09/2026] 🆕 **(9) D'où vient ce chiffre ?** : appui long sur n'importe quel nombre → sa chaîne de
+  calcul (TDEE ← 14 pesées ← apports) et sa fiabilité. Local. _Recoupe :_
+  [[recommandations-explicables-contestables]] (indice de confiance des données).
+
+- [13/09/2026] 🆕 **(36) Apporte ton IA** : exposer ses données, pilier par pilier et avec
+  consentement, à l'assistant de son choix (Claude, ChatGPT…) via MCP, en lecture seule d'abord. Strava
+  l'a fait pour un pilier en juin 2026 ; notre coût d'inférence serait nul. Serveur + RGPD à instruire.
+
+- [13/09/2026] 🆕 **(2) Survol 3D de la sortie** : replay cinématique en relief (MapLibre, déjà
+  installé), ruban coloré par l'allure, fractions et « où tu as lâché » posés sur le terrain. Règle : la
+  3D doit répondre à une question qu'un graphe 2D pose mal.
+
+- [13/09/2026] 🆕 **(11) L'app qui s'efface** : elle mesure l'autonomie et propose de retirer du
+  guidage à mesure que l'utilisateur apprend (Guidé → Accompagné → Autonome). Une app conçue pour qu'on
+  ait de moins en moins besoin d'elle.
+
+- [13/09/2026] 🆕 **(10) La mémoire visible** : ce que l'IA a retenu de l'utilisateur, en phrases
+  claires, modifiable et supprimable ligne à ligne.
+
+- [13/09/2026] 🆕 **(15) Dicter sa série** : « 80, 8, RPE 8 » en reconnaissance vocale Android sur
+  l'appareil, grammaire fermée, sans IA ni réseau. _Recoupe :_ commandes vocales en séance (13/07).
+
+- [13/09/2026] 🆕 **(17) Carnet vocal d'après-séance** : vingt secondes de ressenti dictées, transcrites
+  sur l'appareil, qui nourrissent BIEN-01 et l'Enquête.
+
+- [13/09/2026] 🆕 **(34) Lettre à ton futur toi** : message enregistré en fixant un objectif (OBJ-01),
+  rejoué à l'échéance… ou le jour où l'on décroche.
+
+- [13/09/2026] 🆕 **(3) Le curseur du temps** : un doigt glisse sur l'année, et poids, charges, allures
+  et silhouette bougent ensemble.
+
+- [13/09/2026] 🆕 **(19) Le fantôme en son spatial** : dans le casque, on entend son fantôme derrière
+  soi, sur la gauche, qui revient. Prolonge (18).
+
+- [13/09/2026] 🆕 **(29) Le pouls au doigt** : doigt sur la caméra et le flash, pouls de repos du matin
+  sans montre, versé au score de forme. Aucune allégation médicale. _Recoupe :_ [[score-recuperation-readiness]].
+
+- [13/09/2026] 🆕 **(35) Le film de ta saison** : story verticale générée sur l'appareil — survols,
+  records, courbes qui s'animent. _Recoupe :_ [[retrospective-annuelle-wrapped]], [[carte-seance-partageable]].
+
+- [13/09/2026] 🆕 **(4) Sculpture de saison** : l'année en objet 3D génératif (anneau = semaine,
+  épaisseur = charge, couleur = pilier), partageable, exportable pour impression 3D. _Recoupe :_
+  [[retrospective-annuelle-wrapped]].
+
+### Idées antérieures
+
 - [04/09/2026] 🔍 **Une séance de course qui porte enfin sa consigne (allure cible, échauffement, chrono par fraction)** :
   remonté par Florian après avoir suivi sur le terrain un plan « 5 km en moins de 20 min » (généré par
   ChatGPT, 12 semaines / 24 séances) et constaté que l'app ne sait pas porter ses séances.
@@ -159,20 +297,6 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   **après** le détecteur de collisions — les deux partagent le même moteur de règles.
 
   </details>
-
-- [25/07/2026] 🔍 **Simulateur « What-If / Et si… »** (ChatGPT §20, Qwen-3.8 §4.1) : bac à sable de
-  progression — « si je passe à 4 séances muscu et que je réduis le running de moitié, à quoi ressemble ma
-  progression sur 12 semaines ? », « si je passe en déficit ? », « si je supprime une séance jambes ? ».
-  L'app **projette une courbe** à partir de l'historique réel de l'utilisateur, **avec une fourchette
-  d'incertitude**, et montre l'impact sur le planning, les apports et la charge. Outil de **motivation**
-  ET d'**aide à la décision** ; aucun concurrent identifié sur ce terrain. _Points durs :_ **(1)**
-  **honnêteté statistique** — afficher une fourchette + le volume de données, jamais un chiffre sec ;
-  **(2)** le chiffre doit venir d'un **moteur de simulation déterministe** (l'IA sert au plus à comprendre
-  la question en langage naturel) ; **(3)** **cold start** — quelques semaines de données minimum, prévoir
-  l'état « pas encore assez d'historique » ; **(4)** risque produit : ne rien **promettre**. _Recoupe :_
-  [[analyses-croisees-poussees]], [[objectif-hybride-unifie]], [[detection-plateau-deload]] ; candidat
-  **premium** naturel ([[principe-monetisation]] : le payant, c'est l'intelligence de croisement).
-  _Prochaine étape :_ **post-V1** (nécessite de l'historique) — à cadrer après le moteur de corrélations.
 
 - [25/07/2026] 🔍 **Objectif hybride unifié (avec arbitrage explicite des compromis)** (ChatGPT §1,
   Qwen-3.7) : l'utilisateur pose **un seul objectif composite** — « courir un 10 km en 45 min **tout en**
@@ -602,6 +726,57 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [10/07/2026] ✅ Export GPX des sorties → promue en US 5.xx.
 - [10/07/2026] ❌ Intégration montres Garmin → hors périmètre V1, revoir en V2.
 -->
+
+- [25/07/2026] ✅ **Simulateur « What-If / Et si… »** → **promu et livré en deux temps** :
+  d'abord le moteur (`projectWhatIf`, [DASH-01](docs/specs/functional/us/dash01-dashboards-immersifs.md),
+  13/09/2026), puis l'écran qui le rend utilisable sur **tous les piliers à la fois** —
+  l'onglet **Composer** du [Labo](docs/specs/functional/us/labo01-labo.md) (LABO-01, 15/09/2026,
+  roadmap 7.30). Les quatre points durs de la fiche sont tenus : la projection de force affiche sa
+  **fourchette** et se tait sans historique suffisant ; tous les chiffres viennent de **moteurs
+  déterministes déjà recettés** ; et le quatrième — « ne rien promettre » — a coûté la ligne la plus
+  vendeuse du prototype. 🔴 **« 10 km −25 s » n'est PAS livré** : ce chiffre sortait d'un coefficient
+  inventé, et **aucun calcul validé de l'app ne relie une dose à un temps de course**. L'écran
+  n'affiche donc **aucune projection d'allure ni de chrono**, et le dit en toutes lettres.
+  ⚠️ **Non gardé au premier jet** : le palier premium évoqué dans la fiche (« le payant, c'est
+  l'intelligence de croisement ») — l'app est gratuite en V1, même arbitrage que la surface IA de
+  DASH-01. La question reste ouverte pour l'après-lancement.
+
+- [13/09/2026] ❌ **16 idées de la salve « carnet d'innovation » retirées par Florian au tri du
+  13/09/2026** (motif non détaillé ; les 22 retenues sont en tête de « À trier ») :
+  (12) **Colle ton plan** — import d'un plan par capture, PDF ou texte ·
+  (13) **Le menu du resto** — plats classés selon les macros restantes et la séance du lendemain ·
+  (14) **Assiette avant / après** — deux photos pour retirer les restes ·
+  (16) **Mémoire des machines** — QR sur la machine, réglages et dernière charge ·
+  (20) **Le parcours qui épouse la séance** — boucle générée, fractions sur le plat ·
+  (21) **Duo à distance** — même séance en direct à deux ·
+  (22) **Le plan jusque dans la montre** — séances planifiées écrites dans Health Connect ·
+  (24) **La recette élastique** — portions recalculées selon la séance du lendemain ·
+  (25) **La fenêtre d'avant-course** — heure du dernier repas et de la collation ·
+  (26) **Le frigo décide du dîner** — photo du frigo, trois dîners ·
+  (28) **Le saut du matin** — hauteur de saut comme signal de fraîcheur ·
+  (30) **La respiration haptique** — vibrations lentes après un fractionné ·
+  (32) **La semaine qui se replie** — réorganisation des 3 piliers en langage naturel ·
+  (33) **Séance sous contraintes** — séance générée selon temps, matériel et douleurs ·
+  (37) **Le lien kiné** — partage temporaire douleurs + charge ·
+  (38) **Les programmes vivants** — stats anonymes des utilisateurs d'un programme partagé.
+  Fiches : [docs/product/analyse-innovation-2026-09.md](docs/product/analyse-innovation-2026-09.md) §2
+  et la planche. ⚠️ **Deux recoupements à garder en tête** : (25) survit au catalogue sous **RN-21**
+  (timing du dernier repas avant la course) — la piste de la réintroduire dans le Réservoir est close,
+  celui-ci étant limité aux glucides ; (12) touchait au même besoin que l'analyse des séances
+  structurées du 04/09/2026, qui reste ouverte plus haut.
+
+- [13/09/2026] ✅ **(27) Vitesse de barre à la caméra → retenue par Florian le 13/09/2026, candidate
+  VBT-01 au [BACKLOG](BACKLOG.md)** (salve « carnet d'innovation »). Téléphone posé de profil, vitesse
+  de chaque répétition, et sa chute dit quand arrêter la série. _Réponses aux questions de Florian :_
+  **aucune vidéo stockée** — les images sont analysées en direct sur le téléphone puis jetées, seules les
+  vitesses (quelques octets) sont synchronisées : ni S3, ni frais de stockage, ni API d'IA ; **pastille
+  facultative** — les apps du marché repèrent le disque seul via son diamètre standard (45 cm), la
+  pastille rend le suivi plus simple et plus robuste ; **positionnement** fixe, de profil,
+  perpendiculaire à la barre, à 1-3 m. Validité démontrée pour certaines apps (PLOS One 2024), très
+  variable selon l'implémentation. Demande VisionCamera + frame processors (`expo-camera` ne suffit pas).
+  ≠ « correction de forme par caméra » écartée le 25/07 : on suit un point, pas un squelette.
+  _Prochaine étape :_ essai jetable de 2-3 jours avec critères de sortie, avant toute spec —
+  [analyse §6](docs/product/analyse-innovation-2026-09.md).
 
 - [21/07/2026] ❌ **Compatibilité Claude Code ↔ Codex (outillage multi-agents)** → **abandonné le
   06/08/2026 (Florian).** Chantier de **5 commits / 1 318 insertions** resté sur la branche

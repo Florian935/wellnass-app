@@ -15,7 +15,7 @@
 
 import type { ColorScheme } from './colors';
 
-export const STAGE_KEYS = ['home', 'strength', 'running', 'nutrition'] as const;
+export const STAGE_KEYS = ['home', 'strength', 'running', 'nutrition', 'lab'] as const;
 export type StageKey = (typeof STAGE_KEYS)[number];
 
 export type StageTheme = {
@@ -106,6 +106,22 @@ const HOME_DARK: StageTheme = {
   accent: 'rgba(221,110,64,0.28)',
 };
 
+/**
+ * US LABO-01 — la scène du Labo : les trois piliers dans la même image, sur le fond nocturne de
+ * l'app. Sombre dans les deux thèmes, comme les scènes de pilier : la 3D y est posée dessus.
+ */
+const LAB: StageTheme = {
+  gradient: ['#3a0f22', '#1c150e', '#10233f'],
+  surfaces: ['#3a0f22', '#1c150e', '#10233f'],
+  ink: '#ffffff',
+  inkMuted: '#e6d8c4',
+  glass: GLASS_ON_DARK,
+  glassBorder: GLASS_BORDER_ON_DARK,
+  solid: '#ffffff',
+  onSolid: '#1c150e',
+  accent: '#f2d28a',
+};
+
 export function stageTheme(key: StageKey, scheme: ColorScheme): StageTheme {
   switch (key) {
     case 'strength':
@@ -114,6 +130,8 @@ export function stageTheme(key: StageKey, scheme: ColorScheme): StageTheme {
       return RUNNING;
     case 'nutrition':
       return NUTRITION;
+    case 'lab':
+      return LAB;
     case 'home':
       return scheme === 'dark' ? HOME_DARK : HOME_LIGHT;
   }

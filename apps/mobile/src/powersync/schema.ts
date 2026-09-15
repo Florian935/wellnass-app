@@ -100,6 +100,10 @@ const user_settings = new Table({
   // colonne de cette table à devoir être déclarée ici : absente, l'écriture échoue et
   // `void updateSettings()` avale l'erreur — l'interrupteur revient à « éteint » sans message.
   ai_consent_at: column.text,
+  // US DEPENSE-02 — afficher (ou non) les calories dépensées. 🔴 Septième colonne de cette table à
+  // devoir être déclarée ici ; masquée, la cible s'ajuste quand même (on retire l'affichage, pas le
+  // calcul).
+  show_energy_estimates: column.integer, // 0/1
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -138,6 +142,10 @@ const nutrition_profiles = new Table({
   // avale l'erreur — le réglage ne se pose jamais, sans message (panne exacte de CYCLE-01).
   water_target_ml: column.integer,
   glass_size_ml: column.integer,
+  // US DEPENSE-00 — mode de vie HORS sport, facteur du socle quand `training_bonus_mode` vaut
+  // `activities`. 🔴 Même piège que les colonnes ci-dessus : absente d'ici, le basculement de mode
+  // échoue en local et l'écran revient à son état précédent sans message.
+  sport_free_level: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -747,6 +755,9 @@ const daily_wellbeing = new Table({
   mood: column.integer,
   energy: column.integer,
   stress: column.integer,
+  // US LABO-01 : la nuit qui précède le check-in, en minutes (0-840), facultative.
+  // Migration : supabase/migrations/20260915151307_labo01_sommeil_et_experiences.sql
+  sleep_minutes: column.integer,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -872,6 +883,31 @@ const pain_reports = new Table({
   deleted_at: column.text,
 });
 
+// ── US AUTRE-01 : les autres activités (vélo, natation, rando…) ────────────
+// Migrations : supabase/migrations/20260915165803_depense01_activities.sql
+//              + 20260915165804_depense01_activities_publication.sql
+//
+// 🔴 La **dépense n'est pas stockée** (décision D3) : elle se recalcule à la lecture avec le poids à
+// la date de l'activité — c'est ce qui corrige le défaut des courses, où la dernière pesée
+// réécrivait l'estimation des jours passés. Seul `device_kcal` (chiffre lu sur une montre) est
+// conservé : c'est une mesure, pas une estimation.
+// ⚠️ `rpe` n'est pas décoratif : c'est lui qui donne la charge sRPE (RPE × minutes) et fait entrer
+// l'activité dans l'ACWR et le garde-fou de charge.
+const activities = new Table({
+  user_id: column.text,
+  activity_type: column.text,
+  started_at: column.text,
+  duration_seconds: column.integer,
+  intensity: column.text,
+  rpe: column.integer,
+  distance_m: column.integer,
+  device_kcal: column.integer,
+  notes: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
 // ── US Refonte-D : templates de séance libre ──────────────────────────────
 // Migration : supabase/migrations/20260721074949_refonte_muscu_d_workout_templates.sql
 
@@ -893,6 +929,22 @@ const workout_template_exercises = new Table({
   target_reps: column.text,
   target_weight_kg: column.real,
   rest_seconds: column.integer,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+// ── US LABO-01 : les expériences sur soi du Labo ─────────────────────────────
+// Migrations : supabase/migrations/20260915151307_labo01_sommeil_et_experiences.sql
+//              + 20260915151316_labo01_lab_experiments_publication.sql
+// `schedule` : JSON des 4 semaines tirées au sort (« test » / « usual »). Pas de verdict stocké :
+// il se calcule sur les données réelles à la fin (`experimentVerdict`, @wellness/shared).
+const lab_experiments = new Table({
+  user_id: column.text,
+  kind: column.text,
+  start_date: column.text,
+  schedule: column.text,
+  status: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -925,6 +977,7 @@ export const AppSchema = new Schema({
   personal_goals,
   real_life_periods,
   pain_reports,
+  activities,
   exercises,
   exercise_translations,
   exercise_favorites,
@@ -947,4 +1000,5 @@ export const AppSchema = new Schema({
   running_pace_records,
   workout_templates,
   workout_template_exercises,
+  lab_experiments,
 });

@@ -15,6 +15,7 @@ import {
   WELLBEING_INDICATORS,
   canEditDay,
   isEmptyCheckin,
+  isSleepMinutes,
   isWellbeingLevel,
   localDayKey,
   type LocalWellbeing,
@@ -33,6 +34,8 @@ export type WellbeingEntry = {
   mood: number | null;
   energy: number | null;
   stress: number | null;
+  /** US LABO-01 : la nuit qui précède ce matin, en minutes, ou `null` si non saisie. */
+  sleepMinutes: number | null;
 };
 
 type WellbeingDbRow = {
@@ -41,9 +44,10 @@ type WellbeingDbRow = {
   mood: number | null;
   energy: number | null;
   stress: number | null;
+  sleep_minutes: number | null;
 };
 
-const SELECT_COLS = `id, log_date, mood, energy, stress`;
+const SELECT_COLS = `id, log_date, mood, energy, stress, sleep_minutes`;
 
 function toEntry(row: WellbeingDbRow): WellbeingEntry {
   return {
@@ -52,6 +56,7 @@ function toEntry(row: WellbeingDbRow): WellbeingEntry {
     mood: row.mood,
     energy: row.energy,
     stress: row.stress,
+    sleepMinutes: row.sleep_minutes,
   };
 }
 
@@ -133,9 +138,26 @@ export async function saveWellbeing(
   }
   if (isEmptyCheckin(input)) return false;
 
-  const columns = Object.fromEntries(
-    WELLBEING_INDICATORS.map((indicator) => [indicator, toColumn(input[indicator])]),
-  );
+  /**
+   * 🔴 **Une mise à jour n'écrit QUE les champs présents dans l'entrée.**
+   *
+   * Avant ce correctif, `patch` recevait les quatre colonnes quoi qu'il arrive : un appel partiel
+   * remettait donc à `null` tout ce qu'il ne portait pas. Le widget « énergie » de l'accueil envoie
+   * `{ energy }` seul — il **effaçait** silencieusement l'humeur, le stress et, depuis LABO-01, la
+   * nuit qui venait d'être saisie dans la feuille. Trou dans l'anneau des nuits, proposition « nuit
+   * courte » évaporée, semaine d'expérience comptée non tenue : tout ça sans le moindre signal.
+   *
+   * La feuille de check-in, elle, envoie toujours ses clés (avec `null` pour un indicateur
+   * décoché) : **effacer volontairement reste possible**, c'est deviner qui ne l'est plus.
+   */
+  const columns: Record<string, number | null> = {};
+  for (const indicator of WELLBEING_INDICATORS) {
+    if (indicator in input) columns[indicator] = toColumn(input[indicator]);
+  }
+  // US LABO-01 : une durée hors bornes est traitée comme absente, comme un niveau hors échelle.
+  if ('sleepMinutes' in input) {
+    columns.sleep_minutes = isSleepMinutes(input.sleepMinutes) ? input.sleepMinutes : null;
+  }
 
   const existing = await powerSync.getOptional<{ id: string }>(
     `SELECT id FROM daily_wellbeing WHERE log_date = ? AND deleted_at IS NULL LIMIT 1`,
@@ -147,10 +169,13 @@ export async function saveWellbeing(
     return true;
   }
 
+  // À la création en revanche, les colonnes absentes sont explicitement nulles : la ligne doit être
+  // complète en base, et `null` y est le « non renseigné » du modèle.
   await insertWithSyncFields('daily_wellbeing', {
     user_id: currentUserId(),
     log_date: logDate,
-    ...columns,
+    ...Object.fromEntries(WELLBEING_INDICATORS.map((indicator) => [indicator, toColumn(input[indicator])])),
+    sleep_minutes: isSleepMinutes(input.sleepMinutes) ? input.sleepMinutes : null,
   });
   return true;
 }

@@ -7,7 +7,11 @@ import {
   WELLBEING_CATCHUP_DAYS,
   canEditDay,
   isEmptyCheckin,
+  isSleepMinutes,
   isWellbeingLevel,
+  SLEEP_MINUTES_MAX,
+  SLEEP_MINUTES_MIN,
+  SLEEP_MINUTES_STEP,
   wellbeingAverages,
   wellbeingSeries,
 } from './wellbeing';
@@ -46,6 +50,25 @@ describe('isEmptyCheckin', () => {
   it('ignore une valeur hors échelle : elle ne rend pas le check-in valide', () => {
     expect(isEmptyCheckin({ mood: 0 })).toBe(true);
     expect(isEmptyCheckin({ stress: 9 })).toBe(true);
+  });
+
+  it('US LABO-01 : une nuit seule suffit, une nuit impossible ne compte pas', () => {
+    expect(isEmptyCheckin({ sleepMinutes: 450 })).toBe(false);
+    expect(isEmptyCheckin({ sleepMinutes: 0 })).toBe(false);
+    expect(isEmptyCheckin({ sleepMinutes: SLEEP_MINUTES_MAX + 15 })).toBe(true);
+    expect(isEmptyCheckin({ sleepMinutes: null })).toBe(true);
+  });
+});
+
+describe('isSleepMinutes (US LABO-01)', () => {
+  it('accepte une durée entière de 0 à 14 h', () => {
+    expect(isSleepMinutes(SLEEP_MINUTES_MIN)).toBe(true);
+    expect(isSleepMinutes(7 * 60 + SLEEP_MINUTES_STEP)).toBe(true);
+    expect(isSleepMinutes(SLEEP_MINUTES_MAX)).toBe(true);
+    expect(isSleepMinutes(-15)).toBe(false);
+    expect(isSleepMinutes(841)).toBe(false);
+    expect(isSleepMinutes(420.5)).toBe(false);
+    expect(isSleepMinutes('420')).toBe(false);
   });
 });
 

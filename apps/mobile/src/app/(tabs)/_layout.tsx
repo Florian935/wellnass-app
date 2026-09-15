@@ -43,6 +43,7 @@ export default function TabsLayout() {
     strength: colors.pillarStrength,
     running: colors.pillarRunning,
     nutrition: colors.pillarNutrition,
+    lab: colors.pillarLab,
   };
   const tabTint = (menu: MenuKey) => (menuColorsEnabled ? menuColors[menu] : PILLAR_TINT[menu]);
   // Les scènes muscu, course et nutrition sont sombres dans les deux thèmes : icônes de la barre d'état
@@ -91,6 +92,19 @@ export default function TabsLayout() {
             tabBarActiveTintColor: tabTint('running'),
             tabBarIcon: ({ color, size, focused }) => (
               <TabBarIcon name={PILLAR_ICON.running} color={color} size={size} focused={focused} />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="lab"
+          options={{
+            title: t('tabs.lab'),
+            // US LABO-01 (R9) : le Labo croise les piliers — sans aucun pilier actif, il n'a rien à
+            // croiser, et l'ouvrir ne montrerait qu'une scène coûteuse aux trois disques éteints.
+            href: isActive('strength') || isActive('running') || isActive('nutrition') ? undefined : null,
+            tabBarActiveTintColor: tabTint('lab'),
+            tabBarIcon: ({ color, size, focused }) => (
+              <TabBarIcon name="aperture" color={color} size={size} focused={focused} />
             ),
           }}
         />
