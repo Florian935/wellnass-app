@@ -1,0 +1,541 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+
+    .ph {
+      --bg: #f7eede; --sf: #fffaf2; --sfa: #f3ddd0; --bd: #ece0cd; --tx: #33291f;
+      --mut: #786a59; --trk: #eadcc6; --acc: #b14f2b; --acctx: #ffffff;
+      --pm: #6b0028; --pc: #2f6fc0; --pn: #5c7a3f; --pa: #c0562f; --ok: #66714b; --amb: #b47f31; --oktx: #ffffff;
+      --scene1: #fff6e8; --scene2: #efc39c; --arctrk: rgba(51,41,31,.10); --pale1: #fbf5ec; --pale2: #eadfcf;
+    }
+    .ph[data-theme="dark"] {
+      --bg: #1c150e; --sf: #30271e; --sfa: #3a2e22; --bd: #3a2e22; --tx: #f4ecdd;
+      --mut: #c9b79a; --trk: #362c22; --acc: #dd6e40; --acctx: #1c150e;
+      --pm: #e07a98; --pc: #6fa8ef; --pn: #a9ba7e; --pa: #dd6e40; --ok: #a9ba7e; --amb: #e0b155; --oktx: #1c150e;
+      --scene1: #45331f; --scene2: #1c150e; --arctrk: rgba(244,236,221,.10); --pale1: #332a21; --pale2: #1c150e;
+    }
+
+    .br { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+    .mo { font-family: 'Space Mono', ui-monospace, monospace; }
+    .eyebrow { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
+    .card { background: var(--sf); border: 1px solid var(--bd); border-radius: 22px; box-sizing: border-box; }
+    .tap { cursor: pointer; transition: transform 90ms ease-out; }
+    .tap:active { transform: scale(.96); }
+
+    /* ── Le souffle : le halo et les anneaux respirent, amplitude <= 6 % ── */
+    .a-breathe { animation: aBreathe 4800ms ease-in-out infinite; transform-origin: 75px 75px; }
+    .a-glow { animation: aGlow 4800ms ease-in-out infinite; transition: background 900ms ease-in-out; }
+    @keyframes aBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+    @keyframes aGlow { 0%, 100% { opacity: .6; transform: scale(1); } 50% { opacity: 1; transform: scale(1.08); } }
+
+    /* ── Le compteur qui roule : chaque chiffre est une colonne 0-9 ── */
+    .odo { display: inline-block; position: relative; overflow: hidden; height: 1em; line-height: 1em; vertical-align: top; }
+    .odo-ghost { visibility: hidden; }
+    .odo-col { position: absolute; left: 0; right: 0; top: 0; text-align: center; }
+    .odo-col { display: flex; flex-direction: column; transition: transform 700ms cubic-bezier(.22,.61,.36,1); animation-duration: 1300ms; animation-timing-function: cubic-bezier(.22,.61,.36,1); animation-delay: 250ms; animation-fill-mode: backwards; }
+    .odo-col span { display: block; height: 1em; line-height: 1em; }
+    @keyframes odoFrom0 { from { transform: translateY(-0em); } }
+    @keyframes odoFrom1 { from { transform: translateY(-1em); } }
+    @keyframes odoFrom2 { from { transform: translateY(-2em); } }
+    @keyframes odoFrom3 { from { transform: translateY(-3em); } }
+    @keyframes odoFrom4 { from { transform: translateY(-4em); } }
+    @keyframes odoFrom5 { from { transform: translateY(-5em); } }
+    @keyframes odoFrom6 { from { transform: translateY(-6em); } }
+    @keyframes odoFrom7 { from { transform: translateY(-7em); } }
+    @keyframes odoFrom8 { from { transform: translateY(-8em); } }
+    @keyframes odoFrom9 { from { transform: translateY(-9em); } }
+    .from0 { animation-name: odoFrom0; } .from1 { animation-name: odoFrom1; } .from2 { animation-name: odoFrom2; } .from3 { animation-name: odoFrom3; } .from4 { animation-name: odoFrom4; } .from5 { animation-name: odoFrom5; } .from6 { animation-name: odoFrom6; } .from7 { animation-name: odoFrom7; } .from8 { animation-name: odoFrom8; } .from9 { animation-name: odoFrom9; }
+
+    /* ── Le verdict qui arrive ── */
+    .a-in { animation: aIn 420ms cubic-bezier(.22,.61,.36,1) backwards; }
+    @keyframes aIn { from { opacity: 0; transform: translateY(8px); } }
+
+    /* ── La flamme qui vacille (série en danger) ── */
+    .a-flicker { animation: aFlicker 2400ms ease-in-out infinite; transform-origin: 50% 90%; }
+    @keyframes aFlicker { 0%, 100% { transform: scale(1) rotate(0); } 22% { transform: scale(1.05, .97) rotate(-2deg); } 48% { transform: scale(.97, 1.04) rotate(1.5deg); } 74% { transform: scale(1.03, .98) rotate(-1deg); } }
+    .a-ember { animation: aEmber 2400ms ease-in-out infinite; }
+    @keyframes aEmber { 0%, 100% { opacity: .35; } 50% { opacity: .7; } }
+
+    /* ── Le givre du joker ── */
+    .a-frost { animation: aFrost 2800ms ease-in-out infinite; }
+    @keyframes aFrost { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+
+    /* ── Les cartes du bilan : le segment courant se remplit ── */
+    .seg-run { animation: segRun 6000ms linear backwards; transform-origin: left; }
+    @keyframes segRun { from { transform: scaleX(0); } }
+
+    /* ── Le repère d'objectif qui glisse vers le drapeau ── */
+    .a-slide { animation: aSlide 1400ms cubic-bezier(.22,.61,.36,1) 300ms backwards; }
+    @keyframes aSlide { from { left: 6%; } }
+
+    /* ── Reprise : la première case de la semaine pulse doucement ── */
+    .a-pulse { animation: aPulse 2400ms ease-in-out infinite; }
+    @keyframes aPulse { 0%, 100% { opacity: .45; } 50% { opacity: 1; } }
+  </style>
+</helmet>
+
+<div class="ph" data-theme="{{theme}}" style="width: 390px; height: 1260px; box-sizing: border-box; background: var(--bg); color: var(--tx); font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!-- ════════════════ MOMENT 1 — LE MATIN : check-in, score de forme, bilan du lundi ════════════════ -->
+  <sc-if value="{{isMatin}}" hint-placeholder-val="{{ true }}">
+    <div style="position: relative; overflow: hidden; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; background: radial-gradient(130% 120% at 82% 0%, var(--scene1) 0%, var(--scene2) 100%); padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 16px;">
+
+      <div class="a-glow" style="position: absolute; width: 300px; height: 300px; border-radius: 50%; top: -120px; right: -90px; filter: blur(8px); background: {{glow}};"></div>
+
+      <div style="position: relative; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div>
+          <div class="eyebrow" style="color: var(--mut);">Lundi 14 septembre · 7 h 42</div>
+          <div class="br" style="font-weight: 700; font-size: 22px; letter-spacing: -.6px; margin-top: 3px;">Bien dormi, Florian ?</div>
+        </div>
+        <div style="width: 38px; height: 38px; border-radius: 50%; background: var(--sf); border: 1px solid var(--bd); display: flex; align-items: center; justify-content: center;">
+          <span class="br" style="font-weight: 700; font-size: 14px; color: var(--acc);">FM</span>
+        </div>
+      </div>
+
+      <!-- Check-in en un geste : 5 pastilles, dans la scène elle-même -->
+      <div style="position: relative; display: flex; flex-direction: column; gap: 9px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <span style="font-size: 13px; font-weight: 600;">Ton énergie ce matin</span>
+          <span class="mo" style="font-size: 10px; color: var(--mut);">1 geste · 2 s</span>
+        </div>
+        <div style="display: flex; gap: 7px;">
+          <sc-for list="{{moods}}" as="m" hint-placeholder-count="5">
+            <div class="tap" onClick="{{m.pick}}" style="flex: 1; height: 50px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; background: {{m.bg}}; border: 1px solid {{m.border}}; transition: background 240ms ease-out, border-color 240ms ease-out;">
+              <span class="br" style="font-weight: 800; font-size: 17px; line-height: 1; color: {{m.fg}};">{{m.value}}</span>
+              <span style="font-size: 9.5px; font-weight: 600; color: {{m.sub}};">{{m.label}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{hasVerdict}}" hint-placeholder-val="{{ false }}">
+        <div class="a-in" style="position: relative; display: flex; align-items: center; gap: 12px; border-radius: 16px; padding: 12px 14px; background: {{verdictBg}};">
+          <div style="width: 36px; height: 36px; border-radius: 11px; flex: none; display: flex; align-items: center; justify-content: center; background: {{verdictChip}};">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="{{verdictIcon}}"></path></svg>
+          </div>
+          <div style="flex: 1;">
+            <div class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px; color: {{verdictInk}};">{{verdictTitle}}</div>
+            <div style="font-size: 12px; line-height: 1.35; color: {{verdictInk}}; opacity: .82; margin-top: 1px;">{{verdictBody}}</div>
+          </div>
+        </div>
+      </sc-if>
+
+      <div style="position: relative; display: flex; align-items: center; gap: 16px;">
+        <svg width="126" height="126" viewBox="0 0 150 150" style="flex: none;">
+          <g fill="none" stroke-linecap="round">
+            <circle cx="75" cy="75" r="64" stroke="var(--arctrk)" stroke-width="9"></circle>
+            <circle cx="75" cy="75" r="49" stroke="var(--arctrk)" stroke-width="9"></circle>
+            <circle cx="75" cy="75" r="34" stroke="var(--arctrk)" stroke-width="9"></circle>
+            <g class="a-breathe">
+              <circle cx="75" cy="75" r="64" stroke="var(--pm)" stroke-width="9" stroke-dasharray="402.1" stroke-dashoffset="100.5" transform="rotate(-90 75 75)"></circle>
+              <circle cx="75" cy="75" r="49" stroke="var(--pc)" stroke-width="9" stroke-dasharray="307.9" stroke-dashoffset="101.6" transform="rotate(-90 75 75)"></circle>
+              <circle cx="75" cy="75" r="34" stroke="var(--pn)" stroke-width="9" stroke-dasharray="213.6" stroke-dashoffset="35.6" transform="rotate(-90 75 75)"></circle>
+            </g>
+          </g>
+        </svg>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+          <div class="br" style="font-weight: 800; font-size: 44px; letter-spacing: -2px; line-height: 1; display: flex; align-items: flex-start;">
+            <span>J</span>
+            <sc-for list="{{streakDigits}}" as="d" hint-placeholder-count="2">
+              <span class="odo"><span class="odo-ghost">{{d.char}}</span><span class="odo-col {{d.from}}" style="transform: translateY({{d.y}});"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span>
+            </sc-for>
+          </div>
+          <div style="font-size: 12.5px; color: var(--mut); line-height: 1.35;">jours de série · meilleure&nbsp;: 21</div>
+          <div style="display: flex; gap: 10px; margin-top: 6px; font-size: 11px; color: var(--mut);">
+            <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: var(--pm);"></span>3/4</span>
+            <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: var(--pc);"></span>2/3</span>
+            <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 8px; height: 8px; border-radius: 50%; background: var(--pn);"></span>5/6</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="tap" style="position: relative; display: flex; align-items: center; justify-content: center; gap: 9px; height: 50px; border-radius: 14px; background: var(--acc);">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="var(--acctx)" stroke-width="1.9" stroke-linecap="round"><path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"></path></svg>
+        <span style="font-weight: 700; font-size: 15px; color: var(--acctx);">{{ctaLabel}}</span>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ════════════════ MOMENT 2 — LE SOIR : la série tient à un fil ════════════════ -->
+  <sc-if value="{{isSoir}}" hint-placeholder-val="{{ false }}">
+    <div style="position: relative; overflow: hidden; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; background: linear-gradient(170deg, #5a3321 0%, #2e1d14 55%, #17100b 100%); padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 16px; color: #f4ecdd;">
+      <div class="a-ember" style="position: absolute; width: 320px; height: 220px; border-radius: 50%; bottom: -110px; left: 35px; background: rgba(224,150,70,.45); filter: blur(30px);"></div>
+
+      <div style="position: relative; display: flex; align-items: center; justify-content: space-between;">
+        <div>
+          <div class="eyebrow" style="color: #d9b58f;">Mercredi 16 septembre · 20 h 15</div>
+          <div class="br" style="font-weight: 700; font-size: 22px; letter-spacing: -.6px; margin-top: 3px;">Ta série tient à un fil</div>
+        </div>
+      </div>
+
+      <div style="position: relative; display: flex; align-items: center; gap: 18px; padding: 6px 0;">
+        <svg class="a-flicker" width="92" height="112" viewBox="0 0 92 112" style="flex: none;">
+          <path d="M46 6c16 19 30 34 30 56a30 30 0 0 1-60 0c0-11 5-21 13-29-1 12 4 19 10 19 7 0 10-7 8-17-1-10-3-18-1-29z" fill="#e0b155"></path>
+          <path d="M46 52c7 8 13 15 13 24a13 13 0 0 1-26 0c0-5 2-9 5-12 0 5 2 8 5 8s4-3 4-7c0-4-1-8-1-13z" fill="#fff2d6"></path>
+        </svg>
+        <div>
+          <div class="br" style="font-weight: 800; font-size: 56px; letter-spacing: -2.6px; line-height: .95;">J14</div>
+          <div class="mo" style="font-size: 12px; color: #d9b58f; margin-top: 8px;">il reste 3 h 45 pour la garder</div>
+        </div>
+      </div>
+
+      <div class="tap" style="position: relative; display: flex; align-items: center; justify-content: center; gap: 9px; height: 50px; border-radius: 14px; background: #e0b155;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2e1d14" stroke-width="2" stroke-linecap="round"><path d="M8 5.5v13l11-6.5z"></path></svg>
+        <span style="font-weight: 700; font-size: 15px; color: #2e1d14;">10 min de mobilité suffisent</span>
+      </div>
+
+      <div style="position: relative; display: flex; align-items: center; gap: 10px; border-radius: 14px; background: rgba(255,255,255,.08); padding: 11px 13px;">
+        <svg class="a-frost" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b9dcf2" stroke-width="1.8" stroke-linecap="round" style="flex: none;"><path d="M12 3v18M4.2 7.5l15.6 9M4.2 16.5l15.6-9M9.5 4.5 12 7l2.5-2.5M9.5 19.5 12 17l2.5 2.5"></path></svg>
+        <span style="font-size: 12.5px; line-height: 1.4; color: #f4ecdd;">Ton joker de septembre a déjà servi samedi. <strong style="font-weight: 700;">Ce soir, seule une séance garde la série.</strong></span>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ════════════════ MOMENT 3 — LE RETOUR : 9 jours d'absence, aucun reproche ════════════════ -->
+  <sc-if value="{{isRetour}}" hint-placeholder-val="{{ false }}">
+    <div style="position: relative; overflow: hidden; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; background: radial-gradient(120% 110% at 20% 0%, var(--pale1) 0%, var(--pale2) 100%); padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 16px;">
+      <div class="a-glow" style="position: absolute; width: 280px; height: 280px; border-radius: 50%; top: -130px; left: -70px; filter: blur(10px); background: rgba(102,113,75,.18);"></div>
+
+      <div style="position: relative;">
+        <div class="eyebrow" style="color: var(--mut);">Samedi 26 septembre</div>
+        <div class="br" style="font-weight: 800; font-size: 30px; letter-spacing: -1.2px; line-height: 1.05; margin-top: 6px;">Content de te revoir, Florian.</div>
+        <div style="font-size: 13.5px; line-height: 1.45; color: var(--mut); margin-top: 8px;">Ta meilleure série reste de <strong style="color: var(--tx);">21 jours</strong>. La prochaine commence quand tu veux — aujourd'hui, par exemple.</div>
+      </div>
+
+      <div style="position: relative; display: flex; gap: 6px;">
+        <div class="a-pulse" style="flex: 1; height: 8px; border-radius: 4px; background: var(--ok);"></div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: var(--arctrk);"></div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: var(--arctrk);"></div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: var(--arctrk);"></div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: var(--arctrk);"></div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: var(--arctrk);"></div>
+        <div style="flex: 1; height: 8px; border-radius: 4px; background: var(--arctrk);"></div>
+      </div>
+
+      <div style="position: relative; border-radius: 16px; background: var(--sf); border: 1px solid var(--bd); padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ok)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3 7 4-14 3 7h4"></path></svg>
+          <span class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">Reprendre en douceur</span>
+        </div>
+        <div style="font-size: 12.5px; line-height: 1.45; color: var(--mut);">Deux semaines d'objectifs allégés : <strong style="color: var(--tx);">3 séances de 35 min</strong>, des sorties courtes, pas de cible calorique stricte. Ta série ne te sera pas reprochée.</div>
+        <div style="display: flex; gap: 8px;">
+          <div class="tap" style="flex: 1; height: 44px; border-radius: 12px; background: var(--ok); display: flex; align-items: center; justify-content: center;">
+            <span style="font-weight: 700; font-size: 14px; color: var(--oktx);">C'est parti</span>
+          </div>
+          <div class="tap" style="flex: 1; height: 44px; border-radius: 12px; border: 1px solid var(--bd); display: flex; align-items: center; justify-content: center;">
+            <span style="font-weight: 600; font-size: 13px; color: var(--tx);">Plan normal</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ════════════════ LE CORPS ════════════════ -->
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 18px 20px 0;">
+
+    <!-- Matin : ce qui a bougé depuis hier, les chiffres roulent depuis la dernière visite -->
+    <sc-if value="{{isMatin}}" hint-placeholder-val="{{ true }}">
+      <div class="card" style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <span class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">Depuis ta dernière visite</span>
+          <span class="mo" style="font-size: 10.5px; color: var(--mut);">dim. 21 h</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px;">
+          <div>
+            <div class="br" style="font-weight: 800; font-size: 22px; letter-spacing: -.8px; line-height: 1; display: flex;">
+              <span>−</span>
+              <sc-for list="{{weightDigits}}" as="d" hint-placeholder-count="3">
+                <sc-if value="{{d.isDigit}}" hint-placeholder-val="{{ true }}"><span class="odo"><span class="odo-ghost">{{d.char}}</span><span class="odo-col {{d.from}}" style="transform: translateY({{d.y}});"><span>0</span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span></span></span></sc-if>
+                <sc-if value="{{d.isSep}}" hint-placeholder-val="{{ false }}"><span>{{d.char}}</span></sc-if>
+              </sc-for>
+              <span style="font-size: 12px; font-weight: 600; color: var(--mut); margin-left: 3px; align-self: flex-end;">kg</span>
+            </div>
+            <div style="font-size: 11px; color: var(--mut); margin-top: 4px;">poids, sur 7 j</div>
+          </div>
+          <div>
+            <div class="br" style="font-weight: 800; font-size: 22px; letter-spacing: -.8px; line-height: 1; color: var(--pm);">+1</div>
+            <div style="font-size: 11px; color: var(--mut); margin-top: 4px;">record battu</div>
+          </div>
+          <div>
+            <div class="br" style="font-weight: 800; font-size: 22px; letter-spacing: -.8px; line-height: 1; color: var(--pc);">−12 s</div>
+            <div style="font-size: 11px; color: var(--mut); margin-top: 4px;">prédiction 10 km</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Soir : la semaine de série, avec le jour déjà couvert par un joker -->
+    <sc-if value="{{isSoir}}" hint-placeholder-val="{{ false }}">
+      <div class="card" style="padding: 15px 16px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; align-items: baseline; justify-content: space-between;">
+          <span class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">Ta série, jour par jour</span>
+          <span class="mo" style="font-size: 10.5px; color: var(--mut);">1 joker / mois</span>
+        </div>
+        <div style="display: flex; gap: 6px;">
+          <sc-for list="{{streakWeek}}" as="c" hint-placeholder-count="7">
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+              <div style="width: 100%; height: 38px; box-sizing: border-box; border-radius: 10px; position: relative; overflow: hidden; background: {{c.bg}}; border: {{c.border}};">
+                <sc-if value="{{c.frost}}" hint-placeholder-val="{{ false }}">
+                  <svg class="a-frost" width="100%" height="38" viewBox="0 0 40 38" preserveAspectRatio="xMidYMid slice" style="position: absolute; inset: 0;"><g stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" fill="none"><path d="M20 8v22M10.5 13.5l19 11M10.5 24.5l19-11"></path><path d="M16.5 10 20 13.5 23.5 10M16.5 28 20 24.5 23.5 28"></path></g></svg>
+                </sc-if>
+              </div>
+              <span class="mo" style="font-size: 9.5px; color: {{c.ink}};">{{c.day}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="font-size: 12px; line-height: 1.4; color: var(--mut);">Le <strong style="color: var(--tx);">samedi 12</strong> a été couvert par ton joker de septembre. Il ne compte pas comme un jour actif — il empêche seulement la série de retomber.</div>
+      </div>
+    </sc-if>
+
+    <!-- Retour : ce qui t'attend, sans rattrapage -->
+    <sc-if value="{{isRetour}}" hint-placeholder-val="{{ false }}">
+      <div class="card" style="padding: 15px 16px; display: flex; flex-direction: column; gap: 11px;">
+        <span class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">Ta semaine de reprise</span>
+        <div style="display: flex; flex-direction: column; gap: 9px;">
+          <div style="display: flex; align-items: center; gap: 10px;"><span style="width: 9px; height: 9px; border-radius: 50%; background: var(--pm);"></span><span style="flex: 1; font-size: 13px;">Full body léger</span><span class="mo" style="font-size: 11px; color: var(--mut);">dim. · 35 min</span></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><span style="width: 9px; height: 9px; border-radius: 50%; background: var(--pc);"></span><span style="flex: 1; font-size: 13px;">Footing facile</span><span class="mo" style="font-size: 11px; color: var(--mut);">mar. · 4 km</span></div>
+          <div style="display: flex; align-items: center; gap: 10px;"><span style="width: 9px; height: 9px; border-radius: 50%; background: var(--pm);"></span><span style="flex: 1; font-size: 13px;">Full body léger</span><span class="mo" style="font-size: 11px; color: var(--mut);">jeu. · 35 min</span></div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- L'objectif à échéance : le repère de projection glisse vers le drapeau -->
+    <div class="card" style="padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+        <span class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">10 km sous 55 min</span>
+        <span class="mo" style="font-size: 10.5px; color: var(--mut);">{{goalDue}}</span>
+      </div>
+      <div style="position: relative; height: 40px;">
+        <div style="position: absolute; left: 0; right: 0; top: 18px; height: 5px; border-radius: 3px; background: var(--trk);"></div>
+        <div style="position: absolute; left: 0; top: 18px; height: 5px; border-radius: 3px; background: var(--pc); width: {{goalPct}};"></div>
+        <div class="a-slide" style="position: absolute; top: 9px; left: {{goalPct}}; margin-left: -11px; width: 22px; height: 22px; border-radius: 50%; background: var(--sf); border: 3px solid var(--pc); box-sizing: border-box;"></div>
+        <svg width="20" height="26" viewBox="0 0 20 26" style="position: absolute; right: -2px; top: 0;"><path d="M3 25V2" stroke="var(--tx)" stroke-width="2" stroke-linecap="round"></path><path d="M4 2h12l-3 5 3 5H4z" fill="var(--tx)"></path></svg>
+      </div>
+      <div style="font-size: 12.5px; line-height: 1.4; color: var(--mut);">{{goalText}}</div>
+    </div>
+
+    <!-- Matin : le bilan de la semaine, cinq cartes qu'on touche pour avancer -->
+    <sc-if value="{{isMatin}}" hint-placeholder-val="{{ true }}">
+      <div style="border-radius: 22px; overflow: hidden; position: relative; background: #33291f; color: #f0e4d0; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 12px; min-height: 228px; box-sizing: border-box;">
+        <div style="display: flex; gap: 4px;">
+          <sc-for list="{{segments}}" as="s" hint-placeholder-count="5">
+            <div style="flex: 1; height: 3px; border-radius: 2px; background: rgba(240,228,208,.22); overflow: hidden;">
+              <sc-if value="{{s.done}}" hint-placeholder-val="{{ false }}"><div style="width: 100%; height: 100%; background: #f0e4d0;"></div></sc-if>
+              <sc-if value="{{s.current}}" hint-placeholder-val="{{ true }}"><div class="seg-run" style="width: 100%; height: 100%; background: #f0e4d0;"></div></sc-if>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between;">
+          <span class="eyebrow" style="color: #c9b79a;">Ta semaine · {{storyKicker}}</span>
+          <span class="mo" style="font-size: 10px; color: #c9b79a;">{{storyPos}}</span>
+        </div>
+        <div class="a-in" style="display: flex; flex-direction: column; gap: 6px; flex: 1;">
+          <div class="br" style="font-weight: 800; font-size: 40px; letter-spacing: -1.8px; line-height: 1;">{{storyBig}}</div>
+          <div style="font-size: 13.5px; line-height: 1.45; color: #d9c8ad;">{{storyText}}</div>
+          <sc-if value="{{storyDots}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; gap: 6px; margin-top: 4px;">
+              <span style="width: 22px; height: 22px; border-radius: 7px; background: #e0b155;"></span><span style="width: 22px; height: 22px; border-radius: 7px; background: #e0b155;"></span><span style="width: 22px; height: 22px; border-radius: 7px; background: #e0b155;"></span><span style="width: 22px; height: 22px; border-radius: 7px; background: rgba(240,228,208,.18);"></span><span style="width: 22px; height: 22px; border-radius: 7px; background: #e0b155;"></span><span style="width: 22px; height: 22px; border-radius: 7px; background: #e0b155;"></span><span style="width: 22px; height: 22px; border-radius: 7px; background: #e0b155;"></span>
+            </div>
+          </sc-if>
+          <sc-if value="{{storyShare}}" hint-placeholder-val="{{ false }}">
+            <div class="tap" style="align-self: flex-start; margin-top: 6px; display: flex; align-items: center; gap: 7px; border-radius: 999px; background: #f0e4d0; padding: 9px 14px;">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"></path></svg>
+              <span style="font-weight: 700; font-size: 13px; color: #33291f;">Partager ma semaine</span>
+            </div>
+          </sc-if>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <div class="tap" onClick="{{prevStory}}" style="width: 44px; height: 40px; border-radius: 12px; border: 1px solid rgba(240,228,208,.25); display: flex; align-items: center; justify-content: center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f0e4d0" stroke-width="2" stroke-linecap="round"><path d="M15 6 9 12l6 6"></path></svg>
+          </div>
+          <div class="tap" onClick="{{nextStory}}" style="flex: 1; height: 40px; border-radius: 12px; background: rgba(240,228,208,.12); display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <span style="font-weight: 600; font-size: 13px;">{{storyNextLabel}}</span>
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f0e4d0" stroke-width="2" stroke-linecap="round"><path d="m9 6 6 6-6 6"></path></svg>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Les trois piliers d'aujourd'hui, en une ligne dense -->
+    <div class="card" style="padding: 14px 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 11px; font-weight: 600; color: var(--mut);">Muscu</span>
+        <span class="br" style="font-weight: 800; font-size: 17px; letter-spacing: -.5px;">{{todayMuscu}}</span>
+        <div style="height: 4px; border-radius: 2px; background: var(--trk); overflow: hidden;"><div style="height: 100%; border-radius: 2px; background: var(--pm); width: {{todayMuscuPct}};"></div></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 11px; font-weight: 600; color: var(--mut);">Course</span>
+        <span class="br" style="font-weight: 800; font-size: 17px; letter-spacing: -.5px;">{{todayRun}}</span>
+        <div style="height: 4px; border-radius: 2px; background: var(--trk); overflow: hidden;"><div style="height: 100%; border-radius: 2px; background: var(--pc); width: {{todayRunPct}};"></div></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <span style="font-size: 11px; font-weight: 600; color: var(--mut);">Nutrition</span>
+        <span class="br" style="font-weight: 800; font-size: 17px; letter-spacing: -.5px;">{{todayNutri}}</span>
+        <div style="height: 4px; border-radius: 2px; background: var(--trk); overflow: hidden;"><div style="height: 100%; border-radius: 2px; background: var(--pn); width: {{todayNutriPct}};"></div></div>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: center; gap: 7px; height: 44px;">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="1.9" stroke-linecap="round"><path d="M12 6v12M6 12h12"></path></svg>
+      <span style="font-size: 13px; font-weight: 600; color: var(--mut);">Personnaliser l'accueil</span>
+    </div>
+  </div>
+
+  <!-- ════════════════ LA BARRE D'ONGLETS ════════════════ -->
+  <div style="margin-top: auto; height: 64px; background: var(--sf); border-top: 1px solid var(--bd); display: flex; align-items: center; padding: 0 8px;">
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--pa)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"></path></svg>
+      <span style="font-size: 11px; font-weight: 600; color: var(--pa);">Accueil</span>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="1.9" stroke-linecap="round"><path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"></path></svg>
+      <span style="font-size: 11px; font-weight: 600; color: var(--mut);">Muscu</span>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 19.5c0-3 3-3.6 6-4.1s6-1.1 6-4.1-3-3.7-6-3.7"></path><circle cx="6" cy="19.5" r="1.7"></circle><circle cx="18" cy="5.1" r="1.7"></circle></svg>
+      <span style="font-size: 11px; font-weight: 600; color: var(--mut);">Course</span>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 8-5 13-12 13H5c0-8 5-13 12-13z"></path><path d="M5 20c2-5 5-8 9.5-10"></path></svg>
+      <span style="font-size: 11px; font-weight: 600; color: var(--mut);">Nutrition</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"moment":{"editor":"enum","options":["matin","soir","retour"],"default":"matin"}}'>
+class Component extends DCLogic {
+  digits(str, prev) {
+    // Une colonne par chiffre ; les séparateurs restent du texte.
+    const before = String(prev || str);
+    return String(str).split('').map((ch, i) => {
+      const isDigit = ch >= '0' && ch <= '9';
+      const was = before[i] >= '0' && before[i] <= '9' ? before[i] : ch;
+      return { isDigit: isDigit, isSep: !isDigit, char: ch, y: isDigit ? (-Number(ch)) + 'em' : '0em', from: isDigit ? 'from' + was : '' };
+    });
+  }
+
+  renderVals() {
+    const s = this.state || {};
+    const moment = this.props.moment ?? 'matin';
+    const mood = s.mood ?? 0;
+    const story = s.story ?? 0;
+
+    const labels = ['vidé', 'fatigué', 'normal', 'en forme', 'au top'];
+    const moods = [1, 2, 3, 4, 5].map((v) => {
+      const on = mood === v;
+      return {
+        value: v,
+        label: labels[v - 1],
+        bg: on ? 'var(--tx)' : 'var(--sf)',
+        border: on ? 'var(--tx)' : 'var(--bd)',
+        fg: on ? 'var(--bg)' : 'var(--tx)',
+        sub: on ? 'var(--bg)' : 'var(--mut)',
+        pick: () => this.setState({ mood: v }),
+      };
+    });
+
+    // Score de forme (TRI-03) : un seul signal négatif suffit pour « repos », un seul positif pour « pousse ».
+    let verdict = null;
+    if (mood >= 4) verdict = {
+      title: 'Feu vert — pousse aujourd’hui',
+      body: 'Charge, nutrition et énergie sont au vert. Push A est à ta portée.',
+      bg: 'var(--sf)', chip: '#66714b', ink: 'var(--tx)', icon: 'M5 12.5 10 17 19 7',
+      glow: 'rgba(192,86,47,.42)', cta: 'Commencer Push A',
+    };
+    else if (mood === 3) verdict = {
+      title: 'Journée normale',
+      body: 'Rien ne coince : on garde le plan tel qu’il est prévu.',
+      bg: 'var(--sf)', chip: '#b47f31', ink: 'var(--tx)', icon: 'M5 12h14',
+      glow: 'rgba(224,177,85,.40)', cta: 'Commencer Push A',
+    };
+    else if (mood >= 1) verdict = {
+      title: 'Lève le pied',
+      body: '2 signaux sur 3 au rouge. Une version allégée de Push A t’attend.',
+      bg: 'var(--sf)', chip: '#2f6fc0', ink: 'var(--tx)', icon: 'M12 5v10M7 11l5 5 5-5',
+      glow: 'rgba(111,168,239,.36)', cta: 'Push A allégée · 35 min',
+    };
+
+    const stories = [
+      { kicker: 'le chiffre', big: '4 h 12', text: 'd’entraînement cette semaine — 38 min de plus que la précédente.' },
+      { kicker: 'le record', big: '82,5 kg', text: 'au développé couché, mercredi. Ton meilleur 5 RM depuis que tu t’entraînes ici.' },
+      { kicker: 'la régularité', big: '6 / 7', text: 'jours actifs. Le seul trou : jeudi.', dots: true },
+      { kicker: 'le croisement', big: '−280 kcal', text: 'en moyenne les jours de course. Ton apport ne suit pas encore ta charge.' },
+      { kicker: 'la suite', big: '3 + 2', text: 'séances et sorties prévues. Ta semaine est prête, et elle se partage.', share: true },
+    ];
+    const cur = stories[story];
+    const segments = stories.map((_, i) => ({ done: i < story, current: i === story }));
+
+    const goal = {
+      matin: { due: 'dans 26 jours', pct: '78%', text: 'Au rythme actuel, ta prédiction passe sous 55 min vers le 2 octobre. Il te manque 1 min 40.' },
+      soir: { due: 'dans 24 jours', pct: '78%', text: 'Au rythme actuel, ta prédiction passe sous 55 min vers le 2 octobre. Il te manque 1 min 40.' },
+      retour: { due: 'dans 14 jours', pct: '64%', text: 'Neuf jours d’écart ont décalé ta projection. On repousse l’échéance au 18 octobre ?' },
+    }[moment];
+
+    const streakWeek = [
+      { day: 'J', bg: 'var(--pa)', border: 'none', ink: 'var(--mut)', frost: false },
+      { day: 'V', bg: 'var(--pa)', border: 'none', ink: 'var(--mut)', frost: false },
+      { day: 'S', bg: '#8fbcdc', border: 'none', ink: 'var(--mut)', frost: true },
+      { day: 'D', bg: 'var(--pa)', border: 'none', ink: 'var(--mut)', frost: false },
+      { day: 'L', bg: 'var(--pa)', border: 'none', ink: 'var(--mut)', frost: false },
+      { day: 'M', bg: 'var(--pa)', border: 'none', ink: 'var(--mut)', frost: false },
+      { day: 'M', bg: 'transparent', border: '2px dashed var(--amb)', ink: 'var(--amb)', frost: false },
+    ];
+
+    const today = {
+      matin: { m: 'Push A', mp: '0%', r: 'Repos', rp: '100%', n: '420 kcal', np: '19%' },
+      soir: { m: 'Rien', mp: '0%', r: 'Rien', rp: '0%', n: '1 820 kcal', np: '84%' },
+      retour: { m: '35 min', mp: '0%', r: 'Repos', rp: '100%', n: 'Libre', np: '0%' },
+    }[moment];
+
+    return {
+      theme: this.props.theme ?? 'light',
+      isMatin: moment === 'matin',
+      isSoir: moment === 'soir',
+      isRetour: moment === 'retour',
+      moods: moods,
+      hasVerdict: verdict !== null,
+      verdictTitle: verdict ? verdict.title : '',
+      verdictBody: verdict ? verdict.body : '',
+      verdictBg: verdict ? verdict.bg : 'transparent',
+      verdictChip: verdict ? verdict.chip : 'transparent',
+      verdictInk: verdict ? verdict.ink : 'var(--tx)',
+      verdictIcon: verdict ? verdict.icon : '',
+      glow: verdict ? verdict.glow : 'rgba(192,86,47,.26)',
+      ctaLabel: verdict ? verdict.cta : 'Commencer Push A',
+      streakDigits: this.digits('14', '13'),
+      weightDigits: this.digits('0,4', '0,0'),
+      goalDue: goal.due,
+      goalPct: goal.pct,
+      goalText: goal.text,
+      segments: segments,
+      storyKicker: cur.kicker,
+      storyPos: (story + 1) + ' / 5',
+      storyBig: cur.big,
+      storyText: cur.text,
+      storyDots: !!cur.dots,
+      storyShare: !!cur.share,
+      storyNextLabel: story === 4 ? 'Revoir depuis le début' : 'Carte suivante',
+      nextStory: () => this.setState({ story: (story + 1) % 5 }),
+      prevStory: () => this.setState({ story: Math.max(0, story - 1) }),
+      streakWeek: streakWeek,
+      todayMuscu: today.m, todayMuscuPct: today.mp,
+      todayRun: today.r, todayRunPct: today.rp,
+      todayNutri: today.n, todayNutriPct: today.np,
+    };
+  }
+}
+</script>
+</body>
+</html>

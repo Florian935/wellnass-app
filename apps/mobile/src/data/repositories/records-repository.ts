@@ -32,6 +32,9 @@
 import { useMemo } from 'react';
 import { useQuery } from '@powersync/react';
 import {
+  nearRecords,
+  type NearRecord,
+  type NearRecordInput,
   computeMuscleBalance,
   computeVolume,
   computeWeeklyTrainingNutrition,
@@ -1484,4 +1487,104 @@ export function useExerciseDeltas(workoutId: string): {
   }
 
   return { deltas, isLoading: detailLoading || previousLoading };
+}
+
+// ---------------------------------------------------------------------------
+// useNearRecords — US DASH-01 (§4.4, « à ta portée »)
+// ---------------------------------------------------------------------------
+
+/** Fenêtre des séries « récentes » : au-delà, l'écart ne dit plus où on en est aujourd'hui. */
+const NEAR_RECORD_WINDOW_DAYS = 45;
+
+/**
+ * Meilleure série **récente** par exercice : la plus lourde, et à charge égale la plus longue.
+ *
+ * Échauffements exclus et séries non validées exclues — c'est la même définition de « série qui
+ * compte » que la détection de records elle-même (`collectRecordCandidates`), sans quoi un
+ * échauffement à 40 kg passerait pour une tentative.
+ */
+const SELECT_RECENT_BEST_SETS = `
+  SELECT ws.exercise_id, ws.weight_kg, ws.reps
+  FROM workout_sets ws
+  JOIN workouts w ON w.id = ws.workout_id AND w.deleted_at IS NULL
+  WHERE ws.deleted_at IS NULL AND ws.done = 1 AND ws.set_type != 'warmup'
+    AND ws.weight_kg IS NOT NULL AND ws.reps IS NOT NULL AND ws.reps > 0
+    AND w.started_at >= ?
+  ORDER BY ws.exercise_id, ws.weight_kg DESC, ws.reps DESC
+`;
+
+/**
+ * Record de charge par exercice, avec son contexte (la série qui l'a produit) et le nom résolu.
+ *
+ * `max_weight` et pas `estimated_1rm` : la comparaison de `nearRecords` porte sur une **série
+ * réelle** (charge + répétitions), pas sur une estimation — on ne peut pas « être à 2,5 kg » d'un
+ * 1RM qu'on n'a jamais tenté.
+ */
+const SELECT_WEIGHT_RECORDS = `
+  SELECT r.exercise_id, r.weight_kg, r.reps, r.value,
+         COALESCE(tl.name, tfr.name) AS exercise_name
+  FROM personal_records r
+  LEFT JOIN exercise_translations tl  ON tl.exercise_id = r.exercise_id AND tl.lang = ?      AND tl.deleted_at IS NULL
+  LEFT JOIN exercise_translations tfr ON tfr.exercise_id = r.exercise_id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
+  WHERE r.user_id = ? AND r.type = 'max_weight' AND r.deleted_at IS NULL
+    AND r.weight_kg IS NOT NULL AND r.reps IS NOT NULL
+  ORDER BY r.exercise_id, r.value DESC
+`;
+
+export type NearRecordItem = NearRecord & { exerciseName: string };
+
+/**
+ * Les records **à portée** : de combien on est loin, aujourd'hui, exercice par exercice.
+ *
+ * MUSC-09 savait déjà tout ça ; ce qui manquait, c'est la question qui donne envie d'y aller. La
+ * décision (« est-ce à portée ? ») appartient à `nearRecords` (`@wellness/shared`, testée) : ce
+ * hook ne fait qu'apporter les deux séries à comparer.
+ */
+export function useNearRecords(limit = 3): { items: NearRecordItem[]; isLoading: boolean } {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const lang = getAppLanguage() === 'en' ? 'en' : 'fr';
+  const sinceUtc = useWindowStartUtc(NEAR_RECORD_WINDOW_DAYS);
+
+  const { data: recentRows, isLoading: recentLoading } = useQuery<{
+    exercise_id: string;
+    weight_kg: number;
+    reps: number;
+  }>(SELECT_RECENT_BEST_SETS, [sinceUtc]);
+
+  const { data: recordRows, isLoading: recordsLoading } = useQuery<{
+    exercise_id: string;
+    weight_kg: number;
+    reps: number;
+    value: number;
+    exercise_name: string | null;
+  }>(SELECT_WEIGHT_RECORDS, [lang, userId]);
+
+  const items = useMemo(() => {
+    // Les deux requêtes sont triées : la PREMIÈRE ligne d'un exercice est la bonne, dans les deux cas.
+    const bestRecent = new Map<string, { weightKg: number; reps: number }>();
+    for (const row of recentRows) {
+      if (!bestRecent.has(row.exercise_id)) {
+        bestRecent.set(row.exercise_id, { weightKg: row.weight_kg, reps: row.reps });
+      }
+    }
+
+    const names = new Map<string, string>();
+    const inputs: NearRecordInput[] = [];
+    for (const row of recordRows) {
+      if (names.has(row.exercise_id)) continue;
+      names.set(row.exercise_id, row.exercise_name ?? '');
+      inputs.push({
+        exerciseId: row.exercise_id,
+        recent: bestRecent.get(row.exercise_id) ?? null,
+        record: { weightKg: row.weight_kg, reps: row.reps },
+      });
+    }
+
+    return nearRecords(inputs, { limit })
+      // Un exercice sans nom traduit ne se distingue pas des autres dans une liste : on l'écarte.
+      .map((near) => ({ ...near, exerciseName: names.get(near.exerciseId) ?? '' }))
+      .filter((near) => near.exerciseName !== '');
+  }, [recentRows, recordRows, limit]);
+
+  return { items, isLoading: recentLoading || recordsLoading };
 }

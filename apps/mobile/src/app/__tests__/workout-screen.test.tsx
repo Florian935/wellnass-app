@@ -111,6 +111,13 @@ jest.mock('@/components/workout/SessionMenuSheet', () => {
 });
 jest.mock('@/components/workout/ExerciseList', () => ({ ExerciseList: () => null }));
 jest.mock('@/components/workout/SupersetPickerModal', () => ({ SupersetPickerModal: () => null }));
+// Sonde du rendu immersif (US MUSCU-UX03). Ce fichier teste le **mode classique**, qui reste le
+// défaut ; la sonde sert surtout à couper l'arbre d'imports du mode immersif, dont `SetOptions`
+// tire l'i18n réel — incompatible avec le `react-i18next` mocké plus bas.
+jest.mock('@/components/workout/immersive/ImmersiveWorkout', () => {
+  const { Text: T } = require('react-native');
+  return { ImmersiveWorkout: () => <T testID="immersif">immersif</T> };
+});
 // Sonde de repos : sa simple présence prouve que le décompte est parti.
 jest.mock('@/components/workout/RestOverlay', () => {
   const { Text: T } = require('react-native');
@@ -123,11 +130,17 @@ jest.mock('@/lib/haptics', () => ({
   hapticSelect: jest.fn(),
 }));
 
-jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
+jest.mock('expo-router', () => ({
+  useRouter: jest.fn(),
+  // `plan=1` n'est passé que par le brief du mode immersif (US MUSCU-UX03) : ici, jamais.
+  useLocalSearchParams: () => ({}),
+}));
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k: string, opts?: Record<string, unknown>) => (opts ? `${k}:${JSON.stringify(opts)}` : k),
+    // `i18n.language` sert au nom du jour de référence et à l'heure de fin de repos (MUSCU-UX03).
+    i18n: { language: 'fr' },
   }),
 }));
 

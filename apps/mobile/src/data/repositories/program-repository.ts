@@ -70,6 +70,8 @@ export type ProgramListItem = {
   goal: string | null;
   durationWeeks: number | null;
   isActive: boolean;
+  /** Nombre de séances du programme (= sa fréquence hebdomadaire cible). US GUID-01. */
+  sessionCount: number | null;
 };
 
 /** Un exercice planifié au sein d'une séance, prêt pour l'écran détail. */
@@ -236,6 +238,8 @@ type ProgramListDbRow = {
   is_active: number;
   /** Nom résolu par COALESCE(langue courante, fr) — peut être null si aucune traduction. */
   name: string | null;
+  /** US GUID-01 — nombre de séances, compté par sous-requête corrélée. */
+  session_count: number | null;
 };
 
 /** Ligne brute d'une séance (sans plans). Colonnes running nullables pour muscu. */
@@ -319,7 +323,9 @@ export type IntervalDbRow = {
  */
 const SELECT_PROGRAM_BASE = `
   SELECT p.id, p.pillar, p.level, p.goal, p.duration_weeks, p.is_active,
-         COALESCE(tl.name, tfr.name) AS name
+         COALESCE(tl.name, tfr.name) AS name,
+         (SELECT COUNT(*) FROM sessions s
+           WHERE s.program_id = p.id AND s.deleted_at IS NULL) AS session_count
   FROM programs p
   LEFT JOIN program_translations tl  ON tl.program_id = p.id AND tl.lang = ?      AND tl.deleted_at IS NULL
   LEFT JOIN program_translations tfr ON tfr.program_id = p.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
@@ -446,6 +452,11 @@ function rowToListItem(row: ProgramListDbRow): ProgramListItem {
     goal: row.goal,
     durationWeeks: row.duration_weeks,
     isActive: row.is_active === 1,
+    // US GUID-01 — nombre de séances du programme, qui vaut ici pour sa **fréquence
+    // hebdomadaire** : les programmes éditoriaux décrivent une semaine type. Sert à confronter un
+    // programme à la disponibilité déclarée (`weekly_availability`). Ajout **additif** : les
+    // consommateurs existants ignorent simplement le champ.
+    sessionCount: row.session_count ?? null,
   };
 }
 

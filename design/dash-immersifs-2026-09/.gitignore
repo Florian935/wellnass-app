@@ -1,0 +1,4 @@
+# Page seedée du canvas : ~2,5 Mo d'éditeur embarqué, régénérée depuis les .dc.html.
+# La source de vérité, ce sont les planches .dc.html et canvas.json ; la version en ligne est l'artefact.
+*.html
+!*.dc.html

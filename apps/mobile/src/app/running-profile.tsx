@@ -12,6 +12,8 @@ import {
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { GuidanceSelector } from '@/components/guidance/GuidanceSelector';
+import { useGuidance } from '@/data/guidance';
 import { TextField } from '@/components/TextField';
 import {
   upsertRunnerProfile,
@@ -39,6 +41,8 @@ export default function RunnerProfileScreen() {
   const units = useUnits();
 
   const { runnerProfile } = useRunnerProfile();
+  // US GUID-01 — le régime vit dans le pilier qu'il gouverne, jamais dans la liste des réglages.
+  const guidance = useGuidance('running');
 
   // État local pour le champ allure de référence (saisie libre M:SS).
   // Offline-first : démarre null ; la valeur affichée retombe sur la valeur persistée
@@ -69,6 +73,17 @@ export default function RunnerProfileScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      {/* Guidage — en tête : il décide de ce que tous les réglages du dessous produiront à l'écran. */}
+      <Text style={[styles.section, { color: colors.textMuted }]}>
+        {t('guidance.sectionTitle')}
+      </Text>
+      <GuidanceSelector
+        pillar="running"
+        source={guidance.source}
+        onChange={guidance.setRegime}
+        colors={colors}
+      />
+
       {/* Objectif */}
       <Text style={[styles.section, { color: colors.textMuted }]}>
         {t('running.profile.objective')}

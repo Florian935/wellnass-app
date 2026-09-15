@@ -44,6 +44,20 @@ const profiles = new Table({
   // locale de `daily_step_goal` échouait silencieusement (même anti-pattern que
   // `cycle_tracking_enabled` ci-dessous — constaté en recette le 03/08/2026).
   daily_step_goal: column.integer,
+  // US GUID-01 — l'intention (objectif + échéance + discipline), le contexte (niveau, dispo) et le
+  // régime de guidage. ⚠️ Huit colonnes, et les huit DOIVENT être ici : absente du schéma local,
+  // une colonne n'existe pas dans la base SQLite embarquée, l'écriture échoue, `void upsertProfile()`
+  // avale le rejet, et le sélecteur revient à sa valeur précédente sans le moindre message. C'est la
+  // panne de CYCLE-01 (31/07/2026) et celle de `daily_step_goal` (03/08/2026) — deux recettes
+  // perdues sur le même piège.
+  main_goal_deadline: column.text,
+  training_focus: column.text,
+  training_level: column.text,
+  weekly_availability: column.integer,
+  guidance_regime: column.text,
+  guidance_strength: column.text,
+  guidance_cardio: column.text,
+  guidance_nutrition: column.text,
   onboarding_completed_at: column.text,
   // US ACTIV-01 (1.27) : fermeture explicite du widget « Parcours 7 jours pour démarrer ».
   activation_path_dismissed_at: column.text,
@@ -85,6 +99,10 @@ const user_settings = new Table({
   // US CORPS-02 — document visuel versionné, sérialisé en JSON dans SQLite.
   body_visual_state: column.text,
   body_training_state: column.text,
+  // US DASH-01 §7 — instant du consentement à l'assistant IA (NULL = jamais consenti). 🔴 Sixième
+  // colonne de cette table à devoir être déclarée ici : absente, l'écriture échoue et
+  // `void updateSettings()` avale l'erreur — l'interrupteur revient à « éteint » sans message.
+  ai_consent_at: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

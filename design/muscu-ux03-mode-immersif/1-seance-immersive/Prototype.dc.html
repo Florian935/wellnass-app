@@ -1,0 +1,655 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #efe4d1; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .pb {
+      width: 680px; height: 920px; box-sizing: border-box; background: #efe4d1; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 38px 28px;
+      display: grid; grid-template-columns: 390px minmax(0, 1fr); gap: 30px; align-items: start;
+    }
+    .ic { display: block; flex: none; }
+
+    /* ── Téléphone ── */
+    .pp {
+      width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; border-radius: 30px;
+      background: #1c150e; color: #f4ecdd; box-shadow: 0 30px 60px -30px rgba(60,40,20,.6);
+      user-select: none;
+    }
+    .scr { position: absolute; inset: 0; background: radial-gradient(130% 55% at 50% -12%, rgba(221,110,64,.13) 0%, rgba(221,110,64,0) 62%), #1c150e; }
+    /* Absolu plein cadre : le transform de l'animation en fait le bloc conteneur des enfants positionnés */
+    .in { position: absolute; inset: 0; animation: ppIn .28s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes ppIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
+    .rise { animation: ppRise .34s .12s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes ppRise { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: translateY(0) scale(1); } }
+    .eyebrow { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a; }
+    .tap { cursor: pointer; transition: transform .09s ease-out, filter .09s ease-out; }
+    .tap:active { transform: scale(.97); filter: brightness(.92); }
+
+    .hd { position: absolute; left: 0; right: 0; top: 0; padding: 14px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+    .hd-row { display: flex; align-items: center; justify-content: space-between; height: 28px; }
+    .chrono { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px; letter-spacing: .5px; }
+    .ribbon { display: flex; gap: 4px; height: 6px; }
+    .seg { height: 6px; border-radius: 3px; background: #362c22; overflow: hidden; }
+    .seg-f { height: 100%; border-radius: 3px; transition: width .35s cubic-bezier(.2,.8,.2,1); }
+    .hd-meta { display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a; }
+
+    /* Brief */
+    .br { position: absolute; inset: 0; padding: 60px 20px 0; display: flex; flex-direction: column; gap: 6px; background: radial-gradient(120% 50% at 85% -8%, rgba(221,110,64,.22) 0%, rgba(221,110,64,0) 60%), #1c150e; }
+    .br-title { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 60px; letter-spacing: -2.4px; line-height: .95; margin-top: 4px; }
+    .br-meta { font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; margin-top: 6px; }
+    .stake { border-radius: 16px; padding: 12px 14px; background: rgba(224,177,85,.08); border: 1px solid rgba(224,177,85,.34); display: flex; align-items: center; gap: 12px; }
+    .stake-t { font-size: 14.5px; font-weight: 600; line-height: 1.3; }
+    .stake-t b { color: #e0b155; }
+    .stake-s { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a; margin-top: 3px; }
+    .br-row { height: 52px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #2c231a; }
+    .br-n { width: 16px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; color: #797169; }
+    .br-name { flex: 1; font-size: 15px; font-weight: 600; }
+    .br-sub { font-size: 12px; color: #c9b79a; font-weight: 400; margin-top: 1px; }
+    .br-w { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; }
+    .go { position: absolute; left: 20px; right: 20px; bottom: 26px; height: 64px; border-radius: 20px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 19px; font-weight: 700; box-shadow: 0 14px 32px -12px rgba(221,110,64,.7); }
+
+    /* Série */
+    .stage { position: absolute; left: 0; right: 0; top: 96px; bottom: 274px; padding: 0 20px; display: flex; flex-direction: column; justify-content: center; gap: 18px; }
+    .ex-name { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 36px; letter-spacing: -1.2px; line-height: 1; margin-top: 8px; text-wrap: balance; }
+    .pills { display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+    .pill { height: 34px; box-sizing: border-box; border-radius: 11px; padding: 0 11px; display: flex; align-items: center; gap: 5px; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12.5px; }
+    .pill-done { background: rgba(169,186,126,.14); color: #a9ba7e; }
+    .pill-cur { border: 1.5px solid #dd6e40; color: #dd6e40; }
+    .pill-todo { background: #30271e; color: #c9b79a; }
+    .refs { display: flex; flex-direction: column; gap: 8px; }
+    .ref { display: flex; align-items: baseline; gap: 10px; }
+    .ref-l { width: 96px; flex: none; font-size: 12.5px; color: #c9b79a; }
+    .ref-v { font-family: 'Space Mono', ui-monospace, monospace; font-size: 14px; }
+    .deck { position: absolute; left: 0; right: 0; bottom: 0; height: 274px; box-sizing: border-box; background: #241c14; border-top: 1px solid #3a2e22; border-radius: 28px 28px 0 0; padding: 0 20px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .peek { height: 50px; flex: none; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #3a2e22; font-size: 13.5px; white-space: nowrap; overflow: hidden; }
+    .peek-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #c9b79a; }
+    .ctx { display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px; color: #c9b79a; margin-top: 2px; }
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .field { height: 92px; box-sizing: border-box; border-radius: 18px; background: #1c150e; border: 1px solid #3a2e22; padding: 5px; display: flex; align-items: center; gap: 2px; transition: border-color .2s; }
+    .step { width: 34px; height: 52px; flex: none; border-radius: 12px; background: #30271e; color: #f4ecdd; display: flex; align-items: center; justify-content: center; }
+    .fv { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .fv-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px; line-height: 1; font-variant-numeric: tabular-nums; }
+    .fv-u { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #c9b79a; }
+    .validate { height: 64px; border-radius: 20px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; box-shadow: 0 14px 32px -12px rgba(221,110,64,.7); }
+
+    /* Repos */
+    .rest-body { position: absolute; left: 0; right: 0; top: 108px; padding: 0 20px; display: flex; flex-direction: column; align-items: center; }
+    .done-v { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1px; line-height: 1; margin-top: 6px; }
+    .verdict { margin-top: 10px; height: 30px; box-sizing: border-box; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; }
+    .v-up { background: rgba(169,186,126,.14); color: #a9ba7e; }
+    .v-eq { background: rgba(201,183,154,.12); color: #c9b79a; }
+    .v-rec { background: rgba(224,177,85,.16); color: #e0b155; }
+    .bc { align-self: stretch; border-radius: 20px; padding: 14px 16px; background: #241c14; border: 1px solid #3a2e22; display: flex; flex-direction: column; gap: 12px; }
+    .bc-head { display: flex; align-items: center; gap: 10px; }
+    .bc-ok { width: 32px; height: 32px; border-radius: 50%; background: rgba(169,186,126,.16); color: #a9ba7e; display: flex; align-items: center; justify-content: center; flex: none; }
+    .bc-name { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.4px; }
+    .bc-rec { margin-left: auto; height: 26px; padding: 0 9px; border-radius: 999px; background: rgba(224,177,85,.16); color: #e0b155; font-size: 12px; font-weight: 700; display: flex; align-items: center; }
+    .bc-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-top: 1px solid #3a2e22; padding-top: 10px; }
+    .bc-s + .bc-s { padding-left: 12px; border-left: 1px solid #3a2e22; }
+    .bc-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -.6px; line-height: 1; }
+    .bc-l { font-size: 11.5px; color: #c9b79a; margin-top: 3px; }
+    .ring { position: relative; width: 208px; height: 208px; margin-top: 16px; }
+    .ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+    .ring-arc { transition: stroke-dashoffset .2s linear, stroke .3s; }
+    .ring-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .ring-n { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 50px; letter-spacing: -2px; line-height: 1; }
+    .ring-l { font-size: 13px; font-weight: 600; }
+    .next { align-self: stretch; margin-top: 16px; border-radius: 22px; padding: 14px 18px 15px; background: #241c14; border: 1px solid #3a2e22; display: flex; flex-direction: column; gap: 3px; }
+    .next-name { font-size: 14.5px; font-weight: 600; color: #c9b79a; margin-top: 3px; }
+    .next-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -1px; line-height: 1.05; }
+    .next-rec { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #e0b155; margin-top: 3px; }
+    .actions { align-self: stretch; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+    .btn { height: 52px; border-radius: 16px; border: 1px solid rgba(240,228,208,.32); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; }
+
+    /* Prise d'écran record */
+    .dim { position: absolute; inset: 0; background: rgba(12,8,5,.74); animation: ppFade .2s both; cursor: pointer; }
+    @keyframes ppFade { from { opacity: 0; } to { opacity: 1; } }
+    .card { position: absolute; left: 18px; right: 18px; top: 170px; border-radius: 28px; padding: 24px 22px 22px; overflow: hidden; background: linear-gradient(160deg, #6b0028 0%, #3d0017 100%); box-shadow: 0 30px 60px -20px rgba(0,0,0,.7); animation: ppPop .5s cubic-bezier(.2,.9,.3,1.25) both; pointer-events: none; }
+    @keyframes ppPop { 0% { opacity: 0; transform: translateY(26px) scale(.82); } 60% { opacity: 1; transform: translateY(0) scale(1.05); } 80% { transform: scale(.99); } 100% { opacity: 1; transform: scale(1); } }
+    .wave { position: absolute; left: 50%; top: 42%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; border: 2px solid #e0b155; opacity: 0; animation: ppWave 1s .12s ease-out both; }
+    .wave.w2 { animation-delay: .26s; }
+    @keyframes ppWave { 0% { transform: scale(.4); opacity: .85; } 100% { transform: scale(8); opacity: 0; } }
+    .c-eb { position: relative; display: flex; align-items: center; gap: 8px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #e0b155; }
+    .c-row { position: relative; display: flex; align-items: flex-end; gap: 10px; margin-top: 12px; }
+    .c-v { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 62px; letter-spacing: -2.4px; line-height: .9; color: #fff; }
+    .c-delta { margin-bottom: 8px; height: 26px; padding: 0 9px; border-radius: 999px; background: rgba(224,177,85,.2); color: #e0b155; font-size: 13px; font-weight: 700; display: flex; align-items: center; }
+    .c-x { position: relative; font-size: 16px; font-weight: 600; color: #f0e4d0; margin-top: 12px; }
+    .c-cmp { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 18px; padding-top: 14px; border-top: 1px dashed rgba(240,228,208,.25); }
+    .c-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: #d9a888; }
+    .c-cv { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13.5px; color: #f0e4d0; margin-top: 4px; }
+    .foot-p { position: absolute; left: 50%; bottom: 42px; transform: translateX(-50%); height: 36px; padding: 0 14px; border-radius: 999px; background: rgba(240,228,208,.08); display: flex; align-items: center; gap: 8px; font-size: 13px; color: #c9b79a; white-space: nowrap; }
+    .foot-p b { font-family: 'Space Mono', ui-monospace, monospace; color: #f4ecdd; }
+
+    /* Tout est validé */
+    .ok-big { width: 60px; height: 60px; border-radius: 50%; background: rgba(169,186,126,.16); color: #a9ba7e; display: flex; align-items: center; justify-content: center; }
+    .muted { font-size: 15px; line-height: 1.45; color: #c9b79a; }
+    .fstats { height: 64px; flex: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; border-bottom: 1px solid #3a2e22; }
+    .fs { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .fs + .fs { border-left: 1px solid #3a2e22; }
+    .fs-n { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px; }
+    .fs-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #c9b79a; }
+    .gh { height: 52px; border-radius: 16px; border: 1px solid #4a3d30; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 600; }
+
+    /* Clôture */
+    .cl { position: absolute; inset: 0; padding: 58px 22px 0; background: radial-gradient(140% 60% at 15% -5%, rgba(221,110,64,.26) 0%, rgba(221,110,64,0) 58%), #1c150e; }
+    .cl-title { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 66px; letter-spacing: -2.8px; line-height: .9; margin-top: 12px; animation: ppSlam .42s cubic-bezier(.2,.9,.3,1.3) both; }
+    @keyframes ppSlam { 0% { opacity: 0; transform: translateY(-26px) scale(1.05); } 70% { opacity: 1; transform: translateY(4px) scale(1); } 100% { opacity: 1; transform: translateY(0); } }
+    .cl-sub { font-size: 16px; color: #c9b79a; margin-top: 14px; }
+    .cl-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 24px; animation: ppRise .4s .3s both; }
+    .st { padding: 14px 0; border-top: 1px solid #3a2e22; }
+    .st:nth-child(even) { padding-left: 18px; border-left: 1px solid #3a2e22; }
+    .st-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 40px; letter-spacing: -1.4px; line-height: 1; }
+    .st-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: #c9b79a; margin-top: 4px; }
+    .cl-recs { display: flex; flex-direction: column; gap: 8px; margin-top: 18px; animation: ppRise .4s .5s both; }
+    .rec { display: flex; align-items: center; gap: 12px; height: 50px; box-sizing: border-box; padding: 0 14px; border-radius: 16px; background: rgba(224,177,85,.08); border: 1px solid rgba(224,177,85,.26); }
+    .rec-name { flex: 1; font-size: 14.5px; font-weight: 600; }
+    .rec-v { text-align: right; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #e0b155; }
+    .rec-t { font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 500; font-size: 11px; color: #c9b79a; }
+    .norec { font-size: 14px; color: #c9b79a; }
+
+    /* ── Colonne de consignes ── */
+    .side { display: flex; flex-direction: column; gap: 16px; padding-top: 8px; }
+    .s-eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .s-h { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1px; line-height: 1.02; margin-top: 8px; }
+    .s-p { font-size: 13.5px; line-height: 1.55; color: #5c4d3d; }
+    .s-p b { color: #33291f; }
+    .s-btn { height: 46px; border-radius: 14px; background: #33291f; color: #f7eede; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .s-state { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59; line-height: 1.7; border-top: 1px dashed #d4c1a3; padding-top: 10px; }
+    .s-state b { color: #33291f; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .in, .rise, .card, .wave, .dim, .cl-title, .cl-stats, .cl-recs { animation: none !important; }
+      .wave { display: none; }
+    }
+  </style>
+</helmet>
+
+<div class="pb">
+  <div class="pp">
+
+    <sc-if value="{{ isBrief }}" hint-placeholder-val="{{ true }}">
+      <div class="br">
+        <div class="eyebrow">Séance du jour · extrait jouable</div>
+        <div class="br-title">Push A</div>
+        <div class="br-meta">2 exercices · 6 séries · repos raccourcis</div>
+        <div class="stake" style="margin-top: 18px">
+          <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e0b155" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 3.6M16 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 13v4M8.5 20h7"/></svg>
+          <div><div class="stake-t">L'enjeu du jour : <b>82,5 kg</b> au développé couché</div><div class="stake-s">Record actuel : 80 kg</div></div>
+        </div>
+        <div class="eyebrow" style="margin-top: 18px">Au programme</div>
+        <div class="br-row"><div class="br-n">1</div><div class="br-name">Développé couché<div class="br-sub">4 séries · 6 à 8 reps</div></div><div class="br-w">82,5 kg</div></div>
+        <div class="br-row"><div class="br-n">2</div><div class="br-name">Développé incliné haltères<div class="br-sub">2 séries · 10 reps</div></div><div class="br-w">26 kg</div></div>
+        <div class="go tap" onClick="{{ start }}">C'est parti<svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ inSession }}" hint-placeholder-val="{{ false }}">
+      <div class="scr">
+        <div class="hd">
+          <div class="hd-row">
+            <svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+            <div class="chrono">{{ chrono }}</div>
+            <svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg>
+          </div>
+          <div class="ribbon">
+            <sc-for list="{{ segs }}" as="sg" hint-placeholder-count="2">
+              <div class="seg" style="flex: {{ sg.flex }} 1 0"><div class="seg-f" style="width: {{ sg.pct }}%; background: {{ sg.color }}"></div></div>
+            </sc-for>
+          </div>
+          <div class="hd-meta"><span>Push A</span><span>{{ progressLabel }}</span></div>
+        </div>
+
+        <sc-if value="{{ isSet }}" hint-placeholder-val="{{ true }}">
+          <div class="in">
+            <div class="stage">
+              <div>
+                <div class="eyebrow" style="color: {{ eyebrowColor }}">{{ eyebrow }}</div>
+                <div class="ex-name">{{ exName }}</div>
+              </div>
+              <div class="pills">
+                <sc-for list="{{ pills }}" as="p" hint-placeholder-count="4">
+                  <div class="pill {{ p.cls }}">
+                    <sc-if value="{{ p.done }}" hint-placeholder-val="{{ false }}"><svg class="ic" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></sc-if>
+                    {{ p.label }}
+                  </div>
+                </sc-for>
+              </div>
+              <div class="refs">
+                <div class="ref"><div class="ref-l">Dernière fois</div><div class="ref-v">{{ lastRef }}</div></div>
+                <div class="ref"><div class="ref-l">Ton record</div><div class="ref-v">{{ bestRef }}</div></div>
+              </div>
+              <sc-if value="{{ stakeOn }}" hint-placeholder-val="{{ false }}">
+                <div class="stake rise">
+                  <svg class="ic" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e0b155" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 3.6M16 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 13v4M8.5 20h7"/></svg>
+                  <div><div class="stake-t"><b>{{ curWLabel }}</b>, c'est plus lourd que ton record</div><div class="stake-s">{{ stakeSub }}</div></div>
+                </div>
+              </sc-if>
+            </div>
+            <div class="deck">
+              <div class="peek"><span class="peek-l">Ensuite</span>{{ peekName }}</div>
+              <div class="ctx"><span>{{ setCtx }}</span><span>Repos raccourci</span></div>
+              <div class="fields">
+                <div class="field">
+                  <div class="step tap" onClick="{{ rDown }}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div>
+                  <div class="fv"><div class="fv-n">{{ curR }}</div><div class="fv-u">Reps</div></div>
+                  <div class="step tap" onClick="{{ rUp }}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+                </div>
+                <div class="field" style="border-color: {{ weightBorder }}">
+                  <div class="step tap" onClick="{{ wDown }}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div>
+                  <div class="fv"><div class="fv-n">{{ curW }}</div><div class="fv-u" style="color: {{ weightUnitColor }}">{{ weightUnit }}</div></div>
+                  <div class="step tap" onClick="{{ wUp }}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+                </div>
+              </div>
+              <div class="validate tap" onClick="{{ validate }}">{{ validateLabel }}</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ isRest }}" hint-placeholder-val="{{ false }}">
+          <div class="in">
+            <div class="rest-body">
+              <sc-if value="{{ showVerdict }}" hint-placeholder-val="{{ true }}">
+                <div class="eyebrow">{{ doneEyebrow }}</div>
+                <div class="done-v">{{ doneValue }}</div>
+                <div class="verdict rise {{ verdictCls }}">{{ verdictLabel }}</div>
+              </sc-if>
+              <sc-if value="{{ showBoucle }}" hint-placeholder-val="{{ false }}">
+                <div class="bc rise">
+                  <div class="bc-head">
+                    <div class="bc-ok"><svg class="ic" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div>
+                    <div><div class="eyebrow">Exercice bouclé</div><div class="bc-name">{{ bcName }}</div></div>
+                    <sc-if value="{{ bcHasRec }}" hint-placeholder-val="{{ false }}"><div class="bc-rec">{{ bcRecLabel }}</div></sc-if>
+                  </div>
+                  <div class="bc-stats">
+                    <div class="bc-s"><div class="bc-n">{{ bcSets }}</div><div class="bc-l">séries</div></div>
+                    <div class="bc-s"><div class="bc-n">{{ bcTon }}</div><div class="bc-l">kg soulevés</div></div>
+                    <div class="bc-s"><div class="bc-n" style="color: {{ bcPctColor }}">{{ bcPct }}</div><div class="bc-l">vs mardi</div></div>
+                  </div>
+                </div>
+              </sc-if>
+              <div class="ring">
+                <svg width="208" height="208" viewBox="0 0 208 208">
+                  <circle cx="104" cy="104" r="99.5" fill="none" stroke="#3a2e22" stroke-width="9"></circle>
+                  <circle class="ring-arc" cx="104" cy="104" r="99.5" fill="none" stroke="{{ ringColor }}" stroke-width="9" stroke-linecap="round" stroke-dasharray="625.2" stroke-dashoffset="{{ ringOffset }}"></circle>
+                </svg>
+                <div class="ring-c"><div class="ring-n">{{ restCount }}</div><div class="ring-l" style="color: {{ ringColor }}">{{ ringLabel }}</div></div>
+              </div>
+              <div class="next">
+                <div class="eyebrow">{{ nextEyebrow }}</div>
+                <div class="next-name">{{ exName }}</div>
+                <div class="next-t">{{ nextTarget }}</div>
+                <sc-if value="{{ stakeOn }}" hint-placeholder-val="{{ false }}">
+                  <div class="next-rec"><svg class="ic" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M12 13v4M8.5 20h7"/></svg>{{ stakeNext }}</div>
+                </sc-if>
+              </div>
+              <div class="actions">
+                <div class="btn tap" onClick="{{ extend }}">+15 s</div>
+                <div class="btn tap" onClick="{{ skip }}">Passer</div>
+              </div>
+            </div>
+
+
+          </div>
+        </sc-if>
+        <sc-if value="{{ isAllDone }}" hint-placeholder-val="{{ false }}">
+          <div class="in">
+            <div class="stage">
+              <div class="ok-big"><svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"></path></svg></div>
+              <div class="ex-name">Tout est validé.</div>
+              <div class="muted">Une série de plus, ou tu termines.</div>
+              <div class="verdict rise {{ verdictCls }}" style="align-self: flex-start; margin-top: 0">Dernière série : {{ verdictLabel }}</div>
+            </div>
+            <div class="deck">
+              <div class="fstats">
+                <div class="fs"><div class="fs-n">{{ chrono }}</div><div class="fs-l">Durée</div></div>
+                <div class="fs"><div class="fs-n">{{ doneSetsCount }}</div><div class="fs-l">Séries</div></div>
+              </div>
+              <div class="validate tap" onClick="{{ finish }}">Terminer la séance</div>
+              <div class="gh tap" onClick="{{ addSet }}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Série</div>
+            </div>
+          </div>
+        </sc-if>
+
+
+        <sc-if value="{{ hasTakeover }}" hint-placeholder-val="{{ false }}">
+              <div class="dim" onClick="{{ dismiss }}">
+                <sc-if value="{{ isRest }}" hint-placeholder-val="{{ false }}"><div class="foot-p">Le repos continue <b>{{ restCount }}</b></div></sc-if>
+              </div>
+              <div class="card">
+                <div class="wave"></div>
+                <div class="wave w2"></div>
+                <div class="c-eb"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.6 3.6M16 6h2.5a2.5 2.5 0 0 1-2.6 3.6"/><path d="M12 13v4M8.5 20h7"/></svg>Nouveau record</div>
+                <div class="c-row"><div class="c-v">{{ tkValue }}</div><div class="c-delta">{{ tkDelta }}</div></div>
+                <div class="c-x">{{ tkText }}</div>
+                <div class="c-cmp">
+                  <div><div class="c-l">Ancien record</div><div class="c-cv">{{ tkPrev }}</div></div>
+                  <div><div class="c-l">Aujourd'hui</div><div class="c-cv">{{ tkToday }}</div></div>
+                </div>
+              </div>
+            </sc-if>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+      <div class="cl">
+        <div class="eyebrow">Push A · extrait</div>
+        <div class="cl-title">Séance<br>bouclée.</div>
+        <div class="cl-sub">{{ clSub }}</div>
+        <div class="cl-stats">
+          <div class="st"><div class="st-n">{{ clDuration }}</div><div class="st-l">Durée</div></div>
+          <div class="st"><div class="st-n">{{ clTon }}</div><div class="st-l">kg soulevés</div></div>
+          <div class="st"><div class="st-n">{{ clSets }}</div><div class="st-l">Séries</div></div>
+          <div class="st"><div class="st-n" style="color: #e0b155">{{ clRecCount }}</div><div class="st-l">Records</div></div>
+        </div>
+        <div class="cl-recs">
+          <sc-for list="{{ records }}" as="rc" hint-placeholder-count="1">
+            <div class="rec">
+              <svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#e0b155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"/><path d="M12 13v4M8.5 20h7"/></svg>
+              <div class="rec-name">{{ rc.name }}</div>
+              <div class="rec-v">{{ rc.value }}<div class="rec-t">{{ rc.kind }}</div></div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ noRecords }}" hint-placeholder-val="{{ false }}"><div class="norec">Pas de record aujourd'hui. Tes références sont à jour.</div></sc-if>
+        </div>
+        <div class="go tap" onClick="{{ reset }}">Rejouer la séance</div>
+      </div>
+    </sc-if>
+
+  </div>
+
+  <div class="side">
+    <div>
+      <div class="s-eb">Prototype jouable</div>
+      <div class="s-h">Joue une séance</div>
+    </div>
+    <div class="s-p">Appuie sur <b>C'est parti</b>, puis valide les séries. Les charges prévues font tomber un <b>record en série 3</b>.</div>
+    <div class="s-p">Monte la charge avec <b>+</b> pour voir l'enjeu s'afficher avant de soulever, ou pour battre d'autres records : ils passent en pastille, la prise d'écran n'a lieu qu'une fois.</div>
+    <div class="s-p">Pendant la prise d'écran, un toucher la ferme ; le repos continue dessous.</div>
+    <div class="s-state">Repos raccourcis à <b>8 s</b> · vibrations non jouées dans le navigateur (voir « Rare, donc fort »)</div>
+    <div class="s-btn tap" onClick="{{ reset }}">Recommencer</div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":680,"height":920}}'>
+class Component extends DCLogic {
+  constructor(...args) {
+    super(...args);
+    this.state = this.ppInitial();
+  }
+
+  ppSession() {
+    return [
+      { name: 'Développé couché', lower: 'développé couché', muscles: 'Pectoraux', rest: 8, bestMax: 80, bestE1: 105,
+        sets: [ { w: 80, r: 8, lw: 77.5, lr: 8 }, { w: 80, r: 8, lw: 77.5, lr: 8 }, { w: 82.5, r: 6, lw: 77.5, lr: 7 }, { w: 80, r: 7, lw: 77.5, lr: 6 } ] },
+      { name: 'Développé incliné haltères', lower: 'développé incliné haltères', muscles: 'Pectoraux (haut)', rest: 8, bestMax: 28, bestE1: 36,
+        sets: [ { w: 26, r: 10, lw: 24, lr: 10 }, { w: 26, r: 10, lw: 24, lr: 9 } ] }
+    ];
+  }
+
+  ppExercises() {
+    const base = this.ppSession();
+    const extra = (this.state && this.state.extra) || {};
+    return base.map((e, i) => {
+      const n = extra[i] || 0;
+      if (!n) return e;
+      const last = e.sets[e.sets.length - 1];
+      const add = [];
+      for (let k = 0; k < n; k++) add.push({ w: last.w, r: last.r, lw: last.lw, lr: last.lr, extra: true });
+      return Object.assign({}, e, { sets: e.sets.concat(add) });
+    });
+  }
+
+  ppInitial() {
+    const EX = this.ppSession();
+    return {
+      phase: 'brief', ex: 0, si: 0, cur: { w: EX[0].sets[0].w, r: EX[0].sets[0].r }, log: [],
+      bests: EX.map((e) => ({ max: e.bestMax, e1: e.bestE1 })),
+      verdict: null, justDone: null, exDone: null, takeover: null, takeoverUntil: 0, fullUsed: false,
+      records: [], restEnd: 0, restTotal: 8, startAt: 0, endAt: 0, extra: {}, now: Date.now()
+    };
+  }
+
+  componentDidMount() {
+    this.ppTimer = setInterval(() => this.ppTick(), 200);
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.ppTimer);
+  }
+
+  ppTick() {
+    const s = this.state;
+    if (s.phase !== 'set' && s.phase !== 'rest' && s.phase !== 'allDone') return;
+    const now = Date.now();
+    const patch = { now: now };
+    if (s.phase === 'rest' && now >= s.restEnd) { patch.phase = 'set'; patch.exDone = null; patch.takeover = null; }
+    if (s.takeover && now >= s.takeoverUntil) patch.takeover = null;
+    this.setState(patch);
+  }
+
+  fmt(x) { return String(Math.round(x * 10) / 10).replace('.', ','); }
+  e1(w, r) { return r <= 1 ? w : w * (1 + r / 30); }
+  thousands(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  clock(ms) {
+    const t = Math.max(0, Math.floor(ms / 1000));
+    return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0');
+  }
+
+  verdictFor(set, w, r) {
+    if (set.extra) return { label: 'Série en plus', tone: 'eq' };
+    if (w > set.lw) return { label: '+' + this.fmt(w - set.lw) + ' kg vs mardi', tone: 'up' };
+    if (w === set.lw && r > set.lr) return { label: '+' + (r - set.lr) + (r - set.lr > 1 ? ' reps' : ' rép') + ' vs mardi', tone: 'up' };
+    if (w === set.lw && r === set.lr) return { label: 'Comme mardi', tone: 'eq' };
+    if (w < set.lw) return { label: this.fmt(w) + ' kg · mardi ' + this.fmt(set.lw) + ' kg', tone: 'eq' };
+    return { label: r + ' reps · mardi ' + set.lr, tone: 'eq' };
+  }
+
+  ppValidate() {
+    const EX = this.ppExercises();
+    const s = this.state;
+    if (s.phase !== 'set') return;
+    const E = EX[s.ex];
+    const set = E.sets[s.si];
+    const w = s.cur.w;
+    const r = s.cur.r;
+    const now = Date.now();
+    let verdict = this.verdictFor(set, w, r);
+    const bests = s.bests.map((b) => ({ max: b.max, e1: b.e1 }));
+    const b = bests[s.ex];
+    const est = this.e1(w, r);
+    const records = s.records.slice();
+    let takeover = null;
+    let takeoverUntil = 0;
+    let fullUsed = s.fullUsed;
+    if (w > b.max) {
+      const prev = b.max;
+      b.max = w;
+      if (est > b.e1) b.e1 = est;
+      verdict = { label: 'Record · charge max', tone: 'rec' };
+      records.push({ name: E.name, value: this.fmt(w) + ' kg', kind: 'charge max' });
+      if (!fullUsed) {
+        fullUsed = true;
+        takeover = { value: this.fmt(w) + ' kg', delta: '+' + this.fmt(w - prev) + ' kg', text: 'Plus lourd que jamais au ' + E.lower + '.', prev: this.fmt(prev) + ' kg', today: this.fmt(w) + ' kg × ' + r };
+        takeoverUntil = now + 2800;
+      }
+    } else if (est > b.e1 + 0.05) {
+      b.e1 = est;
+      verdict = { label: 'Record · 1RM estimé ' + Math.round(est) + ' kg', tone: 'rec' };
+      records.push({ name: E.name, value: Math.round(est) + ' kg', kind: '1RM estimé' });
+    }
+    const log = s.log.concat([{ ex: s.ex, si: s.si, w: w, r: r }]);
+    const justDone = { eyebrow: 'Série ' + (s.si + 1) + ' validée', value: this.fmt(w) + ' kg × ' + r };
+    let ex = s.ex;
+    let si = s.si + 1;
+    let exDone = null;
+    if (si >= E.sets.length) {
+      const mine = log.filter((l) => l.ex === s.ex);
+      const ton = mine.reduce((a, l) => a + l.w * l.r, 0);
+      const last = E.sets.reduce((a, st) => a + st.lw * st.lr, 0);
+      const pct = Math.round(((ton - last) / last) * 100);
+      const recs = records.filter((x) => x.name === E.name).length;
+      exDone = {
+        name: E.name, sets: String(mine.length), ton: this.thousands(ton),
+        pct: (pct >= 0 ? '+' : '−') + Math.abs(pct) + ' %', up: pct >= 0,
+        recs: recs, recLabel: recs + (recs > 1 ? ' records' : ' record')
+      };
+      ex = s.ex + 1;
+      si = 0;
+    }
+    if (ex >= EX.length) {
+      // Comme l'écran actuel : la dernière série ne clôture pas, elle ouvre « Tout est validé ».
+      this.setState({ phase: 'allDone', ex: EX.length - 1, si: EX[EX.length - 1].sets.length, log: log, bests: bests, records: records, verdict: verdict, justDone: justDone, exDone: null, takeover: takeover, takeoverUntil: takeoverUntil, fullUsed: fullUsed, now: now });
+      return;
+    }
+    const nx = EX[ex].sets[si];
+    this.setState({
+      phase: 'rest', ex: ex, si: si, cur: { w: nx.w, r: nx.r }, log: log, bests: bests, records: records,
+      verdict: verdict, justDone: justDone, exDone: exDone, takeover: takeover, takeoverUntil: takeoverUntil,
+      fullUsed: fullUsed, restEnd: now + E.rest * 1000, restTotal: E.rest, now: now
+    });
+  }
+
+  renderVals() {
+    const EX = this.ppExercises();
+    const s = this.state;
+    const exI = Math.min(s.ex, EX.length - 1);
+    const E = EX[exI];
+    const totalSets = EX.reduce((a, e) => a + e.sets.length, 0);
+    const best = s.bests[exI];
+    const now = s.now;
+
+    const segs = EX.map((e, i) => {
+      const d = s.log.filter((l) => l.ex === i).length;
+      return { flex: e.sets.length, pct: Math.round((d / e.sets.length) * 100), color: d >= e.sets.length ? '#a9ba7e' : '#dd6e40' };
+    });
+
+    const pills = E.sets.map((st, i) => {
+      const l = s.log.find((x) => x.ex === exI && x.si === i);
+      if (l) return { done: true, label: this.fmt(l.w) + '×' + l.r, cls: 'pill-done' };
+      if (i === s.si) return { done: false, label: 'Série ' + (i + 1), cls: 'pill-cur' };
+      return { done: false, label: String(i + 1), cls: 'pill-todo' };
+    });
+
+    const isLastExercise = exI === EX.length - 1;
+    const isLastSet = isLastExercise && s.si === E.sets.length - 1;
+    const stakeOn = s.cur.w > best.max;
+    const peekName = s.si + 1 < E.sets.length ? E.name + ' · série ' + (s.si + 2) : (EX[exI + 1] ? EX[exI + 1].name : 'Fin de séance');
+
+    const left = Math.max(0, s.restEnd - now);
+    const prog = s.restTotal ? Math.min(1, left / (s.restTotal * 1000)) : 0;
+    const ready = left <= 3000;
+    const restSecs = Math.ceil(left / 1000);
+
+    const tk = s.takeover || {};
+    const bc = s.exDone || {};
+    const v = s.verdict || { label: '', tone: 'eq' };
+    const jd = s.justDone || { eyebrow: '', value: '' };
+
+    const ton = s.log.reduce((a, l) => a + l.w * l.r, 0);
+    const lastTon = s.log.reduce((a, l) => a + EX[l.ex].sets[l.si].lw * EX[l.ex].sets[l.si].lr, 0);
+    const pctAll = lastTon ? Math.round(((ton - lastTon) / lastTon) * 100) : 0;
+    const dur = s.endAt && s.startAt ? s.endAt - s.startAt : 0;
+
+    return {
+      isBrief: s.phase === 'brief',
+      inSession: s.phase === 'set' || s.phase === 'rest' || s.phase === 'allDone',
+      isAllDone: s.phase === 'allDone',
+      doneSetsCount: String(s.log.length),
+      isSet: s.phase === 'set',
+      isRest: s.phase === 'rest',
+      isDone: s.phase === 'done',
+
+      chrono: this.clock(s.startAt ? now - s.startAt : 0),
+      segs: segs,
+      progressLabel: s.log.length + '/' + totalSets + ' séries',
+
+      eyebrow: isLastSet ? 'Dernière série de la séance' : (isLastExercise ? 'Dernier exercice · ' + E.muscles : 'Exercice ' + (exI + 1) + ' sur ' + EX.length + ' · ' + E.muscles),
+      eyebrowColor: isLastExercise ? '#dd6e40' : '#c9b79a',
+      exName: E.name,
+      pills: pills,
+      lastRef: this.fmt(E.sets[0].lw) + ' kg × ' + E.sets.map((st) => st.lr).join(' / '),
+      bestRef: this.fmt(best.max) + ' kg',
+      stakeOn: stakeOn,
+      curWLabel: this.fmt(s.cur.w) + ' kg',
+      stakeSub: 'Record actuel : ' + this.fmt(best.max) + ' kg',
+      stakeNext: 'Plus lourd que ton record de ' + this.fmt(best.max) + ' kg',
+      peekName: peekName,
+      setCtx: 'Série ' + (s.si + 1) + ' sur ' + E.sets.length,
+      curR: String(s.cur.r),
+      curW: this.fmt(s.cur.w),
+      weightUnit: stakeOn ? 'kg · record' : 'kg',
+      weightUnitColor: stakeOn ? '#e0b155' : '#c9b79a',
+      weightBorder: stakeOn ? 'rgba(224,177,85,.55)' : '#3a2e22',
+      validateLabel: 'Valider la série',
+
+      showVerdict: !s.exDone,
+      showBoucle: !!s.exDone,
+      doneEyebrow: jd.eyebrow,
+      doneValue: jd.value,
+      verdictLabel: v.label,
+      verdictCls: v.tone === 'rec' ? 'v-rec' : (v.tone === 'up' ? 'v-up' : 'v-eq'),
+      bcName: bc.name || '',
+      bcSets: bc.sets || '',
+      bcTon: bc.ton || '',
+      bcPct: bc.pct || '',
+      bcPctColor: bc.up ? '#a9ba7e' : '#c9b79a',
+      bcHasRec: !!(bc.recs && bc.recs > 0),
+      bcRecLabel: bc.recLabel || '',
+
+      ringOffset: (625.2 * (1 - prog)).toFixed(1),
+      ringColor: ready ? '#a9ba7e' : '#e0a97f',
+      ringLabel: ready ? 'Prépare-toi' : 'de repos',
+      restCount: '0:' + String(restSecs).padStart(2, '0'),
+      nextEyebrow: s.exDone ? 'Exercice ' + (exI + 1) + ' sur ' + EX.length + ' · à toi' : 'Ensuite · série ' + (s.si + 1) + ' sur ' + E.sets.length,
+      nextTarget: this.fmt(s.cur.w) + ' kg × ' + s.cur.r,
+
+      hasTakeover: !!s.takeover,
+      tkValue: tk.value || '',
+      tkDelta: tk.delta || '',
+      tkText: tk.text || '',
+      tkPrev: tk.prev || '',
+      tkToday: tk.today || '',
+
+      clSub: s.log.length + ' séries sur ' + totalSets + (pctAll >= 0 ? ', ' + pctAll + ' % de tonnage en plus que mardi.' : '.'),
+      clDuration: this.clock(dur),
+      clTon: this.thousands(ton),
+      clSets: s.log.length + '/' + totalSets,
+      clRecCount: String(s.records.length),
+      records: s.records,
+      noRecords: s.records.length === 0,
+
+      start: () => { const t = Date.now(); this.setState({ phase: 'set', startAt: t, now: t }); },
+      reset: () => this.setState(this.ppInitial()),
+      validate: () => this.ppValidate(),
+      wUp: () => { const c = this.state.cur; this.setState({ cur: { w: c.w + 2.5, r: c.r } }); },
+      wDown: () => { const c = this.state.cur; this.setState({ cur: { w: Math.max(0, c.w - 2.5), r: c.r } }); },
+      rUp: () => { const c = this.state.cur; this.setState({ cur: { w: c.w, r: c.r + 1 } }); },
+      rDown: () => { const c = this.state.cur; this.setState({ cur: { w: c.w, r: Math.max(1, c.r - 1) } }); },
+      skip: () => this.setState({ phase: 'set', exDone: null, takeover: null }),
+      extend: () => { const st = this.state; this.setState({ restEnd: st.restEnd + 1000, restTotal: st.restTotal + 1 }); },
+      dismiss: () => this.setState({ takeover: null }),
+      finish: () => { const t = Date.now(); this.setState({ phase: 'done', takeover: null, endAt: t, now: t }); },
+      addSet: () => {
+        const st = this.state;
+        const last = EX.length - 1;
+        const extra = Object.assign({}, st.extra);
+        extra[last] = (extra[last] || 0) + 1;
+        const ref = EX[last].sets[EX[last].sets.length - 1];
+        this.setState({ extra: extra, phase: 'set', ex: last, si: EX[last].sets.length, cur: { w: ref.w, r: ref.r }, takeover: null });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

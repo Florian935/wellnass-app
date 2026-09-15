@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #17110b; }
+    a { color: #e0a97f; }
+    a:hover { color: #f4ecdd; }
+    .board {
+      width: 1400px; height: 1400px; box-sizing: border-box; color: #f4ecdd;
+      background: radial-gradient(70% 40% at 80% 0%, rgba(221,110,64,.16), rgba(221,110,64,0) 70%), #17110b;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 52px 56px; display: flex; flex-direction: column; gap: 34px;
+    }
+    .ic { display: block; flex: none; }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase; color: #c9b79a; }
+    .h1 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 88px; letter-spacing: -3.6px; line-height: .9; margin-top: 12px; }
+    .h1 em { font-style: normal; color: #dd6e40; }
+    .lede { font-size: 18px; line-height: 1.55; color: #c9b79a; max-width: 760px; margin-top: 18px; }
+    .lede b { color: #f4ecdd; font-weight: 600; }
+
+    /* ── Le rythme d'une séance ── */
+    .rhythm { position: relative; border-radius: 24px; background: #1f1810; border: 1px solid #2f261c; padding: 22px 26px 18px; }
+    .r-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 14px; }
+    .r-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.4px; }
+    .r-leg { display: flex; gap: 18px; font-size: 12.5px; color: #c9b79a; }
+    .r-leg span { display: flex; align-items: center; gap: 6px; }
+    .r-leg i { display: block; width: 14px; height: 8px; border-radius: 2px; }
+    .track { position: relative; height: 120px; display: flex; align-items: flex-end; gap: 6px; }
+    .eff { height: 100px; border-radius: 8px 8px 3px 3px; background: linear-gradient(180deg, #e0b155 0%, #dd6e40 35%, #6b0028 100%); position: relative; overflow: hidden; }
+    .eff::after { content: ""; position: absolute; inset: 0; background: rgba(255,240,220,.25); animation: effBeat 3s infinite; }
+    .eff:nth-child(4)::after { animation-delay: .6s; } .eff:nth-child(6)::after { animation-delay: 1.2s; } .eff:nth-child(8)::after { animation-delay: 1.8s; } .eff:nth-child(10)::after { animation-delay: 2.4s; }
+    @keyframes effBeat { 0%, 60%, 100% { opacity: 0; } 70% { opacity: 1; } }
+    .rest { height: 34px; border-radius: 8px 8px 3px 3px; background: #3a2e22; position: relative; overflow: hidden; }
+    .rest::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 100%; background: rgba(224,169,127,.35); transform-origin: bottom; animation: breathe 5s infinite ease-in-out; }
+    @keyframes breathe { 0%, 100% { transform: scaleY(.35); } 40% { transform: scaleY(1); } }
+    .brief { height: 56px; border-radius: 8px 8px 3px 3px; background: #30271e; border: 1px dashed #6d6154; box-sizing: border-box; }
+    .fin { height: 120px; border-radius: 8px 8px 3px 3px; background: linear-gradient(180deg, #f4ecdd, #e0b155 40%, #dd6e40); }
+    .head { position: absolute; top: -4px; bottom: -4px; width: 2px; background: #f4ecdd; box-shadow: 0 0 12px rgba(244,236,221,.8); animation: play 14s linear infinite; }
+    @keyframes play { from { left: 0%; } to { left: 100%; } }
+    .marks { display: grid; grid-template-columns: 80px 1fr 1fr 1fr 1fr 1fr 110px; gap: 6px; margin-top: 10px; font-size: 12px; color: #c9b79a; line-height: 1.35; }
+    .marks b { display: block; color: #f4ecdd; font-weight: 700; font-size: 12.5px; }
+
+    /* ── Les mécaniques ── */
+    .mech { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); column-gap: 26px; row-gap: 0; }
+    .m { padding: 18px 0 20px; border-top: 1px solid #2f261c; display: flex; flex-direction: column; gap: 7px; }
+    .m-n { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #dd6e40; }
+    .m-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -.6px; line-height: 1.05; }
+    .m-d { font-size: 13.5px; line-height: 1.5; color: #e7dccb; }
+    .m-w { font-size: 12.5px; line-height: 1.45; color: #a3927a; }
+    .m-w b { color: #c9b79a; font-weight: 600; }
+    .tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 3px; }
+    .tag { height: 22px; padding: 0 8px; border-radius: 999px; display: flex; align-items: center; font-size: 11px; font-weight: 700; white-space: nowrap; }
+    .t-ok { background: rgba(169,186,126,.14); color: #a9ba7e; }
+    .t-ai { background: rgba(224,169,127,.14); color: #e0a97f; }
+    .t-dec { background: rgba(224,177,85,.14); color: #e0b155; }
+    .t-dep { background: rgba(201,183,154,.12); color: #c9b79a; }
+
+    .foot { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr); gap: 28px; }
+    .panel { border-radius: 22px; padding: 20px 22px; background: #1f1810; border: 1px solid #2f261c; display: flex; flex-direction: column; gap: 10px; }
+    .p-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -.5px; }
+    .p-x { font-size: 13.5px; line-height: 1.55; color: #c9b79a; }
+    .p-x b { color: #f4ecdd; font-weight: 600; }
+    .lot { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 10px; font-size: 13.5px; line-height: 1.45; color: #c9b79a; }
+    .lot b { color: #f4ecdd; }
+    .lot-n { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; color: #dd6e40; padding-top: 1px; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div>
+    <div class="eb">Musculation · exploration · 13/09/2026</div>
+    <div class="h1">La séance <em>vivante</em></div>
+    <div class="lede">Une séance a un rythme : <b>effort, récupération, effort</b>. Aujourd'hui l'app montre le même visage aux deux. Ici, elle <b>bat</b> pendant l'effort, <b>respire</b> pendant le repos, et <b>se souvient de toi</b> du premier mot au dernier. On ne décroche pas d'une séance qui te parle, te suit et te montre ton travail qui s'accumule.</div>
+  </div>
+
+  <div class="rhythm">
+    <div class="r-head">
+      <div class="r-t">Le rythme d'une séance, et ce qui l'habite</div>
+      <div class="r-leg"><span><i style="background: linear-gradient(90deg, #6b0028, #dd6e40, #e0b155)"></i>effort : ça bat</span><span><i style="background: #3a2e22"></i>repos : ça respire</span></div>
+    </div>
+    <div class="track">
+      <div class="brief" style="width: 80px"></div>
+      <div class="eff" style="flex: 1.1"></div><div class="rest" style="flex: 1.6"></div>
+      <div class="eff" style="flex: 1"></div><div class="rest" style="flex: 1.6"></div>
+      <div class="eff" style="flex: 1.2"></div><div class="rest" style="flex: 2"></div>
+      <div class="eff" style="flex: 1"></div><div class="rest" style="flex: 1.6"></div>
+      <div class="eff" style="flex: 1.3"></div>
+      <div class="fin" style="width: 110px"></div>
+      <div class="head"></div>
+    </div>
+    <div class="marks">
+      <div><b>Brief</b>le coach annonce l'enjeu</div>
+      <div><b>Série en direct</b>tempo, reps, barre chargée</div>
+      <div><b>Cadran, ressenti</b>un geste, un mot</div>
+      <div><b>Repos qui respire</b>fantôme, corps, 3-2-1</div>
+      <div><b>Record, bouclé</b>la prise d'écran, le bilan</div>
+      <div><b>Dernière série</b>« 5 reps et tu bats mardi »</div>
+      <div><b>Séance bouclée</b>corps, fantôme, relais nutrition</div>
+    </div>
+  </div>
+
+  <div class="mech">
+    <div class="m">
+      <div class="m-n">01</div><div class="m-t">La barre chargée</div>
+      <div class="m-d">Les disques à mettre de chaque côté, dessinés. Ils glissent quand la charge change.</div>
+      <div class="m-w"><b>Retient :</b> utile à chaque série, on ne calcule plus rien de tête.</div>
+      <div class="tags"><span class="tag t-ok">cadre actuel</span><span class="tag t-dep">exercices à la barre</span></div>
+    </div>
+    <div class="m">
+      <div class="m-n">02</div><div class="m-t">La série en direct</div>
+      <div class="m-d">L'écran bat au tempo de la rép. Toucher le cercle compte, le temps sous tension défile.</div>
+      <div class="m-w"><b>Retient :</b> l'app vit pendant l'effort, pas seulement entre deux efforts.</div>
+      <div class="tags"><span class="tag t-ok">cadre actuel</span></div>
+    </div>
+    <div class="m">
+      <div class="m-n">03</div><div class="m-t">Le cadran et le ressenti</div>
+      <div class="m-d">Un glissé pour les reps, un mot pour l'effort : Facile, Solide, Dur, Limite.</div>
+      <div class="m-w"><b>Retient :</b> saisir devient un geste plaisant, et le ressenti nourrit l'ajustement.</div>
+      <div class="tags"><span class="tag t-ok">cadre actuel</span><span class="tag t-dep">RPE / RIR derrière</span></div>
+    </div>
+    <div class="m">
+      <div class="m-n">04</div><div class="m-t">Le repos qui respire</div>
+      <div class="m-d">L'anneau guide la respiration, 3-2-1 vibré, et la veille assombrit l'écran posé.</div>
+      <div class="m-w"><b>Retient :</b> le temps mort devient une récupération guidée.</div>
+      <div class="tags"><span class="tag t-ok">cadre actuel</span></div>
+    </div>
+    <div class="m">
+      <div class="m-n">05</div><div class="m-t">Le fantôme de mardi</div>
+      <div class="m-d">Ton tonnage contre la même séance la dernière fois, série par série, en direct.</div>
+      <div class="m-w"><b>Retient :</b> on veut finir devant. La dernière série reçoit un objectif chiffré.</div>
+      <div class="tags"><span class="tag t-dec">décision C à confirmer</span></div>
+    </div>
+    <div class="m">
+      <div class="m-n">06</div><div class="m-t">Le corps qui chauffe</div>
+      <div class="m-d">Le schéma musculaire se réchauffe à chaque série validée, de la braise à l'or.</div>
+      <div class="m-w"><b>Retient :</b> on voit le travail s'accumuler. L'image finale se partage.</div>
+      <div class="tags"><span class="tag t-ok">réutilise MUSC-F1b</span></div>
+    </div>
+    <div class="m">
+      <div class="m-n">07</div><div class="m-t">Le coach qui te connaît</div>
+      <div class="m-d">Une voix qui annonce, rappelle la technique, propose d'alléger ou de charger, fait le bilan.</div>
+      <div class="m-w"><b>Retient :</b> une présence. On ne lâche pas une séance où quelqu'un te parle de ton mardi.</div>
+      <div class="tags"><span class="tag t-ai">IA au lancement</span><span class="tag t-ok">voix hors ligne</span></div>
+    </div>
+    <div class="m">
+      <div class="m-n">08</div><div class="m-t">Le fil qui ne casse pas</div>
+      <div class="m-d">Repos en notification continue, rappel quand il se termine, retour en un toucher.</div>
+      <div class="m-w"><b>Retient :</b> ouvrir une autre app pendant le repos ne fait plus perdre la séance.</div>
+      <div class="tags"><span class="tag t-ok">notifications déjà au projet</span><span class="tag t-dep">décompte natif à valider</span></div>
+    </div>
+  </div>
+
+  <div class="foot">
+    <div class="panel">
+      <div class="p-t">Ce qui sort du lot, honnêtement</div>
+      <div class="p-x">Pris un par un, certains existent ailleurs : un calculateur de disques, un minuteur en notification. <b>Ce qui n'existe pas, c'est l'assemblage</b> : un coach qui parle de <b>ton</b> mardi, un fantôme qui donne un objectif à la dernière série, un corps qui garde la trace du travail, et la nutrition qui prend le relais à la fin. C'est la promesse de l'app : les piliers qui se parlent.</div>
+    </div>
+    <div class="panel">
+      <div class="p-t">Proposition de lots</div>
+      <div class="lot"><div class="lot-n">LOT 1</div><div><b>Sans IA, sans dépendance :</b> barre chargée, série en direct, cadran et ressenti, repos qui respire, corps qui chauffe, veille.</div></div>
+      <div class="lot"><div class="lot-n">LOT 2</div><div><b>Après arbitrage :</b> le fantôme (décision C), le fil en notification continue.</div></div>
+      <div class="lot"><div class="lot-n">LOT 3</div><div><b>Le coach IA :</b> proxy serveur, consentement, palier IA (cf. analyse IA §5–7).</div></div>
+    </div>
+    <div class="panel">
+      <div class="p-t">Garde-fous</div>
+      <div class="p-x"><b>Un mode en plus, pas un remplacement :</b> l'écran de séance classique reste, chacun choisit. <b>Tout se règle :</b> coach Motivant, Sobre ou Muet ; sons ; veille ; animations. <b>Rien ne bloque le geste</b> : « Valider directement » reste à un toucher. <b>Rien n'est dit par le mouvement seul</b> : chaque réplique du coach est aussi écrite. Les sons demandent une dépendance audio : à trancher.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

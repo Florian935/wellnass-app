@@ -24,6 +24,8 @@ import {
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { GuidanceSelector } from '@/components/guidance/GuidanceSelector';
+import { useGuidance } from '@/data/guidance';
 import { Segment } from '@/components/Segment';
 import { DeferredTextField } from '@/components/DeferredTextField';
 import { useProfile } from '@/data/repositories/profile-repository';
@@ -79,6 +81,8 @@ export default function NutritionProfileScreen() {
 
   const { profile } = useProfile();
   const { nutritionProfile } = useNutritionProfile();
+  // US GUID-01 — le régime vit dans le pilier qu'il gouverne.
+  const guidance = useGuidance('nutrition');
 
   const objective: NutritionObjective =
     nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
@@ -160,6 +164,15 @@ export default function NutritionProfileScreen() {
       contentContainerStyle={styles.content}
       keyboardShouldPersistTaps="handled"
     >
+      {/* Guidage (US GUID-01) — en tête : il décide de ce que les réglages du dessous produiront. */}
+      <Text style={[styles.section, { color: colors.textMuted }]}>{t('guidance.sectionTitle')}</Text>
+      <GuidanceSelector
+        pillar="nutrition"
+        source={guidance.source}
+        onChange={guidance.setRegime}
+        colors={colors}
+      />
+
       {/* Objectif nutritionnel (4.4 / spec §2.1) */}
       <Text style={[styles.section, { color: colors.textMuted }]}>{t('nutrition.objective.title')}</Text>
       <OptionList

@@ -19,7 +19,12 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { WORKOUT_DISPLAY_LEVELS, type WorkoutDisplayLevel } from '@wellness/shared';
+import {
+  WORKOUT_DISPLAY_LEVELS,
+  WORKOUT_DISPLAY_MODES,
+  type WorkoutDisplayLevel,
+  type WorkoutDisplayMode,
+} from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
 import type { Palette } from '@/theme/colors';
 
@@ -28,6 +33,14 @@ type Props = {
   onClose: () => void;
   level: WorkoutDisplayLevel;
   onChangeLevel: (level: WorkoutDisplayLevel) => void;
+  /**
+   * Mode d'affichage de la séance — US MUSCU-UX03. Facultatif : les tests qui montent ce menu
+   * avant l'US, et tout appelant qui ne gère pas le mode, continuent de fonctionner sans lui.
+   *
+   * ⚠️ Changer de mode **en pleine séance ne perd rien** : les deux rendus lisent le même état.
+   */
+  mode?: WorkoutDisplayMode;
+  onChangeMode?: (mode: WorkoutDisplayMode) => void;
   /** Repos de l'exercice courant, en secondes — affiché à titre de repère. */
   restSeconds: number;
   onOpenRest: () => void;
@@ -76,6 +89,8 @@ export function SessionMenuSheet({
   onClose,
   level,
   onChangeLevel,
+  mode,
+  onChangeMode,
   restSeconds,
   onOpenRest,
   onAddExercise,
@@ -97,6 +112,45 @@ export function SessionMenuSheet({
         <Pressable style={[styles.sheet, { backgroundColor: colors.background }]}>
           <ScrollView contentContainerStyle={styles.sheetContent} showsVerticalScrollIndicator={false}>
             <View style={[styles.grabber, { backgroundColor: colors.border }]} />
+
+            {/* Mode d'affichage (US MUSCU-UX03) — au-dessus du niveau, parce qu'il l'englobe :
+                le niveau s'applique aux deux modes, le mode décide de tout le reste. */}
+            {mode && onChangeMode ? (
+              <>
+                <View style={styles.section}>
+                  <Text style={[styles.eyebrow, { color: colors.textMuted }]}>
+                    {t('workoutMode.switchTitle')}
+                  </Text>
+                  <View style={[styles.segment, { backgroundColor: colors.surfaceAlt }]}>
+                    {WORKOUT_DISPLAY_MODES.map((option) => {
+                      const selected = option === mode;
+                      return (
+                        <Pressable
+                          key={option}
+                          accessibilityRole="button"
+                          accessibilityState={{ selected }}
+                          onPress={() => onChangeMode(option)}
+                          style={[styles.segmentItem, selected && { backgroundColor: colors.accent }]}
+                        >
+                          <Text
+                            style={[
+                              styles.segmentLabel,
+                              { color: selected ? colors.accentText : colors.textMuted },
+                            ]}
+                          >
+                            {t(`workoutMode.${option}`)}
+                          </Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                  <Text style={[styles.hint, { color: colors.textMuted }]}>
+                    {t('workoutMode.switchHint')}
+                  </Text>
+                </View>
+                <View style={[styles.divider, { backgroundColor: colors.border }]} />
+              </>
+            ) : null}
 
             {/* Niveau d'affichage — rapatrié des Réglages */}
             <View style={styles.section}>

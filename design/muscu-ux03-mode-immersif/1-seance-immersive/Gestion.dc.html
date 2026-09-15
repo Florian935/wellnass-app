@@ -1,0 +1,309 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .board {
+      width: 1760px; height: 1270px; box-sizing: border-box; background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 44px 40px; display: flex; flex-direction: column; gap: 28px;
+    }
+    .ic { display: block; flex: none; }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .h1 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 44px; letter-spacing: -1.5px; line-height: 1; margin-top: 8px; }
+    .lede { font-size: 15px; line-height: 1.55; color: #5c4d3d; max-width: 860px; margin-top: 12px; }
+    .cols { display: grid; grid-template-columns: repeat(4, 390px); gap: 36px; align-items: start; }
+    .col { display: flex; flex-direction: column; gap: 12px; }
+    .cap-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 18px; letter-spacing: -.4px; }
+    .cap { font-size: 13.5px; line-height: 1.5; color: #5c4d3d; }
+    .cap b { color: #33291f; }
+
+    .ph { width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; border-radius: 26px; background: radial-gradient(130% 55% at 50% -12%, rgba(221,110,64,.13) 0%, rgba(221,110,64,0) 62%), #1c150e; color: #f4ecdd; box-shadow: 0 26px 50px -30px rgba(60,40,20,.55); }
+    .eyebrow { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a; }
+    .hd { position: absolute; left: 0; right: 0; top: 0; padding: 14px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+    .hd-row { display: flex; align-items: center; justify-content: space-between; height: 28px; }
+    .chrono { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px; }
+    .ribbon { display: flex; gap: 4px; height: 6px; }
+    .seg { height: 6px; border-radius: 3px; background: #362c22; overflow: hidden; }
+    .seg-f { height: 100%; border-radius: 3px; background: #dd6e40; }
+    .hd-meta { display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a; }
+    .bg-name { position: absolute; left: 20px; right: 20px; top: 150px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.3px; line-height: 1; }
+    .scrim { position: absolute; inset: 0; background: rgba(10,7,4,.66); }
+
+    .sheet { position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; background: #241c14; border-radius: 28px 28px 0 0; border-top: 1px solid #3a2e22; padding: 10px 16px 20px; display: flex; flex-direction: column; }
+    .grab { width: 40px; height: 4px; border-radius: 2px; background: #4a3d30; align-self: center; }
+    .sh-head { display: flex; align-items: baseline; justify-content: space-between; padding: 16px 4px 12px; }
+    .sh-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -.6px; }
+    .sh-s { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px; color: #c9b79a; }
+
+    .list { display: flex; flex-direction: column; gap: 8px; }
+    .row { border-radius: 16px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+    .row-main { display: flex; align-items: center; gap: 12px; }
+    .st { width: 28px; height: 28px; border-radius: 50%; flex: none; display: flex; align-items: center; justify-content: center; }
+    .st-done { background: rgba(169,186,126,.16); color: #a9ba7e; }
+    .st-cur { border: 2px solid #dd6e40; }
+    .st-cur i { width: 9px; height: 9px; border-radius: 50%; background: #dd6e40; display: block; }
+    .st-todo { border: 1.5px solid #4a3d30; }
+    .txt { flex: 1; min-width: 0; }
+    .name { font-size: 15px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .sub { font-size: 12.5px; color: #c9b79a; margin-top: 2px; }
+    .more { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #c9b79a; }
+    .rec { height: 24px; padding: 0 8px; border-radius: 999px; background: rgba(224,177,85,.16); color: #e0b155; font-size: 12px; font-weight: 700; display: flex; align-items: center; }
+    .row-cur { background: rgba(221,110,64,.07); border: 1.5px solid rgba(221,110,64,.55); }
+    .note { display: flex; align-items: center; gap: 7px; padding-left: 40px; font-size: 12.5px; font-style: italic; color: #c9b79a; }
+    .sets { display: flex; flex-direction: column; padding-left: 40px; }
+    .set { height: 40px; display: flex; align-items: center; gap: 10px; border-top: 1px solid #30271e; }
+    .set-n { width: 22px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px; color: #c9b79a; }
+    .set-v { flex: 1; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; }
+    .set-v-todo { color: #797169; font-weight: 400; }
+    .set-rpe { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a; }
+    .badge { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 6px; background: #30271e; color: #c9b79a; }
+    .ib { width: 32px; height: 40px; display: flex; align-items: center; justify-content: center; }
+    .add-set { padding-left: 40px; height: 34px; display: flex; align-items: center; font-size: 13.5px; font-weight: 700; color: #e0a97f; }
+    .add-ex { margin-top: auto; height: 50px; border-radius: 16px; border: 1px dashed #4a3d30; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14.5px; font-weight: 600; color: #e0a97f; }
+
+    /* Menu */
+    .m-sec { padding: 4px 4px 14px; border-bottom: 1px solid #3a2e22; display: flex; flex-direction: column; gap: 8px; }
+    .m-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #c9b79a; }
+    .segm { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: #1c150e; }
+    .segm div { height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 600; color: #c9b79a; }
+    .segm .on { background: #3a2e22; color: #f4ecdd; }
+    .m-d { font-size: 12.5px; color: #c9b79a; }
+    .m-row { height: 54px; display: flex; align-items: center; gap: 12px; padding: 0 4px; border-bottom: 1px solid #30271e; font-size: 15px; font-weight: 600; }
+    .m-row span { flex: 1; }
+    .m-val { font-family: 'Space Mono', ui-monospace, monospace; font-size: 13px; color: #c9b79a; }
+    .m-acts { display: flex; flex-direction: column; gap: 8px; padding-top: 14px; }
+    .m-fin { height: 54px; border-radius: 16px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 700; }
+    .m-out { height: 50px; border-radius: 16px; border: 1px solid #4a3d30; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 600; }
+    .m-ab { height: 44px; display: flex; align-items: center; justify-content: center; font-size: 14.5px; font-weight: 600; color: #e0524a; }
+
+    /* Tout validé */
+    .stage { position: absolute; left: 0; right: 0; top: 96px; bottom: 274px; padding: 0 20px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+    .ok { width: 60px; height: 60px; border-radius: 50%; background: rgba(169,186,126,.16); color: #a9ba7e; display: flex; align-items: center; justify-content: center; }
+    .big { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 40px; letter-spacing: -1.4px; line-height: 1; }
+    .muted { font-size: 15px; line-height: 1.45; color: #c9b79a; }
+    .verdict { align-self: flex-start; height: 30px; box-sizing: border-box; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; gap: 6px; background: rgba(169,186,126,.14); color: #a9ba7e; font-size: 13px; font-weight: 700; }
+    .deck { position: absolute; left: 0; right: 0; bottom: 0; height: 274px; box-sizing: border-box; background: #241c14; border-top: 1px solid #3a2e22; border-radius: 28px 28px 0 0; padding: 0 20px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .fstats { height: 64px; flex: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: center; border-bottom: 1px solid #3a2e22; }
+    .fs { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .fs + .fs { border-left: 1px solid #3a2e22; }
+    .fs-n { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px; }
+    .fs-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #c9b79a; }
+    .ghosts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 4px; }
+    .gh { height: 52px; border-radius: 16px; border: 1px solid #4a3d30; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 600; }
+    .validate { height: 64px; border-radius: 20px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; }
+
+    /* Repos réduit */
+    .peek { height: 50px; flex: none; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #3a2e22; font-size: 13.5px; }
+    .peek-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #c9b79a; }
+    .ctx { display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px; color: #c9b79a; margin-top: 2px; }
+    .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .field { height: 92px; box-sizing: border-box; border-radius: 18px; background: #1c150e; border: 1px solid #3a2e22; padding: 5px; display: flex; align-items: center; gap: 2px; }
+    .step { width: 34px; height: 52px; flex: none; border-radius: 12px; background: #30271e; display: flex; align-items: center; justify-content: center; color: #f4ecdd; }
+    .fv { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+    .fv-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px; line-height: 1; }
+    .fv-u { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #c9b79a; }
+    .ex-name { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.3px; line-height: 1; margin-top: 8px; }
+    .ref { display: flex; align-items: baseline; gap: 10px; }
+    .ref-l { width: 96px; flex: none; font-size: 12.5px; color: #c9b79a; }
+    .ref-v { font-family: 'Space Mono', ui-monospace, monospace; font-size: 14px; }
+    .restbar {
+      position: absolute; left: 14px; right: 14px; bottom: 288px; height: 56px; box-sizing: border-box; border-radius: 18px;
+      background: #33291f; box-shadow: 0 16px 30px -12px rgba(0,0,0,.7); padding: 0 8px 0 10px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .mini { position: relative; width: 36px; height: 36px; flex: none; }
+    .mini svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+    .rb-t { flex: 1; font-size: 14px; font-weight: 600; color: #f0e4d0; display: flex; align-items: center; gap: 6px; }
+    .rb-t b { font-family: 'Space Mono', ui-monospace, monospace; }
+    .rb-skip { height: 40px; padding: 0 12px; border-radius: 12px; display: flex; align-items: center; font-size: 14px; font-weight: 700; color: #e0a97f; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div>
+    <div class="eb">Rien ne se perd · gérer la séance</div>
+    <div class="h1">La gestion change de place, pas de contenu</div>
+    <div class="lede">Tout ce que la liste des exercices permet aujourd'hui passe dans le plan de séance, à un geste du pont. Le menu de la séance ne bouge pas. La clôture reste un appui explicite, et le repos peut toujours se réduire.</div>
+  </div>
+
+  <div class="cols">
+    <!-- 1. Plan déplié -->
+    <div class="col">
+      <div class="ph">
+        <div class="hd">
+          <div class="hd-row"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><div class="chrono">21:40</div><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+        </div>
+        <div class="scrim"></div>
+        <div class="sheet" style="top: 84px">
+          <div class="grab"></div>
+          <div class="sh-head"><div class="sh-t">Plan de séance</div><div class="sh-s">6/18 séries · 21 min</div></div>
+          <div class="list">
+            <div class="row">
+              <div class="row-main">
+                <div class="st st-done"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div>
+                <div class="txt"><div class="name" style="color: #c9b79a">Développé couché</div><div class="sub">4/4 · 2 335 kg</div></div>
+                <div class="rec">Record</div>
+                <div class="more"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div>
+              </div>
+            </div>
+
+            <div class="row row-cur">
+              <div class="row-main">
+                <div class="st st-cur"><i></i></div>
+                <div class="txt"><div class="name">Développé incliné haltères</div><div class="sub" style="color: #e0a97f">2/4 · en cours</div></div>
+                <div class="more" style="color: #f4ecdd"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></div>
+              </div>
+              <div class="note"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg>Banc incliné cran 3</div>
+              <div class="sets">
+                <div class="set">
+                  <div class="set-n">S1</div><div class="badge">Éch.</div><div class="set-v">16 kg × 12</div>
+                  <div class="ib"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="#a9ba7e"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#241c14" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <div class="ib"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 12h8"/></svg></div>
+                </div>
+                <div class="set">
+                  <div class="set-n">S2</div><div class="set-v">26 kg × 10</div><div class="set-rpe">RPE 8</div>
+                  <div class="ib"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="#a9ba7e"><circle cx="12" cy="12" r="10"/><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="#241c14" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+                  <div class="ib"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 12h8"/></svg></div>
+                </div>
+                <div class="set">
+                  <div class="set-n">S3</div><div class="set-v set-v-todo">26 kg × 10</div>
+                  <div class="ib"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#797169" stroke-width="1.8"><circle cx="12" cy="12" r="9.5"/></svg></div>
+                  <div class="ib"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 12h8"/></svg></div>
+                </div>
+                <div class="set">
+                  <div class="set-n">S4</div><div class="set-v set-v-todo">26 kg × 10</div>
+                  <div class="ib"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#797169" stroke-width="1.8"><circle cx="12" cy="12" r="9.5"/></svg></div>
+                  <div class="ib"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M8 12h8"/></svg></div>
+                </div>
+              </div>
+              <div class="add-set">+ Série</div>
+            </div>
+
+            <div class="row">
+              <div class="row-main">
+                <div class="st st-todo"></div>
+                <div class="txt"><div class="name">Écarté à la poulie</div><div class="sub">0/3 · 15 kg</div></div>
+                <div class="more"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="row-main">
+                <div class="st st-todo"></div>
+                <div class="txt"><div class="name">Dips lestés</div><div class="sub">0/4 · superset avec Extension triceps</div></div>
+                <div class="more"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg></div>
+              </div>
+            </div>
+          </div>
+          <div class="add-ex"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Ajouter un exercice</div>
+        </div>
+      </div>
+      <div class="cap-t">Plan de séance, exercice déplié</div>
+      <div class="cap">Les gestes de la liste actuelle, à l'identique : <b>dé-valider</b> (toucher la coche, sans relancer le repos), <b>supprimer</b> une série, <b>+ Série</b>, badges de type, RPE ou RIR, note d'exercice. <b>Toucher un exercice y amène le focus</b> ; « ⋯ » ouvre Monter, Descendre, Plus tard, Remplacer.</div>
+    </div>
+
+    <!-- 2. Menu -->
+    <div class="col">
+      <div class="ph">
+        <div class="hd">
+          <div class="hd-row"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><div class="chrono">08:36</div><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+          <div class="ribbon"><div class="seg" style="flex: 4 1 0"><div class="seg-f" style="width: 50%"></div></div><div class="seg" style="flex: 4 1 0"></div><div class="seg" style="flex: 3 1 0"></div><div class="seg" style="flex: 4 1 0"></div><div class="seg" style="flex: 3 1 0"></div></div>
+        </div>
+        <div class="bg-name">Développé couché</div>
+        <div class="scrim"></div>
+        <div class="sheet" style="top: 274px">
+          <div class="grab"></div>
+          <div class="sh-head"><div class="sh-t">Options de la séance</div></div>
+          <div class="m-sec">
+            <div class="m-l">Niveau d'affichage</div>
+            <div class="segm"><div>Simplifiée</div><div>Normale</div><div class="on">Détaillée</div></div>
+            <div class="m-d">Tout : types de séries, RPE, notes, superset.</div>
+          </div>
+          <div class="m-row"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2.5h5"/></svg><span>Repos sur cet exercice</span><div class="m-val">120 s</div></div>
+          <div class="m-row"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>Ajouter un exercice</span></div>
+          <div class="m-acts">
+            <div class="m-fin">Terminer la séance</div>
+            <div class="m-out">Quitter et reprendre plus tard</div>
+            <div class="m-ab">Abandonner</div>
+          </div>
+        </div>
+      </div>
+      <div class="cap-t">Menu de la séance (⋮)</div>
+      <div class="cap">Identique à aujourd'hui : <b>niveau d'affichage</b> modifiable en pleine séance, repos de l'exercice, ajout d'exercice, <b>terminer avant la fin</b>, quitter et reprendre (séance gardée active), abandonner avec confirmation.</div>
+    </div>
+
+    <!-- 3. Tout validé -->
+    <div class="col">
+      <div class="ph">
+        <div class="hd">
+          <div class="hd-row"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><div class="chrono">57:48</div><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+          <div class="ribbon"><div class="seg" style="flex: 4 1 0; background: #a9ba7e"></div><div class="seg" style="flex: 4 1 0; background: #a9ba7e"></div><div class="seg" style="flex: 3 1 0; background: #a9ba7e"></div><div class="seg" style="flex: 4 1 0; background: #a9ba7e"></div><div class="seg" style="flex: 3 1 0; background: #a9ba7e"></div></div>
+          <div class="hd-meta"><span>Push A</span><span style="color: #a9ba7e">18/18 séries</span></div>
+        </div>
+        <div class="stage">
+          <div class="ok"><svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"/></svg></div>
+          <div class="big">Tout est validé.</div>
+          <div class="muted">Une série de plus, un exercice de plus, ou tu termines.</div>
+          <div class="verdict"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>Dernière série : +1 rép vs mardi</div>
+        </div>
+        <div class="deck">
+          <div class="fstats">
+            <div class="fs"><div class="fs-n">57:48</div><div class="fs-l">Durée</div></div>
+            <div class="fs"><div class="fs-n">18</div><div class="fs-l">Séries</div></div>
+          </div>
+          <div class="validate">Terminer la séance</div>
+          <div class="ghosts">
+            <div class="gh"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Série</div>
+            <div class="gh"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Exercice</div>
+          </div>
+        </div>
+      </div>
+      <div class="cap-t">Tout est validé</div>
+      <div class="cap">Comme aujourd'hui, la dernière série ne clôture pas : le pont devient <b>« Terminer la séance »</b>, avec durée et séries. « Séance bouclée » (moment 7) arrive après cet appui. Terminer sans aucune série validée garde sa confirmation.</div>
+    </div>
+
+    <!-- 4. Repos réduit -->
+    <div class="col">
+      <div class="ph">
+        <div class="hd">
+          <div class="hd-row"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg><div class="chrono">07:24</div><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/></svg></div>
+          <div class="ribbon"><div class="seg" style="flex: 4 1 0"><div class="seg-f" style="width: 50%"></div></div><div class="seg" style="flex: 4 1 0"></div><div class="seg" style="flex: 3 1 0"></div><div class="seg" style="flex: 4 1 0"></div><div class="seg" style="flex: 3 1 0"></div></div>
+          <div class="hd-meta"><span>Push A</span><span>2/18 séries</span></div>
+        </div>
+        <div class="stage" style="justify-content: flex-start; padding-top: 40px; gap: 16px">
+          <div><div class="eyebrow">Exercice 1 sur 5 · Pectoraux</div><div class="ex-name">Développé couché</div></div>
+          <div class="ref"><div class="ref-l">Dernière fois</div><div class="ref-v">77,5 kg × 8 / 8 / 7 / 6</div></div>
+        </div>
+        <div class="restbar">
+          <div class="mini">
+            <svg width="36" height="36" viewBox="0 0 36 36"><circle cx="18" cy="18" r="15" fill="none" stroke="#4a3d30" stroke-width="4"/><circle cx="18" cy="18" r="15" fill="none" stroke="#e0a97f" stroke-width="4" stroke-linecap="round" stroke-dasharray="94.2" stroke-dashoffset="37.7"/></svg>
+          </div>
+          <div class="rb-t">Repos <b>1:12</b><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></div>
+          <div class="rb-skip">Passer</div>
+        </div>
+        <div class="deck">
+          <div class="peek"><span class="peek-l">Ensuite</span>Développé incliné haltères</div>
+          <div class="ctx"><span>Série 3 sur 4</span><span>Repos 2:00</span></div>
+          <div class="fields">
+            <div class="field"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">6</div><div class="fv-u">Reps</div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+            <div class="field" style="border-color: rgba(224,177,85,.55)"><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></div><div class="fv"><div class="fv-n">82,5</div><div class="fv-u">kg · <b style="color: #e0b155">record</b></div></div><div class="step"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div></div>
+          </div>
+          <div class="validate">Valider la série</div>
+        </div>
+      </div>
+      <div class="cap-t">Repos réduit</div>
+      <div class="cap">Réduire le repos rend la main sur le pont pendant que le décompte continue : on ajuste la série suivante. Aujourd'hui la barre réduite recouvre le bas de l'écran d'action ; ici elle se pose <b>au-dessus du pont</b>.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

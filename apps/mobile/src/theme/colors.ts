@@ -43,6 +43,19 @@ export type Palette = {
   panelMuted: string;
   /** Accent **lisible sur `panel`** — l'accent terracotta standard y manque de contraste. */
   panelAccent: string;
+  /**
+   * US DASH-01 — la couleur de chaque pilier, **lisible en texte** (≥ 4,5:1) sur `surface` et `background`
+   * dans le thème courant. Onglet actif, barres, libellés des cartes d'un pilier.
+   *
+   * ⚠️ Distinctes des `DEFAULT_MENU_COLORS` (préférence « couleur par menu », qui pilote l'accent
+   * global) : ces valeurs-là étaient choisies pour un fond clair et le bordeaux y tombait à 1,15:1 sur
+   * une carte sombre. Les teintes de maquette du bleu et du vert échouaient aussi, de peu, sur le fond
+   * clair (4,39 et 4,23) : elles sont assombries ici, teinte conservée.
+   */
+  pillarHome: string;
+  pillarStrength: string;
+  pillarRunning: string;
+  pillarNutrition: string;
 };
 
 export const palettes: Record<ColorScheme, Palette> = {
@@ -80,6 +93,10 @@ export const palettes: Record<ColorScheme, Palette> = {
     panelText: '#f0e4d0',
     panelMuted: '#c9b79a',
     panelAccent: '#d9a888',
+    pillarHome: '#b14f2b', // 4,53 / fond · 5,0 / surface (= accent)
+    pillarStrength: '#6b0028', // 12,2 / surface
+    pillarRunning: '#2a64ad', // 5,18 / fond — #2f6fc0 de maquette : 4,39
+    pillarNutrition: '#52703a', // 4,88 / fond — #5c7a3f de maquette : 4,23
   },
   dark: {
     background: '#1c150e',
@@ -113,5 +130,9 @@ export const palettes: Record<ColorScheme, Palette> = {
     panelText: '#f0e4d0',
     panelMuted: '#c9b79a',
     panelAccent: '#e0a97f',
+    pillarHome: '#e07a4d', // 4,94 / surface — l'accent sombre #dd6e40 n'y fait que 4,45 (D2)
+    pillarStrength: '#e07a98', // 5,16 / surface — #6b0028 : 1,15
+    pillarRunning: '#6fa8ef', // 5,94 / surface
+    pillarNutrition: '#a9ba7e', // 6,98 / surface
   },
 };

@@ -52,7 +52,7 @@ Aucun point restant dans les revues. Captures issues du JSX contrôlées en FR/E
 Build Android final `assembleRelease` réussi en 1 min 31 s, quatre ABI, signature APK v2
 vérifiée et bundle final identique à celui de l'APK, dernière correction incluse.
 
-**Suivi** — CORPS-03 passe en recette (§64), nouvelle ligne 6.6 : 230 livrés / 4 partiels /
+**Suivi** — CORPS-03 passe en recette (§65), nouvelle ligne 6.6 : 230 livrés / 4 partiels /
 2 à faire sur 242. La validation Android antérieure concerne toujours CORPS-01/02 uniquement.
 Liens des recettes archivées corrigés et analyse initiale replacée dans son contexte historique.
 Travail conservé sur la branche locale, sans intégration dans dev ni push.
@@ -118,6 +118,426 @@ et RN Web dans `design/mon-corps-2026-09/`, quatre scénarios d’écran et ving
 Recette native en attente : [RECETTES.md §63](RECETTES.md#63-corps-02--silhouette-personnelle-et-intention-visuelle).
 Branche conservée localement. Le rendu 3D, la calibration et la génération d’entraînement restent
 des lots ultérieurs ; aucun déploiement d’application dans cette passe.
+
+## 13/09/2026 (quater) — GUID-01 : l'objectif se met enfin à servir, et le guidage devient réglable
+
+Branche `feature/guid01-objectif-regime-guidage` (depuis `dev`, commit précédent `45b8858d`).
+Analyse et maquettes validées par Florian le 13/09/2026, **traité en un seul lot** là où l'analyse
+proposait cinq volets. Roadmap **1.30** (ligne neuve).
+
+### Le problème, en trois chiffres vérifiés dans le code
+
+L'onboarding demandait un objectif en promettant qu'il « oriente les recommandations ».
+`main_goal` était lu à **8 endroits**, et les 8 étaient le même appel `objectiveFromGoal(...)` — le
+repli de l'objectif nutritionnel, et seulement tant que le profil nutritionnel n'avait pas été
+ouvert. Musculation : zéro lecture. Course : zéro lecture. `performance` et `health` tombaient dans
+le même `default`, donc **deux options sur quatre** donnaient une application identique à celle de
+quelqu'un ayant appuyé sur « Passer ». `runner_profiles.objective` et `.level` : écrits, affichés
+dans leur propre formulaire, **relus nulle part**.
+
+### Ajouté
+
+- **`packages/shared/src/guidance.ts`** — la couche de politique, pure et testée. Trois régimes
+  (`guided` / `assisted` / `autonomous`) → une **disposition** (`apply` / `propose` / `silent`).
+  L'axe est **qui décide**, pas *combien de messages* : graduer le volume aurait fabriqué un mode
+  « l'app me harcèle », coupé en dix jours. `effectiveRegime` / `hasChosenRegime` généralisent le
+  motif **appliqué ≠ choisi** de NUTRI-UX01. `SAFETY_DECISIONS` : trois signaux (ACWR critique,
+  douleur répétée, déficit sévère) qui franchissent **tous** les régimes et ne sont **jamais**
+  appliqués d'office.
+- **`goal-defaults.ts`** — la matrice objectif × pilier, source de vérité unique.
+  `objectiveFromGoal` n'en est plus qu'un adaptateur (signature et 5 résultats **inchangés**,
+  figés par test).
+- **`goal-conflicts.ts`** — 2 règles de contradiction (masse ↔ déficit, masse ↔ longue distance),
+  rendues comme **identifiants**, jamais comme du texte.
+- **`program-ranking.ts`** — le tri des suggestions, sorti du composant pour être testable.
+- **Écrans** : `(onboarding)/guidance.tsx` (neuf), `strength-profile.tsx` (neuf — la musculation
+  n'avait **aucun** écran de profil), `TrainingContextSheet`, `GuidanceSelector`,
+  `GoalConflictCard` + `GoalConflictBanner`.
+- **Stores** : `dismissed-rules-store` (rejet durable d'une règle, `secureStorage`),
+  `auto-move-store` (déplacements décidés d'office).
+- **Migration** `20260913184252` — 8 colonnes additives **toutes nullable** sur `profiles`, sans
+  aucun `default` : `null` doit vouloir dire « jamais répondu », jamais « valeur par défaut ».
+- **Deux tests de garde qui manquaient au dépôt** : `profile-columns-guard.test.ts` (toute clé de
+  `ProfileInput` a bien sa colonne dans les **trois** endroits — migration, `powersync/schema.ts`,
+  repository) et `locale-parity.test.ts` (parité FR ↔ EN, décision de cadrage G, que **rien** ne
+  vérifiait).
+
+### Modifié
+
+- `(onboarding)/goal.tsx` : chaque objectif affiche **ce qu'il décide** (issu de `pillarDefaults`,
+  pas d'un texte parallèle qui divergerait), + échéance optionnelle et question de discipline
+  conditionnelle pour « Performance ».
+- `(onboarding)/summary.tsx` : ligne Guidage avec mention de repli, et carte « Ta première action »
+  — qui referme le trou de la **roadmap 1.11**, constaté absent par ACTIV-01 le 03/08/2026.
+- `SuggestedPrograms.tsx` : trie sur `training_level` ; `workoutDisplayLevel` n'est plus qu'un
+  **dernier repli**. Son en-tête documentait ce détournement depuis MUSCU-UX01.
+- `planning/index.tsx` : les collisions respectent la disposition (déplacement + annonce +
+  annulation en guidé). ⚠️ `sessionConflictsEnabled` **reste maître** — le régime module ce qui est
+  déjà activé, il ne rallume jamais rien.
+- `settings.tsx` : lien vers le profil musculation, et `WorkoutLevelPreview` y est **déplacé**
+  depuis l'écran d'onboarding supprimé, plutôt que laissé mort.
+
+### Supprimé
+
+- `(onboarding)/displayLevel.tsx` — **remplacé** par l'écran de guidage, à la même étape. Le
+  parcours garde le même nombre d'écrans (décision de cadrage F intacte). Le réglage survit dans
+  Réglages ; le niveau d'affichage se **déduit** désormais du régime.
+
+### Corrigé en revue de code (4 constats, avant commit)
+
+- 🔴 **BLOQUANT — la file de synchro.** Une écriture d'une des 8 colonnes mettait en file une op
+  PowerSync que le cloud rejette (`column does not exist`) ; `connector.ts` relance l'erreur **sans
+  compléter la transaction**, qui se rejoue indéfiniment. La file étant **sérialisée**, c'est la
+  remontée de **toutes** les tables qui se figeait. → drapeau **`GUIDANCE_WRITE_READY`** (patron
+  `ADAPTATION_WRITE_READY` de CARDIO-UX01), qui retire les 8 colonnes de l'écriture. **À passer à
+  `true` dans le même geste que `db:push`.**
+- **L'annulation d'un déplacement était défaite** au premier aller-retour sur l'écran : `/planning`
+  est une route empilée, l'état local était perdu au remontage et l'effet redéplaçait la séance. →
+  `auto-move-store`.
+- **Deux collisions traitées dans la même passe pouvaient atterrir le même jour** : le jour de repli
+  est choisi dans l'instantané courant. → **un seul conflit par passe**, la recomputation enchaîne.
+- **Le sélecteur du profil Musculation décrivait trois comportements inexistants** — aucun moteur
+  muscu ne lit encore le régime. C'était le défaut même que cette US corrige. → sélecteur retiré du
+  profil muscu, textes de nutrition réécrits pour ne décrire que ce qui est câblé.
+
+### Technique / Notes
+
+- ✅ **Migration poussée le 13/09/2026**, drapeau `GUIDANCE_WRITE_READY` repassé à `true`, types
+  régénérés (les 8 colonnes apparaissent sur les 3 vues de `profiles`). ⚠️ Le push a d'abord été
+  **refusé** : le cloud portait `20260913182920` (seed CIQUAL v2), appliquée depuis le worktree
+  `nutri-biblio` où son fichier n'était pas encore commité — `db:push` refuse tout tant que repo et
+  cloud divergent. Débloqué **le jour même** par `89396aa0` sur `dev`, qui a versionné ce fichier.
+  Je n'ai pas touché à `migration repair` : la migration n'était pas la mienne, et réparer
+  l'historique de quelqu'un d'autre en effacerait la trace.
+- ✅ **Aucune sync rule à déployer** : `profiles` est déjà publiée en `select *`.
+- **Écarts assumés** : la **génération** d'un plan hebdomadaire n'est pas livrée (le régime guidé
+  **sélectionne** un programme éditorial, le duplique et l'active — composer des séances
+  reviendrait à inventer des données d'entraînement) ; `carbTarget` est **déclaré et testé mais non
+  câblé** (le bonus des jours d'entraînement est déjà automatique et piloté par un réglage
+  utilisateur : le passer sous le régime aurait été une régression pour le mode par défaut, et
+  aurait fait qu'un réglage en outrepasse un autre) ; **2 règles de contradiction sur 3** (RN-17
+  n'existe pas comme calcul livré).
+- **Vérifié** : `typecheck` 3 workspaces à **0**, `lint` à **0** (0 warning), **5 968 tests verts**
+  (3 121 Jest + 2 847 Vitest).
+## 13/09/2026 (ter) — NUTRI-UX01 : la bibliothèque d'aliments passe de 80 à 3 244 entrées
+
+Branche `feature/nutri-refonte-ux`. C'était le **seul point resté ouvert** de la refonte du pilier
+Nutrition livrée le 10/09 : la **décision D1** de la spec constatait que le remplissage était
+*matériellement impossible* — le générateur tire toute la nutrition du CSV CIQUAL, non versionné
+(`.gitignore`) et absent de la machine, et produire 700 fiches de mémoire serait **fabriquer des
+données de santé**. Le fichier a été récupéré sur l'entrepôt **recherche.data.gouv.fr**
+(doi:10.57745/RPWYZD — Table Ciqual 2025 de l'**ANSES**, 3 484 aliments, **Licence Ouverte /
+Etalab**, redistribution autorisée avec attribution).
+
+### Ajouté
+
+- Migration `20260913182920_seed_library_foods_ciqual_v2.sql` (2,5 Mo) — upsert idempotent de
+  **3 244 aliments** et **6 488 traductions**, généré par `generate.py --bulk`. Poussée sur le
+  cloud le 13/09, cochée dans [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md).
+  **Aucune valeur nutritionnelle saisie ni devinée** : macros, sous-macros et 31 micronutriments
+  viennent tous du fichier ANSES, en *present-only* (traces / NC / « <x » → omis, jamais 0).
+- `generate.py` : table `BULK_PREPARATION` — CIQUAL **déclare** la cuisson dans son sous-groupe
+  (« viandes cuites », « poissons crus »…), donc `foods.preparation_state` est désormais
+  renseigné pour **498 aliments** (286 crus, 212 cuits) au lieu d'être déduit du nom. Gain non
+  prévu : R6.7 ne reposait jusqu'ici que sur `preparationStateFromName`, un simple repli.
+- `generate.py` : `BULK_PRIORITE` — l'import est trié par catégorie (légumes, fruits, viandes,
+  poissons, laitages, féculents, oléagineux, boissons, puis le reste) et non plus dans l'ordre du
+  fichier, ce qui rend `--limit` utilisable.
+- [`RECETTES.md`](RECETTES.md) §58 : section **J** (7 critères sur la bibliothèque) et section
+  **K** (reste-à-faire). Le prérequis ① (sync rule `water_entries`) est marqué **fait**,
+  confirmé par Florian le 13/09.
+
+### Corrigé — trois défauts du générateur, tous invisibles à 80 lignes
+
+Le mode `--bulk` avait été écrit le 10/09 et testé contre un CSV **synthétique**, faute du
+fichier réel : il validait mes propres suppositions.
+
+- 🔴 **Les libellés de groupes CIQUAL étaient faux.** La table écrit `viandes, oeufs, poissons`
+  (sans ligature œ), `produits laitiers` et `eaux et autres boissons`. Un groupe non reconnu étant
+  **ignoré en silence**, viandes, poissons, laitages et boissons ne seraient **jamais entrés**
+  dans l'import — sans la moindre erreur. Constaté à la première exécution : 0 viande, 0 poisson,
+  0 laitage, 0 boisson sur 1 787 lignes éligibles.
+- 🔴 **Les id de traduction étaient positionnels** (`d2000{n:03d}`) : au-delà de 999 aliments,
+  un premier bloc à 9 caractères — UUID invalide, migration rejetée en bloc. Ils dérivent
+  désormais de l'id de l'aliment, et le `on conflict` vise **`(food_id, lang)`**, la vraie
+  contrainte unique de la table, au lieu de `id` : un changement d'ordre du catalogue ne peut plus
+  réattribuer une traduction à un autre aliment.
+- ⚠️ **`--limit` coupait dans l'ordre du fichier**, trié par code de groupe : il remplissait la
+  base de salades appertisées avant d'atteindre le premier légume.
+
+### Corrigé — le plafond de recherche, devenu faux à cette échelle
+
+- `food-catalog-repository.ts` : le pré-filtre SQL bornait les candidats à **400 lignes avant le
+  classement**, dans un ordre (`last_used`) qui ignore la pertinence. Sur 3 244 aliments, « po »
+  rend 582 candidats et « bo » 453 : **« Pomme » disparaissait à « po » pour revenir à « pom »**.
+  Une liste qui rétrécit quand on *précise* sa recherche donne l'impression d'un moteur cassé.
+  Corrigé en deux temps : les correspondances par **début de nom** passent devant tout le reste
+  dans le tri SQL, et `SQL_SCAN_LIMIT` monte de **400 à 800**.
+- ⚠️ **Piège SQLite rencontré en chemin** : `ORDER BY (CASE WHEN name LIKE …)` lève
+  `ambiguous column name: name`. Un alias de sortie est résolu quand il forme à lui seul un terme
+  du `ORDER BY`, mais **pas à l'intérieur d'une expression**, où `tl.name` et `tfr.name` sont tous
+  deux en portée. Les colonnes sont donc qualifiées explicitement. **Vérifié sur un vrai SQLite**
+  avec 500 leurres : avant, « Pomme » absente des 400 lignes ; après, en rang 1.
+
+### Technique / Notes
+
+- **Données seulement, aucun changement de schéma** : `npm run db:types` ne produit aucun diff.
+- ✅ **Aucune sync rule à déployer** : `foods` et `food_translations` sont déjà dans le bucket de
+  référence (`owner_id is null`). C'est la première migration de cette US qui n'en demande pas.
+- **Vérifié côté cloud par comptage REST** (le warning CLI `pg-delta` dû à l'absence de Docker ne
+  dit rien de l'application du SQL) : 3 246 `foods`, 6 492 `food_translations`, 286
+  `preparation_state = 'raw'`, 212 `'cooked'`.
+- ⚠️ **Dette assumée et tracée** : 3 164 aliments portent `nameEn = nameFr` + `needsTranslation`
+  (CIQUAL est monolingue) et des **portions vides** — pour eux la saisie s'ouvre sur 100 g.
+  Critères 78 et 79 de la recette.
+- ⚠️ **Parité i18n rompue sur `dev`, indépendamment de ce commit** : 4 valeurs vides
+  `coach.{motivant,sobre}.verdict.warmup`. Constaté identique sur `origin/dev` avant fusion —
+  rien d'i18n n'est touché ici.
+- Le CSV et le XLSX CIQUAL restent **non versionnés** (`enrich-ciqual/.gitignore`).
+- Qualité : lint 0, typecheck 0 sur 3 workspaces, `npm run test` 0 (135 fichiers, 2 791 tests
+  côté `shared` + la suite Jest mobile).
+## 13/09/2026 (bis) — DASH-01 : la surface IA est retirée du build de lancement
+
+Branche `feature/dash01-dashboards-immersifs`, suite directe de l'entrée du jour. **Décision de
+Florian, après livraison** : l'app est **gratuite en V1**, et
+[`docs/product/ia-integration-analyse.md`](docs/product/ia-integration-analyse.md) (15/07/2026)
+plaçait l'IA en **palier payant, post-V1**, avec une règle d'or — « le prix du palier doit couvrir le
+coût IA du user le plus actif ». Livrée gratuite, elle revenait à payer le modèle pour tout le monde,
+sans palier pour l'absorber.
+
+**Le manquement est de cadrage, pas de code** : l'écart au phasage de juillet aurait dû être posé
+comme une question avant d'être construit. Il était mentionné en §9 de la spec (« abonnement premium
+— les quotas en tiennent lieu »), ce qui n'est pas la même chose que le soumettre.
+
+### Supprimé
+
+- L'écran `app/meal-photo.tsx` et sa route ; le bouton **photo** de la scène nutrition (« Chercher »
+  devient le geste principal, en pleine largeur).
+- La section **« Assistant IA »** des Réglages.
+- La reformulation de « Demande-moi » par un modèle.
+- La plomberie cliente devenue sans appelant : `lib/ai/ai-client.ts`, `hooks/useAiAvailability.ts`,
+  `stores/ai-photo-queue-store.ts`, `useFoodsByNames` (ajoutée pour la photo), les événements
+  d'analytics `ai_photo_used` / `ai_ask_used`, et les blocs i18n `ai` et `mealPhoto` (FR + EN).
+
+### Conservé, dormant
+
+- La **migration** `20260913163130_dash01_ai_consent_usage` : elle est **appliquée sur le cloud**, la
+  retirer du dépôt ferait diverger l'historique CLI de la base réelle.
+- La **fonction Edge** `supabase/functions/ai-assist` — elle ne coûte rien tant qu'elle n'est pas
+  déployée, et aucun secret n'est posé.
+- La brique pure `packages/shared/src/ai-assist.ts` et ses tests : elle porte le **contrat de
+  validation** des réponses du modèle, c'est-à-dire la garantie qu'aucun chiffre affiché n'en vient.
+- `user_settings.ai_consent_at` déclarée côté client (schéma PowerSync, Zod, repository) : le schéma
+  local est le **miroir** de la base ; le faire diverger rouvrirait la panne silencieuse de CYCLE-01
+  le jour où la surface revient.
+
+### Technique / Notes
+
+- **« Demande-moi » ne perd rien** : le modèle ne produisait qu'une **formulation**, jamais un
+  chiffre — c'était l'inversion posée dès la conception (§7.3). La carte répond exactement comme
+  avant, sans réseau, et son test n'a plus un seul mock de réseau : c'en est la preuve.
+- ✅ **Play Store** : la déclaration « Sécurité des données » n'a **plus rien à mentionner** côté
+  envoi à un tiers — l'app ne sort aucune donnée.
+- 💶 **Coût d'API : zéro.** Aucun secret posé, aucune fonction déployée. Le jour où le palier payant
+  existera : `supabase secrets set ANTHROPIC_API_KEY=…` puis `supabase functions deploy ai-assist`,
+  et une décision de modèle (Haiku 4.5 divise la facture par ~5 sur ces deux tâches).
+- RECETTES.md §62 passe de 38 à **37 critères** : la section « assistant IA » est remplacée par un
+  critère qui vérifie l'**absence** de surface.
+- Tests : `packages/shared` 128 fichiers / 2741 tests · `apps/mobile` 184 suites / 3029 tests.
+## 13/09/2026 — MUSCU-UX03 : le mode immersif de la séance, **en plus** du classique
+
+La séance était **juste** depuis MUSCU-UX01 et **animée** depuis MOTION-01, mais elle restait
+**muette** : une série moyenne et un record recevaient la même réponse (30 ms de vibration), les
+records n'étaient connus qu'à la clôture, l'effort lui-même était un temps mort pour l'app, et le
+repos — la moitié du temps passé en séance — était le moment où l'on ouvre une autre application.
+
+🔴 **Décision D1 de Florian (13/09)** : l'immersif est un **mode en plus**, pas un remplacement.
+Le mode classique reste **strictement inchangé** ; il ne gagne qu'une pastille de record au repos.
+
+### Ajouté
+
+- **`packages/shared` — 7 briques pures, toutes testées** : `set-feel` (les quatre ressentis et leur
+  correspondance RPE), `barbell` (disques par côté, calcul en centièmes entiers pour éviter les
+  résidus flottants), `workout-verdict` (« vs mardi », à **même rang**), `live-records` (records
+  évalués en mémoire, mêmes règles d'éligibilité que `computeWorkoutRecords`), `session-heat`
+  (chaleur par muscle), `ghost` (tonnage cumulé contre la dernière fois, défi de dernière série),
+  `coach-script` (choix d'une **clé i18n**, aucun texte).
+- **Mode d'affichage de la séance** (`session-mode-store`, `immersive-prefs-store`) : préférences
+  **locales à l'appareil** (`secureStorage`), comme `motion-store`. Feuille de choix au tout premier
+  démarrage, sélecteur sur la scène du hub muscu, ligne dans le menu ⋮ en séance, écran
+  **Réglages › Séance**.
+- **Brief d'entrée en séance** (`app/workout-brief.tsx`), branché sur les **cinq** chemins de
+  démarrage (hub muscu, accueil général, planning, fiche programme, fiche modèle).
+- **Écran immersif** : scène sombre, ruban segmenté par exercice, barre chargée à l'échelle, enjeu
+  « ce serait un record », plan de séance en tiroir (qui **réutilise `ExerciseList`**, sans rien
+  redessiner), effort plein écran au tempo, cadran de reps et ressenti, repos qui respire (veille,
+  verdict, ajustement proposé, plein écran de record, fantôme, corps qui chauffe), cérémonie de fin
+  avec relais nutrition, coach vocal à gabarits FR/EN (`expo-speech`).
+- **Notifications de séance** (`lib/notifications.ts`) : canal Android **« Séance »** distinct de
+  « Rappels », rappel de fin de repos, notification **continue** pendant le repos en arrière-plan,
+  et gestionnaire de premier plan désormais **conditionnel**.
+
+### Modifié
+
+- **`workout.tsx`** reste le **porteur unique de l'état de séance** ; les deux modes n'en sont que
+  des rendus. C'est ce qui permet de basculer classique ↔ immersif **en pleine séance sans rien
+  perdre** (série courante, repos en cours, saisie) — et ce qui garantit que le classique ne bouge pas.
+- **`RestOverlay`** (classique) : pastille ambre de record en tête du repos — le seul ajout de
+  cette US au mode classique (décision D3).
+- **`BodyMap` se scinde** : le dessin passe dans **`BodyMapCanvas`**, sans thème ni i18n, et accepte
+  une prop `heat` (0 → 1 par muscle). Ses trois points de montage historiques rendent à l'identique.
+  Sans cette scission, la carte à partager aurait traîné `useTheme` → repository de réglages →
+  i18next dans une vue capturée hors contexte.
+- **`ShareCard`** : la variante `workout` accepte la chaleur de la séance. **Aucune donnée de santé**.
+- **`CurrentSetCard`** : les suppléments de série sont extraits dans **`SetOptions`**, partagé par les
+  deux modes — plutôt que deux jeux de contrôles à maintenir.
+
+### Technique / Notes
+
+- ⚠️ **« Solide » vaut RPE 7, jamais 8.** `sessionStruggled` classe une séance comme difficile dès
+  un RPE ≥ 8 : mapper la réponse *attendue* d'une bonne série sur 8 aurait **silencieusement**
+  éteint la progression assistée puis déclenché le deload de MUSC-F7. La règle est documentée dans
+  `set-feel.ts`, dans le cadran et dans les critères de recette.
+- ✅ **Aucune migration, aucune sync rule à redéployer, aucune dépendance native nouvelle** : le
+  ressenti s'écrit dans la colonne `rpe` existante, les préférences vivent dans `secureStorage`, et
+  `expo-speech` / `expo-notifications` / `react-native-svg` / Reanimated étaient déjà au projet.
+- Les notifications de séance sont **hors du quota** de 3 notifications immédiates par jour : ce
+  plafond protège des rappels **non sollicités**, or un repos est lancé par l'utilisateur lui-même.
+- **56 critères de recette** en [RECETTES.md](RECETTES.md) §63 ; roadmap **3.61** passée à ✅.
+  **Livré ≠ validé** : la recette device reste à faire.
+
+## 13/09/2026 — CARDIO-UX01 : les six chantiers non livrés sortent de RECETTES.md
+
+Commit de **suivi seul** — aucun fichier applicatif touché. Clôture de la session CARDIO-UX01 :
+la branche `feature/cardio-refonte-ux` est fusionnée dans `dev` et supprimée (locale et distante),
+et il restait deux endroits où la documentation mentait ou allait perdre de l'information.
+
+### Modifié
+- **[BACKLOG.md](BACKLOG.md)** — ajout de **six candidats P1, `CARDIO-02` → `CARDIO-07`** : les
+  chantiers de l'audit du pilier Course qui n'ont **pas** été livrés dans le lot du 10/09/2026
+  (les quatre portes vers l'allure de référence, l'écran de départ et la saisie rétroactive,
+  l'historique filtrable, l'éditeur de séance à trois niveaux, les semaines qui progressent,
+  l'import GPX / Health Connect). Chaque ligne dit **ce qui est déjà livré** — pour quatre d'entre
+  eux, les briques de calcul sont écrites et testées (`referencePaceFromRaceTime`,
+  `createPastRun`, `SELECT_HISTORY` enrichi, `parseSessionLine` + `SESSION_TEMPLATES`,
+  `sessions.week_index`) et **seuls les écrans manquent**.
+  **Pourquoi maintenant** : ces six chantiers ne vivaient que dans [RECETTES.md](RECETTES.md) §59,
+  un fichier dont la règle explicite est de **se vider dès que l'US est clôturée**. `BACKLOG.md`
+  n'en portait **aucune trace** (0 occurrence de « cardio »). Ils seraient morts avec la recette.
+- **[RECETTES.md](RECETTES.md)** — §59 : encart pointant vers les six nouvelles lignes du backlog,
+  pour que la purge de la section ne fasse plus perdre l'information.
+- **[roadmap](docs/roadmap/roadmap.md)** — ligne **5.40** : la note disait encore
+  « 🔴 **Une migration écrite et NON POUSSÉE** […] `ADAPTATION_WRITE_READY` reste à `false` ».
+  C'était **faux depuis le 10/09/2026** : la migration `20260910214329` est appliquée sur le cloud,
+  le drapeau est à `true` et le bouton « Appliquer aujourd'hui » écrit en base. La note porte
+  désormais l'état réel, ainsi que l'épisode du **refus de `db:push`** et le choix de **redater**
+  la migration plutôt que de forcer `--include-all` (qui aurait laissé `schema_migrations` non
+  monotone). La mention des six chantiers renvoie maintenant au backlog, pas seulement à la recette.
+- **[ETAT.md](ETAT.md)** — régénéré.
+
+### Technique / Notes
+- **Branche supprimée** : `feature/cardio-refonte-ux`, locale et distante. Ses quatre commits
+  (`a035e8d`, `542b753`, `407087d`, `e719a47`) sont tous ancêtres de `dev`, vérifié un par un.
+  **Aucun worktree n'avait été créé** pour cette US — elle a été développée dans l'arbre principal.
+- ⚠️ **Signalé, non traité** (appartient à une autre session) : `node scripts/etat.mjs` remonte
+  la migration `20260912235121_corps02_body_visual_state.sql` **absente du registre**
+  [MIGRATIONS.md](supabase/MIGRATIONS.md) et non poussée sur le cloud.
+
+## 13/09/2026 — DASH-01 : les quatre dashboards passent à la scène, et l'app commence à comprendre
+
+Branche `feature/dash01-dashboards-immersifs`, en **worktree** (trois autres branches actives en
+parallèle). Analyse + trois passes de maquettes validées par Florian le 13/09/2026 (canvas de 19
+planches, 3 pages), puis **GO explicite pour tout livrer en une seule vague** — « fait TOUT d'un seul
+coup, d'une seule vague », recette finale unique (§62, 38 critères).
+
+**Le problème de départ.** Les quatre écrans d'atterrissage — accueil et les trois piliers — étaient
+les seuls de l'app à n'avoir **aucune identité** : le même empilement de cartes blanches, quatre
+fois, avec le même en-tête, la même grille et les mêmes rayons. Rien ne disait sur quel pilier on se
+trouvait, et rien ne donnait envie d'y rester. Chacun a désormais **sa couleur, sa matière et son
+moment** : le niveau qui monte (nutrition), la trace parcourue (course), la silhouette qui encaisse
+(muscu), les anneaux qui respirent (accueil).
+
+**Le second problème, plus profond : l'app calculait sans jamais expliquer.** Le verdict de forme, la
+cible calorique, les chronos prédits, la projection de force — tous étaient affichés comme des
+chiffres tombés du ciel. Ils portent maintenant un « **Pourquoi ?** » qui montre les étapes du calcul
+et un niveau de confiance, et acceptent un « ce n'est pas ça » qui **atténue localement** la règle
+contestée.
+
+### Ajouté
+
+**Le socle des scènes** (`components/stage/`) — `PillarStage` (dégradé, arrivée en fondu court, un
+emplacement « matière »), `StageScrollView` (repli au défilement et bandeau compact, masqué aux
+lecteurs d'écran tant que la scène est dépliée), `StageButton`, `StageIconButton`, `DenseTile`, et
+les **quatre matières** : `FillLevel`, `FlowTrace`, `ImpactSilhouette`, `BreathRings`.
+
+**Nutrition** — `NutritionStage` remplace cinq blocs par une surface : en-tête, navigation de jour,
+trame de semaine, bilan du jour et macros. Niveau **plafonné au filet de cible** (jamais de
+débordement, le texte dit l'excédent), sept verres de la semaine, **brouillard de confiance** sur les
+jours sans saisie, ajout rapide des récents.
+
+**Course** — `RunStage` garde les quatre états de `resolveRunHubState` et leur ajoute **l'arrivée**
+(sortie terminée aujourd'hui). Compte à rebours de la séance à l'heure (`countdownToSession`,
+HORAIRE-01). Trois cartes remontent au hub : **km par km** de la dernière sortie, **chronos prédits**
+(Riegel) et **charge** (ACWR) — trois données qui existaient déjà mais vivaient à trois écrans de là.
+
+**Musculation** — `StrengthStage` ajoute le moment **après la séance** (tonnage qui roule, exercices,
+records battus) et allume la silhouette sur les muscles du jour (`SELECT_TODAY_PLAN` remonte
+`muscle_primary`). Plus la **semaine séance par séance** touchable, « **à ta portée** » (les trois
+records les plus proches, via `useNearRecords`) et « **Et si…** ».
+
+**Accueil** — `HomeStage` à quatre moments (`resolveHomeMoment`) : check-in du matin, série en danger
+le soir, retour après une absence, anneaux de la semaine sinon. `NowCard` est posée sur la scène. Le
+corps gagne « **depuis ta dernière visite** », le **bilan de la semaine** en cartes (les deux premiers
+jours), l'**objectif** le plus proche, le **brief du matin** lu par `expo-speech`, et « **Demande-moi** ».
+
+**L'assistant IA, désactivé par défaut** — migration `20260913163130_dash01_ai_consent_usage`
+(`user_settings.ai_consent_at`, table `ai_usage`), fonction Edge `supabase/functions/ai-assist`,
+écran `meal-photo`, carte `AskCard`, section de consentement dans les Réglages.
+
+### Modifié
+
+- Les quatre écrans de `app/(tabs)/` sont réécrits autour de `StageScrollView`. Le **mode édition**
+  des grilles n'a délibérément **pas** de scène : réorganiser des widgets sous une surface fixe
+  ferait croire qu'elle se déplace aussi.
+- `HomeHeader` disparaît ; son seul calcul utile (`headlineKey`) devient `dashboard/home-headline.ts`.
+- `useMinimalWeekTargets` cède sa dérivation de cible protéique à **`useProteinTarget`** : le brief du
+  matin en avait besoin, c'était la cinquième copie de cette chaîne qui menaçait.
+- Cinq événements d'analytics (spec §5) : `home_checkin_done`, `weekly_recap_card`,
+  `streak_saved_evening`, `ai_photo_used`, `ai_ask_used` — des **gestes**, jamais un contenu.
+
+### Technique / Notes
+
+- **Aucun chiffre affiché ne sort d'un modèle** (R7). La photo de repas rend des **aliments et des
+  grammes** ; les calories viennent du catalogue local, donc une portion ajustée recalcule tout et un
+  aliment inconnu s'affiche **sans valeur** plutôt que faux. « Demande-moi » calcule la réponse côté
+  client et le modèle ne fait que la **formuler** : sans IA, sans réseau, sans consentement, les mêmes
+  réponses s'affichent.
+- **Quatre gardes côté serveur avant tout appel** — JWT, consentement, quota (table `ai_usage`,
+  `service_role` seule), taille — et le compteur n'est incrémenté **qu'après** une réponse. Ni la
+  photo, ni la question, ni la réponse ne sont conservées.
+- **Une migration poussée, aucune sync rule à déployer** : `user_settings` est lue en `select *`, et
+  `ai_usage` n'est volontairement pas publiée. Le réflexe « migration ⇒ sync rule à la main » ne vaut
+  que pour une table **synchronisée** — la note est au registre.
+- **L'horloge** : `useCurrentHour` reste la seule source autorisée dans un hook. D'où un compte à
+  rebours **à l'heure** (« dans ~3 h ») plutôt qu'à la minute — une minuterie à la minute ferait
+  re-rendre l'écran le plus ouvert de l'app soixante fois par heure et re-souscrirait ses requêtes.
+- **Le « bug visuel » de la maquette est corrigé** (décision D6) : la silhouette encaisse **un seul**
+  impact à l'arrivée, et la scène part de 35 % d'opacité au lieu de zéro — repartir du vide à chaque
+  changement d'onglet se lisait comme un clignotement.
+- **Écarts assumés**, listés en fin de §62 : partage de séance laissé sur l'écran de bilan, **écart**
+  de prédiction 10 km non calculable (l'app ne garde pas l'historique des records — la scène affiche
+  l'estimation courante et dit quand elle vient de cette sortie), compte à rebours à l'heure.
+- **La migration voisine `20260912235121_corps02_body_visual_state`** (branche corps02) est reprise à
+  l'identique dans cette branche : le cloud l'avait déjà, et le CLI refusait de pousser tant qu'elle
+  manquait à l'historique local. Même fichier, même contenu — la fusion de corps02 ne créera pas de
+  conflit.
+- 🔴 **Deux gestes humains restent** : `supabase secrets set ANTHROPIC_API_KEY=…` et
+  `supabase functions deploy ai-assist`. Sans eux, l'app répond « l'assistant IA n'est pas
+  disponible » — proprement, mais les critères 37–38 de la §62 ne sont pas recettables.
+- 🔴 **Play Store** : la déclaration « Sécurité des données » devra mentionner l'envoi **facultatif**
+  d'une photo à un fournisseur d'IA (opt-in, non conservée) avant publication.
+- Tests : `packages/shared` 128 fichiers / 2741 tests · `apps/mobile` 185 suites / 3036 tests.
+  Typecheck et lint verts.
 
 ## 12/09/2026 — MUSCU-UX02 : le bilan de séance, et la fin de deux écrans qui se contredisaient
 

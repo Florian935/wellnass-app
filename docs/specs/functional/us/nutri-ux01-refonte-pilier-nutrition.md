@@ -3,9 +3,9 @@ id: NUTRI-UX01
 titre: "Refonte UX du pilier Nutrition — objectif juste, geste de saisie, journal, suivi, planning"
 roadmap: [4.41]
 catalogue: [NUTR-12, NUTR-15, NUTR-17, NUTR-21]
-etape: code
+etape: recette
 branche: feature/nutri-refonte-ux
-maj: 10/09/2026
+maj: 13/09/2026
 ---
 # US NUTRI-UX01 — Refonte UX du pilier Nutrition
 
@@ -40,7 +40,11 @@ Vingt-six constats vérifiés dans le code (audit §3 à §6).
 - **Écran Suivi** : sous-onglets (et non repli de sections), conformément à l'option laissée
   ouverte par l'ADR-007 §2.
 
-### D1 — Ce qui ne peut pas être livré ici : le remplissage de la bibliothèque
+### D1 — Le remplissage de la bibliothèque — ✅ **fait le 13/09/2026**
+
+> **Mise à jour du 13/09/2026.** Ce qui suit décrit la situation à la livraison du 10/09, et > reste vrai comme trace de décision. Le CSV CIQUAL a depuis été récupéré sur l'entrepôt
+> recherche.data.gouv.fr et l'import a été joué : **la bibliothèque compte 3 244 aliments**.
+> La procédure telle qu'elle a été exécutée, et ce qu'elle a révélé, sont en §9.
 
 L'audit classait « remplir la bibliothèque » (80 → 800-1 200 aliments) en **lot 1, avant tout le
 reste**. Ce lot **n'est pas dans cette US**, et ce n'est pas un arbitrage de périmètre : c'est une
@@ -239,19 +243,68 @@ Les deux seuils proportionnels sont **dérivés de la cible du jour**, pas d'une
 Un dépassement se lit, il ne se dramatise pas — cohérent avec le traitement déjà retenu pour le
 dépassement calorique.
 
-## 9. Remplissage de la bibliothèque — procédure (suite de D1)
+## 9. Remplissage de la bibliothèque — exécuté le 13/09/2026 (suite de D1)
 
-1. Télécharger la table CIQUAL 2025 sur <https://ciqual.anses.fr> (XLSX).
-2. La convertir en CSV — script dans
+**Résultat : 80 → 3 244 aliments.** Migration `20260913182920_seed_library_foods_ciqual_v2`, poussée sur le cloud, cochée au registre.
+
+La procédure, telle qu'elle a tourné — elle est rejouable à l'identique à chaque nouvelle
+édition de la table CIQUAL :
+
+1. Télécharger `Table Ciqual 2025_FR_2025_11_03.xlsx` (1,5 Mo) sur l'entrepôt
+   <https://entrepot.recherche.data.gouv.fr> (doi:10.57745/RPWYZD) — ANSES, **Licence
+   Ouverte / Etalab**, redistribution autorisée avec attribution. Le fichier reste
+   **non versionné**.
+2. Le convertir en CSV — script `openpyxl` dans
    [enrich-ciqual/README.md](../../../../supabase/scripts/enrich-ciqual/README.md).
-3. `python supabase/scripts/enrich-ciqual/generate.py ciqual2025.csv --bulk --limit 900`
-   → complète `foods-catalog.json` avec les familles couvrant le quotidien français, puis produit
-   `migration.sql`.
-4. `npm run db:new seed_library_foods_ciqual_v2`, y coller la migration, `npm run db:push:dry`,
-   `npm run db:push`, `npm run db:types`, cocher `supabase/MIGRATIONS.md`.
-5. Déployer les sync rules PowerSync si de nouvelles tables sont concernées (ici : non).
+3. `python supabase/scripts/enrich-ciqual/generate.py ciqual2025.csv --bulk --limit 4000`
+   → complète `foods-catalog.json` puis produit `migration.sql`.
+4. Copier `migration.sql` dans une migration versionnée (`npm run db:new`), puis
+   `npm run db:push:dry`, `npm run db:push`, `npm run db:types`, cocher
+   `supabase/MIGRATIONS.md`.
+5. Sync rules PowerSync : **rien à faire** — `foods` et `food_translations` sont déjà dans
+   le bucket de référence.
 
-**R6.2 est un prérequis** : sans pagination, une base à 900 aliments rend le sélecteur lent.
+### Ce que le fichier réel a révélé
+
+Le mode `--bulk` avait été écrit et testé le 10/09 contre un CSV **synthétique**, faute de
+mieux. Confronté à la vraie table, il portait trois défauts qu'aucun test ne pouvait voir :
+
+- 🔴 **Les libellés de groupes CIQUAL étaient faux.** La table écrit `viandes, oeufs,
+  poissons` (sans ligature), `produits laitiers`, `eaux et autres boissons`. Un groupe non
+  reconnu étant **ignoré en silence**, viandes, poissons, laitages et boissons ne seraient
+  **jamais entrés** dans l'import — et rien ne l'aurait signalé.
+- 🔴 **Les id de traduction étaient positionnels** (`d2000{n:03d}`) : au-delà de 999
+  aliments, un premier bloc à 9 caractères, donc un UUID invalide et la migration rejetée.
+  Ils dérivent maintenant de l'id de l'aliment, et le `on conflict` vise `(food_id, lang)`,
+  la vraie contrainte unique de la table.
+- ⚠️ **`--limit` coupait dans l'ordre du fichier**, trié par code de groupe : il remplissait
+  la base de salades appertisées avant d'atteindre le premier légume. L'import est désormais
+  trié par priorité de catégorie (légumes, fruits, viandes, poissons, laitages, féculents,
+  oléagineux, boissons, puis le reste).
+
+**Gain non prévu** : CIQUAL **déclare** la cuisson dans son sous-groupe (« viandes cuites »,
+« poissons crus »…). R6.7 s'appuyait jusque-là sur la lecture du nom ; `preparation_state` est
+désormais **renseigné pour 498 aliments** (286 crus, 212 cuits), le nom ne servant plus que
+de repli.
+
+### Conséquence sur R6.2 — le plafond de balayage
+
+R6.2 était annoncé ici comme un prérequis « sans pagination, 900 aliments rendent le
+sélecteur lent ». Le problème réel n'est pas la lenteur, c'est la **coupe** : le pré-filtre
+SQL bornait les candidats à 400 lignes **avant** le classement. À deux lettres, la base en
+rend bien plus (« po » : 582, « bo » : 453), et l'ordre de coupe ignorait la pertinence —
+« pomme » pouvait disparaître à « po » pour revenir à « pom ». Une liste qui rétrécit quand
+on **précise** sa recherche donne l'impression d'un moteur cassé. Corrigé en deux temps :
+les correspondances par **début de nom** passent devant toutes les autres dans le tri SQL, et
+le plafond monte de **400 à 800**.
+
+### Ce qui reste ouvert
+
+- **La traduction EN de 3 164 noms.** CIQUAL est monolingue : les entrées importées portent
+  `nameEn = nameFr` et un marqueur `needsTranslation`, que le script compte à chaque
+  exécution. Dette **tracée** plutôt qu'oubli silencieux (décision G).
+- **Les portions usuelles.** Absentes de CIQUAL : pour ces aliments la saisie s'ouvre sur
+  100 g. Patron de complétion dans `…nutrf2_portions_reference_aliments.sql`.
 
 ## 10. Recette
 

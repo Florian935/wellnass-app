@@ -11,7 +11,11 @@ import { useMenuAccent, type MenuKey } from '@/stores/menu-accent-store';
 export function useMenuFocus(menu: MenuKey): void {
   useFocusEffect(
     useCallback(() => {
-      useMenuAccent.getState().setActiveMenu(menu);
+      const store = useMenuAccent.getState();
+      store.setActiveMenu(menu);
+      store.setFocusedMenu(menu);
+      // US DASH-01 (R4) : à la perte de focus, les boucles de la scène doivent s'arrêter.
+      return () => useMenuAccent.getState().clearFocusedMenu(menu);
     }, [menu]),
   );
 }

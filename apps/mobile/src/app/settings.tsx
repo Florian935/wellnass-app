@@ -22,6 +22,7 @@ import { Button } from '@/components/Button';
 import { HealthConnectSection } from '@/components/HealthConnectSection';
 import { CycleTrackingSection } from '@/components/CycleTrackingSection';
 import { Segment } from '@/components/Segment';
+import { WorkoutLevelPreview } from '@/components/workout/WorkoutLevelPreview';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { togglePillar, updateSettings, useSettings } from '@/data/repositories/settings-repository';
@@ -312,6 +313,15 @@ export default function SettingsScreen() {
       </Text>
       <View style={styles.stack}>
         <Button label={t('settings.profile.edit')} variant="ghost" onPress={() => router.push('/profile')} />
+        {/* US GUID-01 — la musculation a désormais son profil, comme les deux autres piliers.
+            Placé en tête pour suivre l'ordre muscu > course > nutrition utilisé partout ailleurs. */}
+        {activePillars.includes('strength') ? (
+          <Button
+            label={t('settings.profile.strength')}
+            variant="ghost"
+            onPress={() => router.push('/strength-profile')}
+          />
+        ) : null}
         {activePillars.includes('nutrition') ? (
           <Button
             label={t('settings.profile.nutrition')}
@@ -433,6 +443,26 @@ export default function SettingsScreen() {
             accessibilityLabel={t('settings.motion.enable')}
           />
         </View>
+      </View>
+
+      {/*
+        Séance (MUSCU-UX03). Le mode d'affichage — classique ou immersif — et les huit interrupteurs
+        du mode immersif vivent sur leur propre écran : ils n'ont de sens qu'ensemble, et les
+        Réglages sont déjà longs. Le **niveau** d'affichage y est repris : il n'était joignable que
+        depuis le menu de la séance en cours, c'est-à-dire au pire moment pour s'y intéresser.
+      */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('settingsSession.title')}
+      </Text>
+      <View style={styles.stack}>
+        <Button
+          label={t('settingsSession.entry')}
+          variant="ghost"
+          onPress={() => router.push('/settings-session')}
+        />
+        <Text style={[styles.rowDesc, { color: colors.textMuted }]}>
+          {t('settingsSession.entryDesc')}
+        </Text>
       </View>
 
       {/* Couleurs des menus : un accent par onglet (Accueil / Muscu / Course / Alimentation) */}
@@ -570,13 +600,18 @@ export default function SettingsScreen() {
                 i < WORKOUT_DISPLAY_LEVELS.length - 1 && { borderBottomWidth: 1, borderBottomColor: colors.border },
               ]}
             >
-              <View style={{ flex: 1, gap: 2 }}>
+              <View style={{ flex: 1, gap: 6 }}>
                 <Text style={[styles.rowLabel, { color: colors.text }]}>
                   {t(`workout.displayLevel.levels.${lvl}.label`)}
                 </Text>
                 <Text style={[styles.hint, { color: colors.textMuted, marginTop: 0 }]}>
                   {t(`workout.displayLevel.levels.${lvl}.description`)}
                 </Text>
+                {/* US GUID-01 — l'aperçu vivait sur l'écran d'onboarding « Niveau d'affichage »,
+                    remplacé par la question de guidage. Il est déplacé ici plutôt que supprimé :
+                    c'est désormais le seul endroit où ce choix se fait, et « Détaillée » se
+                    comprend mieux en le voyant qu'en le lisant. */}
+                <WorkoutLevelPreview level={lvl} colors={colors} />
               </View>
               <View
                 style={[

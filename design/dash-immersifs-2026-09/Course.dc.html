@@ -1,0 +1,223 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+
+    .ph {
+      --bg: #f7eede; --sf: #fffaf2; --sfa: #f3ddd0; --bd: #ece0cd; --tx: #33291f;
+      --mut: #786a59; --trk: #eadcc6; --acc: #b14f2b;
+      --pm: #6b0028; --pc: #2f6fc0; --pn: #5c7a3f; --pa: #c0562f; --ok: #66714b; --amb: #b47f31;
+    }
+    .ph[data-theme="dark"] {
+      --bg: #1c150e; --sf: #30271e; --sfa: #3a2e22; --bd: #3a2e22; --tx: #f4ecdd;
+      --mut: #c9b79a; --trk: #362c22; --acc: #dd6e40;
+      --pm: #e07a98; --pc: #6fa8ef; --pn: #a9ba7e; --pa: #dd6e40; --ok: #a9ba7e; --amb: #e0b155;
+    }
+
+    .br { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+    .mo { font-family: 'Space Mono', ui-monospace, monospace; }
+    .card { background: var(--sf); border: 1px solid var(--bd); border-radius: 22px; box-sizing: border-box; }
+
+    /* Le flux : rien ne demarre ni ne s'arrete. Vitesse constante, aucun rebond, aucune pause. */
+    .a-comet { animation: aComet 3200ms linear infinite; }
+    .a-comet2 { animation: aComet 5200ms linear infinite; }
+    .a-drift { animation: aDrift 2400ms linear infinite; }
+    @keyframes aComet { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1000; } }
+    @keyframes aDrift { from { background-position-x: 0; } to { background-position-x: 26px; } }
+  </style>
+</helmet>
+
+<div class="ph" data-theme="{{theme}}" style="width: 390px; height: 1080px; box-sizing: border-box; background: var(--bg); color: var(--tx); font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden;">
+
+  <!-- ── LA SCÈNE — le flux. Absorbe ScreenHeader + la zone Agir + la carte d'adaptation ── -->
+  <div style="position: relative; overflow: hidden; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; background: linear-gradient(162deg, #2f6fc0 0%, #1d4586 48%, #0f2547 100%); padding: 22px 20px 20px; display: flex; flex-direction: column; gap: 14px;">
+
+    <!-- La matière : la trace de la dernière sortie, parcourue sans fin -->
+    <svg width="390" height="372" viewBox="0 0 390 372" style="position: absolute; left: 0; top: 0;">
+      <g fill="none" stroke-linecap="round">
+        <path d="M-16 262C34 214 58 300 106 258S176 128 226 176s58 152 116 108 74-146 130-118" stroke="#ffffff" stroke-width="2" opacity=".14"></path>
+        <path class="a-comet" d="M-16 262C34 214 58 300 106 258S176 128 226 176s58 152 116 108 74-146 130-118" pathLength="1000" stroke="#b7d6ff" stroke-width="3" stroke-dasharray="110 890" opacity=".95"></path>
+        <path class="a-comet2" d="M-16 262C34 214 58 300 106 258S176 128 226 176s58 152 116 108 74-146 130-118" pathLength="1000" stroke="#ffffff" stroke-width="1.5" stroke-dasharray="40 960" opacity=".6"></path>
+      </g>
+    </svg>
+
+    <div style="position: relative;">
+      <div class="mo" style="font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: #a8c8f0;">Sortie du jour · endurance fondamentale</div>
+    </div>
+
+    <div style="position: relative;">
+      <div style="display: flex; align-items: baseline; gap: 10px;">
+        <div class="br" style="font-weight: 800; font-size: 58px; letter-spacing: -2.6px; line-height: .9; color: #ffffff;">8,0</div>
+        <div class="br" style="font-weight: 700; font-size: 22px; letter-spacing: -.6px; color: #a8c8f0;">km</div>
+      </div>
+      <div class="mo" style="font-size: 13px; color: #a8c8f0; margin-top: 10px;">45 min · allure cible 5:42 /km</div>
+    </div>
+
+    <div style="position: relative; display: flex; gap: 6px; flex-wrap: wrap;">
+      <span style="font-size: 11px; font-weight: 600; color: #ffffff; background: rgba(255,255,255,.15); border-radius: 999px; padding: 5px 11px;">Zone 2</span>
+      <span style="font-size: 11px; font-weight: 600; color: #ffffff; background: rgba(255,255,255,.15); border-radius: 999px; padding: 5px 11px;">+64 m D+</span>
+      <span style="font-size: 11px; font-weight: 600; color: #ffffff; background: rgba(255,255,255,.15); border-radius: 999px; padding: 5px 11px;">Plan 10 km · S4</span>
+    </div>
+
+    <!-- L'adaptation, absorbée dans la scène au lieu d'une carte de plus -->
+    <div style="position: relative; display: flex; align-items: center; gap: 10px; border-radius: 14px; background: rgba(255,255,255,.12); padding: 11px 13px;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffd79a" stroke-width="1.9" stroke-linecap="round" style="flex: none;"><path d="M12 7.5v5.2"></path><circle cx="12" cy="16.4" r=".9" fill="#ffd79a" stroke="none"></circle><circle cx="12" cy="12" r="9"></circle></svg>
+      <span style="flex: 1; font-size: 12.5px; line-height: 1.35; color: #ffffff;">Jambes lourdes hier — <strong style="font-weight: 700;">6 km proposés</strong> à la place.</span>
+      <span style="font-size: 12px; font-weight: 700; color: #ffd79a;">Adapter</span>
+    </div>
+
+    <div style="position: relative; display: flex; gap: 10px;">
+      <div style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; height: 50px; border-radius: 14px; background: #ffffff;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d4586" stroke-width="2" stroke-linecap="round"><path d="M8 5.5v13l11-6.5z"></path></svg>
+        <span style="font-weight: 700; font-size: 15px; color: #1d4586;">Démarrer la sortie</span>
+      </div>
+      <div style="flex: none; width: 54px; display: flex; align-items: center; justify-content: center; height: 50px; border-radius: 14px; border: 1px solid rgba(255,255,255,.4);">
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4 3 6.5v13L9 17l6 3 6-2.5v-13L15 7z"></path><path d="M9 4v13M15 7v13"></path></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── LE CORPS ── -->
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 18px 20px 0;">
+
+    <!-- Ma semaine : la bande RunWeekBand, densifiée -->
+    <div class="card" style="padding: 16px 17px; display: flex; flex-direction: column; gap: 13px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between;">
+        <span class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">Ma semaine</span>
+        <span class="mo" style="font-size: 11px; color: var(--mut);">3 / 4 séances</span>
+      </div>
+      <div style="display: flex; gap: 7px; align-items: flex-end; height: 52px;">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="width: 100%; height: 30px; border-radius: 4px; background: var(--pc);"></div>
+          <span class="mo" style="font-size: 9.5px; color: var(--mut);">L</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="width: 100%; height: 8px; border-radius: 4px; background: var(--trk);"></div>
+          <span class="mo" style="font-size: 9.5px; color: var(--mut);">M</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="width: 100%; height: 42px; border-radius: 4px; background: var(--pc);"></div>
+          <span class="mo" style="font-size: 9.5px; color: var(--mut);">M</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="width: 100%; height: 8px; border-radius: 4px; background: var(--trk);"></div>
+          <span class="mo" style="font-size: 9.5px; color: var(--mut);">J</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="width: 100%; height: 22px; border-radius: 4px; background: var(--pc);"></div>
+          <span class="mo" style="font-size: 9.5px; color: var(--mut);">V</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="width: 100%; height: 36px; border-radius: 4px; border: 1.5px dashed var(--pc); box-sizing: border-box;"></div>
+          <span class="mo" style="font-size: 9.5px; color: var(--pc); font-weight: 700;">S</span>
+        </div>
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+          <div style="width: 100%; height: 8px; border-radius: 4px; background: var(--trk);"></div>
+          <span class="mo" style="font-size: 9.5px; color: var(--mut);">D</span>
+        </div>
+      </div>
+      <div style="display: flex; gap: 18px; border-top: 1px solid var(--bd); padding-top: 11px;">
+        <div>
+          <div class="br" style="font-weight: 800; font-size: 19px; letter-spacing: -.7px;">24,6 km</div>
+          <div style="font-size: 10.5px; color: var(--mut);">volume</div>
+        </div>
+        <div>
+          <div class="br" style="font-weight: 800; font-size: 19px; letter-spacing: -.7px;">5:51</div>
+          <div style="font-size: 10.5px; color: var(--mut);">allure moyenne</div>
+        </div>
+        <div>
+          <div class="br" style="font-weight: 800; font-size: 19px; letter-spacing: -.7px;">2 h 24</div>
+          <div style="font-size: 10.5px; color: var(--mut);">temps</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ton allure : l'analyse ALLURE-01 remontée sur le hub -->
+    <div class="card" style="padding: 16px 17px; display: flex; flex-direction: column; gap: 11px;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between;">
+        <span class="br" style="font-weight: 700; font-size: 15px; letter-spacing: -.3px;">Ton allure</span>
+        <span class="mo" style="font-size: 11px; color: var(--mut);">dernière sortie · 8,2 km</span>
+      </div>
+      <svg width="100%" height="70" viewBox="0 0 320 70" preserveAspectRatio="none">
+        <line x1="0" y1="34" x2="320" y2="34" stroke="var(--trk)" stroke-width="1.5" stroke-dasharray="4 5"></line>
+        <path d="M0 58 L40 54 L80 42 L120 30 L160 26 L200 30 L240 24 L280 18 L320 14" fill="none" stroke="var(--pc)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M0 58 L40 54 L80 42 L120 30 L160 26 L200 30 L240 24 L280 18 L320 14 L320 70 L0 70 Z" fill="var(--pc)" opacity=".09"></path>
+        <circle cx="40" cy="54" r="4" fill="var(--acc)"></circle>
+      </svg>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="width: 4px; align-self: stretch; border-radius: 2px; background: var(--acc);"></div>
+        <div style="flex: 1; font-size: 12.5px; line-height: 1.4; color: var(--mut);"><strong style="color: var(--tx); font-weight: 700;">Tu pars 14 s/km trop vite</strong> sur les deux premiers kilomètres. Sur tes 5 dernières sorties, la fin s'effondre à chaque fois.</div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 12px;">
+      <div class="card" style="flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 9px;">
+        <span style="font-size: 12px; font-weight: 600; color: var(--mut);">Programme</span>
+        <div class="br" style="font-weight: 800; font-size: 26px; letter-spacing: -1px; line-height: 1;">10 km</div>
+        <div style="height: 6px; border-radius: 3px; background: var(--trk); overflow: hidden;"><div style="width: 40%; height: 100%; border-radius: 3px; background: var(--pc);"></div></div>
+        <span style="font-size: 11.5px; color: var(--mut);">Semaine 4 sur 10</span>
+      </div>
+      <div class="card" style="flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 9px;">
+        <span style="font-size: 12px; font-weight: 600; color: var(--mut);">Depuis janvier</span>
+        <div class="br" style="font-weight: 800; font-size: 26px; letter-spacing: -1px; line-height: 1;">214 km</div>
+        <div style="display: flex; align-items: flex-end; gap: 3px; height: 22px;">
+          <div style="flex: 1; height: 38%; border-radius: 2px; background: var(--trk);"></div>
+          <div style="flex: 1; height: 56%; border-radius: 2px; background: var(--trk);"></div>
+          <div style="flex: 1; height: 44%; border-radius: 2px; background: var(--trk);"></div>
+          <div style="flex: 1; height: 72%; border-radius: 2px; background: var(--trk);"></div>
+          <div style="flex: 1; height: 62%; border-radius: 2px; background: var(--trk);"></div>
+          <div style="flex: 1; height: 88%; border-radius: 2px; background: var(--trk);"></div>
+          <div style="flex: 1; height: 100%; border-radius: 2px; background: var(--pc);"></div>
+        </div>
+        <span style="font-size: 11.5px; color: var(--mut);">32 sorties · record 12,4 km</span>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 13px 16px; display: flex; align-items: center; gap: 11px;">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><circle cx="12" cy="8" r="3.6"></circle><path d="M5 20c.9-3.6 3.6-5.4 7-5.4s6.1 1.8 7 5.4"></path></svg>
+      <span style="flex: 1; font-size: 14px; font-weight: 600;">Profil coureur, programmes, historique</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="2" stroke-linecap="round" style="flex: none;"><path d="m9 6 6 6-6 6"></path></svg>
+    </div>
+  </div>
+
+  <!-- ── LA BARRE D'ONGLETS ── -->
+  <div style="margin-top: auto; height: 64px; background: var(--sf); border-top: 1px solid var(--bd); display: flex; align-items: center; padding: 0 8px;">
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z"></path></svg>
+      <span style="font-size: 11px; font-weight: 600; color: var(--mut);">Accueil</span>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="1.9" stroke-linecap="round"><path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"></path></svg>
+      <span style="font-size: 11px; font-weight: 600; color: var(--mut);">Muscu</span>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--pc)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 19.5c0-3 3-3.6 6-4.1s6-1.1 6-4.1-3-3.7-6-3.7"></path><circle cx="6" cy="19.5" r="1.7"></circle><circle cx="18" cy="5.1" r="1.7"></circle></svg>
+      <span style="font-size: 11px; font-weight: 600; color: var(--pc);">Course</span>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--mut)" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4c0 8-5 13-12 13H5c0-8 5-13 12-13z"></path><path d="M5 20c2-5 5-8 9.5-10"></path></svg>
+      <span style="font-size: 11px; font-weight: 600; color: var(--mut);">Nutrition</span>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { theme: this.props.theme ?? 'light' };
+  }
+}
+</script>
+</body>
+</html>

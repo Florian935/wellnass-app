@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .board {
+      width: 1320px; height: 1400px; box-sizing: border-box; background: #f7eede; color: #33291f;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 44px 40px; display: flex; flex-direction: column; gap: 24px;
+    }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .h1 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 44px; letter-spacing: -1.5px; line-height: 1; margin-top: 8px; }
+    .lede { font-size: 15px; line-height: 1.55; color: #5c4d3d; max-width: 860px; margin-top: 12px; }
+    .lede b { color: #33291f; }
+    .legend { display: flex; gap: 18px; margin-top: 14px; font-size: 13px; color: #5c4d3d; }
+    .legend span { display: flex; align-items: center; gap: 6px; }
+
+    .tb { display: flex; flex-direction: column; }
+    .tr { display: grid; grid-template-columns: 350px 250px minmax(0, 1fr) 110px 170px; gap: 18px; align-items: center; padding: 8px 0; border-top: 1px solid #e3d4bd; }
+    .th { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #786a59; border-top: none; padding-top: 0; }
+    .grp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 15px; letter-spacing: -.2px; padding: 16px 0 6px; color: #b14f2b; }
+    .f { font-size: 13.5px; font-weight: 600; line-height: 1.35; }
+    .t { font-size: 13px; color: #786a59; line-height: 1.35; }
+    .n { font-size: 13px; line-height: 1.35; }
+    .st { justify-self: start; font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; white-space: nowrap; }
+    .same { background: #e7ead9; color: #56613c; }
+    .moved { background: #efe4d1; color: #786a59; }
+    .more { background: #f3ddd0; color: #a34e2c; }
+    .where { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div>
+    <div class="eb">Rien ne se perd · inventaire</div>
+    <div class="h1">Tout ce que l'écran fait aujourd'hui</div>
+    <div class="lede">Relevé dans le code de l'écran de séance (<b>workout.tsx</b>, carte de série, barre d'action, liste des exercices, repos, menu). Chaque ligne a sa place dans le nouveau flux. <b>Aucune fonction retirée.</b></div>
+    <div class="legend">
+      <span><b class="st same">à l'identique</b></span>
+      <span><b class="st moved">déplacé</b> même geste, autre endroit</span>
+      <span><b class="st more">enrichi</b> même fonction, plus de retour</span>
+    </div>
+  </div>
+
+  <div class="tb">
+    <div class="tr th"><div>Fonction</div><div>Aujourd'hui</div><div>Dans le nouveau flux</div><div>Statut</div><div>Planche</div></div>
+
+    <div class="grp">Faire la série</div>
+    <div class="tr"><div class="f">Niveau Simplifiée / Normale / Détaillée (R4-1)</div><div class="t">carte de série, modifiable en séance</div><div class="n">scène ; le pont ne change jamais</div><div class="st same">à l'identique</div><div class="where">Trois niveaux</div></div>
+    <div class="tr"><div class="f">Dernière fois, prévu, pastilles des séries, + Série</div><div class="t">carte de série</div><div class="n">scène, en plus grand</div><div class="st same">à l'identique</div><div class="where">Trois niveaux</div></div>
+    <div class="tr"><div class="f">Écart au prévu, suggestion, allègement MUSC-F7</div><div class="t">carte, dès Normale</div><div class="n">scène, dès Normale</div><div class="st same">à l'identique</div><div class="where">Trois niveaux</div></div>
+    <div class="tr"><div class="f">Raccourci échauffement</div><div class="t">carte, dès Normale</div><div class="n">puce sur la scène, dès Normale</div><div class="st same">à l'identique</div><div class="where">Trois niveaux</div></div>
+    <div class="tr"><div class="f">Type de série, RPE ou RIR, note d'exercice, superset</div><div class="t">Détaillée, un seul repli</div><div class="n">« Options de la série », un seul repli</div><div class="st same">à l'identique</div><div class="where">Trois niveaux</div></div>
+    <div class="tr"><div class="f">Saisie reps × charge, − / +, clavier, pont au-dessus du clavier</div><div class="t">barre d'action fixe</div><div class="n">pont fixe, champs agrandis</div><div class="st same">à l'identique</div><div class="where">2 · Faire la série</div></div>
+    <div class="tr"><div class="f">Durée m:ss, lest facultatif (durée, poids de corps)</div><div class="t">barre d'action</div><div class="n">pont, pointillés conservés</div><div class="st same">à l'identique</div><div class="where">Superset et types</div></div>
+    <div class="tr"><div class="f">Superset : lier, partenaire, orphelin, retirer, enchaîner sans repos</div><div class="t">repli + « Valider — puis enchaîner »</div><div class="n">idem, lien A — B visible sur la scène</div><div class="st more">enrichi</div><div class="where">Superset et types</div></div>
+
+    <div class="grp">Valider et récupérer</div>
+    <div class="tr"><div class="f">Vibration à la validation</div><div class="t">30 ms, identique pour tout</div><div class="n">conservée, plus verdict et records dosés</div><div class="st more">enrichi</div><div class="where">Rare, donc fort</div></div>
+    <div class="tr"><div class="f">Repos : anneau, série suivante, Passer, +15 s</div><div class="t">plein écran</div><div class="n">+ série faite, charge à préparer, « Prépare-toi »</div><div class="st more">enrichi</div><div class="where">4 · Récupérer</div></div>
+    <div class="tr"><div class="f">Repos durable de l'exercice (« Passer à 150 s… »)</div><div class="t">écran de repos, menu</div><div class="n">écran de repos, menu</div><div class="st same">à l'identique</div><div class="where">4 · Récupérer</div></div>
+    <div class="tr"><div class="f">Réduire le repos en barre</div><div class="t">barre en bas, par-dessus l'action</div><div class="n">barre posée au-dessus du pont</div><div class="st moved">déplacé</div><div class="where">Gérer la séance</div></div>
+
+    <div class="grp">Gérer la séance</div>
+    <div class="tr"><div class="f">Aller à un autre exercice</div><div class="t">toucher son nom dans la liste</div><div class="n">toucher son nom dans le plan de séance</div><div class="st moved">déplacé</div><div class="where">Gérer la séance</div></div>
+    <div class="tr"><div class="f">Dé-valider (sans repos), supprimer, ajouter une série</div><div class="t">liste, exercice déplié</div><div class="n">plan, exercice déplié</div><div class="st moved">déplacé</div><div class="where">Gérer la séance</div></div>
+    <div class="tr"><div class="f">Monter, descendre, plus tard, remplacer</div><div class="t">liste, affichés en permanence</div><div class="n">plan, menu « ⋯ » de la ligne</div><div class="st moved">déplacé</div><div class="where">Gérer la séance</div></div>
+    <div class="tr"><div class="f">Note d'exercice et lien superset en lecture</div><div class="t">liste, même repliée</div><div class="n">plan de séance</div><div class="st moved">déplacé</div><div class="where">Gérer la séance</div></div>
+    <div class="tr"><div class="f">Menu ⋮ : niveau, repos, ajouter, terminer, quitter, abandonner</div><div class="t">feuille d'options</div><div class="n">feuille d'options</div><div class="st same">à l'identique</div><div class="where">Gérer la séance</div></div>
+    <div class="tr"><div class="f">Quitter sans perdre, reprise jusqu'à la clôture auto de 3 h</div><div class="t">✕ en haut, sans confirmation</div><div class="n">✕ en haut ; pas d'écran d'entrée à la reprise</div><div class="st same">à l'identique</div><div class="where">1 · Lancer</div></div>
+
+    <div class="grp">Finir</div>
+    <div class="tr"><div class="f">Tout validé → « Terminer la séance » ; aucune série → confirmation</div><div class="t">barre du bas</div><div class="n">pont, puis « Séance bouclée », puis le bilan</div><div class="st more">enrichi</div><div class="where">Gérer · 7 · Finir</div></div>
+    <div class="tr"><div class="f">Records calculés et enregistrés à la clôture, notification</div><div class="t">clôture</div><div class="n">inchangé ; détection en direct en plus, pour l'affichage</div><div class="st more">enrichi</div><div class="where">Rare, donc fort</div></div>
+    <div class="tr"><div class="f">Écran maintenu allumé, réglage « Animations »</div><div class="t">toute la séance</div><div class="n">toute la séance</div><div class="st same">à l'identique</div><div class="where">—</div></div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

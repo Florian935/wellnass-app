@@ -28,6 +28,7 @@ import type { NowAction } from '@wellness/shared';
 import { AccentHalo } from '@/components/AccentHalo';
 import { startWorkoutFromSession } from '@/data/repositories/workout-repository';
 import { useActionLock } from '@/hooks/useActionLock';
+import { briefRouteForSession } from '@/components/workout/immersive/brief-entry';
 import { useNowAction } from '@/hooks/useNowAction';
 import { useUnits } from '@/hooks/useUnits';
 import { useTodayKey } from '@/hooks/useTodayKey';
@@ -54,7 +55,13 @@ export function NowCard() {
   // rendu, et sans lui deux appuis créaient DEUX séances, dont une orpheline que rien ne rouvrait.
   const lockStart = useActionLock();
 
-  const startSession = (sessionId: string, plannedSessionId: string) =>
+  const startSession = (sessionId: string, plannedSessionId: string) => {
+    // Mode immersif : le brief annonce la séance puis la crée lui-même (US MUSCU-UX03, §5.1).
+    const brief = briefRouteForSession(sessionId, plannedSessionId);
+    if (brief) {
+      router.push(brief);
+      return;
+    }
     void lockStart(async () => {
       setStarting(true);
       try {
@@ -66,6 +73,7 @@ export function NowCard() {
         setStarting(false);
       }
     });
+  };
 
   const painted = paint(action);
 

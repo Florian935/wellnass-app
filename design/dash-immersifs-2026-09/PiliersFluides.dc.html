@@ -1,0 +1,242 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+
+    .ph {
+      --bg: #f7eede; --sf: #fffaf2; --sfa: #f3ddd0; --bd: #ece0cd; --tx: #33291f;
+      --mut: #786a59; --trk: #eadcc6; --acc: #b14f2b;
+      --pm: #6b0028; --pc: #2f6fc0; --pn: #5c7a3f; --pa: #c0562f; --ok: #66714b; --amb: #b47f31;
+      --scene1: #fff6e8; --scene2: #efc39c;
+    }
+    .ph[data-theme="dark"] {
+      --bg: #1c150e; --sf: #30271e; --sfa: #3a2e22; --bd: #3a2e22; --tx: #f4ecdd;
+      --mut: #c9b79a; --trk: #362c22; --acc: #dd6e40;
+      --pm: #e07a98; --pc: #6fa8ef; --pn: #a9ba7e; --pa: #dd6e40; --ok: #a9ba7e; --amb: #e0b155;
+      --scene1: #45331f; --scene2: #1c150e;
+    }
+
+    .br { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+    .mo { font-family: 'Space Mono', ui-monospace, monospace; }
+    .eyebrow { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; }
+    .card { background: var(--sf); border: 1px solid var(--bd); border-radius: 22px; box-sizing: border-box; }
+    .tap { cursor: pointer; transition: transform 90ms ease-out; }
+    .tap:active { transform: scale(.94); }
+
+    /* ── La couleur qui déborde : elle part de l'onglet touché, couvre, puis se retire ── */
+    .flood { position: absolute; width: 1000px; height: 1000px; border-radius: 50%; pointer-events: none; z-index: 5; animation: flood 640ms cubic-bezier(.4,0,.2,1) forwards; }
+    @keyframes flood { 0% { transform: scale(0); opacity: 1; } 52% { transform: scale(1); opacity: 1; } 100% { transform: scale(1); opacity: 0; } }
+
+    /* ── L'axe partagé : le contenu glisse dans le sens du déplacement ── */
+    .enter-r { animation: enterR 440ms cubic-bezier(.22,.61,.36,1) 220ms backwards; }
+    .enter-l { animation: enterL 440ms cubic-bezier(.22,.61,.36,1) 220ms backwards; }
+    .enter-fade { animation: enterFade 160ms linear backwards; }
+    @keyframes enterR { from { opacity: 0; transform: translateX(30px); } }
+    @keyframes enterL { from { opacity: 0; transform: translateX(-30px); } }
+    @keyframes enterFade { from { opacity: 0; } }
+
+    /* ── La scène qui se tasse au défilement — CSS pur, lié au scroll, aucun JavaScript ── */
+    .scroller { position: absolute; inset: 0; overflow-y: auto; scroll-timeline: --sc block; scrollbar-width: none; }
+    .scroller::-webkit-scrollbar { display: none; }
+    .scene { position: sticky; top: 0; z-index: 2; height: 318px; overflow: hidden; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; box-sizing: border-box; animation: sceneCollapse linear both; animation-timeline: --sc; animation-range: 0 210px; }
+    @keyframes sceneCollapse { to { height: 108px; border-bottom-left-radius: 22px; border-bottom-right-radius: 22px; } }
+    .big { animation: bigShrink linear both; animation-timeline: --sc; animation-range: 0 210px; transform-origin: left top; }
+    @keyframes bigShrink { to { transform: translateY(-58px) scale(.46); } }
+    .fade-on-scroll { animation: fadeScroll linear both; animation-timeline: --sc; animation-range: 0 110px; }
+    @keyframes fadeScroll { to { opacity: 0; transform: translateY(-10px); } }
+
+    .indicator { position: absolute; top: 0; height: 3px; width: 44px; margin-left: -22px; border-radius: 0 0 3px 3px; }
+    .ind-plein { transition: left 420ms cubic-bezier(.22,.61,.36,1), background 420ms ease-out; }
+
+    .a-breathe { animation: aBreathe 4800ms ease-in-out infinite; transform-origin: 60px 60px; }
+    @keyframes aBreathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+    .a-comet { animation: aComet 3200ms linear infinite; }
+    @keyframes aComet { from { stroke-dashoffset: 0; } to { stroke-dashoffset: -1000; } }
+    .a-wave { animation: aWave 7000ms linear infinite; }
+    @keyframes aWave { from { transform: translateX(0); } to { transform: translateX(-160px); } }
+    .a-slam { animation: aSlam 2600ms cubic-bezier(.2,.9,.3,1) infinite; }
+    @keyframes aSlam { 0%, 34% { opacity: .22; } 41% { opacity: .92; } 46% { opacity: .5; } 51% { opacity: .8; } 64%, 100% { opacity: .22; } }
+  </style>
+</helmet>
+
+<div class="ph" data-theme="{{theme}}" style="width: 390px; height: 844px; box-sizing: border-box; background: var(--bg); color: var(--tx); font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+
+  <div style="position: relative; flex: 1; overflow: hidden;">
+
+    <!-- ═══════════ ACCUEIL ═══════════ -->
+    <sc-if value="{{t0}}" hint-placeholder-val="{{ true }}">
+      <div class="scroller">
+        <div class="{{enterClass}}">
+          <div class="scene" style="background: radial-gradient(130% 120% at 82% 0%, var(--scene1) 0%, var(--scene2) 100%); padding: 22px 20px;">
+            <div class="fade-on-scroll eyebrow" style="color: var(--mut);">Lundi 14 septembre</div>
+            <div style="display: flex; align-items: center; gap: 18px; margin-top: 18px;">
+              <svg class="fade-on-scroll" width="120" height="120" viewBox="0 0 120 120" style="flex: none;">
+                <g fill="none" stroke-linecap="round" stroke-width="8">
+                  <circle cx="60" cy="60" r="52" stroke="rgba(51,41,31,.10)"></circle><circle cx="60" cy="60" r="39" stroke="rgba(51,41,31,.10)"></circle><circle cx="60" cy="60" r="26" stroke="rgba(51,41,31,.10)"></circle>
+                  <g class="a-breathe">
+                    <circle cx="60" cy="60" r="52" stroke="var(--pm)" stroke-dasharray="326.7" stroke-dashoffset="81.7" transform="rotate(-90 60 60)"></circle>
+                    <circle cx="60" cy="60" r="39" stroke="var(--pc)" stroke-dasharray="245" stroke-dashoffset="80.9" transform="rotate(-90 60 60)"></circle>
+                    <circle cx="60" cy="60" r="26" stroke="var(--pn)" stroke-dasharray="163.4" stroke-dashoffset="27.2" transform="rotate(-90 60 60)"></circle>
+                  </g>
+                </g>
+              </svg>
+              <div class="big br" style="font-weight: 800; font-size: 60px; letter-spacing: -2.6px; line-height: 1;">J14</div>
+            </div>
+            <div class="fade-on-scroll" style="margin-top: 16px; height: 48px; border-radius: 14px; background: var(--acc); color: #ffffff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;">Commencer Push B</div>
+          </div>
+          <div style="padding: 16px 20px 240px; display: flex; flex-direction: column; gap: 12px;">
+            <div class="card" style="padding: 16px;"><div class="br" style="font-weight: 700; font-size: 15px;">Depuis ta dernière visite</div><div style="display: flex; gap: 22px; margin-top: 10px;"><span class="br" style="font-weight: 800; font-size: 22px;">−0,4 kg</span><span class="br" style="font-weight: 800; font-size: 22px; color: var(--pm);">+1</span><span class="br" style="font-weight: 800; font-size: 22px; color: var(--pc);">−12 s</span></div></div>
+            <div class="card" style="padding: 16px;"><div class="br" style="font-weight: 700; font-size: 15px;">10 km sous 55 min</div><div style="height: 5px; border-radius: 3px; background: var(--trk); margin-top: 16px;"><div style="width: 78%; height: 100%; border-radius: 3px; background: var(--pc);"></div></div><div style="font-size: 12.5px; line-height: 1.4; color: var(--mut); margin-top: 10px;">Au rythme actuel, ta prédiction passe sous 55 min vers le 2 octobre.</div></div>
+            <div style="border-radius: 22px; background: #33291f; padding: 16px; box-sizing: border-box; color: #f0e4d0;"><div class="eyebrow" style="color: #c9b79a;">Ta semaine · le chiffre</div><div class="br" style="font-weight: 800; font-size: 40px; margin-top: 14px;">4 h 12</div><div style="font-size: 13px; color: #d9c8ad; margin-top: 6px;">d'entraînement — 38 min de plus que la semaine précédente.</div></div>
+            <div class="card" style="padding: 16px;"><div style="margin-top: 12px;"><div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;"><span style="font-weight: 600;">Muscu</span><span class="mo" style="font-size: 11px; color: var(--mut);">Push B</span></div><div style="height: 6px; border-radius: 3px; background: var(--trk); overflow: hidden;"><div style="height: 100%; width: 0%; border-radius: 3px; background: var(--pm);"></div></div></div><div style="margin-top: 12px;"><div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;"><span style="font-weight: 600;">Course</span><span class="mo" style="font-size: 11px; color: var(--mut);">repos</span></div><div style="height: 6px; border-radius: 3px; background: var(--trk); overflow: hidden;"><div style="height: 100%; width: 100%; border-radius: 3px; background: var(--pc);"></div></div></div><div style="margin-top: 12px;"><div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;"><span style="font-weight: 600;">Nutrition</span><span class="mo" style="font-size: 11px; color: var(--mut);">420 kcal</span></div><div style="height: 6px; border-radius: 3px; background: var(--trk); overflow: hidden;"><div style="height: 100%; width: 19%; border-radius: 3px; background: var(--pn);"></div></div></div></div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ═══════════ MUSCU ═══════════ -->
+    <sc-if value="{{t1}}" hint-placeholder-val="{{ false }}">
+      <div class="scroller">
+        <div class="{{enterClass}}">
+          <div class="scene" style="background: linear-gradient(158deg, #6b0028 0%, #440019 58%, #2d0011 100%); padding: 22px 20px; color: #ffffff;">
+            <svg class="fade-on-scroll" width="150" height="240" viewBox="0 0 120 190" style="position: absolute; right: -18px; top: 10px; opacity: .5;">
+              <g fill="#ffffff" opacity=".10"><circle cx="60" cy="17" r="12"></circle><path d="M54 30h12l18 8 6 20-5 4-6-18-2 40H35l-2-40-6 18-5-4 6-20z"></path><path d="M39 88h16l-2 50 2 44h-11l-4-44z"></path><path d="M81 88H65l2 50-2 44h11l4-44z"></path></g>
+              <g class="a-slam" fill="#ff9ec0"><ellipse cx="44" cy="52" rx="12" ry="9"></ellipse><ellipse cx="76" cy="52" rx="12" ry="9"></ellipse></g>
+            </svg>
+            <div class="fade-on-scroll eyebrow" style="color: #e2a8bd;">Push Pull Legs · semaine 3 sur 8</div>
+            <div class="big br" style="font-weight: 800; font-size: 62px; letter-spacing: -2.6px; line-height: 1; margin-top: 44px;">Push B</div>
+            <div class="fade-on-scroll mo" style="font-size: 12px; color: #e2a8bd; margin-top: 10px;">record à portée · 85 kg × 3</div>
+            <div class="fade-on-scroll" style="margin-top: 22px; height: 48px; border-radius: 14px; background: #ffffff; color: #6b0028; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;">Commencer</div>
+          </div>
+          <div style="padding: 16px 20px 240px; display: flex; flex-direction: column; gap: 12px;">
+            <div class="card" style="padding: 16px;"><div class="br" style="font-weight: 700; font-size: 15px;">Ta semaine</div><div style="display: flex; align-items: flex-end; gap: 8px; height: 70px; margin-top: 10px;"><div style="flex: 1; height: 80%; border-radius: 6px; background: var(--pm);"></div><div style="flex: 1; height: 10%; border-radius: 6px; background: var(--trk);"></div><div style="flex: 1; height: 76%; border-radius: 6px; background: var(--pm);"></div><div style="flex: 1; height: 84%; border-radius: 6px; border: 1.5px dashed var(--pm); box-sizing: border-box;"></div><div style="flex: 1; height: 100%; border-radius: 6px; border: 1.5px dashed var(--pm); box-sizing: border-box;"></div><div style="flex: 1; height: 10%; border-radius: 6px; background: var(--trk);"></div><div style="flex: 1; height: 10%; border-radius: 6px; background: var(--trk);"></div></div></div>
+            <div class="card" style="padding: 16px;"><div class="br" style="font-weight: 700; font-size: 15px;">À ta portée</div><div style="margin-top: 12px;"><div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;"><span style="font-weight: 600;">Développé couché</span><span class="mo" style="font-size: 11px; color: var(--mut);">à 2,5 kg</span></div><div style="height: 6px; border-radius: 3px; background: var(--trk); overflow: hidden;"><div style="height: 100%; width: 94%; border-radius: 3px; background: var(--pm);"></div></div></div><div style="margin-top: 12px;"><div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;"><span style="font-weight: 600;">Squat</span><span class="mo" style="font-size: 11px; color: var(--mut);">à 1 rép.</span></div><div style="height: 6px; border-radius: 3px; background: var(--trk); overflow: hidden;"><div style="height: 100%; width: 83%; border-radius: 3px; background: var(--pm);"></div></div></div><div style="margin-top: 12px;"><div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;"><span style="font-weight: 600;">Tractions lestées</span><span class="mo" style="font-size: 11px; color: var(--mut);">à 2,5 kg</span></div><div style="height: 6px; border-radius: 3px; background: var(--trk); overflow: hidden;"><div style="height: 100%; width: 80%; border-radius: 3px; background: var(--pm);"></div></div></div></div>
+            <div class="card" style="padding: 16px;"><div style="display: flex; justify-content: space-between; align-items: flex-end;"><div><div style="font-size: 12px; font-weight: 600; color: var(--mut);">Total SBD</div><div class="br" style="font-weight: 800; font-size: 30px; letter-spacing: -1.2px;">372,5 kg</div></div><span class="mo" style="font-size: 11px; color: var(--mut);">→ 400 kg mi-nov.</span></div><svg width="100%" height="64" viewBox="0 0 320 64" preserveAspectRatio="none" style="margin-top: 8px;"><path d="M0 54 L40 50 L80 46 L120 40 L160 36 L200 30" fill="none" stroke="var(--pm)" stroke-width="2.6" stroke-linecap="round"></path><path d="M200 30 L260 20 L316 12" fill="none" stroke="var(--pm)" stroke-width="2.2" stroke-dasharray="4 5" opacity=".7"></path></svg></div>
+            <div class="card" style="padding: 16px;"><div class="br" style="font-weight: 700; font-size: 15px;">12 semaines</div><div style="font-size: 12.5px; color: var(--mut); margin-top: 6px;">Série actuelle : 3 semaines · record : 5.</div></div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ═══════════ COURSE ═══════════ -->
+    <sc-if value="{{t2}}" hint-placeholder-val="{{ false }}">
+      <div class="scroller">
+        <div class="{{enterClass}}">
+          <div class="scene" style="background: linear-gradient(162deg, #2f6fc0 0%, #1d4586 48%, #0f2547 100%); padding: 22px 20px; color: #ffffff;">
+            <svg class="fade-on-scroll" width="390" height="318" viewBox="0 0 390 318" style="position: absolute; left: 0; top: 0;">
+              <path d="M-16 232C34 184 58 270 106 228S176 98 226 146s58 152 116 108 74-146 130-118" fill="none" stroke="#ffffff" stroke-width="2" opacity=".14"></path>
+              <path class="a-comet" d="M-16 232C34 184 58 270 106 228S176 98 226 146s58 152 116 108 74-146 130-118" pathLength="1000" fill="none" stroke="#b7d6ff" stroke-width="3" stroke-dasharray="110 890"></path>
+            </svg>
+            <div class="fade-on-scroll eyebrow" style="position: relative; color: #a8c8f0;">Samedi 19 · commence dans 1 h 12</div>
+            <div class="big br" style="position: relative; font-weight: 800; font-size: 66px; letter-spacing: -2.8px; line-height: 1; margin-top: 44px;">8,0 km</div>
+            <div class="fade-on-scroll mo" style="position: relative; font-size: 12px; color: #a8c8f0; margin-top: 10px;">45 min · allure cible 5:42 /km</div>
+            <div class="fade-on-scroll" style="position: relative; margin-top: 22px; height: 48px; border-radius: 14px; background: #ffffff; color: #1d4586; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;">Démarrer la sortie</div>
+          </div>
+          <div style="padding: 16px 20px 240px; display: flex; flex-direction: column; gap: 12px;">
+            <div class="card" style="padding: 16px;"><div class="br" style="font-weight: 700; font-size: 15px;">Km par km</div><div style="display: flex; align-items: flex-end; gap: 7px; height: 70px; margin-top: 10px;"><div style="flex: 1; height: 90%; border-radius: 5px; background: var(--pc);"></div><div style="flex: 1; height: 86%; border-radius: 5px; background: var(--pc);"></div><div style="flex: 1; height: 66%; border-radius: 5px; background: var(--amb);"></div><div style="flex: 1; height: 60%; border-radius: 5px; background: var(--amb);"></div><div style="flex: 1; height: 54%; border-radius: 5px; background: var(--amb);"></div><div style="flex: 1; height: 46%; border-radius: 5px; background: var(--amb);"></div><div style="flex: 1; height: 40%; border-radius: 5px; background: var(--amb);"></div><div style="flex: 1; height: 34%; border-radius: 5px; background: var(--amb);"></div></div></div>
+            <div class="card" style="padding: 16px 16px 6px;"><div class="br" style="font-weight: 700; font-size: 15px; margin-bottom: 8px;">Tes chronos prédits</div><div style="display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--bd); font-size: 13.5px;"><span style="font-weight: 600;">5 km</span><span class="mo" style="font-size: 12px; font-weight: 700;">26:38</span></div><div style="display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--bd); font-size: 13.5px;"><span style="font-weight: 600;">10 km</span><span class="mo" style="font-size: 12px; font-weight: 700;">55:12</span></div><div style="display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--bd); font-size: 13.5px;"><span style="font-weight: 600;">Semi</span><span class="mo" style="font-size: 12px; font-weight: 700;">2:02:40</span></div></div>
+            <div class="card" style="padding: 16px;"><div style="display: flex; justify-content: space-between;"><span class="br" style="font-weight: 700; font-size: 15px;">Ta charge</span><span class="mo" style="font-size: 11px; color: var(--ok); font-weight: 700;">1,12 · zone sûre</span></div><div style="height: 6px; border-radius: 3px; margin-top: 14px; background: linear-gradient(90deg, var(--trk) 0 30%, var(--ok) 30% 62%, var(--amb) 62% 80%, #b23b2e 80% 100%);"></div><div style="font-size: 12.5px; color: var(--mut); margin-top: 10px;">La sortie longue de dimanche passe sans sortir de la zone.</div></div>
+            <div class="card" style="padding: 16px;"><div class="br" style="font-weight: 700; font-size: 15px;">Ma semaine</div><div style="font-size: 12.5px; color: var(--mut); margin-top: 6px;">2 sorties sur 4 · 16,6 km.</div></div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ═══════════ NUTRITION ═══════════ -->
+    <sc-if value="{{t3}}" hint-placeholder-val="{{ false }}">
+      <div class="scroller">
+        <div class="{{enterClass}}">
+          <div class="scene" style="background: #22301a; color: #ffffff; padding: 22px 20px;">
+            <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 58%; background: linear-gradient(180deg, #4a6c2e 0%, #3a5622 100%);">
+              <svg class="a-wave" width="550" height="14" viewBox="0 0 550 14" preserveAspectRatio="none" style="position: absolute; left: 0; top: -7px;"><path d="M0 7c20-7 40-7 60 0s40 7 60 0 40-7 60 0 40 7 60 0 40-7 60 0 40 7 60 0 40-7 60 0 40 7 60 0 40-7 60 0" fill="none" stroke="#a9ba7e" stroke-width="2"></path></svg>
+            </div>
+            <div class="fade-on-scroll eyebrow" style="position: relative; color: #c3d6a5;">Aujourd'hui · cible 2 180</div>
+            <div class="big br" style="position: relative; font-weight: 800; font-size: 68px; letter-spacing: -3px; line-height: 1; margin-top: 44px;">1 480</div>
+            <div class="fade-on-scroll br" style="position: relative; font-weight: 700; font-size: 16px; margin-top: 10px;">Il te reste 700 kcal</div>
+            <div class="fade-on-scroll" style="position: relative; margin-top: 22px; height: 48px; border-radius: 14px; background: #ffffff; color: #2e4419; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;">Ajouter un aliment</div>
+          </div>
+          <div style="padding: 16px 20px 240px; display: flex; flex-direction: column; gap: 12px;">
+            <div class="card" style="padding: 16px;"><div class="br" style="font-weight: 700; font-size: 15px;">Hydratation</div><div style="display: flex; gap: 5px; margin-top: 12px;"><div style="flex: 1; height: 10px; border-radius: 5px; background: var(--pc);"></div><div style="flex: 1; height: 10px; border-radius: 5px; background: var(--pc);"></div><div style="flex: 1; height: 10px; border-radius: 5px; background: var(--pc);"></div><div style="flex: 1; height: 10px; border-radius: 5px; background: var(--pc);"></div><div style="flex: 1; height: 10px; border-radius: 5px; background: var(--pc);"></div><div style="flex: 1; height: 10px; border-radius: 5px; background: var(--trk);"></div><div style="flex: 1; height: 10px; border-radius: 5px; background: var(--trk);"></div><div style="flex: 1; height: 10px; border-radius: 5px; background: var(--trk);"></div></div></div>
+            <div class="card" style="padding: 16px;"><div class="br" style="font-weight: 700; font-size: 15px;">Macros</div><div style="margin-top: 12px;"><div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;"><span style="font-weight: 600;">Protéines</span><span class="mo" style="font-size: 11px; color: var(--mut);">96 / 140 g</span></div><div style="height: 6px; border-radius: 3px; background: var(--trk); overflow: hidden;"><div style="height: 100%; width: 69%; border-radius: 3px; background: var(--pn);"></div></div></div><div style="margin-top: 12px;"><div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;"><span style="font-weight: 600;">Glucides</span><span class="mo" style="font-size: 11px; color: var(--mut);">155 / 230 g</span></div><div style="height: 6px; border-radius: 3px; background: var(--trk); overflow: hidden;"><div style="height: 100%; width: 67%; border-radius: 3px; background: var(--amb);"></div></div></div><div style="margin-top: 12px;"><div style="display: flex; justify-content: space-between; font-size: 13px; margin-bottom: 5px;"><span style="font-weight: 600;">Lipides</span><span class="mo" style="font-size: 11px; color: var(--mut);">48 / 70 g</span></div><div style="height: 6px; border-radius: 3px; background: var(--trk); overflow: hidden;"><div style="height: 100%; width: 68%; border-radius: 3px; background: var(--acc);"></div></div></div></div>
+            <div class="card" style="padding: 16px 16px 6px;"><div class="br" style="font-weight: 700; font-size: 15px; margin-bottom: 8px;">Repas</div><div style="display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--bd); font-size: 13.5px;"><span style="font-weight: 600;">Petit-déjeuner</span><span class="mo" style="font-size: 12px; font-weight: 700;">420</span></div><div style="display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--bd); font-size: 13.5px;"><span style="font-weight: 600;">Déjeuner</span><span class="mo" style="font-size: 12px; font-weight: 700;">680</span></div><div style="display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--bd); font-size: 13.5px;"><span style="font-weight: 600;">Collation</span><span class="mo" style="font-size: 12px; font-weight: 700;">380</span></div><div style="display: flex; justify-content: space-between; align-items: baseline; padding: 11px 0; border-top: 1px solid var(--bd); font-size: 13.5px;"><span style="font-weight: 600;">Dîner</span><span class="mo" style="font-size: 12px; font-weight: 700;">—</span></div></div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- La couleur du pilier jaillit de l'onglet touché -->
+    <sc-if value="{{f0}}" hint-placeholder-val="{{ false }}"><div class="flood" style="left: -445px; top: 280px; background: #efc39c;"></div></sc-if>
+    <sc-if value="{{f1}}" hint-placeholder-val="{{ false }}"><div class="flood" style="left: -352px; top: 280px; background: #6b0028;"></div></sc-if>
+    <sc-if value="{{f2}}" hint-placeholder-val="{{ false }}"><div class="flood" style="left: -258px; top: 280px; background: #1d4586;"></div></sc-if>
+    <sc-if value="{{f3}}" hint-placeholder-val="{{ false }}"><div class="flood" style="left: -165px; top: 280px; background: #3a5622;"></div></sc-if>
+  </div>
+
+  <!-- La barre d'onglets : c'est elle qu'on touche -->
+  <div style="position: relative; height: 64px; flex: none; background: var(--sf); border-top: 1px solid var(--bd); display: flex; align-items: center; padding: 0 8px; z-index: 6;">
+    <div class="indicator {{indClass}}" style="left: {{indLeft}}; background: {{indColor}};"></div>
+    <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="4">
+      <div class="tap" onClick="{{tb.pick}}" style="flex: 1; height: 56px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{tb.color}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{tb.icon}}"></path></svg>
+        <span style="font-size: 11px; font-weight: 600; color: {{tb.color}};">{{tb.label}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+</div>
+</x-dc>
+<script data-dc-script data-props='{"theme":{"editor":"enum","options":["light","dark"],"default":"light"},"mouvement":{"editor":"enum","options":["plein","réduit"],"default":"plein"}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const reduced = (this.props.mouvement ?? 'plein') === 'réduit';
+    const tab = st.tab ?? 0;
+    const prev = st.prev ?? 0;
+    const switched = !!st.switched;
+
+    const TABS = [
+      { label: 'Accueil', color: 'var(--pa)', icon: 'M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-6h-6v6H5a1 1 0 0 1-1-1z' },
+      { label: 'Muscu', color: 'var(--pm)', icon: 'M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10' },
+      { label: 'Course', color: 'var(--pc)', icon: 'M6 19.5c0-3 3-3.6 6-4.1s6-1.1 6-4.1-3-3.7-6-3.7M6 19.5h.01M18 5.1h.01' },
+      { label: 'Nutrition', color: 'var(--pn)', icon: 'M20 4c0 8-5 13-12 13H5c0-8 5-13 12-13zM5 20c2-5 5-8 9.5-10' },
+    ];
+    const centers = [54.75, 148.25, 241.75, 335.25];
+    const tabs = TABS.map((t, i) => ({
+      label: t.label,
+      icon: t.icon,
+      color: i === tab ? t.color : 'var(--mut)',
+      pick: () => {
+        const cur = (this.state || {}).tab ?? 0;
+        if (cur === i) return;
+        this.setState({ tab: i, prev: cur, switched: true });
+      },
+    }));
+
+    let enterClass = '';
+    if (switched && tab !== prev) enterClass = reduced ? 'enter-fade' : (tab > prev ? 'enter-r' : 'enter-l');
+    const flood = (k) => switched && !reduced && tab === k && prev !== k;
+
+    return {
+      theme: this.props.theme ?? 'light',
+      t0: tab === 0, t1: tab === 1, t2: tab === 2, t3: tab === 3,
+      f0: flood(0), f1: flood(1), f2: flood(2), f3: flood(3),
+      enterClass: enterClass,
+      tabs: tabs,
+      indLeft: centers[tab] + 'px',
+      indColor: TABS[tab].color,
+      indClass: reduced ? '' : 'ind-plein',
+    };
+  }
+}
+</script>
+</body>
+</html>

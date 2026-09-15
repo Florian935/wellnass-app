@@ -172,6 +172,20 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
    * Chaque clé est **facultative** : un total partiel n'est jamais présenté comme un total (R11).
    */
   sbdLifts: sbdLiftsSchema.default(emptySbdLifts()),
+
+  /**
+   * US DASH-01 (§7) — consentement à l'**assistant IA**, sous forme d'instant ISO.
+   *
+   * `null` = jamais consenti, et c'est le défaut : rien ne sort de l'appareil tant que l'utilisateur
+   * n'a pas lu ce qui part et dit oui. Un **horodatage** plutôt qu'un booléen parce que le RGPD
+   * demande de pouvoir dire *quand* le consentement a été donné ; révoquer repose `null`.
+   *
+   * ⚠️ **Aucune surface ne l'écrit depuis le 13/09/2026** : l'assistant IA a été retiré du build de
+   * lancement (app gratuite en V1, IA cadrée en palier payant post-V1). Le champ reste déclaré parce
+   * que **la colonne existe sur le cloud** — le schéma local en est le miroir, et le faire diverger
+   * rouvrirait la classe de panne de CYCLE-01 le jour où la surface revient.
+   */
+  aiConsentAt: z.string().nullable().default(null),
 });
 
 export type UserSettingsRow = z.infer<typeof userSettingsRowSchema>;

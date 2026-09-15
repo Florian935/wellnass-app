@@ -1,0 +1,259 @@
+{
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "V1 · L'atmosphère"
+    },
+    {
+      "id": "page-2",
+      "name": "V2 · Vivant & rétention"
+    },
+    {
+      "id": "page-3",
+      "name": "V3 · L’app qui comprend"
+    }
+  ],
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "x": 0,
+      "y": 0,
+      "w": 1200,
+      "h": 1280,
+      "title": "Le parti pris",
+      "page": "page-1"
+    },
+    {
+      "file": "Avant.dc.html",
+      "x": 1320,
+      "y": 0,
+      "w": 1200,
+      "h": 1340,
+      "title": "Avant — le même écran, quatre fois",
+      "page": "page-1"
+    },
+    {
+      "file": "Accueil.dc.html",
+      "x": 0,
+      "y": 1500,
+      "w": 390,
+      "h": 1000,
+      "title": "Accueil — le souffle",
+      "page": "page-1"
+    },
+    {
+      "file": "Muscu.dc.html",
+      "x": 500,
+      "y": 1500,
+      "w": 390,
+      "h": 1010,
+      "title": "Musculation — l'impact",
+      "page": "page-1"
+    },
+    {
+      "file": "Course.dc.html",
+      "x": 1000,
+      "y": 1500,
+      "w": 390,
+      "h": 1080,
+      "title": "Course — le flux",
+      "page": "page-1"
+    },
+    {
+      "file": "Nutrition.dc.html",
+      "x": 1500,
+      "y": 1500,
+      "w": 390,
+      "h": 1080,
+      "title": "Nutrition — le remplissage",
+      "page": "page-1"
+    },
+    {
+      "file": "Systeme.dc.html",
+      "x": 0,
+      "y": 2740,
+      "w": 1200,
+      "h": 1220,
+      "title": "Le socle — ce qu'on écrit une fois",
+      "page": "page-1"
+    },
+    {
+      "file": "AccueilVivant.dc.html",
+      "x": 315,
+      "y": 0,
+      "w": 390,
+      "h": 1260,
+      "title": "Accueil vivant — matin, soir, retour",
+      "page": "page-2",
+      "is_interactive": true
+    },
+    {
+      "file": "MuscuVivant.dc.html",
+      "x": 815,
+      "y": 0,
+      "w": 390,
+      "h": 1500,
+      "title": "Muscu vivante — avant, après la séance",
+      "page": "page-2",
+      "is_interactive": true
+    },
+    {
+      "file": "CourseVivant.dc.html",
+      "x": 1315,
+      "y": 0,
+      "w": 390,
+      "h": 1250,
+      "title": "Course vivante — avant, arrivée",
+      "page": "page-2",
+      "is_interactive": true
+    },
+    {
+      "file": "NutritionVivant.dc.html",
+      "x": 1815,
+      "y": 0,
+      "w": 390,
+      "h": 1480,
+      "title": "Nutrition vivante — ajoute, remplis",
+      "page": "page-2",
+      "is_interactive": true
+    },
+    {
+      "file": "Retention.dc.html",
+      "x": 0,
+      "y": 1680,
+      "w": 1200,
+      "h": 1720,
+      "title": "Ce qui fait revenir",
+      "page": "page-2"
+    },
+    {
+      "file": "Animations.dc.html",
+      "x": 1320,
+      "y": 1680,
+      "w": 1200,
+      "h": 1810,
+      "title": "Quinze mouvements de plus",
+      "page": "page-2"
+    },
+    {
+      "file": "AccueilOrbe.dc.html",
+      "x": 315,
+      "y": 0,
+      "w": 390,
+      "h": 1160,
+      "title": "Accueil — l’orbe, le brief, demande-moi",
+      "page": "page-3",
+      "is_interactive": true
+    },
+    {
+      "file": "PiliersFluides.dc.html",
+      "x": 815,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Passer d’un pilier à l’autre",
+      "page": "page-3",
+      "is_interactive": true
+    },
+    {
+      "file": "MuscuEtSi.dc.html",
+      "x": 1315,
+      "y": 0,
+      "w": 390,
+      "h": 1180,
+      "title": "Muscu — et si…",
+      "page": "page-3",
+      "is_interactive": true
+    },
+    {
+      "file": "NutritionPhoto.dc.html",
+      "x": 1815,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "title": "Nutrition — l’assiette en photo",
+      "page": "page-3",
+      "is_interactive": true
+    },
+    {
+      "file": "Intelligence.dc.html",
+      "x": 0,
+      "y": 1350,
+      "w": 1200,
+      "h": 1640,
+      "title": "L’app qui comprend",
+      "page": "page-3"
+    },
+    {
+      "file": "MouvementsV3.dc.html",
+      "x": 1320,
+      "y": 1350,
+      "w": 1200,
+      "h": 1100,
+      "title": "Huit mouvements de plus",
+      "page": "page-3"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "note-lecture",
+      "x": 0,
+      "y": -180,
+      "w": 560,
+      "text": "Commence ici, puis « Avant » à droite, puis descends sur les quatre téléphones.\nTout bouge en boucle, exprès : une refonte qui promet de l'immersion ne se juge pas sur des images fixes.",
+      "page": "page-1"
+    },
+    {
+      "id": "note-piliers",
+      "x": 1320,
+      "y": -180,
+      "w": 560,
+      "text": "Le test à faire sur la rangée du bas : cache les barres d'onglets et regarde les quatre écrans de loin.\nSi tu reconnais le pilier avant de lire un seul mot, c'est gagné.",
+      "page": "page-1"
+    },
+    {
+      "id": "note-socle",
+      "x": 1320,
+      "y": 2740,
+      "w": 560,
+      "text": "La planche du socle répond à la seule question qui compte après le « waouh » : combien ça coûte.\nRéponse : quatre composants, une migration, zéro module natif, zéro nouveau build EAS.",
+      "page": "page-1"
+    },
+    {
+      "id": "note-v2-toucher",
+      "x": 315,
+      "y": -250,
+      "w": 900,
+      "text": "Ces quatre dashboards se touchent — ouvre-les en grand pour jouer avec.\nAccueil : choisis ton énergie de 1 à 5, puis fais défiler le bilan de la semaine. Muscu : touche un jour. Course : touche un kilomètre. Nutrition : ajoute un skyr, du poulet ou une banane, remplis l'eau, touche un autre jour de la semaine.\nLes réglages « moment » au-dessus de chaque planche changent l'instant : matin / soir / retour, avant / après la séance, avant / arrivée.",
+      "page": "page-2"
+    },
+    {
+      "id": "note-v2-sombre",
+      "x": 1315,
+      "y": -250,
+      "w": 890,
+      "text": "Corrigé en passant : en thème sombre, le bordeaux tombait à 1,15:1 sur les cartes — l'onglet « Muscu » était illisible.\nChaque couleur de pilier a maintenant sa variante sombre (muscu #e07a98 5,16:1 · course #6fa8ef 5,94:1 · nutrition #a9ba7e 6,98:1). Appliqué aussi aux quatre téléphones de la V1.",
+      "page": "page-2"
+    },
+    {
+      "id": "note-v3-toucher",
+      "x": 315,
+      "y": -270,
+      "w": 900,
+      "page": "page-3",
+      "text": "Les quatre téléphones se touchent — ouvre-les en grand.\nAccueil : lance le brief (lecture), puis touche une des trois questions ; dans la réponse, « Ajouter », les sources et « Ce n’est pas ça ». Réglage « reseau » : hors ligne.\nPiliers : touche les onglets en bas, puis fais défiler dans le téléphone. Réglage « mouvement » : réduit.\nMuscu : touche la phrase « Et si… », puis les leviers ; « Pourquoi ce chiffre ? » ouvre le calcul.\nNutrition : « Photographier le repas », déclencheur, ajuste le riz, « Ajouter au dîner ». Réglage « reseau » : hors ligne."
+    },
+    {
+      "id": "note-v3-limites",
+      "x": 1315,
+      "y": -270,
+      "w": 890,
+      "page": "page-3",
+      "text": "À savoir : aucune IA ne tourne dans ces maquettes — les réponses sont écrites à l’avance pour montrer le geste.\nLa scène qui se tasse au défilement est en CSS natif : visible dans Chrome et Edge, pas encore dans Safari ni Firefox.\nLes pastilles « premium », « réseau », « zéro natif » de la planche du bas disent ce que chaque geste coûte vraiment."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-3"
+  }
+}

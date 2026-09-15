@@ -11,6 +11,16 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
+> Dernière mise à jour : **13/09/2026 (ter)** — **64 sections**.
+>
+> **⑧ une §63 est arrivée** : MUSCU-UX03, le **mode immersif** de la séance de musculation.
+> 🔴 **Son premier critère est que le mode classique n'ait bougé en rien** : l'immersif est un
+> mode **en plus**, pas un remplacement (décision D1 de Florian). Le classique ne gagne qu'une
+> seule chose, la pastille de record au repos.
+> ✅ **Aucune migration, aucune sync rule, aucune dépendance native** → recettable sur un build
+> de la branche. ⚠️ **Il faut un historique** : verdict, fantôme, records en direct et défi de
+> dernière série se taisent sur un compte neuf — c'est le comportement attendu.
+
 > Dernière mise à jour : **14/09/2026** — **62 sections**.
 >
 > **② une §60 est arrivée** : MUSCU-UX02, le bilan de séance — suite directe de MUSCU-UX01 (§57).
@@ -20,6 +30,13 @@
 > de l'autre. Ses critères **1 à 4** vérifient cela et sont à passer en premier.
 > ⚠️ **Il faut un historique** : la moitié des blocs se taisent délibérément sur un compte neuf.
 >
+> **⑦ une §62 est arrivée** : DASH-01, les dashboards immersifs — la plus grosse du lot, **37
+> critères**, et la seule à toucher les **quatre** écrans d'atterrissage en même temps.
+> ✅ **Rien à préparer** : la surface IA a été retirée du build (décision du 13/09/2026), donc ni
+> secret, ni déploiement, ni coût d'API — et son dernier critère vérifie justement cette **absence**.
+> ⚠️ Sa migration est déjà poussée et **aucune sync rule n'est à déployer** (pour une fois que le
+> réflexe ne s'applique pas).
+
 > **⑥ une §61 est arrivée** : MOTION-01, le langage de mouvement. C'est la première US du dépôt qui
 > ne change **ni une donnée, ni un écran** : elle ajoute la couche de réponse qui manquait (appuis,
 > anneaux, cascades). ✅ **Aucune migration, aucune sync rule, aucune dépendance native** — donc
@@ -2547,14 +2564,14 @@ deux exclusions, toutes deux extérieures à cette US :
 - [x] 63. **§57.23 — plus de clé brute dans le menu ⋮.** Ouvrir le menu pendant une séance : le
       titre du sélecteur affiche « Niveau d'affichage » (« Display level » en anglais), plus
       `workout.displayLevel.title`.
-- [ ] 64. ❌ *Tombé le 11/09 (Pixel 6a, en vibreur) — recorrigé, voir §70.*
+- [x] 64. ✅ *Tombé le 11/09, validé le 13/09 après le second correctif (§70).*
       **§57.21 — le retour haptique existe.** Valider une série produit une vibration brève.
       ⚠️ **Deux conditions à vérifier avant de conclure à un échec** : que la vibration système du
       téléphone soit active, et que le téléphone ne soit pas en mode silencieux total. Le correctif
       repasse par l'API `Vibrator` (celle qui marchait déjà pour le planning et le fractionné) au
       lieu de `performAndroidHapticsAsync`, qu'Android ignore sans rien dire quand le réglage
       « vibration au toucher » est coupé.
-- [ ] 65. ❌ *Tombé le 11/09 — même cause, recorrigé, voir §71.*
+- [x] 65. ✅ *Tombé le 11/09, validé le 13/09 après le second correctif (§71).*
       **La fin de repos vibre toujours.** Même correctif, même code : lancer un repos et le
       laisser aller à 0. C'est la vibration qui marchait **avant** cette US — vérifier qu'elle n'a
       pas été perdue en route.
@@ -2568,8 +2585,12 @@ deux exclusions, toutes deux extérieures à cette US :
       désignés, l'onglet « Mon corps » ne doit afficher **qu'un seul** titre « Force » — celui de
       la section repliable, pas deux.
 
-### Correctifs de la 2ᵉ passe de recette — 11/09/2026 (3 constats)
+### Correctifs de la 2ᵉ passe de recette — 11/09/2026 (3 constats) · ✅ validés le 13/09/2026
 
+> ✅ **Les six critères de ce bloc sont validés** (Florian, 13/09/2026), et avec eux les §64 et §65
+> restés en suspens. ⚠️ **Cela ne clôt pas l'US** : les 59 critères d'origine (§57.1 à 57.59)
+> attendent toujours leur passage sur device — c'est le gros de la recette.
+>
 > Sur les huit critères de la passe précédente, **six passent**. Restent les deux haptiques, tombés
 > pour une raison qui n'avait rien à voir avec la première, plus une remarque d'esthétique et **un
 > défaut nouveau, le plus gênant des trois** : le clavier recouvre la barre de saisie (§57.19).
@@ -2579,30 +2600,30 @@ deux exclusions, toutes deux extérieures à cette US :
 > l'edge-to-edge est **forcé** sur Android : `adjustResize` est toujours au manifeste mais ne
 > redimensionne plus la fenêtre. Un montage en colonne correct ne suffit donc plus.
 
-- [ ] 68. 🔴 **§57.19 — le clavier ne recouvre plus la saisie.** En séance, taper dans le champ de
+- [x] 68. 🔴 **§57.19 — le clavier ne recouvre plus la saisie.** En séance, taper dans le champ de
       **charge** puis dans celui des **reps** : la barre (les deux champs **et** « Valider la
       série ») doit rester **entièrement visible au-dessus du clavier**, et on doit lire ce qu'on
       tape. C'est le critère le plus important de cette passe : sans lui, on saisit à l'aveugle.
-- [ ] 69. **Rien ne saute à la fermeture du clavier.** Valider avec le clavier ouvert, puis le
+- [x] 69. **Rien ne saute à la fermeture du clavier.** Valider avec le clavier ouvert, puis le
       fermer (retour arrière du téléphone) : la barre redescend à sa place, sans laisser de bande
       vide en bas ni chevaucher la barre de navigation gestuelle.
-- [ ] 70. 🔴 **§57.21 — le retour haptique à la validation, seconde tentative.** Valider une série
+- [x] 70. 🔴 **§57.21 — le retour haptique à la validation, seconde tentative.** Valider une série
       doit produire une vibration brève et **nette**. ⚠️ Le premier correctif passait par
       `expo-haptics`, qui n'expose pas une « vibration » mais une **forme d'onde à amplitude
       imposée** : `impactAsync('light')` vaut 30 sur 255, soit 12 % de la puissance du moteur
       pendant 50 ms — sous le seuil de perception d'un Pixel 6a. On repasse sur `Vibration` de
       React Native, qui laisse l'amplitude **par défaut du constructeur** : c'est l'API qui
       marchait avant cette US, et celle du guidage de fractionné.
-- [ ] 71. **La fin de repos vibre, et plus fort que la validation.** Lancer un repos, le laisser
+- [x] 71. **La fin de repos vibre, et plus fort que la validation.** Lancer un repos, le laisser
       aller à 0 : la vibration doit être franchement plus longue que celle d'une série validée
       (140 ms contre 30). Les deux doivent se distinguer les yeux fermés — c'est tout l'intérêt
       d'avoir deux niveaux.
-- [ ] 72. **La bande de statistiques est présentable.** Sur une séance à gros tonnage : les quatre
+- [x] 72. **La bande de statistiques est présentable.** Sur une séance à gros tonnage : les quatre
       nombres ont **la même taille de police** (c'était le défaut — chaque cellule rétrécissait
       différemment, la densité finissait deux fois plus petite que la durée), l'unité est en petit
       à côté du nombre, et le tonnage n'a **plus de décimale** (« 5 500 kg », pas « 5 500,0 kg »).
       Les libellés longs passent à la ligne au lieu de rapetisser.
-- [ ] 73. **Non-régression : les autres vibrations de l'app.** Le glisser-déposer du **planning** et
+- [x] 73. **Non-régression : les autres vibrations de l'app.** Le glisser-déposer du **planning** et
       les annonces du **fractionné** vibrent toujours — ils n'ont pas été touchés, mais ils
       partagent le moteur.
 
@@ -2628,7 +2649,8 @@ deux exclusions, toutes deux extérieures à cette US :
 >
 > 🔴 **DEUX PRÉREQUIS AVANT DE COMMENCER — dans cet ordre.**
 >
-> **① Déployer la sync rule PowerSync.** `water_entries` est une **table neuve**. Coller
+> **① Déployer la sync rule PowerSync — ✅ FAIT, confirmé par Florian le 13/09/2026.**
+> `water_entries` est une **table neuve**. Coller
 > [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le dashboard
 > PowerSync (Settings → Sync Rules) puis **Deploy**. Sans ce geste, les verres bus restent
 > **locaux** et ne remontent jamais — *sans aucune erreur visible*. Étape déjà oubliée **trois
@@ -2639,6 +2661,11 @@ deux exclusions, toutes deux extérieures à cette US :
 > `water_entries`, `foods.preparation_state`, `meal_plan_entries.food_id`/`quantity_g`,
 > `nutrition_profiles.water_target_ml`/`glass_size_ml`. Un APK antérieur écrira dans des
 > colonnes qui n'existent pas chez lui — et **avalera l'erreur**.
+>
+> **③ La bibliothèque est passée à 3 244 aliments le 13/09/2026** (import CIQUAL, section K).
+> C'est une donnée de référence : rien à installer, elle **descend par la synchro**. À la
+> première ouverture après le build, laisser la synchro finir — ~3 200 aliments et ~6 500
+> traductions arrivent une fois, puis plus rien.
 >
 > ⚠️ **Trois sessions ont travaillé la même semaine** (accueil, musculation, course). Cette US
 > vit dans un worktree isolé et ne touche que le pilier nutrition, mais au merge : vérifier que
@@ -2803,14 +2830,39 @@ deux exclusions, toutes deux extérieures à cette US :
 - [ ] 69. Le **widget nutrition de l'accueil** ouvre toujours le bon repas selon l'heure.
 - [ ] 70. **Aucun texte anglais** n'apparaît en français, et inversement (basculer la langue).
 
-### J. Ce qui reste ouvert après cette recette
+### J. La bibliothèque d'aliments — import CIQUAL du 13/09/2026
 
-- [ ] 71. 🔴 **La bibliothèque compte toujours 80 aliments.** Ce n'est pas un défaut de l'US :
-      le remplissage exige le CSV CIQUAL, non versionné et absent de la machine. L'outillage est
-      livré (`generate.py --bulk`), la procédure est en spec §9 — **c'est le premier
-      reste-à-faire du pilier, et il ne demande aucun développement**.
-- [ ] 72. La **traduction EN** des aliments importés reste à faire (CIQUAL est monolingue) :
-      le script annonce le nombre concerné à chaque import.
+> **80 → 3 244 aliments** (table CIQUAL 2025 de l'ANSES, Licence Ouverte). Toute la nutrition
+> vient du fichier ANSES : **aucune valeur saisie à la main**. Ces critères n'existaient pas à
+> la livraison du 10/09 — le lot était alors impossible, faute du fichier source.
+
+- [ ] 71. Chercher **« courgette »**, **« cabillaud »**, **« emmental »**, **« lentilles »**,
+      **« jus d'orange »** : chacun existe. Aucun n'était dans les 80 aliments d'avant — c'est
+      précisément le « mur au deuxième repas » que l'audit décrivait.
+- [ ] 72. 🔴 **Taper lettre par lettre : « p », « po », « pom », « pomme ».** La liste se
+      **resserre** à chaque lettre, sans jamais faire disparaître un résultat déjà vu. Un
+      aliment qui s'affiche puis s'efface quand on **précise** sa recherche = le plafond de
+      balayage a sauté ; c'est le défaut que l'import a révélé et que cette livraison corrige.
+- [ ] 73. La recherche reste **immédiate** — aucun blanc perceptible — malgré les 3 244 entrées.
+- [ ] 74. Chercher **« boeuf »** puis **« saumon »** : les versions **crues** et **cuites** sont
+      distinguées par le badge cru / cuit. L'information vient désormais de CIQUAL (498 aliments
+      la portent) et non plus de la lecture du nom.
+- [ ] 75. Ajouter un aliment importé au journal, ouvrir son détail : les **micronutriments** sont
+      renseignés. Un nutriment absent de CIQUAL doit rester **absent**, jamais affiché à 0.
+- [ ] 76. ⚠️ Un aliment importé n'a **pas de portion usuelle** : la quantité s'ouvre sur 100 g
+      et le stepper fonctionne normalement. C'est **attendu** (CIQUAL ne fournit pas de
+      portions), pas un défaut — voir 78.
+- [ ] 77. Les 80 aliments d'origine sont **intacts** : « Poulet (blanc, cuit) » garde son nom
+      retouché, sa traduction anglaise et sa portion « 1 blanc = 120 g ». L'import **ajoute**,
+      il ne réécrit pas.
+
+### K. Ce qui reste ouvert après cette recette
+
+- [ ] 78. La **traduction EN de 3 164 noms** reste à faire : CIQUAL est monolingue, donc en
+      anglais ces aliments s'affichent en français. Dette **tracée** (marqueur
+      `needsTranslation`, comptée à chaque import), pas un oubli — décision G.
+- [ ] 79. Les **portions usuelles** des aliments importés (voir 76), à compléter au fil de
+      l'eau : patron dans la migration `…nutrf2_portions_reference_aliments.sql`.
 ---
 
 ## 59. CARDIO-UX01 — Refonte UX du pilier Course (`feature/cardio-refonte-ux`)
@@ -2987,6 +3039,10 @@ n'étaient pas les siens**.
 
 Six chantiers de l'audit ne sont **pas** livrés dans ce lot. Ils ont leur spec, leur plan et,
 pour deux d'entre eux, leurs briques de calcul déjà écrites et testées :
+
+> 📌 **Ils sont désormais aussi dans [BACKLOG.md](BACKLOG.md) (P1, CARDIO-02 → CARDIO-07)**, recopiés
+> le 13/09/2026. C'est volontaire : ce fichier-ci **se vide dès qu'une US est clôturée**, et ces six
+> chantiers n'existaient nulle part ailleurs — ils seraient morts avec la recette.
 
 | Constats | Sujet | État |
 |---|---|---|
@@ -3208,7 +3264,410 @@ L'analyse listait 45 effets, **19 sont dans ce lot**. Les 26 autres, et pourquoi
 A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branchements.
 ---
 
-## 64. CORPS-03 — Priorités confirmées et lecture du programme
+## 62. DASH-01 — Dashboards immersifs (`feature/dash01-dashboards-immersifs`)
+
+> **37 critères.** Spec : [dash01-dashboards-immersifs.md](docs/specs/functional/us/dash01-dashboards-immersifs.md) ·
+> Plan : [dash01-dashboards-immersifs.md](docs/plans/dash01-dashboards-immersifs.md) ·
+> Maquettes : [design/dash-immersifs-2026-09/](design/dash-immersifs-2026-09/) (19 planches, 3 pages).
+>
+> ✅ **Rien à préparer : ni secret, ni déploiement, ni migration à pousser.** La surface IA a été
+> **retirée du build** (décision de Florian du 13/09/2026, spec §7) : l'app n'envoie rien à personne,
+> et il n'y a aucun coût d'API. La carte « Demande-moi » reste, dans sa version **déterministe** —
+> c'est le critère 37.
+>
+> ℹ️ La migration `20260913163130_dash01_ai_consent_usage` est appliquée sur le cloud et y reste
+> (colonne + table dormantes) ; **aucune sync rule à déployer**.
+>
+> ⚠️ **Recettable sur un build de la branche** : aucune dépendance native nouvelle
+> (`expo-speech` était déjà là).
+>
+> ⚠️ **Le mouvement se coupe avec MOTION-01** : si « Animations » est désactivé (app ou Android),
+> tout ce qui suit s'affiche **directement à sa valeur finale**. C'est le comportement correct, et
+> le critère 2 le vérifie.
+
+### Le socle des quatre scènes
+
+- [ ] 1. **Ouvrir chaque onglet** : chacun a **sa couleur** — bordeaux (muscu), bleu (course), vert
+      (nutrition), terracotta clair (accueil) — quelle que soit la « couleur par menu » réglée.
+- [ ] 2. **Couper « Animations »** (app ou Android) : les scènes s'affichent d'un coup, chiffres et
+      jauges **déjà à leur valeur**. Rien ne disparaît, rien ne clignote.
+- [ ] 3. **Arriver sur le pilier Musculation** : les muscles de la séance s'allument **une seule
+      fois**, puis se posent. *C'est le correctif du « bug visuel » relevé sur la maquette : plus
+      aucun clignotement en boucle.*
+- [ ] 4. **Faire défiler un pilier vers le bas** : la scène sort de l'écran et un **bandeau compact**
+      apparaît en haut, avec le titre et le chiffre clé. Remonter : il disparaît.
+- [ ] 5. **En lecteur d'écran (TalkBack)** : le bandeau compact **n'est pas annoncé** tant que la
+      scène est dépliée — l'information n'est pas lue deux fois.
+- [ ] 6. **Thème sombre** : les quatre scènes restent lisibles, textes compris (contraste AA).
+
+### Nutrition — le remplissage
+
+- [ ] 7. **Ouvrir le journal** : la scène se remplit à hauteur de ce qui a été mangé, avec une
+      **vague** lente en surface. Le niveau **ne dépasse jamais** le filet de cible.
+- [ ] 8. **Dépasser la cible du jour** : le niveau s'arrête au filet et le texte dit l'excédent
+      (« 240 kcal au-dessus »). *Aucune jauge qui déborde.*
+- [ ] 9. **Les sept verres** de la semaine : taper un jour passé change de jour ; un **jour à venir
+      ne répond pas**.
+- [ ] 10. **Laisser un jour de la semaine sans rien saisir** : son verre est en **pointillé**, et la
+      scène nomme le trou le plus récent. Le taper ouvre ce jour.
+- [ ] 11. **Aujourd'hui, avec des aliments récents** : trois boutons d'ajout rapide ; un tap ajoute
+      l'aliment à sa portion de référence. Sur un **jour passé**, ils disparaissent.
+- [ ] 12. **Sans objectif calorique** : aucun niveau, aucun pourcentage — un lien « définir un
+      objectif ».
+- [ ] 13. **Le reste du journal est intact** : repas, hydratation, micros, qualité, planning repas.
+- [ ] 14. **« Pourquoi ? » à côté du reste à manger** : les étapes du calcul (dépense estimée,
+      ajustement d'objectif, bonus de séance) et un niveau de confiance.
+
+### Course — le flux
+
+- [ ] 15. **Ouvrir le pilier** : une trace parcourue en boucle, lente. **Mettre l'app en
+      arrière-plan puis revenir** : elle s'était arrêtée et repart.
+- [ ] 16. **Avec une séance prévue aujourd'hui** : type, structure (« 6 × 400 m »), volume, durée
+      estimée et allure cible. Avec une **heure** saisie (HORAIRE-01) : l'heure et « dans ~3 h ».
+- [ ] 17. **Sans heure saisie** : aucun compte à rebours inventé.
+- [ ] 18. **Après une sortie terminée aujourd'hui** : la scène **change** — distance qui roule,
+      durée, allure, et le 10 km estimé. *Avant, l'écran disait « rien de prévu ».*
+- [ ] 19. **Km par km** (sortie GPS d'au moins 2 km) : une barre par kilomètre, un tap affiche son
+      temps et son écart. Sans trace GPS, la carte **n'apparaît pas**.
+- [ ] 20. **Chronos prédits** : n'apparaissent qu'avec un record de 5 km. Taper une distance ouvre
+      « Pourquoi ? » (Riegel, depuis ton record).
+- [ ] 21. **Charge** : le curseur se place entre les deux seuils, et la zone est **nommée**. Sans
+      4 semaines d'historique, la carte se tait.
+
+### Musculation — l'impact
+
+- [ ] 22. **Avec une séance prévue** : nom, programme, exercices, durée estimée, les trois premiers
+      exercices en pastilles et « + N autres ».
+- [ ] 23. **Le record à portée** apparaît sous la séance (« Squat : 2,5 kg du record »). S'il n'y en
+      a pas, la ligne devient « Semaine 3 sur 8 ».
+- [ ] 24. **Après une séance terminée aujourd'hui** : tonnage qui roule, exercices, records battus.
+      *Avant : « repos mérité », sans un chiffre.*
+- [ ] 25. **La semaine séance par séance** : sept jours, les jours faits marqués, un tap ouvre le
+      planning.
+- [ ] 26. **À ta portée** : jusqu'à trois exercices avec l'écart au record ; un tap ouvre la fiche.
+      Rien à portée → la carte se tait.
+- [ ] 27. **« Et si… »** : changer les séances par semaine fait bouger la projection **et** la cible
+      calorique. Deux séances de plus avec « sommeil comme d'habitude » : un avertissement de
+      surcharge, et la projection **baisse**. Sans historique suffisant : ce qui manque, et **aucun
+      chiffre**.
+- [ ] 28. **« Pourquoi ? » sur la projection, puis « ce n'est pas ça » sur le sommeil** : la règle
+      est atténuée, la projection change, et le bouton propose de la restaurer. *Trois refus la
+      neutralisent ; elle ne s'inverse jamais.*
+
+### Accueil — le souffle
+
+- [ ] 29. **Avant 11 h, sans check-in** : cinq pastilles d'énergie. En taper une l'enregistre, et la
+      scène affiche le verdict de forme.
+- [ ] 30. **Le soir (après 20 h par défaut), sans activité du jour, avec une série en cours** : la
+      série, le temps restant, l'état du joker, et un bouton d'action courte.
+- [ ] 31. **Après 7 jours sans rien** : « content de te revoir », la meilleure série, et deux
+      reprises proposées (douce / plan normal). *Aucun reproche.*
+- [ ] 32. **Le reste du temps** : les anneaux de la semaine, un par pilier **actif** (désactiver un
+      pilier retire son anneau).
+- [ ] 33. **« Depuis ta dernière visite »** : après une pesée ou un record, la carte apparaît au
+      retour ; sinon elle **ne s'affiche pas**.
+- [ ] 34. **Le lundi ou le mardi** : le bilan de la semaine en cartes. Le mercredi : plus rien.
+- [ ] 35. **Le matin** : le brief, trois phrases au plus. **Écouter** : la voix lit, et la phrase en
+      cours s'éclaircit. Quitter l'écran : la voix s'arrête.
+- [ ] 36. **« Demande-moi »** : les trois questions répondent **même sans réseau** et sans assistant
+      IA activé.
+
+### L'absence d'IA (décision du 13/09/2026)
+
+- [ ] 37. **Aucune surface IA nulle part** : pas de bouton photo dans le journal (le geste principal
+      de la scène nutrition est « Chercher »), **pas de section « Assistant IA »** dans les Réglages,
+      et « Demande-moi » répond **sans jamais mentionner de reformulation**. *Rien ne doit sortir de
+      l'appareil vers un tiers.*
+
+### 🔴 Ce qui n'est PAS livré — ne pas le chercher
+
+- **La photo de repas et l'assistant IA** : la plomberie existe (migration appliquée, fonction Edge
+  `ai-assist` dans le dépôt), mais **la surface est retirée du build de lancement** — l'app est
+  gratuite en V1 et l'IA était cadrée en palier payant post-V1
+  ([analyse du 15/07/2026](docs/product/ia-integration-analyse.md)). Aucun secret n'est posé, aucune
+  fonction n'est déployée, **aucun coût d'API**. « Demande-moi » reste, en version déterministe.
+- **Le partage de la carte de séance depuis le hub muscu** : il reste sur l'écran de bilan, à un tap
+  de plus. Le dupliquer aurait demandé de recharger tout le rapport de séance dans le hub.
+- **L'écart de prédiction 10 km à l'arrivée d'une sortie** : l'app ne garde pas l'historique des
+  records, donc l'écart avec l'estimation d'hier n'est **pas calculable**. La scène affiche
+  l'estimation courante et dit quand elle vient de cette sortie. Un écart inventé serait pire.
+- **Le compte à rebours à la minute** : il reste à l'heure (« dans ~3 h », « environ 4 h »). La seule
+  horloge autorisée dans un hook est réactive à l'heure pile ; une minuterie à la minute ferait
+  re-rendre l'écran soixante fois par heure pour une précision que personne ne lit.
+
+## 63. MUSCU-UX03 — Mode immersif de la séance (`feature/muscu-ux03-mode-immersif`)
+
+> **56 critères.** Spec : [muscu-ux03-mode-immersif.md](docs/specs/functional/us/muscu-ux03-mode-immersif.md) ·
+> Plan : [muscu-ux03-mode-immersif.md](docs/plans/muscu-ux03-mode-immersif.md) ·
+> Maquettes : [design/muscu-ux03-mode-immersif/](design/muscu-ux03-mode-immersif/) (2 toiles, dont un
+> prototype jouable).
+>
+> ✅ **Aucune migration, aucune sync rule à redéployer, aucune dépendance native neuve.** Le mode et
+> ses réglages vivent dans `secureStorage` ; le ressenti s'écrit dans la colonne `rpe` existante ;
+> `expo-speech`, `expo-notifications`, `react-native-svg` et Reanimated étaient déjà là. **Recettable
+> sur un build de la branche.**
+>
+> 🔴 **Le premier critère est le plus important : le mode classique ne doit avoir bougé en rien.**
+> C'est tout le contrat de l'US (décision D1). S'il tombe, le reste de la section n'a plus d'intérêt.
+> Le classique gagne **une seule chose** : la pastille de record en tête du repos (critères 7-8).
+>
+> ⚠️ **Il faut un historique pour voir la moitié de l'immersif.** Verdict, fantôme, records en direct
+> et défi de dernière série comparent à la **dernière séance terminée du même exercice** : sur un
+> compte neuf, ils se taisent — **c'est le comportement attendu**, pas un bug. Prévoir deux séances
+> du même programme à quelques minutes d'intervalle pour les déclencher.
+>
+> ⚠️ **Le mode par défaut est Classique.** Pour recetter l'immersif, le choisir explicitement :
+> sélecteur de la carte « Séance du jour », menu ⋮ en séance, ou Réglages › Séance.
+
+### 🔴 Le classique n'a pas bougé — à passer en premier
+
+- [ ] **1.** Mode **Classique**, niveau **Simplifiée** puis **Normale** puis **Détaillée** : l'écran
+  de séance est identique à avant (carte de contexte, liste des exercices, barre d'action fixe,
+  repos plein écran). Aucun fond sombre, aucune voix, aucun cadran, aucun brief.
+- [ ] **2.** Superset, échauffement, RPE/RIR, note d'exercice, « Plus tard », « Remplacer »,
+  dé-validation sans repos, « + Série » : tout se comporte comme avant.
+- [ ] **3.** Le **niveau d'affichage** (profil) vaut pour les **deux** modes et reste synchronisé
+  entre appareils ; le **mode**, lui, est local à l'appareil.
+
+### Choix du mode
+
+- [ ] **4.** Compte neuf (aucune séance terminée), premier « Commencer » : la feuille
+  « Comment veux-tu t'entraîner ? » s'ouvre, **rien n'est coché**, « Retenir mon choix » l'est.
+- [ ] **5.** Compte **avec historique** : la feuille ne s'ouvre jamais, le mode reste Classique.
+- [ ] **6.** Le sélecteur **Classique · Immersif** de la carte « Séance du jour » change le mode et
+  le retient **après redémarrage de l'app**.
+- [ ] **7.** Menu ⋮ en pleine séance → « Mode d'affichage » : la bascule garde les **séries
+  validées**, la **série courante**, le **repos en cours** (l'échéance ne repart pas de zéro) et les
+  valeurs en cours de saisie.
+- [ ] **8.** Réglages › Séance : chaque interrupteur agit et survit au redémarrage.
+
+### Classique — la pastille de record (le seul ajout)
+
+- [ ] **9.** Battre la **charge max** d'un exercice **qui a déjà un record** : pastille ambre
+  « Record : … (avant …) » **en tête de l'écran de repos**, avec vibration. Aucune voix, aucun plein
+  écran, aucun verdict.
+- [ ] **10.** Premier passage sur un exercice **jamais fait** : aucune pastille (on n'invente pas un
+  record sur une première fois).
+
+### Immersif — la séance
+
+- [ ] **11.** Fond **sombre** en thème clair comme en thème sombre. La surcharge « Couleurs des
+  menus » ne s'y applique pas — c'est voulu.
+- [ ] **12.** Le **ruban segmenté** de l'en-tête a un segment par exercice, large comme son nombre de
+  séries ; il vire au vert quand un exercice est bouclé.
+- [ ] **13.** « Ensuite » (pont ou repos) ouvre le **plan de séance** : aller à un exercice,
+  dé-valider **sans relancer le repos**, supprimer, « + Série », monter, descendre, « Plus tard »,
+  « Remplacer », « Ajouter un exercice ». Tout doit fonctionner comme dans la liste classique.
+- [ ] **14.** Les trois niveaux montrent exactement le tableau §4.4 de la spec (écart au prévu,
+  suggestion, échauffement, options de série, enjeu).
+- [ ] **15.** Le **brief** s'affiche en immersif pour une séance de programme lancée depuis
+  l'**accueil du pilier**, l'**accueil général**, le **planning** et la **fiche programme**, ainsi
+  que pour une séance issue d'un **modèle**. Jamais pour une séance libre, jamais à la reprise.
+- [ ] **16.** 🔴 Ouvrir le brief, **attendre deux minutes**, puis « C'est parti » : le chrono de la
+  séance démarre **à zéro** (rien n'est créé tant qu'on n'a pas dit oui). Revenir en arrière depuis
+  le brief ne laisse **aucune séance active** derrière soi.
+
+### Barre chargée, effort, cadran
+
+- [ ] **17.** Développé couché à **82,5 kg** : « Par côté : 25 + 5 + 1,25 · barre 20 kg ».
+- [ ] **18.** Réglages › Séance, barre à **15 kg** : le calcul change (« 25 + 15 + 1,25 · barre 15 kg »).
+- [ ] **19.** Exercice à **haltères** ou sur **machine** : aucune barre dessinée.
+- [ ] **20.** Charge **inférieure ou égale** à la barre : « Barre seule ». Reste non chargeable :
+  « + 0,5 kg non chargeable ».
+- [ ] **21.** « Lancer la série » : l'écran passe en plein cadre et **bat au tempo**. Toucher le
+  cercle compte une rép et vibre ; la **8ᵉ** rép sur un objectif de 7 passe en **or**.
+- [ ] **22.** Réglages › « Guide de tempo » coupé : l'écran d'effort ne bat plus, tout le reste est
+  identique.
+- [ ] **23.** « Terminé » : le cadran s'ouvre sur les **reps comptées** ; **sans aucun comptage**,
+  sur l'**objectif**. Le glissé vertical avance cran par cran et vibre.
+- [ ] **24.** 🔴 Choisir **« Solide »** enregistre **RPE 7** (visible au niveau Détaillée). La séance
+  suivante propose toujours une **progression** sur cet exercice — MUSC-F7 ne doit **pas** se
+  déclencher. *(Un RPE 8 ici couperait silencieusement la progression assistée.)*
+- [ ] **25.** Choisir **« Limite »** enregistre RPE 10 et propose **−2,5 kg** sur la série suivante
+  du même exercice ; « Garder » ne change rien. Choisir **« Facile »** propose **+2,5 kg**.
+- [ ] **26.** Aucun ajustement proposé sur un **échauffement**, ni si la charge suivante tomberait
+  **sous la barre à vide**, ni s'il n'y a pas de série suivante.
+- [ ] **27.** « Valider directement » (pont) valide la série **sans** effort ni cadran, avec les
+  valeurs des champs.
+- [ ] **28.** Série **à la durée** : l'effort affiche un **compte à rebours** ; à zéro, le cadran
+  s'ouvre tout seul avec la durée atteinte.
+
+### Retours après la série
+
+- [ ] **29.** Verdicts du tableau §5.3 : « +2,5 kg vs mardi », « +1 rép vs mardi », « Comme mardi »,
+  « 6 reps · mardi 8 », « Première référence posée ». **Aucun rouge** sur une série en dessous.
+- [ ] **30.** Une référence de **plus de 7 jours** est nommée par sa **date** (« vs 02/08 »), pas par
+  son jour.
+- [ ] **31.** **Charge max battue** : plein écran de record pendant le repos (ressort, deux ondes,
+  ancien record). Un toucher le ferme, le **repos continue dessous**, il se ferme seul au bout de
+  ~2,6 s.
+- [ ] **32.** Une **deuxième** charge max dans la même séance → **pastille** seulement (le plein
+  écran ne se joue qu'une fois par séance).
+- [ ] **33.** **1RM estimé** battu sans charge max → pastille ambre « 1RM estimé ».
+- [ ] **34.** Les records **enregistrés à la clôture** sont les mêmes qu'en mode classique pour une
+  séance identique. *(⚠️ écart connu et assumé : un exercice sans record antérieur n'est **pas**
+  célébré en séance mais apparaît bien dans les records du bilan.)*
+
+### Le repos
+
+- [ ] **35.** Disque de **respiration** (2 s inspire / 3 s expire), « Prépare-toi » à T−5 s, trois
+  vibrations à T−3, T−2, T−1, vibration longue à la fin.
+- [ ] **36.** **Veille** : 20 s sans toucher → écran noir, chiffres braise, « Touche pour réveiller ».
+  Réveil au toucher **et automatiquement à T−5 s**. Réglage « Veille » coupé → jamais de veille.
+- [ ] **37.** Réduire le repos (chevron) : la barre compacte se pose **au-dessus du pont** sans le
+  recouvrir, et la série suivante reste réglable pendant que le temps tourne.
+- [ ] **38.** Onglet **« Le fantôme de mardi »** : écart chiffré et courbe cohérents avec les séries
+  faites (vérifier à la main sur 2 séries). Réglage « Fantôme » coupé → onglet et pastille absents.
+- [ ] **39.** Onglet **« Le corps qui chauffe »** : les pectoraux chauffent sur un développé couché,
+  et la **légende écrite** nomme les deux muscles les plus chauds avec leur nombre de séries.
+- [ ] **40.** **Exercice bouclé** : carte en tête du repos (séries, tonnage, écart en % vs la
+  dernière fois, records), puis « Ensuite » présente l'exercice suivant.
+- [ ] **41.** **Dernière série** derrière le fantôme : défi « N reps à X kg et mardi est battu » avec
+  N correct. Devant : « mardi est déjà battu de X kg ». Après un ressenti **« Limite »** sur la série
+  précédente : **aucun défi**.
+
+### Coach vocal
+
+- [ ] **42.** **Motivant** : voix audible, phrases complètes. **Sobre** : chiffres seuls, et rien au
+  brief ni en fin de séance. **Muet** : aucune voix, **les légendes écrites restent**.
+- [ ] **43.** Aucune parole **pendant l'effort** en dehors de la consigne dite au lancement ; une
+  nouvelle réplique **coupe** la précédente.
+- [ ] **44.** App en **anglais** : répliques écrites et voix en anglais.
+
+### Fin de séance
+
+- [ ] **45.** « Terminer la séance » : la **cérémonie** s'affiche pendant la clôture (titre, corps
+  chauffé, durée, tonnage, séries, records, verdict du fantôme), puis « Voir le bilan » ouvre le
+  bilan MUSCU-UX02.
+- [ ] **46.** **Relais nutrition** présent **seulement** si le pilier Nutrition est actif **et** que
+  le bonus glucides du jour est non nul. Pilier coupé → aucune ligne, pas même grisée.
+- [ ] **47.** Carte à partager du bilan : **schéma corporel chauffé** + tonnage, séries, record.
+  **Aucune donnée de santé** (ni poids du corps, ni nutrition).
+
+### Le fil (notifications)
+
+- [ ] **48.** Immersif, app en **arrière-plan** pendant le repos : notification **continue**
+  « Repos jusqu'à 18:42 · … » (non sonore, non balayable), puis rappel **« C'est reparti »** à
+  l'échéance.
+- [ ] **49.** App au **premier plan** : la notification de fin de repos ne s'affiche **jamais** par
+  dessus l'écran de repos.
+- [ ] **50.** « Passer » ou « +15 s » dans l'app : le rappel est annulé / replanifié en conséquence.
+- [ ] **51.** **Classique** : aucune notification de repos tant que le réglage est désactivé (défaut).
+- [ ] **52.** 🔴 Une séance de 18 séries **ne consomme pas** le quota de 3 notifications immédiates
+  par jour : un rappel du soir (streak, repas) arrive quand même.
+
+### Transverse
+
+- [ ] **53.** **Mode avion** toute la séance : tout fonctionne, voix comprise (si une voix est
+  installée sur l'appareil).
+- [ ] **54.** Réglage **« Animations »** coupé (ou « réduire les animations » du système) : mêmes
+  informations, sans battement, sans ondes, sans pulsation.
+- [ ] **55.** Unités en **livres** : disques américains (45/35/25/10/5/2,5 lb), barre 45 lb, verdicts
+  et tonnages en lb.
+- [ ] **56.** Aucune **clé brute** affichée (`immersive.…`, `coach.…`) en FR comme en EN.
+
+---
+
+## 64. GUID-01 — Objectif utile et régime de guidage (`feature/guid01-objectif-regime-guidage`)
+
+[Spec](docs/specs/functional/us/guid01-objectif-regime-guidage.md) ·
+[plan](docs/plans/guid01-objectif-regime-guidage.md) ·
+[analyse](docs/product/analyse-objectif-guidage-2026-09.md) ·
+[maquettes](design/objectif-guidage-2026-09/) · roadmap **1.30**
+
+> ✅ **La migration est poussée** (13/09/2026) et le drapeau `GUIDANCE_WRITE_READY` est à `true` :
+> la recette peut démarrer, rien à préparer côté base.
+> ⚠️ Le push a d'abord été **refusé** — le cloud portait une migration (`20260913182920`, seed
+> CIQUAL v2) dont le fichier n'était pas encore commité. Débloqué le jour même par `89396aa0` sur
+> `dev`. Mentionné ici parce que si un symptôme d'écriture perdue apparaît en recette, c'est le
+> premier endroit où regarder : vérifier que `GUIDANCE_WRITE_READY` vaut bien `true`.
+> ✅ **Aucune sync rule à déployer** : `profiles` est déjà publiée en `select *`.
+
+> ⚠️ **Il faut un compte NEUF** pour les critères 1 à 6 (l'onboarding ne rejoue pas tout seul —
+> passer par Réglages → **Rejouer l'onboarding**).
+
+### L'onboarding
+
+- [ ] **1.** Compte neuf, onboarding complet : l'**étape 4 demande le guidage**, plus le niveau
+  d'affichage. Le parcours compte toujours **5 étapes** (4 si la nutrition est coupée).
+- [ ] **2.** Étape 3, chaque objectif affiche **ce qu'il décide** (« +300 kcal · progression en
+  charge · endurance »), et ces mentions **changent** selon les piliers actifs.
+- [ ] **3.** Choisir **Performance** avec muscu **et** course actifs → la question « Performance en
+  quoi ? » apparaît. Avec un seul des deux → elle **n'apparaît pas**.
+- [ ] **4.** Les chips d'échéance (3 mois / 6 mois / 1 an) se sélectionnent et se désélectionnent ;
+  « Pas de date » est le défaut.
+- [ ] **5.** Récapitulatif : la ligne **Guidage** affiche le régime choisi. En ayant **passé**
+  l'étape 4, elle affiche « Accompagné » **avec la mention « Déduit de ton objectif »**.
+- [ ] **6.** La carte sombre **« Ta première action »** pointe le bon pilier (muscu > course >
+  nutrition) et son bouton mène au bon endroit.
+
+### Le régime, vu de l'intérieur
+
+- [ ] **7.** 🔴 **Régime guidé + collision de séances** (il faut une séance jambes lourde la veille
+  d'un fractionné, et `Réglages → Détecteur de collisions` **activé**) : la séance est
+  **déplacée toute seule**, et le bandeau annonce « Je l'ai déplacée à … ».
+- [ ] **8.** Le bouton **« Annuler le déplacement »** de ce bandeau remet la séance à sa place —
+  **et elle n'est pas re-déplacée dans la foulée**.
+- [ ] **9.** **Régime accompagné**, même situation : la séance **ne bouge pas**, le bandeau propose
+  « Déplacer à … ».
+- [ ] **10.** **Régime autonome**, même situation : **aucun bandeau** sur le planning.
+- [ ] **11.** 🔴 **`Détecteur de collisions` désactivé + régime guidé** : **rien ne bouge**, aucun
+  bandeau. Le régime ne rallume jamais un réglage éteint.
+- [ ] **12.** Changer le régime **global** après avoir posé une surcharge dans un pilier : la
+  **surcharge gagne**, elle n'est pas écrasée.
+
+### Les programmes
+
+- [ ] **13.** Compte neuf sans programme, hub Muscu : toucher une suggestion ouvre la feuille
+  **« Deux questions, et on affine »**. Y répondre **change le tri** des propositions.
+- [ ] **14.** La feuille **ne revient plus** ensuite. « Plus tard » la referme **sans rien écrire**
+  (le profil muscu affiche toujours « Pas encore renseigné »).
+- [ ] **15.** Déclarer **« Je suis confirmé »** puis mettre le niveau d'affichage sur **Simplifiée** :
+  les suggestions restent **avancées**. (C'est le bug historique : l'affichage servait de proxy.)
+- [ ] **16.** Déclarer **1 jour / semaine** : la liste des suggestions **n'est jamais vide**.
+- [ ] **17.** **Régime guidé**, compte neuf, muscu actif : le récapitulatif propose **« Je pose
+  “<nom>” dans ton planning »**, et le toucher rend le programme **actif** dans le hub.
+
+### Les profils de pilier
+
+- [ ] **18.** **Réglages → Profil musculation** existe et s'ouvre (écran neuf).
+- [ ] **19.** Les écrans de profil **Course** et **Nutrition** portent le sélecteur de régime, en
+  haut. ⚠️ Le profil **Musculation n'en a pas**, et c'est voulu : aucun moteur muscu ne lit encore
+  le régime, un curseur y décrirait des comportements qui ne se produisent pas.
+- [ ] **20.** Tant qu'on n'a pas touché le sélecteur d'un pilier, il affiche **« Hérité de ton
+  réglage général »** (ou « Déduit de ton objectif » si l'étape 4 a été passée). Après un toucher,
+  **plus aucune mention**.
+- [ ] **21.** Le texte sous le sélecteur **change** avec le régime choisi, et parle bien **du
+  pilier** affiché.
+
+### Les contradictions
+
+- [ ] **22.** Régler objectif principal = **Prise de masse** et objectif nutritionnel = **Sèche** :
+  la carte « Tes deux objectifs se contredisent » apparaît sur l'**accueil**.
+- [ ] **23.** **« Pourquoi je te dis ça »** déplie une explication, et se replie.
+- [ ] **24.** **« Garder mon objectif »** met la nutrition en prise de masse ; **« Garder ce
+  réglage »** met l'objectif principal en perte de poids. La carte disparaît dans les deux cas.
+- [ ] **25.** 🔴 **« Cette règle ne me correspond pas »** fait disparaître la carte, et elle **ne
+  revient pas après un redémarrage complet de l'app** (le conflit, lui, existe toujours).
+- [ ] **26.** **Régime autonome** (nutrition) : la carte **n'apparaît pas**, même avec le conflit.
+- [ ] **27.** Poser **deux** conflits à la fois (masse + sèche **et** masse + marathon) : **une
+  seule** carte à l'écran.
+
+### Transverse
+
+- [ ] **28.** Bascule **FR ↔ EN** sur les 6 écrans touchés (objectif, guidage, récap, feuille de
+  contexte, profil muscu, carte de contradiction) : **aucune clé brute**, aucun texte tronqué.
+- [ ] **29.** **Mode avion** : changer de régime, répondre aux deux questions et rejeter une règle
+  fonctionnent. Tout est **retrouvé** au retour du réseau (et après redémarrage).
+- [ ] **30.** **Police système à 1,5×** : les trois cartes de régime, la feuille et le segment
+  restent lisibles et cliquables.
+- [ ] **31.** **TalkBack** sur l'étape 4 : chaque régime s'annonce avec son libellé **et** sa
+  description ; le segment des profils annonce l'état sélectionné.
+- [ ] **32.** Compte **existant** (déjà onboardé) : son niveau d'affichage n'a **pas changé**, et
+  son régime s'affiche comme **déduit** tant qu'il n'y touche pas.
+---
+
+## 65. CORPS-03 — Priorités confirmées et lecture du programme
 
 Spec : [CORPS-03](docs/specs/functional/us/corps03-priorites-entrainement.md).
 Branche `feature/corps03-priorites-entrainement`, worktree `.claude/worktrees/mon-corps`.

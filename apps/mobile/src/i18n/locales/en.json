@@ -1519,17 +1519,39 @@
     },
     "goal": {
       "title": "Your goal",
-      "subtitle": "Shapes recommendations. You can change it anytime.",
+      "subtitle": "It sets your calories, your programmes and your running volume. You can change it whenever you like.",
       "options": {
         "muscle": "Build muscle",
         "weightloss": "Lose weight",
         "performance": "Performance",
         "health": "General health"
+      },
+      "focusLabel": "Performance at what?",
+      "deadlineLabel": "Do you have a date in mind?",
+      "noDeadline": "No date",
+      "horizons": {
+        "90": "3 months",
+        "180": "6 months",
+        "365": "1 year"
+      },
+      "hints": {
+        "nutrition": {
+          "bulk": "+300 kcal",
+          "cut": "−400 kcal",
+          "weightloss": "−250 kcal",
+          "maintain": "calories held"
+        },
+        "strength": {
+          "load": "adding load",
+          "maintain": "holding load",
+          "volume": "consistency before load"
+        },
+        "cardio": {
+          "endurance": "endurance",
+          "frequency": "frequency before intensity",
+          "structured": "structured sessions"
+        }
       }
-    },
-    "displayLevel": {
-      "title": "Display level",
-      "subtitle": "Choose how much info you see during sessions. Changeable later in settings."
     },
     "summary": {
       "title": "All set!",
@@ -1537,7 +1559,29 @@
       "pillars": "Active pillars",
       "none": "Not set",
       "note": "Your profile is saved and securely synced. You can start using the app.",
-      "cta": "Let's go"
+      "cta": "Let's go",
+      "titleNamed": "All set, {{name}}!",
+      "firstActionEyebrow": "Your first step",
+      "firstAction": {
+        "strength": {
+          "title": "Pick your strength programme",
+          "body": "Programmes are waiting, sorted for your goal. Two quick questions will sharpen the selection.",
+          "cta": "See the programmes",
+          "guidedTitle": "I'll set up “{{name}}” for you",
+          "guidedBody": "Sorted for your goal and your week. You can swap it any time from the Strength hub.",
+          "guidedCta": "Set up this programme"
+        },
+        "running": {
+          "title": "Plan your first run",
+          "body": "Pick a running programme, or just head out for a free run today.",
+          "cta": "Open running"
+        },
+        "nutrition": {
+          "title": "Log your first meal",
+          "body": "Your daily budget is already worked out. One entry is enough to see it move.",
+          "cta": "Open the log"
+        }
+      }
     },
     "activity": {
       "title": "How active are you?",
@@ -1550,6 +1594,10 @@
         "active": "6 to 7 sessions a week, or physical work",
         "very_active": "Heavy physical work and daily training"
       }
+    },
+    "guidance": {
+      "title": "How much should the app decide for you?",
+      "subtitle": "This isn't about how many messages you get — it's about who makes the call."
     }
   },
   "auth": {
@@ -1982,7 +2030,8 @@
       "edit": "Edit my profile",
       "nutrition": "Nutrition profile",
       "running": "Runner profile",
-      "relaunchOnboarding": "Restart onboarding"
+      "relaunchOnboarding": "Restart onboarding",
+      "strength": "Strength profile"
     },
     "pillars": {
       "title": "Active pillars",
@@ -2786,7 +2835,10 @@
       "title": "Heavy leg session the day before",
       "body": "{{legSets}} leg sets the day before, then “{{runType}}” the next day. Your legs will not have recovered.",
       "swap": "Move to {{day}}",
-      "noSlot": "No other free day this week."
+      "noSlot": "No other free day this week.",
+      "appliedTitle": "Session moved",
+      "appliedBody": "I moved it to {{day}}: {{legSets}} leg sets landed the day before your {{runType}}.",
+      "undo": "Undo the move"
     },
     "timeLabel": "Session time",
     "timeNone": "No time set",
@@ -3178,7 +3230,8 @@
       "sets": "Sets",
       "duration": "Time",
       "records": "Records broken",
-      "a11y": "Workout on {{date}}, {{exercises}} exercises, {{sets}} sets, {{volume}}"
+      "a11y": "Workout on {{date}}, {{exercises}} exercises, {{sets}} sets, {{volume}}",
+      "bodyA11y": "Diagram of the muscles worked during the session"
     }
   },
   "suggestion": {
@@ -3803,6 +3856,646 @@
       "invalid": "This data cannot be edited. Your choices are kept.",
       "goal_missing": "First save your visual goal in My silhouette.",
       "save": "Saving failed. Your choices are kept; you can try again."
+    }
+  },
+  "explain": {
+    "title": "Where this number comes from",
+    "cta": "Why?",
+    "unavailable": "This number has no explanation yet: there isn't enough data to break it down.",
+    "confidence": {
+      "high": "High confidence — the data covers the period",
+      "medium": "Medium confidence — some data is missing",
+      "low": "Low confidence — too little data, treat it as a ballpark"
+    },
+    "disagreeTitle": "Doesn't match what you experience?",
+    "disagree": "{{rule}}: that's not it",
+    "ruleRestore": "{{rule}}: actually it is",
+    "ruleMuted": "toned down to {{percent}}%",
+    "rules": {
+      "sleep": "The effect of sleep",
+      "protein": "The effect of protein"
+    },
+    "readiness": {
+      "load": {
+        "positive": "Training load in the green",
+        "neutral": "Training load as usual",
+        "negative": "Training load above your usual",
+        "unavailable": "Training load: not enough history"
+      },
+      "nutrition": {
+        "positive": "Intake in line with your target",
+        "neutral": "Intake around average",
+        "negative": "Intake well below your target",
+        "unavailable": "Intake: too few logged days"
+      },
+      "wellbeing": {
+        "positive": "Energy and stress in the green on your recent check-ins",
+        "neutral": "Energy and stress around average",
+        "negative": "Low energy or high stress on your recent check-ins",
+        "unavailable": "Wellbeing: no recent check-in"
+      },
+      "verdict": {
+        "rest": "{{negative}} of {{available}} signals in the red: rest advised",
+        "ok": "No signal in the red out of {{available}}: decent shape",
+        "push": "No signal in the red out of {{available}}, and at least one in the green: ready to push"
+      }
+    },
+    "whatIf": {
+      "slope": "Your current weekly progress",
+      "sessions": "Effect of sessions added or removed",
+      "recovery": "Effect of sleep and protein",
+      "overreachOn": "Overreaching detected: the projection is scaled down",
+      "overreachOff": "No overreaching detected"
+    },
+    "race": {
+      "source": "Your 5 km record, in seconds",
+      "riegel": "Riegel formula, exponent",
+      "result": "Estimated time over {{distance}}, in seconds"
+    },
+    "kcal": {
+      "tdee": "Your estimated daily expenditure",
+      "objective": "Adjustment for your goal",
+      "trainingDay": "Training-day bonus",
+      "target": "Your target for the day"
+    }
+  },
+  "brief": {
+    "title": "Your morning brief",
+    "listen": "Listen",
+    "stop": "Stop",
+    "gentle": "Easy period: do what you can, the streak holds.",
+    "verdict": {
+      "rest": "The signals say to ease off today.",
+      "ok": "Nothing particular to report: a normal day.",
+      "push": "Everything is green: you can push today."
+    },
+    "sessionAt": "{{title}} is planned at {{time}}.",
+    "session": "{{title}} is waiting for you today.",
+    "nearRecordKg": "{{exercise}}: you are {{gap}} kg off your record.",
+    "nearRecordReps": "{{exercise}}: {{gap}} reps short of your record.",
+    "protein": "You are about {{grams}} g of protein short today.",
+    "streak": "You are on a {{days}}-day streak."
+  },
+  "whatIf": {
+    "title": "What if…",
+    "horizon": "In {{count}} weeks",
+    "projected": "{{kg}} kg total",
+    "range": "Between {{low}} and {{high}} kg",
+    "overreach": "That pace on short sleep is overreaching: the projection accounts for it.",
+    "needPoints_one": "One more strength measure and the projection becomes possible.",
+    "needPoints_other": "{{count}} more strength measures and the projection becomes possible.",
+    "needDays_one": "One more day of history and the projection becomes possible.",
+    "needDays_other": "{{count}} more days of history and the projection becomes possible.",
+    "sessions": "Sessions per week",
+    "sessionsMore": "One more session",
+    "sessionsLess": "One less session",
+    "sleep": "Sleep",
+    "sleepShort": "As usual",
+    "sleepLong": "Longer",
+    "protein": "Protein",
+    "proteinBase": "As usual",
+    "proteinHigh": "Higher",
+    "load": {
+      "safe": "Estimated load: {{ratio}} — safe zone",
+      "watch": "Estimated load: {{ratio}} — keep an eye on it",
+      "risk": "Estimated load: {{ratio}} — risk zone"
+    },
+    "kcal": "Estimated calorie target: {{kcal}} kcal per day"
+  },
+  "ask": {
+    "title": "Ask me",
+    "offlineMeta": "Answers computed on device",
+    "questions": {
+      "today": "Should I train today?",
+      "eat": "What should I eat tonight?",
+      "week": "Where am I this week?"
+    },
+    "answers": {
+      "todayRest": "Signals are in the red: an easier day will serve you better than a forced session.",
+      "todayOk": "Nothing stands out: your planned session holds.",
+      "todayPush": "Everything is green: it's a good day to push.",
+      "todayUnknown": "Not enough data to call it — listen to yourself.",
+      "eatRemaining": "You have {{kcal}} kcal and {{protein}} g of protein left for the day.",
+      "eatNoTarget": "No calorie target set, so it's hard to say. You can set one in your nutrition profile.",
+      "week": "{{workouts}} sessions and {{runs}} runs this week, {{days}} active days."
+    }
+  },
+  "stage": {
+    "home": {
+      "timeLeft_one": "Less than an hour left to keep it",
+      "timeLeft_other": "About {{count}} h left to keep it",
+      "jokerLeft_one": "One joker left this month — the safety net, not the excuse",
+      "jokerLeft_other": "{{count}} jokers left this month",
+      "jokerNone": "No joker left this month",
+      "saveStreak": "Save my streak",
+      "comeback": "Good to see you again",
+      "bestStreak_one": "Your best streak: one day",
+      "bestStreak_other": "Your best streak: {{count}} days",
+      "gentleRestart": "Gentle restart",
+      "normalPlan": "Back to the normal plan",
+      "sinceLastVisit": {
+        "title": "Since your last visit",
+        "weightDown": "{{delta}} kg down on the scale",
+        "weightUp": "{{delta}} kg up on the scale",
+        "records_one": "One record beaten",
+        "records_other": "{{count}} records beaten",
+        "predictionFaster": "Your estimated 10 km gains {{seconds}} s",
+        "predictionSlower": "Your estimated 10 km loses {{seconds}} s"
+      },
+      "goal": {
+        "title": "Your closest goal",
+        "deadline_one": "One day left",
+        "deadline_other": "{{count}} days left",
+        "late": "Deadline passed",
+        "progressA11y": "{{percent}}% of the way",
+        "empty": "No goal in progress"
+      },
+      "weeklyStory": {
+        "title": "Your week, in three cards",
+        "volume": "{{workouts}} sessions · {{runs}} runs",
+        "tonnage": "{{tonnage}} kg lifted",
+        "distance": "{{distance}} covered",
+        "records_one": "One record beaten",
+        "records_other": "{{count}} records beaten",
+        "regularity_one": "One active day",
+        "regularity_other": "{{count}} active days",
+        "nutrition": "{{days}} days on target out of {{logged}} logged",
+        "change": "{{percent}}% vs the week before",
+        "cta": "See the review"
+      },
+      "ring": {
+        "strength": "Strength {{done}} of {{target}}",
+        "strengthOnly_one": "Strength: one session",
+        "strengthOnly_other": "Strength: {{count}} sessions",
+        "running": "Running {{done}} of {{target}}",
+        "runningOnly_one": "Running: one run",
+        "runningOnly_other": "Running: {{count}} runs",
+        "nutrition_one": "Nutrition: one day logged out of 7",
+        "nutrition_other": "Nutrition: {{count}} days logged out of 7"
+      }
+    },
+    "strength": {
+      "eyebrow": {
+        "resume": "Workout in progress",
+        "after-session": "Workout done",
+        "today": "Today's session",
+        "rest": "Your strength pillar",
+        "onboarding": "Getting started"
+      },
+      "primary": {
+        "resume": "Resume",
+        "after-session": "See summary",
+        "today": "Start",
+        "rest": "Free session",
+        "onboarding": "See programs"
+      },
+      "secondary": {
+        "resume": "See planning",
+        "after-session": "My week",
+        "today": "See details",
+        "rest": "See planning",
+        "onboarding": "Free session"
+      },
+      "kg": "kg",
+      "session": "Today's session",
+      "freeSession": "Free session",
+      "exercises_one": "one exercise",
+      "exercises_other": "{{count}} exercises",
+      "setsProgress": "{{done}} of {{total}} sets",
+      "tonnageA11y": "{{kg}} kilos lifted",
+      "afterMeta": "{{name}} · {{exercises}} exercises",
+      "recordsBeaten_one": "One record beaten",
+      "recordsBeaten_other": "{{count}} records beaten",
+      "near": {
+        "kg": "{{exercise}}: {{gap}} kg off your record",
+        "reps_one": "{{exercise}}: one rep off your record",
+        "reps_other": "{{exercise}}: {{gap}} reps off your record",
+        "beaten": "{{exercise}}: record matched — one set away"
+      },
+      "week": "Week {{week}} of {{total}} · {{done}} sessions done",
+      "weekCard": {
+        "title": "Your week",
+        "meta": "{{done}} of {{planned}}",
+        "dayA11y": "{{day}} — {{state}}",
+        "done": "session done",
+        "planned": "session planned",
+        "empty": "nothing planned",
+        "rest": "rest"
+      },
+      "reach": {
+        "title": "Within reach",
+        "meta": "Weight records",
+        "hint": "Gaps are computed over your last 45 days"
+      }
+    },
+    "running": {
+      "eyebrow": {
+        "resume": "Run in progress",
+        "arrival": "Run finished",
+        "today": "Today's session",
+        "rest": "Your running pillar",
+        "onboarding": "Your running pillar"
+      },
+      "primary": {
+        "resume": "Resume",
+        "arrival": "See analysis",
+        "today": "Start",
+        "rest": "Free run",
+        "onboarding": "Pick a program"
+      },
+      "secondary": {
+        "resume": "History",
+        "arrival": "My week",
+        "today": "See details",
+        "rest": "Planning",
+        "onboarding": "Free run"
+      },
+      "inProgress": "{{duration}} run so far",
+      "arrivalMeta": "{{duration}} · {{pace}}",
+      "arrivalA11y": "{{distance}} {{unit}} at {{pace}}",
+      "predictionNew": "New 5 km record — estimated 10 km: {{time}}",
+      "prediction": "Estimated 10 km: {{time}}",
+      "countdownNow": "It's time",
+      "countdownIn_one": "In about an hour",
+      "countdownIn_other": "In about {{count}} hours",
+      "countdownPast_one": "Planned an hour ago",
+      "countdownPast_other": "Planned {{count}} hours ago",
+      "weekLine": "This week: {{distance}} · {{sessions}}",
+      "splits": {
+        "title": "Kilometre by kilometre",
+        "meta": "{{count}} full km",
+        "hint": "Opens the run analysis",
+        "kmA11y": "Kilometre {{km}}, {{pace}}",
+        "onPace": "Km {{km}} · {{pace}} — right on pace",
+        "faster": "Km {{km}} · {{pace}} — {{seconds}} s faster",
+        "slower": "Km {{km}} · {{pace}} — {{seconds}} s slower",
+        "hintTarget": "Tap a kilometre — reference: {{pace}} targeted",
+        "hintAverage": "Tap a kilometre — reference: {{pace}} average"
+      },
+      "predictions": {
+        "title": "If you raced tomorrow",
+        "meta": "From your 5 km record",
+        "a11y": "{{distance}} estimated at {{time}}"
+      },
+      "load": {
+        "title": "Your load",
+        "a11y": "Load {{ratio}}. {{zone}}"
+      }
+    },
+    "nutrition": {
+      "remaining": "{{kcal}} kcal left",
+      "reached": "Target reached",
+      "over": "{{kcal}} kcal over",
+      "ofTarget": "of {{kcal}} kcal targeted",
+      "noTarget": "No calorie target",
+      "trainingBonus": "+{{kcal}} kcal — training day",
+      "macroP": "P",
+      "macroC": "C",
+      "macroF": "F",
+      "macroA11y": "{{macro}}: {{value}} g of {{goal}} g",
+      "consumedA11y": "{{kcal}} kcal eaten",
+      "missingDay_one": "Nothing logged on {{day}} — filling it in would sharpen your cues",
+      "missingDay_other": "Nothing logged on {{day}} ({{count}} gaps this week)",
+      "quickAddA11y": "Add {{name}}, {{kcal}} kcal",
+      "search": "Search"
+    }
+  },
+  "workoutMode": {
+    "label": "Mode",
+    "classic": "Classic",
+    "immersive": "Immersive",
+    "classicDesc": "Your sets, your weights, the clock. Nothing else.",
+    "immersiveDesc": "Loaded bar, tempo-guided effort, guided rest, ghost of your last session.",
+    "sheetTitle": "How do you want to train?",
+    "sheetSubtitle": "You can change any time, even mid-session.",
+    "remember": "Remember my choice",
+    "start": "Start in {{mode}}",
+    "hubHint": "Your choice is remembered. Change it here, or in Settings › Session.",
+    "switchTitle": "Display mode",
+    "switchHint": "Same session, same sets: nothing is lost."
+  },
+  "settingsSession": {
+    "title": "Session",
+    "entry": "Session settings",
+    "entryDesc": "Display mode, voice coach, rest",
+    "defaultMode": "Default mode",
+    "defaultModeHelp": "Used when starting each session.",
+    "levelHelp": "Applies to both modes.",
+    "immersiveSection": "Immersive mode",
+    "coach": "Voice coach",
+    "coachHelp": "Motivating speaks, Plain gives numbers only, Silent says nothing — captions stay on screen.",
+    "coachMotivant": "Motivating",
+    "coachSobre": "Plain",
+    "coachMuet": "Silent",
+    "tempo": "Tempo guide",
+    "tempoHelp": "The screen beats with each rep during the set.",
+    "breathing": "Breathing during rest",
+    "ghost": "Ghost of your last session",
+    "ghostHelp": "Your tonnage against last time, set after set.",
+    "sleep": "Screen dimming during rest",
+    "sleepHelp": "The screen dims when the phone is down; tap to wake.",
+    "bar": "Bar weight",
+    "bothSection": "For both modes",
+    "restNotification": "Rest notification",
+    "restNotificationHelp": "Rest stays visible outside the app, with a reminder when it ends."
+  },
+  "immersive": {
+    "stage": {
+      "exerciseIndex": "Exercise {{index}} of {{total}}",
+      "lastExercise": "Last exercise",
+      "lastSet": "Last set of the session",
+      "stake": "{{weight}}: heavier than your record ({{record}})"
+    },
+    "deck": {
+      "nextSet": "{{name}} · set {{index}}",
+      "nextEnd": "End of session",
+      "launch": "Start the set",
+      "validateDirectly": "Log it directly"
+    },
+    "done": {
+      "hint": "Every set is logged. Only the wrap-up left."
+    },
+    "plan": {
+      "title": "The session"
+    },
+    "effort": {
+      "tempo": "Down · Push",
+      "target": "{{weight}} × {{reps}}",
+      "tut": "Under tension {{time}}",
+      "hint": "Tap the screen on every rep — or don’t: the dial opens on your target.",
+      "done": "Done",
+      "countA11y_one": "{{count}} rep counted",
+      "countA11y_other": "{{count}} reps counted"
+    },
+    "dial": {
+      "title": "How many reps?",
+      "titleDuration": "How long?",
+      "reps_one": "{{count}} rep",
+      "reps_other": "{{count}} reps",
+      "seconds_one": "{{count}} second",
+      "seconds_other": "{{count}} seconds",
+      "hint": "Swipe up or down to adjust.",
+      "feelLabel": "How did it feel?",
+      "feelHint": "Stored as RPE {{rpe}}",
+      "back": "Back to the set"
+    },
+    "feel": {
+      "facile": "Easy",
+      "solide": "Solid",
+      "dur": "Hard",
+      "limite": "Limit"
+    },
+    "bar": {
+      "perSide": "Per side: {{plates}} · {{bar}} {{unit}} bar",
+      "barOnly": "Empty bar ({{bar}} {{unit}})",
+      "remainder": "+ {{weight}} {{unit}} that can’t be loaded"
+    },
+    "verdict": {
+      "heavier": "+{{delta}}",
+      "heavierDay": "+{{delta}} vs {{day}}",
+      "moreReps_one": "+{{count}} rep",
+      "moreReps_other": "+{{count}} reps",
+      "moreRepsDay_one": "+{{count}} rep vs {{day}}",
+      "moreRepsDay_other": "+{{count}} reps vs {{day}}",
+      "longer": "+{{count}}s",
+      "longerDay": "+{{count}}s vs {{day}}",
+      "equal": "Set logged",
+      "equalDay": "Same as {{day}}",
+      "belowWeight": "{{now}} · {{day}} {{before}}",
+      "belowReps": "{{now}} reps · {{day}} {{before}}",
+      "belowDuration": "{{now}}s · {{day}} {{before}}s",
+      "first": "First reference set"
+    },
+    "record": {
+      "title": "New record",
+      "previous": "Before: {{weight}}",
+      "close": "Close the record",
+      "pillWeight": "Record: {{value}} (was {{previous}})",
+      "pill1rm": "Estimated 1RM: {{value}} (was {{previous}})"
+    },
+    "rest": {
+      "validated": "Set {{index}} logged · {{detail}}",
+      "wake": "Tap to wake",
+      "getReady": "Get ready",
+      "inhale": "Breathe in",
+      "exhale": "Breathe out slowly",
+      "tabGhost": "{{day}}’s ghost",
+      "tabHeat": "Muscles warming up"
+    },
+    "adjust": {
+      "lighter": "Coach: drop the next one to {{weight}}?",
+      "heavier": "Coach: push the next one to {{weight}}?",
+      "keep": "Keep it"
+    },
+    "exerciseDone": {
+      "title": "{{name}}, done.",
+      "stats": "{{sets}} sets · {{tonnage}} of volume",
+      "delta_up": "+{{percent}}% volume vs {{day}}",
+      "delta_down": "−{{percent}}% volume vs {{day}}",
+      "records_one": "{{count}} record beaten",
+      "records_other": "{{count}} records beaten"
+    },
+    "challenge": {
+      "reach_one": "{{count}} rep at {{weight}} and {{day}} is beaten.",
+      "reach_other": "{{count}} reps at {{weight}} and {{day}} is beaten.",
+      "ahead": "{{day}} is already beaten by {{weight}}."
+    },
+    "ghost": {
+      "lastTime": "last time",
+      "pillAhead": "+{{weight}} ahead",
+      "pillBehind": "−{{weight}}",
+      "ahead": "+{{weight}} ahead",
+      "behind": "−{{weight}} behind",
+      "caption": "Cumulated volume against {{day}}.",
+      "you": "You: {{weight}}",
+      "total": "{{day}} in total: {{weight}}"
+    },
+    "heat": {
+      "legendItem_one": "{{muscle}} · {{count}} set",
+      "legendItem_other": "{{muscle}} · {{count}} sets",
+      "empty": "Log a set to start warming up."
+    },
+    "closing": {
+      "title": "Session done.",
+      "records_one": "Record",
+      "records_other": "Records",
+      "ghostBeat": "{{day}} beaten: +{{percent}}% volume",
+      "ghostAhead": "{{day}} keeps a {{percent}}% lead",
+      "nutritionRelay": "Nutrition takes over: +{{grams}}g of carbs today.",
+      "openSummary": "See the recap"
+    },
+    "notification": {
+      "restOverTitle": "Back to it",
+      "restOverBodyEnd": "Last set done — only the wrap-up left.",
+      "ongoingTitle": "Resting until {{time}}"
+    },
+    "brief": {
+      "eyebrow": "Today’s session",
+      "untitled": "Session",
+      "sets": "Sets",
+      "stake": "{{exercise}}: {{weight}} planned, your record is {{record}}.",
+      "go": "Let’s go",
+      "edit": "Adjust before starting"
+    }
+  },
+  "coach": {
+    "motivant": {
+      "brief": "Here we go. {{exercise}} to start.",
+      "setCue": "{{cue}}",
+      "verdict": {
+        "heavier": "Heavier than {{day}}: {{delta}} more.",
+        "moreReps": "{{count}} more than {{day}}. It’s going up.",
+        "longer": "{{count}} seconds longer. You’re holding better.",
+        "equal": "Same as {{day}}. Consistent is already a lot.",
+        "below": "Below {{day}}, and that’s fine. Keep going.",
+        "first": "First reference set on {{exercise}}.",
+        "warmup": ""
+      },
+      "record": {
+        "maxWeight": "{{weight}}. You had never lifted that.",
+        "estimated1rm": "Best estimated 1RM on {{exercise}}."
+      },
+      "adjust": {
+        "down": "Drop to {{weight}} for the next one?",
+        "up": "You’ve got room. {{weight}} on the next one?"
+      },
+      "restPrep": "Back to it: {{weight}}, {{reps}} reps.",
+      "exerciseDone": "{{exercise}} is done. Nice work.",
+      "lastSet": "Last set. This is all that’s left.",
+      "sessionEnd": "{{sets}} sets, {{tonnage}} kilos moved. It’s done."
+    },
+    "sobre": {
+      "verdict": {
+        "heavier": "{{delta}} more.",
+        "moreReps": "{{count}} more.",
+        "longer": "{{count}} seconds longer.",
+        "equal": "Identical.",
+        "below": "Below {{day}}.",
+        "first": "No reference.",
+        "warmup": ""
+      },
+      "record": {
+        "maxWeight": "Record: {{weight}}.",
+        "estimated1rm": "Estimated 1RM record."
+      },
+      "adjust": {
+        "down": "{{weight}} on the next one.",
+        "up": "{{weight}} on the next one."
+      },
+      "restPrep": "{{weight}}, {{reps}} reps.",
+      "exerciseDone": "{{exercise}} done."
+    }
+  },
+  "guidance": {
+    "sectionTitle": "Guidance",
+    "recommended": "Recommended",
+    "previewLabel": "What you'd see",
+    "derivedFromGoal": "Inferred from your goal",
+    "inheritedFromGlobal": "Inherited from your general setting",
+    "focus": {
+      "strength": "At strength",
+      "endurance": "At running"
+    },
+    "regimes": {
+      "guided": {
+        "label": "Guided",
+        "description": "The app decides, and tells you what it changed.",
+        "preview": "“I moved your Legs session to Thursday.”"
+      },
+      "assisted": {
+        "label": "Assisted",
+        "description": "The app suggests, you decide.",
+        "preview": "“Your Legs session lands the day before intervals. Move it?”"
+      },
+      "autonomous": {
+        "label": "On my own",
+        "description": "The app stays quiet. You go looking when you want to.",
+        "preview": "Nothing shows up. It's all still there in Insights."
+      }
+    },
+    "safety": {
+      "title": "Three alerts always come through",
+      "body": "Whatever you choose: critical load, repeated pain, prolonged severe deficit. They show once, without pushing."
+    },
+    "pillarEffect": {
+      "running": {
+        "guided": "A clash with strength work moves the session, and the app tells you.",
+        "assisted": "A clash with strength work gets you a suggestion to move it.",
+        "autonomous": "Nothing appears on its own. The analyses stay in Insights."
+      },
+      "nutrition": {
+        "guided": "Contradictions between your goals are flagged on the home screen.",
+        "assisted": "Contradictions between your goals are flagged on the home screen.",
+        "autonomous": "No contradiction card appears. Your settings stay as they are."
+      }
+    }
+  },
+  "trainingContext": {
+    "sheetTitle": "Two questions, and we'll sharpen this",
+    "sheetSubtitle": "So we can suggest programmes that fit your week.",
+    "levelLabel": "Your experience",
+    "daysLabel": "Training days per week",
+    "daysA11y": "{{count}} days per week",
+    "submit": "Got it",
+    "later": "Later",
+    "levelUnset": "Not set yet — suggestions fall back on your display level.",
+    "levels": {
+      "beginner": {
+        "label": "I'm starting out",
+        "hint": "Under a year of regular training"
+      },
+      "intermediate": {
+        "label": "I train regularly",
+        "hint": "One to three years, technique in place"
+      },
+      "advanced": {
+        "label": "I'm experienced",
+        "hint": "Over three years, heavy loads"
+      }
+    }
+  },
+  "strengthProfile": {
+    "title": "Strength profile",
+    "goalSection": "Your goal",
+    "editGoal": "Change it in my profile"
+  },
+  "goalConflict": {
+    "title": "Your two goals contradict each other.",
+    "why": "Why I'm telling you this",
+    "keepMainGoal": "Keep my goal",
+    "keepPillarGoal": "Keep this setting",
+    "dismiss": "This rule doesn't fit me",
+    "rules": {
+      "bulkVsCut": {
+        "body": "Your main goal says {{left}}. Your nutrition is set to {{right}}. One of the two won't happen.",
+        "why": "Building mass needs a calorie surplus; your nutrition goal enforces a deficit. The two settings live on different screens, and nothing put them side by side until now."
+      },
+      "enduranceVsMass": {
+        "body": "Your main goal says {{left}}, and you're training for a {{right}}. Over twelve weeks, one holds the other back.",
+        "why": "The endurance volume of long-distance training works against building mass — it's the interference the app already measures on your actual load."
+      }
+    },
+    "values": {
+      "goal": {
+        "muscle": "building mass",
+        "weightloss": "losing weight",
+        "performance": "performance",
+        "health": "general health"
+      },
+      "nutrition": {
+        "bulk": "building mass",
+        "cut": "cutting",
+        "weightloss": "losing weight",
+        "maintain": "maintenance"
+      },
+      "running": {
+        "5k": "5 km",
+        "10k": "10 km",
+        "semi": "half marathon",
+        "marathon": "marathon",
+        "perte_poids": "weight loss",
+        "endurance": "endurance"
+      }
     }
   }
 }

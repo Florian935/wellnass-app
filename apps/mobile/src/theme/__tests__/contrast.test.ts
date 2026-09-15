@@ -30,6 +30,25 @@ const PAIRS: {
   { theme: 'light', fg: 'amber', bg: 'background', threshold: 3.0, usage: 'donnée (barre glucides NutritionSummaryCard, MicroCoverageGrid, MacroTriple)' },
   // Thème sombre — 2 non-conformités déjà connues (spec §0.2).
   { theme: 'dark', fg: 'accentText', bg: 'accent', threshold: 4.5, usage: 'libellé des boutons pleins (D1, acceptée le 01/08/2026)' },
+  // US DASH-01 (R10) — couleurs de pilier : textes et icônes sur les cartes et le fond, dans les deux thèmes.
+  // Le bordeaux #6b0028 tombait à 1,15:1 sur une carte sombre ; les teintes de maquette du bleu et du vert
+  // (#2f6fc0, #5c7a3f) échouaient de peu sur le fond clair (4,39 et 4,23).
+  { theme: 'light', fg: 'pillarHome', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'light', fg: 'pillarHome', bg: 'background', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'light', fg: 'pillarStrength', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'light', fg: 'pillarStrength', bg: 'background', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'light', fg: 'pillarRunning', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'light', fg: 'pillarRunning', bg: 'background', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'light', fg: 'pillarNutrition', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'light', fg: 'pillarNutrition', bg: 'background', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'dark', fg: 'pillarHome', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'dark', fg: 'pillarHome', bg: 'background', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'dark', fg: 'pillarStrength', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'dark', fg: 'pillarStrength', bg: 'background', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'dark', fg: 'pillarRunning', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'dark', fg: 'pillarRunning', bg: 'background', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'dark', fg: 'pillarNutrition', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  { theme: 'dark', fg: 'pillarNutrition', bg: 'background', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
   // `accent`/`surface` sombre (D2, 4,45) est un écart ASSUMÉ (spec §4) — volontairement absent de
   // cette table : le consigner ici comme une assertion qui doit rester rouge serait exactement le
   // bruit qu'on veut éviter. Voir le commentaire dans colors.ts.

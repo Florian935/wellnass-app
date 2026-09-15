@@ -1,0 +1,1101 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #17110b; }
+    a { color: #e0a97f; }
+    a:hover { color: #f4ecdd; }
+    .pb {
+      width: 760px; height: 920px; box-sizing: border-box; background: #17110b; color: #f4ecdd;
+      font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 38px 30px;
+      display: grid; grid-template-columns: 390px minmax(0, 1fr); gap: 34px; align-items: start;
+    }
+    .ic { display: block; flex: none; }
+    .mono { font-family: 'Space Mono', ui-monospace, monospace; }
+
+    /* ── Téléphone ── */
+    .pp { width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; border-radius: 32px; background: #1c150e; box-shadow: 0 0 0 1px #2c231a, 0 40px 80px -40px rgba(0,0,0,.9); user-select: none; touch-action: none; }
+    .scr { position: absolute; inset: 0; background: radial-gradient(130% 55% at 50% -12%, rgba(221,110,64,.14) 0%, rgba(221,110,64,0) 62%), #1c150e; }
+    .fill { position: absolute; inset: 0; }
+    .in { position: absolute; inset: 0; animation: lvIn .3s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes lvIn { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
+    .rise { animation: lvRise .36s .1s cubic-bezier(.2,.8,.2,1) both; }
+    @keyframes lvRise { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
+    .eyebrow { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #c9b79a; }
+    .tap { cursor: pointer; transition: transform .09s ease-out, filter .09s ease-out; }
+    .tap:active { transform: scale(.96); filter: brightness(.9); }
+    .h-name { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.1px; line-height: 1; text-wrap: balance; }
+
+    .hd { position: absolute; left: 0; right: 0; top: 0; padding: 14px 20px 0; display: flex; flex-direction: column; gap: 10px; z-index: 2; }
+    .hd-row { display: flex; align-items: center; justify-content: space-between; height: 28px; }
+    .chrono { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 18px; }
+    .ribbon { display: flex; gap: 4px; height: 6px; }
+    .seg { height: 6px; border-radius: 3px; background: #362c22; overflow: hidden; }
+    .seg-f { height: 100%; border-radius: 3px; transition: width .4s cubic-bezier(.2,.8,.2,1); }
+    .hd-meta { display: flex; justify-content: space-between; align-items: center; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a; }
+    .ghost-pill { height: 22px; padding: 0 8px; border-radius: 999px; display: flex; align-items: center; gap: 5px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 11.5px; }
+
+    /* Brief */
+    .br { position: absolute; inset: 0; padding: 56px 20px 0; display: flex; flex-direction: column; gap: 8px; background: radial-gradient(120% 50% at 85% -8%, rgba(221,110,64,.24) 0%, rgba(221,110,64,0) 60%), #1c150e; }
+    .br-title { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 62px; letter-spacing: -2.6px; line-height: .92; }
+    .br-meta { font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; }
+    .coach { border-radius: 20px; background: #241c14; border: 1px solid #3a2e22; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .coach-top { display: flex; align-items: center; gap: 10px; }
+    .coach-l { flex: 1; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #e0a97f; }
+    .coach-t { font-size: 15px; line-height: 1.45; color: #f4ecdd; }
+    .play { height: 34px; padding: 0 12px; border-radius: 999px; background: #3a2e22; display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; }
+    .wbars { display: flex; align-items: center; gap: 2px; height: 18px; }
+    .wbars span { display: block; width: 3px; height: 6px; border-radius: 2px; background: #e0a97f; animation: wb .9s infinite ease-in-out; animation-play-state: paused; }
+    .wbars span:nth-child(2) { animation-delay: .15s; } .wbars span:nth-child(3) { animation-delay: .3s; } .wbars span:nth-child(4) { animation-delay: .45s; } .wbars span:nth-child(5) { animation-delay: .6s; }
+    .wbars.on span { animation-play-state: running; }
+    @keyframes wb { 0%, 100% { height: 4px; } 50% { height: 18px; } }
+    .stake { border-radius: 16px; padding: 11px 14px; background: rgba(224,177,85,.08); border: 1px solid rgba(224,177,85,.34); display: flex; align-items: center; gap: 12px; font-size: 14px; font-weight: 600; line-height: 1.3; }
+    .stake b { color: #e0b155; }
+    .br-row { height: 50px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #2c231a; }
+    .br-n { width: 16px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; color: #797169; }
+    .br-name { flex: 1; font-size: 15px; font-weight: 600; }
+    .br-sub { font-size: 12px; color: #c9b79a; font-weight: 400; }
+    .go { position: absolute; left: 20px; right: 20px; bottom: 24px; height: 64px; border-radius: 20px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 19px; font-weight: 700; box-shadow: 0 14px 32px -12px rgba(221,110,64,.7); }
+
+    /* Prêt : la barre chargée */
+    .ready-stage { position: absolute; left: 0; right: 0; top: 100px; padding: 0 20px; display: flex; flex-direction: column; gap: 14px; }
+    .pills { display: flex; gap: 7px; flex-wrap: wrap; }
+    .pill { height: 32px; box-sizing: border-box; border-radius: 10px; padding: 0 10px; display: flex; align-items: center; gap: 5px; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; }
+    .pill-done { background: rgba(169,186,126,.14); color: #a9ba7e; }
+    .pill-cur { border: 1.5px solid #dd6e40; color: #dd6e40; }
+    .pill-todo { background: #30271e; color: #c9b79a; }
+    .bb-wrap { height: 150px; display: flex; flex-direction: column; justify-content: center; gap: 10px; }
+    .bb { height: 126px; display: flex; align-items: center; }
+    .bb-sleeve { width: 16px; height: 14px; background: #797169; border-radius: 3px; }
+    .bb-side { display: flex; align-items: center; gap: 2px; }
+    .bb-bar { flex: 1; height: 7px; background: linear-gradient(180deg, #a39b90, #6d665d); border-radius: 3px; }
+    .bb-collar { width: 7px; height: 22px; background: #a39b90; border-radius: 2px; }
+    .plate { border-radius: 4px; box-shadow: inset 0 -3px 0 rgba(0,0,0,.25), inset 0 2px 0 rgba(255,255,255,.12); }
+    .bb-label { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px; color: #c9b79a; text-align: center; }
+    @keyframes bbA { 0% { transform: scale(1); } 30% { transform: scale(.97) translateY(3px); } 60% { transform: scale(1.02); } 100% { transform: scale(1); } }
+    @keyframes bbB { 0% { transform: scale(1); } 30% { transform: scale(.97) translateY(3px); } 60% { transform: scale(1.02); } 100% { transform: scale(1); } }
+    .target { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 46px; letter-spacing: -1.8px; line-height: 1; }
+    .target small { font-size: 26px; color: #c9b79a; letter-spacing: -.6px; }
+    .deck { position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; background: #241c14; border-top: 1px solid #3a2e22; border-radius: 28px 28px 0 0; padding: 14px 20px 16px; display: flex; flex-direction: column; gap: 10px; }
+    .steppers { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+    .stp { height: 60px; box-sizing: border-box; border-radius: 16px; background: #1c150e; border: 1px solid #3a2e22; display: flex; align-items: center; padding: 4px; gap: 2px; }
+    .stp-b { width: 40px; height: 50px; border-radius: 12px; background: #30271e; display: flex; align-items: center; justify-content: center; flex: none; }
+    .stp-v { flex: 1; text-align: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px; line-height: 1; }
+    .stp-u { display: block; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 400; font-size: 9.5px; letter-spacing: 1px; color: #c9b79a; margin-top: 3px; }
+    .launch { height: 66px; border-radius: 20px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 19px; font-weight: 700; position: relative; overflow: hidden; }
+    .launch::after { content: ""; position: absolute; inset: -40%; background: radial-gradient(closest-side, rgba(255,240,220,.35), rgba(255,240,220,0)); animation: glow 2.6s ease-in-out infinite; }
+    @keyframes glow { 0%, 100% { transform: translateX(-60%); opacity: 0; } 50% { transform: translateX(60%); opacity: 1; } }
+    .quick { height: 30px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; color: #c9b79a; }
+
+    /* Effort */
+    .fx { position: absolute; inset: 0; background: #140e08; overflow: hidden; }
+    .fx-heat { position: absolute; left: -20%; right: -20%; top: 18%; height: 70%; background: radial-gradient(closest-side, rgba(221,110,64,.85), rgba(107,0,40,.55) 45%, rgba(107,0,40,0) 75%); animation: heat 3s infinite cubic-bezier(.4,0,.2,1); }
+    @keyframes heat { 0% { opacity: .45; transform: scale(1); } 64% { opacity: .22; transform: scale(.9); } 72% { opacity: .95; transform: scale(1.08); } 100% { opacity: .45; transform: scale(1); } }
+    .fx-top { position: absolute; left: 20px; right: 20px; top: 20px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+    .cue { border-radius: 14px; background: rgba(28,21,14,.7); border: 1px solid rgba(240,228,208,.12); padding: 10px 12px; display: flex; align-items: center; gap: 10px; font-size: 14.5px; font-weight: 600; max-width: 100%; box-sizing: border-box; }
+    .ring-zone { position: absolute; left: 50%; top: 190px; width: 270px; height: 270px; margin-left: -135px; cursor: pointer; }
+    .ring-pulse { position: absolute; inset: 0; border-radius: 50%; border: 2px solid rgba(240,228,208,.16); animation: rp 3s infinite cubic-bezier(.4,0,.2,1); }
+    @keyframes rp { 0% { transform: scale(1); } 64% { transform: scale(.9); } 72% { transform: scale(1.06); border-color: rgba(224,177,85,.6); } 100% { transform: scale(1); } }
+    .dot { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; background: #3a2e22; transition: background .15s, transform .15s; }
+    .dot-on { background: #f4ecdd; transform: scale(1.15); }
+    .dot-over { background: #e0b155; transform: scale(1.25); }
+    .ring-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; }
+    .count { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 110px; letter-spacing: -5px; line-height: .9; }
+    .tempo { position: relative; height: 22px; width: 160px; text-align: center; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; letter-spacing: 2px; text-transform: uppercase; }
+    .tempo span { position: absolute; left: 0; right: 0; top: 0; }
+    .t-a { color: #c9b79a; animation: ta 3s infinite steps(1); }
+    .t-b { color: #e0b155; animation: tb 3s infinite steps(1); }
+    @keyframes ta { 0% { opacity: 1; } 66% { opacity: 0; } 100% { opacity: 1; } }
+    @keyframes tb { 0% { opacity: 0; } 66% { opacity: 1; } 100% { opacity: 0; } }
+    .fx-meta { position: absolute; left: 0; right: 0; top: 480px; text-align: center; display: flex; flex-direction: column; gap: 6px; }
+    .fx-load { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -.8px; }
+    .fx-tut { font-family: 'Space Mono', ui-monospace, monospace; font-size: 13px; color: #c9b79a; }
+    .fx-hint { font-size: 12.5px; color: #a3927a; }
+    .done-btn { position: absolute; left: 20px; right: 20px; bottom: 26px; height: 66px; border-radius: 20px; background: #f4ecdd; color: #1c150e; display: flex; align-items: center; justify-content: center; font-size: 19px; font-weight: 700; }
+
+    /* Cadran */
+    .dim { position: absolute; inset: 0; background: rgba(10,7,4,.62); animation: fade .2s both; }
+    @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+    .sheet { position: absolute; left: 0; right: 0; bottom: 0; box-sizing: border-box; background: #241c14; border-radius: 30px 30px 0 0; border-top: 1px solid #3a2e22; padding: 10px 20px 18px; display: flex; flex-direction: column; gap: 12px; animation: sheetUp .38s cubic-bezier(.2,.9,.25,1.05) both; }
+    @keyframes sheetUp { from { transform: translateY(100%); } to { transform: none; } }
+    .grab { width: 40px; height: 4px; border-radius: 2px; background: #4a3d30; align-self: center; }
+    .sh-t { display: flex; justify-content: space-between; align-items: baseline; }
+    .sh-t b { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.4px; }
+    .wheel-row { display: grid; grid-template-columns: 56px minmax(0, 1fr) 56px; align-items: center; gap: 8px; }
+    .wheel { height: 200px; border-radius: 22px; background: #1c150e; border: 1px solid #3a2e22; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; cursor: ns-resize; touch-action: none; }
+    .wheel::before, .wheel::after { content: ""; position: absolute; left: 0; right: 0; height: 60px; pointer-events: none; }
+    .wheel::before { top: 0; background: linear-gradient(#1c150e, rgba(28,21,14,0)); }
+    .wheel::after { bottom: 0; background: linear-gradient(rgba(28,21,14,0), #1c150e); }
+    .w-side { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 34px; color: #6d6154; line-height: 1.1; }
+    .w-cur { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 92px; letter-spacing: -4px; line-height: .95; }
+    .w-btn { width: 56px; height: 56px; border-radius: 16px; background: #30271e; display: flex; align-items: center; justify-content: center; }
+    .w-goal { position: absolute; right: 12px; top: 50%; margin-top: -11px; height: 22px; padding: 0 7px; border-radius: 999px; background: #30271e; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; color: #c9b79a; display: flex; align-items: center; }
+    .feel { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+    .feel div { height: 44px; border-radius: 12px; background: #1c150e; border: 1px solid #3a2e22; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 600; color: #c9b79a; }
+    .feel .on { background: #3a2e22; border-color: #e0a97f; color: #f4ecdd; }
+    .feel .on-lim { background: rgba(178,59,46,.18); border-color: #e0524a; color: #f4ecdd; }
+    .validate { height: 64px; border-radius: 20px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; font-size: 18px; font-weight: 700; }
+    .row-load { display: flex; align-items: center; justify-content: space-between; font-size: 13.5px; color: #c9b79a; }
+    .row-load b { font-family: 'Space Mono', ui-monospace, monospace; color: #f4ecdd; }
+
+    /* Repos */
+    .rest-top { position: absolute; left: 20px; right: 20px; top: 104px; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .rest-done { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px; }
+    .verdict { height: 30px; box-sizing: border-box; padding: 0 11px; border-radius: 999px; display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; white-space: nowrap; }
+    .v-up { background: rgba(169,186,126,.14); color: #a9ba7e; }
+    .v-eq { background: rgba(201,183,154,.12); color: #c9b79a; }
+    .v-rec { background: rgba(224,177,85,.16); color: #e0b155; }
+    .rring { position: absolute; left: 50%; top: 158px; width: 214px; height: 214px; margin-left: -107px; }
+    .rring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+    .arc { transition: stroke-dashoffset .2s linear, stroke .3s; }
+    .breath { position: absolute; left: 50%; top: 50%; width: 150px; height: 150px; margin: -75px 0 0 -75px; border-radius: 50%; background: radial-gradient(circle, rgba(224,169,127,.30), rgba(224,169,127,.06) 70%); animation: breath 5s infinite ease-in-out; }
+    @keyframes breath { 0% { transform: scale(.72); } 40% { transform: scale(1.02); } 100% { transform: scale(.72); } }
+    .rring-c { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+    .rring-n { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 44px; letter-spacing: -1.5px; line-height: 1; }
+    .br-lbl { position: relative; height: 18px; width: 120px; text-align: center; font-size: 13px; font-weight: 600; }
+    .br-lbl span { position: absolute; left: 0; right: 0; }
+    .b-in { color: #e0a97f; animation: bin 5s infinite steps(1); }
+    .b-out { color: #c9b79a; animation: bout 5s infinite steps(1); }
+    @keyframes bin { 0% { opacity: 1; } 40% { opacity: 0; } 100% { opacity: 1; } }
+    @keyframes bout { 0% { opacity: 0; } 40% { opacity: 1; } 100% { opacity: 0; } }
+    .caption { position: absolute; left: 20px; right: 20px; top: 386px; display: flex; align-items: flex-start; gap: 10px; border-radius: 16px; background: #241c14; border: 1px solid #3a2e22; padding: 11px 13px; font-size: 14px; line-height: 1.4; }
+    @keyframes capA { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    @keyframes capB { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .sugg { position: absolute; left: 20px; right: 20px; top: 476px; border-radius: 16px; background: rgba(224,169,127,.1); border: 1px solid rgba(224,169,127,.35); padding: 10px 12px; display: flex; align-items: center; gap: 8px; animation: lvRise .34s both; }
+    .sugg-t { flex: 1; font-size: 13.5px; font-weight: 600; }
+    .sugg-b { height: 36px; padding: 0 11px; border-radius: 11px; display: flex; align-items: center; font-size: 13px; font-weight: 700; white-space: nowrap; }
+    .pager { position: absolute; left: 20px; right: 20px; top: 530px; height: 168px; border-radius: 20px; background: #241c14; border: 1px solid #3a2e22; padding: 12px 14px; box-sizing: border-box; }
+    .tabs { display: flex; gap: 6px; margin-bottom: 8px; }
+    .tabs div { height: 28px; padding: 0 10px; border-radius: 999px; display: flex; align-items: center; font-size: 12.5px; font-weight: 700; color: #c9b79a; background: #1c150e; }
+    .tabs .on { background: #3a2e22; color: #f4ecdd; }
+    .g-row { display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; }
+    .g-big { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1px; line-height: 1; }
+    .g-sub { font-size: 12px; color: #c9b79a; margin-top: 2px; }
+    .body-row { display: flex; align-items: center; gap: 12px; }
+    .body-legend { font-size: 12.5px; color: #c9b79a; line-height: 1.5; }
+    .body-legend b { color: #f4ecdd; }
+    .ractions { position: absolute; left: 20px; right: 20px; bottom: 24px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .btn { height: 52px; border-radius: 16px; border: 1px solid rgba(240,228,208,.3); display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; }
+
+    /* Record */
+    .rdim { z-index: 8; position: absolute; inset: 0; background: rgba(12,8,5,.76); animation: fade .2s both; cursor: pointer; }
+    .rcard { z-index: 9; position: absolute; left: 18px; right: 18px; top: 170px; border-radius: 28px; padding: 24px 22px 22px; overflow: hidden; background: linear-gradient(160deg, #6b0028 0%, #3d0017 100%); box-shadow: 0 30px 60px -20px rgba(0,0,0,.7); animation: pop .5s cubic-bezier(.2,.9,.3,1.25) both; pointer-events: none; }
+    @keyframes pop { 0% { opacity: 0; transform: translateY(26px) scale(.82); } 60% { opacity: 1; transform: scale(1.05); } 80% { transform: scale(.99); } 100% { opacity: 1; transform: none; } }
+    .wave { position: absolute; left: 50%; top: 42%; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; border: 2px solid #e0b155; opacity: 0; animation: wv 1s .12s ease-out both; }
+    .wave.w2 { animation-delay: .26s; }
+    @keyframes wv { 0% { transform: scale(.4); opacity: .85; } 100% { transform: scale(8); opacity: 0; } }
+    .c-eb { position: relative; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: #e0b155; }
+    .c-v { position: relative; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 62px; letter-spacing: -2.4px; line-height: .95; color: #fff; margin-top: 10px; }
+    .c-x { position: relative; font-size: 16px; font-weight: 600; color: #f0e4d0; margin-top: 10px; }
+    .c-cmp { position: relative; margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(240,228,208,.25); font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; color: #d9a888; }
+
+    /* Veille */
+    .veille { z-index: 10; position: absolute; inset: 0; background: #050302; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 14px; animation: fade .8s both; cursor: pointer; }
+    .v-n { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 76px; letter-spacing: -3px; color: #7a3a1e; animation: vb 5s infinite ease-in-out; }
+    @keyframes vb { 0%, 100% { opacity: .7; } 40% { opacity: 1; } }
+    .v-l { font-size: 13px; color: #4a3d30; }
+
+    /* Tout validé + clôture */
+    .center-stage { position: absolute; left: 0; right: 0; top: 96px; bottom: 230px; padding: 0 20px; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+    .ok-big { width: 60px; height: 60px; border-radius: 50%; background: rgba(169,186,126,.16); color: #a9ba7e; display: flex; align-items: center; justify-content: center; }
+    .gh { height: 50px; border-radius: 16px; border: 1px solid #4a3d30; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 15px; font-weight: 600; }
+    .cl { position: absolute; inset: 0; padding: 50px 22px 0; background: radial-gradient(140% 60% at 15% -5%, rgba(221,110,64,.28) 0%, rgba(221,110,64,0) 58%), #1c150e; display: flex; flex-direction: column; gap: 14px; }
+    .cl-title { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 58px; letter-spacing: -2.4px; line-height: .9; animation: slam .45s cubic-bezier(.2,.9,.3,1.3) both; }
+    @keyframes slam { 0% { opacity: 0; transform: translateY(-26px) scale(1.05); } 70% { opacity: 1; transform: translateY(4px); } 100% { opacity: 1; transform: none; } }
+    .cl-row { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 14px; align-items: center; animation: lvRise .45s .25s both; }
+    .cl-body { height: 200px; border-radius: 20px; background: #241c14; border: 1px solid #3a2e22; display: flex; align-items: center; justify-content: center; gap: 2px; }
+    .stats { display: flex; flex-direction: column; }
+    .st { padding: 8px 0; border-top: 1px solid #3a2e22; display: flex; justify-content: space-between; align-items: baseline; }
+    .st:first-child { border-top: none; }
+    .st-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px; }
+    .st-l { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; letter-spacing: 1px; text-transform: uppercase; color: #c9b79a; }
+    .ghost-res { align-self: flex-start; height: 34px; padding: 0 13px; border-radius: 999px; display: flex; align-items: center; gap: 7px; font-size: 14px; font-weight: 700; animation: lvRise .45s .4s both; }
+    .relay { display: flex; align-items: center; gap: 10px; border-radius: 14px; padding: 10px 12px; background: rgba(169,186,126,.08); border: 1px solid rgba(169,186,126,.25); font-size: 13.5px; animation: lvRise .45s .6s both; }
+    .relay b { color: #a9ba7e; }
+
+    /* ── Colonne de réglages ── */
+    .side { display: flex; flex-direction: column; gap: 14px; padding-top: 6px; }
+    .s-eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #c9b79a; }
+    .s-h { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -1.1px; line-height: 1; margin-top: 8px; }
+    .s-p { font-size: 13.5px; line-height: 1.55; color: #c9b79a; }
+    .s-p b { color: #f4ecdd; }
+    .tg { display: flex; align-items: center; justify-content: space-between; height: 46px; padding: 0 12px; border-radius: 14px; background: #241c14; border: 1px solid #3a2e22; font-size: 14px; font-weight: 600; cursor: pointer; }
+    .sw { width: 40px; height: 24px; border-radius: 999px; position: relative; transition: background .2s; }
+    .sw i { position: absolute; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #f4ecdd; transition: left .2s; }
+    .sw-on { background: #dd6e40; } .sw-on i { left: 19px; }
+    .sw-off { background: #4a3d30; } .sw-off i { left: 3px; }
+    .steps { display: flex; flex-direction: column; gap: 8px; font-size: 13px; line-height: 1.45; color: #c9b79a; }
+    .steps b { color: #f4ecdd; }
+    .s-btn { height: 46px; border-radius: 14px; background: #f4ecdd; color: #1c150e; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; cursor: pointer; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .in, .rise, .sheet, .rcard, .wave, .cl-title, .cl-row, .ghost-res, .relay, .fx-heat, .ring-pulse, .breath, .launch::after { animation: none !important; }
+      .t-a, .t-b, .b-in, .b-out { animation: none !important; }
+      .t-b, .b-out { opacity: 0; }
+    }
+  </style>
+</helmet>
+
+<div class="pb">
+  <div class="pp" onPointerDown="{{ touch }}">
+
+    <sc-if value="{{ isBrief }}" hint-placeholder-val="{{ true }}">
+      <div class="br">
+        <div class="eyebrow">Séance du jour · extrait jouable</div>
+        <div class="br-title">Push A</div>
+        <div class="br-meta">2 exercices · 5 séries · repos raccourcis</div>
+        <div class="coach" style="margin-top: 10px">
+          <div class="coach-top">
+            <div class="wbars {{ speakingCls }}"><span></span><span></span><span></span><span></span><span></span></div>
+            <div class="coach-l">Le mot du coach</div>
+            <div class="play tap" onClick="{{ playBrief }}"><svg class="ic" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"></path></svg>Écouter</div>
+          </div>
+          <div class="coach-t">Mardi, tu as calé à 7 reps sur la dernière série de couché. Aujourd'hui le programme prévoit 82,5 kg : ton record est en jeu. Contrôle la descente, le reste suivra.</div>
+        </div>
+        <div class="stake"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e0b155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"></path><path d="M12 13v4M8.5 20h7"></path></svg><div>L'enjeu : <b>82,5 kg</b> au couché, record actuel 80 kg</div></div>
+        <div class="eyebrow" style="margin-top: 10px">Au programme · mardi : 2 383 kg</div>
+        <div class="br-row"><div class="br-n">1</div><div class="br-name">Développé couché<div class="br-sub">3 séries · barre</div></div><div class="mono" style="font-weight: 700; font-size: 13px">80–82,5 kg</div></div>
+        <div class="br-row"><div class="br-n">2</div><div class="br-name">Développé militaire<div class="br-sub">2 séries · barre</div></div><div class="mono" style="font-weight: 700; font-size: 13px">40–42,5 kg</div></div>
+        <div class="go tap" onClick="{{ start }}">C'est parti<svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ inSession }}" hint-placeholder-val="{{ false }}">
+      <div class="scr">
+
+        <sc-if value="{{ showHeader }}" hint-placeholder-val="{{ true }}">
+          <div class="hd">
+            <div class="hd-row">
+              <svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+              <div class="chrono">{{ chrono }}</div>
+              <svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="#f4ecdd"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg>
+            </div>
+            <div class="ribbon">
+              <sc-for list="{{ segs }}" as="sg" hint-placeholder-count="2">
+                <div class="seg" style="flex: {{ sg.flex }} 1 0"><div class="seg-f" style="width: {{ sg.pct }}%; background: {{ sg.color }}"></div></div>
+              </sc-for>
+            </div>
+            <div class="hd-meta"><span>{{ progressLabel }}</span><span class="ghost-pill" style="background: {{ ghostBg }}; color: {{ ghostColor }}">Mardi {{ ghostDeltaLabel }}</span></div>
+          </div>
+        </sc-if>
+
+        <!-- ── Prêt : la barre chargée ── -->
+        <sc-if value="{{ isReady }}" hint-placeholder-val="{{ true }}">
+          <div class="in">
+            <div class="ready-stage">
+              <div>
+                <div class="eyebrow" style="color: {{ eyebrowColor }}">{{ eyebrow }}</div>
+                <div class="h-name" style="margin-top: 8px">{{ exName }}</div>
+              </div>
+              <div class="pills">
+                <sc-for list="{{ pills }}" as="p" hint-placeholder-count="3">
+                  <div class="pill {{ p.cls }}">{{ p.label }}</div>
+                </sc-for>
+              </div>
+              <div class="bb-wrap">
+                <div class="bb" style="animation: {{ bbAnim }}">
+                  <div class="bb-sleeve"></div>
+                  <div class="bb-side">
+                    <sc-for list="{{ platesLeft }}" as="pl" hint-placeholder-count="3">
+                      <div class="plate" style="width: {{ pl.w }}px; height: {{ pl.h }}px; background: {{ pl.c }}"></div>
+                    </sc-for>
+                  </div>
+                  <div class="bb-collar"></div>
+                  <div class="bb-bar"></div>
+                  <div class="bb-collar"></div>
+                  <div class="bb-side">
+                    <sc-for list="{{ platesRight }}" as="pr" hint-placeholder-count="3">
+                      <div class="plate" style="width: {{ pr.w }}px; height: {{ pr.h }}px; background: {{ pr.c }}"></div>
+                    </sc-for>
+                  </div>
+                  <div class="bb-sleeve"></div>
+                </div>
+                <div class="bb-label">{{ platesLabel }}</div>
+              </div>
+              <div class="target">{{ curWLabel }} <small>× {{ curR }}</small></div>
+              <sc-if value="{{ stakeOn }}" hint-placeholder-val="{{ false }}">
+                <div class="stake rise"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e0b155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0V4z"></path><path d="M12 13v4M8.5 20h7"></path></svg><div>{{ stakeText }}</div></div>
+              </sc-if>
+            </div>
+            <div class="deck">
+              <div class="steppers">
+                <div class="stp">
+                  <div class="stp-b tap" onClick="{{ wDown }}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"></path></svg></div>
+                  <div class="stp-v">{{ curW }}<span class="stp-u">KG</span></div>
+                  <div class="stp-b tap" onClick="{{ wUp }}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div>
+                </div>
+                <div class="stp">
+                  <div class="stp-b tap" onClick="{{ rDown }}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"></path></svg></div>
+                  <div class="stp-v">{{ curR }}<span class="stp-u">REPS</span></div>
+                  <div class="stp-b tap" onClick="{{ rUp }}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div>
+                </div>
+              </div>
+              <div class="launch tap" onClick="{{ launch }}"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4.5v15l13-7.5z"></path></svg>Lancer la série</div>
+              <div class="quick tap" onClick="{{ quick }}">Déjà faite ? Valider directement</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ── Effort ── -->
+        <sc-if value="{{ isEffortLike }}" hint-placeholder-val="{{ false }}">
+          <div class="fx">
+            <div class="fx-heat"></div>
+            <div class="fx-top">
+              <div class="eyebrow" style="color: #e0a97f">{{ setCtx }}</div>
+              <div class="cue"><div class="wbars {{ speakingCls }}"><span></span><span></span><span></span><span></span><span></span></div>{{ coach }}</div>
+            </div>
+            <div class="ring-zone" onClick="{{ rep }}">
+              <div class="ring-pulse"></div>
+              <sc-for list="{{ dots }}" as="d" hint-placeholder-count="8">
+                <div class="dot {{ d.cls }}" style="left: {{ d.x }}px; top: {{ d.y }}px"></div>
+              </sc-for>
+              <div class="ring-c">
+                <div class="count" style="color: {{ countColor }}">{{ countLabel }}</div>
+                <div class="tempo"><span class="t-a">Descends · 2</span><span class="t-b">Pousse</span></div>
+              </div>
+            </div>
+            <div class="fx-meta">
+              <div class="fx-load">{{ curWLabel }} × {{ curR }}</div>
+              <div class="fx-tut">sous tension {{ tut }}</div>
+              <div class="fx-hint">Touche le cercle à chaque rép, si tu veux</div>
+            </div>
+            <div class="done-btn tap" onClick="{{ done }}">Terminé</div>
+          </div>
+        </sc-if>
+
+        <!-- ── Cadran ── -->
+        <sc-if value="{{ isDial }}" hint-placeholder-val="{{ false }}">
+          <div class="dim"></div>
+          <div class="sheet">
+            <div class="grab"></div>
+            <div class="sh-t"><b>Combien de reps ?</b><span class="mono" style="font-size: 12px; color: #c9b79a">{{ tutLine }}</span></div>
+            <div class="wheel-row">
+              <div class="w-btn tap" onClick="{{ dialMinus }}"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"></path></svg></div>
+              <div class="wheel" onPointerDown="{{ dialDown }}" onPointerMove="{{ dialMove }}" onPointerUp="{{ dialUp }}" onPointerCancel="{{ dialUp }}">
+                <div class="w-side">{{ dialPrev }}</div>
+                <div class="w-cur" style="color: {{ dialColor }}">{{ dialValue }}</div>
+                <div class="w-side">{{ dialNext }}</div>
+                <div class="w-goal">obj. {{ curR }}</div>
+              </div>
+              <div class="w-btn tap" onClick="{{ dialPlus }}"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div>
+            </div>
+            <div class="row-load"><span>Charge</span><b>{{ curWLabel }}</b></div>
+            <div class="eyebrow">Ressenti · facultatif</div>
+            <div class="feel">
+              <sc-for list="{{ feels }}" as="f" hint-placeholder-count="4">
+                <div class="tap {{ f.cls }}" onClick="{{ f.pick }}">{{ f.label }}</div>
+              </sc-for>
+            </div>
+            <div class="validate tap" onClick="{{ validate }}">Valider la série</div>
+          </div>
+        </sc-if>
+
+        <!-- ── Repos ── -->
+        <sc-if value="{{ isRest }}" hint-placeholder-val="{{ false }}">
+          <div class="in">
+            <div class="rest-top">
+              <div>
+                <div class="eyebrow">{{ doneEyebrow }}</div>
+                <div class="rest-done">{{ doneValue }}</div>
+              </div>
+              <div class="verdict rise {{ verdictCls }}">{{ verdictLabel }}</div>
+            </div>
+            <div class="rring">
+              <div class="breath"></div>
+              <svg width="214" height="214" viewBox="0 0 214 214">
+                <circle cx="107" cy="107" r="102" fill="none" stroke="#3a2e22" stroke-width="8"></circle>
+                <circle class="arc" cx="107" cy="107" r="102" fill="none" stroke="{{ ringColor }}" stroke-width="8" stroke-linecap="round" stroke-dasharray="640.9" stroke-dashoffset="{{ ringOffset }}"></circle>
+              </svg>
+              <div class="rring-c">
+                <div class="rring-n" style="color: {{ ringColor }}">{{ restCount }}</div>
+                <sc-if value="{{ notReady }}" hint-placeholder-val="{{ true }}">
+                  <div class="br-lbl"><span class="b-in">Inspire</span><span class="b-out">Expire longtemps</span></div>
+                </sc-if>
+                <sc-if value="{{ ready }}" hint-placeholder-val="{{ false }}">
+                  <div class="br-lbl" style="color: #a9ba7e">Prépare-toi</div>
+                </sc-if>
+              </div>
+            </div>
+            <div class="caption" style="animation: {{ captionAnim }}">
+              <div class="wbars {{ speakingCls }}" style="margin-top: 2px"><span></span><span></span><span></span><span></span><span></span></div>
+              <div>{{ coach }}</div>
+            </div>
+            <sc-if value="{{ hasSuggestion }}" hint-placeholder-val="{{ false }}">
+              <div class="sugg">
+                <div class="sugg-t">{{ suggText }}</div>
+                <div class="sugg-b tap" style="background: #dd6e40; color: #1c150e" onClick="{{ acceptSugg }}">{{ suggYes }}</div>
+                <div class="sugg-b tap" style="color: #c9b79a" onClick="{{ refuseSugg }}">Garder</div>
+              </div>
+            </sc-if>
+            <div class="pager" style="top: {{ pagerTop }}px">
+              <div class="tabs">
+                <div class="tap {{ tabGhostCls }}" onClick="{{ tabGhost }}">Le fantôme de mardi</div>
+                <div class="tap {{ tabBodyCls }}" onClick="{{ tabBody }}">Le corps qui chauffe</div>
+              </div>
+              <sc-if value="{{ showGhost }}" hint-placeholder-val="{{ true }}">
+                <div class="g-row">
+                  <div>
+                    <div class="g-big" style="color: {{ ghostColor }}">{{ ghostDeltaBig }}</div>
+                    <div class="g-sub">{{ ghostSub }}</div>
+                  </div>
+                  <svg width="170" height="92" viewBox="0 0 170 92">
+                    <path d="{{ ghostPath }}" fill="none" stroke="#797169" stroke-width="2" stroke-dasharray="4 4"></path>
+                    <path d="{{ youPath }}" fill="none" stroke="{{ ghostColor }}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"></path>
+                    <circle cx="{{ youX }}" cy="{{ youY }}" r="4.5" fill="{{ ghostColor }}"></circle>
+                  </svg>
+                </div>
+              </sc-if>
+              <sc-if value="{{ showBody }}" hint-placeholder-val="{{ false }}">
+                <div class="body-row">
+                  <svg width="64" height="108" viewBox="0 0 112 188">
+                    <ellipse cx="56" cy="20" rx="13" ry="15" fill="#30271e"></ellipse>
+                    <rect x="42" y="37" width="28" height="10" rx="4" fill="#30271e"></rect>
+                    <path d="M40 110h14v72H40z M58 110h14v72H58z" fill="#30271e"></path>
+                    <path d="M38 78h36v30H38z" fill="{{ hAbs }}" style="transition: fill .8s"></path>
+                    <path d="M22 58h11v46H22z M79 58h11v46H79z" fill="#30271e"></path>
+                    <path d="M34 48h44v30H34z" fill="{{ hChest }}" style="transition: fill .8s; {{ gChest }}"></path>
+                    <path d="M24 46h14v12H24z M74 46h14v12H74z" fill="{{ hShoulders }}" style="transition: fill .8s; {{ gShoulders }}"></path>
+                  </svg>
+                  <svg width="64" height="108" viewBox="0 0 112 188">
+                    <ellipse cx="56" cy="20" rx="13" ry="15" fill="#30271e"></ellipse>
+                    <rect x="42" y="37" width="28" height="10" rx="4" fill="#30271e"></rect>
+                    <path d="M34 48h44v34H34z" fill="#30271e"></path>
+                    <path d="M40 110h14v16H40z M58 110h14v16H58z M40 126h14v30H40z M58 126h14v30H58z M40 156h14v26H40z M58 156h14v26H58z" fill="#30271e"></path>
+                    <path d="M22 58h11v46H22z M79 58h11v46H79z" fill="{{ hArms }}" style="transition: fill .8s; {{ gArms }}"></path>
+                    <path d="M24 46h14v12H24z M74 46h14v12H74z" fill="{{ hShoulders }}" style="transition: fill .8s"></path>
+                  </svg>
+                  <div class="body-legend">{{ bodyLegend }}</div>
+                </div>
+              </sc-if>
+            </div>
+            <div class="ractions">
+              <div class="btn tap" onClick="{{ extend }}">+15 s</div>
+              <div class="btn tap" onClick="{{ skip }}">Passer</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <!-- ── Tout est validé ── -->
+        <sc-if value="{{ isAllDone }}" hint-placeholder-val="{{ false }}">
+          <div class="in">
+            <div class="center-stage">
+              <div class="ok-big"><svg class="ic" width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.2 4.2L19 7"></path></svg></div>
+              <div class="h-name">Tout est validé.</div>
+              <div class="caption" style="position: static"><div class="wbars {{ speakingCls }}" style="margin-top: 2px"><span></span><span></span><span></span><span></span><span></span></div><div>{{ coach }}</div></div>
+            </div>
+            <div class="deck">
+              <div class="validate tap" onClick="{{ finish }}">Terminer la séance</div>
+              <div class="gh tap" onClick="{{ addSet }}"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>Série</div>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ hasTakeover }}" hint-placeholder-val="{{ false }}">
+          <div class="rdim" onClick="{{ dismiss }}"></div>
+          <div class="rcard">
+            <div class="wave"></div>
+            <div class="wave w2"></div>
+            <div class="c-eb">Nouveau record</div>
+            <div class="c-v">{{ tkValue }}</div>
+            <div class="c-x">{{ tkText }}</div>
+            <div class="c-cmp">Ancien record : {{ tkPrev }} · aujourd'hui {{ tkToday }}</div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{ veilleOn }}" hint-placeholder-val="{{ false }}">
+          <div class="veille">
+            <div class="v-n">{{ restCount }}</div>
+            <div class="v-l">Veille de séance · touche pour réveiller</div>
+          </div>
+        </sc-if>
+      </div>
+    </sc-if>
+
+    <!-- ── Clôture ── -->
+    <sc-if value="{{ isDone }}" hint-placeholder-val="{{ false }}">
+      <div class="cl">
+        <div class="eyebrow">Push A · extrait</div>
+        <div class="cl-title">Séance<br>bouclée.</div>
+        <div class="cl-row">
+          <div class="cl-body">
+            <svg width="68" height="116" viewBox="0 0 112 188">
+              <ellipse cx="56" cy="20" rx="13" ry="15" fill="#30271e"></ellipse>
+              <rect x="42" y="37" width="28" height="10" rx="4" fill="#30271e"></rect>
+              <path d="M40 110h14v72H40z M58 110h14v72H58z" fill="#30271e"></path>
+              <path d="M38 78h36v30H38z" fill="{{ hAbs }}"></path>
+              <path d="M22 58h11v46H22z M79 58h11v46H79z" fill="#30271e"></path>
+              <path d="M34 48h44v30H34z" fill="{{ hChest }}" style="{{ gChest }}"></path>
+              <path d="M24 46h14v12H24z M74 46h14v12H74z" fill="{{ hShoulders }}" style="{{ gShoulders }}"></path>
+            </svg>
+            <svg width="68" height="116" viewBox="0 0 112 188">
+              <ellipse cx="56" cy="20" rx="13" ry="15" fill="#30271e"></ellipse>
+              <rect x="42" y="37" width="28" height="10" rx="4" fill="#30271e"></rect>
+              <path d="M34 48h44v34H34z" fill="#30271e"></path>
+              <path d="M40 110h14v16H40z M58 110h14v16H58z M40 126h14v30H40z M58 126h14v30H58z M40 156h14v26H40z M58 156h14v26H58z" fill="#30271e"></path>
+              <path d="M22 58h11v46H22z M79 58h11v46H79z" fill="{{ hArms }}" style="{{ gArms }}"></path>
+              <path d="M24 46h14v12H24z M74 46h14v12H74z" fill="{{ hShoulders }}"></path>
+            </svg>
+          </div>
+          <div class="stats">
+            <div class="st"><span class="st-l">Durée</span><span class="st-n">{{ clDuration }}</span></div>
+            <div class="st"><span class="st-l">kg soulevés</span><span class="st-n">{{ clTon }}</span></div>
+            <div class="st"><span class="st-l">Séries</span><span class="st-n">{{ clSets }}</span></div>
+            <div class="st"><span class="st-l">Records</span><span class="st-n" style="color: #e0b155">{{ clRecCount }}</span></div>
+          </div>
+        </div>
+        <div class="ghost-res" style="background: {{ ghostBg }}; color: {{ ghostColor }}">{{ clGhost }}</div>
+        <div class="caption" style="position: static; animation: lvRise .45s .5s both"><div class="wbars {{ speakingCls }}" style="margin-top: 2px"><span></span><span></span><span></span><span></span><span></span></div><div>{{ coach }}</div></div>
+        <div class="relay"><svg class="ic" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a9ba7e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3 4 6 7 6 11a6 6 0 0 1-12 0c0-4 3-7 6-11z"></path></svg><div><b>Nutrition prend le relais :</b> jour muscu, +40 g de glucides ce soir.</div></div>
+        <div class="go tap" onClick="{{ reset }}">Rejouer la séance</div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div class="side">
+    <div>
+      <div class="s-eb">Prototype jouable</div>
+      <div class="s-h">Séance vivante</div>
+    </div>
+    <div class="s-p">Monte le son. Le coach parle, la barre se charge, l'effort bat au tempo, le repos respire.</div>
+    <div class="tg" onClick="{{ toggleVoice }}"><span>Voix du coach</span><div class="sw {{ voiceCls }}"><i></i></div></div>
+    <div class="tg" onClick="{{ toggleSound }}"><span>Sons</span><div class="sw {{ soundCls }}"><i></i></div></div>
+    <div class="tg" onClick="{{ toggleVeille }}"><span>Veille pendant le repos</span><div class="sw {{ veilleCls }}"><i></i></div></div>
+    <div class="steps">
+      <div><b>1.</b> Écoute le mot du coach, puis « C'est parti ».</div>
+      <div><b>2.</b> Change la charge : les disques se rechargent.</div>
+      <div><b>3.</b> « Lancer la série », touche le cercle à chaque rép, puis « Terminé ».</div>
+      <div><b>4.</b> Fais glisser le cadran, choisis « Limite » pour voir le coach ajuster.</div>
+      <div><b>5.</b> En série 2, 82,5 kg fait tomber le record.</div>
+      <div><b>6.</b> Au repos, ne touche à rien 6 s : la veille s'installe.</div>
+    </div>
+    <div class="s-btn" onClick="{{ reset }}">Recommencer</div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":760,"height":920}}'>
+class Component extends DCLogic {
+  constructor(...args) {
+    super(...args);
+    this.state = this.lvInitial();
+  }
+
+  lvData() {
+    return [
+      { name: 'Développé couché', lower: 'développé couché', muscles: 'Pectoraux', rest: 12, bestMax: 80, bestE1: 105,
+        cues: ['Omoplates serrées, pieds ancrés.', 'Descends en deux temps, pousse fort.', 'Garde la barre au-dessus des coudes.'],
+        heat: { chest: 0.34, shoulders: 0.1, arms: 0.14, abs: 0 },
+        sets: [ { w: 80, r: 8, lw: 77.5, lr: 8 }, { w: 82.5, r: 7, lw: 77.5, lr: 8 }, { w: 80, r: 8, lw: 77.5, lr: 7 } ] },
+      { name: 'Développé militaire', lower: 'développé militaire', muscles: 'Épaules', rest: 12, bestMax: 42.5, bestE1: 52,
+        cues: ['Fessiers serrés, la barre frôle le menton.', 'Pousse droit, la tête passe sous la barre.'],
+        heat: { chest: 0.04, shoulders: 0.4, arms: 0.16, abs: 0.08 },
+        sets: [ { w: 40, r: 8, lw: 40, lr: 8 }, { w: 42.5, r: 7, lw: 40, lr: 7 } ] }
+    ];
+  }
+
+  lvExercises() {
+    const base = this.lvData();
+    const extra = (this.state && this.state.extra) || {};
+    return base.map((e, i) => {
+      const n = extra[i] || 0;
+      if (!n) return e;
+      const last = e.sets[e.sets.length - 1];
+      const add = [];
+      for (let k = 0; k < n; k++) add.push({ w: last.w, r: last.r, lw: 0, lr: 0, extra: true });
+      return Object.assign({}, e, { sets: e.sets.concat(add) });
+    });
+  }
+
+  lvInitial() {
+    const EX = this.lvData();
+    const t = Date.now();
+    return {
+      phase: 'brief', ex: 0, si: 0, cur: { w: EX[0].sets[0].w, r: EX[0].sets[0].r }, wVersion: 0,
+      log: [], bests: EX.map((e) => ({ max: e.bestMax, e1: e.bestE1 })), records: [], fullUsed: false,
+      verdict: null, justDone: null, takeover: null, takeoverUntil: 0,
+      effortStart: 0, effortEnd: 0, taps: 0, dialValue: 8, feel: null, suggestion: null,
+      restEnd: 0, restTotal: 12, spokePrep: false, lastTickSec: 0,
+      startAt: 0, endAt: 0, pager: 'ghost', coach: '', coachId: 0, speaking: false,
+      lastTouch: t, voice: (this.state && this.state.voice !== undefined) ? this.state.voice : true,
+      sound: (this.state && this.state.sound !== undefined) ? this.state.sound : true,
+      veille: (this.state && this.state.veille !== undefined) ? this.state.veille : true,
+      extra: {}, now: t
+    };
+  }
+
+  componentDidMount() { this.lvTimer = setInterval(() => this.lvTick(), 200); }
+  componentWillUnmount() { clearInterval(this.lvTimer); this.lvHush(); }
+
+  /* ── Retours : voix, sons, vibrations ── */
+  lvCtx() {
+    try {
+      if (!this.lvAudio) { const AC = window.AudioContext || window.webkitAudioContext; if (AC) this.lvAudio = new AC(); }
+      return this.lvAudio || null;
+    } catch (e) { return null; }
+  }
+  lvTone(freq, dur, type, vol, when, slideTo) {
+    if (!this.state.sound) return;
+    const ctx = this.lvCtx();
+    if (!ctx) return;
+    try {
+      const t0 = ctx.currentTime + (when || 0);
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = type || 'sine';
+      o.frequency.setValueAtTime(freq, t0);
+      if (slideTo) o.frequency.exponentialRampToValueAtTime(slideTo, t0 + dur);
+      g.gain.setValueAtTime(0.0001, t0);
+      g.gain.exponentialRampToValueAtTime(vol || 0.15, t0 + 0.012);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(t0); o.stop(t0 + dur + 0.03);
+    } catch (e) {}
+  }
+  sndThunk() { this.lvTone(150, 0.22, 'sine', 0.4, 0, 48); this.lvTone(2400, 0.03, 'triangle', 0.03); }
+  sndPlate() { this.lvTone(1800, 0.09, 'triangle', 0.05, 0, 900); this.lvTone(95, 0.12, 'sine', 0.2, 0, 60); }
+  sndRep() { this.lvTone(540, 0.07, 'triangle', 0.09); }
+  sndTick() { this.lvTone(880, 0.045, 'square', 0.035); }
+  sndGo() { this.lvTone(523, 0.12, 'sine', 0.12); this.lvTone(784, 0.18, 'sine', 0.12, 0.09); }
+  sndRecord() { [523, 659, 784, 1047].forEach((f, i) => this.lvTone(f, 0.55, 'sine', 0.11, i * 0.09)); this.lvTone(80, 0.5, 'sine', 0.3, 0, 45); }
+  buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
+  lvHush() { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} }
+  lvSpeak(text) {
+    if (!this.state.voice) return;
+    try {
+      const s = window.speechSynthesis;
+      if (!s) return;
+      s.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'fr-FR';
+      const voices = s.getVoices() || [];
+      const v = voices.find((x) => /^fr/i.test(x.lang) && x.localService) || voices.find((x) => /^fr/i.test(x.lang));
+      if (v) u.voice = v;
+      u.rate = 1.06;
+      u.onstart = () => this.setState({ speaking: true });
+      u.onend = () => this.setState({ speaking: false });
+      u.onerror = () => this.setState({ speaking: false });
+      s.speak(u);
+    } catch (e) {}
+  }
+
+  fmt(x) { return String(Math.round(x * 100) / 100).replace('.', ','); }
+  e1(w, r) { return r <= 1 ? w : w * (1 + r / 30); }
+  thousands(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  clock(ms) { const t = Math.max(0, Math.floor(ms / 1000)); return String(Math.floor(t / 60)).padStart(2, '0') + ':' + String(t % 60).padStart(2, '0'); }
+
+  lvPlates(w) {
+    const colors = { 25: '#9e2f26', 20: '#3f5b73', 15: '#b08a2e', 10: '#5c6e3f', 5: '#d9cdb8', 2.5: '#7a2a22', 1.25: '#8d877d' };
+    const dims = { 25: [15, 122], 20: [14, 122], 15: [12, 106], 10: [11, 90], 5: [9, 66], 2.5: [7, 50], 1.25: [6, 40] };
+    let side = Math.max(0, (w - 20) / 2);
+    const out = [];
+    [25, 20, 15, 10, 5, 2.5, 1.25].forEach((p) => { while (side + 1e-6 >= p) { out.push(p); side -= p; } });
+    return out.map((p) => ({ p: p, w: dims[p][0], h: dims[p][1], c: colors[p] }));
+  }
+
+  /* ── Horloge ── */
+  lvTick() {
+    const s = this.state;
+    if (s.phase === 'brief' || s.phase === 'done') return;
+    const now = Date.now();
+    const patch = { now: now };
+    if (s.phase === 'rest') {
+      const left = s.restEnd - now;
+      if (left <= 6500 && !s.spokePrep) {
+        const txt = 'On y retourne : ' + this.fmt(s.cur.w) + ' kilos, ' + s.cur.r + ' répétitions.';
+        patch.spokePrep = true; patch.coach = txt; patch.coachId = s.coachId + 1;
+        this.lvSpeak(txt);
+      }
+      const sec = Math.ceil(left / 1000);
+      if (sec <= 3 && sec >= 1 && sec !== s.lastTickSec) { patch.lastTickSec = sec; this.sndTick(); this.buzz(15); }
+      if (left <= 0) {
+        patch.phase = 'ready'; patch.takeover = null; patch.suggestion = null; patch.lastTickSec = 0; patch.lastTouch = now;
+        this.buzz(140); this.lvTone(660, 0.18, 'sine', 0.12); this.lvTone(990, 0.22, 'sine', 0.1, 0.12);
+      }
+    }
+    if (s.takeover && now >= s.takeoverUntil) patch.takeover = null;
+    this.setState(patch);
+  }
+
+  /* ── Gestes ── */
+  lvStart() {
+    const ctx = this.lvCtx();
+    try { if (ctx && ctx.resume) ctx.resume(); } catch (e) {}
+    const t = Date.now();
+    const txt = 'Premier exercice : développé couché. 80 kilos, 8 répétitions pour lancer la machine.';
+    this.setState({ phase: 'ready', startAt: t, now: t, lastTouch: t, coach: txt, coachId: this.state.coachId + 1 });
+    this.lvSpeak(txt); this.sndGo(); this.buzz(40);
+  }
+
+  lvLaunch() {
+    const s = this.state;
+    const E = this.lvExercises()[s.ex];
+    const cue = E.cues[s.si % E.cues.length];
+    const t = Date.now();
+    this.setState({ phase: 'effort', effortStart: t, effortEnd: 0, taps: 0, now: t, coach: cue, coachId: s.coachId + 1 });
+    this.lvSpeak(cue); this.sndGo(); this.buzz(50);
+  }
+
+  lvValidate() {
+    const EX = this.lvExercises();
+    const s = this.state;
+    if (s.phase !== 'dial') return;
+    const E = EX[s.ex];
+    const set = E.sets[s.si];
+    const w = s.cur.w;
+    const r = s.dialValue;
+    const now = Date.now();
+    const bests = s.bests.map((b) => ({ max: b.max, e1: b.e1 }));
+    const b = bests[s.ex];
+    const est = this.e1(w, r);
+    const records = s.records.slice();
+    let verdict;
+    let line;
+    if (set.extra) { verdict = { label: 'Série en plus', tone: 'eq' }; line = 'Une série de plus au compteur.'; }
+    else if (w > set.lw) { verdict = { label: '+' + this.fmt(w - set.lw) + ' kg vs mardi', tone: 'up' }; line = this.fmt(w - set.lw) + ' kilos de plus que mardi. Respire, expire long.'; }
+    else if (w === set.lw && r > set.lr) { verdict = { label: '+' + (r - set.lr) + ' rép vs mardi', tone: 'up' }; line = 'Une répétition de mieux que mardi. Ça avance.'; }
+    else if (w === set.lw && r === set.lr) { verdict = { label: 'Comme mardi', tone: 'eq' }; line = 'Comme mardi. Solide.'; }
+    else { verdict = { label: r + ' reps · mardi ' + set.lr, tone: 'eq' }; line = 'Un cran sous mardi. On garde la qualité.'; }
+    let takeover = null;
+    let takeoverUntil = 0;
+    let fullUsed = s.fullUsed;
+    if (w > b.max && !set.extra) {
+      const prev = b.max;
+      b.max = w;
+      if (est > b.e1) b.e1 = est;
+      verdict = { label: 'Record · charge max', tone: 'rec' };
+      records.push({ name: E.name, value: this.fmt(w) + ' kg' });
+      line = 'Nouveau record. ' + this.fmt(w) + ' kilos, plus lourd que jamais au ' + E.lower + '.';
+      if (!fullUsed) {
+        fullUsed = true;
+        takeover = { value: this.fmt(w) + ' kg', text: 'Plus lourd que jamais au ' + E.lower + '.', prev: this.fmt(prev) + ' kg', today: this.fmt(w) + ' × ' + r };
+        takeoverUntil = now + 2800;
+      }
+      this.sndRecord(); this.buzz([140, 80, 140]);
+    } else if (est > b.e1 + 0.05 && !set.extra) {
+      b.e1 = est;
+      verdict = { label: 'Record · 1RM estimé ' + Math.round(est) + ' kg', tone: 'rec' };
+      records.push({ name: E.name, value: Math.round(est) + ' kg (1RM est.)' });
+      line = 'Record de 1RM estimé : ' + Math.round(est) + ' kilos.';
+      this.sndRecord(); this.buzz(140);
+    } else {
+      this.sndThunk(); this.buzz(30);
+    }
+    const log = s.log.concat([{ ex: s.ex, si: s.si, w: w, r: r, feel: s.feel }]);
+    const justDone = { eyebrow: 'Série ' + (s.si + 1) + ' validée', value: this.fmt(w) + ' kg × ' + r };
+    let ex = s.ex;
+    let si = s.si + 1;
+    if (si >= E.sets.length) {
+      const mine = log.filter((l) => l.ex === s.ex && !E.sets[l.si].extra);
+      const ton = mine.reduce((a, l) => a + l.w * l.r, 0);
+      const last = E.sets.filter((st) => !st.extra).reduce((a, st) => a + st.lw * st.lr, 0);
+      const pct = last ? Math.round(((ton - last) / last) * 100) : 0;
+      if (!takeover && verdict.tone !== 'rec') {
+        line = E.name + ' bouclé, ' + (pct >= 0 ? pct + ' % au-dessus de mardi.' : Math.abs(pct) + ' % sous mardi.') + (EX[ex + 1] ? ' Place au ' + EX[ex + 1].lower + '.' : '');
+      }
+      ex = s.ex + 1;
+      si = 0;
+    }
+    if (ex >= EX.length) {
+      const fin = line + ' Tout est validé : termine quand tu veux.';
+      this.setState({ phase: 'allDone', ex: EX.length - 1, si: EX[EX.length - 1].sets.length, log: log, bests: bests, records: records, verdict: verdict, justDone: justDone, takeover: takeover, takeoverUntil: takeoverUntil, fullUsed: fullUsed, coach: fin, coachId: s.coachId + 1, now: now, suggestion: null });
+      this.lvSpeak(fin);
+      return;
+    }
+    const nx = EX[ex].sets[si];
+    let suggestion = null;
+    if (ex === s.ex && s.feel === 'limite' && nx.w > 20) {
+      suggestion = { w: nx.w - 2.5, dir: 'down' };
+      line += ' C\'était limite : je te propose ' + this.fmt(nx.w - 2.5) + ' kilos pour la suivante.';
+    } else if (ex === s.ex && s.feel === 'facile') {
+      suggestion = { w: nx.w + 2.5, dir: 'up' };
+      line += ' Ça avait l\'air facile : on tente ' + this.fmt(nx.w + 2.5) + ' ?';
+    }
+    this.setState({
+      phase: 'rest', ex: ex, si: si, cur: { w: nx.w, r: nx.r }, wVersion: s.wVersion + 1, log: log, bests: bests, records: records,
+      verdict: verdict, justDone: justDone, takeover: takeover, takeoverUntil: takeoverUntil, fullUsed: fullUsed,
+      restEnd: now + E.rest * 1000, restTotal: E.rest, spokePrep: false, lastTickSec: 0,
+      coach: line, coachId: s.coachId + 1, suggestion: suggestion, now: now, lastTouch: now, pager: 'ghost'
+    });
+    this.lvSpeak(line);
+  }
+
+  /* ── Rendu ── */
+  renderVals() {
+    const EX = this.lvExercises();
+    const s = this.state;
+    const now = s.now;
+    const exI = Math.min(s.ex, EX.length - 1);
+    const E = EX[exI];
+    const best = s.bests[exI];
+    const totalSets = EX.reduce((a, e) => a + e.sets.length, 0);
+
+    // Fantôme : tonnage cumulé contre la même séance, mardi
+    let you = 0;
+    let ghost = 0;
+    const youPts = [0];
+    s.log.forEach((l) => {
+      const st = EX[l.ex].sets[l.si];
+      you += l.w * l.r;
+      ghost += st.extra ? 0 : st.lw * st.lr;
+      youPts.push(you);
+    });
+    const ghostAll = [0];
+    let g = 0;
+    EX.forEach((e) => e.sets.forEach((st) => { if (!st.extra) { g += st.lw * st.lr; ghostAll.push(g); } }));
+    const ghostTotal = g;
+    const delta = you - ghost;
+    const ahead = delta >= 0;
+    const maxV = Math.max(ghostTotal, you) * 1.05 || 1;
+    const nPts = Math.max(ghostAll.length - 1, youPts.length - 1, 1);
+    const px = (i) => Math.round((i / nPts) * 164) + 3;
+    const py = (v) => Math.round(86 - (v / maxV) * 80);
+    const ghostPath = ghostAll.map((v, i) => (i ? 'L' : 'M') + px(i) + ',' + py(v)).join(' ');
+    const youPath = youPts.map((v, i) => (i ? 'L' : 'M') + px(i) + ',' + py(v)).join(' ');
+    const ghostColor = ahead ? '#a9ba7e' : '#c9b79a';
+
+    // Corps qui chauffe
+    const heat = { chest: 0, shoulders: 0, arms: 0, abs: 0 };
+    s.log.forEach((l) => { const h = EX[l.ex].heat; Object.keys(heat).forEach((k) => { heat[k] = Math.min(1, heat[k] + (h[k] || 0)); }); });
+    const stops = [[0, [48, 39, 30]], [0.2, [107, 0, 40]], [0.5, [177, 79, 43]], [0.78, [221, 110, 64]], [1, [224, 177, 85]]];
+    const heatColor = (v) => {
+      for (let i = 1; i < stops.length; i++) {
+        if (v <= stops[i][0]) {
+          const a = stops[i - 1];
+          const bb = stops[i];
+          const t = (v - a[0]) / (bb[0] - a[0]);
+          const c = a[1].map((x, k) => Math.round(x + (bb[1][k] - x) * t));
+          return 'rgb(' + c.join(',') + ')';
+        }
+      }
+      return 'rgb(224,177,85)';
+    };
+    const glow = (v) => (v > 0.45 ? 'filter: drop-shadow(0 0 ' + Math.round(v * 8) + 'px rgba(224,160,90,.75));' : '');
+    const warmest = Object.keys(heat).sort((a, b2) => heat[b2] - heat[a]).filter((k) => heat[k] > 0);
+    const names = { chest: 'Pectoraux', shoulders: 'Épaules', arms: 'Triceps', abs: 'Gainage' };
+
+    // Barre chargée
+    const plates = this.lvPlates(s.cur.w);
+    const platesLabel = plates.length ? 'Par côté : ' + plates.map((p) => this.fmt(p.p)).join(' + ') + ' · barre 20 kg' : 'Barre seule · 20 kg';
+
+    const isLastExercise = exI === EX.length - 1;
+    const isLastSet = isLastExercise && s.si === E.sets.length - 1;
+    const stakeOn = s.cur.w > best.max;
+    let eyebrow = 'Exercice ' + (exI + 1) + ' sur ' + EX.length + ' · ' + E.muscles;
+    if (isLastSet) eyebrow = 'Dernière série de la séance';
+    else if (isLastExercise) eyebrow = 'Dernier exercice · ' + E.muscles;
+    let stakeText = this.fmt(s.cur.w) + ' kg : plus lourd que ton record (' + this.fmt(best.max) + ' kg)';
+    if (isLastSet && !stakeOn) {
+      const need = ghostTotal - you;
+      if (need > 0) {
+        const reps = Math.ceil(need / s.cur.w);
+        stakeText = reps + ' reps à ' + this.fmt(s.cur.w) + ' kg et tu bats mardi';
+      } else {
+        stakeText = 'Mardi est déjà battu de ' + this.thousands(-need) + ' kg';
+      }
+    }
+
+    const pills = E.sets.map((st, i) => {
+      const l = s.log.find((x) => x.ex === exI && x.si === i);
+      if (l) return { label: this.fmt(l.w) + '×' + l.r, cls: 'pill-done' };
+      if (i === s.si) return { label: 'Série ' + (i + 1), cls: 'pill-cur' };
+      return { label: String(i + 1), cls: 'pill-todo' };
+    });
+
+    // Effort
+    const nDots = Math.max(s.cur.r, s.taps);
+    const dots = [];
+    for (let i = 0; i < nDots; i++) {
+      const ang = -Math.PI / 2 + (i / nDots) * Math.PI * 2;
+      dots.push({ x: Math.round(135 + Math.cos(ang) * 124), y: Math.round(135 + Math.sin(ang) * 124), cls: i < s.taps ? (i >= s.cur.r ? 'dot-over' : 'dot-on') : '' });
+    }
+    const tutMs = s.phase === 'effort' ? now - s.effortStart : (s.effortEnd && s.effortStart ? s.effortEnd - s.effortStart : 0);
+
+    // Repos
+    const left = Math.max(0, s.restEnd - now);
+    const prog = s.restTotal ? Math.min(1, left / (s.restTotal * 1000)) : 0;
+    const ready = left <= 3000;
+    const v = s.verdict || { label: '', tone: 'eq' };
+    const jd = s.justDone || { eyebrow: '', value: '' };
+    const tk = s.takeover || {};
+    const hasSuggestion = !!s.suggestion;
+    const idle = now - s.lastTouch;
+
+    const feelDefs = [['facile', 'Facile'], ['solide', 'Solide'], ['dur', 'Dur'], ['limite', 'Limite']];
+    const feels = feelDefs.map((f) => ({
+      label: f[1],
+      cls: s.feel === f[0] ? (f[0] === 'limite' ? 'on-lim' : 'on') : '',
+      pick: () => { this.sndTick(); this.buzz(10); this.setState({ feel: this.state.feel === f[0] ? null : f[0] }); }
+    }));
+
+    const dur = s.endAt && s.startAt ? s.endAt - s.startAt : 0;
+    const pctAll = ghost ? Math.round(((you - ghost) / ghost) * 100) : 0;
+
+    const stepW = (d) => {
+      const c = this.state.cur;
+      const nw = Math.max(20, c.w + d);
+      if (nw === c.w) return;
+      this.sndPlate(); this.buzz(12);
+      this.setState({ cur: { w: nw, r: c.r }, wVersion: this.state.wVersion + 1 });
+    };
+    const stepR = (d) => { const c = this.state.cur; this.sndTick(); this.buzz(8); this.setState({ cur: { w: c.w, r: Math.max(1, c.r + d) } }); };
+    const setDial = (nv) => { const val = Math.max(0, Math.min(30, nv)); if (val !== this.state.dialValue) { this.sndTick(); this.buzz(8); this.setState({ dialValue: val }); } };
+
+    return {
+      isBrief: s.phase === 'brief',
+      inSession: s.phase !== 'brief' && s.phase !== 'done',
+      showHeader: s.phase !== 'effort' && s.phase !== 'dial',
+      isReady: s.phase === 'ready',
+      isEffortLike: s.phase === 'effort' || s.phase === 'dial',
+      isDial: s.phase === 'dial',
+      isRest: s.phase === 'rest',
+      isAllDone: s.phase === 'allDone',
+      isDone: s.phase === 'done',
+
+      chrono: this.clock(s.startAt ? now - s.startAt : 0),
+      segs: EX.map((e, i) => { const d = s.log.filter((l) => l.ex === i).length; return { flex: e.sets.length, pct: Math.round((d / e.sets.length) * 100), color: d >= e.sets.length ? '#a9ba7e' : '#dd6e40' }; }),
+      progressLabel: s.log.length + '/' + totalSets + ' séries',
+      ghostDeltaLabel: (ahead ? '+' : '−') + this.thousands(Math.abs(delta)) + ' kg',
+      ghostColor: ghostColor,
+      ghostBg: ahead ? 'rgba(169,186,126,.14)' : 'rgba(201,183,154,.12)',
+
+      eyebrow: eyebrow,
+      eyebrowColor: isLastExercise ? '#dd6e40' : '#c9b79a',
+      exName: E.name,
+      pills: pills,
+      platesLeft: plates.slice().reverse(),
+      platesRight: plates,
+      platesLabel: platesLabel,
+      bbAnim: (s.wVersion % 2 ? 'bbA' : 'bbB') + ' .34s cubic-bezier(.2,.9,.3,1.2)',
+      curW: this.fmt(s.cur.w),
+      curWLabel: this.fmt(s.cur.w) + ' kg',
+      curR: String(s.cur.r),
+      stakeOn: stakeOn || isLastSet,
+      stakeText: stakeText,
+      setCtx: E.name + ' · série ' + (s.si + 1) + ' sur ' + E.sets.length,
+
+      coach: s.coach,
+      speakingCls: s.speaking ? 'on' : '',
+      captionAnim: (s.coachId % 2 ? 'capA' : 'capB') + ' .35s cubic-bezier(.2,.8,.2,1) both',
+
+      dots: dots,
+      countLabel: s.taps ? String(s.taps) : '0',
+      countColor: s.taps > s.cur.r ? '#e0b155' : '#f4ecdd',
+      tut: this.clock(tutMs).slice(1),
+      tutLine: tutMs ? 'sous tension ' + this.clock(tutMs).slice(1) : '',
+
+      dialValue: String(s.dialValue),
+      dialPrev: s.dialValue > 0 ? String(s.dialValue - 1) : ' ',
+      dialNext: String(s.dialValue + 1),
+      dialColor: s.dialValue > s.cur.r ? '#e0b155' : '#f4ecdd',
+      feels: feels,
+
+      doneEyebrow: jd.eyebrow,
+      doneValue: jd.value,
+      verdictLabel: v.label,
+      verdictCls: v.tone === 'rec' ? 'v-rec' : (v.tone === 'up' ? 'v-up' : 'v-eq'),
+      ringOffset: (640.9 * (1 - prog)).toFixed(1),
+      ringColor: ready ? '#a9ba7e' : '#e0a97f',
+      restCount: '0:' + String(Math.ceil(left / 1000)).padStart(2, '0'),
+      ready: ready,
+      notReady: !ready,
+      hasSuggestion: hasSuggestion,
+      suggText: s.suggestion ? (s.suggestion.dir === 'down' ? 'Coach : alléger la suivante ?' : 'Coach : charger un cran ?') : '',
+      suggYes: s.suggestion ? this.fmt(s.suggestion.w) + ' kg' : '',
+      pagerTop: hasSuggestion ? 544 : 484,
+      tabGhostCls: s.pager === 'ghost' ? 'on' : '',
+      tabBodyCls: s.pager === 'body' ? 'on' : '',
+      showGhost: s.pager === 'ghost',
+      showBody: s.pager === 'body',
+      ghostDeltaBig: (ahead ? '+' : '−') + this.thousands(Math.abs(delta)) + ' kg',
+      ghostSub: ahead ? 'd\'avance sur mardi, à la même série' : 'de retard sur mardi, à la même série',
+      ghostPath: ghostPath,
+      youPath: youPath,
+      youX: px(youPts.length - 1),
+      youY: py(you),
+      hChest: heatColor(heat.chest),
+      hShoulders: heatColor(heat.shoulders),
+      hArms: heatColor(heat.arms),
+      hAbs: heatColor(heat.abs),
+      gChest: glow(heat.chest),
+      gShoulders: glow(heat.shoulders),
+      gArms: glow(heat.arms),
+      bodyLegend: warmest.length ? 'Le plus chaud : ' + warmest.slice(0, 2).map((k) => names[k]).join(', ') + '. Chaque série ajoute sa chaleur.' : 'Chaque série validée réchauffe les muscles qu\'elle a sollicités.',
+      veilleOn: s.veille && s.phase === 'rest' && !s.takeover && idle > 6000,
+
+      hasTakeover: !!s.takeover,
+      tkValue: tk.value || '',
+      tkText: tk.text || '',
+      tkPrev: tk.prev || '',
+      tkToday: tk.today || '',
+
+      clDuration: this.clock(dur),
+      clTon: this.thousands(you),
+      clSets: s.log.length + '/' + totalSets,
+      clRecCount: String(s.records.length),
+      clGhost: pctAll >= 0 ? 'Mardi battu : +' + pctAll + ' % de tonnage' : 'Mardi garde ' + Math.abs(pctAll) + ' % d\'avance',
+
+      voiceCls: s.voice ? 'sw-on' : 'sw-off',
+      soundCls: s.sound ? 'sw-on' : 'sw-off',
+      veilleCls: s.veille ? 'sw-on' : 'sw-off',
+
+      touch: () => { this.setState({ lastTouch: Date.now() }); },
+      playBrief: () => {
+        const ctx = this.lvCtx();
+        try { if (ctx && ctx.resume) ctx.resume(); } catch (e) {}
+        this.lvSpeak('Push A. Mardi, tu as calé à 7 répétitions sur la dernière série de couché. Aujourd\'hui le programme prévoit 82 kilos 5 : ton record est en jeu. Contrôle la descente, le reste suivra.');
+      },
+      start: () => this.lvStart(),
+      launch: () => this.lvLaunch(),
+      quick: () => { const st = this.state; this.setState({ phase: 'dial', dialValue: st.cur.r, feel: null, effortStart: 0, effortEnd: 0 }); },
+      rep: () => { if (this.state.phase !== 'effort') return; this.sndRep(); this.buzz(20); this.setState({ taps: this.state.taps + 1 }); },
+      done: () => { const st = this.state; if (st.phase !== 'effort') return; const t = Date.now(); this.buzz(20); this.setState({ phase: 'dial', dialValue: st.taps > 0 ? st.taps : st.cur.r, feel: null, effortEnd: t, now: t }); },
+      dialDown: (e) => { try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} this.lvDrag = { y: e.clientY, v: this.state.dialValue }; },
+      dialMove: (e) => { if (!this.lvDrag) return; setDial(this.lvDrag.v + Math.round((this.lvDrag.y - e.clientY) / 26)); },
+      dialUp: () => { this.lvDrag = null; },
+      dialMinus: () => setDial(this.state.dialValue - 1),
+      dialPlus: () => setDial(this.state.dialValue + 1),
+      validate: () => this.lvValidate(),
+      wUp: () => stepW(2.5),
+      wDown: () => stepW(-2.5),
+      rUp: () => stepR(1),
+      rDown: () => stepR(-1),
+      acceptSugg: () => { const st = this.state; if (!st.suggestion) return; const txt = 'Va pour ' + this.fmt(st.suggestion.w) + ' kilos.'; this.sndPlate(); this.setState({ cur: { w: st.suggestion.w, r: st.cur.r }, wVersion: st.wVersion + 1, suggestion: null, coach: txt, coachId: st.coachId + 1 }); this.lvSpeak(txt); },
+      refuseSugg: () => { this.setState({ suggestion: null }); },
+      tabGhost: () => this.setState({ pager: 'ghost' }),
+      tabBody: () => this.setState({ pager: 'body' }),
+      skip: () => { this.lvHush(); this.setState({ phase: 'ready', takeover: null, suggestion: null, lastTickSec: 0 }); },
+      extend: () => { const st = this.state; this.setState({ restEnd: st.restEnd + 2000, restTotal: st.restTotal + 2 }); },
+      dismiss: () => this.setState({ takeover: null }),
+      finish: () => {
+        const st = this.state;
+        const t = Date.now();
+        const recs = st.records.length;
+        const deb = 'Séance bouclée. ' + (recs ? (recs > 1 ? recs + ' records' : 'Un record') + ' aujourd\'hui, ' : '') + (pctAll >= 0 ? 'et ' + pctAll + ' % de tonnage de plus que mardi.' : 'et un volume proche de mardi.') + ' Pectoraux et épaules ont bien chauffé. Pense à manger tes glucides ce soir.';
+        this.setState({ phase: 'done', takeover: null, endAt: t, now: t, coach: deb, coachId: st.coachId + 1 });
+        this.sndRecord(); this.buzz([140, 60, 140]);
+        this.lvSpeak(deb);
+      },
+      addSet: () => {
+        const st = this.state;
+        const last = EX.length - 1;
+        const extra = Object.assign({}, st.extra);
+        extra[last] = (extra[last] || 0) + 1;
+        const ref = EX[last].sets[EX[last].sets.length - 1];
+        this.setState({ extra: extra, phase: 'ready', ex: last, si: EX[last].sets.length, cur: { w: ref.w, r: ref.r }, takeover: null });
+      },
+      reset: () => { this.lvHush(); this.setState(this.lvInitial()); },
+      toggleVoice: () => { const on = !this.state.voice; if (!on) this.lvHush(); this.setState({ voice: on, speaking: false }); },
+      toggleSound: () => this.setState({ sound: !this.state.sound }),
+      toggleVeille: () => this.setState({ veille: !this.state.veille, lastTouch: Date.now() })
+    };
+  }
+}
+</script>
+</body>
+</html>

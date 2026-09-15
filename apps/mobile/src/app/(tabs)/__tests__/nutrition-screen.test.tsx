@@ -123,21 +123,6 @@ jest.mock('react-native-gesture-handler/ReanimatedSwipeable', () => {
   };
 });
 
-jest.mock('@/components/Screen', () => {
-  const { View } = require('react-native');
-  return { Screen: ({ children }: { children: React.ReactNode }) => <View>{children}</View> };
-});
-jest.mock('@/components/ScreenHeader', () => {
-  const { Text, View } = require('react-native');
-  return {
-    ScreenHeader: ({ title, action }: { title: string; action?: React.ReactNode }) => (
-      <View>
-        <Text>{title}</Text>
-        {action}
-      </View>
-    ),
-  };
-});
 jest.mock('@/components/Button', () => {
   const { Pressable, Text } = require('react-native');
   return {
@@ -177,22 +162,6 @@ jest.mock('@/components/TextField', () => {
   };
 });
 jest.mock('@/components/MicronutrientDetails', () => ({ MicronutrientDetails: () => null }));
-jest.mock('@/components/nutrition/DayBalanceCard', () => {
-  const { Text } = require('react-native');
-  return {
-    DayBalanceCard: ({ consumed, target }: { consumed: number; target: number | null }) => (
-      <Text>bilan:{consumed}/{String(target)}</Text>
-    ),
-  };
-});
-jest.mock('@/components/nutrition/MacroTriple', () => {
-  const { Text } = require('react-native');
-  return {
-    MacroTriple: ({ targets }: { targets: { protein: number } | null }) => (
-      <Text>macros:{targets ? String(targets.protein) : 'aucune'}</Text>
-    ),
-  };
-});
 jest.mock('@/components/nutrition/MicroCoverageGrid', () => {
   const { Text } = require('react-native');
   return {
@@ -222,6 +191,8 @@ jest.mock('react-i18next', () => ({
 
 jest.mock('@/theme/useTheme', () => ({
   useTheme: () => ({
+    // US DASH-01 : `stageTheme(pilier, scheme)` lit le schéma — sans lui, la scène n'a pas de teinte.
+    scheme: 'light',
     colors: {
       text: '#33291f',
       textMuted: '#96856f',
@@ -298,6 +269,13 @@ const saisir = async (label: string, valeur: string) => {
     fireEvent.changeText(screen.getByLabelText(label), valeur);
   });
 };
+
+/**
+ * Le grand chiffre de la scène (US DASH-01). Il se lit sur `defaultValue` : `AnimatedNumber`
+ * n'écrit jamais `value`, qui figerait le texte côté JS et annulerait la piste d'animation.
+ */
+const kcalAffichees = () =>
+  screen.getByTestId('stage-kcal', { includeHiddenElements: true }).props.defaultValue as string;
 
 /** Ouvre le détail d'une entrée par un appui simple sur sa ligne. */
 const ouvrirDetail = async (nom: string) => {
@@ -843,7 +821,12 @@ describe('objectif du jour', () => {
     });
     await afficher({ entries: [entree()] });
 
-    expect(screen.getByText('macros:180')).toBeTruthy();
+    // Une entrée à 1 g de protéines sur les 180 g demandés : la tige le dit, chiffres compris.
+    expect(
+      screen.getByLabelText(
+        'stage.nutrition.macroA11y:{"macro":"nutrition.macros.protein","value":1,"goal":180}',
+      ),
+    ).toBeTruthy();
   });
 
   it('sans profil complet, aucune cible macro n’est inventée', async () => {
@@ -856,7 +839,9 @@ describe('objectif du jour', () => {
     });
     await afficher({ entries: [entree()] });
 
-    expect(screen.getByText('macros:aucune')).toBeTruthy();
+    // Sans cible, pas de tige : une jauge sans repère inventerait un objectif.
+    expect(screen.queryByLabelText(/stage\.nutrition\.macroA11y/)).toBeNull();
+    expect(screen.getByText('stage.nutrition.noTarget')).toBeTruthy();
   });
 
   it('🔴 l’objectif du jour est demandé pour le jour AFFICHÉ, pas pour aujourd’hui', async () => {
@@ -874,7 +859,8 @@ describe('objectif du jour', () => {
       entries: [entree({ id: 'a', kcal: 90 }), entree({ id: 'b', kcal: 410 })],
     });
 
-    expect(screen.getByText('bilan:500/2000')).toBeTruthy();
+    expect(kcalAffichees()).toBe('500');
+    expect(screen.getByText('stage.nutrition.remaining:{"kcal":1500}')).toBeTruthy();
   });
 
   it('🔴 le badge « jour de séance » ne s’affiche pas pendant le CHARGEMENT', async () => {
@@ -889,7 +875,8 @@ describe('objectif du jour', () => {
 
     // Un badge transitoire qui apparaît puis disparaît est pire qu'un badge tardif : il fait
     // douter de la valeur affichée à côté.
-    expect(screen.getByText('bilan:90/2300')).toBeTruthy();
+    expect(kcalAffichees()).toBe('90');
+    expect(screen.queryByText('stage.nutrition.trainingBonus:{"kcal":300}')).toBeNull();
   });
 });
 

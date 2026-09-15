@@ -27,9 +27,12 @@ import {
   sampleTrack,
   SHARE_CARD_SIZE,
   trackPath,
+  type SessionHeat,
   type TrackPoint,
 } from '@wellness/shared';
 
+import { BodyMapCanvas } from '@/components/body/BodyMapCanvas';
+import { heatColor } from '@/components/workout/immersive/theme';
 import { fontFamily } from '@/theme/fonts';
 
 /**
@@ -80,6 +83,15 @@ export type ShareCardData =
       stats: { exercises: number; sets: number; volume: string; duration: string };
       /** Libellés des records battus. Vide → aucune section records (pas de section vide). */
       records: string[];
+      /**
+       * Chaleur par muscle de la séance (US MUSCU-UX03, §5.13). Optionnelle : sans elle, la carte
+       * reste **exactement** celle d'avant. Avec elle, le corps travaillé devient l'image — ce que
+       * trois chiffres ne racontent pas.
+       *
+       * ⚠️ Aucune donnée de santé n'entre ici : ni poids du corps, ni nutrition, ni douleur. Une
+       * carte partagée sort de l'app ; ce qui s'y trouve doit pouvoir être vu par n'importe qui.
+       */
+      heat?: SessionHeat;
     };
 
 type Props = {
@@ -124,7 +136,7 @@ export const ShareCard = forwardRef<View, Props>(function ShareCard({ data, size
         {data.kind === 'run' ? (
           <RunBody points={data.points} size={size} />
         ) : (
-          <WorkoutBody records={data.records} size={size} />
+          <WorkoutBody records={data.records} heat={data.heat} size={size} />
         )}
       </View>
 
@@ -201,13 +213,40 @@ function RunBody({ points, size }: { points: TrackPoint[]; size: number }) {
 }
 
 /** Records battus, ou rien : une séance sans record n'affiche pas de section vide. */
-function WorkoutBody({ records, size }: { records: string[]; size: number }) {
+function WorkoutBody({
+  records,
+  heat,
+  size,
+}: {
+  records: string[];
+  heat?: SessionHeat;
+  size: number;
+}) {
   const { t } = useTranslation();
   const s = (ratio: number): number => Math.round(size * ratio);
 
-  if (records.length === 0) return null;
+  const warmed = heat ? Object.values(heat).some((value) => (value ?? 0) > 0) : false;
+
+  if (records.length === 0 && !warmed) return null;
 
   return (
+    <View style={styles.workoutBody}>
+      {warmed ? (
+        <BodyMapCanvas
+          full={[]}
+          reduced={[]}
+          heat={heat}
+          heatColor={heatColor}
+          height={s(0.34)}
+          colors={{ neutral: 'rgba(244,236,221,0.14)', accent: CARD_ACCENT, caption: CARD_MUTED }}
+          // Pas de légende « face / dos » sur une image carrée de 1080 px : l'espace sert aux
+          // chiffres, et deux silhouettes côte à côte se lisent sans qu'on les nomme.
+          frontLabel={null}
+          backLabel={null}
+          a11yLabel={t('share.workout.bodyA11y')}
+        />
+      ) : null}
+      {records.length > 0 ? (
     <View
       style={[
         styles.records,
@@ -236,6 +275,8 @@ function WorkoutBody({ records, size }: { records: string[]; size: number }) {
           {record}
         </Text>
       ))}
+    </View>
+      ) : null}
     </View>
   );
 }
@@ -273,6 +314,7 @@ function Stat({
 }
 
 const styles = StyleSheet.create({
+  workoutBody: { alignItems: 'center', gap: 14 },
   card: { justifyContent: 'space-between', overflow: 'hidden' },
   header: { gap: 2 },
   title: { fontFamily: fontFamily.displayBold, letterSpacing: 1.5 },

@@ -1,0 +1,178 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .br { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+    .mo { font-family: 'Space Mono', ui-monospace, monospace; }
+    .kicker { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .rule { height: 1px; background: #e2d3bc; }
+    .us { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; background: #f3ddd0; color: #33291f; border-radius: 5px; padding: 2px 6px; white-space: nowrap; }
+    .row { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 14px; align-items: center; padding: 10px 0; border-top: 1px solid #ece0cd; font-size: 13px; }
+
+    .a-breathe { animation: rBreathe 4800ms ease-in-out infinite; }
+    @keyframes rBreathe { 0%, 100% { transform: scale(1); opacity: .6; } 50% { transform: scale(1.08); opacity: 1; } }
+    .a-flicker { animation: rFlicker 2400ms ease-in-out infinite; transform-origin: 50% 90%; }
+    @keyframes rFlicker { 0%, 100% { transform: scale(1) rotate(0); } 25% { transform: scale(1.06, .96) rotate(-2deg); } 55% { transform: scale(.96, 1.05) rotate(1.5deg); } }
+    .a-seg { animation: rSeg 5000ms linear infinite; transform-origin: left; }
+    @keyframes rSeg { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    .a-shock { animation: rShock 2200ms cubic-bezier(.16,.84,.44,1) infinite; }
+    .a-shock.d2 { animation-delay: 220ms; }
+    @keyframes rShock { 0% { transform: scale(.4); opacity: .9; } 70%, 100% { transform: scale(2); opacity: 0; } }
+  </style>
+</helmet>
+
+<div style="width: 1200px; height: 1720px; box-sizing: border-box; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 46px 48px; display: flex; flex-direction: column; gap: 26px;">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+    <div style="max-width: 820px;">
+      <div class="kicker">V2 · vivant &amp; rétention · 13/09/2026</div>
+      <h1 class="br" style="font-weight: 800; font-size: 50px; letter-spacing: -1.7px; line-height: 1; margin: 10px 0 0;">Ce qui fait revenir</h1>
+      <p style="font-size: 15.5px; line-height: 1.55; color: #786a59; margin: 12px 0 0; text-wrap: pretty;">L'app sait déjà beaucoup de choses qui donnent envie de revenir : ton score de forme du jour, le record à ta portée, ton chrono prédit qui baisse, la série qui tient à un fil. <strong style="color: #33291f;">Tout ça est codé — et rien n'apparaît sur un dashboard.</strong> La V2 n'ajoute pas un jeu : elle rend visible, au bon moment, ce que l'app calcule déjà.</p>
+    </div>
+    <div style="flex: none; display: flex; gap: 14px;">
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 14px 18px; text-align: center;">
+        <div class="br" style="font-weight: 800; font-size: 40px; letter-spacing: -1.5px; line-height: 1; color: #b14f2b;">13</div>
+        <div style="font-size: 12px; color: #786a59; margin-top: 4px; max-width: 110px;">briques de rétention déjà écrites</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 14px 18px; text-align: center;">
+        <div class="br" style="font-weight: 800; font-size: 40px; letter-spacing: -1.5px; line-height: 1; color: #b14f2b;">0</div>
+        <div style="font-size: 12px; color: #786a59; margin-top: 4px; max-width: 110px;">visibles sur un dashboard aujourd'hui</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- ── Trois boucles ── -->
+  <div>
+    <div class="kicker">Trois boucles — une raison d'ouvrir l'app à chaque échelle de temps</div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; margin-top: 14px;">
+
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="height: 150px; position: relative; overflow: hidden; display: flex;">
+          <div style="flex: 1; position: relative; overflow: hidden; background: radial-gradient(130% 120% at 80% 0%, #fff6e8 0%, #efc39c 100%); padding: 14px;">
+            <div class="a-breathe" style="position: absolute; width: 140px; height: 140px; border-radius: 50%; top: -60px; right: -50px; background: rgba(192,86,47,.34);"></div>
+            <div class="mo" style="position: relative; font-size: 9px; letter-spacing: 1.2px; color: #786a59;">7 H 42</div>
+            <div style="position: relative; display: flex; gap: 4px; margin-top: 16px;">
+              <span style="width: 26px; height: 30px; border-radius: 8px; background: #fffaf2; border: 1px solid #ece0cd;"></span><span style="width: 26px; height: 30px; border-radius: 8px; background: #fffaf2; border: 1px solid #ece0cd;"></span><span style="width: 26px; height: 30px; border-radius: 8px; background: #fffaf2; border: 1px solid #ece0cd;"></span><span style="width: 26px; height: 30px; border-radius: 8px; background: #33291f;"></span><span style="width: 26px; height: 30px; border-radius: 8px; background: #fffaf2; border: 1px solid #ece0cd;"></span>
+            </div>
+            <div class="br" style="position: relative; font-weight: 700; font-size: 14px; margin-top: 12px;">Feu vert</div>
+          </div>
+          <div style="flex: 1; position: relative; overflow: hidden; background: linear-gradient(170deg, #5a3321 0%, #17100b 100%); padding: 14px; color: #f4ecdd;">
+            <div class="mo" style="font-size: 9px; letter-spacing: 1.2px; color: #d9b58f;">20 H 15</div>
+            <svg class="a-flicker" width="44" height="54" viewBox="0 0 92 112" style="margin-top: 10px;"><path d="M46 6c16 19 30 34 30 56a30 30 0 0 1-60 0c0-11 5-21 13-29-1 12 4 19 10 19 7 0 10-7 8-17-1-10-3-18-1-29z" fill="#e0b155"></path></svg>
+            <div class="br" style="font-weight: 800; font-size: 22px; letter-spacing: -.8px; position: absolute; right: 14px; bottom: 16px;">J14</div>
+          </div>
+        </div>
+        <div style="padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="br" style="font-weight: 700; font-size: 21px; letter-spacing: -.6px;">Le jour</div>
+          <div style="font-size: 13px; line-height: 1.5; color: #786a59;"><strong style="color: #33291f;">Le matin</strong>, un check-in en un geste dans la scène d'accueil nourrit le score de forme, qui ajuste la séance du jour. <strong style="color: #33291f;">Le soir</strong>, si rien n'est fait, la scène vire au crépuscule et montre ce qui reste pour garder la série — sans notification de plus.</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px;"><span class="us">BIEN-01</span><span class="us">TRI-03</span><span class="us">STREAK-01</span></div>
+        </div>
+      </div>
+
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="height: 150px; position: relative; overflow: hidden; background: #33291f; color: #f0e4d0; padding: 14px 16px; box-sizing: border-box;">
+          <div style="display: flex; gap: 4px;">
+            <div style="flex: 1; height: 3px; border-radius: 2px; background: #f0e4d0;"></div>
+            <div style="flex: 1; height: 3px; border-radius: 2px; background: rgba(240,228,208,.22); overflow: hidden;"><div class="a-seg" style="height: 100%; background: #f0e4d0;"></div></div>
+            <div style="flex: 1; height: 3px; border-radius: 2px; background: rgba(240,228,208,.22);"></div>
+            <div style="flex: 1; height: 3px; border-radius: 2px; background: rgba(240,228,208,.22);"></div>
+            <div style="flex: 1; height: 3px; border-radius: 2px; background: rgba(240,228,208,.22);"></div>
+          </div>
+          <div class="mo" style="font-size: 9px; letter-spacing: 1.2px; color: #c9b79a; margin-top: 14px;">TA SEMAINE · LE RECORD</div>
+          <div class="br" style="font-weight: 800; font-size: 38px; letter-spacing: -1.6px; line-height: 1; margin-top: 8px;">82,5 kg</div>
+          <div style="font-size: 12px; color: #d9c8ad; margin-top: 6px;">au développé couché, mercredi.</div>
+        </div>
+        <div style="padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="br" style="font-weight: 700; font-size: 21px; letter-spacing: -.6px;">La semaine</div>
+          <div style="font-size: 13px; line-height: 1.5; color: #786a59;"><strong style="color: #33291f;">Le lundi</strong>, le bilan hebdomadaire arrive en cinq cartes qu'on touche pour avancer : le chiffre, le record, la régularité, le croisement entre piliers, la semaine qui vient. La dernière carte se partage. C'est le rendez-vous qui donne un rythme à l'app.</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px;"><span class="us">BILAN-01</span><span class="us">MUSC-20</span><span class="us">APPORT-01</span><span class="us">PARTAGE-01</span></div>
+        </div>
+      </div>
+
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; overflow: hidden; display: flex; flex-direction: column;">
+        <div style="height: 150px; position: relative; overflow: hidden; display: flex;">
+          <div style="flex: 1; position: relative; overflow: hidden; background: radial-gradient(120% 90% at 50% 45%, #8a0a3a 0%, #2d0011 100%); display: flex; align-items: center; justify-content: center;">
+            <div class="a-shock" style="position: absolute; width: 70px; height: 70px; border-radius: 50%; border: 2px solid #ff9ec0;"></div>
+            <div class="a-shock d2" style="position: absolute; width: 70px; height: 70px; border-radius: 50%; border: 1.5px solid #ffffff;"></div>
+            <div class="br" style="position: relative; font-weight: 800; font-size: 22px; letter-spacing: -.8px; color: #ffffff;">85 kg</div>
+          </div>
+          <div style="flex: 1; position: relative; overflow: hidden; background: radial-gradient(120% 110% at 20% 0%, #fbf5ec 0%, #eadfcf 100%); padding: 14px;">
+            <div class="mo" style="font-size: 9px; letter-spacing: 1.2px; color: #786a59;">APRÈS 9 JOURS</div>
+            <div class="br" style="font-weight: 800; font-size: 17px; letter-spacing: -.5px; line-height: 1.1; margin-top: 12px;">Content de te revoir.</div>
+            <div style="display: flex; gap: 3px; margin-top: 12px;"><span style="flex: 1; height: 5px; border-radius: 3px; background: #66714b;"></span><span style="flex: 1; height: 5px; border-radius: 3px; background: rgba(51,41,31,.12);"></span><span style="flex: 1; height: 5px; border-radius: 3px; background: rgba(51,41,31,.12);"></span><span style="flex: 1; height: 5px; border-radius: 3px; background: rgba(51,41,31,.12);"></span></div>
+          </div>
+        </div>
+        <div style="padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 8px;">
+          <div class="br" style="font-weight: 700; font-size: 21px; letter-spacing: -.6px;">Le moment</div>
+          <div style="font-size: 13px; line-height: 1.5; color: #786a59;"><strong style="color: #33291f;">Quand ça arrive</strong> — record battu, sortie bouclée, cible atteinte — la scène du pilier célèbre à sa manière et propose la carte partageable. <strong style="color: #33291f;">Quand on revient</strong> après une absence, l'accueil ne compte pas ce qui a été raté : il propose de reprendre en douceur.</div>
+          <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 2px;"><span class="us">MUSC-F8</span><span class="us">RUN-14</span><span class="us">VIE-01</span><span class="us">PARTAGE-01</span></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── Les briques ── -->
+  <div>
+    <div class="kicker">Treize briques déjà écrites — toutes à l'étape recette, aucune ne demande de nouveau calcul</div>
+    <div style="margin-top: 12px; background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 6px 22px 8px;">
+      <div class="row" style="border-top: none; font-size: 11px; color: #786a59; font-family: 'Space Mono', monospace; letter-spacing: .6px; text-transform: uppercase;">
+        <div style="grid-column: span 3;">Levier</div><div style="grid-column: span 2;">US</div><div style="grid-column: span 3;">Où ça remonte</div><div style="grid-column: span 4;">Ce qui bouge à l'écran</div>
+      </div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Check-in d'énergie</div><div style="grid-column: span 2;"><span class="us">BIEN-01</span></div><div style="grid-column: span 3; color: #786a59;">Accueil · scène du matin</div><div style="grid-column: span 4; color: #786a59;">5 pastilles, enfoncement + haptique</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Score de forme</div><div style="grid-column: span 2;"><span class="us">TRI-03</span></div><div style="grid-column: span 3; color: #786a59;">Accueil · juste sous le check-in</div><div style="grid-column: span 4; color: #786a59;">le halo change de teinte, la séance s'adapte</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Série et joker</div><div style="grid-column: span 2;"><span class="us">STREAK-01</span></div><div style="grid-column: span 3; color: #786a59;">Accueil · le soir</div><div style="grid-column: span 4; color: #786a59;">la flamme vacille, le jour couvert se givre</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Bilan hebdomadaire</div><div style="grid-column: span 2;"><span class="us">BILAN-01</span></div><div style="grid-column: span 3; color: #786a59;">Accueil · le lundi</div><div style="grid-column: span 4; color: #786a59;">5 cartes, le segment courant se remplit</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Objectif à échéance</div><div style="grid-column: span 2;"><span class="us">OBJ-01</span></div><div style="grid-column: span 3; color: #786a59;">Accueil · permanent</div><div style="grid-column: span 4; color: #786a59;">le repère de projection glisse vers le drapeau</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Record à portée</div><div style="grid-column: span 2;"><span class="us">MUSC-09</span></div><div style="grid-column: span 3; color: #786a59;">Muscu · scène + carte</div><div style="grid-column: span 4; color: #786a59;">l'écart restant bat lentement</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Projection de force</div><div style="grid-column: span 2;"><span class="us">MUSCPWR-01</span></div><div style="grid-column: span 3; color: #786a59;">Muscu · carte SBD</div><div style="grid-column: span 4; color: #786a59;">la courbe se trace puis se prolonge en pointillé</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Régularité</div><div style="grid-column: span 2;"><span class="us">MUSC-20</span></div><div style="grid-column: span 3; color: #786a59;">Muscu · 12 semaines</div><div style="grid-column: span 4; color: #786a59;">les cases s'allument en vague diagonale</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Célébration de record</div><div style="grid-column: span 2;"><span class="us">MUSC-F8</span></div><div style="grid-column: span 3; color: #786a59;">Muscu · scène après séance</div><div style="grid-column: span 4; color: #786a59;">onde de choc, le tonnage roule</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Chronos prédits</div><div style="grid-column: span 2;"><span class="us">RUN-14</span></div><div style="grid-column: span 3; color: #786a59;">Course · après chaque sortie</div><div style="grid-column: span 4; color: #786a59;">la ligne d'arrivée balaie la scène</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">« Ça commence bientôt »</div><div style="grid-column: span 2;"><span class="us">HORAIRE-01</span></div><div style="grid-column: span 3; color: #786a59;">Course · scène</div><div style="grid-column: span 4; color: #786a59;">la ligne du compte à rebours s'écoule</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Suggestion d'aliment</div><div style="grid-column: span 2;"><span class="us">NUTR-F2</span></div><div style="grid-column: span 3; color: #786a59;">Nutrition · scène + macros</div><div style="grid-column: span 4; color: #786a59;">un tap, le niveau monte, la phrase se recalcule</div></div>
+      <div class="row"><div style="grid-column: span 3; font-weight: 600;">Mode vie réelle</div><div style="grid-column: span 2;"><span class="us">VIE-01</span></div><div style="grid-column: span 3; color: #786a59;">Accueil · retour d'absence</div><div style="grid-column: span 4; color: #786a59;">la première case de la semaine pulse</div></div>
+    </div>
+  </div>
+
+  <div style="flex: 1; display: flex; gap: 18px;">
+    <div style="flex: 1.25; background: #33291f; color: #f0e4d0; border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 13px;">
+      <div class="mo" style="font-size: 11px; letter-spacing: 1.4px; color: #c9b79a;">CE QU'ON NE FERA PAS</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 13px 22px;">
+        <div><div class="br" style="font-weight: 700; font-size: 15px;">Ni badges, ni XP, ni niveaux</div><div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;">Décision C / ADR-005 : la boucle de jeu est réévaluée en V3/V4 sur les vraies données de rétention. On garde série, records et célébration.</div></div>
+        <div><div class="br" style="font-weight: 700; font-size: 15px;">Aucune culpabilité</div><div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;">Un retour après neuf jours n'affiche jamais « série : 0 ». On montre la meilleure série et on propose de reprendre.</div></div>
+        <div><div class="br" style="font-weight: 700; font-size: 15px;">Pas une notification de plus</div><div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;">Le rappel « série en danger » existe déjà, plafonné et soumis aux heures calmes. La scène du soir le montre seulement quand on ouvre.</div></div>
+        <div><div class="br" style="font-weight: 700; font-size: 15px;">Le joker n'est pas une récompense</div><div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;">Un filet : un par mois, pour un jour isolé, rattrapable sept jours. Le jour couvert reste un jour vide dans les analyses.</div></div>
+        <div><div class="br" style="font-weight: 700; font-size: 15px;">Pas de faux urgent</div><div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;">Seul compte à rebours : l'heure réelle d'une séance planifiée. Aucun minuteur inventé pour presser.</div></div>
+        <div><div class="br" style="font-weight: 700; font-size: 15px;">Pas de phrase sans calcul</div><div style="font-size: 12.5px; line-height: 1.45; color: #c9b79a; margin-top: 3px;">Chaque affirmation d'une scène sort d'une fonction testée de <span class="mo" style="font-size: 11.5px;">@wellness/shared</span>. Sans donnée, la phrase ne s'affiche pas.</div></div>
+      </div>
+    </div>
+
+    <div style="flex: 1; background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 12px;">
+      <div class="kicker">Comment on saura que ça marche</div>
+      <div style="font-size: 13px; line-height: 1.5; color: #786a59;">Les métriques existent déjà dans <span class="us">metriques-succes.md</span> : <strong style="color: #33291f;">rétention W1 et W4</strong>, et la courbe de rétention par nombre de piliers activés. Il manque trois événements pour relier les boucles à ces courbes :</div>
+      <div style="display: flex; flex-direction: column; gap: 9px;">
+        <div style="display: flex; gap: 10px; align-items: baseline;"><span class="mo" style="font-size: 12px; color: #b14f2b; flex: none;">home_checkin_done</span><span style="font-size: 12.5px; color: #786a59;">part des ouvertures matinales avec check-in</span></div>
+        <div style="display: flex; gap: 10px; align-items: baseline;"><span class="mo" style="font-size: 12px; color: #b14f2b; flex: none;">weekly_recap_card</span><span style="font-size: 12.5px; color: #786a59;">combien de cartes du bilan sont vues, et partagées</span></div>
+        <div style="display: flex; gap: 10px; align-items: baseline;"><span class="mo" style="font-size: 12px; color: #b14f2b; flex: none;">streak_saved_evening</span><span style="font-size: 12.5px; color: #786a59;">séances lancées depuis la scène du soir</span></div>
+      </div>
+      <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid #ece0cd; font-size: 12.5px; line-height: 1.45; color: #786a59;">Ces trois noms sont une proposition : aucun n'existe encore dans <span class="us">analytics.ts</span>.</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

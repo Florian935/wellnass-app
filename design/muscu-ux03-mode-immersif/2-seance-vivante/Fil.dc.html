@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #17110b; }
+    a { color: #e0a97f; }
+    a:hover { color: #f4ecdd; }
+    .board { width: 1360px; height: 1270px; box-sizing: border-box; background: #17110b; color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 48px 44px; display: flex; flex-direction: column; gap: 30px; }
+    .ic { display: block; flex: none; }
+    .eb { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.8px; text-transform: uppercase; color: #c9b79a; }
+    .h1 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 54px; letter-spacing: -2px; line-height: .95; margin-top: 10px; }
+    .lede { font-size: 16px; line-height: 1.55; color: #c9b79a; max-width: 840px; margin-top: 14px; }
+    .cols { display: grid; grid-template-columns: repeat(3, 390px); gap: 42px; }
+    .col { display: flex; flex-direction: column; gap: 12px; }
+    .cap-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -.5px; }
+    .cap { font-size: 13.5px; line-height: 1.55; color: #c9b79a; }
+    .cap b { color: #f4ecdd; font-weight: 600; }
+    .spec { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; line-height: 1.7; color: #a3927a; border-top: 1px dashed #3a2e22; padding-top: 9px; }
+    .spec b { color: #e0a97f; font-weight: 700; }
+    .ph { width: 390px; height: 844px; position: relative; overflow: hidden; box-sizing: border-box; border-radius: 30px; box-shadow: 0 0 0 1px #2c231a; }
+    .frame-l { position: absolute; left: 0; right: 0; top: 22px; text-align: center; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.6px; text-transform: uppercase; color: rgba(244,236,221,.45); }
+
+    /* 1. Écran verrouillé */
+    .lock { background: radial-gradient(60% 40% at 30% 70%, rgba(107,0,40,.35), rgba(107,0,40,0) 70%), radial-gradient(50% 35% at 80% 20%, rgba(221,110,64,.18), rgba(221,110,64,0) 70%), #0f0b08; }
+    .notif { position: absolute; left: 14px; right: 14px; top: 150px; border-radius: 26px; background: rgba(36,28,20,.92); border: 1px solid #3a2e22; padding: 16px 16px 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 20px 40px -20px rgba(0,0,0,.8); }
+    .n-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #c9b79a; }
+    .n-ico { width: 20px; height: 20px; border-radius: 6px; background: #dd6e40; display: flex; align-items: center; justify-content: center; }
+    .n-head b { color: #f4ecdd; font-weight: 600; }
+    .n-main { display: flex; align-items: flex-end; justify-content: space-between; }
+    .n-t { font-size: 14px; color: #c9b79a; }
+    .n-count { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 40px; letter-spacing: -1.5px; line-height: 1; position: relative; width: 110px; height: 42px; }
+    .n-count span { position: absolute; left: 0; top: 0; opacity: 0; }
+    .k1 { animation: k1 3s infinite steps(1); } .k2 { animation: k2 3s infinite steps(1); } .k3 { animation: k3 3s infinite steps(1); }
+    @keyframes k1 { 0% { opacity: 1; } 33.3% { opacity: 0; } 100% { opacity: 0; } }
+    @keyframes k2 { 0% { opacity: 0; } 33.3% { opacity: 1; } 66.6% { opacity: 0; } 100% { opacity: 0; } }
+    @keyframes k3 { 0% { opacity: 0; } 66.6% { opacity: 1; } 100% { opacity: 1; } }
+    .n-ghost { height: 24px; padding: 0 9px; border-radius: 999px; background: rgba(169,186,126,.14); color: #a9ba7e; font-size: 12px; font-weight: 700; display: flex; align-items: center; }
+    .n-bar { height: 5px; border-radius: 3px; background: #3a2e22; overflow: hidden; }
+    .n-bar i { display: block; height: 100%; background: #e0a97f; border-radius: 3px; animation: nbar 12s linear infinite; animation-delay: -5s; }
+    @keyframes nbar { from { width: 100%; } to { width: 0%; } }
+    .n-body { font-size: 14px; line-height: 1.4; }
+    .n-body b { font-weight: 700; }
+    .n-acts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; border-top: 1px solid #3a2e22; padding-top: 8px; }
+    .n-acts div { height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 13.5px; font-weight: 700; color: #e0a97f; }
+    .unlock { position: absolute; left: 0; right: 0; bottom: 36px; text-align: center; font-size: 12.5px; color: rgba(244,236,221,.4); }
+
+    /* 2. Retour depuis une autre app */
+    .other { background: #e9e4dc; }
+    .feed { position: absolute; left: 0; right: 0; top: 0; bottom: 0; padding: 60px 16px 0; display: flex; flex-direction: column; gap: 12px; filter: saturate(.4); }
+    .fc { border-radius: 16px; background: #ffffff; padding: 12px; display: flex; flex-direction: column; gap: 8px; }
+    .fl { height: 10px; border-radius: 5px; background: #d6cfc4; }
+    .fimg { height: 150px; border-radius: 12px; background: linear-gradient(135deg, #cfc6b8, #bfb5a5); }
+    .hu { position: absolute; left: 10px; right: 10px; top: 12px; border-radius: 24px; background: #241c14; border: 1px solid #3a2e22; padding: 14px 14px 12px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 24px 40px -16px rgba(0,0,0,.55); animation: hu 6s infinite cubic-bezier(.2,.9,.25,1.1); animation-delay: -1.5s; }
+    @keyframes hu { 0%, 10% { transform: translateY(-130%); } 18%, 86% { transform: none; } 96%, 100% { transform: translateY(-130%); } }
+    .hu-top { display: flex; align-items: center; gap: 8px; font-size: 12px; color: #c9b79a; }
+    .hu-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px; line-height: 1.05; color: #f4ecdd; }
+    .hu-s { font-size: 14px; color: #e7dccb; }
+    .hu-b { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+    .hu-go { height: 46px; border-radius: 14px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; }
+    .hu-later { height: 46px; padding: 0 14px; border-radius: 14px; border: 1px solid #4a3d30; color: #c9b79a; display: flex; align-items: center; font-size: 14px; font-weight: 600; }
+    .vib { position: absolute; top: 60px; width: 6px; height: 60px; border-radius: 3px; background: rgba(221,110,64,.5); animation: vib 6s infinite; animation-delay: -1.5s; opacity: 0; }
+    @keyframes vib { 0%, 16% { opacity: 0; transform: scaleY(.4); } 18% { opacity: 1; transform: scaleY(1); } 21% { opacity: .2; transform: scaleY(.6); } 24% { opacity: 1; transform: scaleY(1); } 30%, 100% { opacity: 0; } }
+
+    /* 3. Veille */
+    .sleep { background: #030201; }
+    .s-top { position: absolute; left: 0; right: 0; top: 70px; text-align: center; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #3e3024; }
+    .s-center { position: absolute; left: 0; right: 0; top: 260px; display: flex; flex-direction: column; align-items: center; gap: 22px; }
+    .s-ring { position: relative; width: 250px; height: 250px; }
+    .s-ring svg { position: absolute; inset: 0; transform: rotate(-90deg); }
+    .s-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; }
+    .s-num span { position: absolute; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 70px; letter-spacing: -3px; color: #7a3a1e; opacity: 0; }
+    .s-glow { position: absolute; inset: 40px; border-radius: 50%; background: radial-gradient(circle, rgba(122,58,30,.22), rgba(122,58,30,0) 70%); animation: sg 5s infinite ease-in-out; }
+    @keyframes sg { 0%, 100% { transform: scale(.8); opacity: .6; } 40% { transform: scale(1.05); opacity: 1; } }
+    .s-next { font-size: 14px; color: #4f3f30; text-align: center; line-height: 1.5; }
+    .s-wake { position: absolute; left: 0; right: 0; bottom: 44px; text-align: center; font-size: 12.5px; color: #3e3024; }
+  </style>
+</helmet>
+
+<div class="board">
+  <div>
+    <div class="eb">Séance vivante · le fil</div>
+    <div class="h1">Quitter l'écran sans quitter la séance</div>
+    <div class="lede">Le vrai décrochage n'arrive pas dans l'app : il arrive pendant le repos, dans une autre app, et on revient trois minutes trop tard. Ici la séance reste visible hors de l'app, rappelle au bon moment, et quand le téléphone est posé, elle se fait discrète.</div>
+  </div>
+
+  <div class="cols">
+    <div class="col">
+      <div class="ph lock">
+        <div class="frame-l">Écran verrouillé</div>
+        <div class="notif">
+          <div class="n-head"><div class="n-ico"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1c150e" stroke-width="3" stroke-linecap="round"><path d="M4 9v6M8 7v10M16 7v10M20 9v6M8 12h8"/></svg></div><b>Séance en cours</b><span>· Push A · 14:40</span></div>
+          <div class="n-main">
+            <div><div class="n-t">Repos</div><div class="n-count"><span class="k1">0:48</span><span class="k2">0:47</span><span class="k3">0:46</span></div></div>
+            <div class="n-ghost">Mardi +75 kg</div>
+          </div>
+          <div class="n-bar"><i></i></div>
+          <div class="n-body">Ensuite : <b>Développé militaire</b>, 42,5 kg × 7</div>
+          <div class="n-acts"><div>Passer</div><div>+15 s</div><div>Ouvrir</div></div>
+        </div>
+        <div class="unlock">Toucher « Ouvrir » ramène sur le repos</div>
+      </div>
+      <div class="cap-t">La séance sur l'écran verrouillé</div>
+      <div class="cap">Pendant le repos, une <b>notification continue</b> garde le décompte, la série suivante et l'avance sur mardi. « Passer » et « +15 s » marchent sans ouvrir l'app.</div>
+      <div class="spec">canal <b>« Séance »</b>, notification continue, sans son<br>décompte : <b>chronomètre natif</b> ou mise à jour par seconde<br>(à trancher au plan, expo-notifications seul ne suffit pas)<br>disparaît à la clôture ou à l'abandon</div>
+    </div>
+
+    <div class="col">
+      <div class="ph other">
+        <div class="feed">
+          <div class="fc"><div class="fl" style="width: 40%"></div><div class="fimg"></div><div class="fl" style="width: 80%"></div><div class="fl" style="width: 55%"></div></div>
+          <div class="fc"><div class="fl" style="width: 30%"></div><div class="fimg" style="height: 190px"></div><div class="fl" style="width: 70%"></div></div>
+          <div class="fc"><div class="fl" style="width: 50%"></div><div class="fl" style="width: 90%"></div></div>
+        </div>
+        <div class="vib" style="left: 2px"></div>
+        <div class="vib" style="right: 2px"></div>
+        <div class="hu">
+          <div class="hu-top"><div class="n-ico" style="width: 20px; height: 20px; border-radius: 6px; background: #dd6e40; display: flex; align-items: center; justify-content: center"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#1c150e" stroke-width="3" stroke-linecap="round"><path d="M4 9v6M8 7v10M16 7v10M20 9v6M8 12h8"/></svg></div>Séance en cours · repos terminé</div>
+          <div class="hu-t">C'est reparti.</div>
+          <div class="hu-s">Développé militaire · 42,5 kg × 7 · dernière série</div>
+          <div class="hu-b"><div class="hu-go">Reprendre</div><div class="hu-later">+30 s</div></div>
+        </div>
+      </div>
+      <div class="cap-t">Le rappel qui ramène</div>
+      <div class="cap">Parti sur une autre app pendant le repos ? À la fin du décompte, une <b>notification prioritaire</b> vibre et dit exactement quoi faire. « Reprendre » rouvre la série prête ; « +30 s » accorde un délai sans culpabiliser.</div>
+      <div class="spec">uniquement si l'app est <b>en arrière-plan</b><br>une seule fois par repos, <b>vibration 140 ms</b><br>jamais pendant « Ne pas déranger » total<br>désactivable dans les réglages de séance</div>
+    </div>
+
+    <div class="col">
+      <div class="ph sleep">
+        <div class="s-top">Repos · développé couché</div>
+        <div class="s-center">
+          <div class="s-ring">
+            <div class="s-glow"></div>
+            <svg width="250" height="250" viewBox="0 0 250 250"><circle cx="125" cy="125" r="118" fill="none" stroke="#140d08" stroke-width="4"/><circle cx="125" cy="125" r="118" fill="none" stroke="#5a2a15" stroke-width="4" stroke-linecap="round" stroke-dasharray="741" stroke-dashoffset="440"/></svg>
+            <div class="s-num"><span class="k1">0:48</span><span class="k2">0:47</span><span class="k3">0:46</span></div>
+          </div>
+          <div class="s-next">Ensuite · 82,5 kg × 7</div>
+        </div>
+        <div class="s-wake">Touche pour réveiller</div>
+      </div>
+      <div class="cap-t">La veille de séance</div>
+      <div class="cap">Téléphone posé sur le banc, rien touché depuis 20 s : l'écran reste allumé mais <b>s'éteint presque</b>. Chiffres braise sur noir, lisibles à un mètre, quasi rien consommé sur un écran OLED. Un toucher, et tout revient.</div>
+      <div class="spec">écran maintenu allumé : <b>useKeepAwake</b> (déjà là)<br>contenu à <b>~15 % de luminance</b>, fond noir pur<br>réveil automatique à <b>T−5 s</b> pour « Prépare-toi »<br>coupable dans les réglages</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

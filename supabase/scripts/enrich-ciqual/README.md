@@ -61,9 +61,19 @@ Produit `migration.sql`. Puis :
 > base sur laquelle un utilisateur français tape le mur à son deuxième repas — parce que le
 > catalogue se remplissait **une entrée à la main à la fois**.
 
+> **✅ Exécuté le 13/09/2026** : la bibliothèque est passée de **80 à 3 244 aliments**
+> (migration `20260913182920_seed_library_foods_ciqual_v2`). La commande ci-dessous est
+> celle à rejouer à la prochaine édition de la table CIQUAL.
+
 ```bash
-python supabase/scripts/enrich-ciqual/generate.py ciqual2025.csv --bulk --limit 900
+python supabase/scripts/enrich-ciqual/generate.py ciqual2025.csv --bulk --limit 4000
 ```
+
+`--limit` borne le nombre d'ajouts. L'import est trié par **priorité de catégorie** (légumes,
+fruits, viandes, poissons, laitages, féculents, oléagineux, boissons, puis le reste), et non
+dans l'ordre du fichier : couper à 300 donne donc une base cohérente et non un rayon traiteur.
+Au-delà de ~3 200, tout ce qui est éligible est déjà pris (les aliments infantiles et les
+lignes sans énergie sont exclus délibérément).
 
 Le mode sélectionne les aliments **du quotidien** dans le CSV (groupes alimentaires courants,
 énergie renseignée), leur attribue une catégorie interne et un id déterministe dérivé du code
@@ -74,6 +84,14 @@ CIQUAL, puis les **ajoute** à `foods-catalog.json` avant de régénérer `migra
 | **Aucune valeur inventée** | Toute la nutrition vient du CSV, comme en mode normal. |
 | **Idempotent** | L'id dérive du code CIQUAL : relancer n'ajoute aucun doublon (vérifié). |
 | **Non destructif** | Une entrée déjà au catalogue est conservée telle quelle — nom retouché, portions saisies, traduction EN. |
+| **Cuisson déclarée** | CIQUAL range les aliments en « viandes cuites », « poissons crus »… : `preparation_state` est rempli depuis cette source, pas deviné depuis le nom. |
+
+> 🔴 **Les libellés de groupes sont relevés dans la table, jamais devinés.** La 2025 écrit
+> `viandes, oeufs, poissons` (sans ligature œ), `produits laitiers`, `eaux et autres
+> boissons`. Un libellé faux ne lève **aucune erreur** : le groupe est ignoré et la catégorie
+> disparaît de l'import en silence. C'est exactement ce qui s'est produit à la première
+> version du mode, écrite sans le fichier réel. En cas de doute :
+> `python -c "import csv,collections;print(collections.Counter(r[3] for r in list(csv.reader(open('ciqual2025.csv',encoding='utf-8')))[1:]))"`
 
 ⚠️ **CIQUAL est monolingue.** Les entrées importées portent `nameEn = nameFr` et un marqueur
 `needsTranslation`, et le script annonce leur nombre en fin d'exécution. La base est utilisable en
