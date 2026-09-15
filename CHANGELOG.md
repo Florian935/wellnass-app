@@ -9,6 +9,16 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 15/09/2026 — CORPS-04 : cadrage du programme compatible
+
+Branche `feature/corps04-programme-compatible`, base `c83e7aa5` incluant CORPS-01 à CORPS-03.
+Suite autorisée par Florian avec recette groupée à la fin. La spécification retient un classement
+explicable du programme actif et des programmes éditoriaux selon les priorités, le niveau, les
+jours disponibles, le matériel et une estimation de durée. La proposition choisie devient une
+copie personnelle inactive ; l'original et le programme actif restent inchangés. Aucun dosage,
+exercice, activation ou résultat physique n'est inventé. Références de conception : position
+stand ACSM 2026 et méta-analyse en réseau BJSM 2023. Aucun code applicatif dans ce commit.
+
 ## 14/09/2026 — CORPS-03 : priorités confirmées et lecture du programme
 
 Branche `feature/corps03-priorites-entrainement`, base `ceb9d0c4`.
