@@ -89,13 +89,22 @@ function contextPreferences(context: StrengthProgramContext | null) {
 }
 
 export default function BodyTrainingProgramsScreen() {
+  const accountId = useAuthStore((state) => state.session?.user.id ?? null);
+
+  return <BodyTrainingProgramsSession key={accountId ?? 'signed-out'} accountId={accountId} />;
+}
+
+function currentAccountId(): string | null {
+  return useAuthStore.getState().session?.user.id ?? null;
+}
+
+function BodyTrainingProgramsSession({ accountId }: { accountId: string | null }) {
   const router = useRouter();
   const { t } = useTranslation();
   const { colors } = useTheme();
   const training = useBodyTraining();
   const contextSource = useStrengthProgramContext();
   const repository = useStrengthProgramCandidates();
-  const accountId = useAuthStore((state) => state.session?.user.id ?? null);
   const lockPreparation = useActionLock();
   const [hasLoadedCore, setHasLoadedCore] = useState(false);
   const [fallbackContext, setFallbackContext] = useState<StrengthProgramContextSnapshot | null>(
@@ -124,6 +133,17 @@ export default function BodyTrainingProgramsScreen() {
     optimisticContext &&
       repositoryContext?.updatedAt === optimisticContext.previousUpdatedAt,
   );
+  if (repositoryContext && !waitingForEcho && !same(repositoryContext, fallbackContext)) {
+    setFallbackContext({
+      context: {
+        ...repositoryContext.context,
+        equipment: repositoryContext.context.equipment
+          ? [...repositoryContext.context.equipment]
+          : null,
+      },
+      updatedAt: repositoryContext.updatedAt,
+    });
+  }
   const savedContext = waitingForEcho
     ? optimisticContext
     : repositoryContext ?? fallbackContext;
@@ -202,12 +222,17 @@ export default function BodyTrainingProgramsScreen() {
 
   const persistContext = () => {
     if (!draftContext || !savedContext || saving || waitingForEcho || !dirty) return;
+    if (currentAccountId() !== accountId) {
+      setFailure(t('strengthProgramFinder.errors.recalculate'));
+      return;
+    }
     const draft = draftContext;
     const expectedUpdatedAt = savedContext.updatedAt;
     setSaving(true);
     setFailure(null);
     void saveStrengthProgramContext(draft, expectedUpdatedAt)
       .then((saved: StrengthProgramContextSnapshot) => {
+        if (currentAccountId() !== accountId) return;
         setFallbackContext(saved);
         setDraftPreferences(contextPreferences(saved.context));
         setOptimisticContext({ ...saved, previousUpdatedAt: expectedUpdatedAt });
@@ -228,6 +253,10 @@ export default function BodyTrainingProgramsScreen() {
 
   const compare = () => {
     if (!canCompare || !training.document || !savedContext) return;
+    if (currentAccountId() !== accountId) {
+      setFailure(t('strengthProgramFinder.errors.recalculate'));
+      return;
+    }
     const candidates = [...repository.candidates];
     const recommendations = recommendStrengthPrograms(
       candidates,
@@ -255,7 +284,14 @@ export default function BodyTrainingProgramsScreen() {
   };
 
   const requireFreshComparison = (snapshot: ComparisonSnapshot): boolean => {
-    if (snapshotMatches(snapshot, latest.current ?? currentValues)) return true;
+    const liveAccountId = currentAccountId();
+    const reactiveValues = latest.current ?? currentValues;
+    if (
+      liveAccountId === snapshot.accountId &&
+      snapshotMatches(snapshot, { ...reactiveValues, accountId: liveAccountId })
+    ) {
+      return true;
+    }
     setFailure(t('strengthProgramFinder.errors.recalculate'));
     return false;
   };
@@ -270,15 +306,19 @@ export default function BodyTrainingProgramsScreen() {
     snapshot: ComparisonSnapshot,
   ) => {
     if (!requireFreshComparison(snapshot)) return;
-    Alert.alert(
-      t('strengthProgramFinder.confirm.title'),
-      t('strengthProgramFinder.confirm.body'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('strengthProgramFinder.confirm.action'),
-          onPress: () => {
-            void lockPreparation(async () => {
+    void lockPreparation(
+      () =>
+        new Promise<void>((release) => {
+          let consumed = false;
+          const cancel = () => {
+            if (consumed) return;
+            consumed = true;
+            release();
+          };
+          const confirm = async () => {
+            if (consumed) return;
+            consumed = true;
+            try {
               if (!requireFreshComparison(snapshot)) return;
               setPreparing(true);
               setFailure(null);
@@ -287,6 +327,7 @@ export default function BodyTrainingProgramsScreen() {
                   candidate.program.id,
                   candidate.fingerprint,
                 );
+                if (!requireFreshComparison(snapshot)) return;
                 router.push(`/programs/edit?id=${id}`);
               } catch (error) {
                 const code =
@@ -309,10 +350,24 @@ export default function BodyTrainingProgramsScreen() {
               } finally {
                 setPreparing(false);
               }
-            });
-          },
-        },
-      ],
+            } finally {
+              release();
+            }
+          };
+
+          Alert.alert(
+            t('strengthProgramFinder.confirm.title'),
+            t('strengthProgramFinder.confirm.body'),
+            [
+              { text: t('common.cancel'), style: 'cancel', onPress: cancel },
+              {
+                text: t('strengthProgramFinder.confirm.action'),
+                onPress: confirm,
+              },
+            ],
+            { cancelable: true, onDismiss: cancel },
+          );
+        }),
     );
   };
 

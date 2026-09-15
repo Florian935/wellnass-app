@@ -173,7 +173,9 @@ const tap = async (name: string) =>
 
 beforeEach(async () => {
   jest.clearAllMocks();
-  useAuthStore.setState({ session: { user: { id: 'user-1' } } as never });
+  await act(async () => {
+    useAuthStore.setState({ session: { user: { id: 'user-1' } } as never });
+  });
   await i18n.changeLanguage('fr');
   useTraining.mockReturnValue(bodyState());
   useContext.mockReturnValue(contextState());
@@ -192,8 +194,10 @@ beforeEach(async () => {
   prepare.mockResolvedValue('copy-1');
 });
 
-afterEach(() => {
-  useAuthStore.setState({ session: null });
+afterEach(async () => {
+  await act(async () => {
+    useAuthStore.setState({ session: null });
+  });
   jest.restoreAllMocks();
 });
 
@@ -219,18 +223,32 @@ it('présente niveau et disponibilité en lecture seule sans inventer les valeur
   expect(screen.queryByRole('radio', { name: /Je débute/ })).toBeNull();
 });
 
-it('garde le brouillon durée/matériel pendant les lectures vides et après un conflit CAS', async () => {
+it('mémorise le premier contexte chargé puis garde le brouillon pendant une lecture vide en erreur', async () => {
+  useContext.mockReturnValue({ ...contextState(null), isLoading: true });
   const view = await render(<BodyTrainingProgramsScreen />);
+  expect(screen.getByLabelText('Chargement des programmes compatibles')).toBeTruthy();
+
+  useContext.mockReturnValue(contextState());
+  await view.rerender(<BodyTrainingProgramsScreen />);
   await fireEvent.press(screen.getByRole('radio', { name: '60 minutes maximum' }));
   await fireEvent.press(screen.getByRole('checkbox', { name: 'Barre' }));
 
-  useContext.mockReturnValue({ ...contextState(null), isLoading: true });
+  useContext.mockReturnValue({
+    ...contextState(null),
+    error: new Error('offline'),
+  });
   await view.rerender(<BodyTrainingProgramsScreen />);
   expect(screen.getByRole('radio', { name: '60 minutes maximum' }).props.accessibilityState)
     .toMatchObject({ selected: true });
   expect(screen.getByRole('checkbox', { name: 'Barre' }).props.accessibilityState)
     .toMatchObject({ checked: true });
+  expect(screen.queryByText('Ton profil musculation est indisponible.')).toBeNull();
+});
 
+it('garde le brouillon durée/matériel après un conflit CAS', async () => {
+  const view = await render(<BodyTrainingProgramsScreen />);
+  await fireEvent.press(screen.getByRole('radio', { name: '60 minutes maximum' }));
+  await fireEvent.press(screen.getByRole('checkbox', { name: 'Barre' }));
   useContext.mockReturnValue(contextState());
   saveContext.mockRejectedValue(Object.assign(new Error('conflict'), { code: 'conflict' }));
   await view.rerender(<BodyTrainingProgramsScreen />);
@@ -328,29 +346,91 @@ it('ouvre le programme actuel dans son éditeur même s’il a des contraintes �
   expect(prepare).not.toHaveBeenCalled();
 });
 
-it('confirme et verrouille la préparation éditoriale avant d’ouvrir la copie', async () => {
+it('acquiert le verrou avant l’Alert, le libère sur annulation/dismiss et consomme la confirmation', async () => {
   const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
-  let resolveCopy!: (id: string) => void;
-  prepare.mockImplementation(() => new Promise((resolve) => { resolveCopy = resolve; }));
+  prepare.mockResolvedValue('copy-42');
   await render(<BodyTrainingProgramsScreen />);
   await tap('Comparer les programmes');
-  await tap('Préparer ce programme');
+  const button = screen.getByRole('button', { name: 'Préparer ce programme' });
+  await fireEvent.press(button);
+  await fireEvent.press(button);
 
-  expect(alert).toHaveBeenCalledWith(
+  expect(alert).toHaveBeenCalledTimes(1);
+  expect(alert).toHaveBeenLastCalledWith(
     'Préparer ce programme ?',
     expect.stringContaining('original reste intact'),
     expect.any(Array),
+    expect.objectContaining({ onDismiss: expect.any(Function) }),
   );
-  const confirm = alert.mock.calls.at(-1)![2]![1]!.onPress!;
-  await act(async () => { confirm(); confirm(); });
+
+  alert.mock.calls[0]![2]![0]!.onPress!();
+  await Promise.resolve();
+  await fireEvent.press(button);
+  expect(alert).toHaveBeenCalledTimes(2);
+
+  alert.mock.calls[1]![3]!.onDismiss!();
+  await Promise.resolve();
+  await fireEvent.press(button);
+  expect(alert).toHaveBeenCalledTimes(3);
+
+  const confirm = alert.mock.calls[2]![2]![1]!.onPress!;
+  await act(async () => {
+    const confirmed = confirm() as unknown as Promise<void>;
+    confirm();
+    await confirmed;
+  });
   expect(prepare).toHaveBeenCalledTimes(1);
   expect(prepare).toHaveBeenCalledWith('editorial', 'fingerprint-editorial');
 
-  await act(async () => resolveCopy('copy-42'));
   expect(mockPush).toHaveBeenCalledWith('/programs/edit?id=copy-42');
+  await act(async () => {
+    await (confirm() as unknown as Promise<void>);
+  });
+  expect(prepare).toHaveBeenCalledTimes(1);
 });
 
-it.each(['priorités', 'contexte', 'source', 'compte'])(
+it('refuse une ancienne confirmation si le compte change avant tout flush React', async () => {
+  const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+  await render(<BodyTrainingProgramsScreen />);
+  await tap('Comparer les programmes');
+  await tap('Préparer ce programme');
+  const confirm = alert.mock.calls.at(-1)![2]![1]!.onPress!;
+
+  await act(async () => {
+    useAuthStore.setState({ session: { user: { id: 'user-2' } } as never });
+    await (confirm() as unknown as Promise<void>);
+  });
+
+  expect(prepare).not.toHaveBeenCalled();
+  expect(mockPush).not.toHaveBeenCalled();
+});
+
+it('remonte un orchestrateur vierge quand le compte change', async () => {
+  const view = await render(<BodyTrainingProgramsScreen />);
+  await fireEvent.press(screen.getByRole('radio', { name: '60 minutes maximum' }));
+  await fireEvent.press(screen.getByRole('checkbox', { name: 'Barre' }));
+
+  useContext.mockReturnValue(contextState({
+    ...savedContext,
+    sessionMinutes: 30,
+    equipment: null,
+  }));
+  await act(async () => {
+    useAuthStore.setState({ session: { user: { id: 'user-2' } } as never });
+  });
+  await view.rerender(<BodyTrainingProgramsScreen />);
+
+  expect(screen.getByRole('radio', { name: '30 minutes maximum' }).props.accessibilityState)
+    .toMatchObject({ selected: true });
+  expect(screen.getByRole('radio', { name: '60 minutes maximum' }).props.accessibilityState)
+    .toMatchObject({ selected: false });
+  expect(screen.getByRole('checkbox', { name: 'Tout le matériel' }).props.accessibilityState)
+    .toMatchObject({ checked: true });
+  expect(screen.getByRole('checkbox', { name: 'Barre' }).props.accessibilityState)
+    .toMatchObject({ checked: false });
+});
+
+it.each(['priorités', 'contexte', 'source'])(
   'demande un recalcul si le snapshot %s a changé avant une action',
   async (changed) => {
   const current = candidate({ id: 'current', name: 'Mon programme', current: true });
@@ -368,10 +448,6 @@ it.each(['priorités', 'contexte', 'source', 'compte'])(
     useContext.mockReturnValue({ ...contextState(), updatedAt: '2026-09-15T09:00:01.000Z' });
   } else if (changed === 'source') {
     setCandidates([{ ...current, fingerprint: 'fingerprint-current-new' }]);
-  } else {
-    await act(async () => {
-      useAuthStore.setState({ session: { user: { id: 'user-2' } } as never });
-    });
   }
   await view.rerender(<BodyTrainingProgramsScreen />);
   await tap('Ajuster mon programme actuel');
