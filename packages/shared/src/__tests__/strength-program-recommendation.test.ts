@@ -417,6 +417,7 @@ const sourceSnapshot: StrengthProgramSourceSnapshot = {
   sessions: [
     {
       orderIndex: 0,
+      weekIndex: null,
       name: 'A',
       sessionType: null,
       targetDistanceM: null,
@@ -453,9 +454,54 @@ const sourceSnapshot: StrengthProgramSourceSnapshot = {
           restSeconds: 30,
         },
       ],
+      intervals: [
+        {
+          orderIndex: 1,
+          reps: 4,
+          fastDistanceM: 400,
+          fastDurationSeconds: 90,
+          fastPacePctVma: 105,
+          recoveryDistanceM: 200,
+          recoveryDurationSeconds: 60,
+          kind: 'work',
+          label: 'Rapide',
+          fastPaceMinSPerKm: 220,
+          fastPaceMaxSPerKm: 240,
+          fastTargetTimeMinSeconds: 85,
+          fastTargetTimeMaxSeconds: 95,
+          fastPaceProgressive: true,
+          recoveryKind: 'jog',
+          recoveryPaceMinSPerKm: 360,
+          recoveryPaceMaxSPerKm: 390,
+          groupKey: 'main-set',
+          groupReps: 2,
+        },
+        {
+          orderIndex: 0,
+          reps: 1,
+          fastDistanceM: null,
+          fastDurationSeconds: 600,
+          fastPacePctVma: null,
+          recoveryDistanceM: null,
+          recoveryDurationSeconds: null,
+          kind: 'warmup',
+          label: null,
+          fastPaceMinSPerKm: null,
+          fastPaceMaxSPerKm: null,
+          fastTargetTimeMinSeconds: null,
+          fastTargetTimeMaxSeconds: null,
+          fastPaceProgressive: false,
+          recoveryKind: null,
+          recoveryPaceMinSPerKm: null,
+          recoveryPaceMaxSPerKm: null,
+          groupKey: null,
+          groupReps: null,
+        },
+      ],
     },
     {
       orderIndex: 1,
+      weekIndex: 2,
       name: 'B',
       sessionType: null,
       targetDistanceM: null,
@@ -470,6 +516,7 @@ const sourceSnapshot: StrengthProgramSourceSnapshot = {
       adaptationCriterion: null,
       translations: [],
       plans: [],
+      intervals: [],
     },
   ],
 };
@@ -503,6 +550,7 @@ describe('fingerprintStrengthProgram', () => {
           ...session,
           plans: [...session.plans].reverse(),
           translations: [...session.translations].reverse(),
+          intervals: [...session.intervals].reverse(),
         })),
       translations: [...sourceSnapshot.translations].reverse(),
       program: { ...sourceSnapshot.program },
@@ -522,6 +570,58 @@ describe('fingerprintStrengthProgram', () => {
     expect(mutations.length).toBeGreaterThan(30);
     for (const mutation of mutations) {
       expect(fingerprintStrengthProgram(mutation)).not.toBe(fingerprint);
+    }
+  });
+
+  it('inclut weekIndex et chacun des champs recopiés des intervalles', () => {
+    const fingerprint = fingerprintStrengthProgram(sourceSnapshot);
+    const firstSession = sourceSnapshot.sessions[0]!;
+    const firstInterval = firstSession.intervals[0]!;
+    const intervalMutations: Array<Partial<typeof firstInterval>> = [
+      { orderIndex: 3 },
+      { reps: 5 },
+      { fastDistanceM: 500 },
+      { fastDurationSeconds: 91 },
+      { fastPacePctVma: 106 },
+      { recoveryDistanceM: 201 },
+      { recoveryDurationSeconds: 61 },
+      { kind: 'recovery' },
+      { label: 'Très rapide' },
+      { fastPaceMinSPerKm: 221 },
+      { fastPaceMaxSPerKm: 241 },
+      { fastTargetTimeMinSeconds: 86 },
+      { fastTargetTimeMaxSeconds: 96 },
+      { fastPaceProgressive: false },
+      { recoveryKind: 'walk' },
+      { recoveryPaceMinSPerKm: 361 },
+      { recoveryPaceMaxSPerKm: 391 },
+      { groupKey: 'second-set' },
+      { groupReps: 3 },
+    ];
+
+    const snapshots = [
+      {
+        ...sourceSnapshot,
+        sessions: [
+          { ...firstSession, weekIndex: 1 },
+          ...sourceSnapshot.sessions.slice(1),
+        ],
+      },
+      ...intervalMutations.map((mutation) => ({
+        ...sourceSnapshot,
+        sessions: [
+          {
+            ...firstSession,
+            intervals: [{ ...firstInterval, ...mutation }, ...firstSession.intervals.slice(1)],
+          },
+          ...sourceSnapshot.sessions.slice(1),
+        ],
+      })),
+    ];
+
+    expect(snapshots).toHaveLength(20);
+    for (const snapshot of snapshots) {
+      expect(fingerprintStrengthProgram(snapshot)).not.toBe(fingerprint);
     }
   });
 });

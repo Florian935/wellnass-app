@@ -14,6 +14,7 @@ import {
 } from './exercise';
 import { trainingLevelSchema, type TrainingLevel } from './guidance';
 import { programLevelSchema } from './program';
+import { recoveryKindSchema, segmentKindSchema } from './running-paces';
 import { setTypeSchema } from './workout';
 
 export const STRENGTH_SESSION_MINUTES = [30, 45, 60, 75, 90] as const;
@@ -159,9 +160,34 @@ const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
   ]),
 );
 
+const copiedSessionIntervalSchema = z
+  .object({
+    orderIndex: z.number().int().min(0),
+    reps: z.number().int().positive(),
+    fastDistanceM: z.number().int().positive().nullable(),
+    fastDurationSeconds: z.number().int().positive().nullable(),
+    fastPacePctVma: z.number().int().positive().nullable(),
+    recoveryDistanceM: z.number().int().positive().nullable(),
+    recoveryDurationSeconds: z.number().int().positive().nullable(),
+    kind: segmentKindSchema,
+    label: z.string().nullable(),
+    fastPaceMinSPerKm: z.number().int().positive().nullable(),
+    fastPaceMaxSPerKm: z.number().int().positive().nullable(),
+    fastTargetTimeMinSeconds: z.number().int().positive().nullable(),
+    fastTargetTimeMaxSeconds: z.number().int().positive().nullable(),
+    fastPaceProgressive: z.boolean(),
+    recoveryKind: recoveryKindSchema.nullable(),
+    recoveryPaceMinSPerKm: z.number().int().positive().nullable(),
+    recoveryPaceMaxSPerKm: z.number().int().positive().nullable(),
+    groupKey: z.string().nullable(),
+    groupReps: z.number().int().positive().nullable(),
+  })
+  .strict();
+
 const copiedSessionSchema = z
   .object({
     orderIndex: z.number().int().min(0),
+    weekIndex: z.number().int().min(0).nullable(),
     name: z.string().nullable(),
     sessionType: z.string().nullable(),
     targetDistanceM: z.number().int().positive().nullable(),
@@ -176,6 +202,7 @@ const copiedSessionSchema = z
     adaptationCriterion: z.string().nullable(),
     translations: z.array(copiedSessionTranslationSchema),
     plans: z.array(copiedExercisePlanSchema),
+    intervals: z.array(copiedSessionIntervalSchema),
   })
   .strict();
 
@@ -272,6 +299,9 @@ function normalizeSnapshot(snapshot: StrengthProgramSourceSnapshot): StrengthPro
           (left, right) => compareText(left.lang, right.lang) || compareCanonical(left, right),
         ),
         plans: [...session.plans].sort(
+          (left, right) => left.orderIndex - right.orderIndex || compareCanonical(left, right),
+        ),
+        intervals: [...session.intervals].sort(
           (left, right) => left.orderIndex - right.orderIndex || compareCanonical(left, right),
         ),
       }))
