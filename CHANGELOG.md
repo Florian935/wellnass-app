@@ -18,6 +18,8 @@ jours disponibles, le matériel et une estimation de durée. La proposition choi
 copie personnelle inactive ; l'original et le programme actif restent inchangés. Aucun dosage,
 exercice, activation ou résultat physique n'est inventé. Références de conception : position
 stand ACSM 2026 et méta-analyse en réseau BJSM 2023. Aucun code applicatif dans ce commit.
+Le plan d'implémentation découpe l'intégration de GUID-01, le moteur pur, le contexte offline,
+la lecture SQLite, la copie transactionnelle, le parcours mobile et la vérification Android.
 
 ## 14/09/2026 — CORPS-03 : priorités confirmées et lecture du programme
 

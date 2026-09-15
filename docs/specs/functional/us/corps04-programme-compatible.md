@@ -61,7 +61,7 @@ pas ces travaux comme une promesse individuelle et ne prédit ni résultat ni d�
    opaque n'est montré.
 9. **Préparer ce programme** ouvre une confirmation qui rappelle que l'original reste intact.
    Après accord, l'app duplique le programme éditorial dans le compte courant, ajoute le suffixe
-   localisé « adapté à mes priorités », le laisse inactif et ouvre `/programs/{id}/edit`.
+   localisé « adapté à mes priorités », le laisse inactif et ouvre `/programs/edit?id={id}`.
 10. Un programme personnel appartenant déjà au compte n'est jamais dupliqué silencieusement : le
     programme actif renvoie vers son éditeur. Aucun autre programme personnel n'entre dans le
     classement de bibliothèque.
@@ -119,6 +119,7 @@ type StrengthProgramRecommendation = {
   generalPriorityZones: BodyGoalZone[];
   sessionDurationMinutes: (number | null)[];
   reasons: ('priorities' | 'level' | 'schedule' | 'equipment' | 'duration')[];
+  issues: ('schedule' | 'equipment' | 'duration')[];
 };
 
 function estimateStrengthSessionMinutes(session: StrengthProgramCandidate['program']['sessions'][number]): number | null;
@@ -152,9 +153,9 @@ un repository dédié, avec comparaison de `profiles.updated_at` dans la transac
 La préparation appelle une nouvelle transaction dédiée qui relit le programme source, vérifie son
 empreinte canonique produite par `fingerprintStrengthProgram(program)`, l'identité courante et son
 caractère éditorial publié, puis reprend le mécanisme de
-duplication existant. Elle ne change jamais `is_active`. Le suffixe de nom est écrit dans les deux
-langues à partir du nom résolu ; les contenus et paramètres du programme sont copiés sans dosage
-supplémentaire.
+duplication existant. Elle ne change jamais `is_active`. Chaque traduction disponible conserve sa
+langue et reçoit son suffixe localisé ; aucun contenu traduit absent n'est inventé. Les contenus et
+paramètres du programme sont copiés sans dosage supplémentaire.
 
 ## États et erreurs
 
