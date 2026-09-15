@@ -649,6 +649,33 @@ describe('prepareCompatibleStrengthProgram', () => {
     expect(error).toMatchObject({ code: 'source_invalid' });
   });
 
+  it('laisse remonter telle quelle une panne de lecture du loader', async () => {
+    const { programId } = seedCompatibleEditorialProgram();
+    const storageError = new Error('sentinel sqlite read failure');
+    const originalWriteTransaction = testPowerSync.writeTransaction.bind(testPowerSync);
+    jest.spyOn(testPowerSync, 'writeTransaction').mockImplementationOnce(async (work) =>
+      originalWriteTransaction((tx) =>
+        work({
+          ...tx,
+          getAll: async () => {
+            throw storageError;
+          },
+        }),
+      ),
+    );
+
+    const error = await prepareCompatibleStrengthProgram(programId, 'sp1-stale').catch(
+      (caught: unknown) => caught,
+    );
+
+    expect(error).toBe(storageError);
+    expect(error).not.toHaveProperty('code');
+    expect(programs()).toHaveLength(1);
+    expect(sessions()).toHaveLength(1);
+    expect(plans()).toHaveLength(1);
+    expect(intervals()).toHaveLength(1);
+  });
+
   it('annule toutes les insertions si le compte change pendant les awaits', async () => {
     const { programId } = seedCompatibleEditorialProgram();
     const expectedFingerprint = await fingerprintOf(programId);

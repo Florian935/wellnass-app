@@ -59,6 +59,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { getAppLanguage } from '@/i18n';
 import { insertWithSyncFields, nowUtc, patch, softDelete, txInsert } from './_sql';
 import {
+  InvalidStrengthProgramSourceError,
   readEditorialStrengthProgramSourceSnapshot,
   type StrengthProgramReadTransaction,
 } from './strength-program-recommendation-repository';
@@ -1313,6 +1314,7 @@ export async function prepareCompatibleStrengthProgram(
     try {
       snapshot = await readEditorialStrengthProgramSourceSnapshot(tx, sourceProgramId);
     } catch (cause) {
+      if (!(cause instanceof InvalidStrengthProgramSourceError)) throw cause;
       throw new StrengthProgramPreparationError(
         'source_invalid',
         'Le programme source est incomplet ou invalide.',

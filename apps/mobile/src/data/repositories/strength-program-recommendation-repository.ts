@@ -33,6 +33,14 @@ type StrengthProgramSignalRow = {
   signal: string;
 };
 
+/** Invalidite metier emise seulement apres une lecture SQLite reussie du snapshot source. */
+export class InvalidStrengthProgramSourceError extends Error {
+  constructor(message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'InvalidStrengthProgramSourceError';
+  }
+}
+
 /**
  * Une seule requête réactive signale toute modification susceptible de changer un candidat.
  * Les agrégats ne servent pas à construire le résultat : ils forcent PowerSync à observer les
@@ -623,7 +631,12 @@ export async function readEditorialStrengthProgramSourceSnapshot(
   if (rows.programs.length === 0) return null;
 
   const result = buildStrengthProgramReadResult(rows, 'fr');
-  if (result.error) throw result.error;
+  if (result.error) {
+    throw new InvalidStrengthProgramSourceError(
+      'Le programme editorial strength est incomplet ou invalide.',
+      { cause: result.error },
+    );
+  }
   return result.candidates[0]?.sourceSnapshot ?? null;
 }
 
