@@ -43,9 +43,11 @@ import type {
   RecoveryKind,
   SegmentKind,
   SetType,
+  StrengthProgramSourceSnapshot,
 } from '@wellness/shared';
 import {
   DEFAULT_SEGMENT_KIND,
+  fingerprintStrengthProgram,
   normalizeFineMuscles,
   normalizeSecondaryMuscles,
   parseJsonColumn,
@@ -56,6 +58,10 @@ import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { getAppLanguage } from '@/i18n';
 import { insertWithSyncFields, nowUtc, patch, softDelete, txInsert } from './_sql';
+import {
+  readEditorialStrengthProgramSourceSnapshot,
+  type StrengthProgramReadTransaction,
+} from './strength-program-recommendation-repository';
 
 // ---------------------------------------------------------------------------
 // Types de domaine exposés à l'UI
@@ -1077,6 +1083,448 @@ export async function removeSession(sessionId: string): Promise<void> {
 // Duplication et activation (transactions atomiques)
 // ---------------------------------------------------------------------------
 
+type ProgramWriteTransaction = StrengthProgramReadTransaction & {
+  execute(sql: string, params?: unknown[]): Promise<unknown>;
+  getOptional<T>(sql: string, params?: unknown[]): Promise<T | null>;
+};
+
+type SnapshotSession = StrengthProgramSourceSnapshot['sessions'][number];
+
+type ProgramCopySource = {
+  program: {
+    pillar: Pillar;
+    level: ProgramLevel | null;
+    goal: string | null;
+    durationWeeks: number | null;
+    targetTimeSeconds: number | null;
+    eventName: string | null;
+  };
+  translations: StrengthProgramSourceSnapshot['translations'];
+  sessions: (Omit<SnapshotSession, 'pacingPlan'> & { pacingPlanSql: string | null })[];
+};
+
+type ProgramNameTransform = (name: string, language: string) => string;
+
+async function copyProgramSourceInTransaction(
+  tx: ProgramWriteTransaction,
+  ownerId: string,
+  source: ProgramCopySource,
+  transformName: ProgramNameTransform,
+): Promise<string> {
+  const newProgramId = await txInsert(tx, 'programs', {
+    owner_id: ownerId,
+    pillar: source.program.pillar,
+    status: 'published',
+    is_active: 0,
+    level: source.program.level,
+    goal: source.program.goal,
+    duration_weeks: source.program.durationWeeks,
+    target_date: null,
+    target_time_seconds: source.program.targetTimeSeconds,
+    event_name: source.program.eventName,
+  });
+
+  for (const translation of source.translations) {
+    await txInsert(tx, 'program_translations', {
+      program_id: newProgramId,
+      owner_id: ownerId,
+      lang: translation.lang,
+      name: transformName(translation.name, translation.lang),
+      summary: translation.summary,
+      description: translation.description,
+    });
+  }
+
+  for (const session of source.sessions) {
+    const newSessionId = await txInsert(tx, 'sessions', {
+      program_id: newProgramId,
+      owner_id: ownerId,
+      order_index: session.orderIndex,
+      week_index: session.weekIndex,
+      name: session.name,
+      session_type: session.sessionType,
+      target_distance_m: session.targetDistanceM,
+      target_duration_seconds: session.targetDurationSeconds,
+      target_pace_min_s_per_km: session.targetPaceMinSPerKm,
+      target_pace_max_s_per_km: session.targetPaceMaxSPerKm,
+      target_rpe: session.targetRpe,
+      target_time_seconds: session.targetTimeSeconds,
+      pacing_plan: session.pacingPlanSql,
+      description: session.description,
+      instructions: session.instructions,
+      adaptation_criterion: session.adaptationCriterion,
+    });
+
+    for (const translation of session.translations) {
+      await txInsert(tx, 'session_translations', {
+        session_id: newSessionId,
+        owner_id: ownerId,
+        lang: translation.lang,
+        name: translation.name,
+        description: translation.description,
+        instructions: translation.instructions,
+      });
+    }
+
+    for (const plan of session.plans) {
+      await txInsert(tx, 'exercise_plans', {
+        session_id: newSessionId,
+        owner_id: ownerId,
+        exercise_id: plan.exerciseId,
+        order_index: plan.orderIndex,
+        set_type: plan.setType,
+        target_sets: plan.targetSets,
+        target_reps: plan.targetReps,
+        target_weight_kg: plan.targetWeightKg,
+        rest_seconds: plan.restSeconds,
+      });
+    }
+
+    for (const interval of session.intervals) {
+      await txInsert(tx, 'session_intervals', {
+        session_id: newSessionId,
+        owner_id: ownerId,
+        order_index: interval.orderIndex,
+        reps: interval.reps,
+        fast_distance_m: interval.fastDistanceM,
+        fast_duration_seconds: interval.fastDurationSeconds,
+        fast_pace_pct_vma: interval.fastPacePctVma,
+        recovery_distance_m: interval.recoveryDistanceM,
+        recovery_duration_seconds: interval.recoveryDurationSeconds,
+        kind: interval.kind,
+        label: interval.label,
+        fast_pace_min_s_per_km: interval.fastPaceMinSPerKm,
+        fast_pace_max_s_per_km: interval.fastPaceMaxSPerKm,
+        fast_target_time_min_seconds: interval.fastTargetTimeMinSeconds,
+        fast_target_time_max_seconds: interval.fastTargetTimeMaxSeconds,
+        fast_pace_progressive: interval.fastPaceProgressive ? 1 : 0,
+        recovery_kind: interval.recoveryKind,
+        recovery_pace_min_s_per_km: interval.recoveryPaceMinSPerKm,
+        recovery_pace_max_s_per_km: interval.recoveryPaceMaxSPerKm,
+        group_key: interval.groupKey,
+        group_reps: interval.groupReps,
+      });
+    }
+  }
+
+  return newProgramId;
+}
+
+function validatedSnapshotToCopySource(
+  snapshot: StrengthProgramSourceSnapshot,
+): ProgramCopySource {
+  return {
+    program: snapshot.program,
+    translations: snapshot.translations,
+    sessions: snapshot.sessions.map(({ pacingPlan, ...session }) => ({
+      ...session,
+      pacingPlanSql: pacingPlan === null ? null : JSON.stringify(pacingPlan),
+    })),
+  };
+}
+
+export type StrengthProgramPreparationErrorCode =
+  | 'source_missing'
+  | 'source_invalid'
+  | 'source_changed'
+  | 'account_changed';
+
+/** Erreur metier stable exposee au parcours de selection CORPS-04. */
+export class StrengthProgramPreparationError extends Error {
+  readonly code: StrengthProgramPreparationErrorCode;
+
+  constructor(code: StrengthProgramPreparationErrorCode, message: string, options?: ErrorOptions) {
+    super(message, options);
+    this.name = 'StrengthProgramPreparationError';
+    this.code = code;
+  }
+}
+
+function preparationUserId(): string | null {
+  return useAuthStore.getState().session?.user.id ?? null;
+}
+
+function assertPreparationAccount(ownerId: string): void {
+  if (preparationUserId() !== ownerId) {
+    throw new StrengthProgramPreparationError(
+      'account_changed',
+      'Le compte actif a change pendant la preparation du programme.',
+    );
+  }
+}
+
+function tailoredProgramName(name: string, language: string): string {
+  const primaryLanguage = language.trim().toLowerCase().split('-')[0];
+  const suffix =
+    primaryLanguage === 'fr'
+      ? ' — adapté à mes priorités'
+      : ' — tailored to my priorities';
+  return `${name}${suffix}`;
+}
+
+/**
+ * Prepare une copie personnelle inactive d'un programme editorial strength encore identique a
+ * celui recommande. Codes stables : source_missing, source_invalid, source_changed,
+ * account_changed.
+ */
+export async function prepareCompatibleStrengthProgram(
+  sourceProgramId: string,
+  expectedFingerprint: string,
+): Promise<string> {
+  const ownerId = preparationUserId();
+  if (!ownerId) {
+    throw new StrengthProgramPreparationError(
+      'account_changed',
+      'Aucun compte actif pour preparer le programme.',
+    );
+  }
+
+  return powerSync.writeTransaction(async (tx) => {
+    assertPreparationAccount(ownerId);
+
+    const header = await tx.getOptional<{
+      owner_id: string | null;
+      pillar: string;
+      status: string;
+      deleted_at: string | null;
+    }>(
+      'SELECT owner_id, pillar, status, deleted_at FROM programs WHERE id = ?',
+      [sourceProgramId],
+    );
+    if (!header) {
+      throw new StrengthProgramPreparationError(
+        'source_missing',
+        'Le programme source est introuvable.',
+      );
+    }
+    if (
+      header.owner_id !== null ||
+      header.pillar !== 'strength' ||
+      header.status !== 'published' ||
+      header.deleted_at !== null
+    ) {
+      throw new StrengthProgramPreparationError(
+        'source_invalid',
+        "Le programme source n'est pas un programme editorial de musculation publie.",
+      );
+    }
+
+    let snapshot: StrengthProgramSourceSnapshot | null;
+    try {
+      snapshot = await readEditorialStrengthProgramSourceSnapshot(tx, sourceProgramId);
+    } catch (cause) {
+      throw new StrengthProgramPreparationError(
+        'source_invalid',
+        'Le programme source est incomplet ou invalide.',
+        { cause },
+      );
+    }
+    if (!snapshot) {
+      throw new StrengthProgramPreparationError(
+        'source_invalid',
+        'Le programme source ne peut plus etre prepare.',
+      );
+    }
+    if (fingerprintStrengthProgram(snapshot) !== expectedFingerprint) {
+      throw new StrengthProgramPreparationError(
+        'source_changed',
+        'Le programme source a change depuis la recommandation.',
+      );
+    }
+
+    assertPreparationAccount(ownerId);
+    const copyId = await copyProgramSourceInTransaction(
+      tx,
+      ownerId,
+      validatedSnapshotToCopySource(snapshot),
+      tailoredProgramName,
+    );
+    assertPreparationAccount(ownerId);
+    return copyId;
+  });
+}
+
+async function readProgramCopySource(
+  tx: ProgramWriteTransaction,
+  sourceProgramId: string,
+): Promise<ProgramCopySource | null> {
+  const program = await tx.getOptional<{
+    pillar: Pillar;
+    level: ProgramLevel | null;
+    goal: string | null;
+    duration_weeks: number | null;
+    target_time_seconds: number | null;
+    event_name: string | null;
+  }>(
+    `SELECT pillar, level, goal, duration_weeks, target_time_seconds, event_name FROM programs
+     WHERE id = ? AND deleted_at IS NULL`,
+    [sourceProgramId],
+  );
+  if (!program) return null;
+
+  const translations = await tx.getAll<{
+    lang: string;
+    name: string;
+    summary: string | null;
+    description: string | null;
+  }>(
+    `SELECT lang, name, summary, description FROM program_translations
+     WHERE program_id = ? AND deleted_at IS NULL
+     ORDER BY lang, id`,
+    [sourceProgramId],
+  );
+  const sessionRows = await tx.getAll<{
+    id: string;
+    order_index: number;
+    week_index: number | null;
+    name: string | null;
+    session_type: string | null;
+    target_distance_m: number | null;
+    target_duration_seconds: number | null;
+    target_pace_min_s_per_km: number | null;
+    target_pace_max_s_per_km: number | null;
+    target_rpe: number | null;
+    target_time_seconds: number | null;
+    pacing_plan: string | null;
+    description: string | null;
+    instructions: string | null;
+    adaptation_criterion: string | null;
+  }>(
+    `SELECT id, order_index, week_index, name, session_type, target_distance_m,
+            target_duration_seconds, target_pace_min_s_per_km, target_pace_max_s_per_km,
+            target_rpe, target_time_seconds, pacing_plan, description, instructions,
+            adaptation_criterion
+     FROM sessions
+     WHERE program_id = ? AND deleted_at IS NULL
+     ORDER BY order_index, id`,
+    [sourceProgramId],
+  );
+
+  const sessions: ProgramCopySource['sessions'] = [];
+  for (const session of sessionRows) {
+    const sessionTranslations = await tx.getAll<{
+      lang: string;
+      name: string | null;
+      description: string | null;
+      instructions: string | null;
+    }>(
+      `SELECT lang, name, description, instructions FROM session_translations
+       WHERE session_id = ? AND deleted_at IS NULL
+       ORDER BY lang, id`,
+      [session.id],
+    );
+    const plans = await tx.getAll<{
+      exercise_id: string;
+      order_index: number;
+      set_type: StrengthProgramSourceSnapshot['sessions'][number]['plans'][number]['setType'];
+      target_sets: number | null;
+      target_reps: string | null;
+      target_weight_kg: number | null;
+      rest_seconds: number | null;
+    }>(
+      `SELECT exercise_id, order_index, set_type, target_sets, target_reps,
+              target_weight_kg, rest_seconds
+       FROM exercise_plans
+       WHERE session_id = ? AND deleted_at IS NULL
+       ORDER BY order_index, id`,
+      [session.id],
+    );
+    const intervalRows = await tx.getAll<{
+      order_index: number;
+      reps: number;
+      fast_distance_m: number | null;
+      fast_duration_seconds: number | null;
+      fast_pace_pct_vma: number | null;
+      recovery_distance_m: number | null;
+      recovery_duration_seconds: number | null;
+      kind: StrengthProgramSourceSnapshot['sessions'][number]['intervals'][number]['kind'] | null;
+      label: string | null;
+      fast_pace_min_s_per_km: number | null;
+      fast_pace_max_s_per_km: number | null;
+      fast_target_time_min_seconds: number | null;
+      fast_target_time_max_seconds: number | null;
+      fast_pace_progressive: number | null;
+      recovery_kind: StrengthProgramSourceSnapshot['sessions'][number]['intervals'][number]['recoveryKind'];
+      recovery_pace_min_s_per_km: number | null;
+      recovery_pace_max_s_per_km: number | null;
+      group_key: string | null;
+      group_reps: number | null;
+    }>(
+      `SELECT order_index, reps, fast_distance_m, fast_duration_seconds, fast_pace_pct_vma,
+              recovery_distance_m, recovery_duration_seconds, kind, label,
+              fast_pace_min_s_per_km, fast_pace_max_s_per_km,
+              fast_target_time_min_seconds, fast_target_time_max_seconds,
+              fast_pace_progressive, recovery_kind, recovery_pace_min_s_per_km,
+              recovery_pace_max_s_per_km, group_key, group_reps
+       FROM session_intervals
+       WHERE session_id = ? AND deleted_at IS NULL
+       ORDER BY order_index, id`,
+      [session.id],
+    );
+
+    sessions.push({
+      orderIndex: session.order_index,
+      weekIndex: session.week_index,
+      name: session.name,
+      sessionType: session.session_type,
+      targetDistanceM: session.target_distance_m,
+      targetDurationSeconds: session.target_duration_seconds,
+      targetPaceMinSPerKm: session.target_pace_min_s_per_km,
+      targetPaceMaxSPerKm: session.target_pace_max_s_per_km,
+      targetRpe: session.target_rpe,
+      targetTimeSeconds: session.target_time_seconds,
+      pacingPlanSql: session.pacing_plan,
+      description: session.description,
+      instructions: session.instructions,
+      adaptationCriterion: session.adaptation_criterion,
+      translations: sessionTranslations,
+      plans: plans.map((plan) => ({
+        exerciseId: plan.exercise_id,
+        orderIndex: plan.order_index,
+        setType: plan.set_type,
+        targetSets: plan.target_sets,
+        targetReps: plan.target_reps,
+        targetWeightKg: plan.target_weight_kg,
+        restSeconds: plan.rest_seconds,
+      })),
+      intervals: intervalRows.map((interval) => ({
+        orderIndex: interval.order_index,
+        reps: interval.reps,
+        fastDistanceM: interval.fast_distance_m,
+        fastDurationSeconds: interval.fast_duration_seconds,
+        fastPacePctVma: interval.fast_pace_pct_vma,
+        recoveryDistanceM: interval.recovery_distance_m,
+        recoveryDurationSeconds: interval.recovery_duration_seconds,
+        kind: interval.kind ?? DEFAULT_SEGMENT_KIND,
+        label: interval.label,
+        fastPaceMinSPerKm: interval.fast_pace_min_s_per_km,
+        fastPaceMaxSPerKm: interval.fast_pace_max_s_per_km,
+        fastTargetTimeMinSeconds: interval.fast_target_time_min_seconds,
+        fastTargetTimeMaxSeconds: interval.fast_target_time_max_seconds,
+        fastPaceProgressive: (interval.fast_pace_progressive ?? 0) === 1,
+        recoveryKind: interval.recovery_kind,
+        recoveryPaceMinSPerKm: interval.recovery_pace_min_s_per_km,
+        recoveryPaceMaxSPerKm: interval.recovery_pace_max_s_per_km,
+        groupKey: interval.group_key,
+        groupReps: interval.group_reps,
+      })),
+    });
+  }
+
+  return {
+    program: {
+      pillar: program.pillar,
+      level: program.level,
+      goal: program.goal,
+      durationWeeks: program.duration_weeks,
+      targetTimeSeconds: program.target_time_seconds,
+      eventName: program.event_name,
+    },
+    translations,
+    sessions,
+  };
+}
+
 /**
  * Duplique un programme (éditorial ou autre) en un NOUVEAU programme personnalisé
  * de l'utilisateur : nouveaux UUID partout, `owner_id`=user, `status='published'`,
@@ -1092,240 +1540,11 @@ export async function duplicateProgram(
   const ownerId = currentUserId();
 
   return powerSync.writeTransaction(async (tx) => {
-    const source = await tx.getOptional<{
-      pillar: string;
-      level: string | null;
-      goal: string | null;
-      duration_weeks: number | null;
-      target_time_seconds: number | null;
-      event_name: string | null;
-    }>(
-      `SELECT pillar, level, goal, duration_weeks, target_time_seconds, event_name FROM programs
-       WHERE id = ? AND deleted_at IS NULL`,
-      [sourceProgramId],
-    );
+    const source = await readProgramCopySource(tx, sourceProgramId);
     if (!source) {
       throw new Error('Programme source introuvable : duplication impossible.');
     }
-
-    // 1. Nouvel entête programme.
-    //
-    // ⚠️ US RUN-F4 (lot H) : on recopie l'objectif chrono et le nom de l'événement, mais
-    // **délibérément PAS `target_date`**. Dupliquer un plan sert à le refaire, sur une NOUVELLE
-    // échéance : recopier la date afficherait un « J-42 » déjà périmé (souvent négatif) dès la
-    // première ouverture du programme dupliqué. L'utilisateur repose la date, le reste suit.
-    const newProgramId = await txInsert(tx, 'programs', {
-      owner_id: ownerId,
-      pillar: source.pillar,
-      status: 'published',
-      is_active: 0,
-      level: source.level,
-      goal: source.goal,
-      duration_weeks: source.duration_weeks,
-      target_date: null,
-      target_time_seconds: source.target_time_seconds,
-      event_name: source.event_name,
-    });
-
-    // 2. Copie des traductions (toutes langues disponibles).
-    const translations = await tx.getAll<{
-      lang: string;
-      name: string;
-      summary: string | null;
-      description: string | null;
-    }>(
-      `SELECT lang, name, summary, description FROM program_translations
-       WHERE program_id = ? AND deleted_at IS NULL`,
-      [sourceProgramId],
-    );
-    for (const t of translations) {
-      await txInsert(tx, 'program_translations', {
-        program_id: newProgramId,
-        owner_id: ownerId,
-        lang: t.lang,
-        name: t.name,
-        summary: t.summary,
-        description: t.description,
-      });
-    }
-
-    // 3. Copie des séances (nouveaux id) — on conserve la correspondance ancien→nouveau.
-    //    Colonnes running incluses : les séances muscu les ont à NULL (aucun effet).
-    const sourceSessions = await tx.getAll<{
-      id: string;
-      order_index: number;
-      name: string | null;
-      session_type: string | null;
-      target_distance_m: number | null;
-      target_duration_seconds: number | null;
-      target_pace_min_s_per_km: number | null;
-      target_pace_max_s_per_km: number | null;
-      target_rpe: number | null;
-      target_time_seconds: number | null;
-      pacing_plan: string | null;
-      description: string | null;
-      instructions: string | null;
-      adaptation_criterion: string | null;
-    }>(
-      `SELECT id, order_index, name, session_type, target_distance_m, target_duration_seconds,
-              target_pace_min_s_per_km, target_pace_max_s_per_km, target_rpe,
-              target_time_seconds, pacing_plan, description, instructions, adaptation_criterion
-       FROM sessions
-       WHERE program_id = ? AND deleted_at IS NULL
-       ORDER BY order_index`,
-      [sourceProgramId],
-    );
-
-    const sessionIdMap = new Map<string, string>();
-    for (const s of sourceSessions) {
-      const newSessionId = await txInsert(tx, 'sessions', {
-        program_id: newProgramId,
-        owner_id: ownerId,
-        order_index: s.order_index,
-        name: s.name,
-        session_type: s.session_type,
-        target_distance_m: s.target_distance_m,
-        target_duration_seconds: s.target_duration_seconds,
-        // US RUN-F4 : la consigne suit la séance. Sans ces 8 colonnes, dupliquer un programme
-        // rendrait des séances vidées de leur allure et de leurs instructions — exactement le
-        // vide que cette US comble.
-        target_pace_min_s_per_km: s.target_pace_min_s_per_km,
-        target_pace_max_s_per_km: s.target_pace_max_s_per_km,
-        target_rpe: s.target_rpe,
-        target_time_seconds: s.target_time_seconds,
-        pacing_plan: s.pacing_plan,
-        description: s.description,
-        instructions: s.instructions,
-        adaptation_criterion: s.adaptation_criterion,
-      });
-      sessionIdMap.set(s.id, newSessionId);
-    }
-
-    // 3 bis. Copie des traductions de séance (US RUN-F4, lot I) — même raisonnement que les
-    // traductions de programme juste au-dessus : un programme éditorial bilingue dupliqué doit
-    // rester bilingue, séance par séance.
-    for (const [oldSessionId, newSessionId] of sessionIdMap) {
-      const sessionTranslations = await tx.getAll<{
-        lang: string;
-        name: string | null;
-        description: string | null;
-        instructions: string | null;
-      }>(
-        `SELECT lang, name, description, instructions FROM session_translations
-         WHERE session_id = ? AND deleted_at IS NULL`,
-        [oldSessionId],
-      );
-      for (const t of sessionTranslations) {
-        await txInsert(tx, 'session_translations', {
-          session_id: newSessionId,
-          owner_id: ownerId,
-          lang: t.lang,
-          name: t.name,
-          description: t.description,
-          instructions: t.instructions,
-        });
-      }
-    }
-
-    // 4. Copie des plans d'exercice (nouveaux id, session_id remappé).
-    for (const [oldSessionId, newSessionId] of sessionIdMap) {
-      const plans = await tx.getAll<{
-        exercise_id: string;
-        order_index: number;
-        set_type: string;
-        target_sets: number | null;
-        target_reps: string | null;
-        target_weight_kg: number | null;
-        rest_seconds: number | null;
-      }>(
-        `SELECT exercise_id, order_index, set_type, target_sets, target_reps,
-                target_weight_kg, rest_seconds
-         FROM exercise_plans
-         WHERE session_id = ? AND deleted_at IS NULL
-         ORDER BY order_index`,
-        [oldSessionId],
-      );
-      for (const plan of plans) {
-        await txInsert(tx, 'exercise_plans', {
-          session_id: newSessionId,
-          owner_id: ownerId,
-          exercise_id: plan.exercise_id,
-          order_index: plan.order_index,
-          set_type: plan.set_type,
-          target_sets: plan.target_sets,
-          target_reps: plan.target_reps,
-          target_weight_kg: plan.target_weight_kg,
-          rest_seconds: plan.rest_seconds,
-        });
-      }
-    }
-
-    // 5. Copie des blocs fractionné (nouveaux id, session_id remappé — US RUN-F2c).
-    for (const [oldSessionId, newSessionId] of sessionIdMap) {
-      const intervals = await tx.getAll<{
-        order_index: number;
-        reps: number;
-        fast_distance_m: number | null;
-        fast_duration_seconds: number | null;
-        fast_pace_pct_vma: number | null;
-        recovery_distance_m: number | null;
-        recovery_duration_seconds: number | null;
-        kind: string | null;
-        label: string | null;
-        fast_pace_min_s_per_km: number | null;
-        fast_pace_max_s_per_km: number | null;
-        fast_target_time_min_seconds: number | null;
-        fast_target_time_max_seconds: number | null;
-        fast_pace_progressive: number | null;
-        recovery_kind: string | null;
-        recovery_pace_min_s_per_km: number | null;
-        recovery_pace_max_s_per_km: number | null;
-        group_key: string | null;
-        group_reps: number | null;
-      }>(
-        `SELECT order_index, reps, fast_distance_m, fast_duration_seconds, fast_pace_pct_vma,
-                recovery_distance_m, recovery_duration_seconds,
-                kind, label, fast_pace_min_s_per_km, fast_pace_max_s_per_km,
-                fast_target_time_min_seconds, fast_target_time_max_seconds,
-                fast_pace_progressive, recovery_kind, recovery_pace_min_s_per_km, recovery_pace_max_s_per_km,
-                group_key, group_reps
-         FROM session_intervals
-         WHERE session_id = ? AND deleted_at IS NULL
-         ORDER BY order_index`,
-        [oldSessionId],
-      );
-      for (const block of intervals) {
-        await txInsert(tx, 'session_intervals', {
-          session_id: newSessionId,
-          owner_id: ownerId,
-          order_index: block.order_index,
-          reps: block.reps,
-          fast_distance_m: block.fast_distance_m,
-          fast_duration_seconds: block.fast_duration_seconds,
-          fast_pace_pct_vma: block.fast_pace_pct_vma,
-          recovery_distance_m: block.recovery_distance_m,
-          recovery_duration_seconds: block.recovery_duration_seconds,
-          // US RUN-F4 : nature, allures, chrono cible et imbrication suivent le segment.
-          // ⚠️ `group_key` est recopiée telle quelle : elle n'a de sens que RELATIVEMENT aux
-          // segments consécutifs de la même séance (jamais une référence globale), donc la
-          // réutiliser dans le programme dupliqué est correct et préserve les groupes.
-          kind: block.kind ?? DEFAULT_SEGMENT_KIND,
-          label: block.label,
-          fast_pace_min_s_per_km: block.fast_pace_min_s_per_km,
-          fast_pace_max_s_per_km: block.fast_pace_max_s_per_km,
-          fast_target_time_min_seconds: block.fast_target_time_min_seconds,
-          fast_target_time_max_seconds: block.fast_target_time_max_seconds,
-          fast_pace_progressive: block.fast_pace_progressive ?? 0,
-          recovery_kind: block.recovery_kind,
-          recovery_pace_min_s_per_km: block.recovery_pace_min_s_per_km,
-          recovery_pace_max_s_per_km: block.recovery_pace_max_s_per_km,
-          group_key: block.group_key,
-          group_reps: block.group_reps,
-        });
-      }
-    }
-
-    return newProgramId;
+    return copyProgramSourceInTransaction(tx, ownerId, source, (name) => name);
   });
 }
 

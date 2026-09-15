@@ -198,24 +198,24 @@ type IntervalRow = {
   group_reps: number | null;
 };
 
-const SELECT_PROGRAMS = `
+const selectPrograms = (eligibleProgram: string) => `
   SELECT p.id, p.owner_id, p.pillar, p.is_active, p.level, p.goal, p.duration_weeks,
          p.target_time_seconds, p.event_name
   FROM programs p
-  WHERE ${ELIGIBLE_PROGRAM}
+  WHERE ${eligibleProgram}
   ORDER BY p.id
 `;
 
-const SELECT_PROGRAM_TRANSLATIONS = `
+const selectProgramTranslations = (eligibleProgram: string) => `
   SELECT pt.program_id, pt.lang, pt.name, pt.summary, pt.description
   FROM program_translations pt
   JOIN programs p ON p.id = pt.program_id
-  WHERE ${ELIGIBLE_PROGRAM}
+  WHERE ${eligibleProgram}
     AND pt.owner_id IS p.owner_id AND pt.deleted_at IS NULL
   ORDER BY pt.program_id, pt.lang, pt.id
 `;
 
-const SELECT_SESSIONS = `
+const selectSessions = (eligibleProgram: string) => `
   SELECT s.id, s.program_id, s.order_index, s.week_index, s.name, s.session_type,
          s.target_distance_m, s.target_duration_seconds,
          s.target_pace_min_s_per_km, s.target_pace_max_s_per_km, s.target_rpe,
@@ -223,23 +223,23 @@ const SELECT_SESSIONS = `
          s.adaptation_criterion
   FROM sessions s
   JOIN programs p ON p.id = s.program_id
-  WHERE ${ELIGIBLE_PROGRAM}
+  WHERE ${eligibleProgram}
     AND s.owner_id IS p.owner_id AND s.deleted_at IS NULL
   ORDER BY s.program_id, s.order_index, s.id
 `;
 
-const SELECT_SESSION_TRANSLATIONS = `
+const selectSessionTranslations = (eligibleProgram: string) => `
   SELECT st.session_id, st.lang, st.name, st.description, st.instructions
   FROM session_translations st
   JOIN sessions s ON s.id = st.session_id
   JOIN programs p ON p.id = s.program_id
-  WHERE ${ELIGIBLE_PROGRAM}
+  WHERE ${eligibleProgram}
     AND s.owner_id IS p.owner_id AND s.deleted_at IS NULL
     AND st.owner_id IS p.owner_id AND st.deleted_at IS NULL
   ORDER BY st.session_id, st.lang, st.id
 `;
 
-const SELECT_PLANS = `
+const selectPlans = (eligibleProgram: string) => `
   SELECT ep.id, s.program_id, ep.session_id, ep.exercise_id, ep.order_index, ep.set_type,
          ep.target_sets, ep.target_reps, ep.target_weight_kg, ep.rest_seconds,
          e.id AS resolved_exercise_id, e.muscle_primary, e.muscles_secondary,
@@ -249,27 +249,27 @@ const SELECT_PLANS = `
   JOIN programs p ON p.id = s.program_id
   LEFT JOIN exercises e ON e.id = ep.exercise_id AND e.deleted_at IS NULL
     AND (e.owner_id IS NULL OR e.owner_id = p.owner_id)
-  WHERE ${ELIGIBLE_PROGRAM}
+  WHERE ${eligibleProgram}
     AND s.owner_id IS p.owner_id AND s.deleted_at IS NULL
     AND ep.owner_id IS p.owner_id AND ep.deleted_at IS NULL
   ORDER BY s.program_id, s.order_index, ep.order_index, ep.id
 `;
 
-const SELECT_EXERCISE_TRANSLATIONS = `
+const selectExerciseTranslations = (eligibleProgram: string) => `
   SELECT DISTINCT et.exercise_id, et.lang, et.name, et.instructions
   FROM exercise_translations et
   JOIN exercises e ON e.id = et.exercise_id AND e.deleted_at IS NULL
   JOIN exercise_plans ep ON ep.exercise_id = e.id AND ep.deleted_at IS NULL
   JOIN sessions s ON s.id = ep.session_id AND s.deleted_at IS NULL
   JOIN programs p ON p.id = s.program_id
-  WHERE ${ELIGIBLE_PROGRAM}
+  WHERE ${eligibleProgram}
     AND s.owner_id IS p.owner_id AND ep.owner_id IS p.owner_id
     AND (e.owner_id IS NULL OR e.owner_id = p.owner_id)
     AND et.owner_id IS e.owner_id AND et.deleted_at IS NULL
   ORDER BY et.exercise_id, et.lang, et.name, et.instructions
 `;
 
-const SELECT_INTERVALS = `
+const selectIntervals = (eligibleProgram: string) => `
   SELECT s.program_id, si.session_id, si.order_index, si.reps,
          si.fast_distance_m, si.fast_duration_seconds, si.fast_pace_pct_vma,
          si.recovery_distance_m, si.recovery_duration_seconds, si.kind, si.label,
@@ -281,11 +281,57 @@ const SELECT_INTERVALS = `
   FROM session_intervals si
   JOIN sessions s ON s.id = si.session_id
   JOIN programs p ON p.id = s.program_id
-  WHERE ${ELIGIBLE_PROGRAM}
+  WHERE ${eligibleProgram}
     AND s.owner_id IS p.owner_id AND s.deleted_at IS NULL
     AND si.owner_id IS p.owner_id AND si.deleted_at IS NULL
   ORDER BY s.program_id, s.order_index, si.order_index, si.id
 `;
+
+export type StrengthProgramReadTransaction = {
+  getAll<T>(sql: string, params?: unknown[]): Promise<T[]>;
+};
+
+type StrengthProgramRows = {
+  programs: ProgramRow[];
+  programTranslations: ProgramTranslationRow[];
+  sessions: SessionRow[];
+  sessionTranslations: SessionTranslationRow[];
+  plans: PlanRow[];
+  exerciseTranslations: ExerciseTranslationRow[];
+  intervals: IntervalRow[];
+};
+
+async function loadStrengthProgramRows(
+  tx: StrengthProgramReadTransaction,
+  eligibleProgram: string,
+  params: unknown[],
+): Promise<StrengthProgramRows> {
+  const programs = await tx.getAll<ProgramRow>(selectPrograms(eligibleProgram), params);
+  const programTranslations = await tx.getAll<ProgramTranslationRow>(
+    selectProgramTranslations(eligibleProgram),
+    params,
+  );
+  const sessions = await tx.getAll<SessionRow>(selectSessions(eligibleProgram), params);
+  const sessionTranslations = await tx.getAll<SessionTranslationRow>(
+    selectSessionTranslations(eligibleProgram),
+    params,
+  );
+  const plans = await tx.getAll<PlanRow>(selectPlans(eligibleProgram), params);
+  const exerciseTranslations = await tx.getAll<ExerciseTranslationRow>(
+    selectExerciseTranslations(eligibleProgram),
+    params,
+  );
+  const intervals = await tx.getAll<IntervalRow>(selectIntervals(eligibleProgram), params);
+  return {
+    programs,
+    programTranslations,
+    sessions,
+    sessionTranslations,
+    plans,
+    exerciseTranslations,
+    intervals,
+  };
+}
 
 function normalizeLanguage(language: string): string {
   return language.trim().toLowerCase().split('-')[0] || 'fr';
@@ -509,40 +555,10 @@ function buildCandidate(
   };
 }
 
-export async function readStrengthProgramCandidates(
-  userId: string | null,
-  requestedLanguage: string,
-): Promise<StrengthProgramReadResult> {
-  const language = normalizeLanguage(requestedLanguage);
-  const snapshot = await powerSync.readTransaction(async (tx) => {
-    const params = [userId];
-    const programs = await tx.getAll<ProgramRow>(SELECT_PROGRAMS, params);
-    const programTranslations = await tx.getAll<ProgramTranslationRow>(
-      SELECT_PROGRAM_TRANSLATIONS,
-      params,
-    );
-    const sessions = await tx.getAll<SessionRow>(SELECT_SESSIONS, params);
-    const sessionTranslations = await tx.getAll<SessionTranslationRow>(
-      SELECT_SESSION_TRANSLATIONS,
-      params,
-    );
-    const plans = await tx.getAll<PlanRow>(SELECT_PLANS, params);
-    const exerciseTranslations = await tx.getAll<ExerciseTranslationRow>(
-      SELECT_EXERCISE_TRANSLATIONS,
-      params,
-    );
-    const intervals = await tx.getAll<IntervalRow>(SELECT_INTERVALS, params);
-    return {
-      programs,
-      programTranslations,
-      sessions,
-      sessionTranslations,
-      plans,
-      exerciseTranslations,
-      intervals,
-    };
-  });
-
+function buildStrengthProgramReadResult(
+  snapshot: StrengthProgramRows,
+  language: string,
+): StrengthProgramReadResult {
   const programTranslationsByProgram = groupBy(
     snapshot.programTranslations,
     (translation) => translation.program_id,
@@ -587,6 +603,39 @@ export async function readStrengthProgramCandidates(
         ? null
         : new Error(`Programmes de musculation incomplets (${failures.join(' | ')})`),
   };
+}
+
+const EDITORIAL_STRENGTH_PROGRAM = `
+  p.id = ? AND p.owner_id IS NULL AND p.pillar = 'strength'
+  AND p.status = 'published' AND p.deleted_at IS NULL
+`;
+
+/**
+ * Relit et valide un programme editorial strength dans la transaction fournie.
+ * Le snapshot inclut les exercices references pour que le CAS couvre aussi les faits ayant
+ * determine la compatibilite, meme si ces lignes ne sont jamais dupliquees.
+ */
+export async function readEditorialStrengthProgramSourceSnapshot(
+  tx: StrengthProgramReadTransaction,
+  sourceProgramId: string,
+): Promise<StrengthProgramSourceSnapshot | null> {
+  const rows = await loadStrengthProgramRows(tx, EDITORIAL_STRENGTH_PROGRAM, [sourceProgramId]);
+  if (rows.programs.length === 0) return null;
+
+  const result = buildStrengthProgramReadResult(rows, 'fr');
+  if (result.error) throw result.error;
+  return result.candidates[0]?.sourceSnapshot ?? null;
+}
+
+export async function readStrengthProgramCandidates(
+  userId: string | null,
+  requestedLanguage: string,
+): Promise<StrengthProgramReadResult> {
+  const language = normalizeLanguage(requestedLanguage);
+  const snapshot = await powerSync.readTransaction((tx) =>
+    loadStrengthProgramRows(tx, ELIGIBLE_PROGRAM, [userId]),
+  );
+  return buildStrengthProgramReadResult(snapshot, language);
 }
 
 export function useStrengthProgramCandidates(): StrengthProgramCandidateResult {

@@ -21,18 +21,27 @@ import {
   activateProgram,
   deleteProgram,
   duplicateProgram,
+  prepareCompatibleStrengthProgram,
+  StrengthProgramPreparationError,
   removeSession,
   updateProgramTranslation,
 } from '../program-repository';
-import { resetTestDb, rowsOf, seed } from '@/test-utils/sqlite-harness';
+import { readStrengthProgramCandidates } from '../strength-program-recommendation-repository';
+import { getTestDb, resetTestDb, rowsOf, seed, testPowerSync } from '@/test-utils/sqlite-harness';
 
 jest.mock('@/powersync/system', () => ({
   powerSync: require('@/test-utils/sqlite-harness').testPowerSync,
   connector: {},
 }));
 
+let mockUserId: string | null = 'user-1';
+
 jest.mock('@/stores/auth-store', () => ({
-  useAuthStore: { getState: () => ({ session: { user: { id: 'user-1' } } }) },
+  useAuthStore: {
+    getState: () => ({
+      session: mockUserId === null ? null : { user: { id: mockUserId } },
+    }),
+  },
 }));
 
 jest.mock('@/i18n', () => ({
@@ -54,6 +63,9 @@ type ProgramRow = {
   level: string | null;
   goal: string | null;
   duration_weeks: number | null;
+  target_date: string | null;
+  target_time_seconds: number | null;
+  event_name: string | null;
 };
 
 type SessionRow = {
@@ -63,6 +75,7 @@ type SessionRow = {
   order_index: number;
   name: string | null;
   session_type: string | null;
+  week_index: number | null;
 };
 
 type PlanRow = {
@@ -72,17 +85,30 @@ type PlanRow = {
   order_index: number;
   target_sets: number | null;
   target_reps: string | null;
+  set_type: string;
+  target_weight_kg: number | null;
+  rest_seconds: number | null;
 };
 
 type IntervalRow = { id: string; session_id: string; reps: number; fast_distance_m: number | null };
 
 type TranslationRow = { id: string; program_id: string; lang: string; name: string };
 
+type SessionTranslationRow = {
+  session_id: string;
+  owner_id: string | null;
+  lang: string;
+  name: string | null;
+  description: string | null;
+  instructions: string | null;
+};
+
 const programs = (d = false) => rowsOf<ProgramRow>('programs', d);
 const sessions = (d = false) => rowsOf<SessionRow>('sessions', d);
 const plans = (d = false) => rowsOf<PlanRow>('exercise_plans', d);
 const intervals = (d = false) => rowsOf<IntervalRow>('session_intervals', d);
 const translations = (d = false) => rowsOf<TranslationRow>('program_translations', d);
+const sessionTranslations = () => rowsOf<SessionTranslationRow>('session_translations');
 
 const program = (id: string) => programs().find((p) => p.id === id);
 const sessionsOf = (programId: string) =>
@@ -170,8 +196,161 @@ function seedProgram(opts?: {
   return programId!;
 }
 
+function seedCompatibleEditorialProgram(): {
+  programId: string;
+  sessionId: string;
+  exerciseId: string;
+} {
+  const programId = 'editorial-strength';
+  const sessionId = 'editorial-session';
+  const exerciseId = 'editorial-exercise';
+
+  seed('programs', [
+    {
+      id: programId,
+      owner_id: null,
+      pillar: 'strength',
+      status: 'published',
+      is_active: 0,
+      level: 'intermediate',
+      goal: 'hypertrophy',
+      duration_weeks: 8,
+      target_date: '2026-12-24',
+      target_time_seconds: 3600,
+      event_name: 'Finale',
+    },
+  ]);
+  seed('program_translations', [
+    {
+      program_id: programId,
+      owner_id: null,
+      lang: 'fr',
+      name: 'Force complete',
+      summary: 'Resume FR',
+      description: 'Description FR',
+    },
+    {
+      program_id: programId,
+      owner_id: null,
+      lang: 'en',
+      name: 'Complete strength',
+      summary: 'EN summary',
+      description: 'EN description',
+    },
+    {
+      program_id: programId,
+      owner_id: null,
+      lang: 'de-DE',
+      name: 'Komplette Kraft',
+      summary: 'DE summary',
+      description: 'DE description',
+    },
+  ]);
+  seed('sessions', [
+    {
+      id: sessionId,
+      program_id: programId,
+      owner_id: null,
+      order_index: 2,
+      week_index: 3,
+      name: 'Base session',
+      session_type: 'strength',
+      target_distance_m: 1200,
+      target_duration_seconds: 2700,
+      target_pace_min_s_per_km: 210,
+      target_pace_max_s_per_km: 240,
+      target_rpe: 7,
+      target_time_seconds: 2600,
+      pacing_plan: JSON.stringify({ split: [1, 2] }),
+      description: 'Base description',
+      instructions: 'Base instructions',
+      adaptation_criterion: 'RPE <= 7',
+    },
+  ]);
+  seed('session_translations', [
+    {
+      session_id: sessionId,
+      owner_id: null,
+      lang: 'fr',
+      name: 'Seance force',
+      description: 'Description seance',
+      instructions: 'Consignes seance',
+    },
+  ]);
+  seed('exercises', [
+    {
+      id: exerciseId,
+      owner_id: null,
+      source: 'library',
+      muscle_primary: 'arms',
+      muscles_secondary: JSON.stringify(['back']),
+      muscles_fine: JSON.stringify(['biceps', 'triceps']),
+      equipment: 'dumbbell',
+    },
+  ]);
+  seed('exercise_translations', [
+    {
+      exercise_id: exerciseId,
+      owner_id: null,
+      lang: 'fr',
+      name: 'Curl',
+      instructions: 'Controle la descente',
+    },
+  ]);
+  seed('exercise_plans', [
+    {
+      id: 'editorial-plan',
+      session_id: sessionId,
+      owner_id: null,
+      exercise_id: exerciseId,
+      order_index: 4,
+      set_type: 'normal',
+      target_sets: 4,
+      target_reps: '8-10',
+      target_weight_kg: 22.5,
+      rest_seconds: 90,
+    },
+  ]);
+  seed('session_intervals', [
+    {
+      id: 'editorial-interval',
+      session_id: sessionId,
+      owner_id: null,
+      order_index: 5,
+      reps: 4,
+      fast_distance_m: 400,
+      fast_duration_seconds: 80,
+      fast_pace_pct_vma: 95,
+      recovery_distance_m: 200,
+      recovery_duration_seconds: 60,
+      kind: 'work',
+      label: 'Rapide',
+      fast_pace_min_s_per_km: 210,
+      fast_pace_max_s_per_km: 220,
+      fast_target_time_min_seconds: 78,
+      fast_target_time_max_seconds: 82,
+      fast_pace_progressive: 1,
+      recovery_kind: 'jog',
+      recovery_pace_min_s_per_km: 330,
+      recovery_pace_max_s_per_km: 360,
+      group_key: 'bloc-a',
+      group_reps: 2,
+    },
+  ]);
+
+  return { programId, sessionId, exerciseId };
+}
+
+async function fingerprintOf(programId: string): Promise<string> {
+  const result = await readStrengthProgramCandidates('user-1', 'fr');
+  const candidate = result.candidates.find(({ program }) => program.id === programId);
+  if (!candidate) throw result.error ?? new Error(`Candidat ${programId} absent.`);
+  return candidate.fingerprint;
+}
+
 beforeEach(() => {
   resetTestDb();
+  mockUserId = 'user-1';
 });
 
 // ---------------------------------------------------------------------------
@@ -287,6 +466,217 @@ describe('duplicateProgram', () => {
 
     expect(programs(true)).toHaveLength(0);
     expect(sessions(true)).toHaveLength(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// prepareCompatibleStrengthProgram
+// ---------------------------------------------------------------------------
+
+describe('prepareCompatibleStrengthProgram', () => {
+  it('copie tout le contenu editable, suffixe les noms et conserve source et activation', async () => {
+    const { programId, sessionId, exerciseId } = seedCompatibleEditorialProgram();
+    const expectedFingerprint = await fingerprintOf(programId);
+    const currentId = seedProgram({ ownerId: 'user-1', isActive: true });
+    const sourceBefore = { ...program(programId) };
+    const exerciseCountBefore = rowsOf('exercises').length;
+
+    const copyId = await prepareCompatibleStrengthProgram(programId, expectedFingerprint);
+
+    expect(program(copyId)).toMatchObject({
+      owner_id: 'user-1',
+      pillar: 'strength',
+      status: 'published',
+      is_active: 0,
+      level: 'intermediate',
+      goal: 'hypertrophy',
+      duration_weeks: 8,
+      target_date: null,
+      target_time_seconds: 3600,
+      event_name: 'Finale',
+    });
+    expect(program(programId)).toEqual(sourceBefore);
+    expect(program(currentId)?.is_active).toBe(1);
+
+    const copiedTranslations = translations().filter((row) => row.program_id === copyId);
+    expect(copiedTranslations.map(({ lang, name }) => ({ lang, name }))).toEqual([
+      { lang: 'de-DE', name: 'Komplette Kraft — tailored to my priorities' },
+      { lang: 'en', name: 'Complete strength — tailored to my priorities' },
+      { lang: 'fr', name: 'Force complete — adapté à mes priorités' },
+    ]);
+    expect(copiedTranslations).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ summary: 'Resume FR', description: 'Description FR' }),
+      ]),
+    );
+
+    const copiedSession = sessionsOf(copyId)[0]!;
+    expect(copiedSession.id).not.toBe(sessionId);
+    expect(copiedSession).toMatchObject({
+      order_index: 2,
+      week_index: 3,
+      name: 'Base session',
+      session_type: 'strength',
+      target_distance_m: 1200,
+      target_duration_seconds: 2700,
+      target_pace_min_s_per_km: 210,
+      target_pace_max_s_per_km: 240,
+      target_rpe: 7,
+      target_time_seconds: 2600,
+      pacing_plan: JSON.stringify({ split: [1, 2] }),
+      description: 'Base description',
+      instructions: 'Base instructions',
+      adaptation_criterion: 'RPE <= 7',
+    });
+    expect(sessionTranslations()).toContainEqual(
+      expect.objectContaining({
+        session_id: copiedSession.id,
+        owner_id: 'user-1',
+        lang: 'fr',
+        name: 'Seance force',
+        description: 'Description seance',
+        instructions: 'Consignes seance',
+      }),
+    );
+    expect(plansOf(copiedSession.id)).toEqual([
+      expect.objectContaining({
+        exercise_id: exerciseId,
+        order_index: 4,
+        set_type: 'normal',
+        target_sets: 4,
+        target_reps: '8-10',
+        target_weight_kg: 22.5,
+        rest_seconds: 90,
+      }),
+    ]);
+    expect(intervals().filter((row) => row.session_id === copiedSession.id)).toEqual([
+      expect.objectContaining({
+        order_index: 5,
+        reps: 4,
+        fast_distance_m: 400,
+        fast_duration_seconds: 80,
+        fast_pace_pct_vma: 95,
+        recovery_distance_m: 200,
+        recovery_duration_seconds: 60,
+        kind: 'work',
+        label: 'Rapide',
+        fast_pace_min_s_per_km: 210,
+        fast_pace_max_s_per_km: 220,
+        fast_target_time_min_seconds: 78,
+        fast_target_time_max_seconds: 82,
+        fast_pace_progressive: 1,
+        recovery_kind: 'jog',
+        recovery_pace_min_s_per_km: 330,
+        recovery_pace_max_s_per_km: 360,
+        group_key: 'bloc-a',
+        group_reps: 2,
+      }),
+    ]);
+    expect(rowsOf('exercises')).toHaveLength(exerciseCountBefore);
+    expect(rowsOf('exercise_translations')).toHaveLength(1);
+    expect(rowsOf('planned_sessions')).toHaveLength(0);
+  });
+
+  it.each([
+    ['header', "UPDATE programs SET goal = 'endurance' WHERE id = 'editorial-strength'"],
+    [
+      'program translation',
+      "UPDATE program_translations SET summary = 'changed' WHERE program_id = 'editorial-strength' AND lang = 'fr'",
+    ],
+    [
+      'session and weekIndex',
+      "UPDATE sessions SET week_index = 4 WHERE id = 'editorial-session'",
+    ],
+    [
+      'session translation',
+      "UPDATE session_translations SET instructions = 'changed' WHERE session_id = 'editorial-session'",
+    ],
+    ['plan', "UPDATE exercise_plans SET target_reps = '12' WHERE id = 'editorial-plan'"],
+    ['interval', "UPDATE session_intervals SET label = 'changed' WHERE id = 'editorial-interval'"],
+    ['exercise facts', "UPDATE exercises SET equipment = 'barbell' WHERE id = 'editorial-exercise'"],
+    [
+      'exercise translation',
+      "UPDATE exercise_translations SET instructions = 'changed' WHERE exercise_id = 'editorial-exercise'",
+    ],
+  ])('refuse une mutation CAS de la famille %s', async (_family, sql) => {
+    const { programId } = seedCompatibleEditorialProgram();
+    const expectedFingerprint = await fingerprintOf(programId);
+    getTestDb().prepare(sql).run();
+
+    await expect(
+      prepareCompatibleStrengthProgram(programId, expectedFingerprint),
+    ).rejects.toMatchObject({ code: 'source_changed' });
+
+    expect(programs().filter((row) => row.owner_id === 'user-1')).toHaveLength(0);
+  });
+
+  it.each([
+    ['personal', "UPDATE programs SET owner_id = 'user-1' WHERE id = 'editorial-strength'"],
+    ['draft', "UPDATE programs SET status = 'draft' WHERE id = 'editorial-strength'"],
+    ['deleted', "UPDATE programs SET deleted_at = '2026-09-15T10:00:00Z' WHERE id = 'editorial-strength'"],
+    ['non-strength', "UPDATE programs SET pillar = 'running' WHERE id = 'editorial-strength'"],
+  ])('refuse une source %s avec source_invalid', async (_kind, sql) => {
+    const { programId } = seedCompatibleEditorialProgram();
+    getTestDb().prepare(sql).run();
+
+    await expect(
+      prepareCompatibleStrengthProgram(programId, 'sp1-stale'),
+    ).rejects.toMatchObject({ code: 'source_invalid' });
+  });
+
+  it('distingue une source absente', async () => {
+    const error = await prepareCompatibleStrengthProgram('missing', 'sp1-stale').catch(
+      (caught: unknown) => caught,
+    );
+
+    expect(error).toBeInstanceOf(StrengthProgramPreparationError);
+    expect(error).toEqual(expect.objectContaining({
+      code: 'source_missing',
+    } satisfies Partial<StrengthProgramPreparationError>));
+  });
+
+  it('classe un arbre editorial malforme comme source_invalid', async () => {
+    const { programId, exerciseId } = seedCompatibleEditorialProgram();
+    getTestDb()
+      .prepare('UPDATE exercises SET muscles_fine = ? WHERE id = ?')
+      .run('["biceps"', exerciseId);
+
+    const error = await prepareCompatibleStrengthProgram(programId, 'sp1-stale').catch(
+      (caught: unknown) => caught,
+    );
+
+    expect(error).toBeInstanceOf(StrengthProgramPreparationError);
+    expect(error).toMatchObject({ code: 'source_invalid' });
+  });
+
+  it('annule toutes les insertions si le compte change pendant les awaits', async () => {
+    const { programId } = seedCompatibleEditorialProgram();
+    const expectedFingerprint = await fingerprintOf(programId);
+    const originalWriteTransaction = testPowerSync.writeTransaction.bind(testPowerSync);
+    jest.spyOn(testPowerSync, 'writeTransaction').mockImplementationOnce(async (work) =>
+      originalWriteTransaction(async (tx) => {
+        let writeCount = 0;
+        const guardedTx = {
+          ...tx,
+          execute: async (sql: string, params?: unknown[]) => {
+            const result = await tx.execute(sql, params);
+            writeCount += 1;
+            if (writeCount === 1) mockUserId = 'user-2';
+            return result;
+          },
+        };
+        return work(guardedTx);
+      }),
+    );
+
+    await expect(
+      prepareCompatibleStrengthProgram(programId, expectedFingerprint),
+    ).rejects.toMatchObject({ code: 'account_changed' });
+
+    expect(programs()).toHaveLength(1);
+    expect(sessions()).toHaveLength(1);
+    expect(plans()).toHaveLength(1);
+    expect(intervals()).toHaveLength(1);
   });
 });
 
