@@ -18,6 +18,8 @@ import { useQuery } from '@powersync/react';
 import {
   computeWeightGoalProgress,
   coerceWorkoutDisplayLevel,
+  parseJsonColumn,
+  strengthProgramContextSchema,
   type ProfileRow,
   type WeightGoalProgress,
 } from '@wellness/shared';
@@ -77,6 +79,8 @@ type ProfileDbRow = {
   training_focus: string | null;
   training_level: string | null;
   weekly_availability: number | null;
+  strength_session_minutes: number | null;
+  strength_equipment: string | null;
   guidance_regime: string | null;
   guidance_strength: string | null;
   guidance_cardio: string | null;
@@ -96,6 +100,16 @@ const SELECT_CURRENT = 'SELECT * FROM profiles WHERE deleted_at IS NULL LIMIT 1'
 
 /** Convertit une ligne SQLite (snake_case) → objet de domaine (camelCase). */
 function rowToProfile(row: ProfileDbRow): Profile {
+  const strengthContext = strengthProgramContextSchema.safeParse({
+    level: row.training_level,
+    weeklyAvailability: row.weekly_availability,
+    sessionMinutes: row.strength_session_minutes,
+    equipment:
+      row.strength_equipment === null
+        ? null
+        : parseJsonColumn<unknown>(row.strength_equipment, row.strength_equipment),
+  });
+
   return {
     id: row.id,
     userId: row.user_id,
@@ -123,6 +137,8 @@ function rowToProfile(row: ProfileDbRow): Profile {
     trainingFocus: row.training_focus as Profile['trainingFocus'],
     trainingLevel: row.training_level as Profile['trainingLevel'],
     weeklyAvailability: row.weekly_availability,
+    strengthSessionMinutes: strengthContext.success ? strengthContext.data.sessionMinutes : null,
+    strengthEquipment: strengthContext.success ? strengthContext.data.equipment : null,
     guidanceRegime: row.guidance_regime as Profile['guidanceRegime'],
     guidanceStrength: row.guidance_strength as Profile['guidanceStrength'],
     guidanceCardio: row.guidance_cardio as Profile['guidanceCardio'],

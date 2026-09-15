@@ -84,6 +84,18 @@ describe('decodeJsonColumns', () => {
     ).toEqual({ body_visual_state: { version: 1 } });
   });
 
+  it('déplie le matériel du contexte musculation avant son upload JSONB', () => {
+    expect(
+      decodeJsonColumns('profiles', {
+        strength_equipment: '["barbell","band"]',
+        strength_session_minutes: 60,
+      }),
+    ).toEqual({
+      strength_equipment: ['barbell', 'band'],
+      strength_session_minutes: 60,
+    });
+  });
+
   it('deplie les priorites d entrainement avant leur upload JSONB', () => {
     expect(
       decodeJsonColumns('user_settings', {

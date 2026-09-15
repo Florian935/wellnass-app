@@ -54,6 +54,9 @@ const profiles = new Table({
   training_focus: column.text,
   training_level: column.text,
   weekly_availability: column.integer,
+  // US CORPS-04 — contraintes de durée et matériel utilisées pour recommander un programme.
+  strength_session_minutes: column.integer,
+  strength_equipment: column.text,
   guidance_regime: column.text,
   guidance_strength: column.text,
   guidance_cardio: column.text,

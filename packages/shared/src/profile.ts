@@ -7,6 +7,7 @@ import {
   MIN_WEEKLY_AVAILABILITY,
 } from './guidance';
 import { syncFieldsSchema, utcTimestampSchema } from './sync';
+import { strengthProgramContextSchema } from './strength-program-recommendation';
 import { workoutDisplayLevelSchema } from './workout-display';
 
 /** Sexe déclaré — optionnel, utilisé pour les calculs TDEE (nutrition). */
@@ -24,7 +25,7 @@ export type Goal = z.infer<typeof goalSchema>;
  * Tous les champs applicatifs sont nullable : le profil peut être incomplet
  * (ex. : onboarding non terminé).
  */
-export const profileRowSchema = syncFieldsSchema.extend({
+const profileRowBaseSchema = syncFieldsSchema.extend({
   /** Prénom affiché. */
   firstName: z.string().nullable().default(null),
 
@@ -97,6 +98,12 @@ export const profileRowSchema = syncFieldsSchema.extend({
     .nullable()
     .default(null),
 
+  /** US CORPS-04 — durée disponible pour une séance de musculation. */
+  strengthSessionMinutes: z.unknown().nullable().default(null),
+
+  /** US CORPS-04 — matériel disponible, stocké en JSONB. `null` = tout autorisé. */
+  strengthEquipment: z.unknown().nullable().default(null),
+
   /**
    * US GUID-01 volet C — le **régime de guidage** global, choisi à l'étape 4 de l'onboarding.
    * `null` = la question n'a jamais été posée → `assisted` appliqué, **affiché comme repli**.
@@ -120,6 +127,39 @@ export const profileRowSchema = syncFieldsSchema.extend({
    * (null = jamais fermé). Distinct de l'expiration naturelle au jour 7 (calculée, pas stockée).
    */
   activationPathDismissedAt: utcTimestampSchema.nullable().default(null),
+});
+
+/**
+ * Le contexte musculation est validé par le même schéma que le moteur de recommandation. Cela
+ * garde notamment l'unicité et l'ordre canonique des équipements identiques aux deux frontières.
+ */
+export const profileRowSchema = profileRowBaseSchema.transform((row, refinement) => {
+  const parsed = strengthProgramContextSchema.safeParse({
+    level: row.trainingLevel,
+    weeklyAvailability: row.weeklyAvailability,
+    sessionMinutes: row.strengthSessionMinutes,
+    equipment: row.strengthEquipment,
+  });
+  if (!parsed.success) {
+    for (const issue of parsed.error.issues) {
+      const [field, ...path] = issue.path;
+      if (field !== 'sessionMinutes' && field !== 'equipment') continue;
+      refinement.addIssue({
+        ...issue,
+        path: [
+          field === 'sessionMinutes' ? 'strengthSessionMinutes' : 'strengthEquipment',
+          ...path,
+        ],
+      });
+    }
+    return z.NEVER;
+  }
+
+  return {
+    ...row,
+    strengthSessionMinutes: parsed.data.sessionMinutes,
+    strengthEquipment: parsed.data.equipment,
+  };
 });
 
 export type ProfileRow = z.infer<typeof profileRowSchema>;

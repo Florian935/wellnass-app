@@ -1521,6 +1521,8 @@ export type Database = {
           onboarding_completed_at: string | null
           sex: string | null
           start_weight_kg: number | null
+          strength_equipment: Json | null
+          strength_session_minutes: number | null
           summary_display_level: string | null
           target_weight_kg: number | null
           training_focus: string | null
@@ -1549,6 +1551,8 @@ export type Database = {
           onboarding_completed_at?: string | null
           sex?: string | null
           start_weight_kg?: number | null
+          strength_equipment?: Json | null
+          strength_session_minutes?: number | null
           summary_display_level?: string | null
           target_weight_kg?: number | null
           training_focus?: string | null
@@ -1577,6 +1581,8 @@ export type Database = {
           onboarding_completed_at?: string | null
           sex?: string | null
           start_weight_kg?: number | null
+          strength_equipment?: Json | null
+          strength_session_minutes?: number | null
           summary_display_level?: string | null
           target_weight_kg?: number | null
           training_focus?: string | null

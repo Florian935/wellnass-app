@@ -113,4 +113,35 @@ describe('profileRowSchema — rejets', () => {
       profileRowSchema.parse({ ...syncBase, onboardingCompletedAt: '05/07/2026' }),
     ).toThrow();
   });
+
+  it.each([
+    { strengthSessionMinutes: 50 },
+    { strengthEquipment: [] },
+    { strengthEquipment: ['barbell', 'barbell'] },
+    { strengthEquipment: ['magic_stick'] },
+  ])('rejette un contexte musculation invalide : %j', (context) => {
+    expect(profileRowSchema.safeParse({ ...syncBase, ...context }).success).toBe(false);
+  });
+});
+
+describe('profileRowSchema — contexte musculation CORPS-04', () => {
+  it('accepte les valeurs stockées et remet le matériel dans son ordre canonique', () => {
+    const row = profileRowSchema.parse({
+      ...syncBase,
+      trainingLevel: 'advanced',
+      weeklyAvailability: 4,
+      strengthSessionMinutes: 60,
+      strengthEquipment: ['band', 'barbell', 'bodyweight'],
+    });
+
+    expect(row.strengthSessionMinutes).toBe(60);
+    expect(row.strengthEquipment).toEqual(['barbell', 'bodyweight', 'band']);
+  });
+
+  it('garde null pour un contexte jamais choisi', () => {
+    const row = profileRowSchema.parse({ ...syncBase });
+
+    expect(row.strengthSessionMinutes).toBeNull();
+    expect(row.strengthEquipment).toBeNull();
+  });
 });
