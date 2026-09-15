@@ -148,6 +148,40 @@ const copiedExercisePlanSchema = z
   })
   .strict();
 
+const sourceExerciseTranslationSchema = z
+  .object({
+    lang: z.string().min(1),
+    name: z.string(),
+    instructions: z.string().nullable(),
+  })
+  .strict();
+
+const sourceExerciseFactSchema = z
+  .object({
+    id: z.string().min(1),
+    equipment: equipmentSchema.nullable(),
+    musclePrimary: muscleGroupSchema.nullable(),
+    musclesSecondary: z.array(muscleGroupSchema),
+    musclesFine: z.array(fineMuscleSchema),
+    translations: z.array(sourceExerciseTranslationSchema),
+  })
+  .strict();
+
+const sourceExerciseFactsSchema = z
+  .array(sourceExerciseFactSchema)
+  .superRefine((exercises, refinement) => {
+    const ids = new Set<string>();
+    for (const exercise of exercises) {
+      if (ids.has(exercise.id)) {
+        refinement.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `L'exercice ${exercise.id} apparaît plusieurs fois dans le snapshot.`,
+        });
+      }
+      ids.add(exercise.id);
+    }
+  });
+
 type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue };
 const jsonValueSchema: z.ZodType<JsonValue> = z.lazy(() =>
   z.union([
@@ -207,14 +241,16 @@ const copiedSessionSchema = z
   .strict();
 
 /**
- * Données recopiées par la préparation transactionnelle d'un programme.
- * Les identifiants et champs de synchronisation sont exclus : la copie en crée de nouveaux.
- * Les données d'affichage (nom résolu, muscles, équipement) restent dans le candidat.
+ * Source complète relue par la préparation transactionnelle d'un programme.
+ * Les lignes programme/sessions/plans sont recopiées ; les exercices ne le sont pas, mais leurs
+ * faits déterminent la compatibilité et participent donc au contrôle CAS de Task 4.
+ * Les identifiants générés par la copie et les champs de synchronisation sont exclus.
  */
 export const strengthProgramSourceSnapshotSchema = z
   .object({
     program: copiedProgramSchema,
     translations: z.array(copiedProgramTranslationSchema),
+    exercises: sourceExerciseFactsSchema,
     sessions: z.array(copiedSessionSchema),
   })
   .strict();
@@ -292,6 +328,14 @@ function normalizeSnapshot(snapshot: StrengthProgramSourceSnapshot): StrengthPro
     translations: [...snapshot.translations].sort(
       (left, right) => compareText(left.lang, right.lang) || compareCanonical(left, right),
     ),
+    exercises: snapshot.exercises
+      .map((exercise) => ({
+        ...exercise,
+        translations: [...exercise.translations].sort(
+          (left, right) => compareText(left.lang, right.lang) || compareCanonical(left, right),
+        ),
+      }))
+      .sort((left, right) => compareText(left.id, right.id) || compareCanonical(left, right)),
     sessions: snapshot.sessions
       .map((session) => ({
         ...session,

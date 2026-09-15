@@ -150,8 +150,18 @@ function seedExerciseTranslation(
   ownerId: OwnerId,
   lang: string,
   name: string,
+  options: { instructions?: string | null; deleted?: boolean } = {},
 ): void {
-  seed('exercise_translations', [{ exercise_id: exerciseId, owner_id: ownerId, lang, name }]);
+  seed('exercise_translations', [
+    {
+      exercise_id: exerciseId,
+      owner_id: ownerId,
+      lang,
+      name,
+      instructions: options.instructions ?? null,
+      ...(options.deleted ? { deleted_at: '2026-09-14T09:00:00.000Z' } : {}),
+    },
+  ]);
 }
 
 function seedPlan(
@@ -220,6 +230,10 @@ beforeEach(() => {
   mockUserId = 'user-1';
   mockLanguage = 'en-GB';
   jest.mocked(useQuery).mockReset();
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
 });
 
 describe('lecture SQLite des candidats de programme musculation', () => {
@@ -293,9 +307,16 @@ describe('lecture SQLite des candidats de programme musculation', () => {
     });
 
     seedExercise('curl');
-    seedExerciseTranslation('curl', null, 'fr', 'Curl francais');
+    seedExerciseTranslation('curl', null, 'fr', 'Curl francais', {
+      instructions: 'Descente controlee',
+    });
     seedExerciseTranslation('curl', null, 'en', 'English curl');
+    seedExerciseTranslation('curl', 'user-2', 'en', 'Wrong owner');
+    seedExerciseTranslation('curl', null, 'de', 'Deleted exercise translation', {
+      deleted: true,
+    });
     seedPlan('session-fr', null, 'plan', 'curl');
+    seedPlan('session-first', null, 'repeated-plan', 'curl');
     seedPlan('session-fr', 'user-2', 'foreign-plan', 'curl', 1);
     seedPlan('session-fr', null, 'deleted-plan', 'curl', 2, {
       deleted_at: '2026-09-14T09:00:00.000Z',
@@ -348,6 +369,19 @@ describe('lecture SQLite des candidats de programme musculation', () => {
         { lang: 'de', name: 'Deutsch', summary: 'Zusammenfassung', description: 'Beschreibung' },
         { lang: 'en', name: 'English', summary: 'Summary', description: 'English description' },
         { lang: 'fr', name: 'Francais', summary: 'Resume', description: 'Description FR' },
+      ],
+      exercises: [
+        {
+          id: 'curl',
+          equipment: 'dumbbell',
+          musclePrimary: 'arms',
+          musclesSecondary: ['back'],
+          musclesFine: ['biceps', 'triceps'],
+          translations: [
+            { lang: 'en', name: 'English curl', instructions: null },
+            { lang: 'fr', name: 'Curl francais', instructions: 'Descente controlee' },
+          ],
+        },
       ],
       sessions: [
         expect.objectContaining({
@@ -411,6 +445,25 @@ describe('lecture SQLite des candidats de programme musculation', () => {
     });
     expect(candidate.fingerprint).toBe(fingerprintStrengthProgram(candidate.sourceSnapshot));
     expect(second.candidates[0]?.fingerprint).toBe(candidate.fingerprint);
+
+    getTestDb().prepare("UPDATE exercises SET equipment = 'barbell' WHERE id = 'curl'").run();
+    const equipmentChanged = await readStrengthProgramCandidates('user-1', 'en-GB');
+    expect(equipmentChanged.candidates[0]?.fingerprint).not.toBe(candidate.fingerprint);
+
+    getTestDb()
+      .prepare("UPDATE exercises SET equipment = 'dumbbell', muscles_fine = '[\"triceps\"]' WHERE id = 'curl'")
+      .run();
+    const musclesChanged = await readStrengthProgramCandidates('user-1', 'en-GB');
+    expect(musclesChanged.candidates[0]?.fingerprint).not.toBe(candidate.fingerprint);
+
+    getTestDb()
+      .prepare("UPDATE exercises SET muscles_fine = '[\"biceps\",\"triceps\"]' WHERE id = 'curl'")
+      .run();
+    getTestDb()
+      .prepare("UPDATE exercise_translations SET instructions = 'New cue' WHERE exercise_id = 'curl' AND lang = 'en'")
+      .run();
+    const translationChanged = await readStrengthProgramCandidates('user-1', 'en-GB');
+    expect(translationChanged.candidates[0]?.fingerprint).not.toBe(candidate.fingerprint);
   });
 
   it('omet les candidats incomplets et conserve les candidats valides avec une erreur explicite', async () => {

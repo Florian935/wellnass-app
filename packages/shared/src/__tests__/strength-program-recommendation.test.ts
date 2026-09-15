@@ -414,6 +414,27 @@ const sourceSnapshot: StrengthProgramSourceSnapshot = {
     { lang: 'fr', name: 'Force', summary: 'Résumé', description: 'Description' },
     { lang: 'en', name: 'Strength', summary: null, description: null },
   ],
+  exercises: [
+    {
+      id: 'exercise-b',
+      equipment: 'dumbbell',
+      musclePrimary: 'arms',
+      musclesSecondary: ['back'],
+      musclesFine: ['biceps'],
+      translations: [
+        { lang: 'fr', name: 'Curl', instructions: 'Contrôler la descente' },
+        { lang: 'en', name: 'Curl', instructions: null },
+      ],
+    },
+    {
+      id: 'exercise-a',
+      equipment: null,
+      musclePrimary: 'shoulders',
+      musclesSecondary: [],
+      musclesFine: ['shoulders'],
+      translations: [{ lang: 'fr', name: 'Élévations', instructions: null }],
+    },
+  ],
   sessions: [
     {
       orderIndex: 0,
@@ -553,6 +574,12 @@ describe('fingerprintStrengthProgram', () => {
           intervals: [...session.intervals].reverse(),
         })),
       translations: [...sourceSnapshot.translations].reverse(),
+      exercises: [...sourceSnapshot.exercises]
+        .reverse()
+        .map((exercise) => ({
+          ...exercise,
+          translations: [...exercise.translations].reverse(),
+        })),
       program: { ...sourceSnapshot.program },
     };
 
@@ -622,6 +649,57 @@ describe('fingerprintStrengthProgram', () => {
     expect(snapshots).toHaveLength(20);
     for (const snapshot of snapshots) {
       expect(fingerprintStrengthProgram(snapshot)).not.toBe(fingerprint);
+    }
+  });
+
+  it('inclut chaque fait et traduction des exercices sans dépendre de leur ordre', () => {
+    const fingerprint = fingerprintStrengthProgram(sourceSnapshot);
+    const firstExercise = sourceSnapshot.exercises[0]!;
+    const firstTranslation = firstExercise.translations[0]!;
+    const mutations: StrengthProgramSourceSnapshot[] = [
+      {
+        ...sourceSnapshot,
+        exercises: [{ ...firstExercise, id: 'exercise-c' }, ...sourceSnapshot.exercises.slice(1)],
+      },
+      {
+        ...sourceSnapshot,
+        exercises: [{ ...firstExercise, equipment: 'barbell' }, ...sourceSnapshot.exercises.slice(1)],
+      },
+      {
+        ...sourceSnapshot,
+        exercises: [{ ...firstExercise, musclePrimary: 'chest' }, ...sourceSnapshot.exercises.slice(1)],
+      },
+      {
+        ...sourceSnapshot,
+        exercises: [{ ...firstExercise, musclesSecondary: ['legs'] }, ...sourceSnapshot.exercises.slice(1)],
+      },
+      {
+        ...sourceSnapshot,
+        exercises: [{ ...firstExercise, musclesFine: ['triceps'] }, ...sourceSnapshot.exercises.slice(1)],
+      },
+      ...(
+        [
+          { lang: 'de' },
+          { name: 'Curls alternés' },
+          { instructions: 'Nouvelle consigne' },
+        ] satisfies Partial<typeof firstTranslation>[]
+      ).map((translation) => ({
+        ...sourceSnapshot,
+        exercises: [
+          {
+            ...firstExercise,
+            translations: [
+              { ...firstTranslation, ...translation },
+              ...firstExercise.translations.slice(1),
+            ],
+          },
+          ...sourceSnapshot.exercises.slice(1),
+        ],
+      })),
+    ];
+
+    for (const mutation of mutations) {
+      expect(fingerprintStrengthProgram(mutation)).not.toBe(fingerprint);
     }
   });
 });

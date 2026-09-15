@@ -171,6 +171,7 @@ type ExerciseTranslationRow = {
   exercise_id: string;
   lang: string;
   name: string;
+  instructions: string | null;
 };
 
 type IntervalRow = {
@@ -255,7 +256,7 @@ const SELECT_PLANS = `
 `;
 
 const SELECT_EXERCISE_TRANSLATIONS = `
-  SELECT DISTINCT et.exercise_id, et.lang, et.name
+  SELECT DISTINCT et.exercise_id, et.lang, et.name, et.instructions
   FROM exercise_translations et
   JOIN exercises e ON e.id = et.exercise_id AND e.deleted_at IS NULL
   JOIN exercise_plans ep ON ep.exercise_id = e.id AND ep.deleted_at IS NULL
@@ -265,7 +266,7 @@ const SELECT_EXERCISE_TRANSLATIONS = `
     AND s.owner_id IS p.owner_id AND ep.owner_id IS p.owner_id
     AND (e.owner_id IS NULL OR e.owner_id = p.owner_id)
     AND et.owner_id IS e.owner_id AND et.deleted_at IS NULL
-  ORDER BY et.exercise_id, et.lang, et.name
+  ORDER BY et.exercise_id, et.lang, et.name, et.instructions
 `;
 
 const SELECT_INTERVALS = `
@@ -329,6 +330,46 @@ function buildCandidate(
     throw new Error('aucune traduction de programme disponible.');
   }
 
+  const exerciseFacts = new Map<
+    string,
+    {
+      id: string;
+      equipment: string | null;
+      musclePrimary: string | null;
+      musclesSecondary: unknown;
+      musclesFine: unknown;
+      translations: { lang: string; name: string; instructions: string | null }[];
+    }
+  >();
+  for (const session of sessions) {
+    for (const plan of plansBySession.get(session.id) ?? []) {
+      if (plan.resolved_exercise_id === null) {
+        throw new Error(`exercice ${plan.exercise_id} introuvable ou non autorisé.`);
+      }
+      if (exerciseFacts.has(plan.exercise_id)) continue;
+      exerciseFacts.set(plan.exercise_id, {
+        id: plan.exercise_id,
+        equipment: plan.equipment,
+        musclePrimary: plan.muscle_primary,
+        musclesSecondary: parseJson(
+          plan.muscles_secondary,
+          `exercises.${plan.exercise_id}.muscles_secondary`,
+        ),
+        musclesFine: parseJson(
+          plan.muscles_fine,
+          `exercises.${plan.exercise_id}.muscles_fine`,
+        ),
+        translations: (exerciseTranslationsByExercise.get(plan.exercise_id) ?? []).map(
+          (translation) => ({
+            lang: translation.lang,
+            name: translation.name,
+            instructions: translation.instructions,
+          }),
+        ),
+      });
+    }
+  }
+
   const sourceSnapshot = strengthProgramSourceSnapshotSchema.parse({
     program: {
       pillar: program.pillar,
@@ -344,6 +385,9 @@ function buildCandidate(
       summary: translation.summary,
       description: translation.description,
     })),
+    exercises: [...exerciseFacts.values()].sort((left, right) =>
+      left.id < right.id ? -1 : left.id > right.id ? 1 : 0,
+    ),
     sessions: sessions.map((session) => ({
       orderIndex: session.order_index,
       weekIndex: session.week_index,
@@ -403,6 +447,10 @@ function buildCandidate(
     })),
   });
 
+  const validatedExercises = new Map(
+    sourceSnapshot.exercises.map((exercise) => [exercise.id, exercise]),
+  );
+
   const candidate = strengthProgramCandidateSchema.parse({
     program: {
       id: program.id,
@@ -424,8 +472,12 @@ function buildCandidate(
             if (plan.resolved_exercise_id === null) {
               throw new Error(`exercice ${plan.exercise_id} introuvable ou non autorisé.`);
             }
+            const exercise = validatedExercises.get(plan.exercise_id);
+            if (!exercise) {
+              throw new Error(`faits de l'exercice ${plan.exercise_id} absents du snapshot.`);
+            }
             const exerciseName = resolveExerciseName(
-              exerciseTranslationsByExercise.get(plan.exercise_id) ?? [],
+              exercise.translations,
               language,
             );
             if (exerciseName === undefined) {
@@ -437,17 +489,11 @@ function buildCandidate(
               exerciseName,
               setType: plan.set_type,
               targetSets: plan.target_sets,
-              musclePrimary: plan.muscle_primary,
-              musclesSecondary: parseJson(
-                plan.muscles_secondary,
-                `exercises.${plan.exercise_id}.muscles_secondary`,
-              ),
-              musclesFine: parseJson(
-                plan.muscles_fine,
-                `exercises.${plan.exercise_id}.muscles_fine`,
-              ),
+              musclePrimary: exercise.musclePrimary,
+              musclesSecondary: exercise.musclesSecondary,
+              musclesFine: exercise.musclesFine,
               restSeconds: plan.rest_seconds,
-              equipment: plan.equipment,
+              equipment: exercise.equipment,
             };
           }),
         };
