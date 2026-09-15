@@ -5,17 +5,15 @@
  * rendu pour les 3 points de montage (fiche, aperçu de séance, bilan hebdo).
  *
  * ── Ce qu'il reste ici ──────────────────────────────────────────────────────────────────────────
- * Le **dessin** vit dans `BodyMapCanvas`, qui ne connaît ni thème ni langue (US MUSCU-UX03) ; ce
- * fichier n'est plus que l'habillage qui lui passe les couleurs du thème et les libellés traduits.
- * Le rendu est inchangé pour les trois points de montage historiques.
+ * Les trois points de montage historiques conservent la silhouette anatomique CORPS-01. La carte
+ * à partager utilise séparément `BodyMapCanvas`, sans thème ni langue (US MUSCU-UX03).
  */
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { FineMuscle } from '@wellness/shared';
-import {
-  BodyMapCanvas,
-  type BodyHeat,
-  type BodyMapColors,
-} from '@/components/body/BodyMapCanvas';
+import { FINE_MUSCLES, type FineMuscle } from '@wellness/shared';
+import { AnatomyFigure } from '@/components/body/AnatomyFigure';
+import type { BodyHeat, BodyMapColors } from '@/components/body/BodyMapCanvas';
+import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 export { MUSCLE_PATHS } from '@/components/body/BodyMapCanvas';
@@ -76,18 +74,67 @@ export function BodyMap({
         })
       : t('bodyMap.a11yLabelEmpty');
 
+  const muscleColors =
+    heat && heatColor
+      ? Object.fromEntries(
+          FINE_MUSCLES.map((muscle) => {
+            const value = heat[muscle] ?? 0;
+            return [muscle, value > 0 ? heatColor(value) : colors.neutral];
+          }),
+        ) as Partial<Record<FineMuscle, string>>
+      : undefined;
+  const muscleHaloColors =
+    heat && heatColor
+      ? Object.fromEntries(
+          FINE_MUSCLES.flatMap((muscle) => {
+            const value = heat[muscle] ?? 0;
+            return value > 0.45 ? [[muscle, heatColor(value)]] : [];
+          }),
+        ) as Partial<Record<FineMuscle, string>>
+      : undefined;
+  const palette = override
+    ? { neutral: override.neutral, edge: override.neutral, accent: override.accent }
+    : undefined;
+
   return (
-    <BodyMapCanvas
-      full={full}
-      reduced={reduced}
-      heat={heat}
-      heatColor={heatColor}
-      colors={colors}
-      height={height}
-      pulse={pulse}
-      frontLabel={t('bodyMap.front')}
-      backLabel={t('bodyMap.back')}
-      a11yLabel={label}
-    />
+    <View style={styles.row} accessible accessibilityRole="image" accessibilityLabel={label}>
+      <View style={styles.view}>
+        <AnatomyFigure
+          side="front"
+          height={height}
+          full={full}
+          reduced={reduced}
+          muscleColors={muscleColors}
+          muscleHaloColors={muscleHaloColors}
+          pulse={pulse}
+          palette={palette}
+        />
+        <Text style={[styles.caption, { color: colors.caption }]}>{t('bodyMap.front')}</Text>
+      </View>
+      <View style={styles.view}>
+        <AnatomyFigure
+          side="back"
+          height={height}
+          full={full}
+          reduced={reduced}
+          muscleColors={muscleColors}
+          muscleHaloColors={muscleHaloColors}
+          pulse={pulse}
+          palette={palette}
+        />
+        <Text style={[styles.caption, { color: colors.caption }]}>{t('bodyMap.back')}</Text>
+      </View>
+    </View>
   );
 }
+
+const styles = StyleSheet.create({
+  row: { flexDirection: 'row', justifyContent: 'center', gap: 16 },
+  view: { alignItems: 'center', gap: 4 },
+  caption: {
+    fontFamily: fontFamily.body,
+    fontSize: 11,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+});

@@ -573,8 +573,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V1.1 (4) | 3 | 0 | 1 | 0 | 0 | **3 des 4 items livrés le 04/08/2026** (4.27 / 4.28 / 4.29, US REPAS-01) : remontés de V1.1 dans le périmètre courant par arbitrage Florian, le code étant en avance sur le cahier des charges pendant les délais externes de Google. Reste **1.20** (import GPX/CSV), seul item encore ⬜ de cette version. |
 | Hors cadrage (41) | 40 | 1 | 0 | 0 | 0 | Comptage des lignes après réunion de CORPS et `origin/dev` le 15/09/2026 : DASH-01 (7.29), GUID-01 (1.30), MUSCU-UX03 (3.61), CORPS-02 (6.5) et CORPS-03 (6.6) inclus. MOTION-01 (3.60) reste partiel. |
 
-- **223 fonctionnalités** dans le périmètre de lancement — **compté, pas estimé** (179 du cadrage + 24 hors cadrage + 17 de V0.9 + 3 remontées de V1.1). L'ancienne mention « ~210 » datait du 28/07/2026 et n'avait pas suivi les 13 lignes créées depuis.
-- **~534 h** de code brut estimées, hors intégration, tests et itérations UX — l'estimation ne couvre pas les 24 items hors cadrage.
+- **245 fonctionnalités** dans le périmètre de lancement — **comptées depuis les lignes du tableau**, après réunion de CORPS et `origin/dev` le 15/09/2026. L'ancienne mention « 223 » ne tenait pas compte des ajouts livrés depuis.
+- **~534 h** de code brut estimées, hors intégration, tests et itérations UX — l'estimation ne couvre pas les 41 items hors cadrage.
 - **+ 2 items reportés** en section « Ultérieur — iOS » (9.1, 1.3).
 - **+ ~10 US d'analyse** suivies au [catalogue](../product/analyses-donnees.md), hors décompte.
 

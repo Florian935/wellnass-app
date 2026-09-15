@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **13/09/2026 (ter)** — **64 sections**.
+> Dernière mise à jour : **15/09/2026** — **65 sections**.
 >
 > **⑧ une §63 est arrivée** : MUSCU-UX03, le **mode immersif** de la séance de musculation.
 > 🔴 **Son premier critère est que le mode classique n'ait bougé en rien** : l'immersif est un
@@ -21,8 +21,6 @@
 > de la branche. ⚠️ **Il faut un historique** : verdict, fantôme, records en direct et défi de
 > dernière série se taisent sur un compte neuf — c'est le comportement attendu.
 
-> Dernière mise à jour : **14/09/2026** — **62 sections**.
->
 > **② une §60 est arrivée** : MUSCU-UX02, le bilan de séance — suite directe de MUSCU-UX01 (§57).
 > 🔴 **Son cœur n'est pas l'ergonomie mais l'ISO** : le récap de fin de séance et l'écran
 > d'historique sont désormais **le même composant**, là où deux écrans de 1 107 lignes racontaient
