@@ -10,14 +10,38 @@ jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
 jest.mock('react-native-reanimated', () => {
   const { View } = require('react-native');
   const { useRef } = require('react');
+  const easingFn = () => 0;
+  const Animated = {
+    View,
+    createAnimatedComponent: <T,>(component: T) => component,
+  };
   return {
-    __esModule: true, default: { View },
+    __esModule: true,
+    default: Animated,
+    ...Animated,
+    Easing: {
+      linear: easingFn,
+      ease: easingFn,
+      quad: easingFn,
+      cubic: easingFn,
+      sin: easingFn,
+      circle: easingFn,
+      exp: easingFn,
+      bezier: () => easingFn,
+      in: () => easingFn,
+      out: () => easingFn,
+      inOut: () => easingFn,
+    },
     useSharedValue: (initial: number) => useRef({
       value: initial,
       get() { return this.value; },
       set(value: number) { this.value = value; },
     }).current,
     useAnimatedStyle: (style: () => unknown) => style(),
+    useAnimatedProps: (factory: () => unknown) => factory(),
+    useReducedMotion: jest.fn(() => false),
+    withTiming: (value: unknown) => value,
+    withSequence: (...animations: unknown[]) => animations[animations.length - 1],
     runOnJS: (callback: unknown) => callback,
     runOnUI: (callback: unknown) => callback,
   };
