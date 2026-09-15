@@ -147,6 +147,7 @@ export * from './session-comparison';
 export * from './workout-report';
 export * from './body-visual';
 export * from './body-training';
+export * from './strength-program-recommendation';
 // US DASH-01 (roadmap 7.29) — dashboards immersifs : tout ce qui décide ce qu'affichent les scènes.
 export * from './dashboard-moment';
 export * from './since-last-visit';
