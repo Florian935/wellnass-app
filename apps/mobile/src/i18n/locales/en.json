@@ -3837,6 +3837,7 @@
     "generalOnly": "General association only",
     "countingHint": "Warm-up sets are excluded. A set may appear in several areas, so their totals cannot be added together. A muscle not being listed does not mean it is not working.",
     "openProgram": "Open my programme",
+    "comparePrograms": "Find a compatible programme",
     "explore": {
       "shoulders": "Explore shoulders",
       "chest": "Explore chest",
@@ -3856,6 +3857,98 @@
       "invalid": "This data cannot be edited. Your choices are kept.",
       "goal_missing": "First save your visual goal in My silhouette.",
       "save": "Saving failed. Your choices are kept; you can try again."
+    }
+  },
+  "strengthProgramFinder": {
+    "title": "Find a compatible programme",
+    "subtitle": "Compare your current programme and the library using your confirmed priorities and saved context.",
+    "loading": "Loading compatible programmes",
+    "prioritiesMissing": "Confirm your training priorities first.",
+    "prioritiesUnreadable": "Your confirmed priorities cannot be read right now.",
+    "choosePriorities": "Choose my priorities",
+    "saveRequired": "Save your context before comparing.",
+    "waitingForSave": "Your context was saved. Comparison will be available once the local data has been read again.",
+    "libraryTitle": "Available programmes",
+    "libraryLoading": "Reading the programme library",
+    "libraryEmpty": "The programme library is empty.",
+    "currentOnly": "Only your current programme is available.",
+    "libraryError": "The library cannot be read right now.",
+    "libraryPartial": "Some programmes could not be read. The proposals shown are still available.",
+    "compare": "Compare programmes",
+    "resultsTitle": "Compatible programmes",
+    "noCompatible": "No programme is fully compatible. Here are the constraints to review.",
+    "context": {
+      "title": "Your strength context",
+      "savedHint": "Your level and available days come from your profile. Duration and equipment are saved separately before comparison.",
+      "level": "Level",
+      "availability": "Availability",
+      "days_one": "{{count}} day per week",
+      "days_other": "{{count}} days per week",
+      "toConfirm": "To confirm",
+      "editProfile": "Edit my strength profile",
+      "duration": "Usual maximum duration",
+      "minutes": "{{count}} min",
+      "minutesChoice": "{{count}} minutes maximum",
+      "equipment": "Available equipment",
+      "equipmentHint": "Bodyweight exercises and exercises without equipment always remain possible.",
+      "allEquipment": "All equipment",
+      "save": "Save my context",
+      "saving": "Saving context…",
+      "unavailable": "Your strength profile is not available yet. Open it to complete your context."
+    },
+    "card": {
+      "a11y": "Programme card: {{name}}",
+      "current": "CURRENT PROGRAMME",
+      "editorial": "LIBRARY",
+      "compatible": "Compatible",
+      "toReview": "Constraints to review",
+      "unknown": "Not provided",
+      "level": "Level: {{value}}",
+      "sessions_one": "{{count}} session per pass",
+      "sessions_other": "{{count}} sessions per pass",
+      "noEquipment": "Required equipment: no specific equipment",
+      "requiredEquipment": "Required equipment: {{value}}",
+      "durationTitle": "Estimated duration per session",
+      "durationKnown_one": "{{session}}: about {{count}} minute",
+      "durationKnown_other": "{{session}}: about {{count}} minutes",
+      "durationUnknown": "Cannot be verified with the programme data",
+      "coverageTitle": "Coverage of your priorities",
+      "knownSets_one": "{{zone}}: {{count}} planned set with a specific muscle",
+      "knownSets_other": "{{zone}}: {{count}} planned sets with a specific muscle",
+      "missingFine": "Specific muscles missing from the data: {{value}}",
+      "generalOnly": "General association only: {{zone}}",
+      "reasonsTitle": "Why it matches",
+      "reasons": {
+        "priorities": "Covers at least one specific muscle in your priorities",
+        "level": "Matches your level",
+        "schedule": "Fits your available days",
+        "equipment": "Uses the equipment you listed",
+        "duration": "Known durations fit your limit"
+      },
+      "issues": {
+        "schedule": "More sessions than available days",
+        "equipment": "Equipment unavailable in your context",
+        "duration": "At least one session exceeds your usual duration"
+      },
+      "editCurrent": "Adjust my current programme",
+      "prepare": "Prepare this programme"
+    },
+    "confirm": {
+      "title": "Prepare this programme?",
+      "body": "A personal inactive copy will be created and opened in the editor. The original programme remains unchanged.",
+      "action": "Create the copy"
+    },
+    "errors": {
+      "recalculate": "The data has changed. Recalculate the proposals before continuing.",
+      "prepare": "The copy could not be created. Your context and proposals remain on screen.",
+      "context": {
+        "load": "Your saved context cannot be read right now. Your draft remains on screen.",
+        "conflict": "The profile changed. Your draft has been kept; try again after the data is read.",
+        "profile_missing": "Your profile is unavailable. Your draft has been kept.",
+        "unauthenticated": "Sign in again to save this context. Your draft has been kept.",
+        "invalid": "This context cannot be saved. Your draft has been kept.",
+        "save": "Saving failed. Your draft has been kept."
+      }
     }
   },
   "explain": {

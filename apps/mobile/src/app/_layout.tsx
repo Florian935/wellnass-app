@@ -605,6 +605,7 @@ function RootNavigator() {
         <Stack.Screen name="body" options={{ headerShown: false }} />
         <Stack.Screen name="body-shape" options={{ headerShown: false }} />
         <Stack.Screen name="body-training" options={{ headerShown: false }} />
+        <Stack.Screen name="body-training-programs" options={{ headerShown: false }} />
         {/* US MUSCPWR-01 : désignation des mouvements de force. Une route non déclarée ici
             n'échoue ni au typecheck ni aux tests — seul l'œil voit l'en-tête manquant (PAS-01). */}
         <Stack.Screen name="strength-lifts" options={{ headerShown: false }} />

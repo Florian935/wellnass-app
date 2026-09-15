@@ -3837,6 +3837,7 @@
     "generalOnly": "Association générale seulement",
     "countingHint": "Les séries d’échauffement sont exclues. Une série peut apparaître dans plusieurs zones : leurs totaux ne s’additionnent pas. Un muscle non renseigné ne signifie pas qu’il ne travaille pas.",
     "openProgram": "Ouvrir mon programme",
+    "comparePrograms": "Trouver un programme compatible",
     "explore": {
       "shoulders": "Explorer les épaules",
       "chest": "Explorer les pectoraux",
@@ -3856,6 +3857,98 @@
       "invalid": "Ces données ne peuvent pas être modifiées. Tes choix sont conservés.",
       "goal_missing": "Enregistre d’abord ton objectif visuel dans Ma silhouette.",
       "save": "L’enregistrement a échoué. Tes choix sont conservés ; tu peux réessayer."
+    }
+  },
+  "strengthProgramFinder": {
+    "title": "Trouver un programme compatible",
+    "subtitle": "Compare ton programme actuel et la bibliothèque à partir de tes priorités confirmées et de ton contexte enregistré.",
+    "loading": "Chargement des programmes compatibles",
+    "prioritiesMissing": "Confirme d’abord tes priorités d’entraînement.",
+    "prioritiesUnreadable": "Tes priorités confirmées ne peuvent pas être lues pour le moment.",
+    "choosePriorities": "Choisir mes priorités",
+    "saveRequired": "Enregistre ton contexte avant de comparer.",
+    "waitingForSave": "Enregistrement effectué. La comparaison sera disponible dès que les données locales seront relues.",
+    "libraryTitle": "Programmes disponibles",
+    "libraryLoading": "Lecture de la bibliothèque de programmes",
+    "libraryEmpty": "La bibliothèque de programmes est vide.",
+    "currentOnly": "Seul ton programme actuel est disponible.",
+    "libraryError": "La bibliothèque ne peut pas être lue pour le moment.",
+    "libraryPartial": "Certains programmes n’ont pas pu être lus. Les propositions affichées restent utilisables.",
+    "compare": "Comparer les programmes",
+    "resultsTitle": "Programmes compatibles",
+    "noCompatible": "Aucun programme entièrement compatible. Voici les contraintes à revoir.",
+    "context": {
+      "title": "Ton contexte de musculation",
+      "savedHint": "Le niveau et les jours viennent de ton profil. La durée et le matériel sont enregistrés séparément avant la comparaison.",
+      "level": "Niveau",
+      "availability": "Disponibilité",
+      "days_one": "{{count}} jour par semaine",
+      "days_other": "{{count}} jours par semaine",
+      "toConfirm": "À confirmer",
+      "editProfile": "Modifier mon profil musculation",
+      "duration": "Durée maximale habituelle",
+      "minutes": "{{count}} min",
+      "minutesChoice": "{{count}} minutes maximum",
+      "equipment": "Matériel disponible",
+      "equipmentHint": "Le poids du corps et les exercices sans matériel restent toujours possibles.",
+      "allEquipment": "Tout le matériel",
+      "save": "Enregistrer mon contexte",
+      "saving": "Enregistrement du contexte…",
+      "unavailable": "Ton profil de musculation n’est pas encore disponible. Ouvre-le pour renseigner ton contexte."
+    },
+    "card": {
+      "a11y": "Fiche programme : {{name}}",
+      "current": "PROGRAMME ACTUEL",
+      "editorial": "BIBLIOTHÈQUE",
+      "compatible": "Compatible",
+      "toReview": "Contraintes à revoir",
+      "unknown": "Non renseigné",
+      "level": "Niveau : {{value}}",
+      "sessions_one": "{{count}} séance par passage",
+      "sessions_other": "{{count}} séances par passage",
+      "noEquipment": "Matériel requis : aucun matériel spécifique",
+      "requiredEquipment": "Matériel requis : {{value}}",
+      "durationTitle": "Durée estimée par séance",
+      "durationKnown_one": "{{session}} : environ {{count}} minute",
+      "durationKnown_other": "{{session}} : environ {{count}} minutes",
+      "durationUnknown": "Non vérifiable avec les données du programme",
+      "coverageTitle": "Couverture de tes priorités",
+      "knownSets_one": "{{zone}} : {{count}} série prévue avec un muscle précis",
+      "knownSets_other": "{{zone}} : {{count}} séries prévues avec un muscle précis",
+      "missingFine": "Muscles précis absents des données : {{value}}",
+      "generalOnly": "Association générale seulement : {{zone}}",
+      "reasonsTitle": "Pourquoi il correspond",
+      "reasons": {
+        "priorities": "Couvre au moins un muscle précis de tes priorités",
+        "level": "Correspond à ton niveau",
+        "schedule": "Tient dans tes jours disponibles",
+        "equipment": "Utilise le matériel que tu as indiqué",
+        "duration": "Les durées connues respectent ta limite"
+      },
+      "issues": {
+        "schedule": "Plus de séances que de jours disponibles",
+        "equipment": "Matériel non disponible dans ton contexte",
+        "duration": "Au moins une séance dépasse ta durée habituelle"
+      },
+      "editCurrent": "Ajuster mon programme actuel",
+      "prepare": "Préparer ce programme"
+    },
+    "confirm": {
+      "title": "Préparer ce programme ?",
+      "body": "Une copie personnelle inactive sera créée et ouverte dans l’éditeur. Le programme original reste intact.",
+      "action": "Créer la copie"
+    },
+    "errors": {
+      "recalculate": "Les données ont changé. Recalcule les propositions avant de continuer.",
+      "prepare": "La copie n’a pas pu être créée. Ton contexte et les propositions restent affichés.",
+      "context": {
+        "load": "Ton contexte enregistré ne peut pas être relu pour le moment. Ton brouillon reste affiché.",
+        "conflict": "Le profil a changé. Ton brouillon est conservé ; réessaie après la relecture des données.",
+        "profile_missing": "Ton profil n’est pas disponible. Ton brouillon est conservé.",
+        "unauthenticated": "Reconnecte-toi pour enregistrer ce contexte. Ton brouillon est conservé.",
+        "invalid": "Ce contexte ne peut pas être enregistré. Ton brouillon est conservé.",
+        "save": "L’enregistrement a échoué. Ton brouillon est conservé."
+      }
     }
   },
   "explain": {

@@ -15,14 +15,18 @@ import { BodyShapeFigure } from './BodyShapeFigure';
 import { BodyTrainingButton as Button } from './BodyTrainingButton';
 import { BodyTrainingProgramCard } from './BodyTrainingProgramCard';
 
-type Props = { source: ReturnType<typeof useBodyTraining>; visualSource: ReturnType<typeof useBodyVisual> };
+type Props = {
+  source: ReturnType<typeof useBodyTraining>;
+  visualSource: ReturnType<typeof useBodyVisual>;
+  onOpenCompatiblePrograms: () => void;
+};
 const same = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 const canonical = (zones: BodyGoalZone[]) => BODY_GOAL_ZONES.filter(zone => zones.includes(zone));
 function initialSelection(source: Props['source'], visualSource: Props['visualSource']) {
   return source.document?.priorities ?? (visualSource.document?.goal ? canonical(suggestBodyPriorities(visualSource.document.goal)) : []);
 }
 
-export function BodyTrainingEditor({ source, visualSource }: Props) {
+export function BodyTrainingEditor({ source, visualSource, onOpenCompatiblePrograms }: Props) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const { formatAxisNumber } = useUnits();
@@ -182,6 +186,12 @@ export function BodyTrainingEditor({ source, visualSource }: Props) {
       {!editing && saved ? <>
         {goal ? <Button label={t('bodyTraining.modify')} onPress={modify} disabled={disabled} /> : null}
         <BodyTrainingProgramCard priorities={saved.priorities} />
+        <Button
+          label={t('bodyTraining.comparePrograms')}
+          onPress={onOpenCompatiblePrograms}
+          disabled={disabled || changedElsewhere}
+          primary
+        />
         <Button label={t('bodyTraining.clear')} onPress={clear} disabled={disabled || changedElsewhere} />
       </> : null}
     </>}
