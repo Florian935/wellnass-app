@@ -44,6 +44,10 @@ export const SELECT_STRENGTH_PROGRAM_CONTEXT = `
   LIMIT 1
 `;
 
+function currentUserId(): string | undefined {
+  return useAuthStore.getState().session?.user.id;
+}
+
 function parseContext(row: StrengthProgramContextDbRow) {
   return strengthProgramContextSchema.safeParse({
     level: row.training_level,
@@ -85,14 +89,14 @@ export async function saveStrengthProgramContext(
   context: StrengthProgramContext,
   expectedUpdatedAt: string,
 ): Promise<StrengthProgramContextSnapshot> {
-  const userId = useAuthStore.getState().session?.user.id;
+  const userId = currentUserId();
   if (!userId) throw new StrengthProgramContextSaveError('unauthenticated');
 
   const parsed = strengthProgramContextSchema.safeParse(context);
   if (!parsed.success) throw new StrengthProgramContextSaveError('invalid');
 
   return powerSync.writeTransaction(async (tx) => {
-    if (useAuthStore.getState().session?.user.id !== userId) {
+    if (currentUserId() !== userId) {
       throw new StrengthProgramContextSaveError('unauthenticated');
     }
 
@@ -100,7 +104,7 @@ export async function saveStrengthProgramContext(
       SELECT_STRENGTH_PROGRAM_CONTEXT,
       [userId],
     );
-    if (useAuthStore.getState().session?.user.id !== userId) {
+    if (currentUserId() !== userId) {
       throw new StrengthProgramContextSaveError('unauthenticated');
     }
     if (!row || row.user_id !== userId) {
@@ -124,6 +128,9 @@ export async function saveStrengthProgramContext(
         expectedUpdatedAt,
       ],
     );
+    if (currentUserId() !== userId) {
+      throw new StrengthProgramContextSaveError('unauthenticated');
+    }
 
     return { context: parsed.data, updatedAt };
   });

@@ -7,7 +7,7 @@ import {
   saveStrengthProgramContext,
   useStrengthProgramContext,
 } from '../strength-program-context-repository';
-import { resetTestDb, rowsOf, seed } from '@/test-utils/sqlite-harness';
+import { resetTestDb, rowsOf, seed, testPowerSync } from '@/test-utils/sqlite-harness';
 
 jest.mock('@/powersync/system', () => ({
   powerSync: require('@/test-utils/sqlite-harness').testPowerSync,
@@ -218,6 +218,51 @@ describe('saveStrengthProgramContext sur SQLite réel', () => {
 
     await expectCode(saving, 'unauthenticated');
     expect(profiles()[0]).toEqual(before);
+  });
+
+  it('annule les trois colonnes si le compte change pendant l await de l UPDATE', async () => {
+    const before = seedProfile();
+    const originalWriteTransaction = testPowerSync.writeTransaction;
+    let markUpdateStarted!: () => void;
+    const updateStarted = new Promise<void>((resolve) => {
+      markUpdateStarted = resolve;
+    });
+    let releaseUpdate!: () => void;
+    const updateMayReturn = new Promise<void>((resolve) => {
+      releaseUpdate = resolve;
+    });
+
+    testPowerSync.writeTransaction = (operation) =>
+      originalWriteTransaction((tx) =>
+        operation({
+          ...tx,
+          execute: async (sql, params) => {
+            const result = await tx.execute(sql, params);
+            if (/^\s*UPDATE profiles\b/i.test(sql)) {
+              markUpdateStarted();
+              await updateMayReturn;
+            }
+            return result;
+          },
+        }),
+      );
+
+    try {
+      const saving = saveStrengthProgramContext(context(), before.updated_at);
+      await updateStarted;
+      mockUserId = 'user-2';
+      releaseUpdate();
+
+      await expectCode(saving, 'unauthenticated');
+    } finally {
+      testPowerSync.writeTransaction = originalWriteTransaction;
+    }
+
+    expect(profiles()[0]).toMatchObject({
+      strength_session_minutes: before.strength_session_minutes,
+      strength_equipment: before.strength_equipment,
+      updated_at: before.updated_at,
+    });
   });
 
   it('ignore un profil supprimé et ne le ressuscite pas', async () => {
