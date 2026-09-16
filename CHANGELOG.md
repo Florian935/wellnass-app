@@ -30,11 +30,13 @@ copie, et le double appui est verrouillé.
 **Offline et cloud** — Le contexte durable ajoute `profiles.strength_session_minutes` et
 `profiles.strength_equipment`, deux colonnes nullable portées par la migration
 `20260915115333_corps04_strength_program_context`. Le dry-run n'a proposé que CORPS-04 après
-alignement local temporaire sur cinq migrations plus récentes déjà présentes au cloud. Push avec
-`--include-all` réussi, liste locale/distante alignée, second dry-run à jour et types cloud
-régénérés : les deux champs figurent dans Row/Insert/Update. `profiles` est déjà publiée et lue en
-`select *` : aucune sync rule à redéployer. L'avertissement de cache pg-delta/Docker est survenu
-après l'application SQL et n'a pas empêché la vérification distante.
+alignement sur cinq migrations plus récentes déjà présentes au cloud. Leur historique est conservé
+dans l'arbre final : deux fichiers LABO octet pour octet depuis `origin/dev` (`0f93f0bf`) et trois
+fichiers DEPENSE octet pour octet depuis le lot parallèle local déjà appliqué, sans importer son
+code applicatif. Push avec `--include-all` réussi, liste locale/distante alignée, second dry-run à
+jour et types cloud régénérés : les deux champs figurent dans Row/Insert/Update. `profiles` est déjà
+publiée et lue en `select *` : aucune sync rule à redéployer. L'avertissement de cache
+pg-delta/Docker est survenu après l'application SQL et n'a pas empêché la vérification distante.
 
 **Validation** — Suites ciblées : 34 tests Vitest et 106 tests Jest. La campagne complète fraîche
 passe 6 812 tests (admin : 587, mobile : 3 299, shared : 2 926), puis `npm run lint`,

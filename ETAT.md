@@ -108,9 +108,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/corps04-programme-compatible` (modifications non commitées) |
-| Commits | 1260 · `main` a **1236** commits de retard sur `dev` |
+| Commits | 1261 · `main` a **1236** commits de retard sur `dev` |
 | Specs d'US | 153 au total — 87 clôturées, 66 en cours |
-| Migrations | 100/100 poussées sur le cloud |
+| Migrations | 105/105 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -119,11 +119,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `0683f19`  docs(corps): passer le programme compatible en recette
 - `4ca64b0`  fix(corps): ouvrir la copie préparée
 - `e145efb`  fix(corps): fiabiliser le choix de programme
 - `432d85b`  feat(corps): choisir un programme compatible
 - `25e6294`  fix(corps): preserver les erreurs de lecture
-- `e705344`  feat(corps): preparer une copie de programme
 
 ---
 
