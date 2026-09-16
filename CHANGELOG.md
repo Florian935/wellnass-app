@@ -10,6 +10,117 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 16/09/2026 (bis) — Réparation : les 12 fichiers d'IA-LAB-01 rejoignent leur documentation
+
+🔴 **`dev` ne compilait pas depuis un clone neuf, et c'est le commit `9b10cb8e` (LABO-01) qui l'avait
+cassé.** Ce commit répare, il n'apporte aucune fonctionnalité nouvelle.
+
+### Ce qui s'est passé
+
+LABO-01 a été commité avec un périmètre volontairement restreint (décision de Florian : « LABO-01
+seulement »), trois autres chantiers vivant en parallèle dans le même working tree de `dev`. Les
+fichiers **partagés** — `packages/shared/src/index.ts`, `settings.tsx`, `_layout.tsx`, CHANGELOG,
+RECETTES, roadmap — ont donc été stagés **entiers**, puisqu'ils portaient les deux contributions et
+qu'on ne pouvait pas les séparer.
+
+Ce qui n'a pas été vérifié : que ces contributions voisines ne **référençaient pas des fichiers
+laissés de côté**. Elles le faisaient, à trois endroits :
+
+| Parti dans `9b10cb8e` | Pointait vers | État sur `dev` |
+|---|---|---|
+| `packages/shared/src/index.ts` | `export * from './ai-context'` | fichier absent |
+| `apps/mobile/src/app/settings.tsx` | `import { AiLabSection }` | fichier absent |
+| `apps/mobile/src/app/_layout.tsx` | route `ai-lab` | écran absent |
+
+Plus la documentation complète d'IA-LAB-01 (entrée CHANGELOG du 15/09 ter, RECETTES §67, ligne de
+roadmap 7.31), partie elle aussi — d'où une US **documentée sur `dev` mais dont le code n'y était
+pas**, et une session voisine bloquée qui attendait ce lot sans savoir que la moitié était déjà là.
+
+Le défaut était invisible en local : les fichiers existent sur le disque de Florian, ils n'étaient
+simplement pas suivis par git. `npm run typecheck` passait donc au vert chez lui, et n'aurait pas
+passé sur un clone.
+
+### Ajouté (code écrit par une autre session, commité tel quel)
+
+Les **12 fichiers** manquants d'IA-LAB-01 (roadmap 7.31, spec `etape: recette`, `branche: dev`) :
+`packages/shared/src/ai-context.ts` et son test, `apps/mobile/src/lib/ai/ai-client.ts` et son test,
+`AiLabSection.tsx`, `app/ai-lab.tsx`, `ai-context-repository.ts`,
+`supabase/functions/ai-assist/providers.ts`, `supabase/scripts/ia-purge-et-dataset.sql` et
+`ia-verification.sql`, plus la spec et le plan. 3 201 lignes.
+
+⚠️ **Ce code n'a été ni écrit ni relu par la session qui le commite.** Il est repris dans l'état où
+son auteur l'a laissé (dernière écriture à 09:04, soit 1 h 20 avant le commit — personne n'éditait).
+La relecture reste à la charge de son auteur ; c'est le prix assumé pour rendre `dev` compilable tout
+de suite plutôt que d'attendre.
+
+### Vérifié avant de committer du code non relu
+
+- **Aucun secret** : la seule occurrence sensible est `Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')`
+  dans une fonction Edge déjà commitée, et `providers.ts` lit `GEMINI_API_KEY` / `ANTHROPIC_API_KEY`
+  **par un accesseur d'environnement injecté** — aucune clé littérale nulle part.
+- `packages/shared/src/index.ts` ne porte plus **aucun export orphelin** (vérifié export par export).
+- typecheck 3 workspaces à 0, lint à 0, suite complète verte.
+
+
+## 16/09/2026 — IA-LAB-01 : le contexte ne portait aucune tendance (correction)
+
+Trouvé par la **première recette** : `ia-verification.sql` sortait « allure 332 s/km contre
+332 s/km », donc S5 semblait absent du jeu de données. Le symptôme cachait deux défauts, dont un
+sérieux.
+
+### Le défaut qui comptait
+
+`AiSnapshot` ne portait que des **agrégats sur 90 jours** : une allure moyenne, une moyenne
+calorique, une charge max sans dimension temporelle. Or **cinq des six signaux plantés sont des
+évolutions** — une stagnation, une chute, une dégradation. Ils étaient structurellement
+introuvables : on demandait au modèle de repérer des tendances en ne lui montrant que des moyennes,
+et le labo aurait rendu un verdict sévère sur un modèle à qui l'on n'avait pas donné de quoi
+répondre.
+
+Aucun test ne pouvait attraper ça. Le test-garde de liste blanche vérifie **ce que le contexte
+contient** ; ce défaut portait sur **ce qu'il permet de conclure**. Seule la confrontation à des
+données réelles l'a révélé — c'est l'argument pour avoir écrit `ia-verification.sql` avant
+d'interroger le modèle, et non après.
+
+### Ajouté
+
+- **`AiTrend { recent, previous }`** et `AI_TREND_WINDOW_DAYS = 28` dans
+  [`ai-context.ts`](packages/shared/src/ai-context.ts). Porté par le poids, les calories, les
+  protéines, l'allure, l'énergie, le stress, le sommeil et les pas, plus une **`progression` par
+  exercice** (charge max sur chaque fenêtre) — la forme sous laquelle une stagnation devient
+  lisible : deux valeurs identiques disent « bloqué depuis un mois », ce qu'un maximum unique ne
+  dira jamais.
+- **Section `TENDANCES`** en fin de contexte, groupée plutôt que dispersée dans chaque pilier : une
+  stagnation ne se lit qu'en comparant, et mettre les comparaisons côte à côte est ce qui rend un
+  croisement inter-piliers possible.
+- **10 tests**, dont : une comparaison à moitié vide est **tue** plutôt que rendue à moitié (elle se
+  lirait quand même comme une évolution) ; le rendu ne contient **aucun mot de jugement**.
+
+### Modifié
+
+- **Requêtes à double fenêtre** dans
+  [`ai-context-repository.ts`](apps/mobile/src/data/repositories/ai-context-repository.ts) —
+  `MAX/AVG/SUM(CASE WHEN …)`, un seul parcours par table. L'allure est **pondérée par la distance**
+  et recomposée en TypeScript : `AVG(avg_pace_s_per_km)` donnerait autant de poids à un 5 km qu'à un
+  20 km.
+- **Jeu de données** — S3 et S5 alignés sur **28 jours** (au lieu de 21) et dégradation d'allure
+  portée de 18 à **30 s/km**. Un signal plus court que la fenêtre de comparaison s'y dilue dans la
+  période saine qu'il chevauche : l'écart net tombait à +2 %, que le rendu classe « stable ».
+  **Un signal qu'on ne peut pas lire n'est pas un signal.**
+- **[`ia-verification.sql`](supabase/scripts/ia-verification.sql)** — comparait « les 21 derniers
+  jours » à **tout l'historique**. Il compare désormais les deux mêmes fenêtres de 28 jours que le
+  contexte : vérifier autrement que ce que le modèle voit ne prouve rien sur ce qu'il peut trouver.
+
+### Technique / Notes
+
+- ⚠️ **Le script de jeu de données est à rejouer** si la génération date d'avant cette correction.
+  Il est rejouable sans précaution : il commence par tout effacer.
+- **Aucune migration, aucune sync rule, aucun redéploiement de la fonction Edge** — la correction est
+  entièrement côté contexte et données.
+- **Vérifications** : `npm run typecheck` ✅ · 2 999 tests Vitest + 3 215 Jest sur 196 suites,
+  exit 0 ✅ · `npm run lint` ✅.
+
+
 ## 16/09/2026 — LABO-01 : migrations poussées, sync rule déployée, écriture activée
 
 Suite directe de `9b10cb8e`. Aucune ligne de logique ne change : ce commit **débloque** ce que le
