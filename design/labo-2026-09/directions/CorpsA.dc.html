@@ -1,0 +1,197 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; } a:hover { color: #8a3c1f; }
+    @keyframes haloP { 0%, 100% { opacity: .15; } 50% { opacity: .45; } }
+    .halo { animation: haloP 2s ease-in-out infinite; }
+    @keyframes rise { from { opacity: .35; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    @keyframes flowA { to { stroke-dashoffset: -28; } }
+    @keyframes impA { 0% { transform: scale(.7); opacity: .7; } 100% { transform: scale(1.25); opacity: 0; } }
+    .impA { transform-box: fill-box; transform-origin: center; animation: impA 2.2s ease-out infinite; }
+    @keyframes beatA { 0%, 100% { transform: scale(1); } 15% { transform: scale(1.25); } 30% { transform: scale(1); } }
+    .beatA { transform-box: fill-box; transform-origin: center; animation: beatA 1s ease-in-out infinite; }
+    @keyframes waveA { from { transform: translateX(0); } to { transform: translateX(-48px); } }
+    .waveA { animation: waveA 2.6s linear infinite; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+  <div style="flex: none; position: relative; overflow: hidden; background: radial-gradient(72% 58% at 12% 8%, rgba(107,0,40,.92) 0%, rgba(107,0,40,0) 72%), radial-gradient(70% 56% at 94% 14%, rgba(42,100,173,.9) 0%, rgba(42,100,173,0) 72%), radial-gradient(90% 60% at 50% 104%, rgba(58,86,34,.95) 0%, rgba(58,86,34,0) 74%), #1c150e; color: #fff; border-radius: 0 0 30px 30px; padding: 12px 20px 14px; display: flex; flex-direction: column; gap: 4px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+      <div style="display: flex; align-items: center; gap: 6px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg><div style="font-weight: 600; font-size: 14px;">Le Labo</div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: .8px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.26);">DIRECTION A</div>
+    </div>
+    <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -.8px; line-height: 1.05;">Le corps</div>
+      <div style="font-size: 13px; color: rgba(255,255,255,.8);">tes trois piliers, là où ils agissent</div>
+    </div>
+    <svg width="350" height="330" viewBox="0 0 350 330" style="display: block; flex: none; overflow: visible;">
+      <defs><clipPath id="bellyA"><path d="M140,145 L210,145 L206,190 Q205,199 196,199 L154,199 Q145,199 144,190 Z"></path></clipPath><linearGradient id="heatA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9ec0"></stop><stop offset="1" stop-color="#c9577a"></stop></linearGradient></defs>
+      <g style="filter: drop-shadow(0 0 1.2px rgba(244,236,221,.9)) drop-shadow(0 0 .6px rgba(244,236,221,.9));"><circle cx="175" cy="34" r="19" fill="#2b2118"></circle><line x1="175" y1="54" x2="175" y2="66" stroke="#2b2118" stroke-width="12" stroke-linecap="round" ></line><path d="M135,70 L215,70 Q226,72 223,84 L212,140 L138,140 L127,84 Q124,72 135,70 Z" fill="#2b2118"></path><path d="M140,145 L210,145 L206,190 Q205,199 196,199 L154,199 Q145,199 144,190 Z" fill="#2b2118"></path><line x1="126" y1="82" x2="110" y2="136" stroke="#2b2118" stroke-width="18" stroke-linecap="round" ></line><line x1="224" y1="82" x2="240" y2="136" stroke="#2b2118" stroke-width="18" stroke-linecap="round" ></line><line x1="108" y1="146" x2="100" y2="194" stroke="#2b2118" stroke-width="15" stroke-linecap="round" ></line><line x1="242" y1="146" x2="250" y2="194" stroke="#2b2118" stroke-width="15" stroke-linecap="round" ></line><circle cx="99" cy="205" r="8" fill="#2b2118"></circle><circle cx="251" cy="205" r="8" fill="#2b2118"></circle><line x1="161" y1="208" x2="157" y2="262" stroke="#2b2118" stroke-width="24" stroke-linecap="round" ></line><line x1="189" y1="208" x2="193" y2="262" stroke="#2b2118" stroke-width="24" stroke-linecap="round" ></line><line x1="156" y1="272" x2="154" y2="314" stroke="#2b2118" stroke-width="18" stroke-linecap="round" ></line><line x1="194" y1="272" x2="196" y2="314" stroke="#2b2118" stroke-width="18" stroke-linecap="round" ></line><ellipse cx="150" cy="323" rx="11" ry="5" fill="#2b2118"></ellipse><ellipse cx="200" cy="323" rx="11" ry="5" fill="#2b2118"></ellipse></g>
+      <path d="M226,10 a13,13 0 1,0 12,18 a10,10 0 1,1 -12,-18z" fill="#e0b155" opacity=".9"></path>
+      <text x="252" y="22" font-family="Space Mono, monospace" font-size="9" font-weight="700" letter-spacing=".8" fill="#e0b155">NUIT 7 H 30</text>
+      <!-- muscu : pectoraux, bras, quadriceps -->
+      <g style="opacity: {{ mOp }}; transition: opacity .4s;"><path d="M135,70 L215,70 Q226,72 223,84 L212,140 L138,140 L127,84 Q124,72 135,70 Z" fill="url(#heatA)"></path><line x1="126" y1="82" x2="110" y2="136" stroke="url(#heatA)" stroke-width="18" stroke-linecap="round" ></line><line x1="224" y1="82" x2="240" y2="136" stroke="url(#heatA)" stroke-width="18" stroke-linecap="round" ></line><line x1="161" y1="208" x2="157" y2="262" stroke="url(#heatA)" stroke-width="24" stroke-linecap="round" ></line><line x1="189" y1="208" x2="193" y2="262" stroke="url(#heatA)" stroke-width="24" stroke-linecap="round" ></line></g>
+      <sc-if value="{{ impact }}" hint-placeholder-val="{{ true }}">
+        <ellipse class="impA" cx="175" cy="236" rx="46" ry="34" fill="none" stroke="#ff9ec0" stroke-width="2"></ellipse>
+        <ellipse class="impA" cx="175" cy="104" rx="52" ry="36" fill="none" stroke="#ff9ec0" stroke-width="2" style="animation-delay: -1.1s;"></ellipse>
+      </sc-if>
+      <!-- course : mollets, flux dans les jambes, cœur -->
+      <g style="opacity: {{ cOp }}; transition: opacity .4s;"><line x1="156" y1="272" x2="154" y2="314" stroke="#6fa8ef" stroke-width="18" stroke-linecap="round" ></line><line x1="194" y1="272" x2="196" y2="314" stroke="#6fa8ef" stroke-width="18" stroke-linecap="round" ></line><ellipse cx="150" cy="323" rx="11" ry="5" fill="#6fa8ef"></ellipse><ellipse cx="200" cy="323" rx="11" ry="5" fill="#6fa8ef"></ellipse></g>
+      <g fill="none" stroke="#b7d6ff" stroke-width="2.2" stroke-linecap="round" stroke-dasharray="5 9" style="animation: flowA {{ flowDur }} linear infinite;">
+        <path d="M161,200 L157,262 L154,318"></path><path d="M189,200 L193,262 L196,318"></path>
+      </g>
+      <path class="beatA" d="M160,104 c-6,-8 -18,-3 -14,6 c2,5 8,9 14,14 c6,-5 12,-9 14,-14 c4,-9 -8,-14 -14,-6z" fill="#6fa8ef" style="animation-duration: {{ beat }};"></path>
+      <!-- nutrition : le niveau d'énergie dans le ventre -->
+      <g clip-path="url(#bellyA)">
+        <g style="transform: {{ lvl }}; transition: transform .5s ease;">
+          <g class="waveA"><path d="M100,150 q12,-6 24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 L268,205 L100,205 Z" fill="{{ nColor }}" opacity=".85"></path></g>
+        </g>
+      </g>
+      <path d="M140,145 L210,145 L206,190 Q205,199 196,199 L154,199 Q145,199 144,190 Z" fill="none" stroke="#a9ba7e" stroke-width="1.6"></path>
+      <line x1="82" y1="110" x2="118" y2="110" stroke="rgba(255,255,255,.35)" stroke-width="1"></line>
+      <text x="10" y="104" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1" fill="#ff9ec0" text-anchor="start">MUSCU</text><text x="10" y="119" font-family="Hanken Grotesk, sans-serif" font-size="12.5" font-weight="600" fill="#fff" text-anchor="start">{{ mLabel }}</text>
+      <line x1="232" y1="296" x2="268" y2="296" stroke="rgba(255,255,255,.35)" stroke-width="1"></line>
+      <text x="340" y="290" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1" fill="#b7d6ff" text-anchor="end">COURSE</text><text x="340" y="305" font-family="Hanken Grotesk, sans-serif" font-size="12.5" font-weight="600" fill="#fff" text-anchor="end">{{ cLabel }}</text>
+      <line x1="82" y1="176" x2="140" y2="176" stroke="rgba(255,255,255,.35)" stroke-width="1"></line>
+      <text x="10" y="170" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1" fill="#d8e6b4" text-anchor="start">NUTRITION</text><text x="10" y="185" font-family="Hanken Grotesk, sans-serif" font-size="12.5" font-weight="600" fill="#fff" text-anchor="start">{{ nLabel }}</text>
+      <sc-if value="{{ zmc.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="175" cy="242" r="17" fill="{{ zmc.fill }}" opacity=".28" class="halo"></circle>
+          <circle cx="175" cy="242" r="11" fill="{{ zmc.fill }}" stroke="{{ zmc.ring }}" stroke-width="2"></circle>
+          <text x="175" y="246" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zmc.fg }}" text-anchor="middle">{{ zmc.n }}</text>
+        </sc-if>
+      <sc-if value="{{ zmn.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="246" cy="112" r="17" fill="{{ zmn.fill }}" opacity=".28" class="halo"></circle>
+          <circle cx="246" cy="112" r="11" fill="{{ zmn.fill }}" stroke="{{ zmn.ring }}" stroke-width="2"></circle>
+          <text x="246" y="116" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zmn.fg }}" text-anchor="middle">{{ zmn.n }}</text>
+        </sc-if>
+      <sc-if value="{{ zcn.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="175" cy="204" r="17" fill="{{ zcn.fill }}" opacity=".28" class="halo"></circle>
+          <circle cx="175" cy="204" r="11" fill="{{ zcn.fill }}" stroke="{{ zcn.ring }}" stroke-width="2"></circle>
+          <text x="175" y="208" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zcn.fg }}" text-anchor="middle">{{ zcn.n }}</text>
+        </sc-if>
+      <sc-if value="{{ ztri.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="190" cy="96" r="17" fill="{{ ztri.fill }}" opacity=".28" class="halo"></circle>
+          <circle cx="190" cy="96" r="11" fill="{{ ztri.fill }}" stroke="{{ ztri.ring }}" stroke-width="2"></circle>
+          <text x="190" y="100" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ ztri.fg }}" text-anchor="middle">{{ ztri.n }}</text>
+        </sc-if>
+    </svg>
+    <div style="display: flex; justify-content: space-between; align-items: center; height: 22px;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.3px; color: {{ verdictColor }};">{{ verdict }}</div>
+      <div style="font-size: 12px; color: rgba(255,255,255,.8);">énergie <b style="color: {{ fuelColor }};">{{ fuelWord }}</b></div>
+    </div>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 10px 20px 18px; min-height: 0;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Joue avec tes leviers</div><div style="font-size: 12px; color: #786a59;">mêmes règles partout</div></div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">
+      <sc-for list="{{ levers }}" as="l" hint-placeholder-count="4">
+        <div style="display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 4px; border-radius: 16px; background: #fffaf2; border: 1px solid #ece0cd;">
+          <div style="display: flex; align-items: center; gap: 6px;"><sc-if value="{{ l.isMuscu }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6b0028" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect><line x1="1.5" y1="10.5" x2="1.5" y2="13.5"></line><line x1="22.5" y1="10.5" x2="22.5" y2="13.5"></line></svg></sc-if><sc-if value="{{ l.isCourse }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a64ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 3-4 6-4s3 4 6 4 3-7 6-7"></path><circle cx="21" cy="10" r="1.2" fill="#2a64ad"></circle></svg></sc-if><sc-if value="{{ l.isNutrition }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#52703a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-5 0-8-4-8-9 0-4 3-6 5-6 1.5 0 2.3.7 3 .7s1.5-.7 3-.7c2 0 5 2 5 6 0 5-3 9-8 9z"></path><path d="M12 7c0-2 1-4 3-4"></path></svg></sc-if><span style="font-weight: 700; font-size: 13px; color: {{ l.color }};">{{ l.name }}</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div onClick="{{ l.minus }}" style="width: 44px; height: 40px; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; opacity: {{ l.minusOp }};"><div style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></div></div>
+            <div style="display: flex; flex-direction: column; align-items: center;"><span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px;">{{ l.dose }}</span><span style="font-size: 10px; color: #786a59;">{{ l.unit }}</span></div>
+            <div onClick="{{ l.plus }}" style="width: 44px; height: 40px; display: flex; align-items: center; justify-content: flex-end; cursor: pointer; opacity: {{ l.plusOp }};"><div style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><line x1="12" y1="5" x2="12" y2="19"></line></svg></div></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Croisements</div><div style="font-size: 12px; color: #786a59;">{{ reacCount }}</div></div>
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <sc-for list="{{ reactions }}" as="r" hint-placeholder-count="2">
+        <div style="display: flex; gap: 9px; align-items: center; min-height: 46px; box-sizing: border-box; padding: 5px 11px; border-radius: 14px; background: {{ r.bg }}; border: 1px solid {{ r.border }}; animation: rise .3s ease-out both;">
+          <svg width="24" height="20" viewBox="0 0 26 22" style="flex: none;"><circle cx="9" cy="11" r="7.5" fill="{{ r.ca }}" fill-opacity=".2" stroke="{{ r.ca }}" stroke-width="1.6"></circle><circle cx="17" cy="11" r="7.5" fill="{{ r.cb }}" fill-opacity=".2" stroke="{{ r.cb }}" stroke-width="1.6"></circle></svg>
+          <div style="flex: 1; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; gap: 6px;"><span style="font-weight: 700; font-size: 13px;">{{ r.title }}</span><span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: {{ r.fg }}; margin-top: 2px; white-space: nowrap;">{{ r.kindLabel }}</span></div>
+            <div style="font-size: 12px; line-height: 15px; color: #786a59;">{{ r.text }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { fq: 4, km: 30, kc: 1, gl: false };
+
+  renderVals() {
+    var engine = function engine(s, self) {
+  var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  var KC = [0, -250, -500];
+  var charge = s.fq * 9 + s.km * 1.4 + 12;
+  var base = 3 * 9 + 25 * 1.4 + 12;
+  var jump = Math.round((charge / base - 1) * 100);
+  var recup = clamp(Math.round(104 - Math.max(0, charge - 60) * 1.1 - [0, 10, 26][s.kc]), 6, 100);
+  var fuel = clamp(Math.round(72 + (s.gl ? 16 : 0) - [0, 14, 34][s.kc] - Math.max(0, s.km - 25) * 1.2), 6, 100);
+  var guard = s.kc === 2 && (s.km >= 35 || s.fq >= 5);
+  var R = [];
+  if (guard) R.push({ kind: 'guard', zone: 'tri', a: 'course', b: 'nutrition', title: 'Déficit × volume', text: '−500 kcal avec ' + s.km + ' km : le cycle ne peut pas partir.' });
+  if (s.fq >= 4 && s.km >= 30) R.push({ kind: 'tension', zone: 'mc', a: 'muscu', b: 'course', title: 'Jambes × fractionné', text: 'Squat lundi, 800 m mardi : ~3 s par fraction.' });
+  if (jump > 15) R.push({ kind: 'tension', zone: 'mc', a: 'muscu', b: 'course', title: 'Charge combinée +' + jump + ' %', text: 'Au-delà de +10 %, la récup ne suit plus.' });
+  if (s.kc === 2 && !guard) R.push({ kind: 'tension', zone: 'mn', a: 'nutrition', b: 'muscu', title: 'Déficit × force', text: 'À −500 kcal, ton squat a perdu 3 % en v1.' });
+  if (s.gl) R.push({ kind: 'syn', zone: 'cn', a: 'nutrition', b: 'course', title: 'Glucides × fractionné', text: '+1,5 g/kg les jours durs : l’allure tient.' });
+  if (s.fq >= 3 && s.kc < 2) R.push({ kind: 'syn', zone: 'mn', a: 'nutrition', b: 'muscu', title: 'Protéines × musculation', text: '1,8 g/kg couvre tes séances, même en déficit.' });
+  var order = { guard: 0, tension: 1, syn: 2 };
+  R.sort(function (x, y) { return order[x.kind] - order[y.kind]; });
+
+  var TONES = {
+    syn: { label: 'synergie', fg: '#66714b', bg: 'rgba(102,113,75,.08)', border: 'rgba(102,113,75,.28)', fill: '#f2d28a', ring: '#f2d28a', mfg: '#1c150e', line: '#f2d28a' },
+    tension: { label: 'tension', fg: '#8a6419', bg: '#f7ead6', border: '#e9cfa0', fill: '#1c150e', ring: '#e0b155', mfg: '#e0b155', line: '#e0b155' },
+    guard: { label: 'garde-fou', fg: '#b23b2e', bg: 'rgba(178,59,46,.07)', border: 'rgba(178,59,46,.35)', fill: '#f08a7e', ring: '#f08a7e', mfg: '#1c150e', line: '#f08a7e' },
+  };
+  var PC = { muscu: '#6b0028', course: '#2a64ad', nutrition: '#52703a' };
+  var zone = function (z) {
+    var list = R.filter(function (r) { return r.zone === z; });
+    if (!list.length) return { show: false, n: '', fill: 'none', ring: 'none', fg: 'none', kind: '', line: 'rgba(255,255,255,.16)' };
+    var t = TONES[list[0].kind];
+    return { show: true, n: list.length, fill: t.fill, ring: t.ring, fg: t.mfg, kind: list[0].kind, line: t.line };
+  };
+  var nT = R.filter(function (r) { return r.kind !== 'syn'; }).length;
+  var set = function (k, v) { return function () { var o = {}; o[k] = v; self.setState(o); }; };
+  var KMS = [20, 25, 30, 35, 40], kmI = KMS.indexOf(s.km);
+  var tone = function (v) { return v < 35 ? '#f08a7e' : v < 60 ? '#e0b155' : '#a9ba7e'; };
+  return {
+    charge: charge, jump: jump, recup: recup, fuel: fuel, guard: guard, R: R, nT: nT,
+    zmc: zone('mc'), zmn: zone('mn'), zcn: zone('cn'), ztri: zone('tri'),
+    verdict: guard ? 'Formule bloquée' : nT ? 'Tes piliers se gênent' : 'Tes piliers s’accordent',
+    verdictColor: guard ? '#f08a7e' : nT ? '#e0b155' : '#c5d69a',
+    fuelWord: fuel < 35 ? 'à sec' : fuel < 60 ? 'juste' : 'pleine', fuelColor: tone(fuel),
+    reactions: R.slice(0, 2).map(function (r) { var t = TONES[r.kind]; return { title: r.title, text: r.text, kindLabel: t.label, fg: t.fg, bg: t.bg, border: t.border, ca: PC[r.a], cb: PC[r.b] }; }),
+    reacCount: R.length ? (R.length > 2 ? '2 sur ' + R.length : R.length + (R.length > 1 ? ' actifs' : ' actif')) : 'aucun',
+    levers: [
+      { name: 'Musculation', unit: 'séances', color: '#6b0028', soft: 'rgba(107,0,40,.08)', dose: String(s.fq), minus: set('fq', Math.max(2, s.fq - 1)), plus: set('fq', Math.min(5, s.fq + 1)), minusOp: s.fq > 2 ? 1 : 0.3, plusOp: s.fq < 5 ? 1 : 0.3, isMuscu: true },
+      { name: 'Course', unit: 'km / sem', color: '#2a64ad', soft: 'rgba(42,100,173,.08)', dose: String(s.km), minus: set('km', KMS[Math.max(0, kmI - 1)]), plus: set('km', KMS[Math.min(4, kmI + 1)]), minusOp: kmI > 0 ? 1 : 0.3, plusOp: kmI < 4 ? 1 : 0.3, isCourse: true },
+      { name: 'Balance', unit: 'kcal / jour', color: '#52703a', soft: 'rgba(82,112,58,.09)', dose: KC[s.kc] === 0 ? '0' : String(KC[s.kc]).replace('-', '−'), minus: set('kc', Math.min(2, s.kc + 1)), plus: set('kc', Math.max(0, s.kc - 1)), minusOp: s.kc < 2 ? 1 : 0.3, plusOp: s.kc > 0 ? 1 : 0.3, isNutrition: true },
+      { name: 'Glucides', unit: 'périodisés', color: '#52703a', soft: 'rgba(82,112,58,.09)', dose: s.gl ? 'oui' : 'non', minus: set('gl', false), plus: set('gl', true), minusOp: s.gl ? 1 : 0.3, plusOp: s.gl ? 0.3 : 1, isNutrition: true },
+    ],
+  };
+};
+    var view = function viewA(s, E) {
+  var m = (s.fq - 2) / 3, c = (s.km - 20) / 20;
+  return {
+    mOp: (0.3 + m * 0.6).toFixed(2), impact: s.fq >= 4,
+    cOp: (0.3 + c * 0.6).toFixed(2), flowDur: (2.4 - c * 1.7).toFixed(2) + 's', beat: (1.2 - c * 0.55).toFixed(2) + 's',
+    lvl: 'translateY(' + Math.round((1 - E.fuel / 100) * 50) + 'px)', nColor: E.fuelColor,
+    mLabel: s.fq + ' séances', cLabel: s.km + ' km', nLabel: 'énergie ' + E.fuelWord,
+  };
+};
+    var E = engine(this.state, this);
+    var V = view(this.state, E);
+    var out = {};
+    Object.keys(E).forEach(function (k) { out[k] = E[k]; });
+    Object.keys(V).forEach(function (k) { out[k] = V[k]; });
+    return out;
+  }
+}
+</script>
+</body>
+</html>

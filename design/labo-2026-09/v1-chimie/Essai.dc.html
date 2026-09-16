@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .cell { height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; box-sizing: border-box; }
+    .ca { background: #b14f2b; color: #fff; }
+    .cb { background: #fffaf2; color: #5c4a35; box-shadow: inset 0 0 0 1.5px #90897d; }
+    .cn { background: transparent; color: #b14f2b; box-shadow: inset 0 0 0 2px #b14f2b; animation: pulse 1.8s ease-in-out infinite; }
+    .ce { background: #eadcc6; }
+    @keyframes pulse { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+    @keyframes shimmer { from { transform: translateX(-120%); } to { transform: translateX(220%); } }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; padding: 14px 20px 22px; gap: 12px;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+      <div style="font-weight: 600; font-size: 14px;">Essai sur toi</div>
+    </div>
+    <div style="font-size: 12px; color: #786a59;">2 essais terminés</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <div style="align-self: flex-start; border-radius: 999px; padding: 3px 9px; background: #f7ead6; border: 1px solid #e9cfa0; font-weight: 700; font-size: 10.5px; letter-spacing: .7px; text-transform: uppercase; color: #8a6419;">En cours · 7 séances sur 12</div>
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 26px; letter-spacing: -.7px; line-height: 1.08;">Une collation avant la séance du soir</div>
+    <div style="font-size: 14px; line-height: 20px; color: #786a59;">40 g de glucides une heure avant : meilleure séance&nbsp;?</div>
+  </div>
+
+  <!-- protocole -->
+  <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <div style="font-weight: 700; font-size: 15px;">Le protocole</div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">tiré au sort la veille</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 34px repeat(4, minmax(0, 1fr)); gap: 6px; align-items: center;">
+      <div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; color: #786a59; text-align: center;">S1</div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; color: #786a59; text-align: center;">S2</div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; color: #786a59; text-align: center;">S3</div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; color: #786a59; text-align: center;">S4</div>
+      <div style="font-size: 11px; color: #786a59;">lun.</div>
+      <div class="cell ca">A</div><div class="cell cb">B</div><div class="cell cb">B</div><div class="cell ce"></div>
+      <div style="font-size: 11px; color: #786a59;">mer.</div>
+      <div class="cell cb">B</div><div class="cell ca">A</div><div class="cell cn">ce soir</div><div class="cell ce"></div>
+      <div style="font-size: 11px; color: #786a59;">ven.</div>
+      <div class="cell cb">B</div><div class="cell ca">A</div><div class="cell ce"></div><div class="cell ce"></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 3px; font-size: 12px; line-height: 16px; color: #786a59;">
+      <div><b style="color: #b14f2b;">A</b> collation de 40 g · <b style="color: #5c4a35;">B</b> rien. Pas d'aveugle possible : le tirage au sort compense.</div>
+    </div>
+  </div>
+
+  <!-- verdict scellé -->
+  <div style="background: #33291f; border-radius: 22px; padding: 16px 18px; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 8px;">
+    <div style="position: absolute; top: 0; bottom: 0; width: 70px; background: linear-gradient(90deg, rgba(255,255,255,0), rgba(255,255,255,.07), rgba(255,255,255,0)); animation: shimmer 3.6s ease-in-out infinite;"></div>
+    <div style="position: relative; display: flex; align-items: center; gap: 10px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#d9a888" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.4px; color: #fff;">Le verdict est scellé</div>
+    </div>
+    <div style="position: relative; font-size: 13px; line-height: 19px; color: #c9b79a;">Il s'ouvre après la 12ᵉ séance, dans 9 jours environ. Pas de coup d'œil avant : regarder en cours de route fausse le résultat.</div>
+    <div style="position: relative; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 3px; margin-top: 2px;">
+      <div style="height: 6px; border-radius: 3px; background: #d9a888;"></div><div style="height: 6px; border-radius: 3px; background: #d9a888;"></div><div style="height: 6px; border-radius: 3px; background: #d9a888;"></div><div style="height: 6px; border-radius: 3px; background: #d9a888;"></div><div style="height: 6px; border-radius: 3px; background: #d9a888;"></div><div style="height: 6px; border-radius: 3px; background: #d9a888;"></div><div style="height: 6px; border-radius: 3px; background: #d9a888;"></div><div style="height: 6px; border-radius: 3px; background: rgba(240,228,208,.18);"></div><div style="height: 6px; border-radius: 3px; background: rgba(240,228,208,.18);"></div><div style="height: 6px; border-radius: 3px; background: rgba(240,228,208,.18);"></div><div style="height: 6px; border-radius: 3px; background: rgba(240,228,208,.18);"></div><div style="height: 6px; border-radius: 3px; background: rgba(240,228,208,.18);"></div>
+    </div>
+  </div>
+
+  <!-- mesures -->
+  <div style="display: flex; flex-direction: column; padding: 0 2px;">
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59; padding-bottom: 4px;">Mesuré sans que tu saisisses rien</div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #ece0cd;">
+      <div style="flex: 1;"><div style="font-weight: 700; font-size: 13.5px;">Répétitions à la dernière série</div><div style="font-size: 12px; color: #786a59;">à charge et RPE égaux · critère principal</div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #6b0028; font-weight: 700;">MUSCU</div>
+    </div>
+        <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0;">
+      <div style="flex: 1;"><div style="font-weight: 700; font-size: 13.5px;">Sommeil la nuit suivante</div><div style="font-size: 12px; color: #786a59;">effet de bord surveillé</div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59; font-weight: 700;">HEALTH CONNECT</div>
+    </div>
+  </div>
+
+  <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; background: #fffaf2; border: 1px solid #ece0cd; border-radius: 16px; padding: 12px 14px;">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b23b2e" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+    <div style="flex: 1; font-size: 12.5px; line-height: 17px; color: #5c4a35;">Douleur déclarée ou séance modifiée : la séance sort de l'essai. Le garde-fou passe avant.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

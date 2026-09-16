@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+    @keyframes impact { 0% { transform: scale(.55); opacity: .55; } 100% { transform: scale(1.12); opacity: 0; } }
+    @keyframes flow { to { stroke-dashoffset: -64; } }
+    @keyframes level { from { transform: translateX(0); } to { transform: translateX(-48px); } }
+    @keyframes halo { 0%, 100% { transform: scale(1); opacity: .5; } 50% { transform: scale(1.5); opacity: 0; } }
+    @keyframes souffle { 0%, 100% { transform: scale(.985); opacity: .45; } 50% { transform: scale(1.015); opacity: .8; } }
+    @keyframes rise { from { opacity: .35; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .fb { transform-box: fill-box; transform-origin: center; }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+  <div style="flex: none; position: relative; overflow: hidden; background: radial-gradient(72% 58% at 12% 8%, rgba(107,0,40,.92) 0%, rgba(107,0,40,0) 72%), radial-gradient(70% 56% at 94% 14%, rgba(42,100,173,.9) 0%, rgba(42,100,173,0) 72%), radial-gradient(90% 60% at 50% 104%, rgba(58,86,34,.95) 0%, rgba(58,86,34,0) 74%), #1c150e; color: #fff; border-radius: 0 0 30px 30px; padding: 14px 20px 20px; display: flex; flex-direction: column; gap: 8px; ">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+      <div style="display: flex; align-items: center; gap: 6px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg><div style="font-weight: 600; font-size: 14px;">Le Labo</div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: rgba(255,255,255,.8);">19/10/2026</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 3px;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: rgba(255,255,255,.8);">Fin du cycle · v2 · 8 semaines</div>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 29px; letter-spacing: -1px; line-height: 1.04;">Ce que ce cycle t'a appris</div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: space-between; gap: 4px;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+        <svg width="150" height="108" viewBox="0 0 350 250" style="display: block; flex: none; overflow: visible;">
+      <defs><radialGradient id="ag-muscu" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e07a98" stop-opacity=".62"></stop><stop offset=".7" stop-color="#e07a98" stop-opacity=".22"></stop><stop offset="1" stop-color="#e07a98" stop-opacity=".08"></stop></radialGradient><radialGradient id="ag-course" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#6fa8ef" stop-opacity=".62"></stop><stop offset=".7" stop-color="#6fa8ef" stop-opacity=".22"></stop><stop offset="1" stop-color="#6fa8ef" stop-opacity=".08"></stop></radialGradient><radialGradient id="ag-nutrition" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#a9ba7e" stop-opacity=".62"></stop><stop offset=".7" stop-color="#a9ba7e" stop-opacity=".22"></stop><stop offset="1" stop-color="#a9ba7e" stop-opacity=".08"></stop></radialGradient><clipPath id="aclip-n"><circle cx="175" cy="168" r="66"></circle></clipPath></defs>
+      
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="130" cy="90" r="60" fill="url(#ag-muscu)" stroke="#e07a98" stroke-opacity=".85" stroke-width="1.5" ></circle></g>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="220" cy="90" r="64" fill="url(#ag-course)" stroke="#6fa8ef" stroke-opacity=".85" stroke-width="1.5" ></circle></g>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="175" cy="168" r="66" fill="url(#ag-nutrition)" stroke="#a9ba7e" stroke-opacity=".85" stroke-width="1.5" ></circle><g clip-path="url(#aclip-n)"><g ><path d="M49,180 q12,-6 24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 L301,238 L49,238 Z" fill="#a9ba7e" opacity=".22"></path></g></g></g>
+      <circle cx="175" cy="116" r="4" fill="#fff"></circle><circle cx="175" cy="116" r="8" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1"></circle>
+      
+      
+    </svg>
+        <div style="font-size: 11.5px; color: rgba(255,255,255,.75);">25/08 · au départ</div>
+      </div>
+      <svg width="30" height="16" viewBox="0 0 30 16"><line x1="2" y1="8" x2="24" y2="8" stroke="#fff" stroke-width="2"></line><path d="M20 3l6 5-6 5" fill="none" stroke="#fff" stroke-width="2"></path></svg>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 2px;">
+        <svg width="150" height="108" viewBox="0 0 350 250" style="display: block; flex: none; overflow: visible;">
+      <defs><radialGradient id="bg-muscu" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e07a98" stop-opacity=".62"></stop><stop offset=".7" stop-color="#e07a98" stop-opacity=".22"></stop><stop offset="1" stop-color="#e07a98" stop-opacity=".08"></stop></radialGradient><radialGradient id="bg-course" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#6fa8ef" stop-opacity=".62"></stop><stop offset=".7" stop-color="#6fa8ef" stop-opacity=".22"></stop><stop offset="1" stop-color="#6fa8ef" stop-opacity=".08"></stop></radialGradient><radialGradient id="bg-nutrition" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#a9ba7e" stop-opacity=".62"></stop><stop offset=".7" stop-color="#a9ba7e" stop-opacity=".22"></stop><stop offset="1" stop-color="#a9ba7e" stop-opacity=".08"></stop></radialGradient><clipPath id="bclip-n"><circle cx="175" cy="168" r="64"></circle></clipPath></defs>
+      
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="130" cy="90" r="70" fill="url(#bg-muscu)" stroke="#e07a98" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 5s ease-in-out 0s infinite;"></circle><circle class="fb" cx="130" cy="90" r="70" fill="none" stroke="#e07a98" stroke-width="2" style="animation: impact 2.8s ease-out infinite;"></circle></g>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="220" cy="90" r="72" fill="url(#bg-course)" stroke="#6fa8ef" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 5.7s ease-in-out -1.3s infinite;"></circle><circle cx="220" cy="90" r="65" fill="none" stroke="#6fa8ef" stroke-width="1.6" stroke-dasharray="10 22" stroke-linecap="round" opacity=".85" style="animation: flow 2.4s linear infinite;"></circle></g>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="175" cy="168" r="64" fill="url(#bg-nutrition)" stroke="#a9ba7e" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 6.4s ease-in-out -2.6s infinite;"></circle><g clip-path="url(#bclip-n)"><g style="animation: level 3.2s linear infinite;"><path d="M51,180 q12,-6 24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 L299,236 L51,236 Z" fill="#a9ba7e" opacity=".22"></path></g></g></g>
+      <circle cx="175" cy="116" r="4" fill="#fff"></circle><circle cx="175" cy="116" r="8" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1"></circle>
+      <circle class="fb" cx="175" cy="66" r="12" fill="#f2d28a" style="animation: halo 2.2s ease-out infinite;"></circle><circle cx="175" cy="66" r="11.5" fill="#f2d28a" stroke="#f2d28a" stroke-width="2"></circle><text x="175" y="70" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="#1c150e" text-anchor="middle">1</text><circle class="fb" cx="223" cy="144" r="12" fill="#f2d28a" style="animation: halo 2.2s ease-out infinite;"></circle><circle cx="223" cy="144" r="11.5" fill="#f2d28a" stroke="#f2d28a" stroke-width="2"></circle><text x="223" y="148" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="#1c150e" text-anchor="middle">1</text>
+      
+    </svg>
+        <div style="font-size: 11.5px; color: #fff; font-weight: 600;">19/10 · aujourd'hui</div>
+      </div>
+    </div>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 12px 20px 22px; min-height: 0;">
+    <div style="display: flex; flex-direction: column;">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #ece0cd;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6b0028" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect><line x1="1.5" y1="10.5" x2="1.5" y2="13.5"></line><line x1="22.5" y1="10.5" x2="22.5" y2="13.5"></line></svg>
+        <div style="flex: 1;"><div style="font-size: 12px; color: #786a59;">Total SBD</div><div style="font-size: 12.5px; color: #66714b; font-weight: 600;">projeté 378–392 · dans la fourchette</div></div>
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -.5px;">381 kg</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #ece0cd;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2a64ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 3-4 6-4s3 4 6 4 3-7 6-7"></path><circle cx="21" cy="10" r="1.2" fill="#2a64ad"></circle></svg>
+        <div style="flex: 1;"><div style="font-size: 12px; color: #786a59;">10 km</div><div style="font-size: 12.5px; color: #8a6419; font-weight: 600;">objectif 48:00 · manqué de 34 s</div></div>
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -.5px;">48:34</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid #ece0cd;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#52703a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-5 0-8-4-8-9 0-4 3-6 5-6 1.5 0 2.3.7 3 .7s1.5-.7 3-.7c2 0 5 2 5 6 0 5-3 9-8 9z"></path><path d="M12 7c0-2 1-4 3-4"></path></svg>
+        <div style="flex: 1;"><div style="font-size: 12px; color: #786a59;">Poids</div><div style="font-size: 12.5px; color: #66714b; font-weight: 600;">−1,2 kg · conforme</div></div>
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -.5px;">76,4 kg</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <div style="display: flex; gap: 10px;"><div style="width: 8px; height: 8px; border-radius: 50%; background: #66714b; margin-top: 6px; flex: none;"></div><div style="font-size: 13.5px; line-height: 19px;"><b>Ce qui a porté</b> · <span style="color: #786a59;">le fractionné déplacé au jeudi, et 1,9 g/kg de protéines en moyenne.</span></div></div>
+      <div style="display: flex; gap: 10px;"><div style="width: 8px; height: 8px; border-radius: 50%; background: #90897d; margin-top: 6px; flex: none;"></div><div style="font-size: 13.5px; line-height: 19px;"><b>Sans effet visible</b> · <span style="color: #786a59;">la sieste de 20 minutes, expérience non concluante.</span></div></div>
+      <div style="display: flex; gap: 10px;"><div style="width: 8px; height: 8px; border-radius: 50%; background: #b47f31; margin-top: 6px; flex: none;"></div><div style="font-size: 13.5px; line-height: 19px;"><b>Ce qui a coûté</b> · <span style="color: #786a59;">deux semaines à 5 séances : la récupération n'a pas suivi, le 10 km a stagné.</span></div></div>
+      <div style="font-size: 12px; line-height: 17px; color: #786a59;">Des associations observées sur toi, pas des preuves. Un doute ? Il part en expérience.</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">La v3 proposée</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;"><span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px 0 7px; border-radius: 999px; background: rgba(107,0,40,.08); border: 1px solid rgba(107,0,40,.22); font-size: 12px; font-weight: 600; color: #6b0028; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b0028" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect><line x1="1.5" y1="10.5" x2="1.5" y2="13.5"></line><line x1="22.5" y1="10.5" x2="22.5" y2="13.5"></line></svg>5 → 4 séances</span><span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px 0 7px; border-radius: 999px; background: rgba(42,100,173,.08); border: 1px solid rgba(42,100,173,.24); font-size: 12px; font-weight: 600; color: #2a64ad; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a64ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 3-4 6-4s3 4 6 4 3-7 6-7"></path><circle cx="21" cy="10" r="1.2" fill="#2a64ad"></circle></svg>affûtage J-10</span><span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px 0 7px; border-radius: 999px; background: rgba(82,112,58,.09); border: 1px solid rgba(82,112,58,.26); font-size: 12px; font-weight: 600; color: #52703a; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#52703a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-5 0-8-4-8-9 0-4 3-6 5-6 1.5 0 2.3.7 3 .7s1.5-.7 3-.7c2 0 5 2 5 6 0 5-3 9-8 9z"></path><path d="M12 7c0-2 1-4 3-4"></path></svg>protéines gardées</span><span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px 0 7px; border-radius: 999px; background: rgba(138,100,25,.09); border: 1px solid rgba(138,100,25,.26); font-size: 12px; font-weight: 600; color: #8a6419; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#8a6419" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg>coucher 23 h</span></div>
+    </div>
+    <div style="margin-top: auto; display: flex; flex-direction: column; gap: 6px;">
+      <div style="height: 52px; border-radius: 16px; background: #b14f2b; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; box-shadow: 0 10px 24px -8px rgba(177,79,43,.55); "><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="4" x2="5" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line><line x1="19" y1="4" x2="19" y2="20"></line><circle cx="5" cy="14" r="2.2" fill="#fff"></circle><circle cx="12" cy="8" r="2.2" fill="#fff"></circle><circle cx="19" cy="16" r="2.2" fill="#fff"></circle></svg>Composer la v3 depuis ce bilan</div>
+      <div style="text-align: center; font-size: 12px; color: #786a59;">Rien n'est appliqué sans toi</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

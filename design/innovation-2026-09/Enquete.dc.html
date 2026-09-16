@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .ev { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 10px 14px; display: flex; flex-direction: column; gap: 5px; }
+    .evh { display: flex; align-items: center; gap: 8px; }
+    .rk { width: 22px; height: 22px; border-radius: 11px; background: #33291f; color: #f0e4d0; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+    .ch { border-radius: 999px; padding: 2px 8px; background: #f3ddd0; font-weight: 700; font-size: 10px; letter-spacing: .6px; text-transform: uppercase; color: #a34e2c; }
+    .st { margin-left: auto; display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; color: #5c4a35; }
+    .bars { display: flex; gap: 2px; align-items: flex-end; }
+    .bars span { width: 4px; border-radius: 1px; background: #e2d3bc; }
+    .evt { font-weight: 700; font-size: 15px; line-height: 20px; }
+    .evb { font-size: 13px; line-height: 18px; color: #786a59; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 10px 20px 18px; display: flex; flex-direction: column; gap: 8px;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 40px;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+      <div style="font-weight: 600; font-size: 14px;">Insights</div>
+    </div>
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">bouclée en 38 s</div>
+  </div>
+
+  <div>
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; color: #786a59;">Enquête · dim. 13 sept.</div>
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -.6px; line-height: 1.1; margin-top: 4px;">Pourquoi je stagne au développé couché&nbsp;?</div>
+    <div style="font-size: 13px; line-height: 18px; color: #786a59; margin-top: 5px;">80 kg × 5 depuis 4 semaines · 11 analyses croisées sur 3 piliers et ton sommeil.</div>
+  </div>
+
+  <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 2px;">
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 16px; letter-spacing: -.3px;">3 pistes retenues</div>
+    <div style="font-size: 11px; color: #786a59;">classées par force</div>
+  </div>
+
+  <div class="ev">
+    <div class="evh"><div class="rk">1</div><div class="ch">Assiette × Muscu</div><div class="st"><span class="bars"><span style="height: 6px; background: #b14f2b;"></span><span style="height: 9px; background: #b14f2b;"></span><span style="height: 12px; background: #b14f2b;"></span></span>forte</div></div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <div style="flex: 1; min-width: 0;">
+        <div class="evt">Tes glucides chutent les jours de push</div>
+        <div class="evb">−34 % face à tes autres jours d'entraînement.</div>
+      </div>
+      <svg width="62" height="56" viewBox="0 0 62 56" style="flex: none;" font-family="Space Mono, ui-monospace, monospace">
+        <rect x="6" y="18" width="18" height="26" rx="3" fill="#b14f2b"></rect>
+        <rect x="36" y="4" width="18" height="40" rx="3" fill="#e2d3bc"></rect>
+        <text x="15" y="54" text-anchor="middle" font-size="8.5" fill="#5c4a35">push</text>
+        <text x="45" y="54" text-anchor="middle" font-size="8.5" fill="#5c4a35">autres</text>
+        <text x="15" y="14" text-anchor="middle" font-size="8.5" font-weight="700" fill="#33291f">180</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="ev">
+    <div class="evh"><div class="rk">2</div><div class="ch">Course × Muscu</div><div class="st"><span class="bars"><span style="height: 6px; background: #b14f2b;"></span><span style="height: 9px; background: #b14f2b;"></span><span style="height: 12px; background: #b14f2b;"></span></span>forte</div></div>
+    <div class="evt">Ton push suit le fractionné</div>
+    <div class="evb">3 push sur 4, moins de 20 h après un fractionné.</div>
+    <div style="display: flex; gap: 6px; margin-top: 3px;">
+      <div style="flex: 1; height: 6px; border-radius: 3px; background: #b14f2b;"></div>
+      <div style="flex: 1; height: 6px; border-radius: 3px; background: #b14f2b;"></div>
+      <div style="flex: 1; height: 6px; border-radius: 3px; background: #e2d3bc;"></div>
+      <div style="flex: 1; height: 6px; border-radius: 3px; background: #b14f2b;"></div>
+    </div>
+  </div>
+
+  <div class="ev">
+    <div class="evh"><div class="rk">3</div><div class="ch">Sommeil</div><div class="st"><span class="bars"><span style="height: 6px; background: #b14f2b;"></span><span style="height: 9px; background: #b14f2b;"></span><span style="height: 12px;"></span></span>moyenne</div></div>
+    <div class="evt">Nuits courtes la veille du push</div>
+    <div class="evb"><b style="font-family: 'Space Mono', ui-monospace, monospace; color: #33291f;">6 h 05</b> avant un push, <b style="font-family: 'Space Mono', ui-monospace, monospace; color: #33291f;">7 h 20</b> les autres nuits.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 4px; padding: 2px 4px;">
+    <div style="font-weight: 700; font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: #786a59;">Pistes écartées</div>
+    <div style="font-size: 12.5px; line-height: 17px; color: #786a59;"><span style="text-decoration: line-through;">Volume pectoraux</span> — 12 séries/sem., stable.</div>
+    <div style="font-size: 12.5px; line-height: 17px; color: #786a59;"><span style="text-decoration: line-through;">Surentraînement</span> — charge habituelle.</div>
+  </div>
+
+  <div style="background: #33291f; border-radius: 22px; padding: 14px 16px; position: relative; overflow: hidden;">
+    <div style="position: absolute; width: 150px; height: 150px; border-radius: 50%; background: #b14f2b; opacity: .22; filter: blur(28px); top: -60px; right: -40px;"></div>
+    <div style="position: relative;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; color: #d9a888;">À essayer trois semaines</div>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.5px; line-height: 1.15; color: #fff; margin-top: 4px;">Push le mercredi, et +40 g de glucides au déjeuner</div>
+      <div style="margin-top: 10px; height: 46px; border-radius: 14px; background: #b14f2b; display: flex; align-items: center; justify-content: center; gap: 8px;">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"></path><path d="M10 3v6l-5 9a2 2 0 0 0 1.8 3h10.4a2 2 0 0 0 1.8-3l-5-9V3"></path></svg>
+        <div style="font-weight: 700; font-size: 15px; color: #fff;">Lancer comme expérience</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="font-size: 11.5px; line-height: 15px; color: #786a59; text-align: center; padding: 0 6px;">Chiffres calculés sur ton téléphone. L'IA a choisi les pistes et rédigé&nbsp;; elle n'a reçu que des agrégats.</div>
+
+</div>
+</x-dc>
+</body>
+</html>

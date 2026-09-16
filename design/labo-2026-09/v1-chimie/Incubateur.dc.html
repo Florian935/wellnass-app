@@ -1,0 +1,129 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #120d08; }
+    a { color: #e0a97f; }
+    a:hover { color: #f2c9a4; }
+    @keyframes rise { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: .9; } 100% { transform: translateY(-26px); opacity: 0; } }
+    .b { animation: rise 2.2s linear infinite; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: radial-gradient(100% 45% at 50% 0%, #2f2418 0%, #1c150e 60%, #120d08 100%); color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; padding: 14px 20px 22px; gap: 12px;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+      <div style="font-weight: 600; font-size: 14px;">Incubation</div>
+    </div>
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a;">25/08 → 19/10</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -.9px; line-height: 1.05;">Ta formule prend</div>
+    <div style="font-size: 14px; line-height: 20px; color: #c9b79a;">Une fiole par semaine, remplie de ce que tu as vraiment fait.</div>
+  </div>
+
+  <svg width="350" height="112" viewBox="0 0 350 112" style="display: block; flex: none;" font-family="Space Mono, ui-monospace, monospace">
+    <defs>
+      <linearGradient id="mix" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e0b155"></stop><stop offset=".25" stop-color="#d97fa0"></stop><stop offset=".55" stop-color="#6fa8ef"></stop><stop offset="1" stop-color="#a9ba7e"></stop></linearGradient>
+      <radialGradient id="halo" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e0a97f" stop-opacity=".45"></stop><stop offset="1" stop-color="#e0a97f" stop-opacity="0"></stop></radialGradient>
+      <clipPath id="w0"><path d="M17,24 L17,42.8 A16,16 0 1,0 27,42.8 L27,24 Z"></path></clipPath>
+      <clipPath id="w1"><path d="M60.7,24 L60.7,42.8 A16,16 0 1,0 70.7,42.8 L70.7,24 Z"></path></clipPath>
+      <clipPath id="w2"><path d="M104.4,24 L104.4,42.8 A16,16 0 1,0 114.4,42.8 L114.4,24 Z"></path></clipPath>
+    </defs>
+    <line x1="0" y1="76.5" x2="350" y2="76.5" stroke="#3a2e22" stroke-width="3"></line>
+      
+      <g clip-path="url(#w0)"><rect x="4" y="44" width="36" height="32.0" fill="url(#mix)"></rect>
+      </g>
+      <path d="M17,24 L17,42.8 A16,16 0 1,0 27,42.8 L27,24 Z" fill="rgba(255,255,255,.04)" stroke="rgba(244,236,221,.55)" stroke-width="1.6"></path>
+      <text x="22" y="94" font-size="10" font-weight="700" fill="#f4ecdd" text-anchor="middle">S1</text>
+      <text x="22" y="107" font-size="9" fill="#c9b79a" text-anchor="middle">100 %</text>
+      
+      <g clip-path="url(#w1)"><rect x="47.7" y="49.1" width="36" height="26.9" fill="url(#mix)"></rect>
+      </g>
+      <path d="M60.7,24 L60.7,42.8 A16,16 0 1,0 70.7,42.8 L70.7,24 Z" fill="rgba(255,255,255,.04)" stroke="rgba(244,236,221,.55)" stroke-width="1.6"></path>
+      <text x="65.7" y="94" font-size="10" font-weight="700" fill="#f4ecdd" text-anchor="middle">S2</text>
+      <text x="65.7" y="107" font-size="9" fill="#c9b79a" text-anchor="middle">83 %</text>
+      <circle cx="109.4" cy="58" r="26" fill="url(#halo)"></circle>
+      <g clip-path="url(#w2)"><rect x="91.4" y="62" width="36" height="14.0" fill="url(#mix)"></rect>
+      <circle class="b" cx="105.4" cy="72" r="1.8" fill="#fff"></circle><circle class="b" cx="113.4" cy="72" r="1.4" fill="#fff" style="animation-delay: -1.2s;"></circle></g>
+      <path d="M104.4,24 L104.4,42.8 A16,16 0 1,0 114.4,42.8 L114.4,24 Z" fill="rgba(255,255,255,.04)" stroke="rgba(244,236,221,.8)" stroke-width="1.6"></path>
+      <text x="109.4" y="94" font-size="10" font-weight="700" fill="#e0a97f" text-anchor="middle">S3</text>
+      <text x="109.4" y="107" font-size="9" fill="#c9b79a" text-anchor="middle">en cours</text>
+      <path d="M148.1,24 L148.1,42.8 A16,16 0 1,0 158.1,42.8 L158.1,24 Z" fill="none" stroke="rgba(244,236,221,.28)" stroke-width="1.4" stroke-dasharray="3 3"></path>
+      <text x="153.1" y="94" font-size="10" font-weight="700" fill="#8a7e72" text-anchor="middle">S4</text>
+      <path d="M191.8,24 L191.8,42.8 A16,16 0 1,0 201.8,42.8 L201.8,24 Z" fill="none" stroke="rgba(244,236,221,.28)" stroke-width="1.4" stroke-dasharray="3 3"></path>
+      <text x="196.8" y="94" font-size="10" font-weight="700" fill="#8a7e72" text-anchor="middle">S5</text>
+      <path d="M235.5,24 L235.5,42.8 A16,16 0 1,0 245.5,42.8 L245.5,24 Z" fill="none" stroke="rgba(244,236,221,.28)" stroke-width="1.4" stroke-dasharray="3 3"></path>
+      <text x="240.5" y="94" font-size="10" font-weight="700" fill="#8a7e72" text-anchor="middle">S6</text>
+      <path d="M279.2,24 L279.2,42.8 A16,16 0 1,0 289.2,42.8 L289.2,24 Z" fill="none" stroke="rgba(244,236,221,.28)" stroke-width="1.4" stroke-dasharray="3 3"></path>
+      <text x="284.2" y="94" font-size="10" font-weight="700" fill="#8a7e72" text-anchor="middle">S7</text>
+      <path d="M322.9,24 L322.9,42.8 A16,16 0 1,0 332.9,42.8 L332.9,24 Z" fill="none" stroke="rgba(244,236,221,.28)" stroke-width="1.4" stroke-dasharray="3 3"></path>
+      <text x="327.9" y="94" font-size="10" font-weight="700" fill="#8a7e72" text-anchor="middle">S8</text>
+  </svg>
+
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #c9b79a;">Ce qui mûrit</div>
+      <div style="font-size: 12px; color: #c9b79a;">projection à 90 %</div>
+    </div>
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 58px; box-sizing: border-box; padding: 8px 12px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(244,236,221,.12);">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 1px;">
+          <div style="font-size: 12px; color: #c9b79a; white-space: nowrap;">Total SBD · visé 385</div>
+          <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -.5px; white-space: nowrap;">372 kg</div>
+        </div>
+        <svg width="90" height="34" viewBox="0 0 90 34" style="display: block; flex: none;"><path d="M44,19 L88,2 L88,15 Z" fill="#a9ba7e" opacity=".18"></path><path d="M2,28 L16,25 L30,24 L44,19" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M44,19 L88,8" fill="none" stroke="#a9ba7e" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="round"></path><circle cx="44" cy="19" r="3" fill="#f4ecdd"></circle></svg>
+        <div style="width: 70px; text-align: right; font-size: 11px; font-weight: 700; color: #a9ba7e; line-height: 14px;">sur la trajectoire</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 58px; box-sizing: border-box; padding: 8px 12px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(244,236,221,.12);">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 1px;">
+          <div style="font-size: 12px; color: #c9b79a; white-space: nowrap;">10 km estimé · visé 48:00</div>
+          <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -.5px; white-space: nowrap;">49:10</div>
+        </div>
+        <svg width="90" height="34" viewBox="0 0 90 34" style="display: block; flex: none;"><path d="M44,15 L88,18 L88,31 Z" fill="#e0b155" opacity=".18"></path><path d="M2,8 L16,10 L30,12 L44,15" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M44,15 L88,24" fill="none" stroke="#e0b155" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="round"></path><circle cx="44" cy="15" r="3" fill="#f4ecdd"></circle></svg>
+        <div style="width: 70px; text-align: right; font-size: 11px; font-weight: 700; color: #e0b155; line-height: 14px;">juste</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 58px; box-sizing: border-box; padding: 8px 12px; border-radius: 16px; background: rgba(255,255,255,.06); border: 1px solid rgba(244,236,221,.12);">
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 1px;">
+          <div style="font-size: 12px; color: #c9b79a; white-space: nowrap;">Poids · −0,4 kg/sem</div>
+          <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -.5px; white-space: nowrap;">77,6 kg</div>
+        </div>
+        <svg width="90" height="34" viewBox="0 0 90 34" style="display: block; flex: none;"><path d="M44,18 L88,22 L88,30 Z" fill="#a9ba7e" opacity=".18"></path><path d="M2,10 L16,13 L30,15 L44,18" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><path d="M44,18 L88,26" fill="none" stroke="#a9ba7e" stroke-width="2" stroke-dasharray="3 3" stroke-linecap="round"></path><circle cx="44" cy="18" r="3" fill="#f4ecdd"></circle></svg>
+        <div style="width: 70px; text-align: right; font-size: 11px; font-weight: 700; color: #a9ba7e; line-height: 14px;">conforme</div>
+      </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 18px; background: rgba(255,255,255,.06); border: 1px solid rgba(244,236,221,.12);">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;"><div style="font-weight: 700; font-size: 14.5px;">Relevés du matin</div><div style="font-size: 12px; color: #c9b79a;">ton énergie</div></div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px;">
+      <div style="height: 44px; border-radius: 12px; border: 1px solid rgba(244,236,221,.2); display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #c9b79a;">1</div>
+      <div style="height: 44px; border-radius: 12px; border: 1px solid rgba(244,236,221,.2); display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #c9b79a;">2</div>
+      <div style="height: 44px; border-radius: 12px; border: 1px solid rgba(244,236,221,.2); display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #c9b79a;">3</div>
+      <div style="height: 44px; border-radius: 12px; background: #e0a97f; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #1c150e;">4</div>
+      <div style="height: 44px; border-radius: 12px; border: 1px solid rgba(244,236,221,.2); display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #c9b79a;">5</div>
+    </div>
+    <div style="font-size: 12px; color: #c9b79a;">Nuit 7 h 10 (Health Connect) · courbatures : jambes</div>
+  </div>
+
+  <div style="margin-top: auto; background: #dd6e40; color: #1c150e; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase;">La manip du jour</div>
+      <div style="display: flex; align-items: center; gap: 4px; font-weight: 700; font-size: 13px;">Voir la séance <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1c150e" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></div>
+    </div>
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px;">6 × 800 m · 18 h 30</div>
+    <div style="font-size: 13px; line-height: 18px;">Collation de 40 g à 17 h 30 : c'est le bras A de ton essai. Glucides du jour 5,5 g/kg, jour dur.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

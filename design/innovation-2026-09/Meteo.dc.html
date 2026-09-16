@@ -1,0 +1,141 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .day { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0 7px; border-radius: 14px; }
+    .dl { font-weight: 600; font-size: 11px; color: #786a59; }
+    .ds { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 14px; color: #33291f; }
+    .tags { display: flex; gap: 2px; height: 14px; }
+    .tg { width: 14px; height: 14px; border-radius: 4px; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 8.5px; color: #fff; display: flex; align-items: center; justify-content: center; }
+    .drv { display: flex; align-items: center; gap: 12px; padding: 7px 0; border-bottom: 1px solid #ece0cd; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+
+  <div style="padding: 16px 20px 0; display: flex; flex-direction: column; gap: 10px; flex: 1; min-height: 0;">
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+      <div>
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; color: #786a59;">Prévisions de forme · 7 jours</div>
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -.8px; margin-top: 4px;">Météo intérieure</div>
+      </div>
+      <div style="font-size: 11.5px; color: #786a59; padding-bottom: 6px;">màj 7 h 02</div>
+    </div>
+
+    <!-- Aujourd'hui -->
+    <div style="background: #33291f; border-radius: 22px; padding: 16px 18px; position: relative; overflow: hidden; display: flex; gap: 16px; align-items: center;">
+      <div style="position: absolute; width: 160px; height: 160px; border-radius: 50%; background: #b14f2b; opacity: .22; filter: blur(30px); top: -70px; left: -40px;"></div>
+      <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#e0b155" stroke-width="1.5" stroke-linecap="round" style="position: relative; flex: none;"><circle cx="12" cy="12" r="4.2"></circle><line x1="12" y1="2.5" x2="12" y2="4.5"></line><line x1="12" y1="19.5" x2="12" y2="21.5"></line><line x1="2.5" y1="12" x2="4.5" y2="12"></line><line x1="19.5" y1="12" x2="21.5" y2="12"></line><line x1="5.3" y1="5.3" x2="6.7" y2="6.7"></line><line x1="17.3" y1="17.3" x2="18.7" y2="18.7"></line><line x1="5.3" y1="18.7" x2="6.7" y2="17.3"></line><line x1="17.3" y1="6.7" x2="18.7" y2="5.3"></line></svg>
+      <div style="position: relative; min-width: 0;">
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; color: #d9a888;">Aujourd'hui · lun. 14</div>
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -.6px; color: #fff; margin-top: 4px;">Belle forme</div>
+        <div style="font-size: 13px; color: #c9b79a; margin-top: 2px;"><b style="font-family: 'Space Mono', ui-monospace, monospace; color: #f0e4d0;">72</b> / 100 · fourchette 65–78</div>
+      </div>
+    </div>
+
+    <!-- Semaine -->
+    <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 10px 10px 8px;">
+      <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px;">
+        <div class="day" style="background: #f3ddd0;">
+          <div class="dl" style="color: #a34e2c;">Lun</div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b47f31" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="3" x2="12" y2="5"></line><line x1="12" y1="19" x2="12" y2="21"></line><line x1="3" y1="12" x2="5" y2="12"></line><line x1="19" y1="12" x2="21" y2="12"></line></svg>
+          <div class="ds">72</div>
+          <div class="tags"><div class="tg" style="background: #6b0028;">M</div></div>
+        </div>
+        <div class="day">
+          <div class="dl">Mar</div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="3" stroke="#b47f31"></circle><path d="M9 20h9a3.5 3.5 0 0 0 .4-6.97A5 5 0 0 0 8.8 14.3 2.9 2.9 0 0 0 9 20z" stroke="#786a59"></path></svg>
+          <div class="ds">58</div>
+          <div class="tags"><div class="tg" style="background: #6b0028;">M</div><div class="tg" style="background: #2f6fc0;">C</div></div>
+        </div>
+        <div class="day" style="border: 1.5px dashed #90897d; padding: 6.5px 0 5.5px;">
+          <div class="dl">Mer</div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#5c4a35" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 15h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 8.2 3.5 3.5 0 0 0 7 15z"></path><path d="M12.5 16.5l-2 3h3l-2 3"></path></svg>
+          <div class="ds">49</div>
+          <div class="tags"></div>
+        </div>
+        <div class="day" style="box-shadow: inset 0 0 0 2px #66714b;">
+          <div class="dl" style="color: #66714b;">Jeu</div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b47f31" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="3" x2="12" y2="5"></line><line x1="12" y1="19" x2="12" y2="21"></line><line x1="3" y1="12" x2="5" y2="12"></line><line x1="19" y1="12" x2="21" y2="12"></line><line x1="5.6" y1="5.6" x2="7" y2="7"></line><line x1="17" y1="17" x2="18.4" y2="18.4"></line><line x1="5.6" y1="18.4" x2="7" y2="17"></line><line x1="17" y1="7" x2="18.4" y2="5.6"></line></svg>
+          <div class="ds">81</div>
+          <div class="tags"><div class="tg" style="background: #6b0028;">M</div></div>
+        </div>
+        <div class="day">
+          <div class="dl">Ven</div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b47f31" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="4"></circle><line x1="12" y1="3" x2="12" y2="5"></line><line x1="12" y1="19" x2="12" y2="21"></line><line x1="3" y1="12" x2="5" y2="12"></line><line x1="19" y1="12" x2="21" y2="12"></line></svg>
+          <div class="ds">74</div>
+          <div class="tags"><div class="tg" style="background: #2f6fc0;">C</div></div>
+        </div>
+        <div class="day">
+          <div class="dl">Sam</div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="8.5" cy="8.5" r="3" stroke="#b47f31"></circle><path d="M9 20h9a3.5 3.5 0 0 0 .4-6.97A5 5 0 0 0 8.8 14.3 2.9 2.9 0 0 0 9 20z" stroke="#786a59"></path></svg>
+          <div class="ds">66</div>
+          <div class="tags"><div class="tg" style="background: #2f6fc0;">C</div></div>
+        </div>
+        <div class="day">
+          <div class="dl">Dim</div>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18h10a4 4 0 0 0 .5-7.97A6 6 0 0 0 6.1 11.2 3.5 3.5 0 0 0 7 18z"></path></svg>
+          <div class="ds">70</div>
+          <div class="tags"></div>
+        </div>
+      </div>
+      <svg width="328" height="64" viewBox="0 0 328 64" style="display: block; margin-top: 6px;">
+        <path d="M22.6 15.7 L69.7 29.7 L116.9 39 L164 6.3 L211.1 12.2 L258.3 20.3 L305.4 14.5 L305.4 36.7 L258.3 40.2 L211.1 29.7 L164 20.3 L116.9 60 L69.7 48.3 L22.6 30.8 Z" fill="#f3ddd0"></path>
+        <path d="M22.6 22.7 L69.7 39 L116.9 49.5 L164 12.2 L211.1 20.3 L258.3 29.7 L305.4 25" fill="none" stroke="#b14f2b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+        <circle cx="22.6" cy="22.7" r="4" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle>
+        <circle cx="164" cy="12.2" r="4" fill="#66714b" stroke="#fffaf2" stroke-width="2"></circle>
+      </svg>
+      <div style="display: flex; justify-content: space-between; font-size: 10.5px; color: #786a59; padding: 0 6px;">
+        <span>bande = fourchette, qui s'élargit avec le temps</span>
+        <span style="display: flex; align-items: center; gap: 4px;"><span class="tg" style="background: #6b0028; width: 11px; height: 11px; font-size: 7px;">M</span>muscu <span class="tg" style="background: #2f6fc0; width: 11px; height: 11px; font-size: 7px;">C</span>course</span>
+      </div>
+    </div>
+
+    <!-- Fenêtre record -->
+    <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;">
+      <div style="align-self: flex-start; border-radius: 999px; padding: 3px 9px; background: rgba(102, 113, 75, .14); font-weight: 700; font-size: 10.5px; letter-spacing: .7px; text-transform: uppercase; color: #66714b;">Fenêtre record</div>
+      <div style="font-weight: 700; font-size: 16px; line-height: 21px;">Jeudi 17, ta meilleure journée</div>
+      <div style="font-size: 14px; line-height: 20px; color: #786a59;">Forme prévue 81 (74–86). Si tu veux tenter 82,5 kg au développé couché, c'est ce jour-là.</div>
+      <div style="margin-top: 4px; height: 44px; border-radius: 14px; border: 1.5px solid #33291f; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px;">Déplacer le push à jeudi</div>
+    </div>
+
+    <!-- Ce qui fait la météo -->
+    <div style="display: flex; flex-direction: column; padding: 0 4px;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 17px; letter-spacing: -.3px; margin-bottom: 2px;">Pourquoi mercredi est gris</div>
+      <div class="drv">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M6 13l6 6 6-6"></path></svg>
+        <div style="flex: 1;"><div style="font-weight: 700; font-size: 13.5px;">Charge de la veille</div><div style="font-size: 12px; color: #786a59;">Mardi&nbsp;: jambes et fractionné le même jour</div></div>
+      </div>
+      <div class="drv">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"></path><path d="M6 13l6 6 6-6"></path></svg>
+        <div style="flex: 1;"><div style="font-weight: 700; font-size: 13.5px;">Glucides planifiés bas</div><div style="font-size: 12px; color: #786a59;">180 g prévus, pour 290 g dépensés</div></div>
+      </div>
+      <div class="drv" style="border-bottom: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round"><line x1="5" y1="10" x2="19" y2="10"></line><line x1="5" y1="14" x2="19" y2="14"></line></svg>
+        <div style="flex: 1;"><div style="font-weight: 700; font-size: 13.5px;">Sommeil stable</div><div style="font-size: 12px; color: #786a59;">7 h 10 en moyenne sur 14 nuits</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 64px; flex: none; background: #fffaf2; border-top: 1px solid #ece0cd; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));">
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg><div style="font-weight: 600; font-size: 11px; color: #b14f2b;">Accueil</div></div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect></svg><div style="font-weight: 600; font-size: 11px; color: #786a59;">Muscu</div></div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19l4-5 3 2 3-6 4 2"></path><circle cx="15" cy="5" r="2"></circle></svg><div style="font-weight: 600; font-size: 11px; color: #786a59;">Course</div></div>
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14z"></path><path d="M5 19l7-7"></path></svg><div style="font-weight: 600; font-size: 11px; color: #786a59;">Alim</div></div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

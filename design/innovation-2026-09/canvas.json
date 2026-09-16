@@ -1,0 +1,20 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Compte rendu — carnet d'innovation", "x": 0, "y": 0, "w": 1200, "h": 8100, "print": "flow" },
+    { "file": "Fantome.dc.html", "title": "01 · Le Fantôme", "x": 1320, "y": 0, "w": 390, "h": 844 },
+    { "file": "Reservoir.dc.html", "title": "02 · Le Réservoir", "x": 1790, "y": 0, "w": 390, "h": 844 },
+    { "file": "Meteo.dc.html", "title": "03 · Météo intérieure", "x": 2260, "y": 0, "w": 390, "h": 844 },
+    { "file": "Labo.dc.html", "title": "04 · Labo N=1", "x": 2730, "y": 0, "w": 390, "h": 844 },
+    { "file": "Leviers.dc.html", "title": "05 · Carte des leviers", "x": 3200, "y": 0, "w": 390, "h": 844 },
+    { "file": "Enquete.dc.html", "title": "06 · L'Enquête", "x": 1320, "y": 1080, "w": 390, "h": 844 },
+    { "file": "Conseil.dc.html", "title": "07 · Le Conseil des trois", "x": 1790, "y": 1080, "w": 390, "h": 844 },
+    { "file": "ImportPlan.dc.html", "title": "08 · Colle ton plan", "x": 2260, "y": 1080, "w": 390, "h": 844 },
+    { "file": "VitesseBarre.dc.html", "title": "09 · Vitesse de barre", "x": 2730, "y": 1080, "w": 390, "h": 844 },
+    { "file": "Survol.dc.html", "title": "10 · Survol 3D", "x": 3200, "y": 1080, "w": 390, "h": 844 }
+  ],
+  "annotations": [
+    { "id": "rangee-locale", "x": 1320, "y": -170, "w": 720, "text": "Rangée 1 — le moteur local. Aucune IA générative, tout fonctionne hors ligne. Données fictives." },
+    { "id": "rangee-ia", "x": 1320, "y": 900, "w": 720, "text": "Rangée 2 — l'IA et les sens du téléphone. Vision, agent outillé, caméra, relief 3D. Données fictives." }
+  ],
+  "launch": { "view": "canvas" }
+}

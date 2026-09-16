@@ -3962,7 +3962,15 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 >
 > 1. **Créer une clé Gemini gratuite** sur <https://aistudio.google.com/apikey> (compte Google, pas
 >    de carte bancaire). Quota du palier gratuit : ~10 requêtes/min, ~1 500/jour.
-> 2. `supabase secrets set GEMINI_API_KEY=…` puis `supabase functions deploy ai-assist`.
+> 2. Poser le secret et déployer. 🔴 **`npx`, et `--use-api`** :
+>    ```
+>    npx supabase secrets set GEMINI_API_KEY=…
+>    npx supabase functions deploy ai-assist --use-api
+>    ```
+>    Le CLI est une **dépendance du projet**, pas un binaire global : `supabase` seul renvoie
+>    « n'est pas reconnu ». Et `--use-api` fait faire le bundle côté serveur — sans lui, le
+>    déploiement réclame **Docker**, que ni Florian ni Damien n'ont.
+>    Le projet est déjà lié (`nsxzflxsgovriwwvflxe`) : rien d'autre à passer.
 >    Tant que ce n'est pas fait, la fonction répond `ai_unavailable` — **et rien n'est facturé**.
 > 3. Jouer [`supabase/scripts/ia-purge-et-dataset.sql`](supabase/scripts/ia-purge-et-dataset.sql)
 >    dans le **SQL Editor** du cloud. ⚠️ Il **efface** toutes tes données d'entraînement, de course,
@@ -3980,8 +3988,21 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 
 ### Le jeu de données
 
-- [ ] **1.** Le script s'exécute **sans erreur** et affiche son compte rendu : ~68 séances,
-  ~700 séries, ~51 sorties, ~460 lignes de journal alimentaire, 18 pesées, ~9 activités.
+- [ ] **1.** Le script s'exécute **sans erreur** (« Success. No rows returned »). ⚠️ Le SQL Editor
+  de Supabase n'affiche **que des lignes** : les `raise notice` du script, donc son compte rendu,
+  n'y apparaissent jamais. Jouer ensuite
+  [`supabase/scripts/ia-verification.sql`](supabase/scripts/ia-verification.sql), qui rend un
+  tableau : volumétrie (~68 séances, ~680 séries, ~51 sorties, ~460 lignes de repas, 18 pesées)
+  **et surtout la confirmation des six signaux**, chaque ligne portant sa valeur attendue.
+- [ ] **1 bis.** 🔴 **Les six signaux sont bien dans les données** avant d'interroger l'IA. Juger
+  une réponse contre un signal non confirmé, c'est tester deux choses à la fois et n'en conclure
+  aucune : la vérité de référence se vérifie **d'abord**. Chaque ligne « 28 j / 28 précédents » doit
+  montrer l'écart annoncé : pectoraux identiques, jambes en hausse, −20 % de calories, énergie en
+  baisse, stress en hausse, allure ~30 s plus lente, poids quasi identique.
+- [ ] **1 ter.** ⚠️ **Si tu as joué le script AVANT le 16/09/2026 (correction des fenêtres),
+  rejoue-le** : S3 et S5 portaient sur 21 jours au lieu de 28, et la dégradation d'allure était deux
+  fois trop faible pour être lisible. Le script est rejouable autant de fois que voulu — il commence
+  par tout effacer.
 - [ ] **2.** 🔴 **Le compte survit.** Après exécution, l'app se **reconnecte normalement** avec le
   même identifiant : le script n'a effacé que des données, jamais le compte.
 - [ ] **3.** 🔴 **La bibliothèque survit.** La liste des exercices et le catalogue d'aliments
@@ -4009,6 +4030,13 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 - [ ] **11.** Dans le labo, l'**avertissement rouge est le premier élément** de l'écran.
 - [ ] **12.** Déplier « Ce qui est envoyé » : le texte affiché est **lisible**, chiffré, et
   ressemble à `PROFIL — … / POIDS — … / MUSCULATION — … / COURSE — … / NUTRITION — …`.
+- [ ] **12 bis.** 🔴 **La section `TENDANCES` est présente en fin de bloc**, avec une ligne par
+  mesure au format « X contre Y — ±Z % ». C'est elle qui rend les signaux trouvables : sans elle, le
+  modèle ne voit que des moyennes sur 90 jours et **aucune** évolution. Vérifier qu'y figurent au
+  moins : poids, calories, protéines, allure, énergie, stress.
+- [ ] **12 ter.** La ligne « Charge max, 28 derniers jours contre les 28 précédents » du bloc
+  MUSCULATION montre le **développé couché à l'identique** et le **squat en hausse**. C'est la forme
+  exacte sous laquelle S1 devient trouvable.
 - [ ] **13.** 🔴 **Aucune identité.** Ni prénom, ni e-mail, ni date de naissance (l'**âge** y est,
   la date non), ni note de séance, ni note d'exercice, ni coordonnée GPS. Relire le bloc en entier.
 - [ ] **14.** Les **pas**, le **bien-être** et les **autres activités** (vélo, natation) y figurent.

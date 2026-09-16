@@ -1,0 +1,199 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; } a:hover { color: #8a3c1f; }
+    @keyframes haloP { 0%, 100% { opacity: .15; } 50% { opacity: .45; } }
+    .halo { animation: haloP 2s ease-in-out infinite; }
+    @keyframes rise { from { opacity: .35; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    @keyframes wobB { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(1.6px); } }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+  <div style="flex: none; position: relative; overflow: hidden; background: radial-gradient(72% 58% at 12% 8%, rgba(107,0,40,.92) 0%, rgba(107,0,40,0) 72%), radial-gradient(70% 56% at 94% 14%, rgba(42,100,173,.9) 0%, rgba(42,100,173,0) 72%), radial-gradient(90% 60% at 50% 104%, rgba(58,86,34,.95) 0%, rgba(58,86,34,0) 74%), #1c150e; color: #fff; border-radius: 0 0 30px 30px; padding: 12px 20px 14px; display: flex; flex-direction: column; gap: 4px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+      <div style="display: flex; align-items: center; gap: 6px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg><div style="font-weight: 600; font-size: 14px;">Le Labo</div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: .8px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.26);">DIRECTION B</div>
+    </div>
+    <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -.8px; line-height: 1.05;">La barre</div>
+      <div style="font-size: 13px; color: rgba(255,255,255,.8);">ta charge contre ce qui la soutient</div>
+    </div>
+    <svg width="350" height="330" viewBox="0 0 350 330" style="display: block; flex: none; overflow: visible;">
+      <text x="20" y="22" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1" fill="rgba(255,255,255,.75)">CHARGE</text>
+      <text x="20" y="46" font-family="Bricolage Grotesque, sans-serif" font-size="24" font-weight="800" fill="#fff">{{ chargeTxt }}</text>
+      <text x="20" y="62" font-family="Hanken Grotesk, sans-serif" font-size="11.5" fill="rgba(255,255,255,.75)">séances + kilomètres</text>
+      <text x="330" y="22" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1" fill="rgba(255,255,255,.75)" text-anchor="end">SOUTIEN</text>
+      <text x="330" y="46" font-family="Bricolage Grotesque, sans-serif" font-size="24" font-weight="800" fill="#fff" text-anchor="end">{{ supportTxt }}</text>
+      <text x="330" y="62" font-family="Hanken Grotesk, sans-serif" font-size="11.5" fill="rgba(255,255,255,.75)" text-anchor="end">récup + énergie</text>
+      <text x="175" y="92" font-family="Hanken Grotesk, sans-serif" font-size="13" font-weight="700" fill="{{ balanceColor }}" text-anchor="middle">{{ balanceTxt }}</text>
+      <!-- le support -->
+      <path d="M163,176 L187,176 L181,288 L169,288 Z" fill="rgba(244,236,221,.28)"></path>
+      <rect x="112" y="288" width="126" height="10" rx="5" fill="rgba(244,236,221,.3)"></rect>
+      <ellipse cx="175" cy="312" rx="130" ry="8" fill="rgba(0,0,0,.25)"></ellipse>
+      <g style="transform: {{ tilt }}; transform-origin: 175px 170px; transition: transform .8s cubic-bezier(.3,1.5,.5,1);">
+        <g class="wobB" style="animation: {{ wob }};">
+          <line x1="12" y1="170" x2="338" y2="170" stroke="#d9d2c7" stroke-width="7" stroke-linecap="round"></line>
+          <g stroke="rgba(28,21,14,.35)" stroke-width="1"><line x1="147" y1="167" x2="147" y2="173"></line><line x1="151.5" y1="167" x2="151.5" y2="173"></line><line x1="156" y1="167" x2="156" y2="173"></line><line x1="160.5" y1="167" x2="160.5" y2="173"></line><line x1="165" y1="167" x2="165" y2="173"></line><line x1="169.5" y1="167" x2="169.5" y2="173"></line><line x1="174" y1="167" x2="174" y2="173"></line><line x1="178.5" y1="167" x2="178.5" y2="173"></line><line x1="183" y1="167" x2="183" y2="173"></line><line x1="187.5" y1="167" x2="187.5" y2="173"></line><line x1="192" y1="167" x2="192" y2="173"></line><line x1="196.5" y1="167" x2="196.5" y2="173"></line><line x1="201" y1="167" x2="201" y2="173"></line></g>
+          <rect x="118" y="157" width="8" height="26" rx="2" fill="#bfb6a6"></rect>
+          <rect x="224" y="157" width="8" height="26" rx="2" fill="#bfb6a6"></rect>
+          <sc-for list="{{ bl }}" as="p" hint-placeholder-count="6"><rect x="{{ p.x }}" y="{{ p.y }}" width="{{ p.w }}" height="{{ p.h }}" rx="3" fill="{{ p.fill }}" stroke="{{ p.stroke }}" stroke-width="1.5"></rect></sc-for>
+          <sc-for list="{{ br }}" as="p" hint-placeholder-count="4"><rect x="{{ p.x }}" y="{{ p.y }}" width="{{ p.w }}" height="{{ p.h }}" rx="3" fill="{{ p.fill }}" stroke="{{ p.stroke }}" stroke-width="1.5"></rect></sc-for>
+          <g font-family="Space Mono, monospace" font-size="9" font-weight="700" letter-spacing=".8">
+            <text x="62" y="252" fill="#ff9ec0" text-anchor="middle">MUSCU · COURSE</text>
+            <text x="276" y="252" fill="#d8e6b4" text-anchor="middle">NUTRITION · NUIT</text>
+          </g>
+          <sc-if value="{{ zmc.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="70" cy="104" r="17" fill="{{ zmc.fill }}" opacity=".28" class="halo"></circle>
+          <circle cx="70" cy="104" r="11" fill="{{ zmc.fill }}" stroke="{{ zmc.ring }}" stroke-width="2"></circle>
+          <text x="70" y="108" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zmc.fg }}" text-anchor="middle">{{ zmc.n }}</text>
+        </sc-if>
+          <sc-if value="{{ zmn.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="150" cy="132" r="17" fill="{{ zmn.fill }}" opacity=".28" class="halo"></circle>
+          <circle cx="150" cy="132" r="11" fill="{{ zmn.fill }}" stroke="{{ zmn.ring }}" stroke-width="2"></circle>
+          <text x="150" y="136" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zmn.fg }}" text-anchor="middle">{{ zmn.n }}</text>
+        </sc-if>
+          <sc-if value="{{ zcn.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="200" cy="132" r="17" fill="{{ zcn.fill }}" opacity=".28" class="halo"></circle>
+          <circle cx="200" cy="132" r="11" fill="{{ zcn.fill }}" stroke="{{ zcn.ring }}" stroke-width="2"></circle>
+          <text x="200" y="136" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zcn.fg }}" text-anchor="middle">{{ zcn.n }}</text>
+        </sc-if>
+        </g>
+      </g>
+      <circle cx="175" cy="170" r="9" fill="#1c150e" stroke="#d9d2c7" stroke-width="2.5"></circle>
+      <sc-if value="{{ ztri.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="175" cy="170" r="18" fill="{{ ztri.fill }}" opacity=".28" class="halo"></circle>
+          <circle cx="175" cy="170" r="12" fill="{{ ztri.fill }}" stroke="{{ ztri.ring }}" stroke-width="2"></circle>
+          <text x="175" y="174" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ ztri.fg }}" text-anchor="middle">{{ ztri.n }}</text>
+        </sc-if>
+    </svg>
+    <div style="display: flex; justify-content: space-between; align-items: center; height: 22px;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.3px; color: {{ verdictColor }};">{{ verdict }}</div>
+      <div style="font-size: 12px; color: rgba(255,255,255,.8);">énergie <b style="color: {{ fuelColor }};">{{ fuelWord }}</b></div>
+    </div>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 10px 20px 18px; min-height: 0;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Joue avec tes leviers</div><div style="font-size: 12px; color: #786a59;">mêmes règles partout</div></div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">
+      <sc-for list="{{ levers }}" as="l" hint-placeholder-count="4">
+        <div style="display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 4px; border-radius: 16px; background: #fffaf2; border: 1px solid #ece0cd;">
+          <div style="display: flex; align-items: center; gap: 6px;"><sc-if value="{{ l.isMuscu }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6b0028" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect><line x1="1.5" y1="10.5" x2="1.5" y2="13.5"></line><line x1="22.5" y1="10.5" x2="22.5" y2="13.5"></line></svg></sc-if><sc-if value="{{ l.isCourse }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a64ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 3-4 6-4s3 4 6 4 3-7 6-7"></path><circle cx="21" cy="10" r="1.2" fill="#2a64ad"></circle></svg></sc-if><sc-if value="{{ l.isNutrition }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#52703a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-5 0-8-4-8-9 0-4 3-6 5-6 1.5 0 2.3.7 3 .7s1.5-.7 3-.7c2 0 5 2 5 6 0 5-3 9-8 9z"></path><path d="M12 7c0-2 1-4 3-4"></path></svg></sc-if><span style="font-weight: 700; font-size: 13px; color: {{ l.color }};">{{ l.name }}</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div onClick="{{ l.minus }}" style="width: 44px; height: 40px; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; opacity: {{ l.minusOp }};"><div style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></div></div>
+            <div style="display: flex; flex-direction: column; align-items: center;"><span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px;">{{ l.dose }}</span><span style="font-size: 10px; color: #786a59;">{{ l.unit }}</span></div>
+            <div onClick="{{ l.plus }}" style="width: 44px; height: 40px; display: flex; align-items: center; justify-content: flex-end; cursor: pointer; opacity: {{ l.plusOp }};"><div style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><line x1="12" y1="5" x2="12" y2="19"></line></svg></div></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Croisements</div><div style="font-size: 12px; color: #786a59;">{{ reacCount }}</div></div>
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <sc-for list="{{ reactions }}" as="r" hint-placeholder-count="2">
+        <div style="display: flex; gap: 9px; align-items: center; min-height: 46px; box-sizing: border-box; padding: 5px 11px; border-radius: 14px; background: {{ r.bg }}; border: 1px solid {{ r.border }}; animation: rise .3s ease-out both;">
+          <svg width="24" height="20" viewBox="0 0 26 22" style="flex: none;"><circle cx="9" cy="11" r="7.5" fill="{{ r.ca }}" fill-opacity=".2" stroke="{{ r.ca }}" stroke-width="1.6"></circle><circle cx="17" cy="11" r="7.5" fill="{{ r.cb }}" fill-opacity=".2" stroke="{{ r.cb }}" stroke-width="1.6"></circle></svg>
+          <div style="flex: 1; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; gap: 6px;"><span style="font-weight: 700; font-size: 13px;">{{ r.title }}</span><span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: {{ r.fg }}; margin-top: 2px; white-space: nowrap;">{{ r.kindLabel }}</span></div>
+            <div style="font-size: 12px; line-height: 15px; color: #786a59;">{{ r.text }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { fq: 4, km: 30, kc: 1, gl: false };
+
+  renderVals() {
+    var engine = function engine(s, self) {
+  var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  var KC = [0, -250, -500];
+  var charge = s.fq * 9 + s.km * 1.4 + 12;
+  var base = 3 * 9 + 25 * 1.4 + 12;
+  var jump = Math.round((charge / base - 1) * 100);
+  var recup = clamp(Math.round(104 - Math.max(0, charge - 60) * 1.1 - [0, 10, 26][s.kc]), 6, 100);
+  var fuel = clamp(Math.round(72 + (s.gl ? 16 : 0) - [0, 14, 34][s.kc] - Math.max(0, s.km - 25) * 1.2), 6, 100);
+  var guard = s.kc === 2 && (s.km >= 35 || s.fq >= 5);
+  var R = [];
+  if (guard) R.push({ kind: 'guard', zone: 'tri', a: 'course', b: 'nutrition', title: 'Déficit × volume', text: '−500 kcal avec ' + s.km + ' km : le cycle ne peut pas partir.' });
+  if (s.fq >= 4 && s.km >= 30) R.push({ kind: 'tension', zone: 'mc', a: 'muscu', b: 'course', title: 'Jambes × fractionné', text: 'Squat lundi, 800 m mardi : ~3 s par fraction.' });
+  if (jump > 15) R.push({ kind: 'tension', zone: 'mc', a: 'muscu', b: 'course', title: 'Charge combinée +' + jump + ' %', text: 'Au-delà de +10 %, la récup ne suit plus.' });
+  if (s.kc === 2 && !guard) R.push({ kind: 'tension', zone: 'mn', a: 'nutrition', b: 'muscu', title: 'Déficit × force', text: 'À −500 kcal, ton squat a perdu 3 % en v1.' });
+  if (s.gl) R.push({ kind: 'syn', zone: 'cn', a: 'nutrition', b: 'course', title: 'Glucides × fractionné', text: '+1,5 g/kg les jours durs : l’allure tient.' });
+  if (s.fq >= 3 && s.kc < 2) R.push({ kind: 'syn', zone: 'mn', a: 'nutrition', b: 'muscu', title: 'Protéines × musculation', text: '1,8 g/kg couvre tes séances, même en déficit.' });
+  var order = { guard: 0, tension: 1, syn: 2 };
+  R.sort(function (x, y) { return order[x.kind] - order[y.kind]; });
+
+  var TONES = {
+    syn: { label: 'synergie', fg: '#66714b', bg: 'rgba(102,113,75,.08)', border: 'rgba(102,113,75,.28)', fill: '#f2d28a', ring: '#f2d28a', mfg: '#1c150e', line: '#f2d28a' },
+    tension: { label: 'tension', fg: '#8a6419', bg: '#f7ead6', border: '#e9cfa0', fill: '#1c150e', ring: '#e0b155', mfg: '#e0b155', line: '#e0b155' },
+    guard: { label: 'garde-fou', fg: '#b23b2e', bg: 'rgba(178,59,46,.07)', border: 'rgba(178,59,46,.35)', fill: '#f08a7e', ring: '#f08a7e', mfg: '#1c150e', line: '#f08a7e' },
+  };
+  var PC = { muscu: '#6b0028', course: '#2a64ad', nutrition: '#52703a' };
+  var zone = function (z) {
+    var list = R.filter(function (r) { return r.zone === z; });
+    if (!list.length) return { show: false, n: '', fill: 'none', ring: 'none', fg: 'none', kind: '', line: 'rgba(255,255,255,.16)' };
+    var t = TONES[list[0].kind];
+    return { show: true, n: list.length, fill: t.fill, ring: t.ring, fg: t.mfg, kind: list[0].kind, line: t.line };
+  };
+  var nT = R.filter(function (r) { return r.kind !== 'syn'; }).length;
+  var set = function (k, v) { return function () { var o = {}; o[k] = v; self.setState(o); }; };
+  var KMS = [20, 25, 30, 35, 40], kmI = KMS.indexOf(s.km);
+  var tone = function (v) { return v < 35 ? '#f08a7e' : v < 60 ? '#e0b155' : '#a9ba7e'; };
+  return {
+    charge: charge, jump: jump, recup: recup, fuel: fuel, guard: guard, R: R, nT: nT,
+    zmc: zone('mc'), zmn: zone('mn'), zcn: zone('cn'), ztri: zone('tri'),
+    verdict: guard ? 'Formule bloquée' : nT ? 'Tes piliers se gênent' : 'Tes piliers s’accordent',
+    verdictColor: guard ? '#f08a7e' : nT ? '#e0b155' : '#c5d69a',
+    fuelWord: fuel < 35 ? 'à sec' : fuel < 60 ? 'juste' : 'pleine', fuelColor: tone(fuel),
+    reactions: R.slice(0, 2).map(function (r) { var t = TONES[r.kind]; return { title: r.title, text: r.text, kindLabel: t.label, fg: t.fg, bg: t.bg, border: t.border, ca: PC[r.a], cb: PC[r.b] }; }),
+    reacCount: R.length ? (R.length > 2 ? '2 sur ' + R.length : R.length + (R.length > 1 ? ' actifs' : ' actif')) : 'aucun',
+    levers: [
+      { name: 'Musculation', unit: 'séances', color: '#6b0028', soft: 'rgba(107,0,40,.08)', dose: String(s.fq), minus: set('fq', Math.max(2, s.fq - 1)), plus: set('fq', Math.min(5, s.fq + 1)), minusOp: s.fq > 2 ? 1 : 0.3, plusOp: s.fq < 5 ? 1 : 0.3, isMuscu: true },
+      { name: 'Course', unit: 'km / sem', color: '#2a64ad', soft: 'rgba(42,100,173,.08)', dose: String(s.km), minus: set('km', KMS[Math.max(0, kmI - 1)]), plus: set('km', KMS[Math.min(4, kmI + 1)]), minusOp: kmI > 0 ? 1 : 0.3, plusOp: kmI < 4 ? 1 : 0.3, isCourse: true },
+      { name: 'Balance', unit: 'kcal / jour', color: '#52703a', soft: 'rgba(82,112,58,.09)', dose: KC[s.kc] === 0 ? '0' : String(KC[s.kc]).replace('-', '−'), minus: set('kc', Math.min(2, s.kc + 1)), plus: set('kc', Math.max(0, s.kc - 1)), minusOp: s.kc < 2 ? 1 : 0.3, plusOp: s.kc > 0 ? 1 : 0.3, isNutrition: true },
+      { name: 'Glucides', unit: 'périodisés', color: '#52703a', soft: 'rgba(82,112,58,.09)', dose: s.gl ? 'oui' : 'non', minus: set('gl', false), plus: set('gl', true), minusOp: s.gl ? 1 : 0.3, plusOp: s.gl ? 0.3 : 1, isNutrition: true },
+    ],
+  };
+};
+    var view = function viewB(s, E) {
+  var support = 40 + E.recup * 0.35 + E.fuel * 0.35;
+  var diff = E.charge - support;
+  var tilt = -Math.max(-9, Math.min(11, diff * 0.3));
+  var left = [], right = [], x = 116, i;
+  for (i = 0; i < s.fq; i++) { left.push({ x: x - 11, y: 170 - 58, w: 11, h: 116, fill: '#e07a98', stroke: '#6b0028' }); x -= 14; }
+  var runs = Math.round(s.km / 10);
+  for (i = 0; i < runs; i++) { left.push({ x: x - 9, y: 170 - 46, w: 9, h: 92, fill: '#6fa8ef', stroke: '#1d4586' }); x -= 12; }
+  x = 234;
+  var eat = 1 + Math.round(E.fuel / 34);
+  for (i = 0; i < eat; i++) { right.push({ x: x, y: 170 - 54, w: 11, h: 108, fill: '#a9ba7e', stroke: '#3a5622' }); x += 14; }
+  right.push({ x: x, y: 170 - 42, w: 9, h: 84, fill: '#e0b155', stroke: '#8a6419' });
+  return {
+    bl: left, br: right, tilt: 'rotate(' + tilt.toFixed(1) + 'deg)',
+    wob: E.nT && !E.guard ? 'wobB 1.4s ease-in-out infinite' : 'none',
+    chargeTxt: String(Math.round(E.charge)), supportTxt: String(Math.round(support)),
+    balanceTxt: diff > 12 ? 'la charge l’emporte' : diff < -12 ? 'marge de soutien' : 'à l’équilibre',
+    balanceColor: diff > 12 ? '#e0b155' : '#c5d69a',
+  };
+};
+    var E = engine(this.state, this);
+    var V = view(this.state, E);
+    var out = {};
+    Object.keys(E).forEach(function (k) { out[k] = E[k]; });
+    Object.keys(V).forEach(function (k) { out[k] = V[k]; });
+    return out;
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #1c150e; }
+    a { color: #dd6e40; }
+    a:hover { color: #e0a97f; }
+    @keyframes glow { 0%, 100% { r: 7; opacity: .9; } 50% { r: 16; opacity: .15; } }
+    .glow { animation: glow 1.8s ease-in-out infinite; }
+    .chip { height: 32px; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; gap: 6px; font-weight: 600; font-size: 12px; border: 1px solid #3a2e22; color: #c9b79a; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: radial-gradient(110% 70% at 50% 35%, #2a2118 0%, #1c150e 70%); color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+
+  <!-- Scène 3D -->
+  <div style="position: absolute; left: 0; top: 70px; width: 390px; height: 440px; perspective: 900px;">
+    <div style="position: absolute; left: 15px; top: 60px; width: 360px; height: 360px; transform: rotateX(58deg) rotateZ(-30deg); border-radius: 28px; overflow: hidden; box-shadow: 0 50px 80px -20px rgba(0, 0, 0, .75); background: #241c15;">
+      <svg width="360" height="360" viewBox="0 0 320 320" style="display: block;">
+        <defs>
+          <radialGradient id="h1" cx="110" cy="110" r="110" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#4a3a2a"></stop><stop offset="1" stop-color="#241c15" stop-opacity="0"></stop></radialGradient>
+          <radialGradient id="h2" cx="230" cy="215" r="120" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#5a4633"></stop><stop offset="1" stop-color="#241c15" stop-opacity="0"></stop></radialGradient>
+        </defs>
+        <rect width="320" height="320" fill="#1f1812"></rect>
+        <rect width="320" height="320" fill="url(#h1)"></rect>
+        <rect width="320" height="320" fill="url(#h2)"></rect>
+        <g fill="none" stroke="#4a3a2a" stroke-width="1">
+          <g transform="rotate(-20 110 110)"><ellipse cx="110" cy="110" rx="26" ry="18"></ellipse><ellipse cx="110" cy="110" rx="48" ry="34"></ellipse><ellipse cx="110" cy="110" rx="72" ry="52"></ellipse><ellipse cx="110" cy="110" rx="98" ry="70"></ellipse></g>
+          <g transform="rotate(25 230 215)" stroke="#5c4a35"><ellipse cx="230" cy="215" rx="18" ry="13"></ellipse><ellipse cx="230" cy="215" rx="38" ry="28"></ellipse><ellipse cx="230" cy="215" rx="60" ry="44"></ellipse><ellipse cx="230" cy="215" rx="84" ry="60"></ellipse><ellipse cx="230" cy="215" rx="110" ry="80"></ellipse></g>
+        </g>
+        <path d="M0 300 C 60 290, 120 310, 180 296 S 290 300, 320 290" fill="none" stroke="#2f6fc0" stroke-width="5" opacity=".35"></path>
+        <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="50,262 78,222 96,176 122,138 166,110 214,104 252,132 270,178 256,226 226,254 178,274 122,284 74,284 50,262" stroke="#0f0b08" stroke-width="10"></polyline>
+          <line x1="50" y1="262" x2="78" y2="222" stroke="#f2d2b8" stroke-width="5"></line>
+          <line x1="78" y1="222" x2="96" y2="176" stroke="#f2d2b8" stroke-width="5"></line>
+          <line x1="96" y1="176" x2="122" y2="138" stroke="#e39068" stroke-width="5"></line>
+          <line x1="122" y1="138" x2="166" y2="110" stroke="#e39068" stroke-width="5"></line>
+          <line x1="166" y1="110" x2="214" y2="104" stroke="#f2d2b8" stroke-width="5"></line>
+          <line x1="214" y1="104" x2="252" y2="132" stroke="#f2d2b8" stroke-width="5"></line>
+          <line x1="252" y1="132" x2="270" y2="178" stroke="#e8a27c" stroke-width="5"></line>
+          <line x1="270" y1="178" x2="256" y2="226" stroke="#dd6e40" stroke-width="5"></line>
+          <line x1="256" y1="226" x2="226" y2="254" stroke="#dd6e40" stroke-width="5"></line>
+          <line x1="226" y1="254" x2="178" y2="274" stroke="#e39068" stroke-width="5"></line>
+          <line x1="178" y1="274" x2="122" y2="284" stroke="#f2d2b8" stroke-width="5"></line>
+          <line x1="122" y1="284" x2="74" y2="284" stroke="#f2d2b8" stroke-width="5"></line>
+          <line x1="74" y1="284" x2="50" y2="262" stroke="#f2d2b8" stroke-width="5"></line>
+        </g>
+        <rect x="44" y="256" width="12" height="12" rx="2" fill="#f4ecdd" stroke="#0f0b08" stroke-width="2"></rect>
+        <circle class="glow" cx="261.6" cy="206.8" r="7" fill="#dd6e40"></circle>
+        <circle cx="261.6" cy="206.8" r="6" fill="#fff" stroke="#dd6e40" stroke-width="3"></circle>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Bulle 2D -->
+  <svg width="390" height="844" viewBox="0 0 390 844" style="position: absolute; inset: 0; pointer-events: none;">
+    <line x1="300" y1="250" x2="316" y2="297" stroke="#f4ecdd" stroke-width="1.2"></line>
+  </svg>
+  <div style="position: absolute; left: 200px; top: 182px; width: 170px; box-sizing: border-box; background: rgba(15, 11, 8, .82); border: 1px solid #3a2e22; border-radius: 14px; padding: 9px 11px;">
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; letter-spacing: .5px; text-transform: uppercase; color: #e0a97f;">km 9,4 · +8 %</div>
+    <div style="font-weight: 700; font-size: 13px; margin-top: 2px;">Côte des Buttes</div>
+    <div style="font-size: 12px; color: #c9b79a; margin-top: 1px;">5:48 /km, la plus lente</div>
+  </div>
+
+  <!-- En-tête -->
+  <div style="position: absolute; top: 16px; left: 20px; right: 20px; display: flex; align-items: center; gap: 12px;">
+    <div style="width: 44px; height: 44px; border-radius: 22px; background: rgba(48, 39, 30, .9); display: flex; align-items: center; justify-content: center; flex: none;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+    </div>
+    <div>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.5px;">Survol · sortie longue</div>
+      <div style="font-size: 12px; color: #c9b79a;">sam. 12/09 · 14,2 km · 312 m D+</div>
+    </div>
+  </div>
+
+  <div style="position: absolute; right: 20px; top: 470px; display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+    <div style="font-size: 10.5px; color: #c9b79a;">allure</div>
+    <div style="display: flex; align-items: center; gap: 6px; font-size: 10.5px; color: #c9b79a;">rapide<span style="width: 60px; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #f2d2b8, #e39068, #dd6e40);"></span>lente</div>
+  </div>
+
+  <!-- Panneau -->
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 300px; background: #30271e; border-radius: 26px 26px 0 0; padding: 14px 20px 26px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <div style="font-weight: 700; font-size: 15px;">Profil &amp; allure</div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a;">45 → 150 m</div>
+    </div>
+    <svg width="350" height="96" viewBox="0 0 350 96" style="display: block;">
+      <defs>
+        <linearGradient id="pace" x1="0" y1="0" x2="350" y2="0" gradientUnits="userSpaceOnUse">
+          <stop offset="0" stop-color="#f2d2b8"></stop><stop offset=".18" stop-color="#f2d2b8"></stop><stop offset=".26" stop-color="#e39068"></stop><stop offset=".34" stop-color="#f2d2b8"></stop><stop offset=".58" stop-color="#f2d2b8"></stop><stop offset=".66" stop-color="#dd6e40"></stop><stop offset=".74" stop-color="#dd6e40"></stop><stop offset=".82" stop-color="#eab08c"></stop><stop offset="1" stop-color="#f2d2b8"></stop>
+        </linearGradient>
+      </defs>
+      <path d="M0 77.25 L49.3 74.5 L73.9 55.25 L93.7 44.25 L118.3 63.5 L147.9 71.75 L212 69 L241.5 19.5 L261.3 30.5 L295.8 58 L350 77.25 L350 86 L0 86 Z" fill="#3a2e22"></path>
+      <path d="M0 77.25 L49.3 74.5 L73.9 55.25 L93.7 44.25 L118.3 63.5 L147.9 71.75 L212 69 L241.5 19.5 L261.3 30.5 L295.8 58 L350 77.25" fill="none" stroke="url(#pace)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"></path>
+      <line x1="231.7" y1="4" x2="231.7" y2="86" stroke="#f4ecdd" stroke-width="1.2"></line>
+      <circle cx="231.7" cy="36" r="5" fill="#fff" stroke="#dd6e40" stroke-width="3"></circle>
+      <g font-family="Space Mono, ui-monospace, monospace" font-size="9" fill="#c9b79a"><text x="0" y="96">0</text><text x="123" y="96" text-anchor="middle">5</text><text x="246.5" y="96" text-anchor="middle">10</text><text x="350" y="96" text-anchor="end">14,2 km</text></g>
+    </svg>
+    <div style="display: flex; align-items: center; gap: 12px; margin-top: 2px;">
+      <div style="width: 48px; height: 48px; border-radius: 24px; background: #dd6e40; display: flex; align-items: center; justify-content: center; flex: none;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#1c150e"><path d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5z"></path></svg>
+      </div>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 6px;">
+        <div style="height: 6px; border-radius: 3px; background: #3a2e22; position: relative;"><div style="position: absolute; left: 0; top: 0; bottom: 0; width: 66%; border-radius: 3px; background: #f4ecdd;"></div><div style="position: absolute; left: calc(66% - 8px); top: -5px; width: 16px; height: 16px; border-radius: 8px; background: #fff;"></div></div>
+        <div style="display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a;"><span>9,4 / 14,2 km</span><span>vitesse ×40</span></div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 8px; margin-top: 2px;">
+      <div class="chip" style="background: #f4ecdd; color: #1c150e; border-color: #f4ecdd;">Caméra qui suit</div>
+      <div class="chip"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20V11a6 6 0 0 1 12 0v9l-2-1.5L14 20l-2-1.5L10 20l-2-1.5z"></path></svg>Fantôme du 29/08</div>
+      <div class="chip">Partager</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

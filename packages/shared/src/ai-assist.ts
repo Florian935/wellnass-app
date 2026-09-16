@@ -8,19 +8,36 @@
  */
 
 /*
- * ⚠️ **Plus aucun appelant depuis le 13/09/2026.** La surface IA a été retirée du build de lancement
- * (décision de Florian : l'app est gratuite en V1, et `docs/product/ia-integration-analyse.md` place
- * l'IA en palier payant post-V1). Ce module reste — pur, testé, sans coût à l'exécution — parce
- * qu'il porte le **contrat** de validation des réponses du modèle : c'est lui qui garantit qu'aucun
- * chiffre affiché ne vient d'un modèle. La fonction Edge `supabase/functions/ai-assist` et la
- * migration correspondante restent en place de la même façon.
+ * ⚠️ **Historique.** La surface IA a été retirée du build de lancement le 13/09/2026 (l'app est
+ * gratuite en V1, et `docs/product/ia-integration-analyse.md` plaçait l'IA en palier payant
+ * post-V1). Les contrats `photo` et `ask` ci-dessous n'ont donc **toujours aucun appelant** : ils
+ * restent parce qu'ils portent la règle qui garantit qu'aucun chiffre affiché ne vient d'un modèle.
+ *
+ * ✅ **Rouvert le 15/09/2026 par IA-LAB-01**, avec un troisième type, `coach`, et un fournisseur
+ * **gratuit** (Gemini) : un labo d'évaluation, réservé à des **données factices**, qui ne coûte rien
+ * et n'expose rien de l'app de lancement. Le contexte envoyé vit dans `ai-context.ts`.
  */
 
 import { z } from 'zod';
 
-/** Plafonds quotidiens par utilisateur, appliqués côté serveur (la vérité) et affichés côté client. */
-export const AI_DAILY_QUOTA = { photo: 10, ask: 30 } as const;
+/**
+ * Plafonds quotidiens par utilisateur, appliqués côté serveur (la vérité) et affichés côté client.
+ *
+ * ⚠️ **Miroir de `DAILY_QUOTA` dans `supabase/functions/ai-assist/index.ts`** : la fonction ne
+ * partage pas ce bundle. Modifier ici sans modifier là-bas ne change rien au plafond réel.
+ *
+ * `coach` est le plus bas des trois alors que c'est le mode d'exploration : une analyse coûte dix
+ * fois le contexte d'une reformulation, et le palier gratuit de Gemini plafonne autour de 1 500
+ * appels/jour **pour tout le projet** — un seul testeur ne doit pas pouvoir l'épuiser.
+ */
+export const AI_DAILY_QUOTA = { photo: 10, ask: 30, coach: 20 } as const;
 export type AiKind = keyof typeof AI_DAILY_QUOTA;
+
+/** Les fournisseurs câblés dans la fonction Edge. Miroir de `AI_PROVIDERS` (`providers.ts`). */
+export const AI_PROVIDER_LABELS: Record<string, string> = {
+  gemini: 'Google Gemini',
+  anthropic: 'Anthropic Claude',
+};
 
 /** Sous ce seuil, l'aliment reconnu est signalé « à vérifier ». */
 export const AI_LOW_CONFIDENCE = 0.75;

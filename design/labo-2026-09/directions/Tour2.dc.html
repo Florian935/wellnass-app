@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; } a:hover { color: #8a3c1f; }
+    .k { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .h2 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.1px; line-height: 1.05; margin: 8px 0 0; color: #33291f; text-wrap: balance; }
+    .cb { font-size: 14px; line-height: 1.55; color: #786a59; text-wrap: pretty; }
+    .card { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 8px; }
+    .ct { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 19px; letter-spacing: -.4px; line-height: 1.15; color: #33291f; }
+    .dt { font-size: 13.5px; line-height: 1.5; color: #5c4a35; text-wrap: pretty; }
+    .dl { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #b14f2b; }
+    .badge { width: 34px; height: 34px; border-radius: 11px; background: #33291f; color: #fffaf2; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 17px; flex: none; }
+    .num { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #b14f2b; }
+    table.t { width: 100%; border-collapse: collapse; }
+    table.t th { text-align: left; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #786a59; font-weight: 400; padding: 0 12px 10px 0; border-bottom: 1.5px solid #33291f; }
+    table.t td { padding: 11px 12px 11px 0; border-bottom: 1px solid #ece0cd; font-size: 13.5px; line-height: 1.4; color: #33291f; vertical-align: top; }
+    table.t td.m { font-weight: 700; width: 210px; }
+    table.t td.good { color: #66714b; font-weight: 700; }
+    table.t td.mid { color: #8a6419; font-weight: 700; }
+    table.t td.low { color: #b23b2e; font-weight: 700; }
+  </style>
+</helmet>
+<div style="width: 1200px; box-sizing: border-box; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 0 0 72px; display: flex; flex-direction: column; gap: 56px;">
+  <div style="background: radial-gradient(72% 58% at 12% 8%, rgba(107,0,40,.92) 0%, rgba(107,0,40,0) 72%), radial-gradient(70% 56% at 94% 14%, rgba(42,100,173,.9) 0%, rgba(42,100,173,0) 72%), radial-gradient(90% 60% at 50% 104%, rgba(58,86,34,.95) 0%, rgba(58,86,34,0) 74%), #1c150e; color: #fff; border-radius: 0 0 40px 40px; padding: 56px 72px 48px; display: flex; flex-direction: column; gap: 16px;">
+    <div class="k" style="color: rgba(255,255,255,.8);">Le Labo · directions visuelles · tour 2 · 15/09/2026</div>
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 66px; letter-spacing: -2.5px; line-height: .98; max-width: 980px; text-wrap: balance;">Les disques, et trois pistes pour la 3D</div>
+    <div style="font-size: 17px; line-height: 1.6; color: rgba(255,255,255,.86); max-width: 780px;">Tu as retenu les disques. Ce tour les rend plus beaux, toujours sans 3D, et ouvre trois concepts nouveaux, pensés dès maintenant pour passer en 3D. À droite, quatre prototypes avec les mêmes leviers et les mêmes règles que le tour 1 (en page 1).</div>
+  </div>
+
+  <div style="padding: 0 72px; display: flex; flex-direction: column; gap: 56px;">
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <div><div class="k">01 — Les disques, version 2</div><div class="h2">Ce qui a changé</div></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+      <div class="card"><div class="num">01</div><div class="ct">La fonte a sa matière</div><div class="dt">Caoutchouc brillant, moyeu en acier boulonné, inscription gravée sur la couronne, trois lumières. Une onde de choc quand la semaine monte à 4 séances.</div></div><div class="card"><div class="num">02</div><div class="ct">La piste devient un stade</div><div class="dt">Cinq couloirs numérotés, départs décalés, gazon au centre, et un coureur dont la traînée tourne plus vite quand les kilomètres montent.</div></div><div class="card"><div class="num">03</div><div class="ct">L’assiette se compose</div><div class="dt">Saumon, riz, légumes dans une assiette compartimentée. La part de riz grandit avec les glucides périodisés ; les portions rétrécissent avec le déficit.</div></div><div class="card"><div class="num">04</div><div class="ct">Le socle devient l’anneau des nuits</div><div class="dt">Sept lunes autour de la scène : pleines quand la nuit dépasse 7 h, en creux sinon.</div></div><div class="card"><div class="num">05</div><div class="ct">Les croisements deviennent des médailles</div><div class="dt">Ruban, disque, chiffre : dorée pour une synergie, ambre pour une tension, corail pour un garde-fou.</div></div><div class="card"><div class="num">06</div><div class="ct">En petit, dans les 14 écrans</div><div class="dt">Icône = les trois disques stylisés ; lentille = deux disques ; pilier absent = disque en pointillé ; bilan avant / après = portions et couloirs remplis.</div></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <div><div class="k">02 — Trois concepts pensés pour la 3D</div><div class="h2">La corde, ta salle, le chrono</div></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;">
+      <div class="card" style="gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;"><div class="badge">F</div><div class="ct" style="font-size: 22px;">La corde</div></div>
+        <div class="dt">Tes trois piliers tressés en une corde. L’épaisseur de chaque brin suit ta dose, les nœuds sont les croisements, et la corde porte un kettlebell qui grossit avec la charge.</div>
+        <div><div class="dl">Elle raconte le mieux</div><div class="dt">La solidité de l’ensemble : solide, effilochée, rompue au garde-fou.</div></div>
+        <div><div class="dl">En 3D</div><div class="dt">Trois tubes tressés le long d’une hélice, la corde qui ondule, le poids qui tire : léger à calculer, très beau en mouvement.</div></div>
+        <div><div class="dl" style="color: #8a6419;">Sa limite</div><div class="dt">La plus abstraite pour la nutrition, réduite à un brin d’énergie.</div></div>
+      </div><div class="card" style="gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;"><div class="badge">G</div><div class="ct" style="font-size: 22px;">Ta salle</div></div>
+        <div class="dt">Ton labo devient une pièce : rack chargé de disques, tapis de course, table servie, fenêtre de nuit, tapis de récup, planning au mur. Les croisements sont des chemins au sol.</div>
+        <div><div class="dl">Elle raconte le mieux</div><div class="dt">« C’est chez moi » : chaque pilier a son poste, et on voit la semaine se jouer dans l’espace.</div></div>
+        <div><div class="dl">En 3D</div><div class="dt">L’isométrie est déjà une vue 3D : la même scène en volumes simples, caméra qu’on fait pivoter au doigt.</div></div>
+        <div><div class="dl" style="color: #8a6419;">Sa limite</div><div class="dt">La plus lourde à produire, et un risque d’effet « jeu » à cadrer avec la décision C.</div></div>
+      </div><div class="card" style="gap: 10px;">
+        <div style="display: flex; align-items: center; gap: 10px;"><div class="badge">H</div><div class="ct" style="font-size: 22px;">Le chrono</div></div>
+        <div class="dt">Un chronographe de sport : trois compteurs (séances, kilomètres, réserve d’énergie), la semaine sur la lunette, les croisements en rubis, et une trotteuse qui bat régulièrement ou par à-coups.</div>
+        <div><div class="dl">Elle raconte le mieux</div><div class="dt">Le rythme et la mesure. Les poussoirs « Cycle » et « Bilan » disent déjà où l’on va.</div></div>
+        <div><div class="dl">En 3D</div><div class="dt">Une montre : cylindres, aiguilles, verre. Rendu haut de gamme, et un format tout trouvé pour le widget d’accueil ou une montre connectée.</div></div>
+        <div><div class="dl" style="color: #8a6419;">Sa limite</div><div class="dt">La moins chaleureuse ; la nutrition devient une jauge parmi d’autres.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <div><div class="k">03 — Le comparatif</div><div class="h2">Face aux besoins du Labo</div></div>
+    <table class="t">
+      <thead><tr><th></th><th>E · Les disques v2</th><th>F · La corde</th><th>G · Ta salle</th><th>H · Le chrono</th></tr></thead>
+      <tbody><tr><td class="m">« Fitness » au premier coup d’œil</td><td class="good">très</td><td class="good">oui</td><td class="good">très</td><td class="good">oui</td></tr><tr><td class="m">Croisements lisibles</td><td class="good">médailles</td><td class="good">nœuds</td><td class="mid">chemins au sol</td><td class="good">rubis et lunette</td></tr><tr><td class="m">Équilibre charge / soutien</td><td class="mid">tailles et portions</td><td class="good">kettlebell contre brins</td><td class="low">partiel</td><td class="mid">réserve d’énergie</td></tr><tr><td class="m">Tient en petit (icônes, 14 écrans)</td><td class="good">déjà décliné</td><td class="good">une corde</td><td class="low">trop détaillé</td><td class="good">widget, montre</td></tr><tr><td class="m">Passage en 3D</td><td class="good">trois volumes</td><td class="good">tubes tressés</td><td class="good">natif</td><td class="good">natif</td></tr><tr><td class="m">Effort de production</td><td class="mid">moyen</td><td class="good">faible</td><td class="low">élevé</td><td class="mid">moyen</td></tr><tr><td class="m">Principal risque</td><td class="mid">trop sage</td><td class="mid">abstrait</td><td class="low">effet jeu</td><td class="mid">froid</td></tr></tbody>
+    </table>
+    <div class="cb">Appréciations à dire d’expert, sur les prototypes. En vert ce qui sert le Labo, en ambre ce qui demande un compromis, en rouge ce qui manque.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <div><div class="k">04 — Mon avis</div><div class="h2">Un système, puis une scène</div></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;">
+      <div class="card" style="border: 2px solid #b14f2b; background: #fff;"><div class="dl">Partout, dès maintenant</div><div class="ct">E · Les disques v2</div><div class="dt">Ils deviennent la grammaire du Labo : l’accueil, Composer, les croisements, le bilan avant / après, le pilier absent. C’est ce qui se code en premier, en 2D animée.</div></div>
+      <div class="card"><div class="dl">Quand on passera à la 3D</div><div class="ct">G · Ta salle</div><div class="dt">La plus immersive : on entre dans son labo. Elle garde les disques (sur le rack), la piste (le tapis) et l’assiette (la table) : la 3D prolonge le système au lieu de le remplacer.</div></div>
+      <div class="card"><div class="dl">À garder sous le coude</div><div class="ct">H · Le chrono</div><div class="dt">Le meilleur candidat pour le widget d’écran d’accueil et une future montre. La corde (F) reste une belle animation de transition, par exemple au lancement d’un cycle.</div></div>
+    </div>
+    <div class="cb" style="font-size: 15px; color: #5c4a35; max-width: 920px;">Dis-moi ce que tu gardes : les disques v2 tels quels ou avec des retouches, et quel concept tu veux voir aller plus loin. Ensuite je réhabille les 14 écrans et on attaque l’implémentation.</div>
+  </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

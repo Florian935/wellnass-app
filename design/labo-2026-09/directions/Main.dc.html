@@ -1,0 +1,99 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; } a:hover { color: #8a3c1f; }
+    .k { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .h2 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.1px; line-height: 1.05; margin: 8px 0 0; color: #33291f; text-wrap: balance; }
+    .cb { font-size: 14px; line-height: 1.55; color: #786a59; text-wrap: pretty; }
+    .dir { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+    .badge { width: 34px; height: 34px; border-radius: 11px; background: #33291f; color: #fffaf2; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 17px; }
+    .dn { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 21px; letter-spacing: -.5px; color: #33291f; }
+    .dl { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #b14f2b; }
+    .dt { font-size: 13.5px; line-height: 1.5; color: #5c4a35; text-wrap: pretty; }
+    table.t { width: 100%; border-collapse: collapse; }
+    table.t th { text-align: left; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #786a59; font-weight: 400; padding: 0 12px 10px 0; border-bottom: 1.5px solid #33291f; vertical-align: bottom; }
+    table.t td { padding: 11px 12px 11px 0; border-bottom: 1px solid #ece0cd; font-size: 13.5px; line-height: 1.4; color: #33291f; vertical-align: top; }
+    table.t td.m { font-weight: 700; width: 190px; }
+    table.t td.good { color: #66714b; font-weight: 700; }
+    table.t td.mid { color: #8a6419; font-weight: 700; }
+    table.t td.low { color: #b23b2e; font-weight: 700; }
+    .code { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #a34e2c; background: #f3ddd0; border-radius: 6px; padding: 1px 6px; }
+  </style>
+</helmet>
+<div style="width: 1200px; box-sizing: border-box; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 0 0 72px; display: flex; flex-direction: column; gap: 56px;">
+  <div style="background: radial-gradient(72% 58% at 12% 8%, rgba(107,0,40,.92) 0%, rgba(107,0,40,0) 72%), radial-gradient(70% 56% at 94% 14%, rgba(42,100,173,.9) 0%, rgba(42,100,173,0) 72%), radial-gradient(90% 60% at 50% 104%, rgba(58,86,34,.95) 0%, rgba(58,86,34,0) 74%), #1c150e; color: #fff; border-radius: 0 0 40px 40px; padding: 56px 72px 48px; display: flex; flex-direction: column; gap: 16px;">
+    <div class="k" style="color: rgba(255,255,255,.8);">Le Labo · directions visuelles · 15/09/2026</div>
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 68px; letter-spacing: -2.6px; line-height: .98; max-width: 900px; text-wrap: balance;">La triade, en tenue de sport</div>
+    <div style="font-size: 17px; line-height: 1.6; color: rgba(255,255,255,.86); max-width: 760px;">Ton retour : les sphères sont stylées, mais rien ne dit qu’on est dans une app de musculation, de course et de nutrition. On garde les 14 écrans et toutes leurs idées ; seule l’image centrale change. Voici cinq façons de l’habiller, chacune jouable à droite avec les quatre mêmes leviers et les mêmes règles, pour comparer à égalité.</div>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px;">
+      <div style="padding: 10px 14px; border-radius: 14px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); font-size: 14px;"><b>1 ·</b> tel quel : tes piliers se gênent</div>
+      <div style="padding: 10px 14px; border-radius: 14px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); font-size: 14px;"><b>2 ·</b> glucides « + » et musculation « − » : ils s’accordent</div>
+      <div style="padding: 10px 14px; border-radius: 14px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.22); font-size: 14px;"><b>3 ·</b> balance « − » et course « + » : le garde-fou</div>
+    </div>
+  </div>
+
+  <div style="padding: 0 72px; display: flex; flex-direction: column; gap: 56px;">
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <div><div class="k">01 — Les cinq directions</div><div class="h2">Ce qu’on voit, ce qu’elle raconte, sa limite</div></div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px;">
+      <div class="dir">
+        <div style="display: flex; align-items: center; gap: 10px;"><div class="badge">A</div><div class="dn">Le corps</div></div>
+        <div><div class="dl">On voit</div><div class="dt">Un mannequin d’athlète : les muscles qui chauffent, le flux dans les jambes, l’énergie dans le ventre.</div></div>
+        <div><div class="dl">Elle raconte le mieux</div><div class="dt">Où les piliers agissent. « Jambes × fractionné » se lit sur les cuisses, le garde-fou sur la poitrine.</div></div>
+        <div><div class="dl" style="color: #8a6419;">Sa limite</div><div class="dt">L’image du corps est sensible : mannequin neutre, jamais une silhouette qui maigrit ou grossit avec les chiffres.</div></div>
+      </div><div class="dir">
+        <div style="display: flex; align-items: center; gap: 10px;"><div class="badge">B</div><div class="dn">La barre</div></div>
+        <div><div class="dl">On voit</div><div class="dt">Une barre chargée sur un support : à gauche la charge (séances, kilomètres), à droite ce qui la soutient (énergie, nuit).</div></div>
+        <div><div class="dl">Elle raconte le mieux</div><div class="dt">L’équilibre. La barre bascule quand la charge l’emporte, et se bloque au garde-fou.</div></div>
+        <div><div class="dl" style="color: #8a6419;">Sa limite</div><div class="dt">Elle montre l’équilibre global mieux que chaque croisement : plutôt une jauge qu’une image de lieu.</div></div>
+      </div><div class="dir">
+        <div style="display: flex; align-items: center; gap: 10px;"><div class="badge">C</div><div class="dn">Les objets</div></div>
+        <div><div class="dl">On voit</div><div class="dt">Haltère, chaussure et assiette posés ensemble, reliés par des fils qui s’allument.</div></div>
+        <div><div class="dl">Elle raconte le mieux</div><div class="dt">Qui se croise avec qui, et la matière de chaque pilier : des disques qui s’ajoutent, des foulées, une assiette qui se compose.</div></div>
+        <div><div class="dl" style="color: #8a6419;">Sa limite</div><div class="dt">La plus illustrative : charmante en grand, difficile à réduire en icône.</div></div>
+      </div><div class="dir">
+        <div style="display: flex; align-items: center; gap: 10px;"><div class="badge">D</div><div class="dn">La semaine</div></div>
+        <div><div class="dl">On voit</div><div class="dt">Ton planning de la semaine : séances, sorties, repas, et les croisements dessinés d’un jour à l’autre.</div></div>
+        <div><div class="dl">Elle raconte le mieux</div><div class="dt">Quand ça se croise : la veille, le lendemain, les jours durs, les jours de repos.</div></div>
+        <div><div class="dl" style="color: #8a6419;">Sa limite</div><div class="dt">La moins immersive, et proche de l’écran du cycle et du planning : risque de doublon.</div></div>
+      </div><div class="dir">
+        <div style="display: flex; align-items: center; gap: 10px;"><div class="badge">E</div><div class="dn">Les disques</div></div>
+        <div><div class="dl">On voit</div><div class="dt">La triade habillée : un disque de fonte, une piste d’athlétisme et une assiette qui se chevauchent.</div></div>
+        <div><div class="dl">Elle raconte le mieux</div><div class="dt">Tout ce que racontait la triade, mais reconnaissable au premier regard.</div></div>
+        <div><div class="dl" style="color: #8a6419;">Sa limite</div><div class="dt">La moins spectaculaire ; les chevauchements se lisent un peu moins nettement que des cercles purs.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <div><div class="k">02 — Le comparatif</div><div class="h2">Face aux besoins du Labo</div></div>
+    <table class="t">
+      <thead><tr><th></th><th>A · Le corps</th><th>B · La barre</th><th>C · Les objets</th><th>D · La semaine</th><th>E · Les disques</th></tr></thead>
+      <tbody><tr><td class="m">« Fitness » au premier coup d’œil</td><td class="good">très</td><td class="good">très</td><td class="good">très</td><td class="mid">oui</td><td class="good">oui</td></tr><tr><td class="m">Montre chaque croisement</td><td class="good">sur le corps</td><td class="low">peu</td><td class="good">par les fils</td><td class="good">dans le temps</td><td class="good">par chevauchement</td></tr><tr><td class="m">Montre l’équilibre</td><td class="mid">l’énergie seulement</td><td class="good">c’est son sujet</td><td class="low">non</td><td class="mid">les repos</td><td class="mid">par les tailles</td></tr><tr><td class="m">Remplace la triade dans les 14 écrans</td><td class="mid">oui, mais lourd</td><td class="low">non, une jauge</td><td class="mid">mal en petit</td><td class="low">non</td><td class="good">oui, tel quel</td></tr><tr><td class="m">Avec un seul pilier activé</td><td class="good">zones éteintes</td><td class="mid">demi-barre</td><td class="good">objet en pointillé</td><td class="good">ligne vide</td><td class="good">disque en pointillé</td></tr><tr><td class="m">Passage en 3D</td><td class="mid">mannequin simplifié</td><td class="good">barre physique</td><td class="good">trois objets</td><td class="low">peu d’intérêt</td><td class="good">trois volumes simples</td></tr><tr><td class="m">Principal risque</td><td class="low">image du corps</td><td class="mid">trop global</td><td class="mid">effet gadget</td><td class="mid">doublon</td><td class="mid">trop sage</td></tr></tbody>
+    </table>
+    <div class="cb">Appréciations à dire d’expert, sur les prototypes. En vert ce qui sert le Labo, en ambre ce qui demande un compromis, en rouge ce qui manque.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 20px;">
+    <div><div class="k">03 — Mon avis</div><div class="h2">Elles se combinent : une image, une jauge</div></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;">
+      <div class="dir" style="border: 2px solid #b14f2b; background: #fff;"><div class="dl">L’image du Labo</div><div class="dn">E · Les disques</div><div class="dt">Elle remplace la triade partout sans rien casser : la miniature de l’accueil, la lentille des croisements (deux petits disques), le bilan avant / après, le pilier non activé en pointillé. Et en 3D, trois volumes simples.</div></div>
+      <div class="dir"><div class="dl">La jauge d’équilibre</div><div class="dn">B · La barre</div><div class="dt">Dans Composer, elle remplace les trois barres « Charge, Récupération, Énergie » : la bascule dit en un geste si la semaine tient. C’est aussi la meilleure scène 3D.</div></div>
+      <div class="dir"><div class="dl">Si tu veux le plus fort</div><div class="dn">A · Le corps</div><div class="dt">La plus « waouh » et la plus fitness. À réserver à la feuille d’un croisement (« où ça agit ») plutôt qu’à l’image permanente, à cause de l’image du corps.</div></div>
+    </div>
+    <div class="cb" style="font-size: 15px; color: #5c4a35; max-width: 920px;">Les objets (C) et la semaine (D) restent de bonnes idées d’écran : les objets pour une scène d’accueil illustrée, la semaine pour enrichir l’écran du cycle. Dis-moi ton choix — une image, et si tu veux une jauge — et je réhabille les 14 écrans et le prototype 3D avant de passer à l’implémentation.</div>
+  </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>
