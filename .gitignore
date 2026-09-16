@@ -47,6 +47,10 @@ android/build/
 android/.gradle/
 android/local.properties
 *.apk
+
+# Sorties de build locales conservées hors du dépôt : APK de recette et journaux
+# de construction des lots (non versionnés, mais utiles tant qu'une recette est ouverte).
+builds/
 *.aab
 
 # --- iOS (portage ultérieur) ---
