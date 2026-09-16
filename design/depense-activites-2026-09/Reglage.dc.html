@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    @keyframes open { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+    @keyframes shrink { from { width: 100%; } to { width: 74.2%; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 20px;">
+
+  <div style="height: 44px; display: flex; align-items: center; gap: 6px; flex: none;">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+    <div style="font-weight: 600; font-size: 14px; color: #786a59;">Profil nutrition</div>
+  </div>
+  <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -.7px; line-height: 1.08; flex: none;">Ta cible et tes séances</div>
+
+  <div style="display: flex; gap: 10px; padding: 11px 13px; border-radius: 14px; background: #f7ead6; border: 1px solid #e9cfa0; flex: none;">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8a6419" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 1px;"><path d="M12 9v4M12 16.5v.5"></path><path d="M10.3 3.8L2.6 17a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 3.8a2 2 0 0 0-3.4 0z"></path></svg>
+    <div style="font-size: 13px; line-height: 18px; color: #8a6419;"><b>Ton sport était compté deux fois</b> : dans ton niveau « modérément actif », puis dans le bonus Auto. Voici comment l'éviter.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px; flex: none;">
+    <div style="display: flex; gap: 12px; align-items: flex-start; padding: 11px 14px; border-radius: 16px; border: 1px solid #ece0cd; background: #fffaf2;">
+      <div style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid #90897d; box-sizing: border-box; flex: none; margin-top: 1px;"></div>
+      <div><div style="font-weight: 700; font-size: 14.5px;">Fixe</div><div style="font-size: 12.5px; line-height: 17px; color: #786a59;">La même cible chaque jour. Ton niveau d'activité compte déjà ton sport.</div></div>
+    </div>
+    <div style="display: flex; gap: 12px; align-items: flex-start; padding: 11px 14px; border-radius: 16px; border: 1px solid #ece0cd; background: #fffaf2;">
+      <div style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid #90897d; box-sizing: border-box; flex: none; margin-top: 1px;"></div>
+      <div><div style="font-weight: 700; font-size: 14.5px;">Forfait les jours de séance</div><div style="font-size: 12.5px; line-height: 17px; color: #786a59;">Un bonus fixe quand tu t'entraînes, quelle que soit la séance.</div></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 11px 14px 13px; border-radius: 16px; border: 2px solid #b14f2b; background: #fff;">
+      <div style="display: flex; gap: 12px; align-items: flex-start;">
+        <div style="width: 22px; height: 22px; border-radius: 50%; border: 2px solid #b14f2b; box-sizing: border-box; flex: none; margin-top: 1px; display: flex; align-items: center; justify-content: center;"><div style="width: 10px; height: 10px; border-radius: 50%; background: #b14f2b;"></div></div>
+        <div style="flex: 1;">
+          <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;"><div style="font-weight: 700; font-size: 14.5px;">Selon ce que tu fais</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700; color: #52703a; background: #e9efdf; border-radius: 999px; padding: 2px 8px;">recommandé</div></div>
+          <div style="font-size: 12.5px; line-height: 17px; color: #786a59;">Une cible de base hors sport. Chaque séance ou activité ajoute ce qu'elle a coûté.</div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; animation: open .4s .2s both;">
+        <div style="font-weight: 600; font-size: 13px;">Hors sport, tu es plutôt…</div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+          <div style="min-height: 44px; border-radius: 12px; border: 1px solid #ece0cd; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600;">Assis<span style="font-size: 10.5px; font-weight: 400; color: #786a59;">bureau</span></div>
+          <div style="min-height: 44px; border-radius: 12px; background: #33291f; color: #f0e4d0; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700;">Debout<span style="font-size: 10.5px; font-weight: 400; color: #c9b79a;">souvent</span></div>
+          <div style="min-height: 44px; border-radius: 12px; border: 1px solid #ece0cd; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 600;">Physique<span style="font-size: 10.5px; font-weight: 400; color: #786a59;">métier</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; flex: none;">
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Ce que tu verrais · sèche</div>
+    <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr) 46px; gap: 8px; align-items: center;">
+      <div style="font-size: 12.5px; font-weight: 600;">Jour de repos</div>
+      <div style="height: 12px; border-radius: 4px; background: #eadcc6; position: relative;"><div style="position: absolute; left: 85.5%; top: -4px; bottom: -4px; border-left: 2px dashed #b23b2e;"></div><div style="position: absolute; left: 0; top: 0; bottom: 0; border-radius: 4px; background: #90897d; animation: shrink 1s .6s cubic-bezier(.2,.8,.2,1) both;"></div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12.5px; text-align: right;">2 048</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr) 46px; gap: 8px; align-items: center;">
+      <div style="font-size: 12.5px; font-weight: 600;">Muscu 1 h</div>
+      <div style="height: 12px; border-radius: 4px; background: #eadcc6; position: relative;"><div style="position: absolute; left: 85.5%; top: -4px; bottom: -4px; border-left: 2px dashed #b23b2e;"></div><div style="position: absolute; left: 0; top: 0; bottom: 0; width: 74.2%; background: #90897d; border-radius: 4px 0 0 4px;"></div><div style="position: absolute; left: 74.2%; top: 0; bottom: 0; width: 9.4%; background: #6b0028;"></div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12.5px; text-align: right;">2 308</div>
+    </div>
+    <div style="display: grid; grid-template-columns: 96px minmax(0, 1fr) 46px; gap: 8px; align-items: center;">
+      <div style="font-size: 12.5px; font-weight: 600;">Vélo 1 h 30</div>
+      <div style="height: 12px; border-radius: 4px; background: #eadcc6; position: relative;"><div style="position: absolute; left: 85.5%; top: -4px; bottom: -4px; border-left: 2px dashed #b23b2e;"></div><div style="position: absolute; left: 0; top: 0; bottom: 0; width: 74.2%; background: #90897d; border-radius: 4px 0 0 4px;"></div><div style="position: absolute; left: 74.2%; top: 0; bottom: 0; width: 21%; background: #b14f2b;"></div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12.5px; text-align: right;">2 628</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: #786a59;">
+      <div style="width: 16px; border-top: 2px dashed #b23b2e; flex: none;"></div>Aujourd'hui : 2 359 tous les jours, + bonus Auto les jours de course
+    </div>
+  </div>
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 52px; flex: none;">
+    <div><div style="font-weight: 700; font-size: 14px;">Afficher les calories dépensées</div><div style="font-size: 12px; line-height: 16px; color: #786a59;">Masquées, ta cible s'ajuste quand même.</div></div>
+    <div style="width: 50px; height: 30px; border-radius: 15px; background: #b14f2b; position: relative; flex: none;"><div style="position: absolute; right: 3px; top: 3px; width: 24px; height: 24px; border-radius: 50%; background: #fff;"></div></div>
+  </div>
+
+  <div style="margin-top: auto; height: 52px; border-radius: 16px; background: #b14f2b; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex: none;">Passer à ce mode</div>
+</div>
+</x-dc>
+</body>
+</html>

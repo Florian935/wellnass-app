@@ -1,0 +1,91 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #1c150e; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    @keyframes sheet { from { transform: translateY(40px); opacity: .4; } to { transform: none; opacity: 1; } }
+    @keyframes step { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+
+  <div style="padding: 70px 20px 0; display: flex; flex-direction: column; gap: 8px;">
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -.8px;">Séance terminée</div>
+    <div style="height: 92px; border-radius: 18px; background: #fffaf2; border: 1px solid #ece0cd;"></div>
+  </div>
+  <div style="position: absolute; inset: 0; background: rgba(28,21,14,.55);"></div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 740px; background: #fffaf2; border-radius: 28px 28px 0 0; padding: 10px 20px 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; animation: sheet .45s cubic-bezier(.2,.8,.2,1) both;">
+    <div style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: #e0d0b6; flex: none;"></div>
+
+    <div style="display: flex; flex-direction: column; gap: 4px; flex: none;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Dépense estimée · 370 kcal</div>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px; line-height: 1.1;">D'où vient ce chiffre</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0; flex: none; border: 1px solid #ece0cd; border-radius: 16px; overflow: hidden;">
+      <div style="display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 11px 14px; animation: step .4s .15s both;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: #f3ddd0; color: #b14f2b; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center;">1</div>
+        <div><div style="font-weight: 700; font-size: 14px;">Ton corps au repos</div><div style="font-size: 12.5px; line-height: 17px; color: #786a59;">80 kg · 180 cm · 30 ans · homme (Mifflin-St Jeor)</div></div>
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; white-space: nowrap;">74 kcal/h</div>
+      </div>
+      <div style="height: 1px; background: #ece0cd;"></div>
+      <div style="display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 11px 14px; animation: step .4s .3s both;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: #f3ddd0; color: #b14f2b; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center;">2</div>
+        <div><div style="font-weight: 700; font-size: 14px;">L'intensité de ta séance</div><div style="font-size: 12.5px; line-height: 17px; color: #786a59;">musculation vigoureuse (ressenti 8/10), repos longs (2 min 30)</div></div>
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; white-space: nowrap;">6 MET</div>
+      </div>
+      <div style="height: 1px; background: #ece0cd;"></div>
+      <div style="display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 11px 14px; animation: step .4s .45s both;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: #f3ddd0; color: #b14f2b; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center;">3</div>
+        <div><div style="font-weight: 700; font-size: 14px;">Le temps actif</div><div style="font-size: 12.5px; line-height: 17px; color: #786a59;">durée de la séance, plafonnée à 4 min par série</div></div>
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; white-space: nowrap;">1 h 00</div>
+      </div>
+      <div style="height: 1px; background: #ece0cd;"></div>
+      <div style="display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 11px 14px; background: #f7eede; animation: step .4s .6s both;">
+        <div style="width: 24px; height: 24px; border-radius: 50%; background: #b14f2b; color: #fff; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; display: flex; align-items: center; justify-content: center;">=</div>
+        <div><div style="font-weight: 700; font-size: 14px;">Ce que la séance ajoute</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px; line-height: 17px; color: #786a59;">(6 − 1) × 74 × 1 h</div></div>
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px; white-space: nowrap; color: #b14f2b;">≈ 370</div>
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; align-items: center; flex: none; padding: 10px 14px; border-radius: 14px; background: #f7ead6; border: 1px solid #e9cfa0;">
+      <div style="display: flex; gap: 3px; flex: none;">
+        <div style="width: 8px; height: 18px; border-radius: 2px; background: #8a6419;"></div>
+        <div style="width: 8px; height: 18px; border-radius: 2px; background: #8a6419;"></div>
+        <div style="width: 8px; height: 18px; border-radius: 2px; background: rgba(138,100,25,.25);"></div>
+      </div>
+      <div style="font-size: 13px; line-height: 18px; color: #8a6419;"><b>Confiance moyenne · entre 260 et 480.</b> Sans fréquence cardiaque, la musculation est l'activité la plus dure à estimer.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; flex: none;">
+      <div style="display: flex; gap: 10px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#52703a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 1px;"><path d="M12 3v18M5 10l7-7 7 7"></path></svg>
+        <div style="font-size: 13.5px; line-height: 19px;"><b>Ta cible ne retient que 260 kcal</b>, le bas de la fourchette. Mieux vaut un peu moins que trop.</div>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 1px;"><rect x="7" y="5" width="10" height="14" rx="3"></rect><path d="M9 5V2.5h6V5M9 19v2.5h6V19"></path></svg>
+        <div style="font-size: 13.5px; line-height: 19px;"><b>Ta montre dit plus ?</b> Elle compte aussi les 74 kcal que tu aurais dépensées au repos pendant cette heure. Elles sont déjà dans ta cible.</div>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 1px;"><path d="M4 20h4V10H4zM10 20h4V4h-4zM16 20h4v-7h-4z"></path></svg>
+        <div style="font-size: 13.5px; line-height: 19px;"><b>Ton niveau ne change pas le calcul.</b> On ne dépense pas plus parce qu'on est confirmé : ça passe par les charges, le rythme et le ressenti.</div>
+      </div>
+    </div>
+
+    <div style="margin-top: auto; height: 52px; border-radius: 16px; background: #33291f; color: #f0e4d0; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; flex: none;">Compris</div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

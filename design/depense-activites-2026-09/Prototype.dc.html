@@ -1,0 +1,462 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #efe4d2; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .tap { cursor: pointer; user-select: none; -webkit-user-select: none; }
+    .tap:active { transform: scale(.97); }
+    .anim { transition: all .45s cubic-bezier(.2,.8,.2,1); }
+    @keyframes flash { 0% { background: #f7ead6; } 100% { background: transparent; } }
+    @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  </style>
+</helmet>
+<div style="width: 1240px; height: 900px; box-sizing: border-box; background: #efe4d2; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: grid; grid-template-columns: 300px 390px minmax(0, 1fr); gap: 32px; padding: 28px 32px; align-items: start;">
+
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #b14f2b;">Prototype jouable</div>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -.7px; line-height: 1.05;">Change le profil, regarde la dépense bouger</div>
+    </div>
+
+    <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 12px;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Profil</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+        <sc-for list="{{ sexes }}" as="s" hint-placeholder-count="3">
+          <div class="tap" onClick="{{ s.pick }}" style="min-height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12.5px; font-weight: 700; background: {{ s.bg }}; color: {{ s.fg }}; border: 1px solid {{ s.bd }};">{{ s.label }}</div>
+        </sc-for>
+      </div>
+      <sc-for list="{{ steppers }}" as="st" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+          <div style="font-size: 13.5px; font-weight: 600; width: 64px;">{{ st.label }}</div>
+          <div class="tap" onClick="{{ st.minus }}" style="width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+          <div style="flex: 1; text-align: center; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 16px;">{{ st.value }}</div>
+          <div class="tap" onClick="{{ st.plus }}" style="width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><line x1="12" y1="5" x2="12" y2="19"></line></svg></div>
+        </div>
+      </sc-for>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="font-size: 13.5px; font-weight: 600;">Niveau</div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+          <sc-for list="{{ levels }}" as="lv" hint-placeholder-count="3">
+            <div class="tap" onClick="{{ lv.pick }}" style="min-height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: {{ lv.bg }}; color: {{ lv.fg }}; border: 1px solid {{ lv.bd }};">{{ lv.label }}</div>
+          </sc-for>
+        </div>
+        <div style="font-size: 12px; line-height: 16px; color: #786a59;">Change-le : la dépense ne bouge pas, et c'est voulu. Le niveau agit à travers les charges, le rythme et le ressenti.</div>
+      </div>
+    </div>
+
+    <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Ta cible</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+        <sc-for list="{{ objectives }}" as="ob" hint-placeholder-count="3">
+          <div class="tap" onClick="{{ ob.pick }}" style="min-height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: {{ ob.bg }}; color: {{ ob.fg }}; border: 1px solid {{ ob.bd }};">{{ ob.label }}</div>
+        </sc-for>
+      </div>
+      <div style="font-size: 13px; font-weight: 600;">Hors sport</div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px;">
+        <sc-for list="{{ neats }}" as="ne" hint-placeholder-count="3">
+          <div class="tap" onClick="{{ ne.pick }}" style="min-height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; background: {{ ne.bg }}; color: {{ ne.fg }}; border: 1px solid {{ ne.bd }};">{{ ne.label }}</div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="width: 390px; height: 844px; border-radius: 34px; overflow: hidden; background: #f7eede; box-shadow: 0 30px 60px -30px rgba(51,41,31,.45), 0 0 0 1px #d9c7ad; display: flex; flex-direction: column; position: relative;">
+    <div style="padding: 16px 16px 10px; display: flex; flex-direction: column; gap: 10px; flex: none; background: #f7eede;">
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #eadcc6; border-radius: 14px; padding: 4px;">
+        <sc-for list="{{ tabs }}" as="tb" hint-placeholder-count="3">
+          <div class="tap anim" onClick="{{ tb.pick }}" style="min-height: 40px; border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; background: {{ tb.bg }}; color: {{ tb.fg }}; box-shadow: {{ tb.shadow }};">{{ tb.label }}</div>
+        </sc-for>
+      </div>
+    </div>
+
+    <sc-if value="{{ isSeance }}" hint-placeholder-val="{{ true }}">
+      <div style="flex: 1; min-height: 0; padding: 4px 18px 18px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px;">Ta séance de muscu</div>
+        <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 16px; padding: 4px 12px; display: flex; flex-direction: column;">
+          <sc-for list="{{ seanceSteppers }}" as="ss" hint-placeholder-count="4">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 50px; border-bottom: 1px solid #ece0cd;">
+              <div style="flex: 1;"><div style="font-size: 14px; font-weight: 700;">{{ ss.label }}</div><div style="font-size: 11.5px; color: #786a59;">{{ ss.hint }}</div></div>
+              <div class="tap" onClick="{{ ss.minus }}" style="width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+              <div style="width: 64px; text-align: center; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px;">{{ ss.value }}</div>
+              <div class="tap" onClick="{{ ss.plus }}" style="width: 40px; height: 40px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><line x1="12" y1="5" x2="12" y2="19"></line></svg></div>
+            </div>
+          </sc-for>
+        </div>
+
+        <div style="background: #33291f; color: #f0e4d0; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; position: relative; overflow: hidden;">
+          <div style="position: absolute; width: 170px; height: 170px; border-radius: 50%; background: #6b0028; opacity: .55; filter: blur(34px); top: -80px; right: -50px;"></div>
+          <div style="position: relative; display: flex; justify-content: space-between;">
+            <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #d9a888;">Dépense estimée</div>
+            <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; color: #c9b79a;">{{ seance.met }} MET</div>
+          </div>
+          <div style="position: relative; display: flex; align-items: baseline; gap: 8px;">
+            <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 50px; letter-spacing: -2px; color: #fff; line-height: 1;">≈ {{ seance.kcalTxt }}</div>
+            <div style="font-weight: 600; font-size: 14px; color: #c9b79a;">kcal</div>
+          </div>
+          <div style="position: relative; height: 10px; border-radius: 5px; background: rgba(255,255,255,.1);">
+            <div class="anim" style="position: absolute; top: 0; bottom: 0; left: {{ seance.barLeft }}; width: {{ seance.barWidth }}; border-radius: 5px; background: linear-gradient(90deg, #d9a888, rgba(217,168,136,.35));"></div>
+          </div>
+          <div style="position: relative; display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px;"><span style="color: #d9a888;">{{ seance.lowTxt }} · compté</span><span style="color: #c9b79a;">{{ seance.highTxt }}</span></div>
+          <div style="position: relative; font-size: 12.5px; line-height: 17px; color: #c9b79a;">{{ seance.why }}</div>
+        </div>
+
+        <div class="tap" onClick="{{ finishSeance }}" style="margin-top: auto; height: 52px; border-radius: 16px; background: #b14f2b; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; box-shadow: 0 10px 24px -8px rgba(177,79,43,.55);">{{ seanceCta }}</div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isActivite }}" hint-placeholder-val="{{ false }}">
+      <div style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+        <div style="flex: 1; min-height: 0; padding: 4px 18px 12px; display: flex; flex-direction: column; gap: 12px;">
+          <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -.6px;">Ajouter une activité</div>
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 7px;">
+            <sc-for list="{{ types }}" as="ty" hint-placeholder-count="8">
+              <div class="tap anim" onClick="{{ ty.pick }}" style="height: 56px; border-radius: 14px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; box-sizing: border-box; background: {{ ty.bg }}; border: {{ ty.bd }}; color: {{ ty.fg }};">
+                <div style="font-weight: 700; font-size: 12.5px;">{{ ty.label }}</div>
+                <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 9.5px; color: #786a59;">{{ ty.metTxt }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Durée</div>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <div class="tap" onClick="{{ durMinus }}" style="width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></div>
+              <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.4px;">{{ durTxt }}</div>
+              <div class="tap" onClick="{{ durPlus }}" style="width: 44px; height: 44px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.8" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><line x1="12" y1="5" x2="12" y2="19"></line></svg></div>
+            </div>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Intensité</div>
+            <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px;">
+              <sc-for list="{{ intensities }}" as="it" hint-placeholder-count="3">
+                <div class="tap anim" onClick="{{ it.pick }}" style="min-height: 60px; border-radius: 14px; padding: 7px 9px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; background: {{ it.bg }}; border: {{ it.bd }};">
+                  <div style="font-weight: 700; font-size: 13px; color: {{ it.fg }};">{{ it.label }}</div><div style="font-size: 11px; line-height: 14px; color: #786a59;">{{ it.hint }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+        </div>
+        <div style="flex: none; background: #33291f; color: #f0e4d0; border-radius: 24px 24px 0 0; padding: 14px 18px 18px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+            <div>
+              <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: #d9a888;">Dépense estimée · {{ act.met }} MET</div>
+              <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.2px; color: #fff; line-height: 1.1;">≈ {{ act.kcalTxt }} <span style="font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 13px; color: #c9b79a; letter-spacing: 0;">kcal</span></div>
+            </div>
+            <div style="text-align: right; font-size: 12px; line-height: 17px; color: #c9b79a;">entre {{ act.lowTxt }} et {{ act.highTxt }}<br>ta cible : <b style="color: #fff;">+{{ act.lowTxt }}</b></div>
+          </div>
+          <div class="tap" onClick="{{ saveActivity }}" style="height: 52px; border-radius: 16px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px;">Enregistrer</div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ isJournee }}" hint-placeholder-val="{{ false }}">
+      <div style="flex: 1; min-height: 0; display: flex; flex-direction: column;">
+        <div style="position: relative; height: 300px; flex: none; margin: 0 12px; background: #22301a; border-radius: 24px; overflow: hidden; color: #fff;">
+          <div class="anim" style="position: absolute; left: 0; right: 0; bottom: 0; height: {{ day.fillPct }}; background: linear-gradient(180deg, #4a6c2e, #3a5622);"></div>
+          <div style="position: absolute; left: 16px; right: 16px; top: 14%; border-top: 1.5px dashed rgba(232,240,214,.45);"></div>
+          <div style="position: relative; padding: 16px; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px;">
+            <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase;">Aujourd'hui</div>
+            <div style="margin-top: auto; display: flex; align-items: baseline; gap: 8px;">
+              <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 54px; letter-spacing: -2.4px; line-height: 1;">{{ day.eatenTxt }}</div>
+              <div style="font-weight: 600; font-size: 14px; color: #e1ebcf;">kcal</div>
+            </div>
+            <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px;">{{ day.status }}</div>
+            <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+              <sc-for list="{{ day.chips }}" as="ch" hint-placeholder-count="1">
+                <div style="border-radius: 999px; border: 1px solid rgba(255,255,255,.24); background: rgba(255,255,255,.14); padding: 4px 10px; font-weight: 600; font-size: 11.5px; animation: rise .4s both;">{{ ch }}</div>
+              </sc-for>
+            </div>
+            <div style="display: flex; gap: 6px; margin-top: 6px;">
+              <div class="tap" onClick="{{ eatMinus }}" style="flex: 1; min-height: 40px; border-radius: 12px; border: 1px solid rgba(255,255,255,.24); background: rgba(255,255,255,.14); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12.5px;">− 200 kcal</div>
+              <div class="tap" onClick="{{ eatPlus }}" style="flex: 1; min-height: 40px; border-radius: 12px; background: #fff; color: #2e4419; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 12.5px;">+ 200 kcal mangées</div>
+            </div>
+          </div>
+        </div>
+        <div style="flex: 1; min-height: 0; padding: 12px 18px 16px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 18px;">Ta journée en énergie</div>
+          <sc-for list="{{ day.rows }}" as="rw" hint-placeholder-count="4">
+            <div style="display: grid; grid-template-columns: minmax(0, 1fr) 118px 56px; gap: 8px; align-items: center; min-height: 34px;">
+              <div><div style="font-weight: 600; font-size: 13px;">{{ rw.label }}</div><div style="font-size: 11px; color: #786a59;">{{ rw.hint }}</div></div>
+              <div style="height: 12px; position: relative;"><div class="anim" style="position: absolute; top: 0; bottom: 0; left: {{ rw.left }}; width: {{ rw.width }}; border-radius: 4px; background: {{ rw.color }};"></div></div>
+              <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12.5px; text-align: right; color: {{ rw.valueColor }};">{{ rw.valueTxt }}</div>
+            </div>
+          </sc-for>
+          <div style="height: 1px; background: #ece0cd;"></div>
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <div style="font-weight: 700; font-size: 14px;">Cible du jour</div>
+            <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px;">{{ day.targetTxt }}</div>
+          </div>
+          <div style="font-size: 12px; line-height: 16px; color: #786a59;">{{ day.note }}</div>
+          <div class="tap" onClick="{{ resetDay }}" style="margin-top: auto; min-height: 44px; border-radius: 14px; border: 1.5px dashed #90897d; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13.5px;">Recommencer la journée</div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Sous le capot · {{ capot.title }}</div>
+    <div style="background: #33291f; color: #f0e4d0; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 12px;">
+      <sc-for list="{{ capot.lines }}" as="cl" hint-placeholder-count="5">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; align-items: baseline; border-bottom: 1px solid rgba(240,228,208,.12); padding-bottom: 9px;">
+          <div><div style="font-size: 13.5px; font-weight: 600; color: #f0e4d0;">{{ cl.label }}</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; line-height: 16px; color: #c9b79a;">{{ cl.calc }}</div></div>
+          <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px; color: {{ cl.color }}; white-space: nowrap;">{{ cl.value }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">À comparer</div>
+      <sc-for list="{{ capot.compare }}" as="cp" hint-placeholder-count="3">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) 140px 64px; gap: 10px; align-items: center;">
+          <div><div style="font-size: 13px; font-weight: 700;">{{ cp.label }}</div><div style="font-size: 11.5px; line-height: 15px; color: #786a59;">{{ cp.hint }}</div></div>
+          <div style="height: 12px; border-radius: 4px; background: #eadcc6; position: relative; overflow: hidden;"><div class="anim" style="position: absolute; left: 0; top: 0; bottom: 0; width: {{ cp.width }}; background: {{ cp.color }};"></div></div>
+          <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; text-align: right;">{{ cp.valueTxt }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="font-size: 12.5px; line-height: 18px; color: #786a59;">Formules de l'analyse (§4), appliquées telles quelles. Les MET viennent du Compendium 2011 et restent à revérifier dans la table 2024. Données fictives.</div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":1240,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      tab: 'seance', sex: 'm', age: 30, height: 180, weight: 80, level: 'inter',
+      objective: 'cut', neat: 1.375,
+      sDur: 60, sSets: 18, sRpe: 8, sRest: 150,
+      type: 'velo', dur: 90, intensity: 1,
+      eaten: 1240, seanceDone: false, activities: []
+    };
+  }
+
+  fmt(n) {
+    var s = String(Math.round(Math.abs(n)));
+    var out = '';
+    for (var i = 0; i < s.length; i++) {
+      if (i > 0 && (s.length - i) % 3 === 0) out += ' ';
+      out += s[i];
+    }
+    return (n < 0 ? '−' : '') + out;
+  }
+  r10(x) { return Math.round(x / 10) * 10; }
+  dur(m) { var h = Math.floor(m / 60); var mm = m % 60; return h > 0 ? h + ' h ' + (mm < 10 ? '0' : '') + mm : mm + ' min'; }
+
+  bmr() {
+    var s = this.state;
+    var c = s.sex === 'm' ? 5 : s.sex === 'f' ? -161 : -78;
+    return 10 * s.weight + 6.25 * s.height - 5 * s.age + c;
+  }
+
+  seanceMet() {
+    var s = this.state;
+    var met = s.sRpe <= 5 ? 3.5 : s.sRpe <= 7 ? 5.0 : 6.0;
+    if (s.sRest < 60) met += 1.5; else if (s.sRest <= 120) met += 0.5;
+    return Math.min(8, met);
+  }
+
+  estimate(met, minutes, pct) {
+    var rmrH = this.bmr() / 24;
+    var net = (met - 1) * rmrH * (minutes / 60);
+    return { kcal: this.r10(net), low: this.r10(net * (1 - pct)), high: this.r10(net * (1 + pct)), rmrH: rmrH };
+  }
+
+  types() {
+    return [
+      { id: 'velo', label: 'Vélo', met: [4.0, 8.0, 10.0] },
+      { id: 'natation', label: 'Natation', met: [5.3, 5.8, 9.8] },
+      { id: 'marche', label: 'Marche', met: [3.0, 4.3, 5.0] },
+      { id: 'rando', label: 'Randonnée', met: [5.3, 6.0, 7.8] },
+      { id: 'rameur', label: 'Rameur', met: [4.8, 7.0, 8.5] },
+      { id: 'yoga', label: 'Yoga', met: [2.5, 3.0, 4.0] },
+      { id: 'sportco', label: 'Sport co', met: [6.5, 7.0, 10.0] },
+      { id: 'raquette', label: 'Raquettes', met: [5.5, 7.3, 12.0] }
+    ];
+  }
+
+  renderVals() {
+    var self = this;
+    var s = this.state;
+    var set = function (patch) { return function () { self.setState(patch); }; };
+    var pickStyle = function (on) {
+      return on ? { bg: '#33291f', fg: '#f0e4d0', bd: '#33291f' } : { bg: '#f7eede', fg: '#33291f', bd: '#ece0cd' };
+    };
+    var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+
+    var bmr = this.bmr();
+    var rmrH = bmr / 24;
+    var objDelta = s.objective === 'cut' ? -400 : s.objective === 'bulk' ? 300 : 0;
+    var socle = Math.round(bmr * s.neat);
+
+    var sMet = this.seanceMet();
+    var sMinutes = Math.min(s.sDur, s.sSets * 4);
+    var se = this.estimate(sMet, sMinutes, 0.30);
+    var seance = {
+      met: String(sMet).replace('.', ','),
+      kcalTxt: this.fmt(se.kcal), lowTxt: this.fmt(se.low), highTxt: this.fmt(se.high),
+      barLeft: (se.low / Math.max(900, se.high * 1.05) * 100).toFixed(1) + '%',
+      barWidth: ((se.high - se.low) / Math.max(900, se.high * 1.05) * 100).toFixed(1) + '%',
+      why: 'D’après ' + this.dur(sMinutes) + ' actives, ressenti ' + s.sRpe + '/10, repos ' + (s.sRest < 60 ? 'courts' : s.sRest <= 120 ? 'moyens' : 'longs') + ' et ton profil.'
+    };
+
+    var types = this.types();
+    var type = types.filter(function (t) { return t.id === s.type; })[0];
+    var aMet = type.met[s.intensity];
+    var ae = this.estimate(aMet, s.dur, 0.25);
+    var act = { met: String(aMet).replace('.', ','), kcalTxt: this.fmt(ae.kcal), lowTxt: this.fmt(ae.low), highTxt: this.fmt(ae.high) };
+
+    var items = [];
+    if (s.seanceDone) items.push({ label: 'Musculation', kcal: se.kcal, low: se.low, color: '#6b0028' });
+    s.activities.forEach(function (a) {
+      var t = types.filter(function (x) { return x.id === a.type; })[0];
+      var e = self.estimate(t.met[a.intensity], a.dur, 0.25);
+      items.push({ label: t.label + ' · ' + self.dur(a.dur), kcal: e.kcal, low: e.low, color: '#b14f2b' });
+    });
+    var added = items.reduce(function (sum, i) { return sum + i.low; }, 0);
+    var target = socle + objDelta + added;
+    var remaining = target - s.eaten;
+    var scaleMax = Math.max(socle, target) * 1.05;
+    var px = function (v) { return (v / scaleMax * 100).toFixed(1) + '%'; };
+    var rows = [{ label: 'Socle hors sport', hint: '× ' + String(s.neat).replace('.', ','), left: '0%', width: px(socle), color: '#d9c7ad', valueTxt: this.fmt(socle), valueColor: '#33291f' }];
+    if (objDelta !== 0) {
+      rows.push({ label: 'Objectif', hint: s.objective === 'cut' ? 'sèche' : 'masse',
+        left: objDelta < 0 ? px(socle + objDelta) : px(socle), width: px(Math.abs(objDelta)),
+        color: objDelta < 0 ? '#b23b2e' : '#52703a', valueTxt: (objDelta > 0 ? '+' : '') + this.fmt(objDelta), valueColor: objDelta < 0 ? '#b23b2e' : '#52703a' });
+    }
+    var running = socle + objDelta;
+    items.forEach(function (i) {
+      rows.push({ label: i.label, hint: '≈ ' + self.fmt(i.kcal) + ' estimées', left: px(running), width: px(i.low), color: i.color, valueTxt: '+' + self.fmt(i.low), valueColor: i.color });
+      running += i.low;
+    });
+    var chips = items.map(function (i) { return '+' + self.fmt(i.low) + ' kcal · ' + i.label.split(' · ')[0].toLowerCase(); });
+    var day = {
+      eatenTxt: this.fmt(s.eaten),
+      status: remaining >= 0 ? 'Il te reste ' + this.fmt(remaining) + ' kcal' : 'Tu dépasses de ' + this.fmt(-remaining) + ' kcal',
+      fillPct: (clamp(s.eaten / target, 0, 1) * 86).toFixed(1) + '%',
+      chips: chips, rows: rows, targetTxt: this.fmt(target),
+      note: items.length === 0
+        ? 'Termine la séance ou enregistre une activité : la cible monte du bas de la fourchette.'
+        : 'Glucides en plus pour tes séances : +' + Math.round(added / 4) + ' g (règle MN-04).'
+    };
+
+    var capot;
+    if (s.tab === 'activite') {
+      capot = {
+        title: 'activité',
+        lines: [
+          { label: 'Ton corps au repos', calc: 'Mifflin : ' + this.fmt(bmr) + ' kcal/j ÷ 24', value: this.fmt(rmrH) + ' kcal/h', color: '#f0e4d0' },
+          { label: type.label + ' · ' + ['tranquille', 'soutenu', 'intense'][s.intensity], calc: 'Compendium 2011, à revérifier', value: act.met + ' MET', color: '#f0e4d0' },
+          { label: 'Durée', calc: s.dur + ' min', value: this.dur(s.dur), color: '#f0e4d0' },
+          { label: 'Dépense nette', calc: '(' + act.met + ' − 1) × ' + Math.round(rmrH) + ' × ' + (s.dur / 60).toFixed(2).replace('.', ',') + ' h', value: '≈ ' + act.kcalTxt, color: '#dd6e40' },
+          { label: 'Ce que ta cible retient', calc: 'bas de la fourchette ±25 %', value: '+' + act.lowTxt, color: '#a9ba7e' }
+        ]
+      };
+    } else if (s.tab === 'journee') {
+      capot = {
+        title: 'journée',
+        lines: [
+          { label: 'Socle hors sport', calc: this.fmt(bmr) + ' × ' + String(s.neat).replace('.', ','), value: this.fmt(socle), color: '#f0e4d0' },
+          { label: 'Objectif', calc: s.objective === 'cut' ? 'sèche' : s.objective === 'bulk' ? 'prise de masse' : 'maintien', value: (objDelta > 0 ? '+' : '') + this.fmt(objDelta), color: '#f0e4d0' },
+          { label: 'Séances et activités', calc: items.length + ' · bas des fourchettes', value: '+' + this.fmt(added), color: '#dd6e40' },
+          { label: 'Cible du jour', calc: 'socle + objectif + activités', value: this.fmt(target), color: '#fff' },
+          { label: 'Modèle actuel, pour comparer', calc: 'Fixe « modéré » : ' + this.fmt(bmr) + ' × 1,55 + objectif', value: this.fmt(Math.round(bmr * 1.55) + objDelta), color: '#c9b79a' }
+        ]
+      };
+    } else {
+      capot = {
+        title: 'séance',
+        lines: [
+          { label: 'Ton corps au repos', calc: 'Mifflin : ' + this.fmt(bmr) + ' kcal/j ÷ 24', value: this.fmt(rmrH) + ' kcal/h', color: '#f0e4d0' },
+          { label: 'Intensité', calc: 'ressenti ' + s.sRpe + ' → ' + (s.sRpe <= 5 ? '3,5' : s.sRpe <= 7 ? '5,0' : '6,0') + ' · repos ' + s.sRest + ' s → +' + (s.sRest < 60 ? '1,5' : s.sRest <= 120 ? '0,5' : '0'), value: seance.met + ' MET', color: '#f0e4d0' },
+          { label: 'Temps actif', calc: 'min(' + s.sDur + ' min ; ' + s.sSets + ' séries × 4 min)', value: this.dur(sMinutes), color: '#f0e4d0' },
+          { label: 'Dépense nette', calc: '(' + seance.met + ' − 1) × ' + Math.round(rmrH) + ' × ' + (sMinutes / 60).toFixed(2).replace('.', ',') + ' h', value: '≈ ' + seance.kcalTxt, color: '#dd6e40' },
+          { label: 'Ce que ta cible retient', calc: 'bas de la fourchette ±30 %', value: '+' + seance.lowTxt, color: '#a9ba7e' }
+        ]
+      };
+    }
+    var cur = s.tab === 'activite' ? ae : se;
+    var curMet = s.tab === 'activite' ? aMet : sMet;
+    var curMin = s.tab === 'activite' ? s.dur : sMinutes;
+    var standard = this.r10((curMet - 1) * s.weight * curMin / 60);
+    var watch = this.r10(curMet * rmrH * curMin / 60);
+    var cmax = Math.max(standard, watch, cur.kcal) * 1.1;
+    capot.compare = [
+      { label: 'Notre estimation', hint: 'nette, avec ton profil', width: (cur.kcal / cmax * 100).toFixed(1) + '%', color: '#b14f2b', valueTxt: this.fmt(cur.kcal) },
+      { label: 'MET standard', hint: 'sans âge, taille ni sexe', width: (standard / cmax * 100).toFixed(1) + '%', color: '#90897d', valueTxt: this.fmt(standard) },
+      { label: 'Une montre', hint: 'totale, repos compris', width: (watch / cmax * 100).toFixed(1) + '%', color: '#2a64ad', valueTxt: this.fmt(watch) }
+    ];
+
+    var sexes = [['m', 'Homme'], ['f', 'Femme'], ['u', 'Non précisé']].map(function (x) {
+      var st = pickStyle(s.sex === x[0]);
+      return { label: x[1], bg: st.bg, fg: st.fg, bd: st.bd, pick: set({ sex: x[0] }) };
+    });
+    var steppers = [
+      { label: 'Âge', value: s.age + ' ans', minus: set({ age: clamp(s.age - 5, 18, 80) }), plus: set({ age: clamp(s.age + 5, 18, 80) }) },
+      { label: 'Taille', value: s.height + ' cm', minus: set({ height: clamp(s.height - 5, 150, 200) }), plus: set({ height: clamp(s.height + 5, 150, 200) }) },
+      { label: 'Poids', value: s.weight + ' kg', minus: set({ weight: clamp(s.weight - 5, 45, 130) }), plus: set({ weight: clamp(s.weight + 5, 45, 130) }) }
+    ];
+    var levels = [['beg', 'Débutant'], ['inter', 'Intermédiaire'], ['adv', 'Confirmé']].map(function (x) {
+      var st = pickStyle(s.level === x[0]);
+      return { label: x[1], bg: st.bg, fg: st.fg, bd: st.bd, pick: set({ level: x[0] }) };
+    });
+    var objectives = [['cut', 'Sèche'], ['maintain', 'Maintien'], ['bulk', 'Masse']].map(function (x) {
+      var st = pickStyle(s.objective === x[0]);
+      return { label: x[1], bg: st.bg, fg: st.fg, bd: st.bd, pick: set({ objective: x[0] }) };
+    });
+    var neats = [[1.2, 'Assis'], [1.375, 'Debout'], [1.55, 'Physique']].map(function (x) {
+      var st = pickStyle(s.neat === x[0]);
+      return { label: x[1], bg: st.bg, fg: st.fg, bd: st.bd, pick: set({ neat: x[0] }) };
+    });
+    var tabs = [['seance', 'Fin de séance'], ['activite', 'Activité'], ['journee', 'Journée']].map(function (x) {
+      var on = s.tab === x[0];
+      return { label: x[1], bg: on ? '#fffaf2' : 'transparent', fg: on ? '#33291f' : '#786a59', shadow: on ? '0 2px 8px -2px rgba(51,41,31,.25)' : 'none', pick: set({ tab: x[0] }) };
+    });
+    var seanceSteppers = [
+      { label: 'Durée', hint: 'du début à la fin', value: s.sDur + ' min', minus: set({ sDur: clamp(s.sDur - 10, 20, 180) }), plus: set({ sDur: clamp(s.sDur + 10, 20, 180) }) },
+      { label: 'Séries', hint: 'de travail validées', value: String(s.sSets), minus: set({ sSets: clamp(s.sSets - 2, 4, 40) }), plus: set({ sSets: clamp(s.sSets + 2, 4, 40) }) },
+      { label: 'Ressenti', hint: 'de la séance', value: s.sRpe + '/10', minus: set({ sRpe: clamp(s.sRpe - 1, 3, 10) }), plus: set({ sRpe: clamp(s.sRpe + 1, 3, 10) }) },
+      { label: 'Repos', hint: 'moyen entre séries', value: s.sRest + ' s', minus: set({ sRest: clamp(s.sRest - 30, 30, 240) }), plus: set({ sRest: clamp(s.sRest + 30, 30, 240) }) }
+    ];
+    var typeItems = types.map(function (t) {
+      var on = t.id === s.type;
+      return { label: t.label, metTxt: String(t.met[s.intensity]).replace('.', ',') + ' MET', bg: on ? '#fff' : '#f7eede', bd: on ? '2px solid #b14f2b' : '1px solid #ece0cd', fg: on ? '#b14f2b' : '#33291f', pick: set({ type: t.id }) };
+    });
+    var intensities = [['Tranquille', 'tu peux chanter'], ['Soutenu', 'tu peux parler'], ['Intense', 'quelques mots']].map(function (x, i) {
+      var on = i === s.intensity;
+      return { label: x[0], hint: x[1], bg: on ? '#fff' : '#f7eede', bd: on ? '2px solid #b14f2b' : '1px solid #ece0cd', fg: on ? '#b14f2b' : '#33291f', pick: set({ intensity: i }) };
+    });
+
+    return {
+      sexes: sexes, steppers: steppers, levels: levels, objectives: objectives, neats: neats, tabs: tabs,
+      isSeance: s.tab === 'seance', isActivite: s.tab === 'activite', isJournee: s.tab === 'journee',
+      seanceSteppers: seanceSteppers, seance: seance,
+      seanceCta: s.seanceDone ? 'Voir ma journée' : 'Terminer la séance',
+      finishSeance: function () { self.setState({ seanceDone: true, tab: 'journee' }); },
+      types: typeItems, intensities: intensities, act: act,
+      durTxt: this.dur(s.dur),
+      durMinus: set({ dur: clamp(s.dur - 15, 15, 300) }),
+      durPlus: set({ dur: clamp(s.dur + 15, 15, 300) }),
+      saveActivity: function () {
+        var list = s.activities.concat([{ type: s.type, dur: s.dur, intensity: s.intensity }]).slice(-2);
+        self.setState({ activities: list, tab: 'journee' });
+      },
+      day: day,
+      eatMinus: set({ eaten: clamp(s.eaten - 200, 0, 5000) }),
+      eatPlus: set({ eaten: clamp(s.eaten + 200, 0, 5000) }),
+      resetDay: set({ seanceDone: false, activities: [], eaten: 1240 }),
+      capot: capot
+    };
+  }
+}
+</script>
+</body>
+</html>

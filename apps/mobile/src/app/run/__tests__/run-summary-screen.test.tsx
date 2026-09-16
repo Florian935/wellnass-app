@@ -58,6 +58,9 @@ jest.mock('@/lib/gpx-export', () => ({ exportRunAsGpx: jest.fn() }));
 jest.mock('@/components/running/RouteMap', () => ({ RouteMap: () => null }));
 jest.mock('@/components/share/ShareCardSheet', () => ({ ShareCardSheet: () => null }));
 jest.mock('@/components/run/PaceCurveCards', () => ({ PaceCurveCards: () => null }));
+// US DEPENSE-02 : la carte de dépense a son propre test (EnergyCard.test.tsx) ; ici elle n'apporte
+// rien et tirerait tout le graphe des repositories dans ce test d'écran.
+jest.mock('@/components/energy/RunEnergySection', () => ({ RunEnergySection: () => null }));
 jest.mock('@/components/CelebrationCard', () => {
   const { Text } = require('react-native');
   return {

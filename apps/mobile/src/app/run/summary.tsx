@@ -16,6 +16,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { CelebrationCard } from '@/components/CelebrationCard';
+import { RunEnergySection } from '@/components/energy/RunEnergySection';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import {
@@ -326,6 +327,15 @@ export default function RunSummaryScreen() {
           </View>
         ) : null}
       </Card>
+
+      {/* US DEPENSE-02 — ce que la sortie a coûté (dénivelé compris), et ce que ça change. */}
+      <RunEnergySection
+        finishedAt={run.finishedAt}
+        distanceM={run.distanceM}
+        durationSeconds={run.durationSeconds}
+        elevationGainM={run.elevationGainM}
+        rpe={run.rpe}
+      />
 
       {/* ── La séance planifiée validée (R1c / constat F20) ─────────────────────────────── */}
       {run.plannedSessionId !== null && validated ? (

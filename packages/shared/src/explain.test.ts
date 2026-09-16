@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { explainCalorieTarget, explainRacePrediction, explainReadiness, explainWhatIf } from './explain';
+import { explainCalorieTarget, explainEnergy, explainRacePrediction, explainReadiness, explainWhatIf } from './explain';
 import { RIEGEL_EXPONENT } from './pace-records';
 import type { ReadinessResult } from './readiness';
 import { projectWhatIf } from './what-if';
@@ -123,5 +123,54 @@ describe('explainCalorieTarget', () => {
     const r = explainCalorieTarget({ tdee: 2480, objectiveDeltaKcal: -300, trainingDayBonusKcal: 120, target: 2300, profileComplete: false });
     expect(r.steps.map((s) => s.key)).toContain('explain.kcal.trainingDay');
     expect(r.confidence).toBe('low');
+  });
+});
+
+describe('explainEnergy (US DEPENSE-02)', () => {
+  const base = {
+    restingKcalPerHour: 74.17,
+    personalised: true,
+    met: 6,
+    activeMinutes: 60,
+    kcal: 370,
+    low: 260,
+    high: 480,
+    confidence: 'medium' as const,
+  };
+
+  it('raconte le calcul dans l’ordre, et désamorce la montre et le niveau', () => {
+    const e = explainEnergy(base);
+    expect(e.steps.map((s) => s.key)).toEqual([
+      'explain.energy.resting',
+      'explain.energy.met',
+      'explain.energy.minutes',
+      'explain.energy.result',
+      'explain.energy.watch',
+      'explain.energy.level',
+      'explain.energy.target',
+    ]);
+    // Le repos pendant l'heure d'effort : c'est l'écart avec une montre.
+    expect(e.steps.find((s) => s.key === 'explain.energy.watch')?.params).toEqual({ kcal: 74 });
+    // La cible ne retient que le bas de la fourchette.
+    expect(e.steps.at(-1)).toMatchObject({ key: 'explain.energy.target', value: 260 });
+  });
+
+  it('dit le repli quand le profil est incomplet', () => {
+    const e = explainEnergy({ ...base, personalised: false, confidence: 'low' });
+    expect(e.steps[0]?.key).toBe('explain.energy.restingFallback');
+    expect(e.confidence).toBe('low');
+  });
+
+  it('un chiffre de montre n’a ni MET ni durée à expliquer', () => {
+    const e = explainEnergy({ ...base, met: null, kcal: 812, low: 812, high: 812, confidence: 'high' });
+    expect(e.steps.map((s) => s.key)).toEqual([
+      'explain.energy.resting',
+      'explain.energy.device',
+      'explain.energy.target',
+    ]);
+  });
+
+  it('ne peut pas être plus sûre que le chiffre qu’elle explique', () => {
+    expect(explainEnergy({ ...base, confidence: 'high' }).confidence).toBe('high');
   });
 });

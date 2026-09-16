@@ -57,4 +57,21 @@ describe('activeDayKeys', () => {
     ];
     expect(activeDayKeys(acts)).toEqual(new Set());
   });
+
+  // US AUTRE-01 : trois heures de vélo un dimanche cassaient la série — l'app ne connaissait que la
+  // muscu, la course et la nutrition.
+  it('une autre activité rend le jour actif (US AUTRE-01)', () => {
+    const acts: DayActivity[] = [
+      { day: '2026-09-13', strength: false, running: false, nutrition: false, other: true },
+      { day: '2026-09-14', strength: false, running: false, nutrition: false, other: false },
+    ];
+    expect(activeDayKeys(acts)).toEqual(new Set(['2026-09-13']));
+  });
+
+  it('`other` absent se comporte comme aucune activité (non-régression)', () => {
+    const acts: DayActivity[] = [
+      { day: '2026-09-13', strength: false, running: false, nutrition: false, steps: false },
+    ];
+    expect(activeDayKeys(acts)).toEqual(new Set());
+  });
 });

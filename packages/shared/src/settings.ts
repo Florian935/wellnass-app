@@ -186,6 +186,22 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
    * rouvrirait la classe de panne de CYCLE-01 le jour où la surface revient.
    */
   aiConsentAt: z.string().nullable().default(null),
+
+  /**
+   * US DEPENSE-02 — afficher les **calories dépensées** (bilan de séance, résumé de course,
+   * historique des activités).
+   *
+   * Défaut `true` : c'est le comportement attendu, et l'inverse cacherait sans raison ce que
+   * l'utilisateur vient de faire. Mais le réglage existe parce que le sujet est sensible — pour qui
+   * a un rapport compliqué à la nourriture, « tu as brûlé 780 kcal » nourrit la logique de
+   * compensation, celle-là même que le produit refuse (aucune équivalence alimentaire, aucun ton de
+   * récompense).
+   *
+   * 🔴 **Masquer n'éteint pas le calcul** : la cible calorique continue de suivre les dépenses
+   * réelles en mode `activities`. On retire l'affichage, pas le moteur — sans quoi le réglage
+   * changerait en silence ce que l'utilisateur peut manger.
+   */
+  showEnergyEstimates: z.boolean().default(true),
 });
 
 export type UserSettingsRow = z.infer<typeof userSettingsRowSchema>;

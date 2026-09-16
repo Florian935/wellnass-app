@@ -20,6 +20,8 @@
 import { Linking, Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import {
+  activityTypeDef,
+  buildActivitySessionRecord,
   buildMenstruationFlowRecord,
   buildMenstruationPeriodRecord,
   buildRunRecords,
@@ -161,7 +163,7 @@ export type SyncReport = {
   /** Instant de la tentative (ISO UTC). */
   at: string;
   /** Ce qui était tenté. */
-  kind: 'workout' | 'run' | 'backfill' | 'weight' | 'steps' | 'cycle';
+  kind: 'workout' | 'run' | 'activity' | 'backfill' | 'weight' | 'steps' | 'cycle';
   /** Nombre d'éléments réellement écrits / importés. */
   written: number;
   /**
@@ -502,6 +504,53 @@ export async function pushWorkout(workoutId: string, defaultTitle?: string): Pro
     report('workout', written, error);
   } catch (error) {
     report('workout', 0, errorMessage(error));
+  }
+}
+
+/**
+ * Écrit une **autre activité** (US AUTRE-01) comme séance du bon type. Fire-and-forget.
+ *
+ * ⚠️ Sans calories : ajouter `ActiveCaloriesBurned` demanderait un 7ᵉ type dans la déclaration Play
+ * « Health apps », qui ne se dépose qu'une fois (voir `buildActivitySessionRecord`).
+ */
+export async function pushActivity(activityId: string, title?: string): Promise<void> {
+  const { native, reason, inactive } = await ready();
+  if (!native) {
+    if (!inactive) report('activity', 0, reason);
+    return;
+  }
+  try {
+    const row = await powerSync.getOptional<{
+      id: string;
+      activity_type: string;
+      started_at: string;
+      duration_seconds: number;
+      updated_at: string;
+    }>(
+      `SELECT id, activity_type, started_at, duration_seconds, updated_at
+       FROM activities WHERE id = ? AND deleted_at IS NULL`,
+      [activityId],
+    );
+    if (!row) {
+      report('activity', 0, `activité ${activityId} introuvable en base locale`);
+      return;
+    }
+    const record = buildActivitySessionRecord({
+      id: row.id,
+      startedAt: row.started_at,
+      durationSeconds: row.duration_seconds,
+      exerciseType: activityTypeDef(row.activity_type).exerciseType,
+      updatedAt: row.updated_at,
+      title,
+    });
+    if (!record) {
+      report('activity', 0, `record non constructible (started_at=${row.started_at})`);
+      return;
+    }
+    const { written, error } = await insertBatch(native, [record]);
+    report('activity', written, error);
+  } catch (error) {
+    report('activity', 0, errorMessage(error));
   }
 }
 

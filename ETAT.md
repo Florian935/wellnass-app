@@ -29,6 +29,7 @@ avant de pouvoir publier.
 | **CONTENU-01** — Seed des bibliothèques de programmes (muscu + course) | `recette` | `docs/contenu-01-spec` | [3.1, 5.2] |
 | **CYCLE-01** — Suivi du cycle menstruel — journal, prédiction et croisement | `recette` | `feature/cycle01-suivi-menstruel` | [1.25, 1.26] |
 | **DASH-01** — Dashboards immersifs — une atmosphère par pilier, des écrans vivants, une app qui comprend | `recette` | `feature/dash01-dashboards-immersifs` | [7.29] |
+| **DEPENSE-00** — La cible calorique qui suit les dépenses réelles (fin du double comptage) | `recette` | `dev` | [4.43] |
 | **DEPENSE-01** — Le moteur de dépense énergétique (muscu, course, activité) | `recette` | `dev` | [4.41] |
 | **DOUL-01** — Journal des zones douloureuses — déclaration, historique et signal factuel | `recette` | `feature/doul01-journal-zones-douloureuses` | [1.29] |
 | **EXEC-01** — Écart entre le prévu et le réalisé — lot d'analyses d'exécution muscu | `recette` | `feature/exec01-prevu-vs-realise` | [3.58] |
@@ -91,7 +92,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **67 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DASH-01, DEPENSE-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LAUNCHER-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX02, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **68 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, COLLIS-01, CONF-07, CONTENU-01, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LAUNCHER-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX02, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -113,25 +114,24 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1238 · `main` a **1235** commits de retard sur `dev` |
-| Specs d'US | 157 au total — 85 clôturées, 71 en cours |
+| Commits | 1239 · `main` a **1236** commits de retard sur `dev` |
+| Specs d'US | 157 au total — 85 clôturées, 72 en cours |
 | Migrations | 102/104 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
 
-- ⚠️ 1 spec(s) sans front-matter : depense00-socle-hors-sport.md
 - ⚠️ 2 migration(s) absente(s) du registre : 20260912235121_corps02_body_visual_state.sql, 20260913204247_corps03_body_training_state.sql
 - ⚠️ 2 migration(s) non poussée(s) sur le cloud
 - ⚠️ Working tree : modifications non commitées
 
 ## 🕒 Derniers commits
 
+- `0f93f0b`  chore(labo01): pousse les migrations, deploie la sync rule et active l'ecriture
 - `9b10cb8`  feat(labo01): le Labo, la ou tes piliers se croisent (roadmap 7.30)
 - `1869dff`  chore(guid01): integre dev, pousse la migration et active l'ecriture du guidage
 - `2b43b72`  feat(guid01): l'objectif pilote les 3 piliers, et le guidage devient reglable
 - `ec1b999`  Merge remote-tracking branch 'origin/dev' into feature/nutri-refonte-ux
-- `89396aa`  feat(nutri-ux01): la bibliotheque passe de 80 a 3 244 aliments (import CIQUAL)
 
 ---
 

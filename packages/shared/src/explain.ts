@@ -68,6 +68,59 @@ export function explainRacePrediction(prediction: RacePrediction, nowIso: string
   };
 }
 
+/**
+ * US DEPENSE-02 — d'où sort une **dépense estimée**.
+ *
+ * Quatre étapes, dans l'ordre où on les raconterait à voix haute : le corps au repos, l'intensité,
+ * le temps actif, et ce que ça donne. Puis deux phrases qui désamorcent les deux malentendus
+ * garantis — « ma montre dit plus » (elle compte le repos, déjà dans la cible) et « et mon
+ * niveau ? » (il n'entre pas, et c'est voulu).
+ *
+ * 🔴 La `confidence` **vient de l'estimation**, elle n'est pas recalculée : l'explication ne peut
+ * pas être plus sûre que le chiffre qu'elle explique.
+ */
+export function explainEnergy(input: {
+  /** kcal/h au repos (Mifflin ÷ 24), ou 1 kcal/kg/h en repli. */
+  restingKcalPerHour: number;
+  /** `false` quand l'âge ou la taille manquent : le repli est dit à l'écran. */
+  personalised: boolean;
+  /** MET retenu ; `null` pour un chiffre venu d'une montre. */
+  met: number | null;
+  activeMinutes: number;
+  kcal: number;
+  low: number;
+  high: number;
+  confidence: Confidence;
+}): Explanation {
+  const steps: ExplainStep[] = [
+    {
+      key: input.personalised ? 'explain.energy.resting' : 'explain.energy.restingFallback',
+      value: Math.round(input.restingKcalPerHour),
+    },
+  ];
+  if (input.met != null) {
+    steps.push({ key: 'explain.energy.met', value: input.met });
+    steps.push({ key: 'explain.energy.minutes', value: Math.round(input.activeMinutes) });
+    steps.push({
+      key: 'explain.energy.result',
+      value: input.kcal,
+      params: { low: input.low, high: input.high },
+    });
+    // Le repos pendant l'effort est dans la cible, pas dans la dépense : sans cette phrase, l'écart
+    // avec la montre passe pour une erreur de l'app.
+    steps.push({
+      key: 'explain.energy.watch',
+      params: { kcal: Math.round((input.restingKcalPerHour * input.activeMinutes) / 60) },
+    });
+    steps.push({ key: 'explain.energy.level' });
+  } else {
+    steps.push({ key: 'explain.energy.device', value: input.kcal });
+  }
+  steps.push({ key: 'explain.energy.target', value: input.low });
+
+  return { steps, confidence: input.confidence };
+}
+
 export function explainCalorieTarget(input: {
   tdee: number;
   objectiveDeltaKcal: number;

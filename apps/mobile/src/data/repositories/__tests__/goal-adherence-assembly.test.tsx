@@ -41,6 +41,14 @@ jest.mock('../profile-repository', () => ({
 }));
 jest.mock('../bodyweight-repository', () => ({
   useLatestWeight: jest.fn(),
+  // US DEPENSE-01 : la cible lit désormais les pesées pour retrouver le **poids à la date** de
+  // chaque séance (constat C6). Sans pesée, l'assemblage retombe sur le poids du profil.
+  useWeightEntries: jest.fn(() => ({ entries: [], isLoading: false })),
+}));
+// US AUTRE-01 : aucune autre activité dans ces cas de test — la cible ne doit donc pas bouger.
+jest.mock('../activity-repository', () => ({
+  useActivities: jest.fn(() => ({ activities: [], isLoading: false })),
+  useActivitiesOnDay: jest.fn(() => ({ activities: [], isLoading: false })),
 }));
 jest.mock('../journal-repository', () => ({
   useDailyTotals: jest.fn(),

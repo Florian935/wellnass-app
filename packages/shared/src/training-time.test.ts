@@ -15,13 +15,15 @@ describe('computeTrainingTime', () => {
       totalSeconds: 16200,
       strengthSeconds: 7800,
       runningSeconds: 8400,
+      otherSeconds: 0,
     });
   });
   it('clamp les valeurs négatives / non finies à 0', () => {
-    expect(computeTrainingTime({ strengthSeconds: -10, runningSeconds: Number.NaN })).toEqual({
+    expect(computeTrainingTime({ strengthSeconds: -10, runningSeconds: Number.NaN, otherSeconds: -1 })).toEqual({
       totalSeconds: 0,
       strengthSeconds: 0,
       runningSeconds: 0,
+      otherSeconds: 0,
     });
   });
   it('tout à zéro', () => {
@@ -29,6 +31,18 @@ describe('computeTrainingTime', () => {
       totalSeconds: 0,
       strengthSeconds: 0,
       runningSeconds: 0,
+      otherSeconds: 0,
+    });
+  });
+  // US AUTRE-01 : les autres activités entrent dans le temps d'entraînement (MR-06). Un appelant
+  // qui ne les passe pas garde exactement son résultat d'avant — c'est l'objet des trois cas plus
+  // haut ; celui-ci fige l'ajout.
+  it('compte les autres activités quand elles sont fournies', () => {
+    expect(computeTrainingTime({ strengthSeconds: 3600, runningSeconds: 1800, otherSeconds: 5400 })).toEqual({
+      totalSeconds: 10800,
+      strengthSeconds: 3600,
+      runningSeconds: 1800,
+      otherSeconds: 5400,
     });
   });
 });

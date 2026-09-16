@@ -57,6 +57,7 @@ import { useDenseFoodCandidates, useRecentFoods } from '@/data/repositories/food
 import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 import { AddFoodSheet } from '@/components/nutrition/AddFoodSheet';
 import { DayCalendarSheet } from '@/components/nutrition/DayCalendarSheet';
+import { DayEnergyCard } from '@/components/energy/DayEnergyCard';
 import { HydrationCard } from '@/components/nutrition/HydrationCard';
 import { QualityCard } from '@/components/nutrition/QualityCard';
 import { MealGlyph } from '@/components/nutrition/CategoryGlyph';
@@ -325,6 +326,14 @@ export default function NutritionScreen() {
     >
         {/* R5.2 — hydratation : un tap, aucune saisie. */}
         <HydrationCard day={day} />
+
+        {/*
+          US DEPENSE-03 — « Ta journée en énergie » : ce que la journée a coûté et ce que la cible
+          en retient. Placée haut dans le journal parce qu'elle répond à la question qui amène ici
+          (« est-ce que je peux manger un peu plus ce soir ? »), et qu'elle porte l'entrée
+          « Ajouter une activité » — la seule porte de saisie pour qui n'a activé que la nutrition.
+        */}
+        <DayEnergyCard dayKey={day} consumedKcal={totals.kcal} />
 
         {/* Journée vide (4.18) — un état plein plutôt qu'une simple ligne pointillée : c'est le
             premier écran d'un nouvel utilisateur, et « copier hier » y est l'action la plus utile. */}

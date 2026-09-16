@@ -71,6 +71,55 @@ export function activityFactor(level: ActivityLevel): number {
   return ACTIVITY_FACTORS[level];
 }
 
+// --- Socle HORS SPORT (US DEPENSE-00) ----------------------------------------
+
+/**
+ * Mode de vie **hors sport** — le facteur du socle quand la cible suit les dépenses réelles.
+ *
+ * ── 🔴 Pourquoi un second jeu de paliers ────────────────────────────────────────────────────────
+ * `ACTIVITY_LEVELS` ci-dessus décrit un mode de vie **sport compris** : ses paliers sont définis par
+ * la fréquence d'entraînement (RN-03 suggère « modéré » dès 3 séances par semaine). Ajouter par-dessus
+ * la dépense de chaque séance **compte le sport deux fois** — le défaut mesuré par l'analyse
+ * (`docs/product/analyse-depense-activites-2026-09.md` §3) : jusqu'à 95 % du déficit d'une sèche
+ * effacé, sans la moindre alerte. Le mode `activities` change donc **aussi le socle**, il ne se
+ * contente pas d'ajouter un bonus.
+ *
+ * ⚠️ Les trois valeurs reprennent provisoirement les multiplicateurs existants (1,2 / 1,375 / 1,55).
+ * Elles décrivent ici le quotidien **hors entraînement** — une réinterprétation assumée, à sourcer
+ * proprement (analyse §10). Le ménage, le jardinage et les déplacements sont dans ce socle : c'est
+ * pourquoi le catalogue d'activités ne les propose pas.
+ */
+export const SPORT_FREE_LEVELS = ['seated', 'standing', 'physical'] as const;
+export const sportFreeLevelSchema = z.enum(SPORT_FREE_LEVELS);
+export type SportFreeLevel = z.infer<typeof sportFreeLevelSchema>;
+
+const SPORT_FREE_FACTORS: Record<SportFreeLevel, number> = {
+  seated: 1.2,
+  standing: 1.375,
+  physical: 1.55,
+};
+
+/** Palier appliqué quand la question n'a pas (encore) été posée. */
+export const DEFAULT_SPORT_FREE_LEVEL: SportFreeLevel = 'standing';
+
+export function sportFreeFactor(level: SportFreeLevel): number {
+  return SPORT_FREE_FACTORS[level];
+}
+
+/**
+ * Le **socle hors sport** : métabolisme de base × facteur de mode de vie, sans aucun entraînement.
+ * `null` si le profil ne permet pas de calculer un métabolisme de base (mêmes gardes que `tdee`).
+ */
+export function sportFreeTdee(
+  input: Partial<BmrInput> & { sportFreeLevel: SportFreeLevel },
+): number | null {
+  const { sex = 'unspecified', weightKg, heightCm, age, sportFreeLevel } = input;
+  if (!weightKg || !heightCm || !age || weightKg <= 0 || heightCm <= 0 || age <= 0) {
+    return null;
+  }
+  return Math.round(basalMetabolicRate({ sex, weightKg, heightCm, age }) * sportFreeFactor(sportFreeLevel));
+}
+
 // --- Ajustement auto du TDEE selon le volume de course (US RN-03, catalogue) -
 
 /** Fenêtre de mesure de la fréquence (spec D1) — 14 j, pas 7 : lisse une semaine anormale. */
@@ -197,22 +246,43 @@ export function trainingDayCalories(target: number, bonus: number): number {
   return Math.round(target + Math.max(0, bonus));
 }
 
-/** Mode de calcul du bonus calorique des jours d'entrainement (item RN-02). */
-export type TrainingBonusMode = 'fixed' | 'auto';
+/**
+ * Mode de calcul du bonus calorique des jours d'entraînement.
+ *
+ * - `fixed` (défaut historique) : forfait les jours de séance ;
+ * - `auto` (RN-02) : dépense des courses du jour, repli forfait ;
+ * - `activities` (DEPENSE-00) : **toutes** les dépenses réelles du jour — musculation, course et
+ *   activités libres — sur un socle **hors sport** (`SPORT_FREE_LEVELS`). C'est le seul mode qui ne
+ *   compte pas le sport deux fois.
+ */
+export const TRAINING_BONUS_MODES = ['fixed', 'auto', 'activities'] as const;
+export const trainingBonusModeSchema = z.enum(TRAINING_BONUS_MODES);
+export type TrainingBonusMode = z.infer<typeof trainingBonusModeSchema>;
 
 /**
- * Bonus calorique du jour selon le mode choisi (item RN-02).
- * `fixed` : forfait fixe les jours de seance, 0 sinon.
- * `auto` : depense de la course du jour si une course a ete enregistree,
- * sinon repli sur le forfait fixe (jour de seance sans course), sinon 0.
+ * Bonus calorique du jour selon le mode choisi.
+ *
+ * `fixed` : forfait fixe les jours de séance, 0 sinon.
+ * `auto` : dépense de la course du jour si une course a été enregistrée, sinon repli sur le forfait
+ * fixe (jour de séance sans course), sinon 0.
+ * `activities` : la somme `energyKcalToday` — **déjà au bas des fourchettes** (décision D2), déjà
+ * composée par l'appelant à partir des trois sources.
+ *
+ * 🔴 En mode `activities`, **aucun repli sur le forfait** : le mode promet « ce que tu as réellement
+ * dépensé ». Un jour sans rien de saisi vaut donc 0, et c'est exact — pas un défaut à compenser.
+ * Le comportement des modes `fixed` et `auto` est **inchangé**, à la ligne près (tests de
+ * non-régression).
  */
 export function dayCalorieBonus(params: {
   mode: TrainingBonusMode;
   isTrainingDay: boolean;
   fixedBonus: number;
   runCaloriesToday: number;
+  /** Somme des dépenses estimées du jour (bas de fourchette). Ignorée hors mode `activities`. */
+  energyKcalToday?: number;
 }): number {
-  const { mode, isTrainingDay, fixedBonus, runCaloriesToday } = params;
+  const { mode, isTrainingDay, fixedBonus, runCaloriesToday, energyKcalToday = 0 } = params;
+  if (mode === 'activities') return Math.max(0, Math.round(energyKcalToday));
   const forfait = isTrainingDay && fixedBonus > 0 ? fixedBonus : 0;
   if (mode === 'fixed') return forfait;
   if (runCaloriesToday > 0) return runCaloriesToday;
@@ -230,12 +300,15 @@ export function computeEffectiveTargetForDay(params: {
   fixedBonus: number;
   isTrainingDay: boolean;
   runCaloriesToday: number;
+  /** US DEPENSE-00 — dépenses réelles du jour (bas de fourchette), mode `activities` uniquement. */
+  energyKcalToday?: number;
 }): number {
   const bonus = dayCalorieBonus({
     mode: params.mode,
     isTrainingDay: params.isTrainingDay,
     fixedBonus: params.fixedBonus,
     runCaloriesToday: params.runCaloriesToday,
+    energyKcalToday: params.energyKcalToday,
   });
   return trainingDayCalories(params.targetBase, bonus);
 }
@@ -516,8 +589,14 @@ export const nutritionProfileRowSchema = syncFieldsSchema.extend({
   allergens: z.array(z.string()).default([]),
   /** Bonus calorique des jours d'entraînement (item 4.7, opt-in) ; 0 = désactivé. */
   trainingDayBonus: z.number().nonnegative().default(0),
-  /** Mode de calcul du bonus (item RN-02) : forfait fixe ou dépense course auto. */
-  trainingBonusMode: z.enum(['fixed', 'auto']).default('fixed'),
+  /** Mode de calcul du bonus (items RN-02 puis DEPENSE-00) — voir `TRAINING_BONUS_MODES`. */
+  trainingBonusMode: trainingBonusModeSchema.default('fixed'),
+  /**
+   * US DEPENSE-00 — mode de vie **hors sport**, utilisé comme facteur du socle quand le mode vaut
+   * `activities`. `null` = jamais demandé (et le mode `activities` ne peut alors pas être choisi :
+   * l'écran pose la question au moment du basculement).
+   */
+  sportFreeLevel: sportFreeLevelSchema.nullable().default(null),
   /** Marge d'adhérence à l'objectif (item NUTR-10) : % de tolérance autour de l'objectif effectif. */
   adherenceMarginPct: z.number().int().min(1).max(50).default(10),
   /** Repas personnalisés (renommer / ajouter / supprimer, item 4.15) ; `null` = 4 repas par défaut. */

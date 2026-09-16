@@ -198,6 +198,53 @@ export function buildWorkoutSessionRecord(input: {
 }
 
 /**
+ * Activité libre → record `ExerciseSession` (US AUTRE-01).
+ *
+ * ⚠️ **Aucune calorie n'est écrite**, délibérément. Écrire `ActiveCaloriesBurned` demanderait la
+ * permission `WRITE_ACTIVE_CALORIES_BURNED`, donc un **7ᵉ type** dans la déclaration Google Play
+ * « Health apps » — laquelle ne se dépose qu'une fois (LANCE-00) et coûterait une re-déclaration et
+ * ~2 semaines de délai externe. Le type de sport, lui, ne demande rien de plus : `WRITE_EXERCISE`
+ * est déjà accordée pour les séances et les courses.
+ *
+ * `exerciseType` vient du catalogue applicatif (`ACTIVITY_TYPES`), relevé dans
+ * `react-native-health-connect` — ⚠️ énumération `ExerciseType`, **pas** `ExerciseSegmentType`, où
+ * les mêmes noms portent d'autres nombres.
+ *
+ * `recordingMethod` est **manuel** : l'activité a été saisie à la main, et le dire évite qu'un autre
+ * lecteur la prenne pour une mesure d'appareil.
+ */
+export function buildActivitySessionRecord(input: {
+  id: string;
+  startedAt: string;
+  durationSeconds: number;
+  exerciseType: number;
+  updatedAt: string;
+  /** Libellé traduit du type, fourni par l'appelant (ce module ignore i18next). */
+  title?: string;
+}): ExerciseSessionRecordInput | null {
+  if (!Number.isFinite(input.durationSeconds) || input.durationSeconds <= 0) return null;
+  const startMs = msOf(input.startedAt);
+  if (startMs === null) return null;
+
+  const interval = normalizedInterval(
+    input.startedAt,
+    new Date(startMs + input.durationSeconds * 1000).toISOString(),
+  );
+  if (interval === null) return null;
+
+  const title = input.title?.trim();
+  return {
+    recordType: 'ExerciseSession',
+    startTime: interval.startTime,
+    endTime: interval.endTime,
+    exerciseType: input.exerciseType,
+    ...(title ? { title } : {}),
+    // `notes` volontairement absent : minimisation (spec CONF-06 §2.3).
+    metadata: metadataFor(`activity-${input.id}`, input.updatedAt, true),
+  };
+}
+
+/**
  * Course → records Health Connect, **regroupés par type**.
  *
  * `insertRecords` n'accepte qu'un seul `recordType` par appel et jette sur une liste vide : on

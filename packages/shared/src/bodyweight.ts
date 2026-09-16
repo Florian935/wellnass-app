@@ -17,6 +17,36 @@ export const bodyWeightEntryRowSchema = syncFieldsSchema.extend({
 export type BodyWeightEntryRow = z.infer<typeof bodyWeightEntryRowSchema>;
 
 /**
+ * Le poids **à une date donnée** : la dernière pesée à cette date ou avant.
+ *
+ * 🔴 US DEPENSE-01, constat C6 de l'analyse. Les estimations de dépense prenaient jusqu'ici la
+ * **dernière** pesée connue, y compris pour recalculer des journées passées : quelqu'un qui perd
+ * 6 kg voyait ses courses d'il y a deux mois réévaluées à la baisse — et son adhérence calorique
+ * passée changer après coup. Le principe posé par VIE-01 est le même : une valeur rétroactive doit
+ * refléter ce qui était vrai **ce jour-là**.
+ *
+ * Avant la première pesée, il n'y a rien à antidater : on rend la **plus ancienne** pesée connue
+ * plutôt que `null`. C'est faux au kilo près, mais une estimation sans poids n'existe pas du tout,
+ * et l'erreur va dans le sens de la prudence (le poids de départ est le plus proche disponible).
+ * `null` seulement quand aucune pesée n'existe — l'appelant retombe alors sur le poids du profil.
+ */
+export function weightAtDate(
+  entries: ReadonlyArray<{ logDate: string; weightKg: number }>,
+  dayKey: string,
+): number | null {
+  let best: { logDate: string; weightKg: number } | null = null;
+  let oldest: { logDate: string; weightKg: number } | null = null;
+
+  for (const e of entries) {
+    if (!Number.isFinite(e.weightKg) || e.weightKg <= 0) continue;
+    if (oldest === null || e.logDate < oldest.logDate) oldest = e;
+    if (e.logDate <= dayKey && (best === null || e.logDate > best.logDate)) best = e;
+  }
+
+  return (best ?? oldest)?.weightKg ?? null;
+}
+
+/**
  * Tendance de poids sur une série datée (seuil ±0,3 kg sur la fenêtre observée).
  * Adossée à la régression linéaire (META-08), X = jours écoulés depuis la 1ʳᵉ pesée.
  */
