@@ -28,9 +28,11 @@ if (!source) {
   process.exit(1);
 }
 
+// v2 du 16/09/2026 : la v1 (2 885 sommets, tubes et coques interpénétrées) servait à mesurer le
+// plafond des morphs, pas à ressembler à un corps. Les deux fichiers sont déjà encodés en sparse.
 const fichiers = {
-  SPIKE_MESH_SINGLE: 'body-spike-single-sparse.glb',
-  SPIKE_MESH_SPLIT: 'body-spike-split-sparse.glb',
+  SPIKE_MESH_SINGLE: 'body-v2-single.glb',
+  SPIKE_MESH_SPLIT: 'body-v2-split.glb',
 };
 
 const lignes = [

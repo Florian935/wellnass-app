@@ -15,22 +15,29 @@
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
-> `builds/mon-corps-spike3d-16092026.apk` (copie hors dépôt, ignorée par git), reconstruit le
-> **16/09/2026 à 14:52** depuis le **dépôt principal** sur `dev`, **195,0 Mo**, SHA-256
-> `e3ab51ac7cccab8349e21dbca0ef56d69c72f5f2ebdbe01e84235ebe18a56d48`, signature **v2** valide
-> (certificat Android Debug du projet — installable par simple transfert, il faut autoriser les
-> « sources inconnues »).
+> `builds/mon-corps-spike3d-16092026.apk` (hors dépôt, ignoré par git), construit le
+> **16/09/2026 à 15:54** depuis le **dépôt principal** sur `dev`, **201,4 Mo**, SHA-256
+> `ff921ab3192cfeccbedd184f0fd91f388c2eefbba926d54420e4ce0bf7c6fc43`, signature **v2**
+> (certificat Android Debug — installable par transfert, autoriser les « sources inconnues »).
 >
-> ⚠️ **Le premier APK du 16/09 à 13:42 est périmé** : la scène 3D du spike y affichait
-> « aucun maillage dans le glb ». Cause : `GLTFLoader.parse()` est asynchrone et le verdict était
-> rendu de façon synchrone. Corrigé ; ne pas recetter l'ancien.
+> ⚠️ **Les APK du 16/09 à 13:42 et 14:52 sont périmés.** Le premier affichait « aucun maillage dans
+> le glb » (verdict rendu avant la fin d'un `parse()` asynchrone), le second tronquait la tête
+> (décalage non mis à l'échelle). Celui-ci porte les deux correctifs **et** le maillage v2.
 >
-> Contenu vérifié dans l'archive : le bundle DOM du spike (1 468 Ko) **contient le correctif**, et
-> les deux pages HTML pointent bien vers lui et vers celui du Labo (1 004 Ko). ⚠️ Un troisième
-> bundle **orphelin** de 1 004 Ko traîne dans les assets — résidu d'un build précédent, non
-> référencé : inoffensif ici, mais à purger (`gradlew clean`) avant tout build destiné au Play Store.
-> ⚠️ **Tout le JS est cuit dans l'APK** : un changement de code ne s'y propage pas, il faut
-> reconstruire. Pour itérer vite, préférer le dev client + Metro (mode A de
+> **Le maillage a changé** : v2 anatomique, 27 044 triangles contre 5 728, avec deltoïdes,
+> pectoraux, abdominaux, dorsaux en V, quadriceps et mollets lisibles, bras soudés au torse. Les
+> planches de contrôle sont dans `builds/apercu-maillage-v2/` — à regarder **avant** la recette,
+> pour juger l'anatomie à tête reposée plutôt que sur un téléphone.
+>
+> Vérifié dans l'archive : la page du spike pointe vers un bundle DOM de **3 555 Ko** (présent,
+> maillage v2 inclus), celle du Labo vers 1 002 Ko. ⚠️ **Quatre bundles orphelins** (~4,9 Mo)
+> traînent dans les assets — `mergeReleaseAssets` ne purge pas les anciens. Inoffensif en recette.
+> 🔴 **Ne pas corriger par `gradlew clean`** : essayé le 16/09, il efface les sources codegen JNI et
+> le build suivant échoue sur `Android-autolinking.cmake`. Purger le dossier `www.bundle` des
+> `intermediates` ne suffit pas non plus (Gradle considère le packaging à jour). À traiter avant un
+> build Play Store, pas avant une recette.
+> ⚠️ **Tout le JS est cuit dans l'APK** : un changement de code impose un rebuild. Pour itérer vite,
+> dev client + Metro (mode A de
 > [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md)).
 > **⑪ une §70 est arrivée, et ce n'est pas une fonctionnalité** : le **spike 3D** de la silhouette.
 > Un écran de mesure volontairement moche, qui sera **supprimé** après. 🔴 Ne pas y chercher de

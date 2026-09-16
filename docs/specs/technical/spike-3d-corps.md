@@ -132,6 +132,37 @@ ajouterait donc ~1 Mo au bundle, en plus de ses assets. 🔴 C'est un argument s
 **fusionner les deux scènes dans un seul composant DOM paramétré** plutôt que d'en créer un second,
 le jour où l'éditeur passe en production.
 
+### ⑦ Un maillage anatomique réel pèse moins que projeté — mesuré sur la v2
+
+La première version (2 885 sommets, tubes et coques interpénétrées) mesurait le plafond des morphs ;
+elle ne ressemblait pas à un corps, et Florian l'a dit. La **v2** est anatomiquement lisible —
+deltoïdes, pectoraux, abdominaux, dorsaux en V, fessiers, quadriceps, ischio-jambiers, mollets,
+mains à cinq doigts, bras **soudés** au torse — pour **27 044 triangles / 13 515 sommets**.
+
+| | v1 | v2 |
+|---|---:|---:|
+| triangles | 5 728 | **27 044** |
+| maillage unique, 14 morphs | 172 Ko | **953 Ko** |
+| découpé 7/3/4 | 175 Ko | **960 Ko** |
+| base64 dans le bundle DOM | 464 Ko | **2 551 Ko** |
+| bundle DOM du spike | 1 468 Ko | **3 555 Ko** |
+
+🔴 **La projection de l'inconnue ② était pessimiste d'un facteur 3.** Elle annonçait ~2,8 Mo pour un
+maillage de 13 400 sommets en dense ; le sparse le ramène à **953 Ko** — 471 Ko de morphs au lieu de
+2,27 Mo. Le coût réel d'un corps crédible tient donc dans le Mo, pas dans les trois.
+
+⚠️ Obtenu **sans aucun modèle tiers** : le corps est un champ de distance (~110 primitives fusionnées
+en lisse) extrait par *surface nets*, généré par un script du dépôt (`scripts/spike3d/v2/`). Aucune
+question de licence, et le maillage est **régénérable et ajustable** — la finesse de grille est un
+paramètre. Vérifié : 0 face retournée, 0 dégénérée à toutes les valeurs extrêmes et aux
+combinaisons, maillage fermé, jonctions du découpé exactes (78 et 138 sommets partagés, 0 normale
+divergente).
+
+⚠️ Ce qui reste faible, et qui est assumé : la **tête** est un ovale avec nez et oreilles, sans
+menton ni yeux ; le style est « argile lisse » — les muscles se lisent en **volumes**, pas en fibres
+ni en insertions. C'est une figurine anatomique stylisée, pas un écorché. Pour une app de muscu,
+c'est probablement le bon niveau ; c'est à trancher sur image, pas au jugé.
+
 ### Ce qu'il reste au téléphone, et à lui seul
 
 Les inconnues **⑤ fps / chauffe** et **⑥ conflit rotation ↔ défilement**, plus la **confirmation

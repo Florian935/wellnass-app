@@ -110,6 +110,54 @@ vérité.
 - **Vérifié** : typecheck 3 workspaces à 0, lint à **0 erreur et 0 avertissement** sur `engine.js`
   désormais réellement linté, suite complète verte. Commit précédent : `8d3807db`.
 
+## 16/09/2026 (octies) — Spike 3D : un vrai corps, et un maillage anatomique qui tient dans le Mo
+
+Retour de recette de Florian sur la v1 du maillage : « assez primaire », « ça ne ressemble pas
+vraiment à l'anatomie humaine », avec en référence une planche de musculature. Il a raison, et
+c'était assumé : la v1 (2 885 sommets, tubes et coques de bras interpénétrées) servait à mesurer le
+plafond des morphs, pas à ressembler à un corps.
+
+**La v2** — 27 044 triangles, 13 515 sommets. Deltoïdes distincts des trapèzes, pectoraux en plaque
+avec sillon sternal, abdominaux et ligne blanche, obliques, dorsaux en V et sillon spinal, fessiers,
+biceps/triceps, quadriceps, ischio-jambiers, mollets à deux chefs, genoux, mains à cinq doigts,
+pieds avec talon. Et surtout : **les bras sont soudés au torse**, pas posés dessus.
+
+**Aucun modèle tiers, donc aucune question de licence** — le corps est un **champ de distance**
+(~110 primitives : ellipsoïdes pour les muscles, cônes arrondis pour les os) fusionné en lisse et
+extrait par *surface nets*. Les morphs sont des champs de déplacement pondérés par des masques
+d'appartenance aux groupes musculaires : une translation du bras se **fond** dans l'épaule au lieu de
+déchirer. Générateur versionné dans `scripts/spike3d/v2/`, régénérable, la finesse de grille étant
+un paramètre.
+
+**🔴 L'inconnue ② était pessimiste d'un facteur 3.** La projection annonçait ~2,8 Mo pour 13 400
+sommets en dense ; le sparse ramène à **953 Ko** (471 Ko de morphs au lieu de 2,27 Mo). Un corps
+crédible coûte donc **le Mo, pas les trois**. Le bundle DOM du spike passe de 1 468 à 3 555 Ko,
+base64 compris.
+
+**Vérifié indépendamment** avant embarquement, pas sur parole : chargement par le GLTFLoader r128,
+les 14 noms exacts, découpe 7/3/4 inchangée, `morphTargetsRelative`, jonctions du découpé
+rigoureuses (78 et 138 sommets partagés, **0 normale divergente, 0 delta incohérent**), 0 face
+retournée ni dégénérée à tous les extrêmes et aux combinaisons, maillage fermé. Les planches de
+contrôle sont publiées dans `builds/apercu-maillage-v2/`.
+
+⚠️ **Ce qui reste faible** : la tête est un ovale avec nez et oreilles, sans menton ni yeux ; le
+style est « argile lisse » — les muscles se lisent en volumes, pas en fibres ni en insertions. C'est
+une figurine anatomique stylisée, pas un écorché. Probablement le bon niveau pour une app de muscu,
+mais c'est une décision produit, à prendre sur image.
+
+**Deux pièges de build rencontrés, et consignés** — `gradlew clean` **casse le build suivant** : il
+efface les sources codegen JNI et `Android-autolinking.cmake` échoue sur
+`maplibre-react-native`. Et purger le `www.bundle` des `intermediates` ne suffit pas à retirer les
+bundles DOM orphelins : Gradle considère le packaging à jour et **ne reconstruit pas l'APK**
+(horodatage et SHA inchangés — exactement le piège « BUILD SUCCESSFUL mais APK inchangé » documenté
+le 28/07). Quatre orphelins subsistent donc, ~4,9 Mo, inoffensifs en recette mais à traiter avant un
+build Play Store.
+
+**APK** : `builds/mon-corps-spike3d-16092026.apk`, 15:54, 201,4 Mo, SHA-256 `ff921ab3192c…`. Vérifié
+dans l'archive : la page du spike pointe bien vers le bundle de 3 555 Ko, présent.
+
+**Validation** — `typecheck`, `lint` et `test` passent : 7 095 tests, 216 suites mobiles.
+
 ## 16/09/2026 (septies) — Spike 3D : la 3D tourne à 61 fps, et la tête ne sort plus du cadre
 
 Deuxième recette sur téléphone (Florian). **La scène s'affiche** : 61 images par seconde, première
