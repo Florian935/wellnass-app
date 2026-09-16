@@ -9,6 +9,62 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+
+## 16/09/2026 (quater) — LABO-01 : la vraie cause, `pillarsOn` n'était jamais déclaré
+
+Le correctif précédent (canvas de zéro pixel) était réel mais **n'était pas ce qui bloquait**. Après
+reconstruction de l'APK, la scène restait vide. Cause trouvée, et reproduite hors device.
+
+### Corrigé
+
+🔴 **`pillarsOn` n'a jamais été déclaré** (`engine.js`), depuis le tout premier commit. Il est assigné
+dans `setPillars()` et lu trois fois dans `frame()`. Le fichier est un **module ES**, donc en mode
+strict : une affectation sur un identifiant inconnu n'y crée pas un global, elle **lève**.
+
+Conséquence, en deux temps :
+- `setPillars()` levait à chaque appel, donc dès la première poussée d'état ;
+- et surtout `frame()` levait **au premier tour de boucle**. Une exception dans un callback
+  `requestAnimationFrame` ne replanifie rien : **la boucle mourait sur place**, définitivement.
+
+D'où le symptôme exact observé : la scène se créait sans erreur (l'exception est asynchrone, elle
+arrive après le retour de `createLabScene`), `onStatus({ ok: true })` partait, aucun repli 2D ne se
+déclenchait — et le canvas restait noir pour toujours, **sans le moindre message**.
+
+Le défaut vient du **portage**, pas du prototype : `setPillars()` y était un stub vide
+(« la scène lit les valeurs via setValues »). En le rendant réel pour gérer les piliers désactivés
+(R9), `pillarsOn` a été introduit sans déclaration.
+
+### 🔴 Ce qui aurait dû l'attraper, et pourquoi ça ne l'a pas fait
+
+`no-undef` le signale en une seconde. Il était **désactivé** : le fichier porte un
+`/* eslint-disable */ ` **global** en tête, posé au portage avec la justification « c'est un portage
+à l'identique d'un fichier déjà relu ». Sauf que ce n'était pas un portage à l'identique — on y a
+ajouté de la logique (`setPillars`, `setLabels`, `dispose`, l'affichage de l'assiette).
+
+La désactivation est désormais **ciblée** : `/* eslint-disable no-var */` seul, avec sa raison. Tout
+le reste des règles s'applique, `no-undef` compris. Au passage, et c'est la preuve que le garde-fou
+sert : en nettoyant, `no-undef` a immédiatement attrapé une seconde erreur introduite dans la même
+session (un `catch (_e)` dont le corps lisait encore `e`). `usePost` a été renommé `applyPost` —
+`react-hooks/rules-of-hooks` le prenait pour un hook React à cause de son préfixe.
+
+### Vérifié hors device, pour ne plus faire de va-et-vient d'APK
+
+Un harnais jetable (esbuild + Chrome headless en SwiftShader) fait tourner le **vrai** moteur avec la
+même séquence d'appels que `LabScene3D.dom.tsx`, et prend une capture. Avant correctif : rien.
+Après : **le podium, la pile de disques, la piste et l'assiette s'affichent**.
+
+⚠️ **Piège de mesure rencontré, à noter pour la prochaine fois** : un premier harnais concluait
+« rien n'est dessiné » via `gl.readPixels` dans un `setTimeout`. C'était faux — WebGL **vide le
+drawing buffer** après l'avoir présenté au compositeur, sauf `preserveDrawingBuffer`. Lire les pixels
+hors du frame mesure un tampon vide, quelle que soit la scène. Seule la **capture d'écran** dit la
+vérité.
+
+### Technique — notes
+
+- 🔴 **Un nouvel APK est nécessaire** : le bundle DOM est cuit dans les assets à la construction.
+- **Vérifié** : typecheck 3 workspaces à 0, lint à **0 erreur et 0 avertissement** sur `engine.js`
+  désormais réellement linté, suite complète verte. Commit précédent : `8d3807db`.
+
 ## 16/09/2026 (septies) — Spike 3D : la 3D tourne à 61 fps, et la tête ne sort plus du cadre
 
 Deuxième recette sur téléphone (Florian). **La scène s'affiche** : 61 images par seconde, première

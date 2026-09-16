@@ -144,6 +144,15 @@ de nuit vivant dans le check-in de bien-être, un écran **partagé**.
 ✅ **Levé le 16/09/2026**, dans le même geste que le push des deux migrations et le déploiement de
 la sync rule.
 
+### R7 ter — Le moteur de la scène est du JavaScript, mais il reste linté
+
+Le moteur est porté du prototype en ES5, d'où un `eslint-disable` — mais **ciblé sur `no-var` seul**.
+Une désactivation **globale** y a coûté cher le 16/09 : `pillarsOn`, introduit au portage sans
+déclaration, levait un `ReferenceError` au premier tour de la boucle d'animation et tuait la scène,
+sans message. `no-undef` l'aurait signalé immédiatement. La leçon : un fichier « porté à
+l'identique » cesse de l'être dès qu'on y ajoute de la logique, et c'est précisément là que les
+garde-fous servent.
+
 ### R8 — La 3D ne doit jamais bloquer l'écran
 
 La scène décide elle-même de son repli : si WebGL manque, si le contexte est perdu ou si la

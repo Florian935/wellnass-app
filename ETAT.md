@@ -116,7 +116,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1277 · `main` a **1274** commits de retard sur `dev` |
+| Commits | 1278 · `main` a **1274** commits de retard sur `dev` |
 | Specs d'US | 161 au total — 87 clôturées, 74 en cours |
 | Migrations | 105/105 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -127,11 +127,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `8d6a571`  fix(spike3d): la tete sortait du cadre, le calcul sort du moteur
 - `2863ec5`  fix(spike3d): le verdict sur le maillage etait rendu avant son chargement
 - `641907d`  chore(git): ignorer builds/, les sorties de build locales
 - `d22e9d0`  docs(recettes): l'APK unique de la campagne Mon corps + spike 3D
 - `10c79b7`  spike(corps3d): un ecran de mesure, et quatre inconnues deja tombees
-- `8be814a`  docs(spike3d): cadrer le spike de silhouette 3D avant toute ligne de code
 
 ---
 
