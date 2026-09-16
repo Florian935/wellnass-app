@@ -24,6 +24,7 @@ export type BodySpikeStatus = { ok: boolean; reason?: string };
 export type BodySpikeStats = {
   fps: number;
   meshes: number;
+  maillagePret: boolean;
   morphsParMaillage: number[];
   pousseesNonNulles: number;
   limite: number;
@@ -70,12 +71,26 @@ export default function BodySpikeScene3D({ state, background, onStatus, onStats 
     if (!canvas) return;
 
     let sizeCheck: ReturnType<typeof setTimeout> | undefined;
+    let meshCheck: ReturnType<typeof setTimeout> | undefined;
     let statsTimer: ReturnType<typeof setInterval> | undefined;
+    // Même principe que pour la taille : un maillage qui ne répond **ni** succès **ni** échec est
+    // un échec. Sans ce garde, un `parse()` qui n'appelle jamais ses rappels laisserait un écran
+    // vide indéfiniment — et c'est justement ce silence qu'on s'est promis de ne plus tolérer.
+    let meshRepondu = false;
     try {
       const created = createBodySpikeScene(canvas, {
         meshBase64: variant === 'single' ? SPIKE_MESH_SINGLE : SPIKE_MESH_SPLIT,
         reducedMotion: state.reducedMotion,
         onLost: () => void onStatus({ ok: false, reason: 'contexte-webgl-perdu' }),
+        // Le maillage se charge **après** la création de la scène : son verdict arrive par ici,
+        // jamais en retour de `createBodySpikeScene`.
+        onMeshError: (detail: string) => {
+          meshRepondu = true;
+          void onStatus({ ok: false, reason: `maillage : ${detail}` });
+        },
+        onMeshReady: () => {
+          meshRepondu = true;
+        },
       }) as SceneHandle & { ok: boolean; reason?: string; detail?: string };
 
       if (!created.ok) {
@@ -96,6 +111,10 @@ export default function BodySpikeScene3D({ state, background, onStatus, onStats 
         }
       }, 800);
 
+      meshCheck = setTimeout(() => {
+        if (!meshRepondu) void onStatus({ ok: false, reason: 'maillage : aucune réponse en 4 s' });
+      }, 4000);
+
       statsTimer = setInterval(() => {
         const handle = sceneRef.current;
         if (handle) void onStats(handle.stats());
@@ -107,6 +126,7 @@ export default function BodySpikeScene3D({ state, background, onStatus, onStats 
 
     return () => {
       if (sizeCheck) clearTimeout(sizeCheck);
+      if (meshCheck) clearTimeout(meshCheck);
       if (statsTimer) clearInterval(statsTimer);
       sceneRef.current?.dispose();
       sceneRef.current = null;

@@ -9,6 +9,42 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 16/09/2026 (sexies) — Spike 3D : le maillage se chargeait, le verdict était rendu trop tôt
+
+Première recette du spike sur téléphone (Florian, 16/09). L'écran affichait **« Scène 3D
+indisponible — aucun maillage dans le glb »**, et aucune mesure.
+
+**La cause, en une ligne** — `GLTFLoader.parse()` est **asynchrone**. Son rappel s'exécute plus tard,
+jamais dans la pile de l'appel. Or le moteur testait `meshes.length` **juste après** l'appel : la
+valeur y est toujours 0, donc la scène se déclarait en échec pendant que le maillage se chargeait
+très bien une milliseconde plus tard. Un verdict rendu sur un résultat qui n'est pas encore arrivé.
+
+**Le correctif** — le verdict sur le maillage ne peut venir que **des rappels** : `onMeshReady` et
+`onMeshError` sont passés au moteur, `parse()` reçoit enfin son rappel d'erreur (il n'en avait pas),
+et le test synchrone disparaît. Les influences déjà poussées avant la fin du chargement s'appliquent
+d'elles-mêmes, la boucle relisant ses cibles à chaque image.
+
+**Un troisième garde, dans la même logique que les deux autres** — si le maillage ne répond **ni**
+succès **ni** échec en 4 s, c'est un échec. Le silence d'un `parse()` laisserait sinon un écran vide
+indéfiniment, exactement ce qu'on s'est promis de ne plus tolérer. L'état du maillage est aussi
+affiché dans le panneau de mesures (« chargé (3) » / « en cours… »), pour qu'on ne redevine plus.
+
+**Ce que cet incident dit du filet** — il a fonctionné. L'écran n'est pas resté noir : il a **nommé**
+la raison, ce qui a permis de diagnostiquer sur une simple capture au lieu de tâtonner. C'est
+précisément ce que les cinq gestes anti-« zéro pixel » visaient. ⚠️ En revanche, **aucun test
+automatisé ne couvre ce chemin** : le moteur ne tourne que dans une WebView, il n'est ni typechecké
+ni testable sous Jest. C'est la recette qui l'a trouvé, et c'est la limite assumée de ce patron.
+
+**APK reconstruit — et depuis le dépôt principal, plus depuis le worktree** (supprimé après la
+fusion) : `dev` porte désormais tout le code, et `android/`, `.env` et `three` y sont présents.
+`builds/mon-corps-spike3d-16092026.apk`, 16/09 à 14:52, 195,0 Mo, SHA-256 `e3ab51ac7ccc…`,
+signature v2. Vérifié dans l'archive : le bundle DOM du spike (1 468 Ko) contient le correctif, et
+les deux pages HTML pointent vers lui et vers celui du Labo. ⚠️ Un **troisième bundle orphelin** de
+1 004 Ko traîne dans les assets fusionnés, résidu d'un build précédent et non référencé —
+inoffensif en recette, à purger par `gradlew clean` avant tout build destiné au Play Store.
+
+**Validation** — `typecheck`, `lint` et `test` passent : 7 089 tests, 215 suites mobiles.
+
 ## 16/09/2026 (quinquies) — Spike 3D : le mur des 8 morphs est confirmé avant même le téléphone
 
 Branche `feature/corps04-programme-compatible`. **Code de spike, fait pour être supprimé** — un

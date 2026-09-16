@@ -70,7 +70,9 @@ export default function SpikeCorps3DScreen() {
           <Text style={styles.metric}>
             Première image : {stats ? `${stats.premiereImageMs} ms` : '—'}
           </Text>
-          <Text style={styles.metric}>Maillages : {stats ? stats.meshes : '—'}</Text>
+          <Text style={styles.metric}>
+            Maillage : {stats ? (stats.maillagePret ? `chargé (${stats.meshes})` : 'en cours…') : '—'}
+          </Text>
           <Text style={styles.metric}>
             Morphs par maillage : {stats ? stats.morphsParMaillage.join(' · ') : '—'}
           </Text>

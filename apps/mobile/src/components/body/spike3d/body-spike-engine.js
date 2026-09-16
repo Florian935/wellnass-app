@@ -94,6 +94,7 @@ export function createBodySpikeScene(canvas, opts) {
   var meshes = [];
   var morphIndex = {}; // nom de cible -> [{ mesh, index }]
   var loadError = '';
+  var maillagePret = false;
 
   function indexerMorphs(objet) {
     objet.traverse(function (noeud) {
@@ -119,23 +120,40 @@ export function createBodySpikeScene(canvas, opts) {
     // `parse` et non `load` : le maillage est **inliné en base64** dans le bundle DOM. Aucune
     // requête réseau, aucune URI d'asset React Native que la WebView n'aurait pas le droit de
     // lire — c'est ce qui garantit que la scène marche hors ligne.
-    loader.parse(base64ToArrayBuffer(opts.meshBase64 || ''), '', function (gltf) {
-      indexerMorphs(gltf.scene);
-      // Le maillage est debout, pieds à y = 0 : sans recentrage il sort du cadre par le haut.
-      // On le recentre sur sa boîte englobante et on l'ajuste à la hauteur visible.
-      var boite = new THREE.Box3().setFromObject(gltf.scene);
-      var centre = boite.getCenter(new THREE.Vector3());
-      var taille = boite.getSize(new THREE.Vector3());
-      gltf.scene.position.sub(centre);
-      var hauteur = taille.y || 1;
-      gltf.scene.scale.setScalar(3.4 / hauteur);
-      world.add(gltf.scene);
-    });
+    // 🔴 `parse()` est **ASYNCHRONE** : le rappel s'exécute plus tard, jamais dans cette pile.
+    // Tester `meshes.length` juste après l'appel donnait donc toujours 0, et la scène se déclarait
+    // « aucun maillage dans le glb » alors que le maillage se chargeait très bien une milliseconde
+    // plus tard (défaut constaté en recette le 16/09/2026). Le verdict sur le maillage ne peut
+    // être rendu que **depuis les rappels**, jamais de façon synchrone.
+    loader.parse(
+      base64ToArrayBuffer(opts.meshBase64 || ''),
+      '',
+      function (gltf) {
+        indexerMorphs(gltf.scene);
+        if (!meshes.length) {
+          if (opts.onMeshError) opts.onMeshError('aucun maillage dans le glb');
+          return;
+        }
+        // Le maillage est debout, pieds à y = 0 : sans recentrage il sort du cadre par le haut.
+        // On le recentre sur sa boîte englobante et on l'ajuste à la hauteur visible.
+        var boite = new THREE.Box3().setFromObject(gltf.scene);
+        var centre = boite.getCenter(new THREE.Vector3());
+        var taille = boite.getSize(new THREE.Vector3());
+        gltf.scene.position.sub(centre);
+        var hauteur = taille.y || 1;
+        gltf.scene.scale.setScalar(3.4 / hauteur);
+        world.add(gltf.scene);
+        maillagePret = true;
+        if (opts.onMeshReady) opts.onMeshReady(meshes.length);
+      },
+      function (erreur) {
+        if (opts.onMeshError) opts.onMeshError((erreur && erreur.message) || 'glb illisible');
+      },
+    );
   } catch (e) {
     loadError = (e && e.message) || String(e);
   }
   if (loadError) return { ok: false, reason: 'mesh', detail: loadError };
-  if (!meshes.length) return { ok: false, reason: 'mesh', detail: 'aucun maillage dans le glb' };
 
   // ── Taille du canvas ───────────────────────────────────────────────────────────────────────────
   // 🔴 Pas de `|| 1` ici, et c'est délibéré. Le moteur du Labo retombait sur 1 pixel quand le
@@ -257,6 +275,7 @@ export function createBodySpikeScene(canvas, opts) {
       morphsParMaillage: meshes.map(function (m) {
         return m.morphTargetInfluences ? m.morphTargetInfluences.length : 0;
       }),
+      maillagePret: maillagePret,
       pousseesNonNulles: pousseesNonNulles,
       limite: MORPH_LIMIT_R128,
       premiereImageMs: premiereImage ? Math.round(premiereImage - debut) : 0,

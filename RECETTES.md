@@ -15,14 +15,20 @@
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
-> `apps/mobile/android/app/build/outputs/apk/release/app-release.apk` du worktree
-> `.claude/worktrees/mon-corps`, construit le **16/09/2026 à 13:42**, **193,9 Mo**,
-> SHA-256 `866442977dee1a207df2e45b4c44f1ee3123aaf6d0e6a4b6643a90da0f9f53b5`, signature **v2**
-> valide (certificat Android Debug du projet — installable par simple transfert, il faut autoriser
-> les « sources inconnues »).
+> `builds/mon-corps-spike3d-16092026.apk` (copie hors dépôt, ignorée par git), reconstruit le
+> **16/09/2026 à 14:52** depuis le **dépôt principal** sur `dev`, **195,0 Mo**, SHA-256
+> `e3ab51ac7cccab8349e21dbca0ef56d69c72f5f2ebdbe01e84235ebe18a56d48`, signature **v2** valide
+> (certificat Android Debug du projet — installable par simple transfert, il faut autoriser les
+> « sources inconnues »).
 >
-> Contenu vérifié dans l'APK : les **deux** scènes 3D y sont (bundle DOM du Labo 1 004 Ko, bundle du
-> spike 1 468 Ko), et l'écran de spike ainsi que sa route sont présents dans le bundle Hermes.
+> ⚠️ **Le premier APK du 16/09 à 13:42 est périmé** : la scène 3D du spike y affichait
+> « aucun maillage dans le glb ». Cause : `GLTFLoader.parse()` est asynchrone et le verdict était
+> rendu de façon synchrone. Corrigé ; ne pas recetter l'ancien.
+>
+> Contenu vérifié dans l'archive : le bundle DOM du spike (1 468 Ko) **contient le correctif**, et
+> les deux pages HTML pointent bien vers lui et vers celui du Labo (1 004 Ko). ⚠️ Un troisième
+> bundle **orphelin** de 1 004 Ko traîne dans les assets — résidu d'un build précédent, non
+> référencé : inoffensif ici, mais à purger (`gradlew clean`) avant tout build destiné au Play Store.
 > ⚠️ **Tout le JS est cuit dans l'APK** : un changement de code ne s'y propage pas, il faut
 > reconstruire. Pour itérer vite, préférer le dev client + Metro (mode A de
 > [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md)).
