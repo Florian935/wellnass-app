@@ -114,7 +114,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1241 · `main` a **1238** commits de retard sur `dev` |
+| Commits | 1242 · `main` a **1239** commits de retard sur `dev` |
 | Specs d'US | 157 au total — 85 clôturées, 72 en cours |
 | Migrations | 102/104 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -127,11 +127,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `4434a8b`  feat(ia-lab01): Gemini dans la fonction Edge, §7 de l'analyse et recette
 - `5ed60eb`  fix(dev): rattache les 12 fichiers d'IA-LAB-01 a leur documentation deja poussee
 - `71baf1c`  feat(depense): la depense d'une seance, et les activites que l'app ignorait
 - `0f93f0b`  chore(labo01): pousse les migrations, deploie la sync rule et active l'ecriture
 - `9b10cb8`  feat(labo01): le Labo, la ou tes piliers se croisent (roadmap 7.30)
-- `1869dff`  chore(guid01): integre dev, pousse la migration et active l'ecriture du guidage
 
 ---
 

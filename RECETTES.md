@@ -3918,7 +3918,13 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 - [ ] **41.** **TalkBack** : les boutons « + » / « − » s'annoncent avec leur **libellé explicite**
   (« Augmenter : cible de protéines »), pas « plus » ; la feuille se lit dans l'ordre.
 - [ ] **42.** **WebGL indisponible / appareil modeste** : la scène bascule sur les **mêmes disques en
-  2D**, le message le dit, et **tout le reste de l'écran fonctionne normalement**.
+  2D**, le message le dit, et **tout le reste de l'écran fonctionne normalement**. 🔴 **La zone ne
+  doit JAMAIS rester vide sans message** : si la scène ne répond pas en 5 s, le repli 2D part tout
+  seul. Une bande vide et muette est un défaut à remonter, pas une lenteur.
+- [ ] **49.** 🔴 **La 3D remplit bien sa zone** (correctif du 16/09). Sur le premier APK, le canvas
+  faisait **zéro pixel de haut** : WebGL tournait, la scène se déclarait OK, et on ne voyait rien.
+  Vérifier que les disques occupent toute la hauteur de la scène, en portrait **et** après une
+  rotation de l'écran.
 - [ ] **43.** Ouvrir et quitter l'onglet Labo **dix fois** de suite : pas de ralentissement
   progressif ni de chauffe anormale — la scène doit se libérer à la sortie.
 

@@ -11,7 +11,7 @@
  *     ses transitions (et le repli 2D est statique de toute façon).
  */
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -39,6 +39,23 @@ export function LabStage({ state, caption, onPick, onLand }: Props) {
   const stage = useStageTheme('lab');
   const insets = useSafeAreaInsets();
   const [status, setStatus] = useState<LabScene3DStatus>({ ok: true });
+  const [answered, setAnswered] = useState(false);
+
+  /**
+   * 🔴 **Chien de garde : la scène doit répondre, ou on passe en 2D.**
+   *
+   * Les trois cas prévus par R8 (WebGL absent, contexte perdu, bibliothèque en échec) ont un point
+   * commun : la scène **dit** `ok: false`. Restait le cas où elle ne dit *rien* — WebView qui ne
+   * monte pas, bundle DOM introuvable, JavaScript qui meurt avant le premier `onStatus`. Le statut
+   * restait alors optimiste et la zone restait vide **indéfiniment**, sans même le message de repli.
+   * Cinq secondes : assez pour un premier rendu WebGL sur un téléphone modeste, assez peu pour ne
+   * pas laisser quelqu'un devant une bande vide.
+   */
+  useEffect(() => {
+    if (answered) return;
+    const timer = setTimeout(() => setStatus({ ok: false, reason: 'timeout' }), 5000);
+    return () => clearTimeout(timer);
+  }, [answered]);
 
   const hint = state.focus === null ? t('lab.stage.hint') : t('lab.stage.hintFocus');
 
@@ -51,7 +68,10 @@ export function LabStage({ state, caption, onPick, onLand }: Props) {
           state={state}
           background={stage.surfaces[1]!}
           onPick={async (pillar) => onPick(pillar)}
-          onStatus={async (next) => setStatus(next)}
+          onStatus={async (next) => {
+            setAnswered(true);
+            setStatus(next);
+          }}
           onLand={async () => onLand()}
           dom={{ style: styles.fill, matchContents: false, scrollEnabled: false }}
         />
