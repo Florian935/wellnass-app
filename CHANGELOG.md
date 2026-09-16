@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 16/09/2026 — LABO-01 : migrations poussées, sync rule déployée, écriture activée
+
+Suite directe de `9b10cb8e`. Aucune ligne de logique ne change : ce commit **débloque** ce que le
+précédent avait délibérément gardé éteint.
+
+### Modifié
+
+- **`LAB_WRITE_READY` passe à `true`** (`lab-experiment-repository.ts`). Le champ « Nuit » du
+  check-in de bien-être est donc rendu, et les expériences peuvent être lancées. Le drapeau est
+  **conservé** plutôt que supprimé, même choix que `ADAPTATION_WRITE_READY` : il nomme la dépendance
+  entre ce code et un schéma distant, et donne un point de retour immédiat si la migration devait
+  être annulée.
+- **Registre des migrations** : les deux lignes cochées au 16/09/2026.
+- **RECETTES §66** : le bloc de prérequis passe de « à préparer avant de recetter » à « base prête,
+  la recette peut démarrer ». Restent le **build** (three est une dépendance neuve) et les
+  48 critères.
+- **Spec (R7 bis, §3) et roadmap 7.30** : alignées sur le réel.
+- `packages/shared/src/database.types.ts` — régénéré par `npm run db:types` depuis le cloud.
+  ⚠️ Le fichier étant **généré à partir du schéma distant**, il embarque aussi les tables des
+  chantiers voisins déjà poussés (`activities`, cibles d'énergie) : c'est la photo de la base, pas
+  un mélange de travaux.
+
+### Technique — notes
+
+- ⚠️ **`npx supabase db push --include-all` a été nécessaire.** Le CLI refusait le push :
+  « Found local migration files to be inserted before the last migration on remote database ». Les
+  deux migrations du Labo sont horodatées `20260915151307` / `1513 16`, donc **avant** celles de
+  DEPENSE-01 (`20260915165803/04/06`) poussées la veille par une autre session, et le CLI refuse par
+  défaut d'insérer dans le passé de l'historique distant — dans le cas général, une migration hors
+  ordre peut dépendre d'un état que la base n'avait pas encore.
+  **Sans conséquence ici, et c'est vérifiable** : les deux jeux sont strictement additifs et
+  **disjoints** — colonne neuve sur `daily_wellbeing` et table neuve `lab_experiments` d'un côté,
+  `activities` et cibles d'énergie de l'autre. Aucune ne lit ni ne modifie ce que l'autre a fait,
+  donc l'ordre d'application ne change rien au résultat. Le dry-run avait d'ailleurs énuméré
+  **exactement ces deux fichiers**, ce qui écartait le risque d'emporter le travail d'une autre
+  session au passage.
+  **Le renommage des fichiers a été écarté** : il aurait gardé un historique linéaire, mais au prix
+  d'un commit de churn documentaire (registre, spec, plan, RECETTES, CHANGELOG) pour un gain
+  cosmétique — `--include-all` est un geste ponctuel, et les pushes suivants repartent normalement.
+- ✅ **Sync rule déployée** dans le dashboard PowerSync (table neuve). C'est l'étape manuelle déjà
+  oubliée sur BIEN-01, VIE-01 et RUN-F2c : sans elle, une expérience lancée n'aurait pas survécu à
+  une resynchro, **sans le moindre message d'erreur**.
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0, suite complète verte. Commit précédent :
+  `9b10cb8e`.
+
+
 ## 15/09/2026 (ter) — IA-LAB-01 : un labo pour enfin *voir* ce que l'IA rend sur nos données
 
 Demande de Florian, 15/09 : « si je veux intégrer de l'IA gratuite pour faire des tests dans un

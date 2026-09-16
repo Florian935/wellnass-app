@@ -3795,23 +3795,17 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 [maquettes + prototype jouable](design/labo-2026-09/) ·
 [ADR-008](docs/adr/ADR-008-scene-3d-composant-dom.md) · roadmap **7.30**
 
-> 🔴 **À préparer AVANT de recetter, dans cet ordre** :
-> 1. `npm run db:push:dry` puis `npm run db:push` — **2 migrations** (`sleep_minutes` +
->    `lab_experiments`, puis la publication). ⚠️ Lire ce que le dry-run annonce : d'autres sessions
->    ont des migrations en attente sur `dev`, ne pas en pousser une par inadvertance.
-> 2. **Déployer les sync rules à la main** : coller
->    [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le dashboard
->    PowerSync. `lab_experiments` est une **table neuve** — sans ce geste, une expérience lancée ne
->    survivrait pas à une resynchro. Étape déjà oubliée sur BIEN-01, VIE-01 et RUN-F2c.
-> 3. `npm run db:types`, puis cocher les deux migrations dans
->    [supabase/MIGRATIONS.md](supabase/MIGRATIONS.md).
-> 4. 🔴 **Passer `LAB_WRITE_READY` à `true`** dans
->    [lab-experiment-repository.ts](apps/mobile/src/data/repositories/lab-experiment-repository.ts),
->    **dans le même geste** que le push. Tant qu'il est à `false`, le champ « Nuit » du check-in
->    n'apparaît pas et aucune expérience ne peut être lancée — c'est volontaire : écrire une colonne
->    que le serveur ne connaît pas fige la file de synchro de **toutes** les tables (patron
->    `ADAPTATION_WRITE_READY`, CARDIO-UX01). **Si la nuit ou les expériences semblent absentes en
->    recette, c'est le premier endroit où regarder.**
+> ✅ **Base prête, la recette peut démarrer** (16/09/2026) :
+> les **2 migrations sont poussées** (`npx supabase db push --include-all`), `npm run db:types` a
+> confirmé `daily_wellbeing.sleep_minutes` et la table `lab_experiments`, la **sync rule est
+> déployée** dans le dashboard PowerSync, les deux lignes sont cochées au
+> [registre](supabase/MIGRATIONS.md), et **`LAB_WRITE_READY` est à `true`**.
+>
+> ⚠️ `--include-all` a été nécessaire : ces migrations sont horodatées **avant** celles de DEPENSE-01
+> déjà appliquées, et le CLI refuse par défaut d'insérer dans le passé de l'historique distant. Sans
+> conséquence — les deux jeux sont strictement additifs et disjoints. Mentionné ici parce que si un
+> symptôme d'écriture perdue apparaît en recette, c'est le premier endroit où regarder : vérifier que
+> `LAB_WRITE_READY` vaut bien `true` et que la sync rule contient bien `lab_experiments`.
 >
 > 🔴 **Nouvelle dépendance : un build est requis.** La scène 3D est un **composant DOM**
 > (`@expo/dom-webview`, déjà fourni par `expo` 57) et `three` est une dépendance neuve : l'APK

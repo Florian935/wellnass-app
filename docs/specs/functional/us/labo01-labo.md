@@ -141,7 +141,8 @@ pas met en file une opération que le cloud **rejette**, et PowerSync **sériali
 la remontée de **toutes** les tables qui se fige. Le risque est ici plus large que le Labo, la note
 de nuit vivant dans le check-in de bien-être, un écran **partagé**.
 
-🔴 **À passer à `true` dans le même geste que `npm run db:push`.**
+✅ **Levé le 16/09/2026**, dans le même geste que le push des deux migrations et le déploiement de
+la sync rule.
 
 ### R8 — La 3D ne doit jamais bloquer l'écran
 
@@ -173,9 +174,9 @@ dessinés **dans** la scène 3D (`setLabels`).
 ### Migration `20260915151316_labo01_lab_experiments_publication.sql`
 Ajoute `lab_experiments` à la publication `powersync`.
 
-🔴 **Sync rules à déployer à la main** après la migration :
-[powersync-sync-rules.yaml](../../technical/powersync-sync-rules.yaml) (déjà à jour dans le dépôt) à
-coller dans le dashboard PowerSync. `daily_wellbeing` est lue en `select *` : **rien à changer** pour
+✅ **Sync rules déployées le 16/09/2026** :
+[powersync-sync-rules.yaml](../../technical/powersync-sync-rules.yaml) collé dans le dashboard
+PowerSync (table neuve — sans ce geste, une expérience lancée n'aurait pas survécu à une resynchro). `daily_wellbeing` est lue en `select *` : **rien à changer** pour
 la colonne de sommeil.
 
 ## 4. Écrans et navigation

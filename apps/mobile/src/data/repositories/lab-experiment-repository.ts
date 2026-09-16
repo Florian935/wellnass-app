@@ -24,7 +24,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch, softDelete } from './_sql';
 
 /**
- * 🔴 **Interrupteur d'écriture, à passer à `true` DANS LE MÊME GESTE que `npm run db:push`.**
+ * **Interrupteur d'écriture, lié au schéma distant.** ✅ Levé le 16/09/2026.
  *
  * Patron `ADAPTATION_WRITE_READY` (CARDIO-UX01), et pour la même raison, qui n'est pas cosmétique :
  * écrire une colonne ou une table que le serveur ne connaît pas encore met en file une opération que
@@ -34,12 +34,24 @@ import { insertWithSyncFields, patch, softDelete } from './_sql';
  * Le risque est ici plus large que l'onglet Labo : la **note de nuit** vit dans le check-in de
  * bien-être (BIEN-01), un écran **partagé**. N'importe qui installant le prochain build et tapant
  * « + » sur sa nuit — sans jamais ouvrir le Labo — bloquerait sa synchro. Tant que ce drapeau est à
- * `false`, le champ « Nuit » n'est pas rendu et les expériences ne peuvent pas être lancées.
+ * `false`, le champ « Nuit » n'est pas rendu et les expériences ne peuvent pas être lancées — c'est
+ * ce qu'il était entre l'écriture du code (15/09) et le push de la migration (16/09).
  *
- * ⬜ **Migrations `20260915151307` et `20260915151316` : PAS ENCORE POUSSÉES** (registre
- * [supabase/MIGRATIONS.md](../../../../../supabase/MIGRATIONS.md)).
+ * ✅ **Migrations poussées sur le cloud le 16/09/2026** (`npx supabase db push --include-all` par
+ * Florian ; colonne et table confirmées dans `database.types.ts` après `npm run db:types`, et sync
+ * rule déployée dans le dashboard PowerSync). Le drapeau est donc à `true` : le champ « Nuit » est
+ * rendu et les expériences peuvent être lancées.
+ *
+ * ⚠️ `--include-all` a été nécessaire : ces deux migrations sont horodatées **avant** celles de
+ * DEPENSE-01, déjà appliquées. Sans conséquence — les deux jeux sont strictement additifs et
+ * disjoints (`daily_wellbeing` + `lab_experiments` d'un côté, `activities` + cibles d'énergie de
+ * l'autre), donc l'ordre d'application ne change rien au résultat.
+ *
+ * Il reste comme **garde-fou documentaire** plutôt que d'être supprimé (même choix que
+ * `ADAPTATION_WRITE_READY`) : il nomme la dépendance entre ce code et un schéma distant, et donne un
+ * point de retour immédiat si la migration devait être annulée.
  */
-export const LAB_WRITE_READY = false;
+export const LAB_WRITE_READY = true;
 
 type LabExperimentDbRow = {
   id: string;

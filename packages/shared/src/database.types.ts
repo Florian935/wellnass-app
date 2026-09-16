@@ -74,6 +74,62 @@ export type Database = {
           },
         ]
       }
+      activities: {
+        Row: {
+          activity_type: string
+          created_at: string
+          deleted_at: string | null
+          device_kcal: number | null
+          distance_m: number | null
+          duration_seconds: number
+          id: string
+          intensity: string
+          notes: string | null
+          rpe: number | null
+          started_at: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          activity_type: string
+          created_at?: string
+          deleted_at?: string | null
+          device_kcal?: number | null
+          distance_m?: number | null
+          duration_seconds: number
+          id: string
+          intensity: string
+          notes?: string | null
+          rpe?: number | null
+          started_at: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          activity_type?: string
+          created_at?: string
+          deleted_at?: string | null
+          device_kcal?: number | null
+          distance_m?: number | null
+          duration_seconds?: number
+          id?: string
+          intensity?: string
+          notes?: string | null
+          rpe?: number | null
+          started_at?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "activities_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_usage: {
         Row: {
           count: number
@@ -317,6 +373,7 @@ export type Database = {
           id: string
           log_date: string
           mood: number | null
+          sleep_minutes: number | null
           stress: number | null
           updated_at: string
           user_id: string
@@ -328,6 +385,7 @@ export type Database = {
           id: string
           log_date: string
           mood?: number | null
+          sleep_minutes?: number | null
           stress?: number | null
           updated_at?: string
           user_id: string
@@ -339,6 +397,7 @@ export type Database = {
           id?: string
           log_date?: string
           mood?: number | null
+          sleep_minutes?: number | null
           stress?: number | null
           updated_at?: string
           user_id?: string
@@ -902,6 +961,50 @@ export type Database = {
           },
         ]
       }
+      lab_experiments: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          kind: string
+          schedule: Json
+          start_date: string
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          kind: string
+          schedule: Json
+          start_date: string
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          kind?: string
+          schedule?: Json
+          start_date?: string
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lab_experiments_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meal_plan_entries: {
         Row: {
           carbs_g: number
@@ -1206,6 +1309,7 @@ export type Database = {
           meals: Json | null
           objective: string | null
           restrictions: Json
+          sport_free_level: string | null
           training_bonus_mode: string
           training_day_bonus: number
           updated_at: string
@@ -1227,6 +1331,7 @@ export type Database = {
           meals?: Json | null
           objective?: string | null
           restrictions?: Json
+          sport_free_level?: string | null
           training_bonus_mode?: string
           training_day_bonus?: number
           updated_at?: string
@@ -1248,6 +1353,7 @@ export type Database = {
           meals?: Json | null
           objective?: string | null
           restrictions?: Json
+          sport_free_level?: string | null
           training_bonus_mode?: string
           training_day_bonus?: number
           updated_at?: string
@@ -2630,6 +2736,7 @@ export type Database = {
           active_pillars: Json
           ai_consent_at: string | null
           analytics_enabled: boolean
+          body_training_state: Json | null
           body_visual_state: Json | null
           created_at: string
           cycle_health_connect_enabled: boolean
@@ -2644,6 +2751,7 @@ export type Database = {
           pain_journal_enabled: boolean
           sbd_lifts: Json | null
           session_conflicts_enabled: boolean
+          show_energy_estimates: boolean
           theme: string
           units: string
           updated_at: string
@@ -2653,6 +2761,7 @@ export type Database = {
           active_pillars?: Json
           ai_consent_at?: string | null
           analytics_enabled?: boolean
+          body_training_state?: Json | null
           body_visual_state?: Json | null
           created_at?: string
           cycle_health_connect_enabled?: boolean
@@ -2667,6 +2776,7 @@ export type Database = {
           pain_journal_enabled?: boolean
           sbd_lifts?: Json | null
           session_conflicts_enabled?: boolean
+          show_energy_estimates?: boolean
           theme?: string
           units?: string
           updated_at?: string
@@ -2676,6 +2786,7 @@ export type Database = {
           active_pillars?: Json
           ai_consent_at?: string | null
           analytics_enabled?: boolean
+          body_training_state?: Json | null
           body_visual_state?: Json | null
           created_at?: string
           cycle_health_connect_enabled?: boolean
@@ -2690,6 +2801,7 @@ export type Database = {
           pain_journal_enabled?: boolean
           sbd_lifts?: Json | null
           session_conflicts_enabled?: boolean
+          show_energy_estimates?: boolean
           theme?: string
           units?: string
           updated_at?: string

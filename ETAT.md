@@ -113,25 +113,25 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1237 · `main` a **1234** commits de retard sur `dev` |
+| Commits | 1238 · `main` a **1235** commits de retard sur `dev` |
 | Specs d'US | 157 au total — 85 clôturées, 71 en cours |
-| Migrations | 100/104 poussées sur le cloud |
+| Migrations | 102/104 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
 
 - ⚠️ 1 spec(s) sans front-matter : depense00-socle-hors-sport.md
 - ⚠️ 2 migration(s) absente(s) du registre : 20260912235121_corps02_body_visual_state.sql, 20260913204247_corps03_body_training_state.sql
-- ⚠️ 4 migration(s) non poussée(s) sur le cloud
+- ⚠️ 2 migration(s) non poussée(s) sur le cloud
 - ⚠️ Working tree : modifications non commitées
 
 ## 🕒 Derniers commits
 
+- `9b10cb8`  feat(labo01): le Labo, la ou tes piliers se croisent (roadmap 7.30)
 - `1869dff`  chore(guid01): integre dev, pousse la migration et active l'ecriture du guidage
 - `2b43b72`  feat(guid01): l'objectif pilote les 3 piliers, et le guidage devient reglable
 - `ec1b999`  Merge remote-tracking branch 'origin/dev' into feature/nutri-refonte-ux
 - `89396aa`  feat(nutri-ux01): la bibliotheque passe de 80 a 3 244 aliments (import CIQUAL)
-- `45b8858`  chore(etat): regenere ETAT.md sur dev apres la cloture DASH-01
 
 ---
 
