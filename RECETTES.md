@@ -11,7 +11,12 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **16/09/2026** — **69 sections**.
+> Dernière mise à jour : **16/09/2026** — **70 sections**.
+>
+> **⑪ une §70 est arrivée, et ce n'est pas une fonctionnalité** : le **spike 3D** de la silhouette.
+> Un écran de mesure volontairement moche, qui sera **supprimé** après. 🔴 Ne pas y chercher de
+> qualité visuelle : on compte des zones qui bougent et des images par seconde. Quatre des six
+> inconnues sont **déjà répondues** — la section dit lesquelles pour ne pas les re-chercher.
 >
 > **⑩ deux sections « Mon corps » sont arrivées** : **§68 CORPS-03** (priorités confirmées) et
 > **§69 CORPS-04** (programme compatible). Elles se jouent dans **une seule campagne, sur le même APK**.
@@ -4188,3 +4193,36 @@ ni n'active jamais automatiquement le programme courant.
 - [ ] 16. Passer hors ligne **avant** la toute première ouverture de l'écran, sur un compte qui a déjà un contexte enregistré : le message doit dire que le contexte est **illisible pour le moment**, et **jamais** proposer de renseigner un profil déjà rempli. Rétablir le réseau : le contexte revient tel quel.
 - [ ] 17. Double appui rapide sur « Enregistrer mon contexte » : une seule sauvegarde, et aucune erreur de concurrence pour un geste unique. Vérifier aussi qu'une sauvegarde reste possible pendant qu'une préparation de copie est en vol.
 - [ ] 18. Un programme dont une séance a une durée estimable et une autre non : les deux lignes se lisent pareil (« Nom de séance : … »), en FR et en EN. Aucun deux-points collé en français.
+
+---
+
+## 70. SPIKE-3D — Silhouette 3D, écran de mesure (à supprimer après)
+
+⚠️ **Ce n'est pas une recette de fonctionnalité, c'est un protocole de mesure.** L'écran est
+volontairement moche, non traduit et non accessible : il existe pour répondre à deux questions que
+seul un téléphone peut trancher, puis pour **disparaître**. Note complète, résultats déjà obtenus et
+critères de décision : [spike-3d-corps.md](docs/specs/technical/spike-3d-corps.md).
+
+Chemin : **Musculation → Suivre → Mon corps → ⚠️ SPIKE — silhouette 3D (mesure)**.
+
+**Ce qui est déjà répondu, et qu'il ne faut PAS re-chercher** : le plafond des 8 influences de morph
+est confirmé par exécution du code de three r128 ; le poids d'un morph est linéaire (34 Ko) ; le
+maillage entre par le bundle DOM en base64 ; un second composant DOM **duplique** three (Labo
+1 004 Ko + spike 1 468 Ko, aucun partage). Ce qui suit ne porte que sur le reste.
+
+- [ ] 1. L'écran s'ouvre et **montre un corps**. S'il reste vide, il doit **dire pourquoi** (« webgl », « taille:0x0 », « silence de la scène après 5 s ») — un écran vide muet est un défaut du spike, pas un résultat.
+- [ ] 2. Noter **« Première image »** en millisecondes, et les **images par seconde** au repos.
+- [ ] 3. Variante **« Maillage unique (14 morphs) »**, bouton **« Tout pousser au max »** : compter **combien de zones du corps bougent réellement**. Attendu : 8 sur 14. Noter lesquelles restent immobiles.
+- [ ] 4. Variante **« Découpé (3 × ≤ 8) »**, même geste : les **14** zones doivent répondre. Noter les fps.
+- [ ] 5. Regarder les **jonctions** au cou, à la taille et aux hanches sur la variante découpée, aux valeurs extrêmes : trou, décrochement, arête visible ? C'est le critère qui décide entre « découper » et « monter three ».
+- [ ] 6. **Faire tourner la silhouette au doigt** pendant qu'on pousse un curseur. Noter les fps pendant le geste. **≥ 30 est le seuil de décision.**
+- [ ] 7. Basculer entre les deux variantes **dix fois** : la scène se recrée à chaque fois. Les fps se dégradent-ils ? Le téléphone chauffe-t-il ? (Ce geste éprouve le `dispose()` — une fuite se verrait ici.)
+- [ ] 8. Quitter l'écran et y revenir **dix fois**. Même question.
+- [ ] 9. Poser un doigt **sur la scène** et glisser verticalement : la page défile-t-elle, ou la scène capte-t-elle le geste ? Puis glisser verticalement **juste en dessous** de la scène. C'est l'inconnue ⑥ : elle contraint la maquette de l'éditeur, pas son code.
+- [ ] 10. **Mode avion** : tout doit fonctionner à l'identique, maillage compris. Si quoi que ce soit dépend du réseau, c'est un défaut bloquant (l'app est offline-first).
+- [ ] 11. Ouvrir le **Labo** puis revenir au spike, et inversement : deux scènes 3D dans la même session. Un téléphone ne tolère qu'une poignée de contextes WebGL — vérifier qu'aucune des deux ne devient noire.
+
+**Ce que la recette décide** : fps ≥ 30 pendant le glissé sur la variante découpée, sans dégradation
+après dix ouvertures → on cadre l'US d'éditeur 3D. Jonctions cassées → on tranche entre monter three
+(ce qui **rouvre l'ADR-008**) et la déformation par squelette, non couverte ici. fps insuffisant →
+retour au rendu 2D précalculé, et le SVG existant reste la seule chose livrée.

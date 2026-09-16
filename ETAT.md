@@ -116,7 +116,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/corps04-programme-compatible` (modifications non commitées) |
-| Commits | 1270 · `main` a **1240** commits de retard sur `dev` |
+| Commits | 1273 · `main` a **1240** commits de retard sur `dev` |
 | Specs d'US | 161 au total — 87 clôturées, 74 en cours |
 | Migrations | 105/105 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -127,11 +127,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `8be814a`  docs(spike3d): cadrer le spike de silhouette 3D avant toute ligne de code
+- `ddcf290`  merge: rattraper dev et documenter le piege du cache d'expo lint
 - `ba7ace6`  merge: rattraper dev repare (IA-LAB-01 complet) dans le lot Mon corps
+- `8d3807d`  fix(labo01): la scene 3D faisait zero pixel de haut, et rien ne le disait
 - `4434a8b`  feat(ia-lab01): Gemini dans la fonction Edge, §7 de l'analyse et recette
-- `5ed60eb`  fix(dev): rattache les 12 fichiers d'IA-LAB-01 a leur documentation deja poussee
-- `8782df6`  fix(corps04): solder les quatre points differes de la revue finale
-- `d7e85be`  merge: rattraper dev dans le lot Mon corps (LABO-01 + DEPENSE)
 
 ---
 

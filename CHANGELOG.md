@@ -9,6 +9,66 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 16/09/2026 (quinquies) — Spike 3D : le mur des 8 morphs est confirmé avant même le téléphone
+
+Branche `feature/corps04-programme-compatible`. **Code de spike, fait pour être supprimé** — un
+`git revert` de ce commit retire l'écran, sa route, son entrée et ses maillages.
+
+**Ce qui est livré** — Un écran de debug volontairement moche
+(`Musculation → Suivre → Mon corps → ⚠️ SPIKE`), 14 curseurs bruts, deux variantes de maillage, et
+une instrumentation visible : images par seconde, temps de première image, nombre de maillages,
+morphs par maillage, influences demandées. Rien d'autre : ni direction artistique, ni persistance,
+ni lecture de `body_visual_state`. Aucune écriture en base, donc **aucune migration, aucune sync
+rule, aucun impact sur l'export RGPD**.
+
+**🔴 Quatre des six inconnues sont tombées à la construction, sans téléphone.**
+
+① **Le plafond des 8 est réel et muet.** Le code `WebGLMorphtargets` de r128 a été extrait du build
+et **exécuté** sur le maillage à 14 cibles : 8 emplacements remplis, **6 morphs ignorés sans erreur
+ni alerte**. Sur la variante découpée (7/3/4), rien n'est ignoré. ⚠️ Et le plafond **tombe à 4** si
+l'on morphe aussi les normales — or c'est exactement ce qu'il faut pour un éclairage juste sur une
+zone déformée. Le budget est donc divisé par deux une seconde fois.
+
+② **Le poids d'un morph est linéaire** : sommets × 12 octets, soit 34,1 Ko par morph sur ce maillage
+de 2 885 sommets (0 morph : 102 Ko · 8 : 375 Ko · 14 : 579 Ko). Les accesseurs *sparse* divisent le
+disque par 7, mais r128 envoie toujours les cibles **denses en VRAM** : le gain est disque et bundle
+seulement. Projection pour un maillage réaliste — **extrapolation, pas mesure** — ~1,4 Mo à 6 900
+sommets, ~5,1 Mo à 25 000.
+
+③ **Le maillage entre par le bundle DOM, en base64.** `assetExts` d'Expo 57 ne connaît ni `glb` ni
+`gltf` ni `bin`, et un asset React Native est exposé par une URI que la WebView n'a aucune garantie
+de pouvoir lire — l'app étant offline-first, c'était disqualifiant. ⚠️ **Défaut de conception
+attrapé par la mesure elle-même** : le maillage était d'abord passé en **prop**, donc 464 Ko de
+base64 traversaient le pont à chaque montage. Il est désormais **importé dans le composant DOM**,
+et le pont ne porte plus que l'état, quelques centaines d'octets.
+
+④ **Un second composant DOM duplique three** — mesuré, pas supposé. `expo export --platform android`
+produit deux bundles distincts : Labo **1 004 Ko**, spike **1 468 Ko** (dont 464 Ko de maillage).
+Aucun partage. 🔴 Le jour où l'éditeur passe en production, c'est un argument sérieux pour **fusionner
+les deux scènes dans un seul composant DOM paramétré** plutôt que d'en créer un second.
+
+**Deux décisions prises en chemin** — Une proportion signée est rendue par **une seule** cible et une
+influence **négative**, vérifié possible dans r128 : deux cibles opposées porteraient le total à 21 et
+feraient compter les sept « moins » dans les huit emplacements. Prix assumé : la déformation devient
+symétrique. Et les **anneaux de jonction** du maillage découpé sont immobiles pour les 14 morphs, ce
+qui permet à chaque partie de ne porter que ses cibles — sur un vrai maillage il faudra placer les
+coutures en zone neutre, ou dupliquer les morphs qui les traversent et les compter deux fois.
+
+**Les cinq gestes anti-« zéro pixel » sont repris à la lettre** du correctif du matin : hauteur du
+document, canvas en `position: fixed` avec les quatre côtés nommés, contrôle de taille à 800 ms,
+chien de garde de 5 s côté RN avec drapeau `answered`, et un `resize()` qui **refuse** de rendre
+sous 2 pixels au lieu de retomber sur `|| 1` — c'est ce garde-là qui avait transformé un bug visible
+en bug muet, et il ne sera pas recopié.
+
+**Validation** — `typecheck`, `lint` et `test` passent : **7 089 tests** (587 admin, 3 078 shared,
+3 424 mobile), 215 suites mobiles. 12 tests neufs, tous écrits **avant** leur implémentation, dont
+le test de sérialisabilité de la frontière DOM et les quatre cas du chien de garde repris du Labo.
+⚠️ `npm install` a dû être rejoué dans le worktree : `three` était déclaré par la fusion de `dev`
+mais jamais installé — l'export échouait, les tests non, parce que le composant DOM y est mocké.
+
+**Suivi** — Recette §70, 11 critères, qui dit explicitement ce qu'il ne faut **pas** re-chercher.
+Aucune ligne de roadmap : un spike n'est pas une fonctionnalité.
+
 ## 16/09/2026 (quater) — Le piège du cache d'`expo lint`, et Mon corps prêt à atterrir
 
 Branche `feature/corps04-programme-compatible`, fusion de `dev` (`8d3807db`, correctif de hauteur

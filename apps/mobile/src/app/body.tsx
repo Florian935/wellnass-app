@@ -63,6 +63,12 @@ function BodyExplorerContent({ incoming, context, full, reduced }: {
           onPress={() => router.push('/body-training')} style={[styles.context, { backgroundColor: colors.surfaceAlt, minHeight: 48 }]}>
           <Text style={[styles.contextText, { color: colors.accent }]}>{t('bodyTraining.entry')}</Text>
         </Pressable>
+        {/* ⚠️ SPIKE TECHNIQUE — entrée volontairement voyante et non traduite, pour qu'on ne la
+            confonde pas avec une fonctionnalité. Elle part avec le spike. */}
+        <Pressable accessibilityRole="button" accessibilityLabel="Spike technique : silhouette 3D"
+          onPress={() => router.push('/spike-corps-3d')} style={[styles.context, { backgroundColor: colors.surfaceAlt, minHeight: 48 }]}>
+          <Text style={[styles.contextText, { color: colors.danger }]}>⚠️ SPIKE — silhouette 3D (mesure)</Text>
+        </Pressable>
         {context ? <View style={[styles.context, { backgroundColor: colors.surfaceAlt }]}>
           <Text style={[styles.contextText, { color: colors.text }]}>{t(`bodyExplorer.context.${context}`)}</Text>
           <Text style={[styles.contextHint, { color: colors.textMuted }]}>{t('bodyExplorer.contextHint')}</Text>
