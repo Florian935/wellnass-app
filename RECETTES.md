@@ -13,6 +13,19 @@
 >
 > Dernière mise à jour : **16/09/2026** — **70 sections**.
 >
+> ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
+>
+> `apps/mobile/android/app/build/outputs/apk/release/app-release.apk` du worktree
+> `.claude/worktrees/mon-corps`, construit le **16/09/2026 à 13:42**, **193,9 Mo**,
+> SHA-256 `866442977dee1a207df2e45b4c44f1ee3123aaf6d0e6a4b6643a90da0f9f53b5`, signature **v2**
+> valide (certificat Android Debug du projet — installable par simple transfert, il faut autoriser
+> les « sources inconnues »).
+>
+> Contenu vérifié dans l'APK : les **deux** scènes 3D y sont (bundle DOM du Labo 1 004 Ko, bundle du
+> spike 1 468 Ko), et l'écran de spike ainsi que sa route sont présents dans le bundle Hermes.
+> ⚠️ **Tout le JS est cuit dans l'APK** : un changement de code ne s'y propage pas, il faut
+> reconstruire. Pour itérer vite, préférer le dev client + Metro (mode A de
+> [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md)).
 > **⑪ une §70 est arrivée, et ce n'est pas une fonctionnalité** : le **spike 3D** de la silhouette.
 > Un écran de mesure volontairement moche, qui sera **supprimé** après. 🔴 Ne pas y chercher de
 > qualité visuelle : on compte des zones qui bougent et des images par seconde. Quatre des six
