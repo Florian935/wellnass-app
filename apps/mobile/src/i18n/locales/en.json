@@ -73,7 +73,10 @@
       "fri": "F",
       "sat": "S",
       "sun": "S"
-    }
+    },
+    "save": "Save",
+    "delete": "Delete",
+    "done": "Done"
   },
   "sync": {
     "connected": "Synced",
@@ -491,7 +494,8 @@
     "home": "Home",
     "strength": "Strength",
     "running": "Running",
-    "nutrition": "Food"
+    "nutrition": "Food",
+    "lab": "Lab"
   },
   "pillars": {
     "strength": "Strength",
@@ -544,7 +548,11 @@
         "label": "Training day bonus",
         "fixed": "Fixed",
         "auto": "Auto (run burn)",
-        "hint": "Fixed: a set bonus on training days. Auto: follows your estimated run burn; the fixed bonus is then used as a fallback on strength days."
+        "activities": "Based on what you do",
+        "hint_fixed": "Your target stays the same: your activity level already accounts for your training.",
+        "hint_auto": "A bonus on training days, following the estimated burn of your runs.",
+        "hint_activities": "A non-sport baseline, and every session or activity adds what it cost (bottom of the range).",
+        "doubleCount": "Your training is counted twice: your activity level already includes it, and the bonus adds it on top. “Based on what you do” fixes this."
       },
       "trainingBonus": "Training-day bonus (kcal)",
       "trainingBonusHint": "Added to your goal on days with a strength or running session. In Auto mode, used as a fallback on strength days. 0 = off.",
@@ -554,7 +562,15 @@
       },
       "incomplete": "Enter your weight, height and date of birth to calculate your calorie needs.",
       "completeProfile": "Complete my profile",
-      "tdeeHint": "What your body burns in a day, at rest and in activity — estimated from your weight, height, age and activity level."
+      "tdeeHint": "What your body burns in a day, at rest and in activity — estimated from your weight, height, age and activity level.",
+      "sportFree": {
+        "label": "Outside sport, you are mostly…",
+        "seated": "Seated",
+        "standing": "On your feet",
+        "physical": "Physical",
+        "hint": "Your typical day without training: desk job, often on your feet, or physical work.",
+        "hintDefault": "Never set — “On your feet” is applied by default. Pick your case for an accurate target."
+      }
     },
     "macros": {
       "title": "Macro split",
@@ -2158,7 +2174,8 @@
       "goals": "Goals",
       "wellbeing": "Well-being",
       "review": "Weekly review",
-      "hint": "Your personal journals, available when you need them — without cluttering the home screen."
+      "hint": "Your personal journals, available when you need them — without cluttering the home screen.",
+      "activities": "My other activities"
     },
     "conflicts": {
       "title": "Session sequencing",
@@ -2967,7 +2984,13 @@
     "a11yIndicatorTab": "Show chart: {{indicator}}",
     "closeSheet": "Close check-in",
     "windowAll": "All",
-    "windowDays": "{{count}} d"
+    "windowDays": "{{count}} d",
+    "sleepLabel": "Night",
+    "sleepHint": "The night that just ended",
+    "sleepNone": "not logged",
+    "sleepClear": "clear",
+    "sleepLess": "Fifteen minutes less sleep",
+    "sleepMore": "Fifteen minutes more sleep"
   },
   "measurements": {
     "title": "Measurements",
@@ -4010,6 +4033,17 @@
       "objective": "Adjustment for your goal",
       "trainingDay": "Training-day bonus",
       "target": "Your target for the day"
+    },
+    "energy": {
+      "resting": "Your body at rest: {{value}} kcal/h (age, height, weight, sex)",
+      "restingFallback": "Your body at rest: {{value}} kcal/h — default estimate, age or height is missing",
+      "met": "Effort intensity: {{value}} MET",
+      "minutes": "Active time counted: {{value}} min",
+      "result": "What the effort adds: ≈ {{value}} kcal (between {{low}} and {{high}})",
+      "watch": "Your watch shows more? It also counts the {{kcal}} kcal you would have burned at rest during that time — they are already in your target.",
+      "level": "Your training level is not part of the calculation: it shows up through loads, pace and effort.",
+      "device": "Number from your watch: {{value}} active kcal",
+      "target": "What your target keeps: {{value}} kcal, the bottom of the range"
     }
   },
   "brief": {
@@ -4589,6 +4623,615 @@
         "perte_poids": "weight loss",
         "endurance": "endurance"
       }
+    }
+  },
+  "activity": {
+    "title": "Add an activity",
+    "editTitle": "Edit activity",
+    "listTitle": "My other activities",
+    "listSubtitle": "Everything that is neither a strength session nor a run.",
+    "listItemA11y": "{{type}}, {{date}}",
+    "addCta": "Add an activity",
+    "habits": "Your usual ones",
+    "type": "Activity type",
+    "showAll": "Show all",
+    "showLess": "Show less",
+    "duration": "Duration",
+    "durationMinus": "Decrease duration by 5 minutes",
+    "durationPlus": "Increase duration by 5 minutes",
+    "intensityLabel": "Intensity",
+    "distance": "Distance (km) · optional",
+    "distancePlaceholder": "e.g. 30",
+    "deviceKcal": "Active calories from your watch · optional",
+    "deviceKcalPlaceholder": "e.g. 812",
+    "estimateDetail": "{{type}}, {{intensity}} — from your profile and the duration.",
+    "save": "Save",
+    "empty": {
+      "title": "No other activity yet",
+      "body": "Cycling, swimming, hiking, team sports: log them here so they count towards your streak, your load and your calorie target."
+    },
+    "delete": {
+      "title": "Delete this activity?",
+      "body": "It will no longer count towards your streak, your load or today's target."
+    },
+    "types": {
+      "bike": "Cycling",
+      "swim": "Swimming",
+      "walk": "Walking",
+      "hike": "Hiking",
+      "row": "Rowing",
+      "yoga": "Yoga",
+      "team_sport": "Team sport",
+      "racket": "Tennis / padel",
+      "bike_indoor": "Stationary bike",
+      "elliptical": "Elliptical",
+      "pilates": "Pilates",
+      "dance": "Dance",
+      "basketball": "Basketball",
+      "handball": "Handball",
+      "badminton": "Badminton",
+      "squash": "Squash",
+      "climbing": "Climbing",
+      "boxing": "Boxing",
+      "martial_arts": "Martial arts",
+      "hiit": "HIIT / circuit",
+      "ski": "Skiing",
+      "other": "Other"
+    },
+    "intensity": {
+      "light": {
+        "label": "Easy",
+        "hint": "you could sing"
+      },
+      "moderate": {
+        "label": "Steady",
+        "hint": "you could talk"
+      },
+      "vigorous": {
+        "label": "Hard",
+        "hint": "a few words at a time"
+      }
+    },
+    "saved": {
+      "title": "{{type}} added",
+      "subtitle": "{{duration}} · {{intensity}}",
+      "effects": "What this changes",
+      "target": "Today's target",
+      "targetDetail": "It goes up to {{target}} kcal (bottom of the range).",
+      "targetNoProfile": "Complete your nutrition profile to see the effect on your target.",
+      "targetOff": "Your target stays the same",
+      "targetOffDetail": "Your activity level already accounts for your training. Switch to “Based on what you do” for it to follow your real energy use.",
+      "streak": "Your streak",
+      "streakDetail": "Today counts as an active day.",
+      "streakValue": "{{count}} d",
+      "load": "This week's load",
+      "loadDetail": "Effort {{rpe}} × {{minutes}} min.",
+      "healthConnect": "Health Connect",
+      "healthConnectOn": "Session added, without calories.",
+      "healthConnectOff": "Turned off — nothing is sent.",
+      "edit": "Edit activity"
+    }
+  },
+  "energy": {
+    "title": "Estimated burn",
+    "a11y": "Estimated burn: about {{kcal}} kilocalories",
+    "range": "between {{low}} and {{high}} kcal · your target keeps {{low}}",
+    "confidence": {
+      "high": "high confidence",
+      "medium": "medium confidence",
+      "low": "low confidence"
+    },
+    "explainCta": "Where does this come from?",
+    "explainTitle": "Estimated burn · {{kcal}} kcal",
+    "fromDevice": "Your watch's number — kept as is.",
+    "dayEffect": "Today's target goes up by {{kcal}} kcal, to {{target}}.",
+    "missingWeight": {
+      "title": "Your weight is missing",
+      "body": "Without a weight, no burn can be estimated — and making one up would give a wrong but believable number.",
+      "cta": "Log my weight"
+    },
+    "kinds": {
+      "strength": "Strength",
+      "run": "Run"
+    },
+    "strength": {
+      "detail": "{{duration}} active min · effort {{rpe}}/10 · rest ~{{rest}} min"
+    },
+    "run": {
+      "detail": "{{km}} km",
+      "detailClimb": "{{km}} km · +{{climb}} m of climbing counted",
+      "detailNoGps": "No distance: estimated from duration and effort."
+    },
+    "day": {
+      "title": "Your day in energy",
+      "total": "≈ {{kcal}} kcal burned",
+      "empty": "Nothing logged today. A session, a run or an activity will raise your target.",
+      "estimated": "≈ {{kcal}} kcal",
+      "base": "Non-sport baseline + goal",
+      "fromActivity": "Today's energy use",
+      "target": "Today's target",
+      "remaining": "Left today",
+      "notFollowing": "Your target doesn't follow your real energy use yet. Set it up.",
+      "notFollowingCta": "Set up the calorie target"
+    },
+    "settings": {
+      "title": "Calories burned",
+      "label": "Show calories burned",
+      "hint": "Hidden, your target still adjusts: we remove the display, not the calculation."
+    }
+  },
+  "lab": {
+    "title": "The Lab",
+    "subtitle": "Where your pillars meet.",
+    "tabs": {
+      "week": "Week",
+      "composer": "Compose",
+      "why": "Why?",
+      "known": "Learned"
+    },
+    "pillars": {
+      "sleep": "Sleep"
+    },
+    "stage": {
+      "week": "Your week, for real",
+      "composer": "Your formula, in draft",
+      "why": "The investigation",
+      "known": "What you know about yourself",
+      "hint": "Drag to orbit · tap a disc to move closer",
+      "hintFocus": "Tap empty space to zoom back out",
+      "fallback": "3D did not start: here are the same discs, in 2D."
+    },
+    "scene": {
+      "brand": "FITTRIO",
+      "plate": "SESSION",
+      "outings": "RUNS / WEEK",
+      "kmOf": "OF {{total}} KM"
+    },
+    "week": {
+      "lead_one": "One thing to sort out this week.",
+      "lead_other": "{{count}} things to sort out this week.",
+      "leadReady": "Everything is ready to apply.",
+      "leadClear": "Your week is set.",
+      "where": "Where you stand",
+      "grid": "Your week",
+      "gridLegend": "solid = done · dashed = planned",
+      "strength": "{{done}} of {{planned}} sessions",
+      "running": "{{done}} of {{planned}} km",
+      "protein": "Protein",
+      "proteinValue": "{{value}} of {{target}} g/kg",
+      "proteinEmpty": "nothing logged this week",
+      "loggedDays_one": "{{count}} day logged",
+      "loggedDays_other": "{{count}} days logged",
+      "nights": "{{good}} of {{logged}} nights above 7 h",
+      "nightsEmpty": "no night logged",
+      "lastNight": "last night: {{value}}",
+      "lastNightEmpty": "log your night in the check-in",
+      "next": "next: {{day}}, {{name}}",
+      "noNext": "nothing else planned before Sunday",
+      "session": "session",
+      "run": "run",
+      "proposals": "What the Lab suggests",
+      "toFix_one": "1 to sort out",
+      "toFix_other": "{{count}} to sort out",
+      "allClear": "all sorted",
+      "empty": "Nothing to flag: your pillars hold together.",
+      "apply_one": "Apply this change to my plan",
+      "apply_other": "Apply {{count}} changes to my plan",
+      "staged": "Ready",
+      "applied": "In your plan",
+      "remove": "remove",
+      "km": "{{value}} km"
+    },
+    "proposals": {
+      "overtraining": {
+        "kind": "safety",
+        "title": "{{streakDays}} days in a row without rest",
+        "text": "Load is stacking up with no day off. Put a rest day in the week: that is where progress happens.",
+        "done": "Pick your rest day in the planner.",
+        "action": "Open my planner",
+        "changeTitle": "Planner",
+        "changeDetail": "Pick a rest day",
+        "changeWhere": "Planner"
+      },
+      "loadRisk": {
+        "kind": "safety",
+        "title": "Your load jumped (ratio {{ratio}})",
+        "text": "This week weighs far more than your last four. Lighten today’s hard session rather than skipping it.",
+        "done": "Today’s session will drop 25% of its reps.",
+        "action": "Lighten today’s session",
+        "changeTitle": "Today’s session",
+        "changeDetail": "25% fewer reps, today only",
+        "changeWhere": "Home, Strength, Running"
+      },
+      "deficitVolume": {
+        "kind": "safety",
+        "title": "{{deficitPct}}% deficit with high volume",
+        "text": "Eating well under target during a heavy strength week costs strength. Revisit your target or ease the week.",
+        "done": "To revisit in your nutrition targets.",
+        "action": "See my targets",
+        "changeTitle": "Nutrition",
+        "changeDetail": "Revisit the calorie target",
+        "changeWhere": "Nutrition"
+      },
+      "collision": {
+        "kind": "collision",
+        "title": "Legs the day before your quality session",
+        "text": "{{legSets}} leg sets the day before: tomorrow’s session starts on heavy legs. The Lab can move it.",
+        "done": "Run moved: 48 h after legs.",
+        "action": "Move the run",
+        "changeTitle": "Running · this week",
+        "changeDetail": "Session moved to {{toDayKey}}",
+        "changeWhere": "Home, Running, Planner"
+      },
+      "shortNight": {
+        "kind": "short night",
+        "title": "Short night before a hard session",
+        "text": "You slept under 6 h. Keep the session, but lighten it — the same adjustment the app already offers after a short night.",
+        "done": "Session lightened by 25% of reps, today only.",
+        "action": "Lighten today",
+        "changeTitle": "Today’s session",
+        "changeDetail": "25% fewer reps, today only",
+        "changeWhere": "Home, Running"
+      },
+      "protein": {
+        "kind": "gap",
+        "title": "Protein at {{gPerKg}} g/kg",
+        "text": "Your target is {{targetMin}} g/kg: about {{missingG}} g short per day. The app can suggest what to add.",
+        "done": "To top up in your meals.",
+        "action": "See what to add",
+        "changeTitle": "Nutrition",
+        "changeDetail": "Top up today’s protein",
+        "changeWhere": "Nutrition"
+      },
+      "carbs": {
+        "kind": "fuel",
+        "title": "Carbs at {{gPerKg}} g/kg before hard sessions",
+        "text": "{{hardSessions}} hard session(s) left this week and your carbs sit below the {{targetMin}} g/kg mark.",
+        "done": "To adjust on hard days.",
+        "action": "See my carbs",
+        "changeTitle": "Nutrition",
+        "changeDetail": "Raise carbs on hard days",
+        "changeWhere": "Nutrition"
+      }
+    },
+    "composer": {
+      "sessions_one": "{{count}} session / week",
+      "sessions_other": "{{count}} sessions / week",
+      "outings_one": "{{count}} run / week",
+      "outings_other": "{{count}} runs / week",
+      "gPerKg": "{{value}} g/kg",
+      "sleepValue": {
+        "short": "under 7 h",
+        "long": "7 h or more"
+      },
+      "lever": {
+        "strengthSessions": "Strength sessions",
+        "runningFrequency": "Runs per week",
+        "proteinGPerKg": "Protein target",
+        "objective": "Nutrition objective",
+        "sleep": "Nights"
+      },
+      "decrease": "Decrease: {{lever}}",
+      "increase": "Increase: {{lever}}",
+      "step": {
+        "strengthSessions": {
+          "up": "One more strength session",
+          "down": "One less strength session"
+        },
+        "runningFrequency": {
+          "up": "One more run",
+          "down": "One less run"
+        },
+        "proteinGPerKg": {
+          "up": "Raise the protein target",
+          "down": "Lower the protein target"
+        },
+        "objective": {
+          "up": "More generous objective",
+          "down": "Stricter objective"
+        },
+        "sleep": {
+          "up": "Sleep 7 h or more",
+          "down": "Sleep under 7 h"
+        }
+      },
+      "best": "The setting that pays off most",
+      "bestEffect": "+{{value}} kg total, at 8 weeks",
+      "levers": "Levers",
+      "reset": "Back to my settings",
+      "crossings": "What it crosses",
+      "noCrossing": "Nothing clashes in this formula.",
+      "honest": "Projections computed on your real slope, with fixed, readable coefficients. No pace projection: no validated calculation links a dose to a race time.",
+      "sbd": "Strength total at {{weeks}} weeks",
+      "kg": "{{value}} kg",
+      "range": "between {{low}} and {{high}} kg",
+      "deltaKg": "{{value}} kg vs your settings",
+      "noHistory": "Not enough strength history to project yet.",
+      "load": "Load (acute / chronic)",
+      "loadZone": {
+        "safe": "healthy zone",
+        "watch": "worth watching",
+        "risk": "above the threshold"
+      },
+      "kcal": "Daily target",
+      "weightChange": "{{value}} kg expected in {{weeks}} weeks",
+      "protein": "Protein",
+      "gPerDay": "{{value}} g / day",
+      "proteinStatus": {
+        "low": "below your objective’s range",
+        "in": "within range",
+        "high": "above the range"
+      },
+      "carbs": "Carbs",
+      "carbsRange": "{{min}} to {{max}} g/kg",
+      "carbsNote": "based on your running volume",
+      "apply_one": "Apply this setting",
+      "apply_other": "Apply these {{count}} settings",
+      "notWritable": "Strength sessions are set in your program: the Lab will not write them for you.",
+      "change": {
+        "runningFrequency": "{{from}} → {{to}} runs per week",
+        "proteinGPerKg": "{{from}} → {{to}} g/kg",
+        "objective": "New objective: {{to}}"
+      },
+      "changeWhere": {
+        "runningFrequency": "Running",
+        "proteinGPerKg": "Nutrition",
+        "objective": "Home, Nutrition"
+      }
+    },
+    "crossings": {
+      "overreach": {
+        "title": "Overreach: {{extraSessions}} extra sessions on short nights",
+        "text": "This guardrail cannot be disputed: more load on less sleep reverses progress."
+      },
+      "loadRisk": {
+        "title": "Load above the threshold (ratio {{ratio}})",
+        "text": "Past 1.3, injury risk rises faster than the gain."
+      },
+      "loadWatch": {
+        "title": "Load worth watching (ratio {{ratio}})",
+        "text": "Nothing alarming, but the rise is clear: keep an eye on recovery."
+      },
+      "deficitHeavyWeek": {
+        "title": "Deficit and a heavy week",
+        "text": "A {{kcalDelta}} kcal deficit on a dense week costs strength if protein does not follow."
+      },
+      "proteinLow": {
+        "title": "Protein below your target",
+        "text": "{{gPerKg}} g/kg for a {{targetMin}} target: strength work returns less than it could."
+      },
+      "proteinStrength": {
+        "title": "Protein × strength",
+        "text": "At {{gPerKg}} g/kg, your sessions are covered."
+      },
+      "sleepSupports": {
+        "title": "Nights × training",
+        "text": "Nights of 7 h or more support a demanding week."
+      }
+    },
+    "why": {
+      "lead": "When a curve stalls, the Lab looks for the cause across every pillar.",
+      "emptyTitle": "Nothing is stalling right now.",
+      "emptyBody": "The Lab watches your strength, pace and weight. As soon as a curve flattens, the investigation opens here.",
+      "eightWeeks": "last eight weeks",
+      "suspects": "What weighs, in your data",
+      "suspectsMeta": "most to least likely",
+      "noSuspect": "No known factor moved over the period.",
+      "level": {
+        "strong": "strong",
+        "medium": "medium",
+        "weak": "weak"
+      },
+      "cleared": "Ruled out: {{list}}.",
+      "missing": "Cannot be judged, data missing: {{list}}.",
+      "fixInWeek": "Sort it out in your week →",
+      "toSettle": "To settle it",
+      "measureFirstTitle": "Measure first, do not restrict",
+      "measureFirstBody": "No experiment on calories. Log your weekends too for two weeks: that is the most common gap between the journal and reality.",
+      "startExperiment": "Start the experiment (4 weeks)",
+      "alreadyRunning": "Already running",
+      "honest": "Associations found in your data, not proof. The experiment settles it.",
+      "kg": "{{value}} kg"
+    },
+    "questions": {
+      "liftPlateau": {
+        "title": "My strength is stalling",
+        "detected": "{{exerciseName}}: {{valueKg}} kg for {{weeksFlat}} weeks"
+      },
+      "paceFade": {
+        "title": "My quality sessions are slowing",
+        "detected": "{{recentPace}} against {{previousPace}} before, {{deltaS}} s/km slower"
+      },
+      "weightPlateau": {
+        "title": "My weight will not move",
+        "detected": "{{avgKg}} kg ±{{rangeKg}} for {{weeks}} weeks"
+      }
+    },
+    "suspects": {
+      "legsBeforeQuality": {
+        "title": "Legs the day before a quality session",
+        "proof": "{{count}} times out of {{runs}} these three weeks",
+        "short": "legs the day before"
+      },
+      "proteinLow": {
+        "title": "Protein below target",
+        "proof": "{{gPerKg}} g/kg for a {{targetMin}} target",
+        "short": "protein"
+      },
+      "deficit": {
+        "title": "Marked calorie deficit",
+        "proof": "{{avgKcal}} kcal for a {{targetKcal}} target ({{deficitPct}}% under)",
+        "short": "deficit"
+      },
+      "sleepShort": {
+        "title": "Short nights",
+        "proof": "{{avgMinutes}} minutes on average",
+        "short": "sleep"
+      },
+      "loadHigh": {
+        "title": "Load on the rise",
+        "proof": "{{changePct}}% more load than before",
+        "short": "load"
+      },
+      "weekendSurplus": {
+        "title": "Weekends above your target",
+        "proof": "+{{surplusKcal}} kcal on average on Saturday and Sunday",
+        "short": "weekends"
+      },
+      "journalGaps": {
+        "title": "Days without logging",
+        "proof": "{{gaps}} days out of {{days}} with no meal logged",
+        "short": "incomplete journal"
+      },
+      "carbsLowHardDays": {
+        "title": "Low carbs on quality days",
+        "proof": "{{gPerKg}} g/kg for a {{targetMin}} mark",
+        "short": "carbs"
+      }
+    },
+    "experiments": {
+      "legs48h": {
+        "title": "Legs 48 h before the quality session",
+        "text": "Four weeks, two “test” and two “usual”, in a random order. The Lab measures the pace of your quality sessions, with nothing for you to log."
+      },
+      "carbsHardDays": {
+        "title": "Carbs above the mark on hard days",
+        "text": "Four weeks, order drawn at random. The Lab compares the pace of your quality sessions between followed weeks and the rest."
+      },
+      "earlierBedtime": {
+        "title": "Earlier bedtime before hard sessions",
+        "text": "Four weeks, order drawn at random. The Lab compares your reported energy between 7 h 30 weeks and the rest."
+      }
+    },
+    "known": {
+      "lead": "Your Lab learns from you.",
+      "subtitle": "Every thing learned replaces a general rule with your own numbers.",
+      "running": "Experiments running",
+      "sealed": "verdict sealed until the end",
+      "title": "What the Lab knows about you",
+      "whatFor": "and what it is used for",
+      "empty": "Nothing learned yet: it takes a few weeks of data.",
+      "day": "D{{day}} / {{total}}",
+      "arm": {
+        "test": "This week: we try it.",
+        "usual": "This week: business as usual."
+      },
+      "startsOn": "starts on {{date}}",
+      "stop": "stop the experiment",
+      "status": {
+        "verified": "verified by experiment",
+        "contrary": "the trial worked against you",
+        "noEffect": "no clear effect",
+        "inconclusive": "not enough measurements",
+        "solid": "solid link",
+        "probable": "likely",
+        "noLink": "no link",
+        "learning": "still learning"
+      },
+      "fromExperiment": "Measured by an experiment, weeks drawn at random.",
+      "fromCases": "{{exposed}} cases against {{other}} — association, not proof.",
+      "usedBy": {
+        "shortNight": "Used to lighten your sessions after a short night.",
+        "collision": "Used by the session collision detector.",
+        "carbs": "Used for your carb targets on hard days.",
+        "protein": "Used for your protein target.",
+        "loadRisk": "Used by the load guardrail.",
+        "deficitVolume": "Used by the deficit × volume guardrail.",
+        "overtraining": "Used by the recovery guardrail."
+      },
+      "learning_one": "{{count}} association still learning: it needs {{needed}} cases on each side.",
+      "learning_other": "{{count}} associations still learning: they need {{needed}} cases on each side."
+    },
+    "knowledge": {
+      "legs48h": {
+        "experiment": "Spacing legs 48 h changes your pace by {{delta}} s/km"
+      },
+      "carbsHardDays": {
+        "experiment": "Raising carbs on hard days changes your pace by {{delta}} s/km"
+      },
+      "earlierBedtime": {
+        "experiment": "Going to bed earlier changes your energy by {{delta}} point"
+      },
+      "shortNightPace": {
+        "association": "A night under 6 h costs you {{delta}} s/km on the next session"
+      },
+      "heavyLegsPace": {
+        "association": "Heavy legs the day before cost you {{delta}} s/km"
+      },
+      "carbsPace": {
+        "association": "Carbs below the mark cost you {{delta}} s/km"
+      }
+    },
+    "apply": {
+      "weekTitle": "What changes in your week",
+      "formulaTitle": "What changes in your settings",
+      "where": "Visible in: {{list}}",
+      "note": "Nothing else moves. Offline, it is saved on the phone and synced later.",
+      "later": "Not now",
+      "confirm": "Apply to my plan",
+      "weekSubtitle_one": "1 change, applied right away",
+      "weekSubtitle_other": "{{count}} changes, applied right away",
+      "formulaSubtitle_one": "1 setting, applied right away",
+      "formulaSubtitle_other": "{{count}} settings, applied right away",
+      "error": "Could not apply: try again in a moment."
+    }
+  },
+  "aiLab": {
+    "title": "AI Lab",
+    "subtitle": "See what a model actually makes of your data",
+    "warning": {
+      "title": "🔬 Test surface — fake data only",
+      "body": "The model used here is a free tier: the provider may use requests to train its models. Only use this lab on an account repopulated with the test dataset."
+    },
+    "consent": {
+      "title": "The lab is off",
+      "body": "Nothing is sent until you turn the lab on in settings.",
+      "action": "Open settings"
+    },
+    "context": {
+      "title": "What gets sent",
+      "subtitle": "A numeric summary of the last {{days}} days. No name, no notes, no GPS trace.",
+      "show": "See exactly what",
+      "hide": "Hide",
+      "empty": "Nothing to send yet.",
+      "noData": "Your log is empty over the period: answers will be thin. Re-run the dataset script."
+    },
+    "ask": {
+      "title": "Your question",
+      "placeholder": "Ask your own, or pick one above…",
+      "send": "Ask",
+      "quota": "{{quota}} questions per day."
+    },
+    "questions": {
+      "weeklyReview": "Give me a review of this period.",
+      "whyStalling": "Why am I stalling on strength training?",
+      "nutritionCheck": "Am I eating enough for how much I train?",
+      "nextWeek": "What should I change next week?",
+      "crossPillar": "What link do you see between my running, lifting and eating?",
+      "blindSpot": "What's my blind spot?"
+    },
+    "result": {
+      "meta": "{{provider}} · {{model}} — {{used}}/{{quota}} questions used today."
+    },
+    "errors": {
+      "consent-required": "The lab isn't enabled in settings.",
+      "quota-exceeded": "Daily limit reached. Try again tomorrow.",
+      "offline": "No network, or the function isn't deployed.",
+      "unavailable": "No provider key is set on the server.",
+      "refused": "The model declined to answer this question.",
+      "misconfigured": "The provider configuration is invalid.",
+      "failed": "The request failed."
+    },
+    "settings": {
+      "title": "AI Lab",
+      "toggle": "Enable the AI lab",
+      "subtitle": "Sends a numeric summary of your data to a model, so you can judge its answers.",
+      "disclaimer": "Off by default. What leaves the device: aggregates (volumes, averages, paces, weight) — never your name, your notes or your GPS traces. The free provider used for testing may reuse these requests to train its models: only enable this on fake data.",
+      "open": "Open the lab",
+      "confirmTitle": "Enable the AI lab?",
+      "confirmBody": "A numeric summary of your data will leave the device for a third-party provider on every question. The free tier used for testing may use it to train its models. Only enable this on fake data.",
+      "cancel": "Cancel",
+      "accept": "Enable"
     }
   }
 }

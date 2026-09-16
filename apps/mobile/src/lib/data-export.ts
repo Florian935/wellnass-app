@@ -81,6 +81,10 @@ export const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   // cycle menstruel. Exportée même si le journal a été désactivé sans suppression — ce qui est gardé
   // reste exportable.
   { table: 'pain_reports', col: 'user_id' },
+  // US AUTRE-01 — les autres activités (vélo, natation, rando…). Même raison que partout ailleurs :
+  // ce sont des données d'entraînement saisies par l'utilisateur, leur absence de l'export en ferait
+  // un export incomplet. Attrapé par le test de complétude, comme `session_intervals` en août.
+  { table: 'activities', col: 'user_id' },
   // US CYCLE-01 — cycle menstruel. **Catégorie sensible au sens du RGPD** : l'omettre de l'export
   // ne serait pas une finition oubliée mais un manquement réglementaire. Les deux tables sont
   // exportées même quand le suivi a été désactivé sans suppression (R17 : « garder » est un choix
@@ -95,6 +99,12 @@ export const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   { table: 'meal_plan_entries', col: 'user_id' },
   { table: 'shopping_lists', col: 'user_id' },
   { table: 'shopping_list_items', col: 'user_id' },
+  // US LABO-01 — expériences sur soi du Labo. Donnée personnelle saisie et synchronisée, mais
+  // surtout : l'`schedule` (l'ordre tiré au sort des semaines « essai » / « habitude ») est la
+  // **seule** trace de ce qui a été demandé à l'utilisateur pendant ces quatre semaines. Sans elle,
+  // l'archive contiendrait les mesures sans le protocole — donc des chiffres qu'on ne peut plus
+  // interpréter. C'est ce même raisonnement qui a fait entrer `real_life_periods` plus haut.
+  { table: 'lab_experiments', col: 'user_id' },
 ];
 
 /**

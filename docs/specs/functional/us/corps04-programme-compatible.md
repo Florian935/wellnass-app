@@ -197,7 +197,7 @@ sur `profiles.Row`, `Insert` et `Update`. `profiles` étant déjà publiée et s
 Les suites ciblées passent : 34 tests Vitest sur le moteur et le profil, puis 106 tests Jest sur
 les repositories SQL, les deux écrans et le décodage JSON PowerSync. L'APK release Android a été
 construit avec les quatre ABI, signé en v2 et contrôlé contre son bundle embarqué. La recette
-device reste volontairement non cochée dans [RECETTES.md](../../../../RECETTES.md) §66 et se joue
-dans la même campagne finale « Mon corps » que CORPS-03 §65. Les trois points device différés à
+device reste volontairement non cochée dans [RECETTES.md](../../../../RECETTES.md) §69 et se joue
+dans la même campagne finale « Mon corps » que CORPS-03 §68. Les trois points device différés à
 la fin de Task 5 — métriques natives, parcours TalkBack et alerte système — restent dans cette
 recette ; aucun changement applicatif supplémentaire n'est introduit par la clôture.

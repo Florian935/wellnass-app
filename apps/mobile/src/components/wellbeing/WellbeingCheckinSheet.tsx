@@ -18,6 +18,9 @@ import { useState } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
+  SLEEP_MINUTES_MAX,
+  SLEEP_MINUTES_MIN,
+  SLEEP_MINUTES_STEP,
   WELLBEING_INDICATORS,
   formatDayFull,
   isEmptyCheckin,
@@ -26,12 +29,20 @@ import {
 } from '@wellness/shared';
 
 import { Button } from '@/components/Button';
+// US LABO-01 : le bouton rond du Labo, réutilisé ici — la note de nuit est une brique du Labo
+// posée dans le check-in, pas un quatrième indicateur de bien-être.
+import { Stepper } from '@/components/lab/Stepper';
+import { LAB_WRITE_READY } from '@/data/repositories/lab-experiment-repository';
+import { formatMinutes } from '@/components/lab/lab-format';
 import { WellbeingScale } from '@/components/wellbeing/WellbeingScale';
 import { logWeight, useLatestWeight } from '@/data/repositories/bodyweight-repository';
 import { saveWellbeing, type WellbeingEntry } from '@/data/repositories/daily-wellbeing-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+
+/** Valeur de départ de la note de nuit, au premier « + » (US LABO-01). Un point de départ, pas une cible. */
+const SLEEP_DEFAULT_MINUTES = 7 * 60;
 
 type Props = {
   visible: boolean;
@@ -87,13 +98,31 @@ function CheckinForm({
   const { latest } = useLatestWeight();
 
   const [values, setValues] = useState<WellbeingCheckinInput>(() =>
-    existing ? { mood: existing.mood, energy: existing.energy, stress: existing.stress } : {},
+    existing
+      ? {
+          mood: existing.mood,
+          energy: existing.energy,
+          stress: existing.stress,
+          sleepMinutes: existing.sleepMinutes,
+        }
+      : {},
   );
   // `null` = champ non touché → on affiche la pesée du jour si elle existe. Dès que l'utilisateur
   // tape, sa saisie prime. Ce repli remplace l'ancien effet de pré-remplissage.
   const [weightText, setWeightText] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Première pression sur « + » : une nuit ordinaire, pas un quart d'heure. Personne ne monte de 0
+  // à 7 h par pas de 15 min, et une valeur de départ plausible se corrige en deux gestes.
+  const sleepMinutes = values.sleepMinutes ?? null;
+  const stepSleep = (direction: 1 | -1) =>
+    setValues((prev) => {
+      const current = prev.sleepMinutes ?? null;
+      if (current === null) return { ...prev, sleepMinutes: SLEEP_DEFAULT_MINUTES };
+      const next = Math.min(SLEEP_MINUTES_MAX, Math.max(SLEEP_MINUTES_MIN, current + direction * SLEEP_MINUTES_STEP));
+      return { ...prev, sleepMinutes: next };
+    });
 
   const sameDayWeightKg = latest && latest.logDate === logDate ? latest.weightKg : null;
   const weightValue =
@@ -140,6 +169,51 @@ function CheckinForm({
           }
         />
       ))}
+
+      {/* US LABO-01 — la nuit, facultative comme le reste. Elle alimente le Labo (nuit courte →
+          séance allégée, enquête « pourquoi ça cale »), et rien d'autre ne la saisit dans l'app.
+          🔴 Masquée tant que la migration n'est pas sur le cloud : écrire une colonne inconnue du
+          serveur bloquerait la file de synchro de TOUTES les tables. */}
+      {LAB_WRITE_READY && (
+      <View style={[styles.sleepCard, { borderColor: colors.border }]} testID="wellbeing-sleep">
+        <View style={styles.sleepHead}>
+          <View style={styles.grow}>
+            <Text style={[styles.weightLabel, { color: colors.text }]}>{t('wellbeing.sleepLabel')}</Text>
+            <Text style={[styles.weightHint, { color: colors.textMuted }]}>{t('wellbeing.sleepHint')}</Text>
+          </View>
+          {sleepMinutes !== null && (
+            <Text
+              accessibilityRole="button"
+              onPress={() => setValues((prev) => ({ ...prev, sleepMinutes: null }))}
+              style={[styles.sleepClear, { color: colors.textMuted }]}
+            >
+              {t('wellbeing.sleepClear')}
+            </Text>
+          )}
+        </View>
+        <View style={styles.sleepControls}>
+          <Stepper
+            label={t('wellbeing.sleepLess')}
+            icon="remove"
+            onPress={() => stepSleep(-1)}
+            disabled={sleepMinutes !== null && sleepMinutes <= SLEEP_MINUTES_MIN}
+          />
+          <Text
+            testID="wellbeing-sleep-value"
+            style={[styles.sleepValue, { color: sleepMinutes === null ? colors.textMuted : colors.text }]}
+            maxFontSizeMultiplier={1.4}
+          >
+            {sleepMinutes === null ? t('wellbeing.sleepNone') : formatMinutes(sleepMinutes)}
+          </Text>
+          <Stepper
+            label={t('wellbeing.sleepMore')}
+            icon="add"
+            onPress={() => stepSleep(1)}
+            disabled={sleepMinutes !== null && sleepMinutes >= SLEEP_MINUTES_MAX}
+          />
+        </View>
+      </View>
+      )}
 
       <View style={[styles.weightCard, { borderColor: colors.border }]}>
         <View style={styles.grow}>
@@ -193,6 +267,11 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     padding: 13,
   },
+  sleepCard: { gap: 10, borderWidth: 1, borderRadius: 14, padding: 13 },
+  sleepHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 12 },
+  sleepClear: { fontFamily: fontFamily.body, fontSize: 12, textDecorationLine: 'underline' },
+  sleepControls: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 },
+  sleepValue: { flex: 1, textAlign: 'center', fontFamily: fontFamily.bodySemi, fontSize: 17 },
   grow: { flex: 1, minWidth: 0 },
   weightLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   weightHint: { fontFamily: fontFamily.body, fontSize: 12, marginTop: 2 },

@@ -46,6 +46,8 @@ import {
   findRestorableGap,
   computeTrainingTime,
   dayCalorieBonus,
+  DEFAULT_SPORT_FREE_LEVEL,
+  sportFreeTdee,
   defaultMacroRatios,
   effectiveNutritionObjective,
   estimateRunCalories,
@@ -107,6 +109,8 @@ import { useActiveWorkout, useWorkoutHistory } from './workout-repository';
 import { useRunHistory, useRunStats } from './run-repository';
 import { useRunningRecords } from './running-record-repository';
 import { useSettings } from './settings-repository';
+import { useActivities, useActivitiesOnDay } from './activity-repository';
+import { useDayEnergy, useEnergyTargetByDay } from './energy-repository';
 import { useActiveProgram } from './program-repository';
 import { useHasPlannedSession } from './planned-session-repository';
 import { useAuthStore } from '@/stores/auth-store';
@@ -303,18 +307,21 @@ export function useIsTrainingDay(dayKey: string): { isTrainingDay: boolean; isLo
   const { workouts, isLoading: workoutsLoading } = useWorkoutHistory();
   const { runs, isLoading: runsLoading } = useRunHistory();
   const { hasPlanned, isLoading: plannedLoading } = useHasPlannedSession(dayKey);
+  // US AUTRE-01 — une autre activité fait un jour d'entraînement, au même titre qu'une séance.
+  // C'est ce qui donne à ce jour son bonus (modes forfait/auto) et ses glucides péri-séance (MN-04).
+  const { activities, isLoading: activitiesLoading } = useActivitiesOnDay(dayKey);
 
   const retroactiveDone = useMemo(() => {
     const doneOnDay = (arr: { finishedAt: string | null }[]) =>
       arr.some((x) => x.finishedAt != null && localDayKey(new Date(x.finishedAt)) === dayKey);
-    return doneOnDay(workouts) || doneOnDay(runs);
-  }, [workouts, runs, dayKey]);
+    return doneOnDay(workouts) || doneOnDay(runs) || activities.length > 0;
+  }, [workouts, runs, activities, dayKey]);
 
   const todayKey = useTodayKey();
 
   return {
     isTrainingDay: computeIsTrainingDay({ retroactiveDone, hasPlanned, dayKey, todayKey }),
-    isLoading: workoutsLoading || runsLoading || plannedLoading,
+    isLoading: workoutsLoading || runsLoading || plannedLoading || activitiesLoading,
   };
 }
 
@@ -348,7 +355,7 @@ export type NutritionSummary = {
    *  - `forfait` : forfait fixe jour de séance (mode fixed, ou mode auto sans course) ;
    *  - `none`    : aucun bonus appliqué.
    */
-  bonusSource: 'run' | 'forfait' | 'none';
+  bonusSource: 'run' | 'forfait' | 'activities' | 'none';
   /** Macronutriments consommés aujourd'hui en grammes (0 si aucune entrée). */
   macros: { p: number; g: number; l: number };
   /**
@@ -381,7 +388,7 @@ export type DayCalorieTarget = {
    *  - `forfait` : forfait fixe jour de séance (mode fixed, ou mode auto sans course) ;
    *  - `none`    : aucun bonus appliqué.
    */
-  bonusSource: 'run' | 'forfait' | 'none';
+  bonusSource: 'run' | 'forfait' | 'activities' | 'none';
   /** Vrai si `dayKey` est un jour d'entraînement ET qu'un bonus s'applique. */
   isTrainingDay: boolean;
   isLoading: boolean;
@@ -419,17 +426,33 @@ export function useDayCalorieTarget(dayKey: string): DayCalorieTarget {
 
   const isLoading = nutritionLoading || profileLoading || weightLoading || trainingLoading || runsLoading;
 
+  // US DEPENSE-00 — la dépense réelle du jour (bas des fourchettes), mode `activities` seulement.
+  const { targetKcal: energyKcalToday, isLoading: energyLoading } = useDayEnergy(dayKey);
+
   // Calcul de l'objectif de base — même logique que nutrition-stats.tsx (indépendant du jour)
   const objective =
     nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
   const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : undefined;
-  const tdeeValue = tdee({
-    sex: profile?.sex ?? 'unspecified',
-    weightKg: profile?.weightKg ?? undefined,
-    heightCm: profile?.heightCm ?? undefined,
-    age,
-    activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
-  });
+  // 🔴 US DEPENSE-00 — le mode `activities` change AUSSI le socle, il n'ajoute pas qu'un bonus.
+  // Le facteur d'activité ordinaire (×1,2 à ×1,9) est défini par la fréquence d'entraînement : lui
+  // ajouter la dépense de chaque séance compterait le sport deux fois (analyse §3, jusqu'à 95 % du
+  // déficit d'une sèche effacé). Le socle hors sport ne contient, lui, aucun entraînement.
+  const usesRealEnergy = (nutritionProfile?.trainingBonusMode ?? 'fixed') === 'activities';
+  const tdeeValue = usesRealEnergy
+    ? sportFreeTdee({
+        sex: profile?.sex ?? 'unspecified',
+        weightKg: profile?.weightKg ?? undefined,
+        heightCm: profile?.heightCm ?? undefined,
+        age,
+        sportFreeLevel: nutritionProfile?.sportFreeLevel ?? DEFAULT_SPORT_FREE_LEVEL,
+      })
+    : tdee({
+        sex: profile?.sex ?? 'unspecified',
+        weightKg: profile?.weightKg ?? undefined,
+        heightCm: profile?.heightCm ?? undefined,
+        age,
+        activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
+      });
   // US VIE-01 (R4) : pendant une période « vie réelle », l'objectif retombe au maintien — le déficit
   // comme le surplus. C'est bien la **cible du jour** ici, donc la règle s'applique (l'écran de
   // réglage de l'objectif, lui, en est exclu : voir `nutrition-profile.tsx`).
@@ -474,17 +497,35 @@ export function useDayCalorieTarget(dayKey: string): DayCalorieTarget {
     isTrainingDay: trainedThatDay,
     fixedBonus,
     runCaloriesToday: runCaloriesOnDay,
+    energyKcalToday,
   });
 
   const trainingBonus = bonus;
-  const isTrainingDay = trainedThatDay && bonus > 0 && target != null;
+  // En mode `activities`, le bonus ne dépend PAS du statut « jour d'entraînement » : une sortie vélo
+  // un jour sans séance planifiée compte, et un jour de séance sans rien de saisi ne compte pas.
+  const isTrainingDay = (mode === 'activities' ? bonus > 0 : trainedThatDay && bonus > 0) && target != null;
   const effectiveTarget = target != null ? trainingDayCalories(target, bonus) : target;
 
   // Origine du bonus appliqué.
-  const bonusSource: 'run' | 'forfait' | 'none' =
-    mode === 'auto' && runCaloriesOnDay > 0 ? 'run' : bonus > 0 ? 'forfait' : 'none';
+  const bonusSource: 'run' | 'forfait' | 'activities' | 'none' =
+    mode === 'activities'
+      ? bonus > 0
+        ? 'activities'
+        : 'none'
+      : mode === 'auto' && runCaloriesOnDay > 0
+        ? 'run'
+        : bonus > 0
+          ? 'forfait'
+          : 'none';
 
-  return { target, effectiveTarget, trainingBonus, bonusSource, isTrainingDay, isLoading };
+  return {
+    target,
+    effectiveTarget,
+    trainingBonus,
+    bonusSource,
+    isTrainingDay,
+    isLoading: isLoading || energyLoading,
+  };
 }
 
 /**
@@ -596,6 +637,7 @@ export type StreakData = {
 export function useStreakData(windowDays = 30): StreakData {
   const { workouts, isLoading: workoutsLoading } = useWorkoutHistory();
   const { runs, isLoading: runsLoading } = useRunHistory();
+  const { activities: otherActivities, isLoading: otherLoading } = useActivities();
 
   // Fenêtre d'analyse. `windowDays + 1` : la borne est inclusive côté aujourd'hui, donc `windowDays`
   // jours d'historique + le jour courant — c'est ce que faisait le `setDate(- windowDays)` précédent.
@@ -612,6 +654,7 @@ export function useStreakData(windowDays = 30): StreakData {
   const isLoading =
     workoutsLoading ||
     runsLoading ||
+    otherLoading ||
     totalsLoading ||
     stepsLoading ||
     goalLoading ||
@@ -658,6 +701,12 @@ export function useStreakData(windowDays = 30): StreakData {
       touch(day).steps = true;
     }
 
+    // US AUTRE-01 : trois heures de vélo un dimanche cassaient la série — l'app ne regardait que la
+    // muscu, la course, la nutrition et les pas.
+    for (const a of otherActivities) {
+      touch(localDayKey(new Date(a.startedAt))).other = true;
+    }
+
     const activities = [...map.values()];
     const activeDays = activeDayKeys(activities);
     const jokerDays = new Set(jokerDayList);
@@ -688,7 +737,7 @@ export function useStreakData(windowDays = 30): StreakData {
     });
 
     return { streak, last7, restorableGap };
-  }, [workouts, runs, totals, stepRows, stepGoal, jokerDayList, todayKey, pausedDays]);
+  }, [workouts, runs, otherActivities, totals, stepRows, stepGoal, jokerDayList, todayKey, pausedDays]);
 
   return {
     current: streak.current,
@@ -1099,6 +1148,7 @@ export function useTrainingTime(): TrainingTime {
 
   const { stats, isLoading: runLoading } = useRunStats('week');
   const { workouts, isLoading: workoutLoading } = useWorkoutHistory();
+  const { activities, isLoading: activitiesLoading } = useActivities();
 
   const weekStartKey = useWindowStartKey(ROLLING_WEEK_DAYS);
   const strengthSecondsRaw = workouts.reduce((sum, w) => {
@@ -1107,12 +1157,25 @@ export function useTrainingTime(): TrainingTime {
     return dayKey >= weekStartKey ? sum + w.durationSeconds : sum;
   }, 0);
 
+  // US AUTRE-01 — troisième poste du temps d'entraînement (MR-06). Aucun gating : les autres
+  // activités n'appartiennent à aucun pilier, et les masquer ferait mentir un total.
+  const otherSecondsRaw = activities.reduce((sum, a) => {
+    const dayKey = localDayKey(new Date(a.startedAt));
+    return dayKey >= weekStartKey ? sum + a.durationSeconds : sum;
+  }, 0);
+
   const agg = computeTrainingTime({
     strengthSeconds: strengthActive ? strengthSecondsRaw : 0,
     runningSeconds: runningActive ? stats.totalDurationS : 0,
+    otherSeconds: otherSecondsRaw,
   });
 
-  return { ...agg, strengthActive, runningActive, isLoading: runLoading || workoutLoading };
+  return {
+    ...agg,
+    strengthActive,
+    runningActive,
+    isLoading: runLoading || workoutLoading || activitiesLoading,
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -1145,6 +1208,27 @@ export type TrainingLoadAlert = { show: boolean; ratio: number | null };
  * hooks sous-jacents sont appelés inconditionnellement (règle des hooks React) ; le gating
  * n'intervient qu'au moment de retourner le résultat.
  */
+/**
+ * Une activité libre vue comme une **séance de charge** (US AUTRE-01).
+ *
+ * La méthode session-RPE (Foster) ne connaît que deux entrées — un ressenti et des minutes — et ne
+ * demande donc aucun pilier : c'est ce qui permet à une sortie vélo d'entrer telle quelle dans
+ * l'ACWR, le garde-fou de charge et le score de disponibilité. Sans ça, trois heures de vélo
+ * pesaient **zéro** et l'app disait « repos » à quelqu'un qui venait de rouler 90 km.
+ *
+ * `finishedAt` est reconstruit (début + durée) : les unions de charge raisonnent toutes sur la fin
+ * de séance, et une activité n'en stocke pas.
+ */
+function activityLoadSessions(
+  activities: readonly { rpe: number | null; durationSeconds: number; startedAt: string }[],
+): { rpe: number | null; durationSeconds: number | null; finishedAt: string | null }[] {
+  return activities.map((a) => ({
+    rpe: a.rpe,
+    durationSeconds: a.durationSeconds,
+    finishedAt: new Date(new Date(a.startedAt).getTime() + a.durationSeconds * 1000).toISOString(),
+  }));
+}
+
 export function useTrainingLoadAlert(): TrainingLoadAlert {
   const { settings } = useSettings();
   const activePillars = resolveActivePillars(settings?.activePillars);
@@ -1153,6 +1237,7 @@ export function useTrainingLoadAlert(): TrainingLoadAlert {
 
   const { workouts } = useWorkoutHistory();
   const { runs } = useRunHistory();
+  const { activities } = useActivities();
 
   const acuteStartKey = useWindowStartKey(ACUTE_WINDOW_DAYS);
   const chronicStartKey = useWindowStartKey(CHRONIC_WINDOW_DAYS);
@@ -1164,6 +1249,7 @@ export function useTrainingLoadAlert(): TrainingLoadAlert {
   const sessions = [
     ...workouts.map((w) => ({ rpe: w.rpe, durationSeconds: w.durationSeconds, finishedAt: w.finishedAt })),
     ...runs.map((r) => ({ rpe: r.rpe, durationSeconds: r.durationSeconds, finishedAt: r.finishedAt })),
+    ...activityLoadSessions(activities),
   ];
 
   const byWindow = (startKey: string) =>
@@ -1271,6 +1357,7 @@ export function useOvertrainingGuardAlert(): OvertrainingGuardResult {
 
   const { workouts } = useWorkoutHistory();
   const { runs } = useRunHistory();
+  const { activities } = useActivities();
   const todayKey = useTodayKey();
   const loadLookbackKey = useWindowStartKey(LOAD_STREAK_LOOKBACK_DAYS);
   const deficitWindowKey = useWindowStartKey(DEFICIT_WINDOW_DAYS);
@@ -1284,6 +1371,7 @@ export function useOvertrainingGuardAlert(): OvertrainingGuardResult {
   const sessions = [
     ...workouts.map((w) => ({ rpe: w.rpe, durationSeconds: w.durationSeconds, finishedAt: w.finishedAt })),
     ...runs.map((r) => ({ rpe: r.rpe, durationSeconds: r.durationSeconds, finishedAt: r.finishedAt })),
+    ...activityLoadSessions(activities),
   ].filter((s) => s.finishedAt != null && localDayKey(new Date(s.finishedAt)) >= loadLookbackKey);
 
   const loadByDay = new Map<string, number>();
@@ -1345,6 +1433,7 @@ export function useReadiness(): ReadinessResult {
 
   const { workouts } = useWorkoutHistory();
   const { runs } = useRunHistory();
+  const { activities: readinessActivities } = useActivities();
   const acuteStartKey = useWindowStartKey(ACUTE_WINDOW_DAYS);
   const chronicStartKey = useWindowStartKey(CHRONIC_WINDOW_DAYS);
 
@@ -1369,6 +1458,9 @@ export function useReadiness(): ReadinessResult {
     ...(runningActive
       ? runs.map((r) => ({ rpe: r.rpe, durationSeconds: r.durationSeconds, finishedAt: r.finishedAt }))
       : []),
+    // US AUTRE-01 — les autres activités n'appartiennent à aucun pilier : elles ne sont donc jamais
+    // gatées. Une sortie vélo fatigue autant que le reste, que la course soit activée ou non.
+    ...activityLoadSessions(readinessActivities),
   ];
   const byWindow = (startKey: string) =>
     sessions.filter((s) => s.finishedAt != null && localDayKey(new Date(s.finishedAt)) >= startKey);
@@ -1550,19 +1642,34 @@ export function useDailyCalorieTargets(
   // Objectif de base (indépendant du jour), même logique que useDayCalorieTarget.
   const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
   const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : undefined;
-  const tdeeValue = tdee({
-    sex: profile?.sex ?? 'unspecified',
-    weightKg: profile?.weightKg ?? undefined,
-    heightCm: profile?.heightCm ?? undefined,
-    age,
-    activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
-  });
+  // US DEPENSE-00 : en mode `activities`, le socle est **hors sport** — sans quoi l'adhérence
+  // rétroactive comparerait les apports à une cible qui compte l'entraînement deux fois.
+  const tdeeValue =
+    (nutritionProfile?.trainingBonusMode ?? 'fixed') === 'activities'
+      ? sportFreeTdee({
+          sex: profile?.sex ?? 'unspecified',
+          weightKg: profile?.weightKg ?? undefined,
+          heightCm: profile?.heightCm ?? undefined,
+          age,
+          sportFreeLevel: nutritionProfile?.sportFreeLevel ?? DEFAULT_SPORT_FREE_LEVEL,
+        })
+      : tdee({
+          sex: profile?.sex ?? 'unspecified',
+          weightKg: profile?.weightKg ?? undefined,
+          heightCm: profile?.heightCm ?? undefined,
+          age,
+          activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
+        });
   const hasTarget = tdeeValue != null && objective != null;
 
   const mode: TrainingBonusMode = nutritionProfile?.trainingBonusMode ?? 'fixed';
   const fixedBonus = nutritionProfile?.trainingDayBonus ?? 0;
   const marginPct = nutritionProfile?.adherenceMarginPct ?? 10;
   const weightKg = latest?.weightKg ?? profile?.weightKg ?? null;
+  // US DEPENSE-00 — la dépense réellement retenue par jour (bas des fourchettes). Le même hook que
+  // la carte « Ta journée en énergie » : deux calculs séparés finiraient par se contredire, et
+  // l'adhérence rétroactive porterait sur une cible que plus aucun écran ne sait justifier.
+  const { byDay: energyByDay } = useEnergyTargetByDay();
   const runningActive = resolveActivePillars(settings?.activePillars).includes('running');
   const manualCalories = nutritionProfile?.manualCalories ?? null;
 
@@ -1617,6 +1724,7 @@ export function useDailyCalorieTargets(
                 fixedBonus,
                 isTrainingDay: isTraining,
                 runCaloriesToday: runCaloriesByDay.get(d.logDate) ?? 0,
+                energyKcalToday: energyByDay.get(d.logDate) ?? 0,
               }),
         isTrainingDay: isTraining,
       };
@@ -1634,6 +1742,7 @@ export function useDailyCalorieTargets(
     fixedBonus,
     weightKg,
     runningActive,
+    energyByDay,
   ]);
 
   return { days, marginPct, hasTarget, weightKg, isLoading };

@@ -26,6 +26,7 @@ import type {
   NutritionProfileRow,
   ProteinPerKg,
   RunningDayKind,
+  SportFreeLevel,
   TrainingBonusMode,
 } from '@wellness/shared';
 import {
@@ -69,6 +70,7 @@ export type NutritionProfileInput = Pick<
   | 'allergens'
   | 'trainingDayBonus'
   | 'trainingBonusMode'
+  | 'sportFreeLevel'
   | 'adherenceMarginPct'
   | 'meals'
   | 'waterTargetMl'
@@ -89,6 +91,8 @@ type NutritionDbRow = {
   allergens: string | null;
   training_day_bonus: number | null;
   training_bonus_mode: string | null;
+  /** US DEPENSE-00 — mode de vie hors sport ; `null` = jamais demandé (≠ valeur par défaut). */
+  sport_free_level: string | null;
   adherence_margin_pct: number | null;
   meals: string | null;
   water_target_ml: number | null;
@@ -121,6 +125,10 @@ function rowToNutritionProfile(row: NutritionDbRow): NutritionProfile {
     allergens: parseJsonColumn<string[]>(row.allergens, []),
     trainingDayBonus: row.training_day_bonus ?? 0,
     trainingBonusMode: (row.training_bonus_mode as TrainingBonusMode | null) ?? 'fixed',
+    // 🔴 Pas de repli ici : `null` veut dire « la question n'a jamais été posée », et l'écran doit
+    // pouvoir la poser (leçon de `activity_level`, dont le repli silencieux ×1,55 valait ~614 kcal
+    // de trop par jour à un sédentaire).
+    sportFreeLevel: (row.sport_free_level as SportFreeLevel | null) ?? null,
     adherenceMarginPct: row.adherence_margin_pct ?? 10,
     meals: parseJsonColumn<MealConfigItem[] | null>(row.meals, null),
     waterTargetMl: row.water_target_ml,
@@ -144,6 +152,7 @@ function inputToColumns(input: Partial<NutritionProfileInput>): Record<string, u
   if ('allergens' in input) columns['allergens'] = JSON.stringify(input.allergens ?? []);
   if ('trainingDayBonus' in input) columns['training_day_bonus'] = input.trainingDayBonus;
   if ('trainingBonusMode' in input) columns['training_bonus_mode'] = input.trainingBonusMode;
+  if ('sportFreeLevel' in input) columns['sport_free_level'] = input.sportFreeLevel;
   if ('adherenceMarginPct' in input) columns['adherence_margin_pct'] = input.adherenceMarginPct;
   if ('meals' in input) columns['meals'] = input.meals ? JSON.stringify(input.meals) : null;
   if ('waterTargetMl' in input) columns['water_target_ml'] = input.waterTargetMl;

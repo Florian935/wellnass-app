@@ -18,6 +18,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { ShareCardSheet } from '@/components/share/ShareCardSheet';
 import { TextField } from '@/components/TextField';
 import { WorkoutReport } from '@/components/workout/report/WorkoutReport';
+import { WorkoutEnergySection } from '@/components/energy/WorkoutEnergySection';
 import { useWorkoutReport } from '@/data/repositories/workout-report-repository';
 import { useSessionMuscles } from '@/data/repositories/immersive-repository';
 import { useWorkoutHistory } from '@/data/repositories/workout-repository';
@@ -103,6 +104,21 @@ export default function WorkoutSummaryScreen() {
       <ScreenHeader title={t('workout.summary.title')} subtitle={t('workout.summary.subtitle')} />
 
       {report !== null ? <WorkoutReport report={report} context="post-session" /> : null}
+
+      {/*
+        US DEPENSE-02 — ce que la séance a coûté, et ce que ça change dans la journée.
+        Placée APRÈS le bilan : la dépense est un complément, pas le sujet de l'écran (une séance
+        se juge à ses charges et à ses records, pas à ses calories). Masquable par réglage.
+      */}
+      {report !== null && workout !== null ? (
+        <WorkoutEnergySection
+          workoutId={workoutId}
+          finishedAt={workout.finishedAt}
+          durationSeconds={report.totals.durationMin * 60}
+          totalSets={report.totals.workingSets + report.totals.warmupSets}
+          rpe={report.feelingRpe ?? (report.totals.averageRpe != null ? Math.round(report.totals.averageRpe) : null)}
+        />
+      ) : null}
 
       {canSaveAsTemplate ? (
         <View style={styles.saveAsTemplateSection}>

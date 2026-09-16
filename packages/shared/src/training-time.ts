@@ -9,14 +9,26 @@ function safeSeconds(v: number): number {
   return Number.isFinite(v) && v > 0 ? v : 0;
 }
 
-/** Agrège les durées muscu + course en total + ventilation (toutes ≥ 0). */
+/**
+ * Agrège les durées muscu + course **+ autres activités** (US AUTRE-01) en total + ventilation.
+ *
+ * `otherSeconds` est optionnel : les appelants antérieurs à l'US gardent exactement leur résultat,
+ * et une ventilation à trois postes n'apparaît que là où il y a quelque chose à ventiler.
+ */
 export function computeTrainingTime(input: {
   strengthSeconds: number;
   runningSeconds: number;
-}): { totalSeconds: number; strengthSeconds: number; runningSeconds: number } {
+  otherSeconds?: number;
+}): { totalSeconds: number; strengthSeconds: number; runningSeconds: number; otherSeconds: number } {
   const strengthSeconds = safeSeconds(input.strengthSeconds);
   const runningSeconds = safeSeconds(input.runningSeconds);
-  return { totalSeconds: strengthSeconds + runningSeconds, strengthSeconds, runningSeconds };
+  const otherSeconds = safeSeconds(input.otherSeconds ?? 0);
+  return {
+    totalSeconds: strengthSeconds + runningSeconds + otherSeconds,
+    strengthSeconds,
+    runningSeconds,
+    otherSeconds,
+  };
 }
 
 /** Formate des secondes en « Xh YY » (minutes plancher, zéro-paddées sur 2 chiffres). */

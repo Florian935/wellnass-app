@@ -32,7 +32,12 @@ module.exports = {
   testPathIgnorePatterns: ['/node_modules/', '/dist/'],
 
   // Collecte de couverture (activée via --coverage)
-  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/test-utils/**'],
+  //
+  // `*.dom.tsx` est exclu : un composant DOM Expo (`'use dom'`) n'est pas exécuté par React Native
+  // mais chargé dans une WebView, avec `document`, `window.matchMedia` et WebGL. Le monter sous
+  // jest-expo ne testerait rien de ce qu'il fait — ce qui est testable en a été sorti
+  // (`scene-state.ts`, pur et couvert).
+  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/*.d.ts', '!src/**/*.dom.tsx', '!src/test-utils/**'],
 
   // ── Seuils de couverture (lot 6, 03/08/2026) ────────────────────────────────
   //

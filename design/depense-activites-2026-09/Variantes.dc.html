@@ -1,0 +1,80 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  </style>
+</helmet>
+<div style="width: 1200px; height: 760px; box-sizing: border-box; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 36px 40px; display: flex; flex-direction: column; gap: 24px;">
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.3px; text-transform: uppercase; color: #b14f2b;">Décision d'affichage</div>
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1px; line-height: 1.05;">Trois façons de dire « ta séance a coûté 370 kcal »</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; flex: 1;">
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="height: 230px; border-radius: 22px; background: #33291f; color: #f0e4d0; padding: 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden;">
+        <div style="position: absolute; width: 170px; height: 170px; border-radius: 50%; background: #6b0028; opacity: .55; filter: blur(34px); top: -80px; right: -50px;"></div>
+        <div style="position: relative; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #d9a888;">Dépense estimée</div>
+        <div style="position: relative; display: flex; align-items: baseline; gap: 8px;"><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 54px; letter-spacing: -2px; color: #fff; line-height: 1;">≈ 370</div><div style="font-weight: 600; font-size: 15px; color: #c9b79a;">kcal</div></div>
+        <div style="position: relative; height: 10px; border-radius: 5px; background: rgba(255,255,255,.1);"><div style="position: absolute; left: 22%; right: 22%; top: 0; bottom: 0; border-radius: 5px; background: linear-gradient(90deg, #d9a888, rgba(217,168,136,.35)); transform-origin: left; animation: grow .8s both;"></div></div>
+        <div style="position: relative; display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px;"><span style="color: #d9a888;">260 · compté</span><span style="color: #c9b79a;">480</span></div>
+        <div style="position: relative; margin-top: auto; font-weight: 700; font-size: 13px; text-decoration: underline; text-underline-offset: 3px; color: #fff;">D'où vient ce chiffre ?</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px;">A · Le chiffre et sa fourchette</div>
+      </div>
+      <div style="align-self: flex-start; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #fff; background: #52703a; border-radius: 999px; padding: 3px 10px;">recommandée · fin de séance</div>
+      <div style="font-size: 14.5px; line-height: 21px;"><b>Pour :</b> se lit en une seconde, dit ce qu'on ne sait pas, et montre ce que la cible retient. C'est le chiffre que les sportifs cherchent en premier.</div>
+      <div style="font-size: 14.5px; line-height: 21px; color: #786a59;"><b style="color: #33291f;">Contre :</b> une fourchette peut surprendre la première fois. Elle ne tient pas sans la feuille « D'où vient ce chiffre ».</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="height: 230px; border-radius: 22px; background: #22301a; color: #fff; padding: 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #e1ebcf;">Ta journée</div>
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -.5px; line-height: 1.15;">Ta séance ajoute 260 kcal à ta journée</div>
+        <div style="height: 22px; border-radius: 8px; background: rgba(255,255,255,.14); position: relative; overflow: hidden;">
+          <div style="position: absolute; left: 0; top: 0; bottom: 0; width: 53.7%; background: #a9ba7e;"></div>
+          <div style="position: absolute; left: 88.7%; right: 0; top: 0; bottom: 0; background: repeating-linear-gradient(135deg, #f2d9a3 0 4px, rgba(242,217,163,.4) 4px 8px); transform-origin: left; animation: grow .8s .3s both;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #e1ebcf;"><span>mangé 1 240</span><span>cible 2 308</span></div>
+        <div style="margin-top: auto; font-size: 14px; font-weight: 600;">Il te reste 1 070 kcal, dont 65 g de glucides.</div>
+      </div>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px;">B · La journée qui bouge</div>
+      <div style="align-self: flex-start; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #33291f; background: #f2d9a3; border-radius: 999px; padding: 3px 10px;">en complément · scène Nutrition</div>
+      <div style="font-size: 14.5px; line-height: 21px;"><b>Pour :</b> répond directement à « combien je mange ce soir ». Elle fonctionne aussi quand les chiffres de dépense sont masqués.</div>
+      <div style="font-size: 14.5px; line-height: 21px; color: #786a59;"><b style="color: #33291f;">Contre :</b> elle cache la dépense elle-même, et elle n'a aucun sens quand le pilier Nutrition est inactif.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="height: 230px; border-radius: 22px; background: #fffaf2; border: 1px solid #ece0cd; padding: 18px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden;">
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Tu as brûlé</div>
+        <div style="display: flex; align-items: center; gap: 14px;">
+          <svg width="74" height="74" viewBox="0 0 74 74"><path d="M37 8 L66 62 Q37 72 8 62 Z" fill="#f2d9a3" stroke="#b47f31" stroke-width="2.5" stroke-linejoin="round"></path><circle cx="32" cy="40" r="5" fill="#b23b2e"></circle><circle cx="44" cy="52" r="5" fill="#b23b2e"></circle><circle cx="28" cy="56" r="4" fill="#b23b2e"></circle></svg>
+          <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1px; line-height: 1.05;">= 1 part<br>de pizza</div>
+        </div>
+        <div style="margin-top: auto; font-size: 14px; color: #786a59;">Tu l'as bien méritée !</div>
+        <div style="position: absolute; inset: 0; background: repeating-linear-gradient(135deg, rgba(178,59,46,0) 0 22px, rgba(178,59,46,.07) 22px 26px);"></div>
+      </div>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px;">C · L'équivalent assiette</div>
+      <div style="align-self: flex-start; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #fff; background: #b23b2e; border-radius: 999px; padding: 3px 10px;">écartée</div>
+      <div style="font-size: 14.5px; line-height: 21px;"><b>Pour :</b> concret, amusant, repris par plusieurs apps grand public.</div>
+      <div style="font-size: 14.5px; line-height: 21px; color: #786a59;"><b style="color: #33291f;">Contre :</b> fait du sport une monnaie pour « mériter » de manger. Ça apprend à compenser et à culpabiliser, à rebours du « sans culpabiliser » du produit. La précision affichée est en plus fausse.</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

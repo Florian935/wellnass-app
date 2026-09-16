@@ -64,6 +64,9 @@ export * from './strength-hub';
 export * from './session-estimate';
 export * from './program';
 export * from './nutrition';
+// US DEPENSE-01 / AUTRE-01 — le moteur de dépense (commun aux 3 sources) et les autres activités.
+export * from './activity';
+export * from './energy';
 export * from './meal-plan';
 export * from './shopping-list';
 export * from './strength-intensity';
@@ -154,7 +157,13 @@ export * from './since-last-visit';
 export * from './weekly-story';
 export * from './near-record';
 export * from './what-if';
+// US LABO-01 — le Labo : la semaine, les enquêtes, les expériences et acquis, Composer.
+export * from './lab-week';
+export * from './lab-investigations';
+export * from './lab-experiments';
+export * from './lab-composer';
 export * from './explain';
 export * from './morning-brief';
 export * from './data-confidence';
 export * from './ai-assist';
+export * from './ai-context';

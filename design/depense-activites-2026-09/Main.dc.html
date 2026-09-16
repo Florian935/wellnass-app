@@ -1,0 +1,325 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  </style>
+</helmet>
+<div style="width: 1200px; box-sizing: border-box; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; gap: 64px; padding-bottom: 72px;">
+
+  <div style="position: relative; overflow: hidden; background: #33291f; color: #f0e4d0; padding: 56px 64px 48px; display: flex; flex-direction: column; gap: 28px;">
+    <div style="position: absolute; width: 420px; height: 420px; border-radius: 50%; background: #6b0028; opacity: .55; filter: blur(80px); top: -200px; left: -80px;"></div>
+    <div style="position: absolute; width: 380px; height: 380px; border-radius: 50%; background: #2a64ad; opacity: .45; filter: blur(80px); top: -160px; left: 420px;"></div>
+    <div style="position: absolute; width: 380px; height: 380px; border-radius: 50%; background: #52703a; opacity: .55; filter: blur(80px); top: -120px; right: -60px;"></div>
+    <div style="position: relative; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: #d9a888;">Exploration · 15/09/2026 · proposition de cadrage, non validée</div>
+    <div style="position: relative; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 60px; letter-spacing: -2.2px; line-height: 1.0; color: #fff; max-width: 940px;">Ce que coûte une séance, et ce que ça change dans l'assiette</div>
+    <div style="position: relative; font-size: 19px; line-height: 28px; color: #c9b79a; max-width: 860px;">Deux idées de Florian qui se rejoignent. Estimer la dépense à la fin d'une séance de muscu ou de course, pour savoir s'il faut manger un peu plus ou un peu moins. Et pouvoir noter à la main une autre activité, comme le vélo ou la natation.</div>
+    <div style="position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+      <div style="border-radius: 20px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); padding: 20px 22px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; color: #d9a888; font-weight: 700;">IDÉE 1</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #33291f; background: #e0b155; border-radius: 999px; padding: 3px 10px;">à moitié là</div></div>
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px; color: #fff;">La dépense en fin de séance</div>
+        <div style="font-size: 15px; line-height: 22px; color: #c9b79a;">La course a une estimation, branchée sur la cible, mais on ne la voit jamais. La muscu n'a qu'un forfait aveugle.</div>
+      </div>
+      <div style="border-radius: 20px; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.14); padding: 20px 22px; display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; justify-content: space-between; align-items: center;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; color: #d9a888; font-weight: 700;">IDÉE 2</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #fff; background: #b23b2e; border-radius: 999px; padding: 3px 10px;">absente</div></div>
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 24px; color: #fff;">Les autres activités</div>
+        <div style="font-size: 15px; line-height: 22px; color: #c9b79a;">L'app ne connaît que la muscu et la course, partout. Trois heures de vélo comptent comme un jour de repos.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 0 64px; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 14px; color: #b14f2b;">01</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px;">En bref</div></div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 22px 24px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -.4px;">Un défaut à régler d'abord</div>
+        <div style="font-size: 16px; line-height: 24px; color: #5c4f40;">La cible compte déjà le sport dans le « niveau d'activité », et le bonus Auto le rajoute. Chiffré plus bas : jusqu'à <b style="color: #33291f;">95 % d'une sèche effacée</b>.</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 22px 24px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -.4px;">Une formule pour tout</div>
+        <div style="font-size: 16px; line-height: 24px; color: #5c4f40;">(MET − 1) × ton métabolisme au repos × durée. <b style="color: #33291f;">L'âge, la taille, le poids et le sexe</b> entrent par le métabolisme. Le niveau n'entre pas, et c'est voulu.</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 22px 24px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -.4px;">D'abord montrer, ensuite piloter</div>
+        <div style="font-size: 16px; line-height: 24px; color: #5c4f40;">Phase A : la dépense et les activités, <b style="color: #33291f;">sans toucher la cible</b>. Phase B : une cible « socle hors sport + dépense réelle ».</div>
+      </div>
+      <div style="background: #f7ead6; border: 1px solid #e9cfa0; border-radius: 20px; padding: 22px 24px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -.4px; color: #8a6419;">Une décision presse, hors code</div>
+        <div style="font-size: 16px; line-height: 24px; color: #8a6419;">La déclaration santé du Play Store ne se dépose qu'une fois. Des calories ou des séances de montre dans Health Connect un jour ? <b>À décider avant LANCE-00.</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 0 64px; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 14px; color: #b14f2b;">02</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px;">Ce que fait l'app aujourd'hui</div></div>
+    <div style="font-size: 16px; line-height: 24px; color: #786a59; max-width: 860px;">Onze constats vérifiés dans le code le 15/09/2026. Le détail et les liens sont dans l'analyse.</div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px;">
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #2a64ad;">C1 · COURSE</div><div style="font-weight: 700; font-size: 16px;">La formule existe et elle est saine</div><div style="font-size: 14px; line-height: 20px; color: #786a59;">Dépense nette ≈ poids × km, plus un petit terme d'allure. Recette OK le 16/07.</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #90897d;">running.ts:687</div></div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #2a64ad;">C2 · COURSE</div><div style="font-weight: 700; font-size: 16px;">Jamais montrée en fin de course</div><div style="font-size: 14px; line-height: 20px; color: #786a59;">Le résumé ne contient aucune calorie. On ne la voit que dans une pastille de la scène Nutrition.</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #90897d;">run/summary.tsx</div></div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #52703a;">C3 · NUTRITION</div><div style="font-weight: 700; font-size: 16px;">Par défaut, rien ne bouge</div><div style="font-size: 14px; line-height: 20px; color: #786a59;">Mode « fixed » et bonus à 0 : sur un compte neuf, la cible est la même chaque jour.</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #90897d;">nutrition.ts:518</div></div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #2a64ad;">C4 · COURSE</div><div style="font-weight: 700; font-size: 16px;">Sur tapis, zéro calorie</div><div style="font-size: 14px; line-height: 20px; color: #786a59;">Le mode sans GPS n'a pas de distance, et la formule rend 0 sans distance.</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #90897d;">roadmap 5.21</div></div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #2a64ad;">C5 · COURSE</div><div style="font-weight: 700; font-size: 16px;">Le dénivelé est ignoré</div><div style="font-size: 14px; line-height: 20px; color: #786a59;">Trail de 15 km avec 800 m de D+ : 1 202 kcal estimées, contre ~1 840 en km-effort.</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #90897d;">RUN-F1b</div></div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #52703a;">C6 · NUTRITION</div><div style="font-weight: 700; font-size: 16px;">Le dernier poids, même pour le passé</div><div style="font-size: 14px; line-height: 20px; color: #786a59;">Perdre 6 kg recalcule les courses d'il y a deux mois, et change l'adhérence passée.</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #90897d;">dashboard-repository.ts:450</div></div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #6b0028;">C7 · MUSCU</div><div style="font-weight: 700; font-size: 16px;">Un forfait aveugle, qui peut disparaître</div><div style="font-size: 14px; line-height: 20px; color: #786a59;">Même bonus pour 20 min de gainage et 1 h 30 de jambes. Un jour course + muscu garde la course seule.</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #90897d;">nutrition.ts:218</div></div>
+      <div style="background: #33291f; color: #f0e4d0; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #d9a888;">C8 · LE DÉFAUT DE FOND</div><div style="font-weight: 700; font-size: 16px; color: #fff;">Le sport compté deux fois</div><div style="font-size: 14px; line-height: 20px; color: #c9b79a;">Le facteur d'activité inclut l'entraînement ; le bonus Auto le rajoute. Voir 03.</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a;">nutrition.ts:140</div></div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #b14f2b;">C9 · ACTIVITÉS</div><div style="font-weight: 700; font-size: 16px;">Deux types d'activité, partout</div><div style="font-size: 14px; line-height: 20px; color: #786a59;">Série, jour d'entraînement, charge, temps d'entraînement, Health Connect : muscu et course, rien d'autre.</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #90897d;">streak.ts:56 · training-time.ts:46</div></div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #52703a;">C10 · BRIQUES</div><div style="font-weight: 700; font-size: 16px;">Tout ce qu'il faut existe déjà</div><div style="font-size: 14px; line-height: 20px; color: #786a59;">Métabolisme personnalisé, « d'où vient ce chiffre » avec confiance, charge sRPE sans pilier, glucides MN-04.</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #90897d;">explain.ts:71 · workout-report.ts:181</div></div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 6px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: #8a6419;">C11 · IMPORT</div><div style="font-weight: 700; font-size: 16px;">Un vélo importé deviendrait un record</div><div style="font-size: 14px; line-height: 20px; color: #786a59;">IMPORT-01 mappe tout GPX sur une course : 60 km à 25 km/h. À corriger dans sa spec.</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #90897d;">IMPORT-01 · validation</div></div>
+    </div>
+  </div>
+
+  <div style="padding: 0 64px; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 14px; color: #b14f2b;">03</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px;">Le piège : le sport compté deux fois</div></div>
+    <div style="font-size: 16px; line-height: 24px; color: #786a59; max-width: 900px;">Profil A : homme, 30 ans, 180 cm, 80 kg. Déclaré « modérément actif » parce qu'il court quatre fois 10 km par semaine. Calories par jour, en moyenne sur la semaine, avant l'objectif.</div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: center;">
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 26px 28px; display: flex; flex-direction: column; gap: 22px;">
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;"><div style="font-weight: 700; font-size: 16px;">Fixe « modéré » · le défaut</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 16px;">2 759</div></div>
+          <div style="display: flex; height: 34px; border-radius: 8px; overflow: hidden; transform-origin: left; animation: grow .8s both;">
+            <div style="width: 377.6px; background: #d9c7ad; display: flex; align-items: center; padding-left: 10px; font-size: 12.5px; font-weight: 600; box-sizing: border-box;">métabolisme 1 780</div>
+            <div style="width: 75.5px; background: #c9b79a;"></div>
+            <div style="width: 132.2px; background: #2a64ad; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">sport 623</div>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;"><div style="font-weight: 700; font-size: 16px;">Auto (RN-02)</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 16px; color: #b23b2e;">3 229</div></div>
+          <div style="display: flex; height: 34px; border-radius: 8px; overflow: hidden; transform-origin: left; animation: grow .8s .2s both;">
+            <div style="width: 377.6px; background: #d9c7ad; display: flex; align-items: center; padding-left: 10px; font-size: 12.5px; font-weight: 600; box-sizing: border-box;">métabolisme 1 780</div>
+            <div style="width: 75.5px; background: #c9b79a;"></div>
+            <div style="width: 132.2px; background: #2a64ad; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">sport 623</div>
+            <div style="width: 99.7px; background: repeating-linear-gradient(135deg, #2a64ad 0 5px, #6fa8ef 5px 10px); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">+470</div>
+          </div>
+          <div style="font-size: 13px; color: #b23b2e; font-weight: 600;">Les mêmes courses, une seconde fois : 4 × 823 kcal étalées sur 7 jours.</div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;"><div style="font-weight: 700; font-size: 16px;">Proposé · socle hors sport + dépense réelle</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 16px; color: #52703a;">2 848</div></div>
+          <div style="display: flex; height: 34px; border-radius: 8px; overflow: hidden; transform-origin: left; animation: grow .8s .4s both;">
+            <div style="width: 377.6px; background: #d9c7ad; display: flex; align-items: center; padding-left: 10px; font-size: 12.5px; font-weight: 600; box-sizing: border-box;">métabolisme 1 780</div>
+            <div style="width: 141.7px; background: #c9b79a; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600;">hors sport 668</div>
+            <div style="width: 84.8px; background: #52703a; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700;">+400</div>
+          </div>
+          <div style="font-size: 13px; color: #786a59;">Hors sport « debout souvent » (× 1,375), courses au bas de leur fourchette (4 × 700).</div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 72px; letter-spacing: -3px; line-height: .95; color: #b23b2e;">95 %</div>
+        <div style="font-size: 17px; line-height: 25px;">du déficit d'une sèche effacé. <b>381 kcal/j d'écart</b>, soit 2 667 kcal par semaine contre 2 800 de déficit visé.</div>
+        <div style="font-size: 14px; line-height: 21px; color: #786a59;">L'ampleur dépend du palier hors sport retenu. Le sens du défaut, lui, ne dépend d'aucune hypothèse : dès qu'un palier inclut l'entraînement, un bonus par séance le compte deux fois.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 0 64px; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 14px; color: #b14f2b;">04</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px;">Le modèle proposé</div></div>
+    <div style="background: #33291f; color: #f0e4d0; border-radius: 22px; padding: 28px 32px; display: flex; flex-direction: column; gap: 14px;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: #d9a888;">Une seule formule</div>
+      <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 34px; letter-spacing: -.8px; color: #fff;">
+        <span>dépense nette</span><span style="color: #d9a888;">=</span>
+        <span style="background: rgba(255,255,255,.1); border-radius: 12px; padding: 2px 12px;">(MET − 1)</span><span style="color: #d9a888;">×</span>
+        <span style="background: rgba(82,112,58,.55); border-radius: 12px; padding: 2px 12px;">repos / h</span><span style="color: #d9a888;">×</span>
+        <span style="background: rgba(255,255,255,.1); border-radius: 12px; padding: 2px 12px;">heures actives</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; font-size: 14.5px; line-height: 21px; color: #c9b79a;">
+        <div><b style="color: #fff;">MET</b> : l'intensité, 1 = repos. Valeurs du Compendium of Physical Activities (2011, mis à jour en 2024).</div>
+        <div><b style="color: #fff;">− 1</b> : on retire le repos, déjà dans la cible. Même convention « nette » que la course aujourd'hui.</div>
+        <div><b style="color: #fff;">Repos / h</b> : ton métabolisme Mifflin ÷ 24. C'est là qu'entrent l'âge, la taille, le poids et le sexe.</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-top: 4px solid #6b0028; border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px;">Musculation</div>
+        <div style="font-size: 14px; line-height: 20px; color: #786a59;">Le MET vient du ressenti de séance, ajusté par la densité (repos moyen).</div>
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; font-size: 13.5px;">
+          <span>ressenti ≤ 5</span><b style="font-family: 'Space Mono', ui-monospace, monospace;">3,5</b>
+          <span>ressenti 6-7</span><b style="font-family: 'Space Mono', ui-monospace, monospace;">5,0</b>
+          <span>ressenti ≥ 8</span><b style="font-family: 'Space Mono', ui-monospace, monospace;">6,0</b>
+          <span>repos &lt; 60 s</span><b style="font-family: 'Space Mono', ui-monospace, monospace;">+1,5</b>
+        </div>
+        <div style="font-size: 13.5px; line-height: 19px;">Temps actif plafonné à <b>4 min par série</b> (séance oubliée ouverte). Fourchette <b>±30 %</b>.</div>
+        <div style="margin-top: auto; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; color: #6b0028; font-weight: 700;">1 h, ressenti 8, repos longs → A 370 · B 260</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-top: 4px solid #2a64ad; border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px;">Course</div>
+        <div style="font-size: 14px; line-height: 20px; color: #786a59;">On garde RN-01, et on bouche trois trous.</div>
+        <div style="display: flex; flex-direction: column; gap: 5px; font-size: 13.5px; line-height: 19px;">
+          <div><b>Dénivelé</b> : 100 m de D+ = 1 km d'effort.</div>
+          <div><b>Sans GPS</b> : MET de course × durée, ou la distance du tapis.</div>
+          <div><b>Poids à la date</b> de la course.</div>
+        </div>
+        <div style="font-size: 13.5px; line-height: 19px;">Âge et sexe comptent peu ici : on le dit. Fourchette <b>±15 %</b> avec GPS.</div>
+        <div style="margin-top: auto; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; color: #2a64ad; font-weight: 700;">10 km, D+ 120 → 920 · tapis 40 min → 440</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-top: 4px solid #b14f2b; border-radius: 18px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px;">Autre activité</div>
+        <div style="font-size: 14px; line-height: 20px; color: #786a59;">MET du type × intensité déclarée × durée.</div>
+        <div style="display: flex; flex-direction: column; gap: 5px; font-size: 13.5px; line-height: 19px;">
+          <div><b>Test de la parole</b> : tu peux chanter · parler · quelques mots.</div>
+          <div><b>Distance</b> facultative : vélo, natation, marche, rando, rameur.</div>
+          <div><b>Chiffre de montre</b> accepté, marqué « montre ».</div>
+        </div>
+        <div style="font-size: 13.5px; line-height: 19px;">16 types au départ, hors ménage et jardinage (déjà dans le socle). Fourchette <b>±25 %</b>.</div>
+        <div style="margin-top: auto; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; color: #b14f2b; font-weight: 700;">Vélo 1 h 30 soutenu → A 780 · B 540</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px;">La même heure de muscu, trois profils</div>
+        <div style="display: grid; grid-template-columns: 170px minmax(0, 1fr) 60px; gap: 8px 12px; align-items: center; font-size: 13.5px;">
+          <span>MET standard, 80 kg</span><div style="height: 14px; border-radius: 4px; background: #90897d; width: 100%;"></div><b style="font-family: 'Space Mono', ui-monospace, monospace; text-align: right;">400</b>
+          <span>A · H, 30 ans, 80 kg</span><div style="height: 14px; border-radius: 4px; background: #6b0028; width: 92.5%;"></div><b style="font-family: 'Space Mono', ui-monospace, monospace; text-align: right;">370</b>
+          <span>B · F, 45 ans, 60 kg</span><div style="height: 14px; border-radius: 4px; background: #b14f2b; width: 65%;"></div><b style="font-family: 'Space Mono', ui-monospace, monospace; text-align: right;">260</b>
+        </div>
+        <div style="font-size: 13.5px; line-height: 19px; color: #786a59;">Le Compendium 2024 recommande cette correction : le MET standard surestime la dépense des personnes plus âgées ou en surpoids.</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 20px 22px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px;">La cible retient le bas de la fourchette</div>
+        <div style="position: relative; height: 16px; border-radius: 8px; background: #eadcc6; margin-top: 8px;">
+          <div style="position: absolute; left: 22%; right: 22%; top: 0; bottom: 0; border-radius: 8px; background: linear-gradient(90deg, #52703a, rgba(82,112,58,.3));"></div>
+          <div style="position: absolute; left: 50%; top: -5px; width: 3px; height: 26px; margin-left: -1.5px; background: #33291f; border-radius: 2px;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px;"><span style="margin-left: 17%; color: #52703a; font-weight: 700;">260 compté</span><span>≈ 370 affiché</span><span style="margin-right: 18%;">480</span></div>
+        <div style="font-size: 13.5px; line-height: 19px; color: #786a59;">Les MET surestiment plus souvent qu'ils ne sous-estiment, et une surestimation efface un déficit sans bruit. « Mieux vaut un peu moins que trop », sans aucun pourcentage inventé.</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 14px; align-items: flex-start; background: #f3ddd0; border-radius: 18px; padding: 18px 22px;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 20px; color: #b14f2b; flex: none;">Et le niveau ?</div>
+      <div style="font-size: 15px; line-height: 23px;">Il n'entre pas comme multiplicateur. Un confirmé ne dépense pas plus <i>parce qu'il est</i> confirmé : il dépense plus parce qu'il soulève plus lourd, enchaîne plus vite ou court plus vite, et tout cela est déjà mesuré. Un facteur de niveau compterait la même chose deux fois, encore.</div>
+    </div>
+  </div>
+
+  <div style="padding: 0 64px; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 14px; color: #b14f2b;">05</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px;">Dans l'assiette</div></div>
+    <div style="display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 24px;">
+      <div style="background: #22301a; color: #fff; border-radius: 22px; padding: 24px 26px; display: flex; flex-direction: column; gap: 10px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 14px;">
+        <div style="font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 12px; letter-spacing: 1.3px; text-transform: uppercase; color: #e1ebcf;">Profil A · sèche · jour de muscu</div>
+        <div style="display: flex; justify-content: space-between;"><span>Socle hors sport</span><span>2 448</span></div>
+        <div style="display: flex; justify-content: space-between; color: #f0b79b;"><span>Objectif sèche</span><span>−400</span></div>
+        <div style="display: flex; justify-content: space-between; color: #f2d9a3;"><span>Musculation (≈ 370)</span><span>+260</span></div>
+        <div style="height: 1px; background: rgba(255,255,255,.25);"></div>
+        <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 17px;"><span>Cible du jour</span><span>2 308</span></div>
+        <div style="display: flex; justify-content: space-between; color: #e1ebcf;"><span>Mangé</span><span>1 240</span></div>
+        <div style="display: flex; justify-content: space-between; font-weight: 700;"><span>Reste</span><span>1 070</span></div>
+        <div style="font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 13.5px; line-height: 19px; color: #e1ebcf; margin-top: 4px;">Dont +65 g de glucides (MN-04). Un jour de repos : 2 048. Aujourd'hui, en Fixe : 2 359 tous les jours.</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px;">« Un peu plus, un peu moins », selon le régime de guidage</div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+          <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;"><div style="font-weight: 700; font-size: 15px;">Autonome</div><div style="font-size: 13.5px; line-height: 19px; color: #786a59;">La dépense dans le bilan, la cible ajustée. Rien d'autre ne s'affiche.</div></div>
+          <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;"><div style="font-weight: 700; font-size: 15px;">Accompagné</div><div style="font-size: 13.5px; line-height: 19px; color: #786a59;">+ « il te reste 1 070 kcal, dont 65 g de glucides » et deux idées tirées de tes aliments fréquents.</div></div>
+          <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; gap: 6px;"><div style="font-weight: 700; font-size: 15px;">Guidé</div><div style="font-size: 13.5px; line-height: 19px; color: #786a59;">+ une proposition précise, « Skyr + banane ce soir ? », ajoutée au plan de repas d'un geste.</div></div>
+        </div>
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px; margin-top: 6px;">Garde-fous</div>
+        <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+          <div style="font-size: 14px; line-height: 20px;"><b>Le sport n'est jamais un paiement.</b> Pas de « tu as gagné ton dessert », pas d'équivalent pizza.</div>
+          <div style="font-size: 14px; line-height: 20px;"><b>Chiffres masquables.</b> La cible s'ajuste quand même : sujet sensible pour qui a un rapport compliqué à la nourriture.</div>
+          <div style="font-size: 14px; line-height: 20px;"><b>Utile sans Nutrition.</b> Pilier inactif : la dépense seule, sans ligne de cible (décision H).</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 0 64px; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 14px; color: #b14f2b;">06</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px;">Le plan</div></div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; align-items: stretch;">
+      <div style="grid-column: span 3; display: flex; align-items: center; gap: 10px;"><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px;">Phase A · Montrer</div><div style="font-size: 14px; color: #786a59;">la cible ne bouge pas, sans risque produit</div></div>
+      <div style="grid-column: span 2; display: flex; align-items: center; gap: 10px;"><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px;">Phase B · Piloter</div><div style="font-size: 14px; color: #786a59;">la cible suit ce qu'on fait</div></div>
+
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700; color: #b14f2b;">① DEPENSE-01</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">M</div></div>
+        <div style="font-weight: 700; font-size: 17px;">Le moteur</div>
+        <div style="font-size: 13.5px; line-height: 19px; color: #786a59;">energy.ts pur : repos/h, estimation MET, muscu depuis le bilan, course v2, poids à la date, catalogue de 16 types.</div>
+        <div style="margin-top: auto; font-size: 12.5px; line-height: 17px;"><b>Tests</b> : Vitest 100 %, valeurs dorées A et B, non-régression RN-01.</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700; color: #b14f2b;">② DEPENSE-02</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">M</div></div>
+        <div style="font-weight: 700; font-size: 17px;">La dépense en fin de séance</div>
+        <div style="font-size: 13.5px; line-height: 19px; color: #786a59;">Bilan muscu, résumé de course, historique. « D'où vient ce chiffre ». Réglage pour masquer.</div>
+        <div style="margin-top: auto; font-size: 12.5px; line-height: 17px;"><b>Tests</b> : Jest écrans, poids manquant, Nutrition inactive.</div>
+      </div>
+      <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700; color: #b14f2b;">③ AUTRE-01</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">L</div></div>
+        <div style="font-weight: 700; font-size: 17px;">Les autres activités</div>
+        <div style="font-size: 13.5px; line-height: 19px; color: #786a59;">Table activities + sync rules, saisie, historique. Branchées sur la série, le jour d'entraînement, la charge et Health Connect.</div>
+        <div style="margin-top: auto; font-size: 12.5px; line-height: 17px;"><b>Recette</b> : hors ligne, 2ᵉ appareil, suppression.</div>
+      </div>
+      <div style="background: #33291f; color: #f0e4d0; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700; color: #d9a888;">④ DEPENSE-00</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a;">M</div></div>
+        <div style="font-weight: 700; font-size: 17px; color: #fff;">Le socle sans double comptage</div>
+        <div style="font-size: 13.5px; line-height: 19px; color: #c9b79a;">Mode « Selon ce que tu fais », palier hors sport, aperçu avant / après, migration douce des utilisateurs Auto.</div>
+        <div style="margin-top: auto; font-size: 12.5px; line-height: 17px; color: #f0e4d0;"><b>Point dur</b> : ne jamais changer une cible en silence.</div>
+      </div>
+      <div style="background: #33291f; color: #f0e4d0; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px;">
+        <div style="display: flex; justify-content: space-between;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700; color: #d9a888;">⑤ DEPENSE-03</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a;">M</div></div>
+        <div style="font-weight: 700; font-size: 17px; color: #fff;">La journée en énergie</div>
+        <div style="font-size: 13.5px; line-height: 19px; color: #c9b79a;">Pastille détaillée, détail de la journée, prévu → réel, suggestions selon le régime.</div>
+        <div style="margin-top: auto; font-size: 12.5px; line-height: 17px; color: #f0e4d0;"><b>Couvre</b> RN-04, TRI-06 (jour), NUTR-23.</div>
+      </div>
+    </div>
+    <div style="background: #fffaf2; border: 1.5px dashed #90897d; border-radius: 18px; padding: 18px 22px; display: grid; grid-template-columns: 180px minmax(0, 1fr); gap: 16px; align-items: start;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px;">Horizon 2</div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 24px; font-size: 14px; line-height: 20px;">
+        <div><b>Calibrer le socle sur le poids</b> : l'app apprend le vrai socle de chacun (NUTR-19). Candidat « plus ».</div>
+        <div><b>Importer les activités d'une montre</b> via Health Connect, avec dédoublonnage.</div>
+        <div><b>Fréquence cardiaque</b> : bien plus juste en musculation.</div>
+        <div><b>Planifier et répéter</b> une activité (vélotaf) ; collisions avec les séances jambes.</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="padding: 0 64px; display: flex; flex-direction: column; gap: 24px;">
+    <div style="display: flex; align-items: baseline; gap: 16px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 14px; color: #b14f2b;">07</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px;">Décisions à trancher</div></div>
+    <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column;">
+      <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 12px 20px; background: #efe4d2; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: #786a59;"><span>#</span><span>Question</span><span>Recommandation</span></div>
+      <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 13px 20px; border-top: 1px solid #ece0cd; font-size: 14.5px; line-height: 21px;"><b style="font-family: 'Space Mono', ui-monospace, monospace;">D1</b><span>Garder « facteur tout compris + bonus » ou passer au socle hors sport ? Et les utilisateurs Auto ?</span><span><b>Socle hors sport</b>, nouveau mode opt-in. Auto migre avec aperçu et confirmation, sinon repasse en Forfait.</span></div>
+      <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 13px 20px; border-top: 1px solid #ece0cd; font-size: 14.5px; line-height: 21px;"><b style="font-family: 'Space Mono', ui-monospace, monospace;">D2</b><span>Combien de la dépense la cible retient-elle ?</span><span><b>Le bas de la fourchette.</b></span></div>
+      <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 13px 20px; border-top: 1px solid #ece0cd; font-size: 14.5px; line-height: 21px;"><b style="font-family: 'Space Mono', ui-monospace, monospace;">D3</b><span>Stocker la dépense ou la calculer à la lecture ?</span><span><b>La calculer, avec le poids à la date.</b> Corrige C6.</span></div>
+      <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 13px 20px; border-top: 1px solid #ece0cd; font-size: 14.5px; line-height: 21px;"><b style="font-family: 'Space Mono', ui-monospace, monospace;">D4</b><span>Montrer la dépense quand la Nutrition est inactive ?</span><span><b>Oui, sans ligne cible</b>, avec un réglage pour masquer les chiffres.</span></div>
+      <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 13px 20px; border-top: 1px solid #ece0cd; font-size: 14.5px; line-height: 21px;"><b style="font-family: 'Space Mono', ui-monospace, monospace;">D5</b><span>Course et muscu dans le catalogue manuel ?</span><span><b>Rediriger vers le pilier s'il est actif</b>, noter comme activité sinon.</span></div>
+      <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 13px 20px; border-top: 1px solid #ece0cd; font-size: 14.5px; line-height: 21px;"><b style="font-family: 'Space Mono', ui-monospace, monospace;">D6</b><span>Accepter le chiffre d'une montre ?</span><span><b>Oui, en calories actives</b>, marqué « montre ».</span></div>
+      <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 13px 20px; border-top: 1px solid #e9cfa0; background: #f7ead6; font-size: 14.5px; line-height: 21px; color: #6b4d12;"><b style="font-family: 'Space Mono', ui-monospace, monospace;">D7 ⏰</b><span><b>Health Connect</b> : calories en écriture, séances de montre en lecture ?</span><span><b>Trancher avant le dépôt de la déclaration santé (LANCE-00).</b> V1 : la séance du bon type, sans calories. READ_EXERCISE seulement si l'import montre est voulu dans l'année.</span></div>
+      <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 13px 20px; border-top: 1px solid #ece0cd; font-size: 14.5px; line-height: 21px;"><b style="font-family: 'Space Mono', ui-monospace, monospace;">D8</b><span>Qu'est-ce qui est payant ?</span><span><b>Estimation et saisie gratuites</b> ; calibration du socle = candidat « plus ». Rouvre D sans la trancher.</span></div>
+      <div style="display: grid; grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr); gap: 16px; padding: 13px 20px; border-top: 1px solid #ece0cd; font-size: 14.5px; line-height: 21px;"><b style="font-family: 'Space Mono', ui-monospace, monospace;">D9</b><span>Où vit « Ajouter une activité » ?</span><span><b>Accueil, scène Nutrition, historique</b>, dans aucun pilier.</span></div>
+    </div>
+  </div>
+
+  <div style="padding: 0 64px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px;">
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 16px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 14px; color: #b14f2b;">08</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -1px;">Risques</div></div>
+      <div style="display: flex; flex-direction: column; gap: 10px; font-size: 14.5px; line-height: 21px;">
+        <div><b>Fausse précision</b> → arrondi à 10, fourchette, confiance.</div>
+        <div><b>Surestimation qui efface un déficit</b> → socle hors sport, bas de fourchette.</div>
+        <div><b>Compensation</b> → aucune équivalence alimentaire, chiffres masquables.</div>
+        <div><b>« Ma montre dit plus »</b> → expliquer net contre total dès la première séance.</div>
+        <div><b>Doublons</b> GPS + manuel, plus tard montre → redirection vers le pilier, dédoublonnage.</div>
+        <div><b>Sync rules PowerSync</b> à coller à la main pour la nouvelle table.</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 14px;">
+      <div style="display: flex; align-items: baseline; gap: 16px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 14px; color: #b14f2b;">09</div><div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 32px; letter-spacing: -1px;">Ce qui n'est pas fait</div></div>
+      <div style="display: flex; flex-direction: column; gap: 10px; font-size: 14.5px; line-height: 21px;">
+        <div><b>Aucune spec, aucun plan, aucun code.</b></div>
+        <div><b>MET non revérifiés</b> dans la table 2024 (valeurs 2011) ; padel absent.</div>
+        <div><b>Aucune calibration</b> contre une montre cardio : les fourchettes sont des ordres de grandeur.</div>
+        <div><b>Paliers hors sport</b> repris des multiplicateurs existants, sans source propre.</div>
+        <div><b>Maquettes</b> : thème clair, français, données fictives, pas de passe d'accessibilité.</div>
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; color: #786a59;">Analyse complète : docs/product/analyse-depense-activites-2026-09.md</div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

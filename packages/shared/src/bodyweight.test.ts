@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { computeDeficitVolumeAlert, weightTrend } from './bodyweight';
+import { computeDeficitVolumeAlert, weightAtDate, weightTrend } from './bodyweight';
 
 // Oracle = ancienne implémentation (delta premier↔dernier, seuil ±0,3 kg).
 function oldWeightTrend(weights: readonly number[]): 'up' | 'down' | 'stable' {
@@ -120,5 +120,36 @@ describe('computeDeficitVolumeAlert', () => {
         weeklyVolume: 9000,
       }).show,
     ).toBe(false);
+  });
+});
+
+describe('weightAtDate (US DEPENSE-01, constat C6)', () => {
+  const entries = [
+    { logDate: '2026-07-01', weightKg: 86 },
+    { logDate: '2026-08-15', weightKg: 83 },
+    { logDate: '2026-09-14', weightKg: 80 },
+  ];
+
+  it('rend la pesée du jour, ou la dernière avant', () => {
+    expect(weightAtDate(entries, '2026-09-14')).toBe(80);
+    expect(weightAtDate(entries, '2026-09-15')).toBe(80);
+    expect(weightAtDate(entries, '2026-08-20')).toBe(83);
+    expect(weightAtDate(entries, '2026-07-02')).toBe(86);
+  });
+
+  it('n’antidate pas la première pesée : avant elle, c’est la plus ancienne connue', () => {
+    expect(weightAtDate(entries, '2026-06-01')).toBe(86);
+  });
+
+  it('ignore les valeurs aberrantes et rend null sans aucune pesée', () => {
+    expect(weightAtDate([{ logDate: '2026-09-01', weightKg: 0 }], '2026-09-10')).toBeNull();
+    expect(weightAtDate([{ logDate: '2026-09-01', weightKg: Number.NaN }], '2026-09-10')).toBeNull();
+    expect(weightAtDate([], '2026-09-10')).toBeNull();
+  });
+
+  it('une perte de poids ne réécrit plus les journées passées', () => {
+    // C'est tout l'objet du constat C6 : la course de juillet garde le poids de juillet.
+    expect(weightAtDate(entries, '2026-07-10')).toBe(86);
+    expect(weightAtDate(entries, '2026-07-10')).not.toBe(80);
   });
 });

@@ -57,6 +57,7 @@ export type SettingsInput = Pick<
   | 'cycleHealthConnectEnabled'
   | 'sbdLifts'
   | 'aiConsentAt'
+  | 'showEnergyEstimates'
 >;
 
 /** Ligne brute renvoyée par SQLite (colonnes snake_case). */
@@ -89,6 +90,8 @@ type SettingsDbRow = {
   sbd_lifts: string | null;
   /** Instant ISO du consentement à l'assistant IA (US DASH-01 §7), `null` = jamais consenti. */
   ai_consent_at: string | null;
+  /** US DEPENSE-02 — 0/1 ; `null` sur une ligne antérieure à la migration → lu « affiché ». */
+  show_energy_estimates: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -165,6 +168,10 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     sbdLifts: sbdLiftsSchema.parse(parseJsonColumn<unknown>(row.sbd_lifts, null) ?? {}),
     // `?? null` et non un défaut permissif : l'absence de valeur ne vaut JAMAIS consentement.
     aiConsentAt: row.ai_consent_at ?? null,
+    // US DEPENSE-02 — `!== 0` et non `=== 1` : sur une ligne locale antérieure à la migration la
+    // colonne est `null`, ce qui doit se lire **affiché** (le défaut). L'inverse ferait disparaître
+    // les dépenses de tous les comptes existants à la mise à jour, sans que personne l'ait demandé.
+    showEnergyEstimates: row.show_energy_estimates !== 0,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -210,6 +217,9 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
   }
   if ('cycleHealthConnectEnabled' in input) {
     columns['cycle_health_connect_enabled'] = input.cycleHealthConnectEnabled ? 1 : 0;
+  }
+  if ('showEnergyEstimates' in input) {
+    columns['show_energy_estimates'] = input.showEnergyEstimates ? 1 : 0;
   }
   if ('aiConsentAt' in input) {
     columns['ai_consent_at'] = input.aiConsentAt ?? null;

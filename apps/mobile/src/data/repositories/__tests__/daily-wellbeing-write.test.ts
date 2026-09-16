@@ -58,6 +58,7 @@ describe('saveWellbeing', () => {
       mood: 4,
       energy: 3,
       stress: 1,
+      sleep_minutes: null,
     });
     expect(patch).not.toHaveBeenCalled();
   });
@@ -71,6 +72,7 @@ describe('saveWellbeing', () => {
       mood: null,
       energy: 3,
       stress: null,
+      sleep_minutes: null,
     });
   });
 
@@ -80,12 +82,45 @@ describe('saveWellbeing', () => {
     const written = await saveWellbeing(todayKey(), { mood: 5, energy: 4, stress: 2 });
 
     expect(written).toBe(true);
-    expect(patch).toHaveBeenCalledWith('daily_wellbeing', 'row-1', {
-      mood: 5,
-      energy: 4,
-      stress: 2,
-    });
+    expect(patch).toHaveBeenCalledWith('daily_wellbeing', 'row-1', { mood: 5, energy: 4, stress: 2 });
     expect(insertWithSyncFields).not.toHaveBeenCalled();
+  });
+
+  it('🔴 une mise à jour PARTIELLE n’efface pas ce qu’elle ne porte pas', async () => {
+    getOptional.mockResolvedValue({ id: 'row-1' });
+
+    // Le widget « énergie » de l'accueil envoie ce seul champ. Avant correctif, les trois autres
+    // colonnes repartaient à `null` : la nuit saisie au réveil était effacée au premier tap depuis
+    // l'accueil, sans le moindre signal — et avec elle l'anneau des nuits, la proposition « nuit
+    // courte » et l'adhérence d'une expérience de sommeil en cours.
+    await saveWellbeing(todayKey(), { energy: 4 });
+
+    expect(patch).toHaveBeenCalledWith('daily_wellbeing', 'row-1', { energy: 4 });
+  });
+
+  it('effacer volontairement reste possible : une clé présente à null remet la colonne à null', async () => {
+    getOptional.mockResolvedValue({ id: 'row-1' });
+
+    // C'est ce qu'envoie la feuille de check-in quand on retape un niveau déjà choisi pour le retirer.
+    await saveWellbeing(todayKey(), { mood: null, energy: 3, stress: null });
+
+    expect(patch).toHaveBeenCalledWith('daily_wellbeing', 'row-1', { mood: null, energy: 3, stress: null });
+  });
+
+  it('US LABO-01 : écrit la nuit, seule ou avec les indicateurs, et écarte une durée impossible', async () => {
+    await saveWellbeing(todayKey(), { sleepMinutes: 405 });
+    expect(insertWithSyncFields).toHaveBeenCalledWith('daily_wellbeing', {
+      user_id: 'user-1',
+      log_date: todayKey(),
+      mood: null,
+      energy: null,
+      stress: null,
+      sleep_minutes: 405,
+    });
+
+    getOptional.mockResolvedValue({ id: 'row-1' });
+    await saveWellbeing(todayKey(), { energy: 2, sleepMinutes: 2000 });
+    expect(patch).toHaveBeenCalledWith('daily_wellbeing', 'row-1', { energy: 2, sleep_minutes: null });
   });
 
   it('n’écrit rien pour un check-in vide plutôt que de créer une ligne inutile', async () => {

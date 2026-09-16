@@ -12,8 +12,8 @@ import { secureStorage } from '@/lib/secure-storage';
  * (promotion possible vers `user_settings` plus tard).
  */
 
-export type MenuKey = 'home' | 'strength' | 'running' | 'nutrition';
-export const MENU_KEYS: readonly MenuKey[] = ['home', 'strength', 'running', 'nutrition'];
+export type MenuKey = 'home' | 'strength' | 'running' | 'nutrition' | 'lab';
+export const MENU_KEYS: readonly MenuKey[] = ['home', 'strength', 'running', 'nutrition', 'lab'];
 
 /** Couleurs par défaut (une identité par menu). */
 export const DEFAULT_MENU_COLORS: Record<MenuKey, string> = {
@@ -21,6 +21,7 @@ export const DEFAULT_MENU_COLORS: Record<MenuKey, string> = {
   strength: '#6b0028', // bordeaux
   running: '#2f6fc0', // bleu
   nutrition: '#5c7a3f', // vert
+  lab: '#a8712a', // doré — US LABO-01
 };
 
 /** Palette de choix proposée dans les réglages. */

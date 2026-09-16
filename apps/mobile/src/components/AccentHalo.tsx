@@ -110,6 +110,7 @@ export const MENU_HALO: Record<MenuKey, { corner: HaloCorner; scale: number }> =
   home: { corner: 'top-right', scale: 1 },
   strength: { corner: 'bottom-right', scale: 1.15 },
   running: { corner: 'bottom-left', scale: 1.3 },
+  lab: { corner: 'top-left', scale: 1.2 },
   nutrition: { corner: 'top-right', scale: 1 },
 };
 

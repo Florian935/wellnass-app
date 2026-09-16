@@ -27,6 +27,10 @@ import {
   resolveMealSplit,
   suggestActivityLevel,
   effectiveNutritionObjective,
+  DEFAULT_SPORT_FREE_LEVEL,
+  SPORT_FREE_LEVELS,
+  sportFreeFactor,
+  sportFreeTdee,
   targetCalories,
   tdee,
   trainingDayCalories,
@@ -243,6 +247,72 @@ describe('dayCalorieBonus', () => {
   });
   it('auto : 0 si aucune activité', () => {
     expect(dayCalorieBonus({ mode: 'auto', isTrainingDay: false, fixedBonus: 300, runCaloriesToday: 0 })).toBe(0);
+  });
+
+  // US DEPENSE-00 — le mode qui ne compte pas le sport deux fois.
+  it('activities : la somme des dépenses réelles du jour, telle quelle', () => {
+    expect(
+      dayCalorieBonus({ mode: 'activities', isTrainingDay: true, fixedBonus: 300, runCaloriesToday: 450, energyKcalToday: 840 }),
+    ).toBe(840);
+  });
+  it('activities : AUCUN repli sur le forfait ni sur la course — un jour sans rien vaut 0', () => {
+    expect(
+      dayCalorieBonus({ mode: 'activities', isTrainingDay: true, fixedBonus: 300, runCaloriesToday: 450, energyKcalToday: 0 }),
+    ).toBe(0);
+    expect(
+      dayCalorieBonus({ mode: 'activities', isTrainingDay: true, fixedBonus: 300, runCaloriesToday: 450 }),
+    ).toBe(0);
+  });
+  it('activities : jamais négatif, toujours entier', () => {
+    expect(
+      dayCalorieBonus({ mode: 'activities', isTrainingDay: false, fixedBonus: 0, runCaloriesToday: 0, energyKcalToday: -120 }),
+    ).toBe(0);
+    expect(
+      dayCalorieBonus({ mode: 'activities', isTrainingDay: false, fixedBonus: 0, runCaloriesToday: 0, energyKcalToday: 259.6 }),
+    ).toBe(260);
+  });
+  it('les modes fixed et auto ignorent totalement les dépenses (non-régression)', () => {
+    expect(
+      dayCalorieBonus({ mode: 'fixed', isTrainingDay: true, fixedBonus: 300, runCaloriesToday: 0, energyKcalToday: 900 }),
+    ).toBe(300);
+    expect(
+      dayCalorieBonus({ mode: 'auto', isTrainingDay: true, fixedBonus: 300, runCaloriesToday: 450, energyKcalToday: 900 }),
+    ).toBe(450);
+  });
+});
+
+describe('socle hors sport (US DEPENSE-00)', () => {
+  it('expose trois paliers ordonnés', () => {
+    expect(SPORT_FREE_LEVELS).toEqual(['seated', 'standing', 'physical']);
+    expect(sportFreeFactor('seated')).toBeLessThan(sportFreeFactor('standing'));
+    expect(sportFreeFactor('standing')).toBeLessThan(sportFreeFactor('physical'));
+  });
+
+  it('profil A : le socle hors sport est bien en dessous du TDEE « modérément actif »', () => {
+    const profil = { sex: 'male' as const, weightKg: 80, heightCm: 180, age: 30 };
+    expect(sportFreeTdee({ ...profil, sportFreeLevel: 'seated' })).toBe(2136);
+    expect(sportFreeTdee({ ...profil, sportFreeLevel: 'standing' })).toBe(2448);
+    expect(sportFreeTdee({ ...profil, sportFreeLevel: 'physical' })).toBe(2759);
+    // C'est tout le sujet du double comptage : ×1,55 « modéré » vaut le palier « physique » hors
+    // sport, et le bonus de séance s'y ajoutait par-dessus.
+    expect(tdee({ ...profil, activityLevel: 'moderate' })).toBe(2759);
+  });
+
+  it('rend null sur un profil incomplet, comme tdee', () => {
+    expect(sportFreeTdee({ weightKg: 80, heightCm: 180, sportFreeLevel: 'standing' })).toBeNull();
+    expect(sportFreeTdee({ weightKg: 0, heightCm: 180, age: 30, sportFreeLevel: 'standing' })).toBeNull();
+    expect(sportFreeTdee({ weightKg: 80, heightCm: 0, age: 30, sportFreeLevel: 'standing' })).toBeNull();
+    expect(sportFreeTdee({ weightKg: 80, heightCm: 180, age: 0, sportFreeLevel: 'standing' })).toBeNull();
+  });
+
+  it('sans sexe déclaré, applique la constante « non précisé »', () => {
+    expect(sportFreeTdee({ weightKg: 80, heightCm: 180, age: 30, sportFreeLevel: 'seated' })).toBe(
+      Math.round(1697 * 1.2),
+    );
+  });
+
+  it('le défaut proposé est un palier réel du catalogue', () => {
+    expect(SPORT_FREE_LEVELS).toContain(DEFAULT_SPORT_FREE_LEVEL);
   });
 });
 

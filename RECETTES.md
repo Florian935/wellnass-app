@@ -11,7 +11,19 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **15/09/2026** — **65 sections**.
+> Dernière mise à jour : **16/09/2026** — **69 sections**.
+>
+> **⑩ deux sections « Mon corps » sont arrivées** : **§68 CORPS-03** (priorités confirmées) et
+> **§69 CORPS-04** (programme compatible). Elles se jouent dans **une seule campagne, sur le même APK**.
+> 🔴 **Aucune sync rule à déployer** et **aucune migration à pousser** : tout est déjà au cloud.
+> ⚠️ **Il faut un objectif visuel enregistré** (CORPS-02) : sans lui, §68 ne propose que de le créer,
+> et §69 renvoie vers §68. Commencer par §68.
+>
+> **⑨ une §65 est arrivée** : la **dépense d'une séance** et les **autres activités** (vélo, natation…),
+> livrées en une passe. 🔴 **Une sync rule est à coller à la main avant de commencer** (table neuve
+> `activities`). 🔴 **Commencer par les critères 2 et 22** : ils vérifient que le bilan de séance et la
+> cible calorique **n'ont rien changé** pour qui ne demande rien — le reste est un ajout.
+> ⚠️ **Il faut un poids** (pesée ou profil) : sans lui, toutes les cartes affichent leur remède.
 >
 > **⑧ une §63 est arrivée** : MUSCU-UX03, le **mode immersif** de la séance de musculation.
 > 🔴 **Son premier critère est que le mode classique n'ait bougé en rien** : l'immersif est un
@@ -3663,9 +3675,430 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
   description ; le segment des profils annonce l'état sélectionné.
 - [ ] **32.** Compte **existant** (déjà onboardé) : son niveau d'affichage n'a **pas changé**, et
   son régime s'affiche comme **déduit** tant qu'il n'y touche pas.
+
 ---
 
-## 65. CORPS-03 — Priorités confirmées et lecture du programme
+## 65. DEPENSE / AUTRE-01 — La dépense d'une séance, et les autres activités (`dev`)
+
+[Analyse](docs/product/analyse-depense-activites-2026-09.md) ·
+[spec moteur DEPENSE-01](docs/specs/functional/us/depense01-moteur-depense.md) ·
+[spec AUTRE-01](docs/specs/functional/us/autre01-autres-activites.md) ·
+[spec DEPENSE-00](docs/specs/functional/us/depense00-socle-hors-sport.md) ·
+[maquettes](design/depense-activites-2026-09/) · roadmap **4.41 · 4.42 · 4.43**
+
+> ✅ **Les 3 migrations sont poussées** (15/09/2026) : table `activities`, `sport_free_level`,
+> `show_energy_estimates`. Types régénérés.
+> 🔴 **UNE SYNC RULE EST À COLLER À LA MAIN AVANT LA RECETTE** — table **neuve**. Dashboard
+> PowerSync → Sync Rules → coller
+> [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) → **Deploy**.
+> Sans ça : les activités restent **locales**, sans aucune erreur visible, et la cible calorique
+> diffère d'un téléphone à l'autre (le piège déjà tombé sur BIEN-01 et RUN-F2c).
+> ⚠️ **Le poids est obligatoire** pour voir le moindre chiffre : sans pesée ni poids de profil,
+> toutes les cartes affichent « Il manque ton poids » — c'est le comportement attendu, pas un bug.
+> ⚠️ **Livré en une passe, sans validation intermédiaire** (demande du 15/09). Les specs ont été
+> écrites **avec** le code.
+
+### Le moteur, vu de l'écran
+
+- [ ] **1.** Finir une séance de muscu → le bilan affiche **« Dépense estimée ≈ X kcal »** avec sa
+  fourchette (« entre … et … »), sous le bilan habituel.
+- [ ] **2.** 🔴 **Le bilan lui-même n'a bougé en rien** : mêmes blocs, mêmes chiffres, même verdict
+  qu'avant. La dépense est un **ajout en bas**, jamais une modification.
+- [ ] **3.** « **D'où vient ce chiffre ?** » ouvre la feuille d'explication : corps au repos (kcal/h),
+  intensité (MET), temps actif, résultat, **la phrase sur la montre** et **celle sur le niveau**.
+- [ ] **4.** Le chiffre **change avec le ressenti** : refaire une séance équivalente en notant 4/10
+  puis 9/10 → la dépense est nettement plus basse dans le premier cas.
+- [ ] **5.** **Séance oubliée ouverte** (démarrer, laisser tourner > 1 h sans rien faire, terminer) :
+  la dépense reste **plausible** — le temps actif est plafonné à 4 min par série validée.
+- [ ] **6.** Terminer une **course avec GPS** → le résumé affiche la dépense, et **le dénivelé est
+  mentionné** s'il y en a (« +120 m de dénivelé comptés »).
+- [ ] **7.** 🔴 **Course sans GPS / tapis** (mode sans GPS, sans distance) : la dépense **n'est plus
+  0** — elle est estimée sur la durée, avec la mention « estimée sur la durée et le ressenti ».
+- [ ] **8.** Rouvrir une **vieille séance** dans l'historique : la dépense est calculée avec le poids
+  **de l'époque** (vérifiable si une pesée ancienne existe et que le poids a changé depuis).
+
+### Les autres activités
+
+- [ ] **9.** Journal Nutrition → carte **« Ta journée en énergie »** → **« Ajouter une activité »**.
+  L'écran s'ouvre en modale.
+- [ ] **10.** Choisir **Vélo**, 1 h 30, **Soutenu** → la dépense estimée s'affiche **en bas, en
+  direct**, et change quand on touche à la durée ou à l'intensité.
+- [ ] **11.** « **Tout voir** » déplie les 22 types ; « Voir moins » les replie.
+- [ ] **12.** Saisir une **distance** sur un vélo (ex. 30 km pour 1 h 30) → la dépense s'ajuste
+  (la vitesse prime sur l'intensité déclarée).
+- [ ] **13.** Saisir un **chiffre de montre** → il est **repris tel quel**, sans fourchette, avec la
+  mention « Chiffre de ta montre ».
+- [ ] **14.** Enregistrer → l'écran **« Ce que ça change »** liste : cible du jour, série, charge de
+  la semaine, Health Connect.
+- [ ] **15.** Le jour devient **actif dans la série** (widget d'accueil) alors qu'il n'y a **ni
+  séance ni course** ce jour-là. 🔴 C'est le défaut principal que l'US répare.
+- [ ] **16.** **Réglages → Suivi → Mes autres activités** : l'historique liste l'activité ; un tap
+  ouvre l'**édition**, où l'on peut modifier puis **supprimer**.
+- [ ] **17.** Refaire **deux fois** la même combinaison (même type, même durée, même intensité) →
+  elle apparaît ensuite dans « **Tes habituelles** », et un tap la préremplit.
+- [ ] **18.** Le **temps d'entraînement** de la semaine (widget accueil) inclut la durée de
+  l'activité.
+- [ ] **19.** Avec muscu **et** course activés, une grosse activité fait **monter la charge** (widget
+  de charge / score de forme) — elle ne pèse plus zéro.
+- [ ] **20.** **Health Connect activé** : l'activité apparaît dans Health Connect **avec son type**
+  (Vélo, Natation…) et **sans calories**. 🔴 Vérifier l'absence de calories : en ajouter demanderait
+  un 7ᵉ type dans la déclaration Play, qui ne se dépose qu'une fois.
+- [ ] **21.** **Hors ligne** (mode avion) : saisir une activité fonctionne ; elle remonte au retour du
+  réseau. **Sur un 2ᵉ appareil**, elle apparaît (c'est ce qui valide la sync rule).
+
+### La cible calorique (le sujet sensible)
+
+- [ ] **22.** 🔴 **Rien ne change tant qu'on ne demande rien** : sur un compte existant en mode
+  **Forfait** ou **Auto**, la cible du jour est **exactement la même qu'avant** cette livraison.
+- [ ] **23.** Profil nutrition → **Bonus jour d'entraînement** propose désormais **trois** modes.
+  En mode **Auto** avec un niveau d'activité « modérément actif » ou plus, un **encadré ambre**
+  prévient que le sport est compté deux fois.
+- [ ] **24.** Choisir « **Selon ce que tu fais** » → la question « **Hors sport, tu es plutôt…** »
+  apparaît (Assis / Debout / Physique), avec la mention « appliqué par défaut » tant qu'on n'a pas
+  choisi.
+- [ ] **25.** Dans ce mode, la **cible d'un jour de repos baisse** (socle hors sport) et **monte avec
+  chaque séance ou activité** du jour.
+- [ ] **26.** La carte « Ta journée en énergie » montre le calcul : **socle + objectif → + dépenses →
+  cible → reste**. Les chiffres **collent** à ceux de la scène Nutrition (même cible, même reste).
+- [ ] **27.** 🔴 **Deux chiffres différents par ligne, et c'est voulu** : « ≈ 370 » (ce que ça a
+  coûté) et « +260 » (ce que la cible autorise en plus, bas de fourchette).
+- [ ] **28.** Revenir **en arrière** (mode Forfait) → la cible redevient celle d'avant, sans perte.
+- [ ] **29.** **Adhérence / bilan calorique** (Nutrition → Stats) : les jours passés restent
+  cohérents avec le mode choisi, sans cible recalculée à l'envers.
+
+### Le garde-fou
+
+- [ ] **30.** **Réglages → Calories dépensées → interrupteur OFF** : les chiffres disparaissent des
+  bilans, de la carte du jour et de l'historique. 🔴 **Mais la cible continue de s'ajuster** — on a
+  retiré l'affichage, pas le calcul.
+- [ ] **31.** Aucun écran ne propose d'**équivalence alimentaire** (« = 1 part de pizza ») ni de ton
+  de récompense (« tu l'as bien mérité »). C'est une règle produit, pas une finition.
+- [ ] **32.** **Sans poids renseigné** : les cartes affichent « Il manque ton poids » **et le
+  raccourci pour se peser**, jamais un chiffre par défaut.
+- [ ] **33.** **Pilier Nutrition désactivé** : la dépense s'affiche toujours en fin de séance, mais
+  **sans aucune ligne de cible**.
+
+### Ce qui n'est PAS livré (ne pas le chercher)
+
+- L'**aperçu avant/après chiffré** au basculement de mode (la maquette en montrait un).
+- L'**anticipation** d'une séance planifiée sur la cible du matin en mode « Selon ce que tu fais ».
+- L'**import des activités d'une montre** (Health Connect en lecture) et l'écriture des **calories**.
+- La **calibration du socle par le poids** (« l'app apprend ton vrai socle »).
+- Les **récurrences** (« vélotaf tous les mardis ») et la **planification** d'une activité.
+- L'entrée dans la **barre d'actions rapides** de l'accueil (limitée à 4 pastilles par ACCUEIL-03).
+- Le **détecteur de collisions** ne lit pas encore la sollicitation (`focus`) des activités.
+- L'**édition** d'une activité ne réécrit pas son record Health Connect.
+- Les **MET** viennent du Compendium **2011** : si un chiffre paraît franchement faux en recette,
+  c'est la **donnée d'entrée** qu'il faut corriger, pas la formule.
+
+---
+
+## 66. LABO-01 — Le Labo (`dev`)
+
+[Spec](docs/specs/functional/us/labo01-labo.md) · [plan](docs/plans/labo01-labo.md) ·
+[analyse](docs/product/analyse-labo-2026-09.md) ·
+[maquettes + prototype jouable](design/labo-2026-09/) ·
+[ADR-008](docs/adr/ADR-008-scene-3d-composant-dom.md) · roadmap **7.30**
+
+> ✅ **Base prête, la recette peut démarrer** (16/09/2026) :
+> les **2 migrations sont poussées** (`npx supabase db push --include-all`), `npm run db:types` a
+> confirmé `daily_wellbeing.sleep_minutes` et la table `lab_experiments`, la **sync rule est
+> déployée** dans le dashboard PowerSync, les deux lignes sont cochées au
+> [registre](supabase/MIGRATIONS.md), et **`LAB_WRITE_READY` est à `true`**.
+>
+> ⚠️ `--include-all` a été nécessaire : ces migrations sont horodatées **avant** celles de DEPENSE-01
+> déjà appliquées, et le CLI refuse par défaut d'insérer dans le passé de l'historique distant. Sans
+> conséquence — les deux jeux sont strictement additifs et disjoints. Mentionné ici parce que si un
+> symptôme d'écriture perdue apparaît en recette, c'est le premier endroit où regarder : vérifier que
+> `LAB_WRITE_READY` vaut bien `true` et que la sync rule contient bien `lab_experiments`.
+>
+> 🔴 **Nouvelle dépendance : un build est requis.** La scène 3D est un **composant DOM**
+> (`@expo/dom-webview`, déjà fourni par `expo` 57) et `three` est une dépendance neuve : l'APK
+> existant **ne suffit pas**. Même contrainte que PARTAGE-01, RUN-F2a, MUSC-F9 et LAUNCHER-01.
+>
+> ⚠️ Les onglets « Pourquoi ? » et « Acquis » ont besoin d'**historique** : sur un compte neuf ils
+> afficheront légitimement leur état vide. C'est un critère à part entière (§66.30), pas un défaut.
+
+### La scène et l'entrée
+
+- [ ] **1.** L'onglet **Labo** apparaît dans la barre du bas (icône `aperture`), et **disparaît** si
+  on coupe les trois piliers dans les réglages.
+- [ ] **2.** 🔴 **La 3D démarre.** À l'ouverture : le podium, la **pile de disques de fonte**, la
+  **piste** et l'**assiette** sont visibles et nets — pas un carré noir ni une image figée. Faire
+  tourner la scène au doigt : elle suit, sans à-coups.
+- [ ] **3.** Toucher un disque : la caméra s'en approche. Toucher le vide : elle revient à
+  l'ensemble. Le texte d'aide sous la scène change en conséquence.
+- [ ] **4.** 🔴 **La scène ne vole pas le défilement.** Faire défiler le corps de l'écran en partant
+  **juste sous** la scène, puis en partant **sur** elle : le corps défile normalement dans le
+  premier cas, et la scène reste à sa place (hauteur fixe) dans les deux.
+- [ ] **5.** Les **lampes-nuits** du socle correspondent aux nuits notées : allumées au-dessus de
+  7 h, éteintes en dessous, **absentes** les jours sans check-in — jamais « éteintes » par défaut
+  sur un jour non renseigné.
+- [ ] **6.** Réglages → **Mouvement réduit** : la scène passe d'un état à l'autre sans animer, et
+  rien ne clignote.
+- [ ] **7.** Changer d'onglet (Semaine → Composer → Pourquoi ? → Acquis) : la légende en haut à
+  gauche de la scène change à chaque fois, et la scène change avec elle.
+- [ ] **8.** Basculer **FR ↔ EN** : les textes **dessinés dans la scène** (« SÉANCE », « SUR 30 KM »,
+  les initiales des jours) changent eux aussi. Aucune clé brute nulle part.
+
+### Onglet Semaine
+
+- [ ] **9.** « Où tu en es » affiche les **vrais** chiffres de la semaine en cours : séances faites
+  sur prévues, kilomètres, protéines par kilo, nuits. Les comparer à ceux des écrans Muscu, Course
+  et Nutrition — ils doivent **coïncider**.
+- [ ] **10.** Un pilier **désactivé** n'a ni bloc de progression, ni proposition le concernant.
+- [ ] **11.** La grille montre les séances **faites en plein** et les **prévues en pointillé**, et
+  le jour courant est surligné.
+- [ ] **12.** 🔴 **Un jour sans donnée est un trou.** Un jour sans repas saisi n'affiche pas
+  « 0 g/kg » ; un jour sans check-in n'affiche pas « 0 h ».
+- [ ] **13.** Chaque proposition porte **un chiffre qui la justifie** (« 12 séries de jambes la
+  veille », « protéines à 1,4 g/kg ») et **un seul geste**.
+- [ ] **14.** 🔴 **Rien ne s'écrit au tap.** Appuyer sur le geste d'une proposition qui touche le
+  plan (décaler, alléger) : elle passe à **« Prêt »** et **rien ne bouge** dans le planning — le
+  vérifier sur l'écran Planning **avant** de confirmer.
+- [ ] **15.** « Retirer » sur une proposition prête la remet à son état initial, et le bouton
+  d'application disparaît s'il n'en reste aucune.
+- [ ] **16.** 🔴 **La feuille dit la vérité.** Appuyer sur « Appliquer … » : elle nomme le
+  changement, son pilier et **les écrans où ça se verra**. Confirmer, puis vérifier sur **chacun**
+  de ces écrans que le changement y est — et **nulle part ailleurs**.
+- [ ] **17.** Une séance **décalée** l'est au jour annoncé par la proposition, pas un autre.
+- [ ] **18.** Une séance **allégée** l'est de **25 % de répétitions**, **aujourd'hui seulement** :
+  rouvrir le programme, les séances des semaines suivantes sont intactes.
+- [ ] **19.** Une proposition qui **ouvre un écran** (protéines, glucides, planning) y va
+  **directement**, **sans** passer par la feuille de confirmation.
+- [ ] **20.** Une proposition appliquée reste marquée **« Dans ton plan »** et ne se re-propose pas.
+- [ ] **21.** Semaine sans rien à signaler : l'écran le dit (« ta semaine est calée ») au lieu de
+  rester vide.
+
+### Onglet Composer
+
+- [ ] **22.** Les leviers affichés correspondent aux **piliers actifs**, et chaque « + » / « − »
+  change **immédiatement** la scène et les cartes de conséquence.
+- [ ] **23.** 🔴 **Aucune projection d'allure ni de chrono nulle part** : ni « −25 s au 10 km », ni
+  temps estimé. La phrase d'honnêteté en bas de l'onglet est présente et lisible.
+- [ ] **24.** La projection de **force à 8 semaines** et sa fourchette correspondent à ce qu'affiche
+  « Et si… » sur le dashboard Musculation pour les mêmes réglages.
+- [ ] **25.** Monter les séances **et** passer les nuits sous 7 h fait apparaître le croisement de
+  **surcharge**, marqué comme garde-fou (bordure d'alerte).
+- [ ] **26.** 🔴 **Les séances de musculation ne s'écrivent pas.** Ne régler **que** ce levier :
+  aucun bouton « Appliquer » n'apparaît, et la phrase qui l'explique s'affiche.
+- [ ] **27.** Régler la fréquence de course puis confirmer : la valeur est bien celle du **profil
+  coureur** (Course → profil).
+- [ ] **28.** Régler la cible de protéines puis confirmer : la cible du profil nutrition change, et
+  **en grammes par jour** cohérents avec le poids (g/kg × poids).
+- [ ] **29.** « Revenir à mes réglages » remet tout à l'état initial et fait disparaître le bouton.
+
+### Onglets Pourquoi ? et Acquis
+
+- [ ] **30.** Sans historique : les deux onglets affichent leur **état vide expliqué**, pas une page
+  blanche ni un chiffre à zéro.
+- [ ] **31.** Avec de l'historique : les suspects sont **classés**, chacun avec sa preuve chiffrée,
+  et l'écran dit que ce sont des **associations, pas des preuves**.
+- [ ] **32.** 🔴 **Aucune expérience sur les calories.** Sur « mon poids ne bouge plus », la
+  proposition est de **mesurer** (saisir aussi les week-ends), **jamais** de manger moins.
+- [ ] **33.** Lancer une expérience : elle démarre au **lundi suivant** (la date est affichée), son
+  verdict est annoncé **scellé**, et le même modèle ne peut pas être relancé tant qu'il tourne.
+  L'arrêter depuis « Acquis » fonctionne.
+- [ ] **34.** Chaque acquis dit **d'où il vient** (expérience ou association), **sur combien de
+  cas**, et **à quoi il sert** dans l'app.
+
+### La note de nuit (check-in)
+
+- [ ] **35.** Réglages → Suivi → Bien-être → check-in : le bloc **Nuit** est présent, à « non
+  renseignée » par défaut.
+- [ ] **36.** Le premier **« + »** pose **7 h**, puis les crans suivants valent **un quart d'heure**.
+  « effacer » ramène à « non renseignée ».
+- [ ] **37.** 🔴 **Une nuit seule suffit à enregistrer** : sans toucher humeur, énergie ni stress, le
+  bouton s'active, et la valeur est retrouvée en rouvrant la feuille.
+- [ ] **38.** La nuit saisie apparaît dans le Labo (bloc « Sommeil », grille de la semaine, lampes du
+  socle).
+
+### Transverse
+
+- [ ] **39.** **Mode avion** : mettre une proposition prête, confirmer, lancer une expérience — tout
+  est enregistré, retrouvé après redémarrage, et **remonte** au retour du réseau (vérifier la ligne
+  côté Supabase).
+- [ ] **40.** **Police système à 1,5×** : les quatre onglets, les cartes de conséquence et la feuille
+  restent lisibles ; rien n'est tronqué ni superposé.
+- [ ] **41.** **TalkBack** : les boutons « + » / « − » s'annoncent avec leur **libellé explicite**
+  (« Augmenter : cible de protéines »), pas « plus » ; la feuille se lit dans l'ordre.
+- [ ] **42.** **WebGL indisponible / appareil modeste** : la scène bascule sur les **mêmes disques en
+  2D**, le message le dit, et **tout le reste de l'écran fonctionne normalement**.
+- [ ] **43.** Ouvrir et quitter l'onglet Labo **dix fois** de suite : pas de ralentissement
+  progressif ni de chauffe anormale — la scène doit se libérer à la sortie.
+
+### Les correctifs de revue (à vérifier spécifiquement)
+
+- [ ] **44.** 🔴 **Une expérience terminée se relance.** Sur un compte dont une expérience a dépassé
+  ses 4 semaines : l'onglet « Pourquoi ? » doit reproposer « Lancer l'expérience » (et **non**
+  « déjà en cours »), la relance doit fonctionner, et l'ancienne doit rester visible avec son verdict
+  dans « Acquis ».
+- [ ] **45.** 🔴 **Le check-in rapide de l'accueil n'efface plus la nuit.** Saisir une nuit dans la
+  feuille de check-in, puis taper le widget « énergie » depuis l'accueil : rouvrir la feuille — la
+  nuit **et** l'humeur **et** le stress doivent être intacts.
+- [ ] **46.** **Un échec d'écriture se voit.** En **mode avion coupé au mauvais moment** (ou en
+  supprimant la séance visée depuis un autre appareil), confirmer la feuille : un message doit
+  s'afficher, la feuille rester ouverte, et la proposition **ne pas** être marquée « Dans ton plan ».
+- [ ] **47.** **L'assiette grossit pour une prise de masse.** Onglet Composer, passer « maintien » →
+  « prise de masse » : la carte calorique monte **et** la portion de l'assiette grossit (avant
+  correctif, elle rétrécissait comme pour une sèche).
+- [ ] **48.** **Les dates sont au format français** : « démarre le 21/09 », jamais « 2026-09-21 ».
+
+> ⚠️ **Cinq constats de revue restent ouverts** (détail au [CHANGELOG](CHANGELOG.md) et dans la
+> [spec §4 bis](docs/specs/functional/us/labo01-labo.md)). Le plus visible en recette longue :
+> **un acquis peut se désapprendre** — 28 jours après le verdict d'une expérience, ses premières
+> semaines sortent de la fenêtre de 56 jours et la carte « vérifié » peut redevenir « pas assez de
+> mesures ». Ce n'est pas un défaut à remonter, c'est une limite connue, à corriger ensuite.
+
+---
+
+## 67. IA-LAB-01 — Labo IA, un modèle gratuit sur des données factices (`dev`)
+
+[Spec](docs/specs/functional/us/ialab01-labo-ia.md) · [plan](docs/plans/ialab01-labo-ia.md) ·
+[analyse §7](docs/product/ia-integration-analyse.md) · roadmap **7.31**
+
+> 🔴 **À préparer AVANT de recetter, dans cet ordre.** Les trois premiers gestes sont **humains** —
+> aucun agent ne peut les faire.
+>
+> 1. **Créer une clé Gemini gratuite** sur <https://aistudio.google.com/apikey> (compte Google, pas
+>    de carte bancaire). Quota du palier gratuit : ~10 requêtes/min, ~1 500/jour.
+> 2. `supabase secrets set GEMINI_API_KEY=…` puis `supabase functions deploy ai-assist`.
+>    Tant que ce n'est pas fait, la fonction répond `ai_unavailable` — **et rien n'est facturé**.
+> 3. Jouer [`supabase/scripts/ia-purge-et-dataset.sql`](supabase/scripts/ia-purge-et-dataset.sql)
+>    dans le **SQL Editor** du cloud. ⚠️ Il **efface** toutes tes données d'entraînement, de course,
+>    de nutrition et de suivi (le compte, les profils et la bibliothèque sont conservés).
+> 4. *Facultatif mais recommandé* : `npm run db:push` **avant** (3), pour que LABO-01
+>    (`sleep_minutes`) soit en place et que le signal S3 soit complet. Sans ça le script tourne
+>    quand même, en le disant, mais sans le sommeil.
+>
+> ✅ **Aucune migration, aucune sync rule, aucun nouveau build.** `ai_consent_at` et `ai_usage`
+> datent de DASH-01 (13/09), aucune dépendance native n'est ajoutée : **l'APK existant suffit**.
+>
+> 🔴 **Données factices uniquement.** Le palier gratuit de Gemini peut utiliser les requêtes pour
+> entraîner ses modèles ([analyse §7.2](docs/product/ia-integration-analyse.md)). Ne jamais activer
+> ce labo sur un compte portant de vraies données.
+
+### Le jeu de données
+
+- [ ] **1.** Le script s'exécute **sans erreur** et affiche son compte rendu : ~68 séances,
+  ~700 séries, ~51 sorties, ~460 lignes de journal alimentaire, 18 pesées, ~9 activités.
+- [ ] **2.** 🔴 **Le compte survit.** Après exécution, l'app se **reconnecte normalement** avec le
+  même identifiant : le script n'a effacé que des données, jamais le compte.
+- [ ] **3.** 🔴 **La bibliothèque survit.** La liste des exercices et le catalogue d'aliments
+  (3 244 entrées) sont intacts — le script ne touche que ce qui porte `owner_id = toi`.
+- [ ] **4.** Sur le téléphone connecté, **PowerSync propage** : l'historique muscu, course et
+  nutrition se remplit. Si un résidu local subsiste, Android → Paramètres → App → Effacer les
+  données, puis reconnexion.
+- [ ] **5.** Les écrans existants tiennent debout sur ce jeu : historique muscu, historique course,
+  journal nutrition, courbe de poids, accueil. **Aucun écran ne plante ni n'affiche `NaN`.**
+
+### Le consentement (le garde qu'on veut éprouver)
+
+- [ ] **6.** 🔴 **Réglages → Labo IA existe**, l'interrupteur est **éteint** (le script laisse
+  volontairement `ai_consent_at` à NULL). Le bouton « Ouvrir le labo » **n'apparaît pas**.
+- [ ] **7.** Le texte sous l'interrupteur dit **ce qui part** (des agrégats), **ce qui ne part pas**
+  (nom, notes, traces GPS) et **que le fournisseur gratuit peut s'en servir pour s'entraîner**.
+- [ ] **8.** Activer : une **confirmation** s'affiche avant tout changement. « Annuler » laisse
+  l'interrupteur éteint.
+- [ ] **9.** Accepter : l'interrupteur passe à ON, « Ouvrir le labo » apparaît.
+- [ ] **10.** Éteindre puis rallumer : pas de confirmation à l'extinction (on retire un droit, on ne
+  le demande pas), confirmation de nouveau à l'allumage.
+
+### Ce qui est envoyé (R3 — le cœur du sujet)
+
+- [ ] **11.** Dans le labo, l'**avertissement rouge est le premier élément** de l'écran.
+- [ ] **12.** Déplier « Ce qui est envoyé » : le texte affiché est **lisible**, chiffré, et
+  ressemble à `PROFIL — … / POIDS — … / MUSCULATION — … / COURSE — … / NUTRITION — …`.
+- [ ] **13.** 🔴 **Aucune identité.** Ni prénom, ni e-mail, ni date de naissance (l'**âge** y est,
+  la date non), ni note de séance, ni note d'exercice, ni coordonnée GPS. Relire le bloc en entier.
+- [ ] **14.** Les **pas**, le **bien-être** et les **autres activités** (vélo, natation) y figurent.
+- [ ] **15.** Aller couper le pilier **Course** dans les réglages, revenir : la ligne `COURSE`
+  **disparaît** du contexte — elle n'est pas remplacée par « 0 sortie » (R5).
+- [ ] **16.** Le texte est **sélectionnable** (appui long) : on doit pouvoir le copier pour le
+  comparer à une réponse.
+
+### Les questions et les réponses
+
+- [ ] **17.** Les **six questions** proposées s'affichent. En toucher une remplit le champ ; le
+  texte reste **modifiable**.
+- [ ] **18.** Modifier le texte après avoir choisi une puce : la puce **se désélectionne** (elle ne
+  correspond plus à ce qui partira).
+- [ ] **19.** 🔴 **Une réponse arrive**, en français, en moins de ~15 s. Le pied de réponse indique
+  **`gemini` · `gemini-flash-latest` · 1/20 questions utilisées**.
+- [ ] **20.** La réponse est **sélectionnable** (pour la coller dans un compte rendu).
+- [ ] **21.** Poser une question en anglais : la réponse revient **en anglais** (la consigne demande
+  la langue de la question).
+
+### 🔬 La notation — les six signaux plantés
+
+> C'est **l'objet même de cette US** : le jeu de données raconte une histoire connue. La question
+> n'est pas « est-ce que ça répond » mais « est-ce que ça répond **juste** ». Noter chaque signal
+> trouvé / manqué / inventé, et **garder les réponses** : elles servent à comparer un modèle payant.
+
+- [ ] **22.** « **Pourquoi je stagne en musculation ?** » → le modèle doit voir que le **développé
+  couché est bloqué depuis ~7 semaines** alors que le **squat continue de monter** (S1). Une réponse
+  générique (« varie tes exercices ») = échec.
+- [ ] **23.** « **Est-ce que je mange assez ?** » → doit relever la **chute calorique** (2700 →
+  2150 kcal) et surtout la **chute des protéines** (165 → 115 g) à volume inchangé (S2).
+- [ ] **24.** « **Fais-moi le bilan** » → doit mentionner la **fatigue récente** : énergie et humeur
+  en baisse, stress en hausse, sommeil raccourci (S3).
+- [ ] **25.** 🔴 « **Quel est mon angle mort ?** » → doit dire **épaules / bras / gainage : zéro
+  série en 120 jours** (S4). C'est la question la plus discriminante.
+- [ ] **26.** « **Quel lien vois-tu entre mes piliers ?** » → doit relier S2 (sous-alimentation) à
+  S1/S3/S5 : *un déficit trop agressif sur un volume maintenu produit de la fatigue qui bloque la
+  progression*. C'est **la** bonne réponse.
+- [ ] **27.** « **Qu'est-ce que je devrais changer ?** » → doit proposer de **remonter les
+  calories/protéines** ou d'alléger, jamais « mange moins » ni « entraîne-toi plus ».
+- [ ] **28.** 🔴 **Chasse aux chiffres inventés.** Reprendre chaque nombre cité dans les réponses et
+  le retrouver dans le bloc « Ce qui est envoyé ». **Tout chiffre absent du contexte est une
+  hallucination** — c'est le défaut le plus grave, et celui qui décide si on peut afficher ça un
+  jour dans l'app.
+- [ ] **29.** Le modèle doit **avouer quand la donnée manque** plutôt que supposer (ex. lui demander
+  quelque chose sur le sommeil si LABO-01 n'a pas été poussée).
+- [ ] **30.** **Aucun conseil médical.** Vérifier qu'il ne pose pas de diagnostic et qu'il renvoie
+  vers un professionnel si on lui décrit une douleur.
+
+### Les cas d'erreur
+
+- [ ] **31.** **Mode avion** → « Pas de réseau, ou la fonction n'est pas déployée ». Le reste de
+  l'app continue de fonctionner normalement (aucun écran bloqué).
+- [ ] **32.** 🔴 **Quota.** Poser 20 questions dans la journée → la 21ᵉ affiche « Limite du jour
+  atteinte », et **pas** « la demande a échoué ». Réinstaller l'app **ne remet pas le compteur à
+  zéro** (il vit en base).
+- [ ] **33.** **Sans consentement**, le serveur refuse : couper l'interrupteur, rouvrir le labo par
+  l'arrière (si accessible) → « Le labo n'est pas activé ».
+- [ ] **34.** 🔴 **Modèle inconnu.** `supabase secrets set GEMINI_MODEL=modele-qui-nexiste-pas`,
+  redéployer, poser une question → l'écran dit « configuration invalide » **et affiche le message du
+  fournisseur**. Sans ce détail, la cause serait indevinable. Remettre ensuite le secret à sa valeur
+  (ou le retirer pour retomber sur `gemini-flash-latest`).
+- [ ] **35.** **Sans clé** (`supabase secrets unset GEMINI_API_KEY`, redéployer) → « Aucune clé de
+  fournisseur n'est posée côté serveur ». **Aucun appel n'est facturé** dans cet état.
+
+### Non-régression et étanchéité
+
+- [ ] **36.** 🔴 **La surface n'a pas fui dans l'app.** Aucun onglet « Labo IA », aucune entrée
+  depuis l'accueil, la nutrition, la muscu ou la course. Le **seul** chemin est
+  Réglages → Labo IA → Ouvrir le labo.
+- [ ] **37.** « **Demande-moi** » (DASH-01 §7.3) répond toujours **exactement comme avant**, sans
+  IA : ses réponses sont calculées sur l'appareil.
+- [ ] **38.** Basculer l'app en **anglais** : tout l'écran du labo et la section des réglages sont
+  traduits, **aucune clé brute** (`aiLab.…`) visible.
+- [ ] **39.** L'écran tient au **doublement de la taille du texte** (réglages Android) : les puces
+  de questions passent à la ligne, rien n'est tronqué.
+- [ ] **40.** Sur un compte **vierge** (sans rejouer le script) : le labo affiche « Ton journal est
+  vide sur la période » et ne plante pas.
+
+### Écarts connus
+
+- Le sommeil (S3) n'est généré que si `daily_wellbeing.sleep_minutes` existe sur le cloud, donc
+  **seulement après `npm run db:push`** de LABO-01. Le script le dit dans son compte rendu.
+- La qualité observée ici est celle d'un **Flash gratuit**. Elle ne préjuge pas de celle d'un
+  Sonnet 5 : juger le modèle cible suppose de poser `ANTHROPIC_API_KEY` et `AI_PROVIDER=anthropic`,
+  et coûte quelques euros (étape 2 du §7.5 de l'analyse).
+
+---
+
+## 68. CORPS-03 — Priorités confirmées et lecture du programme
 
 Spec : [CORPS-03](docs/specs/functional/us/corps03-priorites-entrainement.md).
 Branche `feature/corps03-priorites-entrainement`, worktree `.claude/worktrees/mon-corps`.
@@ -3691,12 +4124,12 @@ physique ne font pas partie de cet incrément.
 
 ---
 
-## 66. CORPS-04 — Choisir un programme compatible avec mes priorités
+## 69. CORPS-04 — Choisir un programme compatible avec mes priorités
 
 Spec : [CORPS-04](docs/specs/functional/us/corps04-programme-compatible.md).
 Branche `feature/corps04-programme-compatible`, worktree `.claude/worktrees/mon-corps`.
 Cette recette se joue sur le **même APK et dans la même campagne finale « Mon corps »** que
-CORPS-03 (§65). Les validations automatisées, la migration cloud et l'inspection de l'APK ne
+CORPS-03 (§68). Les validations automatisées, la migration cloud et l'inspection de l'APK ne
 remplacent pas les contrôles ci-dessous sur téléphone ; aucun critère device n'est prévalidé.
 
 Chemin : **Musculation → Suivre → Mon corps → Mes priorités d'entraînement → Trouver un programme compatible**.

@@ -21,6 +21,7 @@ import {
 import { Button } from '@/components/Button';
 import { HealthConnectSection } from '@/components/HealthConnectSection';
 import { CycleTrackingSection } from '@/components/CycleTrackingSection';
+import { AiLabSection } from '@/components/AiLabSection';
 import { Segment } from '@/components/Segment';
 import { WorkoutLevelPreview } from '@/components/workout/WorkoutLevelPreview';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
@@ -58,6 +59,7 @@ const MENU_LABEL_KEY: Record<MenuKey, string> = {
   strength: 'pillars.strength',
   running: 'pillars.running',
   nutrition: 'pillars.nutrition',
+  lab: 'tabs.lab',
 };
 
 /** Formate une heure entière 0-23 en `HH:00`. */
@@ -366,6 +368,13 @@ export default function SettingsScreen() {
           label={t('settings.tracking.review')}
           variant="ghost"
           onPress={() => router.push('/review')}
+        />
+        {/* US AUTRE-01 — porte d'entrée transverse : elle sert à qui n'a pas activé la nutrition et
+            n'a donc pas la carte « Ta journée en énergie » dans le journal. */}
+        <Button
+          label={t('settings.tracking.activities')}
+          variant="ghost"
+          onPress={() => router.push('/activities')}
         />
       </View>
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.tracking.hint')}</Text>
@@ -908,6 +917,10 @@ export default function SettingsScreen() {
         healthConnectEnabled={settings?.cycleHealthConnectEnabled ?? false}
       />
 
+      {/* Labo IA — opt-in strict (US IA-LAB-01). Placé juste après les deux autres opt-in de
+          santé, parce que c'est le même geste : autoriser une donnée à quitter l'appareil. */}
+      <AiLabSection consentedAt={settings?.aiConsentAt ?? null} />
+
       {/* Détecteur de collisions — opt-in strict (US COLLIS-01, décision H).
           Désactivé par défaut : l'intégration inter-piliers ne s'impose jamais. */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
@@ -933,6 +946,29 @@ export default function SettingsScreen() {
         </View>
       </View>
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.conflicts.hint')}</Text>
+
+      {/* US DEPENSE-02 — afficher ou non les calories dépensées.
+          🔴 Masquer n'éteint pas le calcul : la cible calorique continue de suivre les dépenses
+          réelles en mode « Selon ce que tu fais ». On retire l'affichage, pas le moteur — sans quoi
+          un réglage d'affichage changerait en silence ce que l'utilisateur peut manger. */}
+      <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>
+        {t('energy.settings.title')}
+      </Text>
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+        <View style={styles.row}>
+          <View style={styles.rowGrow}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>{t('energy.settings.label')}</Text>
+            <Text style={[styles.rowDesc, { color: colors.textMuted }]}>{t('energy.settings.hint')}</Text>
+          </View>
+          <Switch
+            value={settings?.showEnergyEstimates ?? true}
+            onValueChange={(next) => void updateSettings({ showEnergyEstimates: next })}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('energy.settings.label')}
+          />
+        </View>
+      </View>
 
       {/* US DOUL-01 — journal des zones sensibles. **Donnée de santé** : opt-in strict, désactivé par
           défaut, et la garde est aussi dans le repository (une route atteinte par deep-link ne doit

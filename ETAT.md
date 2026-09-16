@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 234 livré · 4 partiel · 2 à faire (sur 246)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 239 livré · 4 partiel · 2 à faire (sur 251)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
 avant de pouvoir publier.
@@ -20,6 +20,7 @@ avant de pouvoir publier.
 | **ADMIN-01** — Archivage sûr du contenu éditorial (back-office) | `recette` | `feature/admin01-archivage-sur` | [8.11] |
 | **ALLURE-01** — La courbe d'allure — ce que ta façon de courir dit | `recette` | `feature/allure01-courbe-allure` | [5.35] |
 | **APPORT-01** — Manges-tu comme tu t'entraînes ? — lot d'analyses croisées muscu × nutrition | `recette` | `feature/apport01-manger-comme-on-sentraine` | [4.40] |
+| **AUTRE-01** — Les autres activités : vélo, natation, rando… saisies à la main | `recette` | `dev` | [4.42] |
 | **BIEN-01** — Check-in quotidien & journal de bien-être | `recette` | `feature/bien01-checkin-bien-etre` | [1.24] |
 | **BILAN-01** — Bilan hebdomadaire automatique | `recette` | `feature/bilan01-bilan-hebdo` | [7.16] |
 | **CARDIO-UX01** — Refonte UX du pilier Course — justesse, hub, course, après-course, préparation | `recette` | `feature/cardio-refonte-ux` | [5.40] |
@@ -30,6 +31,8 @@ avant de pouvoir publier.
 | **CORPS-04** — Choisir un programme compatible avec mes priorités | `recette` | `feature/corps04-programme-compatible` | [6.7] |
 | **CYCLE-01** — Suivi du cycle menstruel — journal, prédiction et croisement | `recette` | `feature/cycle01-suivi-menstruel` | [1.25, 1.26] |
 | **DASH-01** — Dashboards immersifs — une atmosphère par pilier, des écrans vivants, une app qui comprend | `recette` | `feature/dash01-dashboards-immersifs` | [7.29] |
+| **DEPENSE-00** — La cible calorique qui suit les dépenses réelles (fin du double comptage) | `recette` | `dev` | [4.43] |
+| **DEPENSE-01** — Le moteur de dépense énergétique (muscu, course, activité) | `recette` | `dev` | [4.41] |
 | **DOUL-01** — Journal des zones douloureuses — déclaration, historique et signal factuel | `recette` | `feature/doul01-journal-zones-douloureuses` | [1.29] |
 | **EXEC-01** — Écart entre le prévu et le réalisé — lot d'analyses d'exécution muscu | `recette` | `feature/exec01-prevu-vs-realise` | [3.58] |
 | **FUEL-01** — Socle glucidique du coureur — besoin g/kg selon la charge et périodisation jours durs / faciles | `recette` | `feature/fuel01-socle-glucidique-coureur` | — |
@@ -38,6 +41,7 @@ avant de pouvoir publier.
 | **HORAIRE-01** — Heure d'une séance planifiée — et le rappel « ça commence bientôt » | `recette` | `feature/horaire01-heure-seance` | [2.4] |
 | **INSIGHTS-01** — Écran « Insights » — moteur de sélection des analyses pertinentes (Tier 3) | `recette` | `feature/insights01-ecran-insights` | [7.20] |
 | **INSIGHTS-02** — Dégonflage du Tier 0 — ramener l'accueil au plafond d'ADR-007 | `recette` | `feature/insights02-degonflage-tier0` | [7.21] |
+| **LABO-01** — Le Labo — là où tes piliers se croisent | `recette` | `dev` | [7.30] |
 | **LAUNCHER-01** — Widget écran d'accueil Android | `recette` | `feature/launcher01-widget-ecran-accueil` | [7.19] |
 | **MESUR-01** — Mensurations corporelles | `recette` | `feature/mesur01-mensurations` | [3.51] |
 | **META-19** — Garde-fou surentraînement (ACWR combiné) | `recette` | `feature/meta19-acwr-garde-fou` | — |
@@ -86,7 +90,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **65 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, BIEN-01, BILAN-01, CARDIO-UX01, COLLIS-01, CONF-07, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, INSIGHTS-01, INSIGHTS-02, LAUNCHER-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX02, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **69 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, COLLIS-01, CONF-07, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, EXEC-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LAUNCHER-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX02, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, OBJ-01, PARTAGE-01, REPAS-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (2)
 
@@ -108,8 +112,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/corps04-programme-compatible` (modifications non commitées) |
-| Commits | 1261 · `main` a **1236** commits de retard sur `dev` |
-| Specs d'US | 153 au total — 87 clôturées, 66 en cours |
+| Commits | 1262 · `main` a **1237** commits de retard sur `dev` |
+| Specs d'US | 157 au total — 87 clôturées, 70 en cours |
 | Migrations | 105/105 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -119,11 +123,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `90ead68`  fix(db): conserver l'historique cloud de corps04
 - `0683f19`  docs(corps): passer le programme compatible en recette
 - `4ca64b0`  fix(corps): ouvrir la copie préparée
 - `e145efb`  fix(corps): fiabiliser le choix de programme
 - `432d85b`  feat(corps): choisir un programme compatible
-- `25e6294`  fix(corps): preserver les erreurs de lecture
 
 ---
 

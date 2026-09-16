@@ -10,6 +10,7 @@ import {
   computeAge,
   effectiveActivityLevel,
   hasChosenActivityLevel,
+  DEFAULT_SPORT_FREE_LEVEL,
   defaultMacroRatios,
   macroGramsFromCalories,
   macroRatiosFromGrams,
@@ -20,6 +21,7 @@ import {
   type DietRestriction,
   type MacroGrams,
   type NutritionObjective,
+  type SportFreeLevel,
   type TrainingBonusMode,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -46,7 +48,21 @@ const MACRO_COLORS: Record<MacroKey, 'accent' | 'success' | 'textMuted'> = {
 };
 
 /** Modes du bonus calorique des jours d'entraînement (item RN-02). */
-const TRAINING_BONUS_MODES: readonly TrainingBonusMode[] = ['fixed', 'auto'];
+/**
+ * Les trois modes de cible, dans l'ordre où ils se comprennent : rien ne bouge → un forfait → la
+ * dépense réelle (US DEPENSE-00).
+ */
+const TRAINING_BONUS_MODES: readonly TrainingBonusMode[] = ['fixed', 'auto', 'activities'];
+
+/**
+ * Paliers d'activité à partir desquels le facteur du TDEE **inclut déjà l'entraînement** : leur
+ * définition (spec §2.2, RN-03) part de 3 séances par semaine. C'est la population chez qui le mode
+ * `auto` compte le sport deux fois — et la seule à qui l'avertissement s'adresse.
+ */
+const DOUBLE_COUNT_LEVELS: readonly ActivityLevel[] = ['moderate', 'active', 'very_active'];
+
+/** Paliers de mode de vie **hors sport**, du plus assis au plus physique. */
+const SPORT_FREE_OPTIONS: readonly SportFreeLevel[] = ['seated', 'standing', 'physical'];
 
 /**
  * Allergènes les plus courants, proposés à cocher (spec §2.4).
@@ -252,8 +268,43 @@ export default function NutritionProfileScreen() {
             label={(mode) => t(`nutrition.calories.bonusMode.${mode}`)}
           />
           <Text style={[styles.hint, { color: colors.textMuted }]}>
-            {t('nutrition.calories.bonusMode.hint')}
+            {t(`nutrition.calories.bonusMode.hint_${trainingBonusMode}`)}
           </Text>
+
+          {/*
+            US DEPENSE-00 — l'avertissement du double comptage.
+            Il ne s'affiche qu'en mode `auto` et à partir d'un niveau d'activité « modéré » : c'est
+            exactement la combinaison qui compte le sport deux fois (le palier inclut déjà
+            l'entraînement, le bonus le rajoute). Analyse §3 : jusqu'à 95 % du déficit d'une sèche
+            effacé, en silence.
+          */}
+          {trainingBonusMode === 'auto' && DOUBLE_COUNT_LEVELS.includes(activityLevel) ? (
+            <View style={[styles.warnBox, { backgroundColor: colors.warn, borderColor: colors.warnBorder }]}>
+              <Text style={[styles.warnText, { color: colors.warnText }]}>
+                {t('nutrition.calories.bonusMode.doubleCount')}
+              </Text>
+            </View>
+          ) : null}
+
+          {/* Le socle hors sport n'a de sens — et n'est demandé — que dans le mode qui l'utilise. */}
+          {trainingBonusMode === 'activities' ? (
+            <>
+              <Text style={[styles.rowLabel, { color: colors.text }]}>
+                {t('nutrition.calories.sportFree.label')}
+              </Text>
+              <Segment
+                options={SPORT_FREE_OPTIONS}
+                value={nutritionProfile?.sportFreeLevel ?? DEFAULT_SPORT_FREE_LEVEL}
+                onChange={(level) => void upsertNutritionProfile({ sportFreeLevel: level })}
+                label={(level) => t(`nutrition.calories.sportFree.${level}`)}
+              />
+              <Text style={[styles.hint, { color: colors.textMuted }]}>
+                {nutritionProfile?.sportFreeLevel == null
+                  ? t('nutrition.calories.sportFree.hintDefault')
+                  : t('nutrition.calories.sportFree.hint')}
+              </Text>
+            </>
+          ) : null}
           {/* Bonus jour d'entraînement (4.7) — 0/vide = désactivé */}
           <DeferredTextField
             label={t('nutrition.calories.trainingBonus')}
@@ -475,6 +526,8 @@ function OptionList<T extends string>({ options, value, onChange, label, trailin
 }
 
 const styles = StyleSheet.create({
+  warnBox: { borderWidth: 1, borderRadius: 14, padding: 12 },
+  warnText: { fontFamily: fontFamily.bodyMedium, fontSize: 13, lineHeight: 18 },
   content: { padding: 20, gap: 12 },
   section: {
     fontFamily: fontFamily.bodySemi,

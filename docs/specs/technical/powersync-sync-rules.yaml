@@ -59,6 +59,9 @@ bucket_definitions:
       - select * from daily_steps           where user_id = bucket.user_id and deleted_at is null
       # US BIEN-01 : check-in de bien-être (humeur / énergie / stress, une ligne par jour).
       - select * from daily_wellbeing       where user_id = bucket.user_id and deleted_at is null
+      # US LABO-01 : les expériences sur soi du Labo (4 semaines tirées au sort, verdict calculé).
+      # 🔴 SYNC RULE NEUVE À DÉPLOYER À LA MAIN — table créée le 15/09/2026.
+      - select * from lab_experiments       where user_id = bucket.user_id and deleted_at is null
       # US CYCLE-01 : suivi du cycle menstruel. Deux tables indépendantes (aucune FK entre elles) —
       # un jour de flux peut exister sans période déclarée. `ended_on` null = période en cours.
       # ⚠️ Donnée de santé SENSIBLE : elle ne quitte l'appareil que si l'utilisatrice a activé le
@@ -81,6 +84,11 @@ bucket_definitions:
       # (opt-in strict, `user_settings.pain_journal_enabled`, désactivé par défaut). Rien n'est
       # écrit dans Health Connect — c'est ce qui garde la déclaration Play « Health apps » à 6 types.
       - select * from pain_reports          where user_id = bucket.user_id and deleted_at is null
+      # US AUTRE-01 : les autres activités (vélo, natation, rando…), saisies à la main.
+      # 🔴 SYNC RULE NEUVE À DÉPLOYER À LA MAIN — table créée le 15/09/2026. Sans elle, le vélo du
+      # dimanche reste sur un seul téléphone, sans la moindre erreur, et la cible calorique diffère
+      # d'un appareil à l'autre.
+      - select * from activities            where user_id = bucket.user_id and deleted_at is null
       # US RUN-F4 (lot F) : réalisé par répétition — une ligne par phase franchie.
       # 🔴 SYNC RULE NEUVE À DÉPLOYER À LA MAIN. Le PRÉVU y est recopié, pas joint : modifier la
       # séance planifiée ne doit jamais réécrire l'histoire d'une course déjà courue.

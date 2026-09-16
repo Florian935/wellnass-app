@@ -48,6 +48,11 @@ const PAIRS: {
   { theme: 'dark', fg: 'pillarRunning', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
   { theme: 'dark', fg: 'pillarRunning', bg: 'background', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
   { theme: 'dark', fg: 'pillarNutrition', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  // US LABO-01 — la couleur du Labo, même contrat que les trois piliers.
+  { theme: 'light', fg: 'pillarLab', bg: 'surface', threshold: 4.5, usage: 'couleur du Labo (onglet actif, libellés) — LABO-01' },
+  { theme: 'light', fg: 'pillarLab', bg: 'background', threshold: 4.5, usage: 'couleur du Labo (onglet actif, libellés) — LABO-01' },
+  { theme: 'dark', fg: 'pillarLab', bg: 'surface', threshold: 4.5, usage: 'couleur du Labo (onglet actif, libellés) — LABO-01' },
+  { theme: 'dark', fg: 'pillarLab', bg: 'background', threshold: 4.5, usage: 'couleur du Labo (onglet actif, libellés) — LABO-01' },
   { theme: 'dark', fg: 'pillarNutrition', bg: 'background', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
   // `accent`/`surface` sombre (D2, 4,45) est un écart ASSUMÉ (spec §4) — volontairement absent de
   // cette table : le consigner ici comme une assertion qui doit rester rouge serait exactement le

@@ -89,10 +89,10 @@ const LOW_ENERGY_THRESHOLD = 2;
 const HEAT_THRESHOLD_C = 28;
 
 /** Retrait de repetitions propose. Milieu de la fourchette 20-30 % du plan analyse. */
-const REPS_REDUCTION_PCT = 25;
+export const REPS_REDUCTION_PCT = 25;
 
 /** Ralentissement propose. Milieu de la fourchette 3-5 s/km du plan analyse. */
-const PACE_SLOWDOWN_S_PER_KM = 4;
+export const PACE_SLOWDOWN_S_PER_KM = 4;
 
 /** Les seances dont l'intensite justifie une adaptation ; les autres sont deja la solution. */
 export function isIntenseSessionType(type: SessionType | null | undefined): boolean {

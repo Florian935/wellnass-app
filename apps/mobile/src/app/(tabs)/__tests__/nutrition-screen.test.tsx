@@ -180,6 +180,10 @@ jest.mock('@expo/vector-icons', () => {
   return { Ionicons: ({ name }: { name: string }) => <Text>icone-{name}</Text> };
 });
 
+// US DEPENSE-03 : la carte « Ta journée en énergie » a ses propres tests ; ici elle tirerait
+// settings-repository et tout le graphe i18n dans un test d'écran qui mocke react-i18next.
+jest.mock('@/components/energy/DayEnergyCard', () => ({ DayEnergyCard: () => null }));
+
 jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 
 jest.mock('react-i18next', () => ({

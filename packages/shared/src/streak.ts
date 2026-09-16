@@ -60,17 +60,25 @@ export type DayActivity = {
   nutrition: boolean;
   /** Objectif de pas atteint ce jour-là (US PAS-01). Optionnel : absent = non atteint. */
   steps?: boolean;
+  /**
+   * Une **autre activité** a été saisie ce jour-là (US AUTRE-01) : vélo, natation, rando…
+   *
+   * 🔴 Sans cette dimension, trois heures de vélo un dimanche **cassaient la série** : l'app ne
+   * connaissait que la muscu, la course et la nutrition. Optionnel pour la même raison que `steps` —
+   * les appelants antérieurs à l'US continuent de compiler et gardent leur comportement.
+   */
+  other?: boolean;
 };
 
 /**
  * Extrait l'ensemble des clés de jours actifs depuis une liste d'activités.
- * Un jour est actif si au moins une dimension est vraie : musculation, course, nutrition
- * ou **objectif de pas atteint**.
+ * Un jour est actif si au moins une dimension est vraie : musculation, course, nutrition,
+ * **objectif de pas atteint**, ou **autre activité saisie** (US AUTRE-01).
  */
 export function activeDayKeys(activities: DayActivity[]): Set<string> {
   const result = new Set<string>();
   for (const a of activities) {
-    if (a.strength || a.running || a.nutrition || a.steps === true) {
+    if (a.strength || a.running || a.nutrition || a.steps === true || a.other === true) {
       result.add(a.day);
     }
   }

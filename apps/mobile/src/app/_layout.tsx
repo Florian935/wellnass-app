@@ -360,6 +360,30 @@ function RootNavigator() {
             headerTintColor: colors.accent,
           }}
         />
+        {/* US AUTRE-01 — saisie d'une autre activité (vélo, natation…), en modale comme les autres
+            saisies transverses (pesée, bien-être). */}
+        <Stack.Screen
+          name="activity"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('activity.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        <Stack.Screen
+          name="activities"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('activity.listTitle'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
         <Stack.Screen
           name="nutrition-profile"
           options={{
@@ -483,6 +507,18 @@ function RootNavigator() {
             presentation: 'modal',
             headerShown: true,
             title: t('insights.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        {/* US IA-LAB-01 — labo d'évaluation de l'IA. Ouvert depuis Réglages → Labo IA. */}
+        <Stack.Screen
+          name="ai-lab"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('aiLab.title'),
             headerStyle: { backgroundColor: colors.surface },
             headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
             headerTintColor: colors.accent,

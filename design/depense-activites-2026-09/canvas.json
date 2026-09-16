@@ -1,0 +1,19 @@
+{
+  "artboards": [
+    { "file": "Main.dc.html", "title": "Compte rendu — la dépense", "x": 0, "y": 0, "w": 1200, "h": 5560, "print": "flow" },
+    { "file": "FinSeance.dc.html", "title": "01 · Fin de séance muscu", "x": 1320, "y": 0, "w": 390, "h": 844 },
+    { "file": "DOuVient.dc.html", "title": "02 · D'où vient ce chiffre", "x": 1790, "y": 0, "w": 390, "h": 844 },
+    { "file": "FinCourse.dc.html", "title": "03 · Fin de course", "x": 2260, "y": 0, "w": 390, "h": 844 },
+    { "file": "Journee.dc.html", "title": "04 · La journée en énergie", "x": 2730, "y": 0, "w": 390, "h": 844 },
+    { "file": "AjoutActivite.dc.html", "title": "05 · Ajouter une activité", "x": 1320, "y": 1000, "w": 390, "h": 844 },
+    { "file": "ActiviteEnregistree.dc.html", "title": "06 · Ce que ça change", "x": 1790, "y": 1000, "w": 390, "h": 844 },
+    { "file": "Reglage.dc.html", "title": "07 · Le réglage de la cible", "x": 2260, "y": 1000, "w": 390, "h": 844 },
+    { "file": "Variantes.dc.html", "title": "08 · Trois façons d'afficher", "x": 2730, "y": 1000, "w": 1200, "h": 760 },
+    { "file": "Prototype.dc.html", "title": "09 · Prototype jouable", "x": 1320, "y": 2000, "w": 1240, "h": 900, "is_interactive": true }
+  ],
+  "annotations": [
+    { "id": "lecture", "x": 1320, "y": -150, "w": 560, "text": "Écrans 01 à 04 : phase A, la dépense s'affiche.\n05 à 07 : l'activité manuelle et le réglage qui répare le double comptage.\n09 : prototype jouable — change le profil, la dépense suit." },
+    { "id": "fictif", "x": 2680, "y": 2000, "w": 300, "text": "Données fictives. Profil A : homme, 30 ans, 180 cm, 80 kg. Les MET viennent du Compendium 2011 et restent à revérifier." }
+  ],
+  "launch": { "view": "canvas" }
+}

@@ -120,6 +120,9 @@ jest.mock('@expo/vector-icons', () => {
   return { Ionicons: ({ name }: { name: string }) => <Text>icone-{name}</Text> };
 });
 
+// US DEPENSE-02 : la section dépense est testée à part (EnergyCard.test.tsx).
+jest.mock('@/components/energy/WorkoutEnergySection', () => ({ WorkoutEnergySection: () => null }));
+
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
   useLocalSearchParams: jest.fn(() => ({ id: 'w-1' })),
