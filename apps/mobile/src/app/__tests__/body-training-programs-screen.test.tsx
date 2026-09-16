@@ -389,6 +389,85 @@ it('acquiert le verrou avant l’Alert, le libère sur annulation/dismiss et con
   expect(prepare).toHaveBeenCalledTimes(1);
 });
 
+it('ouvre la copie réussie du même compte même si les entrées réactives changent pendant la préparation', async () => {
+  const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+  let resolveCopy!: (id: string) => void;
+  let confirmation!: Promise<void>;
+  prepare.mockImplementation(() => new Promise((resolve) => {
+    resolveCopy = resolve;
+  }));
+  const view = await render(<BodyTrainingProgramsScreen />);
+  await tap('Comparer les programmes');
+  await tap('Préparer ce programme');
+  const confirm = alert.mock.calls.at(-1)![2]![1]!.onPress!;
+
+  await act(async () => {
+    confirmation = confirm() as unknown as Promise<void>;
+    await Promise.resolve();
+  });
+  expect(prepare).toHaveBeenCalledTimes(1);
+
+  useTraining.mockReturnValue(bodyState({
+    ...confirmedPriorities,
+    priorities: ['back'],
+    confirmedAt: '2026-09-15T09:15:00.000Z',
+  }));
+  useContext.mockReturnValue({
+    context: { ...savedContext, sessionMinutes: 60 },
+    updatedAt: '2026-09-15T09:16:00.000Z',
+    isLoading: false,
+    error: null,
+  });
+  setCandidates([
+    candidate({ id: 'current', name: 'Mon programme', current: true }),
+    candidate({
+      id: 'editorial',
+      name: 'Bras et épaules',
+      fingerprint: 'fingerprint-editorial-updated',
+    }),
+  ]);
+  await view.rerender(<BodyTrainingProgramsScreen />);
+
+  await act(async () => {
+    resolveCopy('copy-after-reactive-change');
+    await confirmation;
+  });
+
+  expect(prepare).toHaveBeenCalledTimes(1);
+  expect(mockPush).toHaveBeenCalledTimes(1);
+  expect(mockPush).toHaveBeenCalledWith('/programs/edit?id=copy-after-reactive-change');
+});
+
+it('ne navigue pas vers la copie réussie si le compte change pendant la préparation', async () => {
+  const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+  let resolveCopy!: (id: string) => void;
+  let confirmation!: Promise<void>;
+  prepare.mockImplementation(() => new Promise((resolve) => {
+    resolveCopy = resolve;
+  }));
+  await render(<BodyTrainingProgramsScreen />);
+  await tap('Comparer les programmes');
+  await tap('Préparer ce programme');
+  const confirm = alert.mock.calls.at(-1)![2]![1]!.onPress!;
+
+  await act(async () => {
+    confirmation = confirm() as unknown as Promise<void>;
+    await Promise.resolve();
+  });
+  expect(prepare).toHaveBeenCalledTimes(1);
+
+  await act(async () => {
+    useAuthStore.setState({ session: { user: { id: 'user-2' } } as never });
+  });
+  await act(async () => {
+    resolveCopy('copy-for-user-1');
+    await confirmation;
+  });
+
+  expect(prepare).toHaveBeenCalledTimes(1);
+  expect(mockPush).not.toHaveBeenCalled();
+});
+
 it('refuse une ancienne confirmation si le compte change avant tout flush React', async () => {
   const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
   await render(<BodyTrainingProgramsScreen />);

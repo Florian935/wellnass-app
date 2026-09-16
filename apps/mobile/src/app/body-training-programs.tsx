@@ -327,7 +327,7 @@ function BodyTrainingProgramsSession({ accountId }: { accountId: string | null }
                   candidate.program.id,
                   candidate.fingerprint,
                 );
-                if (!requireFreshComparison(snapshot)) return;
+                if (currentAccountId() !== snapshot.accountId) return;
                 router.push(`/programs/edit?id=${id}`);
               } catch (error) {
                 const code =
