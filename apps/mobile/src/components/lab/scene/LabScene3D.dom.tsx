@@ -52,11 +52,23 @@ export default function LabScene3D({ state, background, onPick, onStatus, onLand
 
   // Une seule création pour la vie du composant : la scène est coûteuse, et l'état se pousse.
   useEffect(() => {
+    // 🔴 **Donner une hauteur au document, sinon le canvas fait zéro pixel.**
+    // Dans une WebView, `html` et `body` ont une hauteur AUTO : un canvas en `height: 100%` se
+    // résout donc contre un parent sans hauteur, `clientHeight` vaut 0, et `resize()` retombe sur
+    // son garde `|| 1` — le moteur rend une image d'un pixel de haut. WebGL marche parfaitement dans
+    // ce cas, donc la scène se déclare `ok` et le repli 2D ne part pas : l'utilisateur voit une
+    // bande vide, sans message. C'est exactement ce qui s'est passé sur le premier APK.
+    // Le prototype ne l'avait pas parce que son canvas vivait dans un conteneur déjà dimensionné.
+    const root = document.documentElement;
+    root.style.height = '100%';
+    document.body.style.height = '100%';
     document.body.style.margin = '0';
+    document.body.style.overflow = 'hidden';
     document.body.style.background = background;
     const canvas = canvasRef.current;
     if (canvas === null) return;
     let handle: SceneHandle | null = null;
+    let sizeCheck: ReturnType<typeof setTimeout> | undefined;
     try {
       const created = createLabScene(canvas, {
         reducedMotion: state.reducedMotion,
@@ -72,11 +84,21 @@ export default function LabScene3D({ state, background, onPick, onStatus, onLand
       handle = created;
       sceneRef.current = created;
       void onStatus({ ok: true, quality: created.quality() });
+
+      // Filet : WebGL peut très bien démarrer sur un canvas de taille nulle. On revérifie la taille
+      // une fois la mise en page faite, et on bascule en 2D plutôt que de laisser une bande vide —
+      // un repli lisible vaut mieux qu'un écran qui ne dit rien.
+      sizeCheck = setTimeout(() => {
+        if (canvas.clientWidth < 2 || canvas.clientHeight < 2) {
+          void onStatus({ ok: false, reason: `size:${canvas.clientWidth}x${canvas.clientHeight}` });
+        }
+      }, 800);
     } catch (error) {
       void onStatus({ ok: false, reason: error instanceof Error ? error.message : 'renderer' });
       return;
     }
     return () => {
+      if (sizeCheck !== undefined) clearTimeout(sizeCheck);
       handle?.dispose();
       sceneRef.current = null;
     };
@@ -102,7 +124,21 @@ export default function LabScene3D({ state, background, onPick, onStatus, onLand
     <canvas
       ref={canvasRef}
       aria-hidden
-      style={{ width: '100%', height: '100%', display: 'block', touchAction: 'none', background }}
+      // `position: fixed` + les quatre cotes : le canvas se mesure sur la FENETRE de la WebView,
+      // sans dependre d'une chaine de hauteurs entre lui et `body`. (`top/left/right/bottom`
+      // plutot que `inset`, que les vieilles WebView Android ne connaissent pas.)
+      style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        width: '100%',
+        height: '100%',
+        display: 'block',
+        touchAction: 'none',
+        background,
+      }}
     />
   );
 }

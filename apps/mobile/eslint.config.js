@@ -26,6 +26,16 @@ module.exports = defineConfig([
      * `apps/mobile/node_modules` peut déclencher le même faux positif, au hasard des arbitrages
      * d'installation de npm. On rend donc les deux racines explicites plutôt que d'ajouter une
      * exception par paquet.
+     *
+     * ── ⚠️ Second piège, constaté le 16/09/2026 : le cache d'`expo lint` ────────────────────────
+     * `expo lint` met son cache ESLint dans **`apps/mobile/.expo/cache/eslint/`**, PAS dans le
+     * `.eslintcache` habituel. Un `import/no-unresolved` peut donc survivre à la **création** du
+     * fichier manquant : le verdict périmé est resservi tant que le fichier *importateur* n'a pas
+     * changé. Symptôme exact : `npm run lint` accuse `@/components/AiLabSection` d'être
+     * introuvable alors que `npx eslint src/app/settings.tsx` le résout (« matched ts path »), que
+     * `npm run typecheck` passe, et que le même code lint au vert dans un autre checkout.
+     * **Ne pas chercher un problème de résolution : vider `rm -rf apps/mobile/.expo/cache/eslint`.**
+     * Toucher le fichier importé ne sert à rien, la clé de cache porte sur l'importateur.
      */
     settings: {
       'import/resolver': {

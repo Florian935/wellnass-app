@@ -9,6 +9,27 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 16/09/2026 (quater) — Le piège du cache d'`expo lint`, et Mon corps prêt à atterrir
+
+Branche `feature/corps04-programme-compatible`, fusion de `dev` (`8d3807db`, correctif de hauteur
+de la scène 3D du Labo). Conflit unique sur `ETAT.md`, régénéré.
+
+**Une heure perdue, documentée pour la prochaine fois** — après la fusion, `npm run lint` accusait
+`@/components/AiLabSection` d'être introuvable. Or le fichier était là, identique octet pour octet
+à celui de `dev`, `npm run typecheck` passait, `npx eslint src/app/settings.tsx` le résolvait
+explicitement (« matched ts path »), et le même code lintait au vert dans le dépôt principal.
+Cause réelle : **`expo lint` met son cache ESLint dans `apps/mobile/.expo/cache/eslint/`**, pas
+dans le `.eslintcache` qu'on vide par réflexe. Le verdict d'`import/no-unresolved` d'avant la
+fusion était donc resservi, et **toucher le fichier importé n'y change rien** — la clé de cache
+porte sur l'importateur. Le remède tient en une ligne, `rm -rf apps/mobile/.expo/cache/eslint`, et
+il est désormais écrit dans [eslint.config.js](apps/mobile/eslint.config.js), à côté du premier
+piège de résolution consigné le 06/08/2026. C'est exactement le genre de faux positif qui fait
+douter d'un code sain.
+
+**Validation** — `typecheck`, `lint` et `test` passent tous les trois : **7 077 tests** (587 admin,
+3 078 shared, 3 412 mobile), 213 suites mobiles sur 213. Le lot Mon corps est prêt à rejoindre
+`dev`.
+
 ## 16/09/2026 (ter) — Mon corps : dev réparé, le lot est enfin vérifiable de bout en bout
 
 Branche `feature/corps04-programme-compatible`, fusion de `dev` (`4434a8b1`).
@@ -270,6 +291,44 @@ et RN Web dans `design/mon-corps-2026-09/`, quatre scénarios d’écran et ving
 Recette native en attente : [RECETTES.md §63](RECETTES.md#63-corps-02--silhouette-personnelle-et-intention-visuelle).
 Branche conservée localement. Le rendu 3D, la calibration et la génération d’entraînement restent
 des lots ultérieurs ; aucun déploiement d’application dans cette passe.
+
+## 16/09/2026 (ter) — LABO-01 : la 3D ne s’affichait pas sur l’APK, et rien ne le disait
+
+Constaté par Florian sur le **premier APK de recette** : la scène du Labo restait vide en haut de
+l’écran, sans message ni erreur. Deux défauts distincts, l’un qui casse, l’autre qui le cache.
+
+### Corrigé
+
+- 🔴 **Le canvas faisait zéro pixel de haut** (`LabScene3D.dom.tsx`). Dans une WebView, `html` et
+  `body` ont une hauteur **auto** : un canvas en `height: 100%` se résout donc contre un parent
+  sans hauteur. `canvas.clientHeight` valait 0, et le `resize()` du moteur retombait sur son garde
+  `|| 1` — three rendait consciencieusement une image **d’un pixel de haut**. Le prototype n’avait
+  pas le défaut parce que son canvas vivait dans un conteneur déjà dimensionné (`.stage-wrap`, en
+  `position: absolute; inset: 0`) ; en portant le composant, cette chaîne de hauteurs a été perdue.
+  Le canvas se mesure désormais sur la **fenêtre** (`position: fixed` + les quatre côtés, plutôt que
+  `inset` que les vieilles WebView Android ignorent), et `html`/`body` reçoivent une hauteur.
+- 🔴 **Et surtout : rien ne le signalait.** R8 ne couvrait que les cas où la scène **dit**
+  `ok: false` — WebGL absent, contexte perdu, bibliothèque en échec. Ici WebGL marchait
+  parfaitement, la scène se déclarait `ok`, et le repli 2D ne partait jamais. Deux filets ajoutés :
+  la page revérifie la taille du canvas 800 ms après la création et se déclare en échec si elle est
+  nulle ; et `LabStage` replie en 2D si **aucun statut** n’arrive en 5 s — WebView qui ne monte pas,
+  bundle DOM introuvable, JS mort avant le premier `onStatus`. **Le silence est désormais un échec**,
+  et c’est figé par 4 tests (`lab-stage.test.tsx`). C’était un constat de la revue du 15/09, laissé
+  ouvert : il est remonté en production le lendemain.
+
+### Technique — notes
+
+- ⚠️ **La chaîne native était saine**, vérifiée avant de chercher ailleurs : le bundle DOM
+  (`www.bundle/<hash>.html` + son entrée JS) est bien dans
+  `android/app/build/intermediates/assets/release/mergeReleaseAssets/`, et le module natif
+  `@expo/dom-webview` est présent et autolinké. Le problème était **dans la page**, pas dans
+  l’embarquement — c’est ce qui a permis de ne pas partir sur une fausse piste.
+- 🔴 **Un nouvel APK est nécessaire** : le bundle DOM est cuit dans les assets à la construction, un
+  changement JS ne se propage pas à l’APK existant. Avec un dev client + Metro, la vérification est
+  immédiate.
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0, **6 811 tests verts** (587 admin + 3 224
+  mobile + 2 999 shared). Commit précédent : `5ed60eb6`.
+
 
 ## 16/09/2026 (ter) — La queue du lot : le §7 de l'analyse IA, la recette, et le carnet d'innovation
 

@@ -148,7 +148,14 @@ la sync rule.
 
 La scène décide elle-même de son repli : si WebGL manque, si le contexte est perdu ou si la
 bibliothèque échoue, elle dit `ok: false` et l'écran bascule sur les **mêmes disques en 2D**
-(`react-native-svg`). Elle est de **hauteur fixe** : une WebView imbriquée dans une liste qui défile
+(`react-native-svg`).
+
+🔴 **Et le silence compte comme un échec** (ajouté le 16/09, après le premier APK). Ces trois cas ont
+un point commun : la scène **parle**. Le cas où elle ne dit rien — WebView qui ne monte pas, bundle
+DOM introuvable, canvas de taille nulle sur lequel WebGL tourne très bien — laissait le statut
+optimiste et la zone vide **indéfiniment**, sans même le message de repli. Deux filets : la page
+revérifie la taille de son canvas 800 ms après création, et `LabStage` replie en 2D si aucun statut
+n'arrive en 5 s. Elle est de **hauteur fixe** : une WebView imbriquée dans une liste qui défile
 se dispute les gestes avec elle, et c'est l'utilisateur qui perd. **Mouvement réduit** respecté : les
 transitions deviennent instantanées.
 
