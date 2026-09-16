@@ -10,6 +10,77 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 16/09/2026 (ter) — La queue du lot : le §7 de l'analyse IA, la recette, et le carnet d'innovation
+
+Commit de **rattrapage**, sur `dev`. Le commit `5ed60eb6` avait repris les 12 fichiers de code
+d'IA-LAB-01, mais quatre fichiers modifiés étaient restés au bord du chemin — dont le **§7 de
+l'analyse IA**, qui est pourtant la pièce qui justifie tout le reste. S'y ajoutent les artefacts non
+suivis de la salve « carnet d'innovation » (15/09), jamais committés.
+
+⚠️ **Commit volontairement mixte**, sur demande explicite de Florian (« /commit et tu pousses tout
+sur la dev »). Le périmètre couvre deux sujets sans rapport : la fin d'IA-LAB-01 et le carnet
+d'innovation. Scinder aurait supposé un découpage par morceaux (`RECETTES.md` et `BACKLOG.md` portent
+les deux), pour un gain nul une fois le tout poussé dans la même minute.
+
+### Ajouté
+
+- **`docs/product/ia-integration-analyse.md` §7 « Tester en gratuit avant d'engager un budget »**
+  — la section de fond, restée non committée depuis le 15/09 alors que tout le code qu'elle justifie
+  l'était. Comparatif des huit paliers gratuits du marché relevés au 15/09 (Gemini, Groq, Mistral,
+  Cerebras, GitHub Models, Cloudflare, OpenRouter), le piège de l'entraînement sur nos données, ce
+  que le gratuit économise **et ce qu'il n'économise pas** (une campagne de recette coûte ~4 $ : le
+  gratuit n'achète pas de l'argent, il achète le droit de ne pas choisir de fournisseur tout de
+  suite), et le phasage en trois temps. §7→8, 8→9, 9→10 décalées.
+- **[`RECETTES.md`](RECETTES.md) §67** — 43 critères d'IA-LAB-01, dont la grille de notation des six
+  signaux plantés et la chasse aux chiffres inventés.
+- **Carnet d'innovation du 15/09** (autres sessions, jamais committé) : trois specs d'US au stade
+  `spec` — [FANT-01](docs/specs/functional/us/fant01-fantome-course.md) (5.41),
+  [LETTRE-01](docs/specs/functional/us/lettre01-lettre-futur-moi.md) (7.32),
+  [RESERV-01](docs/specs/functional/us/reserv01-reservoir-glucides.md) (4.45) — trois analyses
+  produit (innovation, Labo, mon corps) et quatre dossiers de maquettes.
+- **`supabase/migrations/20260913204247_corps03_body_training_state.sql`** (CORPS-03) — le fichier
+  existait sur disque sans être suivi. 🔴 **Absent du registre
+  [`supabase/MIGRATIONS.md`](supabase/MIGRATIONS.md)**, comme `20260912235121_corps02_body_visual_state` :
+  `node scripts/etat.mjs` le signale à chaque exécution. À cocher par la session qui l'a poussée —
+  un fichier de migration suivi mais non enregistré, c'est exactement la divergence repo ↔ cloud que
+  le registre existe pour empêcher.
+
+### Modifié
+
+- **`packages/shared/src/ai-assist.ts`** — quota `coach: 20` et `AI_PROVIDER_LABELS`. Le quota du
+  mode d'exploration est **plus bas** que celui de `ask` (30) alors que c'est lui qu'on veut
+  utiliser : une analyse coûte dix fois le contexte d'une reformulation, et le palier gratuit de
+  Gemini plafonne autour de 1 500 appels/jour **pour tout le projet** — un seul testeur ne doit pas
+  pouvoir l'épuiser.
+- **`supabase/functions/ai-assist/index.ts`** — type d'appel `coach`, délégation à
+  `providers.ts`, consigne système avec ses garde-fous (pas de diagnostic, pas de chiffre inventé,
+  aveu explicite quand la donnée manque). L'import `npm:@anthropic-ai/sdk` disparaît au passage :
+  deux appels REST sans streaming ni outils ne justifient pas un SDK à démarrage froid.
+- **`BACKLOG.md`** — candidat **VBT-01** (vitesse de barre à la caméra), avec ses critères de sortie
+  fixés d'avance.
+
+### Corrigé
+
+- 🔴 **Collision de numéro de roadmap.** LETTRE-01 et IA-LAB-01 revendiquaient toutes deux `7.31`
+  dans leur front-matter — la salve d'innovation l'avait pris le 15/09 avant que la ligne
+  d'IA-LAB-01 n'existe. Deux specs sur le même numéro font diverger **silencieusement** ETAT.md et
+  la roadmap, et c'est précisément ce que le modèle de suivi à 4 niveaux existe pour éviter.
+  IA-LAB-01 garde `7.31` (sa ligne est créée et poussée, l'US est en recette) ; LETTRE-01, encore au
+  stade `spec` et **sans ligne de roadmap**, passe à `7.32` — le déplacement le moins coûteux.
+  L'arbitrage est daté dans la spec elle-même.
+
+### Technique / Notes
+
+- **Commit sur `dev` sans branche dédiée**, à l'encontre de la règle « une US = une branche » de
+  CLAUDE.md. Demande explicite et répétée de Florian pour ce chantier ; l'écart est assumé et
+  tracé ici plutôt que taire.
+- **Aucun secret** : les onze chemins non suivis ont été passés au crible (`sk-ant-`, `AIza…`,
+  `service_role`, JWT, clés privées) — rien. Les ~16 Mo de maquettes sont du HTML de canvas, même
+  nature que les dossiers `design/` déjà suivis.
+- **Vérifications** : `npm run lint` ✅ · `npm run typecheck` ✅ · `npm run test` — 2 999 tests
+  Vitest + 3 215 tests Jest sur 196 suites, **exit 0 lu sans pipe** ✅.
+
+
 ## 16/09/2026 (bis) — Réparation : les 12 fichiers d'IA-LAB-01 rejoignent leur documentation
 
 🔴 **`dev` ne compilait pas depuis un clone neuf, et c'est le commit `9b10cb8e` (LABO-01) qui l'avait

@@ -1,0 +1,93 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #120d08; }
+    a { color: #e0a97f; }
+    a:hover { color: #f2c9a4; }
+    @keyframes rise { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: .9; } 100% { transform: translateY(-50px); opacity: 0; } }
+    .b { animation: rise 3s linear infinite; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: radial-gradient(120% 60% at 78% 8%, #3a2a1a 0%, #1c150e 48%, #120d08 100%); color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; padding: 14px 20px 22px; gap: 12px;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+      <div style="font-weight: 600; font-size: 14px;">Le Labo</div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #e0a97f;">Jour 11 · musculation seule</div>
+    <div style="display: flex; align-items: baseline; gap: 8px;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1px; line-height: 1.02;">Force 3 jours</div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; color: #1c150e; background: #e0a97f; border-radius: 999px; padding: 2px 8px;">v1</div>
+    </div>
+  </div>
+
+  <svg width="350" height="236" viewBox="0 0 350 236" style="display: block; flex: none;" font-family="Space Mono, ui-monospace, monospace">
+    <defs>
+      <clipPath id="f1"><path d="M160,40 L160,86 A64,64 0 1,0 190,86 L190,40 Z"></path></clipPath>
+      <radialGradient id="g1" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e07a98" stop-opacity=".45"></stop><stop offset="1" stop-color="#e07a98" stop-opacity="0"></stop></radialGradient>
+    </defs>
+    <line x1="14" y1="30" x2="150" y2="30" stroke="#3a2e22" stroke-width="6" stroke-linecap="round"></line>
+    <rect x="22" y="6" width="14" height="21" rx="4" fill="#e07a98" opacity=".9"></rect>
+    <rect x="44" y="9" width="14" height="18" rx="4" fill="#e07a98" opacity=".6"></rect>
+    <rect x="66" y="7" width="14" height="20" rx="4" fill="#e0b155" opacity=".9"></rect>
+    <rect x="88" y="8" width="14" height="19" rx="4" fill="none" stroke="#c9b79a" stroke-width="1.2" stroke-dasharray="3 3"></rect>
+    <rect x="110" y="8" width="14" height="19" rx="4" fill="none" stroke="#c9b79a" stroke-width="1.2" stroke-dasharray="3 3"></rect>
+    <circle cx="175" cy="160" r="100" fill="url(#g1)"></circle>
+    <g clip-path="url(#f1)">
+      <rect x="100" y="162" width="150" height="10" fill="#e0b155"></rect>
+      <rect x="100" y="172" width="150" height="70" fill="#e07a98"></rect>
+      <circle class="b" cx="160" cy="210" r="2.6" fill="#fff"></circle>
+      <circle class="b" cx="186" cy="214" r="2" fill="#fff" style="animation-delay: -1.3s;"></circle>
+    </g>
+    <path d="M160,40 L160,86 A64,64 0 1,0 190,86 L190,40 Z" fill="rgba(255,255,255,.04)" stroke="rgba(244,236,221,.6)" stroke-width="2"></path>
+    <!-- piliers non activés : places vides -->
+    <path d="M40,164 L40,182 A22,22 0 1,0 52,182 L52,164 Z" fill="none" stroke="rgba(111,168,239,.45)" stroke-width="1.5" stroke-dasharray="3 3"></path>
+    <text x="46" y="156" font-size="9" fill="#8a9fbd" text-anchor="middle">COURSE</text>
+    <path d="M298,164 L298,182 A22,22 0 1,0 310,182 L310,164 Z" fill="none" stroke="rgba(169,186,126,.45)" stroke-width="1.5" stroke-dasharray="3 3"></path>
+    <text x="304" y="156" font-size="9" fill="#9aa684" text-anchor="middle">NUTRITION</text>
+    <rect x="0" y="222" width="350" height="4" fill="#6b4d33"></rect>
+    <rect x="0" y="226" width="350" height="10" fill="#3b2a1c"></rect>
+  </svg>
+
+  <!-- démarrage à froid -->
+  <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border-radius: 18px; background: rgba(255,255,255,.06); border: 1px solid rgba(244,236,221,.12);">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;"><div style="font-weight: 700; font-size: 14.5px;">Ton labo s'équipe</div><div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a;">11 / 21 jours</div></div>
+    <div style="height: 6px; border-radius: 3px; background: rgba(244,236,221,.12); overflow: hidden;"><div style="height: 6px; width: 52%; border-radius: 3px; background: #e0a97f;"></div></div>
+    <div style="font-size: 12.5px; line-height: 18px; color: #c9b79a;">Jusqu'à trois semaines de données, les projections restent en fourchette large. Les essais s'ouvrent ensuite.</div>
+  </div>
+
+  <!-- réactions disponibles -->
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #c9b79a;">Réactions dans ta formule</div>
+    <div style="display: flex; gap: 10px; align-items: center; min-height: 50px; box-sizing: border-box; padding: 8px 12px; border-radius: 14px; background: rgba(242,210,138,.08); border: 1px solid rgba(242,210,138,.28);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="#f2d28a" style="flex: none;"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"></path></svg>
+      <div style="flex: 1;"><div style="font-weight: 700; font-size: 13.5px;">Sommeil × intensité</div><div style="font-size: 12.5px; color: #d9ccb6;">7 h 30 de nuit tiennent tes séances lourdes.</div></div>
+    </div>
+    <div style="display: flex; gap: 10px; align-items: center; min-height: 50px; box-sizing: border-box; padding: 8px 12px; border-radius: 14px; background: rgba(224,177,85,.07); border: 1px solid rgba(224,177,85,.3);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e0b155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none;"><path d="M2 12h3l3-7 4 14 3-9 2 2h5"></path></svg>
+      <div style="flex: 1;"><div style="font-weight: 700; font-size: 13.5px;">Volume × décharge</div><div style="font-size: 12.5px; color: #d9ccb6;">Semaine 4 sans décharge prévue : à surveiller.</div></div>
+    </div>
+  </div>
+
+  <div style="margin-top: auto; display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 16px; border: 1px dashed rgba(244,236,221,.28);">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 1px;"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><line x1="12" y1="8" x2="12" y2="8"></line></svg>
+    <div style="font-size: 12.5px; line-height: 18px; color: #c9b79a;">Les réactions entre piliers n'apparaissent que si tu actives la Course ou la Nutrition. Sinon, rien ne change : ce labo te suffit.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

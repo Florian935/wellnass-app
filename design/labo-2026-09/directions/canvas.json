@@ -1,0 +1,146 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Les cinq directions — comparatif",
+      "x": 0,
+      "y": 0,
+      "w": 1200,
+      "h": 2100,
+      "print": "flow",
+      "page": "page-1"
+    },
+    {
+      "file": "CorpsA.dc.html",
+      "title": "A · Le corps",
+      "x": 1320,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true,
+      "page": "page-1"
+    },
+    {
+      "file": "BarreB.dc.html",
+      "title": "B · La barre",
+      "x": 1790,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true,
+      "page": "page-1"
+    },
+    {
+      "file": "ObjetsC.dc.html",
+      "title": "C · Les objets",
+      "x": 2260,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true,
+      "page": "page-1"
+    },
+    {
+      "file": "SemaineD.dc.html",
+      "title": "D · La semaine",
+      "x": 2730,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true,
+      "page": "page-1"
+    },
+    {
+      "file": "DisquesE.dc.html",
+      "title": "E · Les disques",
+      "x": 3200,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true,
+      "page": "page-1"
+    },
+    {
+      "file": "Tour2.dc.html",
+      "title": "Tour 2 — compte rendu",
+      "x": 0,
+      "y": 0,
+      "w": 1200,
+      "h": 2450,
+      "print": "flow",
+      "page": "page-2"
+    },
+    {
+      "file": "DisquesE2.dc.html",
+      "title": "E · Les disques, version 2",
+      "x": 1320,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true,
+      "page": "page-2"
+    },
+    {
+      "file": "CordeF.dc.html",
+      "title": "F · La corde",
+      "x": 1790,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true,
+      "page": "page-2"
+    },
+    {
+      "file": "SalleG.dc.html",
+      "title": "G · Ta salle",
+      "x": 2260,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true,
+      "page": "page-2"
+    },
+    {
+      "file": "ChronoH.dc.html",
+      "title": "H · Le chrono",
+      "x": 2730,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true,
+      "page": "page-2"
+    }
+  ],
+  "annotations": [
+    {
+      "id": "jouer",
+      "x": 1320,
+      "y": -150,
+      "w": 1100,
+      "text": "Cinq prototypes, mêmes quatre leviers et mêmes règles. Essaie : tel quel (tension), puis Glucides + et Musculation − (synergies), puis Balance − et Course + (garde-fou). Données fictives.",
+      "page": "page-1"
+    },
+    {
+      "id": "jouer-2",
+      "x": 1320,
+      "y": -150,
+      "w": 1100,
+      "page": "page-2",
+      "text": "Tour 2 — mêmes leviers, mêmes règles. Essaie : tel quel (tension), Glucides + et Musculation − (synergies), Balance − et Course + (garde-fou). Données fictives."
+    }
+  ],
+  "launch": {
+    "view": "canvas",
+    "page": "page-2"
+  },
+  "pages": [
+    {
+      "id": "page-1",
+      "name": "Tour 1 · cinq directions"
+    },
+    {
+      "id": "page-2",
+      "name": "Tour 2 · les disques et trois concepts"
+    }
+  ]
+}

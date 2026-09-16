@@ -1,0 +1,266 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; } a:hover { color: #8a3c1f; }
+    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+    @keyframes impact { 0% { transform: scale(.55); opacity: .55; } 100% { transform: scale(1.12); opacity: 0; } }
+    @keyframes flow { to { stroke-dashoffset: -64; } }
+    @keyframes level { from { transform: translateX(0); } to { transform: translateX(-48px); } }
+    @keyframes halo { 0%, 100% { transform: scale(1); opacity: .5; } 50% { transform: scale(1.5); opacity: 0; } }
+    @keyframes souffle { 0%, 100% { transform: scale(.985); opacity: .45; } 50% { transform: scale(1.015); opacity: .8; } }
+    .fb { transform-box: fill-box; transform-origin: center; }
+    .k { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .h2 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 36px; letter-spacing: -1.2px; line-height: 1.05; margin: 8px 0 0; color: #33291f; text-wrap: balance; }
+    .lead { font-size: 16px; line-height: 1.6; color: #5c4a35; max-width: 780px; text-wrap: pretty; }
+    .card { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .ct { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.5px; line-height: 1.15; color: #33291f; }
+    .cb { font-size: 14px; line-height: 1.55; color: #786a59; text-wrap: pretty; }
+    .mini { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 5px; }
+    .mn { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; color: #b14f2b; }
+    .mt { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.4px; line-height: 1.1; color: #33291f; }
+    .mb { font-size: 12.5px; line-height: 1.45; color: #786a59; text-wrap: pretty; }
+    .row { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; padding: 14px 0; border-bottom: 1px solid #ece0cd; }
+    .rt { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.3px; color: #33291f; line-height: 1.2; }
+    .rb { font-size: 14px; line-height: 1.55; color: #786a59; text-wrap: pretty; }
+    .code { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #a34e2c; background: #f3ddd0; border-radius: 6px; padding: 1px 6px; }
+    .fam-h { display: flex; align-items: center; gap: 10px; padding-bottom: 10px; border-bottom: 1.5px solid #33291f; }
+    .fam-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 21px; letter-spacing: -.5px; color: #33291f; }
+    .idea { padding: 11px 0; border-bottom: 1px solid #ece0cd; display: flex; flex-direction: column; gap: 3px; }
+    .in { font-weight: 700; font-size: 15px; color: #33291f; }
+    .id { font-size: 13.5px; line-height: 1.5; color: #786a59; text-wrap: pretty; }
+    table.t { width: 100%; border-collapse: collapse; }
+    table.t th { text-align: left; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #786a59; font-weight: 400; padding: 0 16px 10px 0; border-bottom: 1.5px solid #33291f; }
+    table.t td { padding: 12px 16px 12px 0; border-bottom: 1px solid #ece0cd; font-size: 14px; line-height: 1.45; color: #33291f; vertical-align: top; }
+    table.t td.m { font-weight: 700; white-space: nowrap; }
+    table.t td.o { color: #786a59; }
+    .pill { font-size: 11.5px; font-weight: 600; color: #5c4a35; border: 1px solid #e2d3bc; border-radius: 999px; padding: 2px 9px; line-height: 1.4; }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
+</helmet>
+<div style="width: 1200px; box-sizing: border-box; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 0 0 80px; display: flex; flex-direction: column; gap: 64px;">
+
+  <!-- ouverture en scène -->
+  <div style="background: radial-gradient(72% 58% at 12% 8%, rgba(107,0,40,.92) 0%, rgba(107,0,40,0) 72%), radial-gradient(70% 56% at 94% 14%, rgba(42,100,173,.9) 0%, rgba(42,100,173,0) 72%), radial-gradient(90% 60% at 50% 104%, rgba(58,86,34,.95) 0%, rgba(58,86,34,0) 74%), #1c150e; color: #fff; border-radius: 0 0 40px 40px; padding: 60px 72px 52px; display: grid; grid-template-columns: minmax(0, 1fr) 420px; gap: 32px; align-items: center;">
+    <div style="display: flex; flex-direction: column; gap: 18px;">
+      <div class="k" style="color: rgba(255,255,255,.8);">FitTrio · exploration · version 2 · 14/09/2026</div>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 72px; letter-spacing: -2.8px; line-height: .98; text-wrap: balance;">Le Labo, là où tes piliers se croisent</div>
+      <div style="font-size: 17px; line-height: 1.6; color: rgba(255,255,255,.86); max-width: 620px;">Ton retour sur la v1 : le concept est là, mais « labo » était à prendre au sens figuré, et les fioles ne ressemblaient ni à l'app ni à son thème. Cette version garde le fond et change tout le reste : un endroit où l'on compose, croise et analyse tous ses piliers activés, dessiné avec la langue visuelle des dashboards immersifs.</div>
+    </div>
+    <svg width="420" height="300" viewBox="0 0 350 250" style="display: block; flex: none; overflow: visible;">
+      <defs><radialGradient id="herog-muscu" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e07a98" stop-opacity=".62"></stop><stop offset=".7" stop-color="#e07a98" stop-opacity=".22"></stop><stop offset="1" stop-color="#e07a98" stop-opacity=".08"></stop></radialGradient><radialGradient id="herog-course" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#6fa8ef" stop-opacity=".62"></stop><stop offset=".7" stop-color="#6fa8ef" stop-opacity=".22"></stop><stop offset="1" stop-color="#6fa8ef" stop-opacity=".08"></stop></radialGradient><radialGradient id="herog-nutrition" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#a9ba7e" stop-opacity=".62"></stop><stop offset=".7" stop-color="#a9ba7e" stop-opacity=".22"></stop><stop offset="1" stop-color="#a9ba7e" stop-opacity=".08"></stop></radialGradient><clipPath id="heroclip-n"><circle cx="175" cy="168" r="70"></circle></clipPath></defs>
+      <circle class="fb" cx="175" cy="128" r="124" fill="none" stroke="#e0b155" stroke-width="1.2" stroke-dasharray="2 6" style="animation: souffle 6s ease-in-out infinite;"></circle>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="130" cy="90" r="70" fill="url(#herog-muscu)" stroke="#e07a98" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 5s ease-in-out 0s infinite;"></circle><circle class="fb" cx="130" cy="90" r="70" fill="none" stroke="#e07a98" stroke-width="2" style="animation: impact 2.8s ease-out infinite;"></circle></g>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="220" cy="90" r="70" fill="url(#herog-course)" stroke="#6fa8ef" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 5.7s ease-in-out -1.3s infinite;"></circle><circle cx="220" cy="90" r="63" fill="none" stroke="#6fa8ef" stroke-width="1.6" stroke-dasharray="10 22" stroke-linecap="round" opacity=".85" style="animation: flow 2.4s linear infinite;"></circle></g>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="175" cy="168" r="70" fill="url(#herog-nutrition)" stroke="#a9ba7e" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 6.4s ease-in-out -2.6s infinite;"></circle><g clip-path="url(#heroclip-n)"><g style="animation: level 3.2s linear infinite;"><path d="M45,180 q12,-6 24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 L305,242 L45,242 Z" fill="#a9ba7e" opacity=".22"></path></g></g></g>
+      <circle cx="175" cy="116" r="4" fill="#fff"></circle><circle cx="175" cy="116" r="8" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1"></circle>
+      <circle cx="175" cy="66" r="11.5" fill="#1c150e" stroke="#e0b155" stroke-width="2"></circle><text x="175" y="70" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="#e0b155" text-anchor="middle">1</text><circle class="fb" cx="127" cy="144" r="12" fill="#f2d28a" style="animation: halo 2.2s ease-out infinite;"></circle><circle cx="127" cy="144" r="11.5" fill="#f2d28a" stroke="#f2d28a" stroke-width="2"></circle><text x="127" y="148" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="#1c150e" text-anchor="middle">2</text><circle class="fb" cx="223" cy="144" r="12" fill="#f2d28a" style="animation: halo 2.2s ease-out infinite;"></circle><circle cx="223" cy="144" r="11.5" fill="#f2d28a" stroke="#f2d28a" stroke-width="2"></circle><text x="223" y="148" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="#1c150e" text-anchor="middle">1</text>
+      <text x="94" y="78" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1" fill="#fff" text-anchor="middle">MUSCU</text><text x="256" y="78" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1" fill="#fff" text-anchor="middle">COURSE</text><text x="175" y="210" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1" fill="#fff" text-anchor="middle">NUTRITION</text>
+    </svg>
+  </div>
+
+  <div style="padding: 0 72px; display: flex; flex-direction: column; gap: 64px;">
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: -24px;">
+    <div class="card"><div class="k" style="color: #b14f2b;">À droite de cette planche</div><div class="ct">14 écrans en 3 rangées</div><div class="cb">Composer et Croiser sont cliquables. Données fictives, même personnage que la v1.</div></div>
+    <div class="card"><div class="k" style="color: #b14f2b;">À part</div><div class="ct">La triade en 3D</div><div class="cb">Le prototype jouable refait dans cette DA : trois volumes de pilier qui se chevauchent, du son, une voix.</div></div>
+    <div class="card"><div class="k" style="color: #b14f2b;">Archivé</div><div class="ct">La v1 « chimie »</div><div class="cb">Fioles, ballon et alambic sont rangés dans <span class="code">design/labo-2026-09/v1-chimie/</span>, hors de cette toile.</div></div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">01 — Ce qui change</div><div class="h2">Même concept, autre regard</div></div>
+
+    <table class="t">
+      <thead><tr><th>Sujet</th><th>Version 1</th><th>Version 2</th></tr></thead>
+      <tbody>
+        <tr><td class="m">Le sens de « labo »</td><td class="o">Un laboratoire de chimie : paillasse, fioles, alambic</td><td>Ton espace à toi, au sens figuré : là où tu composes et croises tes piliers</td></tr>
+        <tr><td class="m">L'image centrale</td><td class="o">Un ballon rempli de couches colorées</td><td>La triade : les trois scènes de pilier, en cercles qui se chevauchent</td></tr>
+        <tr><td class="m">L'univers visuel</td><td class="o">Atelier nocturne, bois, lampe, verre</td><td>La DA de l'app : scène en dégradé de pilier en haut, papier crème dessous (DASH-01)</td></tr>
+        <tr><td class="m">Les mots</td><td class="o">Paillasse, éléments, réactions, incuber, distiller</td><td>Composer, Croiser, Tester, Retenir ; croisements ; cycle ; bilan ; découvertes</td></tr>
+        <tr><td class="m">Ce qui ne bouge pas</td><td class="o" colspan="2" style="color: #33291f;">La formule qui orchestre les piliers sans les dupliquer, les garde-fous calculés, l'expérience sur soi, le bilan de cycle, le carnet de ce qu'on sait de soi, la vue sobre toujours disponible.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">02 — Le manque</div><div class="h2">Trois piliers, trois onglets, aucun endroit commun</div></div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+      <div class="card"><div class="ct">Chaque pilier vit seul</div><div class="cb">Musculation, Course et Nutrition ont chacun leur scène et leurs réglages. Leurs croisements existent, mais éparpillés : un bandeau ici, une carte là.</div></div>
+      <div class="card"><div class="ct">Le moteur est déjà là</div><div class="cb">Le catalogue compte 87 analyses entre piliers, dont une trentaine livrées : interférence, périodisation glucidique, garde-fou unifié, charge combinée, protéines par kilo… Elles n'ont pas de maison.</div></div>
+      <div class="card"><div class="ct">Insights raconte, le Labo fait faire</div><div class="cb">L'écran Insights choisit pour toi ce qui mérite d'être vu. Le Labo est l'endroit actif : tu règles, tu poses une question, tu testes, tu gardes.</div></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">03 — Le concept</div><div class="h2">Quatre gestes, une boucle</div></div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
+      <div class="card" style="gap: 10px;"><div style="display: flex; justify-content: space-between; align-items: center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="4" x2="5" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line><line x1="19" y1="4" x2="19" y2="20"></line><circle cx="5" cy="14" r="2.2" fill="#b14f2b"></circle><circle cx="12" cy="8" r="2.2" fill="#b14f2b"></circle><circle cx="19" cy="16" r="2.2" fill="#b14f2b"></circle></svg><span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">1 / 4</span></div><div class="ct">Composer</div><div class="cb">Doser les leviers de tous tes piliers sur un seul écran. Les croisements apparaissent pendant que tu règles, garde-fous compris.</div></div><div class="card" style="gap: 10px;"><div style="display: flex; justify-content: space-between; align-items: center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="1.9"><circle cx="9" cy="12" r="6.5"></circle><circle cx="15" cy="12" r="6.5"></circle></svg><span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">2 / 4</span></div><div class="ct">Croiser</div><div class="cb">Poser deux leviers de piliers différents face à face, sur tes propres données : un lien, ou pas.</div></div><div class="card" style="gap: 10px;"><div style="display: flex; justify-content: space-between; align-items: center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><line x1="12" y1="5" x2="12" y2="19"></line><path d="M6.5 14.5l1.5-5 1.5 5"></path><line x1="7" y1="13" x2="9" y2="13"></line><path d="M15 9.5h1.8a1.3 1.3 0 0 1 0 2.5H15zM15 12h2.2a1.3 1.3 0 0 1 0 2.5H15z"></path></svg><span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">3 / 4</span></div><div class="ct">Tester</div><div class="cb">Quand un croisement reste une piste, une expérience tirée au sort tranche sur toi.</div></div><div class="card" style="gap: 10px;"><div style="display: flex; justify-content: space-between; align-items: center;"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"></path></svg><span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">4 / 4</span></div><div class="ct">Retenir</div><div class="cb">Découvertes, ressenti et bilans de cycle : ce que tu sais de toi, avec d'où ça vient.</div></div>
+    </div>
+    <div class="cb" style="font-size: 15px; color: #5c4a35; max-width: 900px;">La boucle : on <b style="color: #33291f;">compose</b> une formule, on la vit un cycle de 4 à 12 semaines, on <b style="color: #33291f;">croise</b> ce qui s'est passé, on <b style="color: #33291f;">teste</b> ce qui reste douteux, on <b style="color: #33291f;">retient</b> ce qui est acquis — et la version suivante part de là. Le numéro des gestes suit cette boucle.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">04 — La direction artistique</div><div class="h2">La triade : tes piliers, en un seul dessin</div></div>
+
+    <div style="background: radial-gradient(72% 58% at 12% 8%, rgba(107,0,40,.92) 0%, rgba(107,0,40,0) 72%), radial-gradient(70% 56% at 94% 14%, rgba(42,100,173,.9) 0%, rgba(42,100,173,0) 72%), radial-gradient(90% 60% at 50% 104%, rgba(58,86,34,.95) 0%, rgba(58,86,34,0) 74%), #1c150e; border-radius: 32px; padding: 32px 36px; display: grid; grid-template-columns: 420px minmax(0, 1fr); gap: 32px; align-items: center;">
+      <svg width="420" height="300" viewBox="0 0 350 250" style="display: block; flex: none; overflow: visible;">
+      <defs><radialGradient id="dag-muscu" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e07a98" stop-opacity=".62"></stop><stop offset=".7" stop-color="#e07a98" stop-opacity=".22"></stop><stop offset="1" stop-color="#e07a98" stop-opacity=".08"></stop></radialGradient><radialGradient id="dag-course" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#6fa8ef" stop-opacity=".62"></stop><stop offset=".7" stop-color="#6fa8ef" stop-opacity=".22"></stop><stop offset="1" stop-color="#6fa8ef" stop-opacity=".08"></stop></radialGradient><radialGradient id="dag-nutrition" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#a9ba7e" stop-opacity=".62"></stop><stop offset=".7" stop-color="#a9ba7e" stop-opacity=".22"></stop><stop offset="1" stop-color="#a9ba7e" stop-opacity=".08"></stop></radialGradient><clipPath id="daclip-n"><circle cx="175" cy="168" r="70"></circle></clipPath></defs>
+      <circle class="fb" cx="175" cy="128" r="124" fill="none" stroke="#e0b155" stroke-width="1.2" stroke-dasharray="2 6" style="animation: souffle 6s ease-in-out infinite;"></circle>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="130" cy="90" r="70" fill="url(#dag-muscu)" stroke="#e07a98" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 5s ease-in-out 0s infinite;"></circle><circle class="fb" cx="130" cy="90" r="70" fill="none" stroke="#e07a98" stroke-width="2" style="animation: impact 2.8s ease-out infinite;"></circle></g>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="220" cy="90" r="70" fill="url(#dag-course)" stroke="#6fa8ef" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 5.7s ease-in-out -1.3s infinite;"></circle><circle cx="220" cy="90" r="63" fill="none" stroke="#6fa8ef" stroke-width="1.6" stroke-dasharray="10 22" stroke-linecap="round" opacity=".85" style="animation: flow 2.4s linear infinite;"></circle></g>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="175" cy="168" r="70" fill="url(#dag-nutrition)" stroke="#a9ba7e" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 6.4s ease-in-out -2.6s infinite;"></circle><g clip-path="url(#daclip-n)"><g style="animation: level 3.2s linear infinite;"><path d="M45,180 q12,-6 24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 L305,242 L45,242 Z" fill="#a9ba7e" opacity=".22"></path></g></g></g>
+      <circle cx="175" cy="116" r="4" fill="#fff"></circle><circle cx="175" cy="116" r="8" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1"></circle>
+      <circle cx="175" cy="66" r="11.5" fill="#1c150e" stroke="#e0b155" stroke-width="2"></circle><text x="175" y="70" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="#e0b155" text-anchor="middle">1</text><circle class="fb" cx="223" cy="144" r="12" fill="#f2d28a" style="animation: halo 2.2s ease-out infinite;"></circle><circle cx="223" cy="144" r="11.5" fill="#f2d28a" stroke="#f2d28a" stroke-width="2"></circle><text x="223" y="148" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="#1c150e" text-anchor="middle">1</text><circle class="fb" cx="175" cy="116" r="12" fill="#f08a7e" style="animation: halo 2.2s ease-out infinite;"></circle><circle cx="175" cy="116" r="11.5" fill="#f08a7e" stroke="#f08a7e" stroke-width="2"></circle><text x="175" y="120" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="#1c150e" text-anchor="middle">1</text>
+      <text x="94" y="78" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1" fill="#fff" text-anchor="middle">MUSCU</text><text x="94" y="93" font-family="Hanken Grotesk, sans-serif" font-size="12" font-weight="600" fill="rgba(255,255,255,.85)" text-anchor="middle">4 séances</text><text x="256" y="78" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1" fill="#fff" text-anchor="middle">COURSE</text><text x="256" y="93" font-family="Hanken Grotesk, sans-serif" font-size="12" font-weight="600" fill="rgba(255,255,255,.85)" text-anchor="middle">30 km</text><text x="175" y="210" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1" fill="#fff" text-anchor="middle">NUTRITION</text><text x="175" y="225" font-family="Hanken Grotesk, sans-serif" font-size="12" font-weight="600" fill="rgba(255,255,255,.85)" text-anchor="middle">−250 kcal</text>
+    </svg>
+      <div style="display: flex; flex-direction: column;">
+        <div style="display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.12);">
+          <div style="display: flex; justify-content: center;"><svg width="34" height="26" viewBox="0 0 34 26"><circle cx="11" cy="13" r="9" fill="#e07a98" fill-opacity=".4" stroke="#e07a98" stroke-width="1.5"></circle><circle cx="23" cy="13" r="9" fill="#6fa8ef" fill-opacity=".4" stroke="#6fa8ef" stroke-width="1.5"></circle></svg></div>
+          <div><div style="font-weight: 700; font-size: 14.5px; color: #fff;">Un cercle par pilier activé</div><div style="font-size: 13px; line-height: 1.5; color: #d9ccb6;">Les couleurs des scènes de DASH-01 (bordeaux, bleu nuit, vert profond). Sa taille dit la part du pilier dans ta formule. Chacun garde sa matière : l'onde de choc de la muscu, le flux de la course, le niveau qui ondule de la nutrition.</div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.12);">
+          <div style="display: flex; justify-content: center;"><svg width="26" height="26" viewBox="0 0 26 26"><circle cx="13" cy="13" r="11" fill="#f2d28a" stroke="#f2d28a" stroke-width="2"></circle><text x="13" y="17" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="#1c150e" text-anchor="middle">2</text></svg></div>
+          <div><div style="font-weight: 700; font-size: 14.5px; color: #fff;">Là où deux cercles se touchent, un croisement</div><div style="font-size: 13px; line-height: 1.5; color: #d9ccb6;">Doré quand les piliers s'aident, ambre quand ils se gênent, corail quand un garde-fou bloque — au centre, quand les trois sont en jeu. Le chiffre compte les croisements de la zone.</div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.12);">
+          <div style="display: flex; justify-content: center;"><svg width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="none" stroke="#e0b155" stroke-width="1.4" stroke-dasharray="2 5"></circle></svg></div>
+          <div><div style="font-weight: 700; font-size: 14.5px; color: #fff;">Le socle autour</div><div style="font-size: 13px; line-height: 1.5; color: #d9ccb6;">Sommeil, énergie, douleurs : un anneau pointillé qui respire, parce qu'il entoure les trois piliers sans en être un.</div></div>
+        </div>
+        <div style="display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 12px; align-items: start; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,.12);">
+          <div style="display: flex; justify-content: center;"><svg width="30" height="30" viewBox="0 0 30 30"><circle cx="15" cy="15" r="12" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="1.3" stroke-dasharray="4 4"></circle></svg></div>
+          <div><div style="font-weight: 700; font-size: 14.5px; color: #fff;">Un pilier non activé</div><div style="font-size: 13px; line-height: 1.5; color: #d9ccb6;">Un cercle vide en pointillé, sans reproche ni incitation appuyée (décision H).</div></div>
+        </div>
+      </div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+      <div class="card"><div class="k">La scène et le papier</div><div class="cb">Comme les dashboards : la scène sombre en haut porte la triade et l'action principale ; dessous, sur papier crème, on lit, on compare, on règle.</div></div>
+      <div class="card"><div class="k">La lentille</div><div class="cb">Deux cercles qui se chevauchent, aux couleurs des deux piliers en jeu : c'est l'icône de tout croisement, dans les listes, les découvertes et la carte.</div></div>
+      <div class="card"><div class="k">Déjà dans le code</div><div class="cb">Les matières existent : <span class="code">ImpactSilhouette</span> <span class="code">FlowTrace</span> <span class="code">FillLevel</span> <span class="code">BreathRings</span> dans <span class="code">components/stage/matter</span>. La triade les assemble.</div></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">05 — Les quatorze écrans, à droite</div><div class="h2">Le parcours</div></div>
+
+    <div class="k" style="color: #33291f;">Rangée 1 · Composer</div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px;">
+      <div class="mini"><div class="mn">01</div><div class="mt">Le Labo</div><div class="mb">La triade de tes piliers, ce qui se croise aujourd'hui, et les quatre gestes.</div></div><div class="mini"><div class="mn">02 · jouable</div><div class="mt">Composer</div><div class="mb">Quatre leviers de trois piliers : les cercles, l'équilibre et les croisements bougent en direct.</div></div><div class="mini"><div class="mn">03</div><div class="mt">Un croisement</div><div class="mb">Le mécanisme, tes données, la recherche, trois façons de résoudre.</div></div><div class="mini"><div class="mn">04</div><div class="mt">Et si… ?</div><div class="mb">La projection des trois objectifs à la fois : un pilier ne gagne jamais seul.</div></div><div class="mini"><div class="mn">05</div><div class="mt">Un levier</div><div class="mb">Ta dose, la recherche contre tes données, et avec quoi il se croise.</div></div>
+    </div>
+    <div class="k" style="color: #33291f;">Rangée 2 · Croiser et tester</div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
+      <div class="mini"><div class="mn">06 · jouable</div><div class="mt">Croiser</div><div class="mb">Quatre paires de leviers, un nuage de points, une phrase honnête — y compris « pas de lien ».</div></div><div class="mini"><div class="mn">07</div><div class="mt">La carte</div><div class="mb">Les 55 paires de tes leviers d'un coup d'œil : ce qui aide, ce qui freine, ce qui manque.</div></div><div class="mini"><div class="mn">08</div><div class="mt">Tester sur moi</div><div class="mb">Protocole tiré au sort, mesures sans saisie, verdict scellé jusqu'au bout.</div></div><div class="mini"><div class="mn">09</div><div class="mt">Le cycle</div><div class="mb">Semaine par semaine, pilier par pilier : chaque case se remplit de ce que tu as fait.</div></div>
+    </div>
+    <div class="k" style="color: #33291f;">Rangée 3 · Retenir et entrer autrement</div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px;">
+      <div class="mini"><div class="mn">10</div><div class="mt">Le bilan</div><div class="mb">Ta triade au départ et à la fin, ce qui a porté, ce qui a coûté, la v3.</div></div><div class="mini"><div class="mn">11</div><div class="mt">Tes découvertes</div><div class="mb">Le ressenti dicté qui devient une piste, et tout ce que tu sais de toi.</div></div><div class="mini"><div class="mn">12 · IA</div><div class="mt">Compose avec moi</div><div class="mb">Ton objectif dicté devient un brouillon vérifié par le calcul.</div></div><div class="mini"><div class="mn">13</div><div class="mt">Partir d'une formule</div><div class="mb">Des formules de coach, avec leur empreinte de piliers.</div></div><div class="mini"><div class="mn">14 · décision H</div><div class="mt">Un seul pilier</div><div class="mb">Le Labo avec la muscu seule : les autres cercles attendent en pointillé.</div></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">06 — Complet sans être touffu</div><div class="h2">Trois profondeurs de lecture</div></div>
+
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+      <div class="card"><div class="k" style="color: #b14f2b;">Un coup d'œil</div><div class="ct">La triade</div><div class="cb">Tailles, chevauchements, marqueurs : on sait en une seconde si ses piliers s'accordent.</div></div>
+      <div class="card"><div class="k" style="color: #b14f2b;">Comprendre</div><div class="ct">Les croisements listés</div><div class="cb">Chaque croisement en une ligne, puis sa feuille : mécanisme, données, recherche, résolutions.</div></div>
+      <div class="card"><div class="k" style="color: #b14f2b;">Explorer</div><div class="ct">Croiser et la carte</div><div class="cb">Toutes les paires de leviers, et n'importe laquelle posée face à face sur tes données.</div></div>
+    </div>
+    <div class="cb" style="font-size: 15px; color: #5c4a35; max-width: 900px;">Le même principe que le bilan de séance à trois niveaux (MUSCU-UX02) : la complexité est rangée, jamais cachée. Et le retour sur soi remonte dans le même endroit — un ressenti dicté trois fois devient une piste à croiser.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">07 — La banque</div><div class="h2">24 idées pour remplir le Labo</div></div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 40px;">
+      <div style="display: flex; flex-direction: column;">
+        <div class="fam-h"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="4" x2="5" y2="20"></line><line x1="12" y1="4" x2="12" y2="20"></line><line x1="19" y1="4" x2="19" y2="20"></line><circle cx="5" cy="14" r="2.2" fill="#b14f2b"></circle><circle cx="12" cy="8" r="2.2" fill="#b14f2b"></circle><circle cx="19" cy="16" r="2.2" fill="#b14f2b"></circle></svg><span class="fam-n">Composer</span></div>
+        <div class="idea"><div class="in">La formule née de l'objectif</div><div class="id">Le premier brouillon sort de l'objectif et du régime de guidage (GUID-01) : personne ne part d'un écran vide.</div></div><div class="idea"><div class="in">Un réglage par semaine</div><div class="id">Une règle de méthode : un seul levier bouge au bilan du lundi, sinon on ne sait plus ce qui agit.</div></div><div class="idea"><div class="in">La variante</div><div class="id">Vacances, déplacement, blessure : une branche de la formule, qui revient ensuite au tronc.</div></div><div class="idea"><div class="in">Et si… sur trois piliers</div><div class="id">Chaque réglage montre ce qu'il change sur les trois objectifs à la fois, fourchette comprise.</div></div>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+        <div class="fam-h"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="1.9"><circle cx="9" cy="12" r="6.5"></circle><circle cx="15" cy="12" r="6.5"></circle></svg><span class="fam-n">Croiser</span></div>
+        <div class="idea"><div class="in">La carte des paires</div><div class="id">Tous tes leviers croisés deux à deux ; une case vide dit quelle donnée manque.</div></div><div class="idea"><div class="in">Le décalage réglable</div><div class="id">Même jour, lendemain, semaine suivante : le lien d'aujourd'hui n'est pas celui de demain.</div></div><div class="idea"><div class="in">« Pas de lien » est un résultat</div><div class="id">Savoir que tes pas ne disent rien de ton poids évite de chercher au mauvais endroit.</div></div><div class="idea"><div class="in">D'où vient ce croisement ?</div><div class="id">La chaîne de calcul et les données derrière chaque phrase, en un appui (idée 9).</div></div>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+        <div class="fam-h"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><line x1="12" y1="5" x2="12" y2="19"></line><path d="M6.5 14.5l1.5-5 1.5 5"></path><line x1="7" y1="13" x2="9" y2="13"></line><path d="M15 9.5h1.8a1.3 1.3 0 0 1 0 2.5H15zM15 12h2.2a1.3 1.3 0 0 1 0 2.5H15z"></path></svg><span class="fam-n">Tester</span></div>
+        <div class="idea"><div class="in">Une piste devient une expérience</div><div class="id">Depuis Croiser, la carte ou un croisement : le protocole est proposé, borné par les garde-fous.</div></div><div class="idea"><div class="in">Le verdict scellé</div><div class="id">Pas de résultat intermédiaire : regarder en cours de route fausse l'expérience, et l'attente fait revenir.</div></div><div class="idea"><div class="in">Mesuré sans saisie</div><div class="id">Les critères sortent de ce que l'app enregistre déjà : répétitions, allure, RPE, sommeil.</div></div><div class="idea"><div class="in">Des protocoles écrits par un coach</div><div class="id">Le back-office publie les expériences permises, leurs bornes et leurs critères d'arrêt.</div></div>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+        <div class="fam-h"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"></path></svg><span class="fam-n">Retenir</span></div>
+        <div class="idea"><div class="in">Les découvertes et leur source</div><div class="id">Expérience, bilan, croisement ou ressenti : chaque savoir dit d'où il vient et combien on peut s'y fier.</div></div><div class="idea"><div class="in">Le ressenti qui devient piste</div><div class="id">Une phrase dictée qui revient ouvre un croisement proposé.</div></div><div class="idea"><div class="in">La triade avant / après</div><div class="id">Le bilan de cycle montre comment ta formule a changé de forme.</div></div><div class="idea"><div class="in">Le carnet exportable</div><div class="id">Tes formules, expériences et découvertes en PDF, pour un coach ou un médecin (TRI-14).</div></div>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+        <div class="fam-h"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"></path><path d="M4 16l5-6 4 3 7-8"></path></svg><span class="fam-n">Rendre vivant</span></div>
+        <div class="idea"><div class="in">La triade qui respire</div><div class="id">Les matières de DASH-01 animent les cercles ; le mode « mouvement réduit » les fige.</div></div><div class="idea"><div class="in">La triade en 3D</div><div class="id">Trois volumes qui se chevauchent, qu'on fait tourner du doigt (prototype joint).</div></div><div class="idea"><div class="in">Le croisement qui s'entend</div><div class="id">Une note douce pour une synergie, une plus sourde pour une tension, une vibration au garde-fou.</div></div><div class="idea"><div class="in">La triade sur l'accueil</div><div class="id">Une version miniature dans la scène d'accueil, porte d'entrée du Labo.</div></div>
+      </div>
+      <div style="display: flex; flex-direction: column;">
+        <div class="fam-h"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#b14f2b" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><line x1="12" y1="18" x2="12" y2="22"></line></svg><span class="fam-n">L'IA à côté</span></div>
+        <div class="idea"><div class="in">Compose avec moi</div><div class="id">L'objectif dicté devient un brouillon ; le moteur vérifie chaque dose, le modèle raconte et dit ce qu'il a supposé.</div></div><div class="idea"><div class="in">Explique-moi ce croisement</div><div class="id">La même feuille en mots simples, au niveau du régime de guidage.</div></div><div class="idea"><div class="in">Pourquoi mon cycle a calé ?</div><div class="id">L'Enquête (idée 5) appliquée à un cycle : pistes classées, pistes écartées.</div></div><div class="idea"><div class="in">Fable à l'atelier</div><div class="id">Le modèle le plus capable écrit les règles de croisement et les fiches FR/EN, relues par un coach ; l'app tourne sans réseau.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">08 — Pourquoi on y revient</div><div class="h2">Une question en cours, pas une série à sauver</div></div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
+      <div class="mini"><div class="mn">Le jour</div><div class="mb">Le relevé du matin et ce qui se croise aujourd'hui.</div></div>
+      <div class="mini"><div class="mn">La semaine</div><div class="mb">Le bilan du lundi et le seul réglage permis.</div></div>
+      <div class="mini"><div class="mn">L'expérience</div><div class="mb">Deux à quatre semaines avant le verdict scellé.</div></div>
+      <div class="mini"><div class="mn">Le cycle</div><div class="mb">Le bilan qui clôt, et la version suivante.</div></div>
+    </div>
+    <div class="cb" style="font-size: 15px; color: #5c4a35; max-width: 920px;">On tient à ce qu'on a composé soi-même, on revient pour connaître la fin d'une expérience, et ce qu'on apprend sur soi n'existe dans aucune autre app. Ni XP, ni niveaux, ni badges (décision C) ; aucune semaine ratée ne remet rien à zéro ; aucun chiffre ne sort d'ailleurs que d'un calcul testé.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">09 — Faisabilité</div><div class="h2">Ce que ça demande</div></div>
+
+    <div style="display: flex; flex-direction: column;">
+      <div class="row"><div class="rt">La formule</div><div class="rb">Une couche au-dessus de l'existant : elle référence programmes, cibles nutritionnelles et objectif, et « lancer le cycle » applique un changement vu et validé (s'applique ou se propose selon GUID-01). Tables <span class="code">lab_formulas</span> <span class="code">lab_formula_doses</span> <span class="code">lab_experiments</span> <span class="code">lab_discoveries</span>, UUID client, soft delete, règles de synchro PowerSync à redéployer à la main.</div></div>
+      <div class="row"><div class="rt">Les croisements</div><div class="rb">Des fonctions pures dans <span class="code">packages/shared</span>, testées, qui composent les analyses livrées (MR-08, FUEL-01, GARDE-01, META-19, MN-06, MN-08, TRI-03…). Croiser ajoute une corrélation décalée, avec son intervalle et un seuil de données minimal.</div></div>
+      <div class="row"><div class="rt">La triade</div><div class="rb">SVG et Reanimated, installés ; les quatre matières existent. La 3D (react-three-fiber) seulement après un essai de trois jours sur un Android moyen.</div></div>
+      <div class="row"><div class="rt">L'IA</div><div class="rb">Sonnet 5 pour composer avec l'utilisateur, Opus 5 pour une enquête rare, Haiku 4.5 pour router ; Fable 5.1 à l'atelier seulement. Proxy serveur, consentement séparé, fournisseur interchangeable (un modèle GPT peut prendre la place).</div></div>
+      <div class="row"><div class="rt">FR + EN, hors ligne</div><div class="rb">Tout le Labo marche sans réseau, sauf « Compose avec moi ». Chaque phrase de croisement passe par des clés i18n.</div></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">10 — Lucidité</div><div class="h2">Ce que ça rouvre</div></div>
+
+    <div style="display: flex; flex-direction: column;">
+      <div class="row"><div class="rt">Corrélation n'est pas cause</div><div class="rb">Croiser affiche le nombre de paires, l'intervalle et une phrase de prudence ; sous un seuil, il n'affiche rien. C'est aussi pour ça que Tester existe.</div></div>
+      <div class="row"><div class="rt">Décisions C et D</div><div class="rb">Le Labo reste du côté motivation. « Compose avec moi », les expériences illimitées et les formules de coach forment une piste payante, après la V1.</div></div>
+      <div class="row"><div class="rt">La sécurité</div><div class="rb">Doses bornées, garde-fous non contournables, aucune expérience de restriction calorique ni de complément, rien pour un mineur. Déclaration Play « Health apps » à relire avant tout envoi à un modèle.</div></div>
+      <div class="row"><div class="rt">La complexité</div><div class="rb">Un second chemin vers les réglages de chaque pilier : les écrans des piliers restent, le Labo est une porte en plus pour ceux qui aiment composer.</div></div>
+      <div class="row" style="border-bottom: none;"><div class="rt">Le calendrier</div><div class="rb">La publication Play Store reste le seul bloquant et des dizaines d'US attendent une recette : rien de ceci avant LANCE-01.</div></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">11 — À trancher, par toi ou Damien</div><div class="h2">Six décisions</div></div>
+
+    <table class="t">
+      <thead><tr><th>#</th><th>Question</th><th>Ma recommandation</th></tr></thead>
+      <tbody>
+        <tr><td class="m">D1</td><td>Les quatre gestes Composer · Croiser · Tester · Retenir, et le mot « formule » ?</td><td class="o">Oui : ils décrivent ce qu'on fait, pas une métaphore à apprendre.</td></tr>
+        <tr><td class="m">D2</td><td>La triade comme image du Labo ?</td><td class="o">Oui : elle sort des scènes existantes et dit l'intégration en un dessin.</td></tr>
+        <tr><td class="m">D3</td><td>Où entre-t-on ?</td><td class="o">Une triade miniature sur l'accueil d'abord ; un onglet si l'usage le justifie.</td></tr>
+        <tr><td class="m">D4</td><td>Croiser montre-t-il des corrélations sur les données de l'utilisateur ?</td><td class="o">Oui, avec seuil de données, intervalle et « pas de lien » comme résultat à part entière.</td></tr>
+        <tr><td class="m">D5</td><td>La 3D ?</td><td class="o">Triade 2D animée d'abord ; la 3D après essai, critères de sortie fixés avant.</td></tr>
+        <tr><td class="m">D6</td><td>Quand ouvrir le premier lot (Composer + Croiser) ?</td><td class="o">Après LANCE-01, via <span class="code">/us</span>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

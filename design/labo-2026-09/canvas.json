@@ -1,0 +1,153 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Compte rendu — le Labo (v2)",
+      "x": 0,
+      "y": 0,
+      "w": 1200,
+      "h": 6900,
+      "print": "flow"
+    },
+    {
+      "file": "Labo.dc.html",
+      "title": "01 · Le Labo",
+      "x": 1320,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Composer.dc.html",
+      "title": "02 · Composer (jouable)",
+      "x": 1790,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true
+    },
+    {
+      "file": "Croisement.dc.html",
+      "title": "03 · Un croisement",
+      "x": 2260,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Projection.dc.html",
+      "title": "04 · Et si… ?",
+      "x": 2730,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Levier.dc.html",
+      "title": "05 · Un levier",
+      "x": 3200,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Croiser.dc.html",
+      "title": "06 · Croiser (jouable)",
+      "x": 1320,
+      "y": 1080,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true
+    },
+    {
+      "file": "Carte.dc.html",
+      "title": "07 · La carte",
+      "x": 1790,
+      "y": 1080,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Experience.dc.html",
+      "title": "08 · Tester sur moi",
+      "x": 2260,
+      "y": 1080,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Cycle.dc.html",
+      "title": "09 · Le cycle",
+      "x": 2730,
+      "y": 1080,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Bilan.dc.html",
+      "title": "10 · Le bilan",
+      "x": 1320,
+      "y": 2160,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Decouvertes.dc.html",
+      "title": "11 · Tes découvertes",
+      "x": 1790,
+      "y": 2160,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Assistant.dc.html",
+      "title": "12 · Compose avec moi (IA)",
+      "x": 2260,
+      "y": 2160,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Coach.dc.html",
+      "title": "13 · Partir d'une formule",
+      "x": 2730,
+      "y": 2160,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "UnPilier.dc.html",
+      "title": "14 · Un seul pilier",
+      "x": 3200,
+      "y": 2160,
+      "w": 390,
+      "h": 844
+    }
+  ],
+  "annotations": [
+    {
+      "id": "rangee-composer",
+      "x": 1320,
+      "y": -150,
+      "w": 900,
+      "text": "Rangée 1 — Composer. La scène en haut porte la triade de tes piliers ; le papier crème dessous, ce qu'on lit et règle. Composer est cliquable. Données fictives."
+    },
+    {
+      "id": "rangee-croiser",
+      "x": 1320,
+      "y": 930,
+      "w": 900,
+      "text": "Rangée 2 — Croiser et tester. Croiser est cliquable : quatre paires de leviers, dont une sans lien."
+    },
+    {
+      "id": "rangee-retenir",
+      "x": 1320,
+      "y": 2010,
+      "w": 900,
+      "text": "Rangée 3 — Retenir, et entrer autrement : par la voix, par une formule de coach, ou avec un seul pilier activé."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

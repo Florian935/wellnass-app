@@ -1,0 +1,97 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #1c150e; }
+    a { color: #dd6e40; }
+    a:hover { color: #e0a97f; }
+    @keyframes track { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-62px); } }
+    .bar { animation: track 2.4s cubic-bezier(.45, .05, .55, .95) infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .ring { transform-origin: 108px 234px; animation: spin 6s linear infinite; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #0f0b08; color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+
+  <!-- Vue caméra -->
+  <div style="position: absolute; left: 0; right: 0; top: 0; height: 470px; background: radial-gradient(90% 70% at 40% 45%, #2e241b 0%, #120d09 75%);">
+    <svg width="390" height="470" viewBox="0 0 390 470" style="position: absolute; inset: 0;">
+      <rect x="40" y="40" width="10" height="420" fill="#2a2118"></rect>
+      <rect x="330" y="40" width="10" height="420" fill="#2a2118"></rect>
+      <rect x="0" y="440" width="390" height="30" fill="#17110c"></rect>
+      <line x1="108" y1="120" x2="108" y2="360" stroke="#dd6e40" stroke-width="1.5" stroke-dasharray="3 6" opacity=".6"></line>
+      <path d="M100 132 L108 120 L116 132" fill="none" stroke="#dd6e40" stroke-width="1.5" opacity=".6"></path>
+      <g class="bar">
+        <rect x="20" y="230" width="350" height="8" rx="4" fill="#5c4a35"></rect>
+        <circle cx="108" cy="234" r="58" fill="#241c15" stroke="#3a2e22" stroke-width="3"></circle>
+        <circle cx="108" cy="234" r="44" fill="none" stroke="#30271e" stroke-width="2"></circle>
+        <circle cx="108" cy="234" r="12" fill="#3a2e22"></circle>
+        <circle cx="108" cy="234" r="7" fill="#dd6e40"></circle>
+        <g class="ring"><circle cx="108" cy="234" r="20" fill="none" stroke="#dd6e40" stroke-width="2" stroke-dasharray="6 5"></circle></g>
+        <rect x="266" y="192" width="22" height="84" rx="4" fill="#241c15" stroke="#3a2e22" stroke-width="2"></rect>
+      </g>
+    </svg>
+
+    <div style="position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 7px; background: rgba(15, 11, 8, .72); border-radius: 999px; padding: 6px 11px;">
+        <div style="width: 8px; height: 8px; border-radius: 4px; background: #a9ba7e;"></div>
+        <div style="font-weight: 600; font-size: 12px; color: #f4ecdd;">Pastille suivie</div>
+      </div>
+      <div style="background: rgba(15, 11, 8, .72); border-radius: 999px; padding: 6px 11px; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; color: #f4ecdd;">Squat · 100 kg</div>
+    </div>
+
+    <div style="position: absolute; left: 16px; bottom: 18px; display: flex; flex-direction: column; gap: 0;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; letter-spacing: .5px; color: #e0a97f;">REP 6</div>
+      <div style="display: flex; align-items: baseline; gap: 5px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 46px; letter-spacing: -1.5px; color: #fff; line-height: 1.05;">0,41</div>
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 17px; color: #f0e4d0;">m/s</div>
+      </div>
+    </div>
+    <div style="position: absolute; right: 16px; bottom: 22px; font-size: 11px; color: #c9b79a; text-align: right; line-height: 15px;">téléphone à 1,5 m<br>calé sur le disque de 45 cm</div>
+  </div>
+
+  <!-- Panneau -->
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 392px; background: #30271e; border-radius: 26px 26px 0 0; padding: 12px 20px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;">
+    <div style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: #797169;"></div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+      <div style="font-weight: 700; font-size: 15px;">Vitesse par répétition</div>
+      <div style="display: flex; align-items: center; gap: 6px; font-size: 11.5px; color: #c9b79a;"><span style="width: 16px; border-top: 1.5px dashed #f4ecdd;"></span>seuil −20 %</div>
+    </div>
+    <svg width="350" height="146" viewBox="0 0 350 146" style="display: block;" font-family="Space Mono, ui-monospace, monospace">
+      <line x1="0" y1="124" x2="350" y2="124" stroke="#797169" stroke-width="1"></line>
+      <rect x="14" y="26.6" width="38" height="97.4" rx="4" fill="#c9b79a"></rect>
+      <rect x="70" y="29.7" width="38" height="94.3" rx="4" fill="#c9b79a"></rect>
+      <rect x="126" y="34.4" width="38" height="89.6" rx="4" fill="#c9b79a"></rect>
+      <rect x="182" y="40.7" width="38" height="83.3" rx="4" fill="#c9b79a"></rect>
+      <rect x="238" y="50.1" width="38" height="73.9" rx="4" fill="#dd6e40"></rect>
+      <rect x="294" y="59.6" width="38" height="64.4" rx="4" fill="#dd6e40"></rect>
+      <line x1="0" y1="45.4" x2="350" y2="45.4" stroke="#f4ecdd" stroke-width="1" stroke-dasharray="4 4"></line>
+      
+      <text x="33" y="64" text-anchor="middle" font-size="10" font-weight="700" fill="#1c150e">0,62</text>
+      <text x="313" y="77" text-anchor="middle" font-size="10" font-weight="700" fill="#1c150e">0,41</text><g font-size="10" fill="#c9b79a" text-anchor="middle"><text x="33" y="140">1</text><text x="89" y="140">2</text><text x="145" y="140">3</text><text x="201" y="140">4</text><text x="257" y="140">5</text><text x="313" y="140">6</text></g>
+    </svg>
+    
+
+    <div style="display: flex; gap: 14px; align-items: center; margin-top: 2px;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.2px; color: #dd6e40; line-height: 1; flex: none;">−34 %</div>
+      <div style="font-size: 13.5px; line-height: 18px; color: #c9b79a;">Tu es probablement à <b style="color: #f4ecdd;">une rep de l'échec</b> (RIR ≈ 1). Pose la barre.</div>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-top: auto;">
+      <div style="flex: 1.4; height: 48px; border-radius: 14px; background: #dd6e40; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px; color: #1c150e;">Valider 6 × 100 kg</div>
+      <div style="flex: 1; height: 48px; border-radius: 14px; border: 1.5px solid #797169; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; color: #f4ecdd;">Encore une</div>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

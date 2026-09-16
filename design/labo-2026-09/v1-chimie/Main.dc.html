@@ -1,0 +1,353 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .k { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .h2 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 36px; letter-spacing: -1.2px; line-height: 1.05; margin: 8px 0 0; color: #33291f; text-wrap: balance; }
+    .lead { font-size: 16px; line-height: 1.6; color: #5c4a35; max-width: 760px; text-wrap: pretty; }
+    .card { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .ct { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.5px; line-height: 1.15; color: #33291f; }
+    .cb { font-size: 14px; line-height: 1.55; color: #786a59; text-wrap: pretty; }
+    .panel { background: #33291f; color: #f0e4d0; border-radius: 24px; padding: 28px; display: flex; flex-direction: column; gap: 12px; position: relative; overflow: hidden; }
+    .pk { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #d9a888; }
+    .pt { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -.8px; line-height: 1.12; color: #fff; text-wrap: balance; }
+    .pb { font-size: 14px; line-height: 1.6; color: #c9b79a; text-wrap: pretty; }
+    .halo { position: absolute; width: 220px; height: 220px; border-radius: 50%; background: #b14f2b; opacity: .22; filter: blur(40px); top: -80px; right: -60px; }
+    .rule { height: 1px; background: #e2d3bc; }
+    .pill { font-size: 11.5px; font-weight: 600; color: #5c4a35; border: 1px solid #e2d3bc; border-radius: 999px; padding: 2px 9px; line-height: 1.4; }
+    .code { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #a34e2c; background: #f3ddd0; border-radius: 6px; padding: 1px 6px; }
+    .fam { display: flex; flex-direction: column; }
+    .fam-h { display: flex; align-items: baseline; gap: 10px; padding-bottom: 10px; border-bottom: 1.5px solid #33291f; }
+    .fam-l { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #b14f2b; }
+    .fam-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 21px; letter-spacing: -.5px; color: #33291f; }
+    .idea { padding: 11px 0; border-bottom: 1px solid #ece0cd; display: flex; flex-direction: column; gap: 3px; }
+    .in { font-weight: 700; font-size: 15px; color: #33291f; }
+    .id { font-size: 13.5px; line-height: 1.5; color: #786a59; text-wrap: pretty; }
+    .mini { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 5px; }
+    .mn { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; color: #b14f2b; }
+    .mt { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.4px; line-height: 1.1; color: #33291f; }
+    .mb { font-size: 12.5px; line-height: 1.45; color: #786a59; text-wrap: pretty; }
+    .row { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 24px; padding: 14px 0; border-bottom: 1px solid #ece0cd; }
+    .rt { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.3px; color: #33291f; line-height: 1.2; }
+    .rb { font-size: 14px; line-height: 1.55; color: #786a59; text-wrap: pretty; }
+    table.t { width: 100%; border-collapse: collapse; }
+    table.t th { text-align: left; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #786a59; font-weight: 400; padding: 0 16px 10px 0; border-bottom: 1.5px solid #33291f; }
+    table.t td { padding: 12px 16px 12px 0; border-bottom: 1px solid #ece0cd; font-size: 14px; line-height: 1.45; color: #33291f; vertical-align: top; }
+    table.t td.m { font-weight: 700; white-space: nowrap; }
+    table.t td.o { color: #786a59; }
+    .star { background: #33291f; color: #fffaf2; border-color: #33291f; }
+  </style>
+</helmet>
+
+<div style="width: 1200px; box-sizing: border-box; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 64px 72px 80px; display: flex; flex-direction: column; gap: 64px;">
+
+  <!-- en-tête -->
+  <div style="display: flex; flex-direction: column; gap: 18px;">
+    <div class="k">FitTrio · exploration · 14/09/2026</div>
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 76px; letter-spacing: -3px; line-height: .98; max-width: 980px; text-wrap: balance;">Le Labo, là où tu concoctes ta formule</div>
+    <div class="lead">Tu m'as décrit une intuition encore floue : un endroit à soi, où l'on « concocte ses recettes » à partir des piliers qu'on a activés, attirant, et qui donne envie de revenir. J'ai relu l'état du dépôt, le carnet d'innovation d'hier et ton tri, les analyses croisées déjà codées, puis j'ai poussé l'idée jusqu'au bout. Il en sort un concept, trois façons de le faire, une banque d'idées, 12 écrans maquettés et un prototype 3D jouable.</div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; margin-top: 6px;">
+      <div class="card"><div class="k" style="color: #b14f2b;">À droite de cette planche</div><div class="ct">12 écrans en 3 rangées</div><div class="cb">Composer · vivre la formule · entrer autrement. La paillasse (2ᵉ écran) est cliquable. Données fictives.</div></div>
+      <div class="card"><div class="k" style="color: #b14f2b;">À part</div><div class="ct">La paillasse en 3D</div><div class="cb">Un prototype web jouable : sept fioles, un ballon, du son, une voix, l'incubation puis la distillation. Lien donné avec ce compte rendu.</div></div>
+      <div class="card"><div class="k" style="color: #b14f2b;">Dans le dépôt</div><div class="ct">Analyse et sources</div><div class="cb"><span class="code">docs/product/analyse-labo-2026-09.md</span> et <span class="code">design/labo-2026-09/</span>. Aucune ligne de code applicatif.</div></div>
+    </div>
+  </div>
+
+  <!-- 01 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">01 — Ce que j'ai compris</div><div class="h2">Un lieu à soi, pas un écran de plus</div></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+      <div class="card"><div class="ct">On compose, on ne remplit pas</div><div class="cb">Aujourd'hui, un programme, un plan de repas ou une cible de protéines se règlent dans trois formulaires, pilier par pilier. Le Labo les réunit sur une même paillasse, et on les dose ensemble.</div></div>
+      <div class="card"><div class="ct">Les piliers se répondent sous tes yeux</div><div class="cb">Le différenciateur de FitTrio, c'est l'intégration. Dans le Labo, elle devient visible et tactile : un déficit avec trop de volume fait « trancher » le mélange ; des glucides bien placés font briller le fractionné.</div></div>
+      <div class="card"><div class="ct">On revient parce qu'il se passe quelque chose</div><div class="cb">Une formule mûrit pendant des semaines, un essai attend son verdict, une version suivante se prépare. La raison de revenir n'est pas une série à ne pas perdre, c'est une question en cours.</div></div>
+    </div>
+    <div style="display: flex; gap: 14px; align-items: flex-start; background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 16px 20px;">
+      <div class="code" style="font-size: 12px; margin-top: 2px;">vocabulaire</div>
+      <div class="cb" style="color: #5c4a35;"><b style="color: #33291f;">« Formule », pas « recette ».</b> Le mot recette est déjà pris deux fois dans le projet : les recettes de cuisine du pilier Nutrition, et la recette sur appareil qui clôture une US. Une « formule » se compose d'<b>éléments</b> dosés ; mélangés, ils ont des <b>réactions</b> ; la formule s'<b>incube</b>, puis se <b>distille</b> en version suivante.</div>
+    </div>
+  </div>
+
+  <!-- 02 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">02 — Le concept</div><div class="h2">Doser, voir réagir, laisser mûrir, distiller</div></div>
+    <div class="panel">
+      <div class="halo"></div>
+      <div class="pk" style="position: relative;">En une phrase</div>
+      <div class="pt" style="position: relative; max-width: 900px;">Le Labo transforme tes piliers en éléments qu'on dose. Mélangés, ils réagissent. Ta formule s'incube quelques semaines, puis se distille en une version meilleure — et tout ce que tu apprends sur toi reste dans ton carnet.</div>
+    </div>
+    <svg width="1056" height="250" viewBox="0 0 1056 250" style="display: block;" font-family="Hanken Grotesk, system-ui, sans-serif">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#33291f"></path></marker></defs>
+      <g>
+        <rect x="0" y="40" width="210" height="96" rx="20" fill="#fffaf2" stroke="#33291f" stroke-width="1.5"></rect>
+        <text x="20" y="72" font-size="11" font-family="Space Mono, monospace" fill="#b14f2b" letter-spacing="1.2">COMPOSER</text>
+        <text x="20" y="98" font-size="17" font-weight="700" fill="#33291f">La paillasse</text>
+        <text x="20" y="120" font-size="13" fill="#786a59">doses des piliers activés</text>
+      </g>
+      <line x1="214" y1="88" x2="276" y2="88" stroke="#33291f" stroke-width="1.5" marker-end="url(#ar)"></line>
+      <g>
+        <rect x="282" y="40" width="210" height="96" rx="20" fill="#fffaf2" stroke="#33291f" stroke-width="1.5"></rect>
+        <text x="302" y="72" font-size="11" font-family="Space Mono, monospace" fill="#b14f2b" letter-spacing="1.2">RÉAGIR</text>
+        <text x="302" y="98" font-size="17" font-weight="700" fill="#33291f">Synergies, tensions</text>
+        <text x="302" y="120" font-size="13" fill="#786a59">et garde-fous calculés</text>
+      </g>
+      <line x1="496" y1="88" x2="558" y2="88" stroke="#33291f" stroke-width="1.5" marker-end="url(#ar)"></line>
+      <g>
+        <rect x="564" y="40" width="210" height="96" rx="20" fill="#33291f"></rect>
+        <text x="584" y="72" font-size="11" font-family="Space Mono, monospace" fill="#d9a888" letter-spacing="1.2">INCUBER</text>
+        <text x="584" y="98" font-size="17" font-weight="700" fill="#fff">4 à 12 semaines</text>
+        <text x="584" y="120" font-size="13" fill="#c9b79a">une fiole par semaine vécue</text>
+      </g>
+      <line x1="778" y1="88" x2="840" y2="88" stroke="#33291f" stroke-width="1.5" marker-end="url(#ar)"></line>
+      <g>
+        <rect x="846" y="40" width="210" height="96" rx="20" fill="#fffaf2" stroke="#33291f" stroke-width="1.5"></rect>
+        <text x="866" y="72" font-size="11" font-family="Space Mono, monospace" fill="#b14f2b" letter-spacing="1.2">DISTILLER</text>
+        <text x="866" y="98" font-size="17" font-weight="700" fill="#33291f">L'essence</text>
+        <text x="866" y="120" font-size="13" fill="#786a59">ce qui a porté, ce qui a coûté</text>
+      </g>
+      <path d="M951,140 C951,196 105,196 105,142" fill="none" stroke="#b14f2b" stroke-width="1.5" stroke-dasharray="5 5" marker-end="url(#ar)"></path>
+      <text x="528" y="236" font-size="13" font-weight="700" fill="#b14f2b" text-anchor="middle">la version suivante repart de l'essence</text>
+      <path d="M387,38 C387,24 669,24 669,36" fill="none" stroke="#786a59" stroke-width="1.2" stroke-dasharray="3 4"></path>
+      <text x="528" y="12" font-size="12.5" fill="#786a59" text-anchor="middle">un doute sur une réaction ? il part en essai sur toi, pendant l'incubation</text>
+    </svg>
+    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px;">
+      <div class="mini"><div class="mn">La seconde</div><div class="mb">Verser une fiole, voir le mélange réagir, entendre la réaction.</div></div>
+      <div class="mini"><div class="mn">Le jour</div><div class="mb">Relevés du matin en 20 s, puis la manip du jour.</div></div>
+      <div class="mini"><div class="mn">La semaine</div><div class="mb">Le prélèvement du lundi, et un seul réglage permis.</div></div>
+      <div class="mini"><div class="mn">L'essai</div><div class="mb">Deux à quatre semaines, un verdict scellé jusqu'au bout.</div></div>
+      <div class="mini"><div class="mn">Le cycle</div><div class="mb">La distillation, rituel qui clôt et relance.</div></div>
+      <div class="mini"><div class="mn">Toujours</div><div class="mb">Le carnet et ta table des éléments, qui ne font que s'enrichir.</div></div>
+    </div>
+  </div>
+
+  <!-- 03 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">03 — Trois façons de le faire</div><div class="h2">Du rangement au jeu, avec un choix au milieu</div></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+      <div class="card">
+        <div class="k">A · L'atelier</div>
+        <div class="ct">Un toit commun pour ce qui existe</div>
+        <div class="cb">On range sous « Labo » les éditeurs déjà livrés — programmes, séances types, recettes, plans de course — avec une mise en scène commune.</div>
+        <div class="cb"><b style="color: #66714b;">Pour</b> · peu de risque, quelques semaines.<br><b style="color: #b23b2e;">Contre</b> · rien de neuf à vivre, aucune raison de revenir : c'est un menu.</div>
+      </div>
+      <div class="card" style="border: 2px solid #b14f2b; background: #fff;">
+        <div class="k" style="color: #b14f2b;">B · La formule — recommandée</div>
+        <div class="ct">Un objet central qui orchestre les piliers</div>
+        <div class="cb">La formule assemble ce qui existe (programmes, cibles, objectif) sans le dupliquer, puis ajoute les réactions, l'incubation, les essais et la distillation.</div>
+        <div class="cb"><b style="color: #66714b;">Pour</b> · différenciant, boucle de retour complète, s'appuie sur des analyses croisées déjà codées.<br><b style="color: #b23b2e;">Contre</b> · un nouvel objet de données et du contenu à écrire (éléments, réactions).</div>
+      </div>
+      <div class="card">
+        <div class="k">C · Le labo-jeu</div>
+        <div class="ct">Une pièce 3D à explorer</div>
+        <div class="cb">Un laboratoire en 3D, des potions, une collection d'objets à débloquer, un avatar dans la pièce.</div>
+        <div class="cb"><b style="color: #66714b;">Pour</b> · l'effet waouh maximal.<br><b style="color: #b23b2e;">Contre</b> · rouvre la décision C, risque de gadget, performances sur un Android moyen.</div>
+      </div>
+    </div>
+    <div class="cb" style="font-size: 15px; color: #5c4a35; max-width: 900px;"><b style="color: #33291f;">Mon choix : B pour le fond, la mise en scène de C en couche optionnelle.</b> Comme pour la séance immersive, la vue labo est un mode en plus : une vue fiche sobre porte toujours la même information.</div>
+  </div>
+
+  <!-- 04 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">04 — Les douze écrans, à droite</div><div class="h2">Les postes du labo</div></div>
+    <div class="k" style="color: #33291f;">Rangée 1 · Composer</div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px;">
+      <div class="mini"><div class="mn">01 · Entrée</div><div class="mt">Le Labo</div><div class="mb">Une scène : l'étagère de tes éléments, le ballon de ta formule, l'essai qui chauffe, ce qui t'attend aujourd'hui.</div></div>
+      <div class="mini"><div class="mn">02 · jouable</div><div class="mt">La paillasse</div><div class="mb">Quatre doses à régler : équilibre, réactions et mélange changent en direct, jusqu'au garde-fou.</div></div>
+      <div class="mini"><div class="mn">03 · Tension</div><div class="mt">Ta formule tranche</div><div class="mb">Le mécanisme, tes données, la recherche, et trois résolutions dont « tester sur moi ».</div></div>
+      <div class="mini"><div class="mn">04 · Savoir</div><div class="mt">Ta table des éléments</div><div class="mb">23 leviers en tableau périodique. Pleins quand tes données les connaissent.</div></div>
+      <div class="mini"><div class="mn">05 · Fiche</div><div class="mt">Protéines</div><div class="mb">Ta dose, la zone utile, la recherche contre tes données, et avec quoi l'élément réagit.</div></div>
+    </div>
+    <div class="k" style="color: #33291f;">Rangée 2 · Vivre la formule</div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
+      <div class="mini"><div class="mn">06 · Incubation</div><div class="mt">Ta formule prend</div><div class="mb">Une fiole par semaine, remplie de ce que tu as vraiment fait ; ce qui mûrit ; la manip du jour.</div></div>
+      <div class="mini"><div class="mn">07 · Essai</div><div class="mt">Le verdict scellé</div><div class="mb">Un protocole tiré au sort, mesuré sans saisie, et pas de coup d'œil avant la fin.</div></div>
+      <div class="mini"><div class="mn">08 · Distillation</div><div class="mt">L'essence de ta v2</div><div class="mb">Résultats contre projection, ce qui a porté, ce qui a coûté, la v3 proposée.</div></div>
+      <div class="mini"><div class="mn">09 · Carnet</div><div class="mt">Ta généalogie</div><div class="mb">Versions, variantes, brouillons et essais tranchés : ce que tu sais de toi.</div></div>
+    </div>
+    <div class="k" style="color: #33291f;">Rangée 3 · Entrer autrement</div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px;">
+      <div class="mini"><div class="mn">10 · IA</div><div class="mt">Le préparateur</div><div class="mb">Tu dictes ton objectif, il pose un brouillon que le moteur a vérifié, et dit ce qu'il a supposé.</div></div>
+      <div class="mini"><div class="mn">11 · Débutant</div><div class="mt">L'étagère</div><div class="mb">Des formules écrites par un coach, adaptées à tes piliers et à ton historique.</div></div>
+      <div class="mini"><div class="mn">12 · Décision H</div><div class="mt">Un seul pilier</div><div class="mb">Le labo marche avec la musculation seule, et dit quand il manque de données.</div></div>
+    </div>
+  </div>
+
+  <!-- 05 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">05 — La banque</div><div class="h2">32 idées pour remplir le labo, en huit familles</div></div>
+    <div class="cb" style="max-width: 860px;">Les numéros entre parenthèses renvoient au carnet d'innovation du 13/09 : le Labo donne une maison à plusieurs idées que tu as gardées au tri. Les deux idées que tu as retirées et qui touchaient au sujet — la recette élastique (24) et les programmes vivants (38) — ne sont pas reprises.</div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px 40px;">
+      <div class="fam">
+        <div class="fam-h"><span class="fam-l">A</span><span class="fam-n">Composer</span></div>
+        <div class="idea"><div class="in">La formule née de l'objectif</div><div class="id">Le premier brouillon sort de l'objectif et du régime de guidage (GUID-01) : personne ne part d'une paillasse vide.</div></div>
+        <div class="idea"><div class="in">Un réglage par semaine</div><div class="id">Une règle de méthode, pas une limite technique : on ne change qu'une dose au prélèvement du lundi, sinon on ne sait plus ce qui agit.</div></div>
+        <div class="idea"><div class="in">La variante</div><div class="id">Vacances, déplacement, blessure : une branche de la formule qui garde l'essentiel, puis revient au tronc.</div></div>
+        <div class="idea"><div class="in">La formule sous contraintes</div><div class="id">Créneaux, matériel, douleurs déclarées : la paillasse grise ce qui ne rentre pas au lieu de le laisser tenter.</div></div>
+      </div>
+      <div class="fam">
+        <div class="fam-h"><span class="fam-l">B</span><span class="fam-n">Réagir</span></div>
+        <div class="idea"><div class="in">La table des réactions</div><div class="id">Des fonctions pures et testées qui appellent les analyses existantes : MR-08, FUEL-01, GARDE-01, META-19, MN-06, MN-08, TRI-03, COLLIS-01.</div></div>
+        <div class="idea"><div class="in">La tension qui se discute</div><div class="id">Chaque tension propose trois sorties, dont l'essai sur soi. Un garde-fou, lui, ne se discute pas.</div></div>
+        <div class="idea"><div class="in">D'où vient cette réaction ?</div><div class="id">La chaîne de calcul et les données derrière chaque réaction, en un appui (9).</div></div>
+        <div class="idea"><div class="in">Les réactions entre piliers, en option</div><div class="id">Activer la course fait apparaître ses réactions avec la muscu. Rien n'est jamais imposé (décision H).</div></div>
+      </div>
+      <div class="fam">
+        <div class="fam-h"><span class="fam-l">C</span><span class="fam-n">Tester sur soi</span></div>
+        <div class="idea"><div class="in">L'essai sur toi</div><div class="id">Le Labo N=1 (7) trouve sa maison : protocole alterné tiré au sort, verdict avec son incertitude.</div></div>
+        <div class="idea"><div class="in">Le verdict scellé</div><div class="id">Pas de résultat intermédiaire : regarder en cours de route fausse l'essai. C'est aussi ce qui crée l'attente.</div></div>
+        <div class="idea"><div class="in">La carte des leviers comme source d'hypothèses</div><div class="id">Un lien douteux de la carte (8) devient un essai proposé sur la paillasse.</div></div>
+        <div class="idea"><div class="in">Des protocoles écrits par un coach</div><div class="id">Le back-office publie les essais autorisés, leurs bornes et leurs critères d'arrêt.</div></div>
+      </div>
+      <div class="fam">
+        <div class="fam-h"><span class="fam-l">D</span><span class="fam-n">Voir mûrir</span></div>
+        <div class="idea"><div class="in">Une fiole par semaine</div><div class="id">Remplie à hauteur de ce qui a été réellement fait. Une semaine manquée remplit moins, sans jamais « échouer ».</div></div>
+        <div class="idea"><div class="in">Les relevés du matin</div><div class="id">Le check-in de BIEN-01 devient le relevé du labo, en un geste.</div></div>
+        <div class="idea"><div class="in">La manip du jour</div><div class="id">Séance, collation, glucides du jour : la formule traduite en une carte.</div></div>
+        <div class="idea"><div class="in">La météo par la fenêtre</div><div class="id">La fenêtre de la scène montre ta météo intérieure (31) : un ciel couvert annonce une semaine lourde.</div></div>
+      </div>
+      <div class="fam">
+        <div class="fam-h"><span class="fam-l">E</span><span class="fam-n">Capitaliser</span></div>
+        <div class="idea"><div class="in">La distillation</div><div class="id">Le rituel de fin de cycle : résultats contre projection, ce qui a porté, ce qui a coûté, la version suivante.</div></div>
+        <div class="idea"><div class="in">Le carnet et sa généalogie</div><div class="id">Chaque formule, variante et essai. Exportable en PDF pour un coach ou un médecin (TRI-14).</div></div>
+        <div class="idea"><div class="in">Ta table personnelle</div><div class="id">Les éléments se colorent à mesure que tes données les connaissent : un savoir sur soi, pas des badges.</div></div>
+        <div class="idea"><div class="in">La lettre dans la fiole</div><div class="id">À l'incubation, un mot à ton futur toi, rouvert à la distillation (34).</div></div>
+      </div>
+      <div class="fam">
+        <div class="fam-h"><span class="fam-l">F</span><span class="fam-n">Mise en scène</span></div>
+        <div class="idea"><div class="in">Le labo 2.5D vivant</div><div class="id">Scène en couches, liquides qui ondulent, parallaxe au gyroscope. Le niveau de liquide de DASH-01 se réutilise.</div></div>
+        <div class="idea"><div class="in">Le labo en vraie 3D</div><div class="id">Le prototype joint montre la cible. Sur mobile, un essai technique d'abord.</div></div>
+        <div class="idea"><div class="in">Le son et la main</div><div class="id">Verser gargouille, une synergie tinte, un garde-fou ferme. Haptique au dosage.</div></div>
+        <div class="idea"><div class="in">L'heure et la saison</div><div class="id">La lampe suit l'heure réelle, l'atelier change avec les saisons de ton année.</div></div>
+      </div>
+      <div class="fam">
+        <div class="fam-h"><span class="fam-l">G</span><span class="fam-n">L'IA à la paillasse</span></div>
+        <div class="idea"><div class="in">Le préparateur vocal</div><div class="id">Il comprend l'objectif, choisit éléments et doses avec les fonctions du moteur comme outils, et montre ses suppositions.</div></div>
+        <div class="idea"><div class="in">Explique-moi cette réaction</div><div class="id">La même réaction en mots simples, adaptés au régime de guidage.</div></div>
+        <div class="idea"><div class="in">Pourquoi ma formule a tranché en semaine 5 ?</div><div class="id">L'Enquête (5) appliquée à une formule : pistes classées, pistes écartées.</div></div>
+        <div class="idea"><div class="in">Fable à l'atelier</div><div class="id">Le modèle le plus capable écrit la table des réactions et les fiches FR/EN, relues par un coach. L'app, elle, tourne sans réseau.</div></div>
+      </div>
+      <div class="fam">
+        <div class="fam-h"><span class="fam-l">H</span><span class="fam-n">Plus tard</span></div>
+        <div class="idea"><div class="in">La carte de formule</div><div class="id">« Hybride d'automne v2 : +9 kg au SBD, 10 km en 48:34 », partageable (PARTAGE-01).</div></div>
+        <div class="idea"><div class="in">Les formules de coachs</div><div class="id">Une étagère élargie à des coachs invités : la piste payante la plus naturelle, après la V1 (décision D).</div></div>
+        <div class="idea"><div class="in">Le labo en réalité augmentée</div><div class="id">Ton ballon posé sur ta table. Seulement si l'essai 3D tient, et seulement si ça sert à quelque chose.</div></div>
+        <div class="idea"><div class="in">Apporte ta formule à ton IA</div><div class="id">Ta formule et ton carnet exposés, avec ton accord, à l'assistant de ton choix (36).</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">06 — La rétention</div><div class="h2">Pourquoi on y revient, sans jeu ni culpabilité</div></div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px;">
+      <div class="card"><div class="ct">On tient à ce qu'on a assemblé</div><div class="cb">Une formule qu'on a dosée soi-même compte davantage qu'un programme reçu. C'est l'effet IKEA, et il marche sans aucun point à gagner.</div></div>
+      <div class="card"><div class="ct">Une question reste ouverte</div><div class="cb">Un essai en cours, une incubation à mi-chemin : on revient pour connaître la fin. Le verdict scellé renforce l'attente au lieu de la gâcher.</div></div>
+      <div class="card"><div class="ct">Un savoir qui n'existe nulle part ailleurs</div><div class="cb">Ni Strava ni MyFitnessPal ne savent que la caféine te fait gagner 3,8 s au kilomètre (exemple fictif de la maquette). Le carnet crée un attachement réel, et honnête : il est exportable.</div></div>
+      <div class="card"><div class="ct">Une formule qui mûrit, pas une série qui casse</div><div class="cb">Une semaine ratée remplit moins la fiole ; elle ne remet rien à zéro. L'autonomie plutôt que la peur de perdre.</div></div>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px;">
+      <div class="panel" style="padding: 22px;">
+        <div class="pk">Ce qu'on ne fera pas</div>
+        <div class="pb">Ni XP, ni niveaux, ni badges (décision C). Pas de mascotte ni de personnage qui parle. Pas de faux urgent. Pas de chiffre qui ne sorte pas d'un calcul testé. Aucun essai de restriction calorique, aucun complément alimentaire à tester.</div>
+      </div>
+      <div class="card">
+        <div class="k">Comment on saura</div>
+        <div class="cb">Rétention à 4 semaines des utilisateurs du Labo contre les autres ; part des comptes avec une formule en incubation ; essais lancés et menés au bout ; part des distillations suivies d'une version suivante. Événements proposés : <span class="code">lab_formula_incubated</span> <span class="code">lab_reaction_opened</span> <span class="code">lab_trial_verdict</span> <span class="code">lab_distilled</span> — aucun n'existe encore.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">07 — Immersion et 3D</div><div class="h2">Trois étages, dans cet ordre</div></div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+      <div class="card" style="border: 2px solid #b14f2b; background: #fff;"><div class="k" style="color: #b14f2b;">Étage 1 · d'abord</div><div class="ct">Le labo 2.5D vivant</div><div class="cb">Scène en couches SVG, liquides animés avec Reanimated (installé), haptique et voix déjà présentes (expo-haptics, expo-speech). Ce qui manque : expo-sensors pour la parallaxe, un module audio pour les sons — donc un nouveau build.</div></div>
+      <div class="card"><div class="k">Étage 2 · après un essai</div><div class="ct">La vraie 3D</div><div class="cb">react-three-fiber sur expo-gl, scène basse définition. Essai technique jetable de trois jours sur un Android moyen : images par seconde, poids de l'APK, batterie. Le prototype web joint montre la cible visuelle.</div></div>
+      <div class="card"><div class="k">Étage 3 · pari</div><div class="ct">Au-delà de l'écran</div><div class="cb">Le ballon posé sur ta vraie table en réalité augmentée ; la sculpture de saison (4) née du carnet. Seulement si l'étage 2 tient.</div></div>
+    </div>
+    <div class="cb" style="font-size: 15px; color: #5c4a35; max-width: 920px;"><b style="color: #33291f;">La règle qui protège de l'effet gadget :</b> la 3D ne porte jamais seule une information. La vue fiche est complète, lisible par TalkBack, et le mode « mouvement réduit » coupe vagues, bulles et versements.</div>
+  </div>
+
+  <!-- 08 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">08 — Fable, GPT et compagnie</div><div class="h2">Le moteur calcule, l'IA raconte</div></div>
+    <table class="t">
+      <thead><tr><th>Usage</th><th>Modèle</th><th>Où et quand</th></tr></thead>
+      <tbody>
+        <tr><td class="m">Écrire la table des réactions, les fiches d'éléments FR/EN, les protocoles d'essai</td><td class="m">Fable 5.1</td><td class="o">À l'atelier, par lots, relu par un coach. Rien de tout cela ne tourne dans l'app.</td></tr>
+        <tr><td class="m">Le préparateur : comprendre la demande, choisir les doses via les outils du moteur, rédiger</td><td class="m">Sonnet 5</td><td class="o">Dans l'app, avec réseau et consentement IA séparé.</td></tr>
+        <tr><td class="m">« Pourquoi ma formule a tranché ? » — enquête à plusieurs outils</td><td class="m">Opus 5</td><td class="o">À la demande, rare, plafonné par utilisateur.</td></tr>
+        <tr><td class="m">Router une question, classer une demande</td><td class="m">Haiku 4.5</td><td class="o">Devant les deux précédents, pour ne pas payer un gros modèle inutilement.</td></tr>
+        <tr><td class="m">Dicter au préparateur, entendre les réactions</td><td class="m">sur l'appareil</td><td class="o">Reconnaissance vocale Android et synthèse vocale locale : l'audio ne part pas au modèle.</td></tr>
+      </tbody>
+    </table>
+    <div class="cb" style="max-width: 920px;">Le fournisseur reste interchangeable derrière un proxy côté serveur : un modèle GPT peut prendre la place d'un Claude sans toucher au moteur. Les coûts sont à chiffrer sur la grille tarifaire du moment, pas de mémoire. Les visuels du labo (verrerie, textures, saisons) peuvent être générés à l'atelier puis retouchés, jamais à l'exécution.</div>
+  </div>
+
+  <!-- 09 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">09 — Architecture, à grands traits</div><div class="h2">La formule orchestre, elle ne duplique pas</div></div>
+    <div style="display: flex; flex-direction: column;">
+      <div class="row"><div class="rt">L'objet formule</div><div class="rb">Une couche au-dessus de ce qui existe : elle référence le programme de musculation, le programme de course, les cibles nutritionnelles et l'objectif. « Incuber » applique un changement que l'utilisateur a vu et validé ; selon le régime de guidage (GUID-01), il s'applique ou se propose.</div></div>
+      <div class="row"><div class="rt">Données</div><div class="rb">Tables <span class="code">lab_formulas</span> <span class="code">lab_formula_doses</span> <span class="code">lab_trials</span> <span class="code">lab_notebook_events</span> ; contenu éditorial <span class="code">lab_elements</span> et <span class="code">lab_reactions</span> géré par le back-office. UUID côté client, UTC, soft delete, repository, et règles de synchro PowerSync à redéployer à la main.</div></div>
+      <div class="row"><div class="rt">Réactions</div><div class="rb">Des fonctions pures dans <span class="code">packages/shared</span>, testées avec Vitest, qui composent les analyses déjà livrées plutôt que d'en réécrire.</div></div>
+      <div class="row"><div class="rt">Hors ligne</div><div class="rb">Tout le Labo fonctionne sans réseau. Seul le préparateur en a besoin ; sans lui, rien ne manque à l'écran.</div></div>
+      <div class="row"><div class="rt">FR + EN</div><div class="rb">Noms, fiches et réactions bilingues. Les symboles d'éléments doivent être choisis neutres ou doublés : « So » (sommeil) deviendrait « Sl » en anglais et heurterait « Sl » (sortie longue).</div></div>
+    </div>
+  </div>
+
+  <!-- 10 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">10 — Lucidité</div><div class="h2">Ce que ça rouvre, ce qui peut mal tourner</div></div>
+    <div style="display: flex; flex-direction: column;">
+      <div class="row"><div class="rt">La décision C</div><div class="rb">Le Labo reste du côté motivation — pas de points, de niveaux ni de badges — mais sa métaphore est ludique. C'est à trancher explicitement, pas à laisser glisser.</div></div>
+      <div class="row"><div class="rt">La décision D</div><div class="rb">Base gratuite ; préparateur IA, essais illimités et formules de coachs forment une piste payante, qui ne s'active qu'après la V1.</div></div>
+      <div class="row"><div class="rt">La sécurité</div><div class="rb">Doses bornées, garde-fous non contournables, aucun essai de restriction calorique ni de complément, aucune formule de perte de poids sous un seuil de poids ou pour un mineur. Aucune allégation médicale.</div></div>
+      <div class="row"><div class="rt">Le Play Store</div><div class="rb">La déclaration « Health apps » et la politique de confidentialité sont à relire dès que le préparateur envoie des agrégats de santé à un tiers.</div></div>
+      <div class="row"><div class="rt">Le démarrage à froid</div><div class="rb">Sans historique, projections et essais sont faibles : l'écran 12 le dit, l'étagère donne un point de départ.</div></div>
+      <div class="row"><div class="rt">La complexité</div><div class="rb">Un second chemin vers les programmes pourrait embrouiller. Les éditeurs restent ; le Labo est une porte en plus, pour ceux qui aiment régler.</div></div>
+      <div class="row" style="border-bottom: none;"><div class="rt">La file de recette</div><div class="rb">Des dizaines d'US attendent une recette sur appareil et la publication Play Store reste le seul bloquant : rien de ceci ne passe avant.</div></div>
+    </div>
+  </div>
+
+  <!-- 11 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">11 — Le découpage</div><div class="h2">Quatre lots, chacun utile seul</div></div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px;">
+      <div class="card"><div class="k" style="color: #b14f2b;">Lot 0 · sans IA</div><div class="ct">La paillasse</div><div class="cb">Formule, éléments, réactions, incubation, scène 2.5D. Écrans 01 à 06 et 12.</div><div style="display: flex; gap: 6px;"><span class="pill">local</span><span class="pill">1 à 2 mois</span></div></div>
+      <div class="card"><div class="k" style="color: #b14f2b;">Lot 1 · sans IA</div><div class="ct">Essais et distillation</div><div class="cb">Essai sur soi, verdict scellé, distillation, carnet. Écrans 07 à 09.</div><div style="display: flex; gap: 6px;"><span class="pill">local</span><span class="pill">3 à 5 semaines</span></div></div>
+      <div class="card"><div class="k" style="color: #b14f2b;">Lot 2 · IA</div><div class="ct">Le préparateur</div><div class="cb">Après le socle IA commun : proxy, consentement, plafonds. Écran 10.</div><div style="display: flex; gap: 6px;"><span class="pill">réseau</span><span class="pill">3 à 4 semaines</span></div></div>
+      <div class="card"><div class="k" style="color: #b14f2b;">Lot 3 · pari</div><div class="ct">3D et étagère</div><div class="cb">Essai 3D jetable, formules de coachs via le back-office, carte partageable. Écran 11.</div><div style="display: flex; gap: 6px;"><span class="pill">essai d'abord</span><span class="pill">1 à 2 mois</span></div></div>
+    </div>
+    <div class="cb">Durées estimées à dire d'expert, non mesurées.</div>
+  </div>
+
+  <!-- 12 -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div><div class="k">12 — À trancher, par toi ou Damien</div><div class="h2">Six décisions</div></div>
+    <table class="t">
+      <thead><tr><th>#</th><th>Question</th><th>Ma recommandation</th></tr></thead>
+      <tbody>
+        <tr><td class="m">D1</td><td>Adopte-t-on « Labo » et « formule » comme vocabulaire ?</td><td class="o">Oui : « recette » est déjà pris deux fois.</td></tr>
+        <tr><td class="m">D2</td><td>Quelle approche : atelier, formule ou labo-jeu ?</td><td class="o">La formule qui orchestre (B), avec la vue labo en mode optionnel.</td></tr>
+        <tr><td class="m">D3</td><td>Où entre-t-on dans le Labo ?</td><td class="o">Une porte depuis l'accueil d'abord ; un onglet seulement si l'usage le justifie.</td></tr>
+        <tr><td class="m">D4</td><td>Le Labo reste-t-il du côté « motivation » de la décision C ?</td><td class="o">Oui : ni XP, ni niveaux, ni badges.</td></tr>
+        <tr><td class="m">D5</td><td>La 3D : 2.5D d'abord, vraie 3D après essai ?</td><td class="o">Oui, avec des critères de sortie fixés avant l'essai.</td></tr>
+        <tr><td class="m">D6</td><td>Quand ouvre-t-on le lot 0 ?</td><td class="o">Après LANCE-01, par <span class="code">/us</span>.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

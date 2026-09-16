@@ -1,0 +1,106 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+    @keyframes impact { 0% { transform: scale(.55); opacity: .55; } 100% { transform: scale(1.12); opacity: 0; } }
+    @keyframes flow { to { stroke-dashoffset: -64; } }
+    @keyframes level { from { transform: translateX(0); } to { transform: translateX(-48px); } }
+    @keyframes halo { 0%, 100% { transform: scale(1); opacity: .5; } 50% { transform: scale(1.5); opacity: 0; } }
+    @keyframes souffle { 0%, 100% { transform: scale(.985); opacity: .45; } 50% { transform: scale(1.015); opacity: .8; } }
+    @keyframes rise { from { opacity: .35; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .fb { transform-box: fill-box; transform-origin: center; }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 14px 20px 22px; min-height: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; flex: none;">
+      <div style="display: flex; align-items: center; gap: 6px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg><div style="font-weight: 600; font-size: 14px;">Composer</div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">projection à 90 %</div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -.9px; line-height: 1.05;">Et si tu lançais la v3 ?</div>
+      <div style="font-size: 14px; line-height: 20px; color: #786a59;">Les trois objectifs bougent ensemble. Un pilier ne gagne jamais seul.</div>
+    </div>
+    <div style="display: flex; gap: 14px; font-size: 12px; color: #786a59; align-items: center; flex-wrap: wrap;">
+      <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 18px; height: 0; border-top: 2px dashed #786a59;"></span>v2 actuelle</span>
+      <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 18px; height: 3px; border-radius: 2px; background: #b14f2b;"></span>brouillon v3</span>
+      <span style="display: flex; align-items: center; gap: 6px;"><span style="width: 18px; height: 0; border-top: 1px dashed #8a6419;"></span>objectif</span>
+    </div>
+    <div style="display: flex; flex-direction: column;">
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 0; border-bottom: 1px solid #ece0cd;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; color: #6b0028;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6b0028" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect><line x1="1.5" y1="10.5" x2="1.5" y2="13.5"></line><line x1="22.5" y1="10.5" x2="22.5" y2="13.5"></line></svg>Total SBD</div>
+          <div style="display: flex; align-items: baseline; gap: 6px;"><span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -.4px;">386 kg</span><span style="font-size: 11.5px; color: #786a59;">378–393</span></div>
+        </div>
+        <svg width="318" height="92" viewBox="0 0 318 92" style="display: block;" font-family="Space Mono, monospace">
+          <line x1="4" y1="26" x2="264" y2="26" stroke="#8a6419" stroke-width="1" stroke-dasharray="4 4"></line>
+          <text x="318" y="29" font-size="9.5" fill="#8a6419" text-anchor="end">400</text>
+          <polygon points="99.3,62.0 131.0,56.4 162.8,50.8 194.5,45.2 226.3,40.6 258.0,35.0 258.0,51.0 226.3,53.4 194.5,54.8 162.8,57.2 131.0,59.6 99.3,62.0" fill="#6b0028" fill-opacity=".12"></polygon>
+          <path d="M4.0,74 L35.8,70 L67.5,67 L99.3,62" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M99.3,62 L131.0,58 L162.8,54 L194.5,50 L226.3,47 L258.0,43" fill="none" stroke="#6b0028" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"></path>
+          <path d="M99.3,62.0 L131.0,56.8 L162.8,51.6 L194.5,46.4 L226.3,42.2 L258.0,37.0" fill="none" stroke="#b14f2b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="99.25" cy="62" r="4" fill="#33291f"></circle>
+          <circle cx="258" cy="37.0" r="4" fill="#b14f2b"></circle>
+          <text x="4" y="90" font-size="9" fill="#786a59">25/08</text><text x="99.25" y="90" font-size="9" fill="#786a59" text-anchor="middle">auj.</text><text x="258" y="90" font-size="9" fill="#786a59" text-anchor="middle">19/10</text>
+        </svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 0; border-bottom: 1px solid #ece0cd;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; color: #2a64ad;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2a64ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 3-4 6-4s3 4 6 4 3-7 6-7"></path><circle cx="21" cy="10" r="1.2" fill="#2a64ad"></circle></svg>10 km</div>
+          <div style="display: flex; align-items: baseline; gap: 6px;"><span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -.4px;">47:52</span><span style="font-size: 11.5px; color: #786a59;">47:10–48:40</span></div>
+        </div>
+        <svg width="318" height="92" viewBox="0 0 318 92" style="display: block;" font-family="Space Mono, monospace">
+          <line x1="4" y1="58" x2="264" y2="58" stroke="#8a6419" stroke-width="1" stroke-dasharray="4 4"></line>
+          <text x="318" y="61" font-size="9.5" fill="#8a6419" text-anchor="end">48:00</text>
+          <polygon points="99.3,33.0 131.0,35.2 162.8,37.4 194.5,39.6 226.3,40.8 258.0,43.0 258.0,61.0 226.3,55.2 194.5,50.4 162.8,44.6 131.0,38.8 99.3,33.0" fill="#2a64ad" fill-opacity=".12"></polygon>
+          <path d="M4.0,22 L35.8,26 L67.5,29 L99.3,33" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M99.3,33 L131.0,37 L162.8,41 L194.5,45 L226.3,48 L258.0,52" fill="none" stroke="#2a64ad" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"></path>
+          <path d="M99.3,33.0 L131.0,38.5 L162.8,44.0 L194.5,49.5 L226.3,54.0 L258.0,59.5" fill="none" stroke="#b14f2b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="99.25" cy="33" r="4" fill="#33291f"></circle>
+          <circle cx="258" cy="59.5" r="4" fill="#b14f2b"></circle>
+          <text x="4" y="90" font-size="9" fill="#786a59">25/08</text><text x="99.25" y="90" font-size="9" fill="#786a59" text-anchor="middle">auj.</text><text x="258" y="90" font-size="9" fill="#786a59" text-anchor="middle">19/10</text>
+        </svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px; padding: 10px 0; border-bottom: 1px solid #ece0cd;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <div style="display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 14px; color: #52703a;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#52703a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-5 0-8-4-8-9 0-4 3-6 5-6 1.5 0 2.3.7 3 .7s1.5-.7 3-.7c2 0 5 2 5 6 0 5-3 9-8 9z"></path><path d="M12 7c0-2 1-4 3-4"></path></svg>Poids</div>
+          <div style="display: flex; align-items: baseline; gap: 6px;"><span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -.4px;">75,9 kg</span><span style="font-size: 11.5px; color: #786a59;">75,4–76,4</span></div>
+        </div>
+        <svg width="318" height="92" viewBox="0 0 318 92" style="display: block;" font-family="Space Mono, monospace">
+          <line x1="4" y1="50" x2="264" y2="50" stroke="#8a6419" stroke-width="1" stroke-dasharray="4 4"></line>
+          <text x="318" y="53" font-size="9.5" fill="#8a6419" text-anchor="end">76 kg</text>
+          <polygon points="99.3,35.0 131.0,37.6 162.8,40.2 194.5,41.8 226.3,44.4 258.0,47.0 258.0,61.0 226.3,55.6 194.5,50.2 162.8,45.8 131.0,40.4 99.3,35.0" fill="#52703a" fill-opacity=".12"></polygon>
+          <path d="M4.0,24 L35.8,28 L67.5,31 L99.3,35" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path d="M99.3,35 L131.0,39 L162.8,43 L194.5,46 L226.3,50 L258.0,54" fill="none" stroke="#52703a" stroke-width="2" stroke-dasharray="4 4" stroke-linecap="round"></path>
+          <path d="M99.3,35.0 L131.0,39.0 L162.8,43.0 L194.5,46.0 L226.3,50.0 L258.0,54.0" fill="none" stroke="#b14f2b" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path>
+          <circle cx="99.25" cy="35" r="4" fill="#33291f"></circle>
+          <circle cx="258" cy="54.0" r="4" fill="#b14f2b"></circle>
+          <text x="4" y="90" font-size="9" fill="#786a59">25/08</text><text x="99.25" y="90" font-size="9" fill="#786a59" text-anchor="middle">auj.</text><text x="258" y="90" font-size="9" fill="#786a59" text-anchor="middle">19/10</text>
+        </svg>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Ce que la v3 change</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px;"><span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px 0 7px; border-radius: 999px; background: rgba(107,0,40,.08); border: 1px solid rgba(107,0,40,.22); font-size: 12px; font-weight: 600; color: #6b0028; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6b0028" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect><line x1="1.5" y1="10.5" x2="1.5" y2="13.5"></line><line x1="22.5" y1="10.5" x2="22.5" y2="13.5"></line></svg>+4 kg au SBD</span><span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px 0 7px; border-radius: 999px; background: rgba(42,100,173,.08); border: 1px solid rgba(42,100,173,.24); font-size: 12px; font-weight: 600; color: #2a64ad; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2a64ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 3-4 6-4s3 4 6 4 3-7 6-7"></path><circle cx="21" cy="10" r="1.2" fill="#2a64ad"></circle></svg>−15 s au 10 km</span><span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px 0 7px; border-radius: 999px; background: rgba(82,112,58,.09); border: 1px solid rgba(82,112,58,.26); font-size: 12px; font-weight: 600; color: #52703a; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#52703a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-5 0-8-4-8-9 0-4 3-6 5-6 1.5 0 2.3.7 3 .7s1.5-.7 3-.7c2 0 5 2 5 6 0 5-3 9-8 9z"></path><path d="M12 7c0-2 1-4 3-4"></path></svg>poids inchangé</span></div>
+      <div style="font-size: 12.5px; line-height: 17px; color: #786a59;">Confiance moyenne : 24 séances et 41 jours de journal, mais le sommeil n'est déclaré qu'une nuit sur trois.</div>
+    </div>
+    <div style="margin-top: auto; display: flex; gap: 10px;"><div style="height: 50px; border-radius: 16px; border: 1.5px solid #33291f; display: flex; align-items: center; justify-content: center; gap: 7px; font-weight: 700; font-size: 14px; box-sizing: border-box; flex: 1;">Garder la v2</div><div style="height: 52px; border-radius: 16px; background: #b14f2b; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; box-shadow: 0 10px 24px -8px rgba(177,79,43,.55); flex: 1.2; height: 50px;">Adopter la v3</div></div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

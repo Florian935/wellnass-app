@@ -1,0 +1,151 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+    @keyframes impact { 0% { transform: scale(.55); opacity: .55; } 100% { transform: scale(1.12); opacity: 0; } }
+    @keyframes flow { to { stroke-dashoffset: -64; } }
+    @keyframes level { from { transform: translateX(0); } to { transform: translateX(-48px); } }
+    @keyframes halo { 0%, 100% { transform: scale(1); opacity: .5; } 50% { transform: scale(1.5); opacity: 0; } }
+    @keyframes souffle { 0%, 100% { transform: scale(.985); opacity: .45; } 50% { transform: scale(1.015); opacity: .8; } }
+    @keyframes rise { from { opacity: .35; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .fb { transform-box: fill-box; transform-origin: center; }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 11px; padding: 14px 20px 22px; min-height: 0;">
+        <div style="display: flex; align-items: center; justify-content: space-between; height: 44px; flex: none;">
+      <div style="display: flex; align-items: center; gap: 6px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg><div style="font-weight: 600; font-size: 14px;">Le Labo</div></div>
+      <div style="display: flex; align-items: center; justify-content: center; gap: 6px; min-width: 44px; height: 44px; padding: 0 12px; border-radius: 14px; background: #fffaf2; border: 1px solid #ece0cd; box-sizing: border-box; font-weight: 700; font-size: 13px;"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><line x1="12" y1="11" x2="12" y2="16"></line><line x1="12" y1="8" x2="12" y2="8"></line></svg></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1px; line-height: 1.02;">Croiser</div>
+      <div style="font-size: 14px; line-height: 20px; color: #786a59;">Deux leviers, tes données. Un lien, ou pas.</div>
+    </div>
+    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+      <sc-for list="{{ presets }}" as="p" hint-placeholder-count="4">
+        <div onClick="{{ p.pick }}" style="flex: none; height: 34px; padding: 0 12px; border-radius: 999px; display: flex; align-items: center; font-size: 12.5px; font-weight: 700; cursor: pointer; background: {{ p.bg }}; color: {{ p.ink }}; border: 1px solid {{ p.border }};">{{ p.label }}</div>
+      </sc-for>
+    </div>
+
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) 26px minmax(0, 1fr); align-items: stretch; gap: 4px;">
+      <div style="border-radius: 16px; padding: 10px 12px; background: {{ x.soft }}; border: 1px solid {{ x.line }}; display: flex; flex-direction: column; gap: 2px;">
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700; letter-spacing: .8px; color: {{ x.color }};">{{ x.pillar }}</div>
+        <div style="font-weight: 700; font-size: 14px; line-height: 1.2;">{{ x.name }}</div>
+        <div style="font-size: 11.5px; color: #786a59;">{{ x.when }}</div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 16px; color: #786a59;">×</div>
+      <div style="border-radius: 16px; padding: 10px 12px; background: {{ y.soft }}; border: 1px solid {{ y.line }}; display: flex; flex-direction: column; gap: 2px;">
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700; letter-spacing: .8px; color: {{ y.color }};">{{ y.pillar }}</div>
+        <div style="font-weight: 700; font-size: 14px; line-height: 1.2;">{{ y.name }}</div>
+        <div style="font-size: 11.5px; color: #786a59;">{{ y.when }}</div>
+      </div>
+    </div>
+    <div style="display: flex; gap: 6px; flex-wrap: wrap; font-size: 12px;">
+      <span style="height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid #e2d3bc; display: flex; align-items: center; gap: 5px; color: #5c4a35;">Décalage · <b>{{ lag }}</b></span>
+      <span style="height: 28px; padding: 0 10px; border-radius: 999px; border: 1px solid #e2d3bc; display: flex; align-items: center; gap: 5px; color: #5c4a35;">Contexte · <b>{{ context }}</b></span>
+    </div>
+
+    <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 20px; padding: 12px 14px; display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 12px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 11px; color: #786a59; font-weight: 600;">Chaque point = {{ unit }}</div>
+        <svg width="150" height="132" viewBox="0 0 150 132" style="display: block;">
+          <line x1="14" y1="6" x2="14" y2="112" stroke="#d9c7ab" stroke-width="1"></line>
+          <line x1="14" y1="112" x2="146" y2="112" stroke="#d9c7ab" stroke-width="1"></line>
+          <path d="{{ band }}" fill="{{ bandFill }}"></path>
+          <path d="{{ dots }}" fill="#5c4a35" fill-opacity=".72"></path>
+          <path d="{{ fit }}" fill="none" stroke="{{ fitColor }}" stroke-width="2.4" stroke-linecap="round"></path>
+          <text x="80" y="127" font-family="Hanken Grotesk, sans-serif" font-size="10" fill="#786a59" text-anchor="middle">{{ x.short }} →</text>
+          <text x="10" y="60" font-family="Hanken Grotesk, sans-serif" font-size="10" fill="#786a59" text-anchor="middle" transform="rotate(-90 10 60)">{{ y.short }} →</text>
+        </svg>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-size: 11px; color: #786a59; font-weight: 600;">12 semaines</div>
+        <svg width="100%" height="132" viewBox="0 0 150 132" preserveAspectRatio="none" style="display: block;">
+          <line x1="0" y1="112" x2="150" y2="112" stroke="#d9c7ab" stroke-width="1"></line>
+          <path d="{{ lineX }}" fill="none" stroke="{{ x.color }}" stroke-width="2.2" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+          <path d="{{ lineY }}" fill="none" stroke="{{ y.color }}" stroke-width="2.2" stroke-dasharray="4 3" stroke-linejoin="round" vector-effect="non-scaling-stroke"></path>
+        </svg>
+        <div style="display: flex; gap: 8px; font-size: 10.5px; color: #786a59;"><span style="color: {{ x.color }}; font-weight: 700;">— {{ x.short }}</span><span style="color: {{ y.color }}; font-weight: 700;">- - {{ y.short }}</span></div>
+      </div>
+    </div>
+
+    <div style="background: #33291f; color: #f0e4d0; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 5px; position: relative; overflow: hidden;">
+      <div style="position: absolute; width: 150px; height: 150px; border-radius: 50%; background: {{ glow }}; opacity: .3; filter: blur(32px); top: -80px; right: -40px;"></div>
+      <div style="position: relative; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: {{ verdictColor }};">{{ verdict }}</div>
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; color: #c9b79a;">{{ stats }}</div>
+      </div>
+      <div style="position: relative; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 19px; letter-spacing: -.4px; line-height: 1.2; color: #fff;">{{ sentence }}</div>
+      <div style="position: relative; font-size: 12px; line-height: 17px; color: #c9b79a;">{{ caveat }}</div>
+    </div>
+
+    <div style="margin-top: auto; display: flex; gap: 10px;">
+      <div style="flex: 1; height: 50px; border-radius: 16px; border: 1.5px solid #33291f; display: flex; align-items: center; justify-content: center; gap: 7px; font-weight: 700; font-size: 14px; box-sizing: border-box; opacity: {{ testOp }};"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="3"></rect><line x1="12" y1="5" x2="12" y2="19"></line><path d="M6.5 14.5l1.5-5 1.5 5"></path><line x1="7" y1="13" x2="9" y2="13"></line><path d="M15 9.5h1.8a1.3 1.3 0 0 1 0 2.5H15zM15 12h2.2a1.3 1.3 0 0 1 0 2.5H15z"></path></svg>Tester sur moi</div>
+      <div style="flex: 1.2; height: 50px; border-radius: 16px; background: #b14f2b; color: #fff; display: flex; align-items: center; justify-content: center; gap: 7px; font-weight: 700; font-size: 14px;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"></path></svg>{{ keepText }}</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { i: 0 };
+
+  renderVals() {
+    var PIL = {
+      muscu: { pillar: 'MUSCU', color: '#6b0028', soft: 'rgba(107,0,40,.07)', line: 'rgba(107,0,40,.22)' },
+      course: { pillar: 'COURSE', color: '#2a64ad', soft: 'rgba(42,100,173,.07)', line: 'rgba(42,100,173,.24)' },
+      nutrition: { pillar: 'NUTRITION', color: '#52703a', soft: 'rgba(82,112,58,.08)', line: 'rgba(82,112,58,.26)' },
+      socle: { pillar: 'SOCLE', color: '#8a6419', soft: 'rgba(138,100,25,.08)', line: 'rgba(138,100,25,.26)' },
+    };
+    var PRESETS = [
+      { label: 'Sommeil × allure', x: ['socle', 'Durée de sommeil', 'la nuit d\u2019avant', 'sommeil'], y: ['course', 'Allure des fractions', 'la séance du lendemain', 'allure'], lag: 'le lendemain', context: 'jours de fractionné', unit: 'un fractionné', r: -0.41, n: 34, seed: 3, favorable: true, verdict: 'Lien modéré · probable', sentence: 'Une heure de sommeil en plus, et tes fractions vont 4 s/km plus vite le lendemain.', caveat: 'r = −0,41 sur 34 paires. Une association sur toi, pas une preuve : les nuits longues tombent aussi les jours sans travail.', keep: 'Garder la piste' },
+      { label: 'Protéines × squat', x: ['nutrition', 'Protéines', 'moyenne de la semaine', 'protéines'], y: ['muscu', 'Progression du squat', 'la semaine suivante', 'squat'], lag: 'une semaine', context: 'toutes les semaines', unit: 'une semaine', r: 0.52, n: 14, seed: 7, favorable: true, verdict: 'Lien net · à confirmer', sentence: 'Les semaines à 1,8 g/kg ou plus, ton squat progresse trois fois plus vite.', caveat: 'r = 0,52 mais seulement 14 semaines : un essai de 6 semaines trancherait.', keep: 'Garder la piste' },
+      { label: 'Déficit × effort', x: ['nutrition', 'Déficit calorique', 'le jour même', 'déficit'], y: ['muscu', 'Effort ressenti', 'séance du soir', 'RPE'], lag: 'même jour', context: 'jours de musculation', unit: 'une séance', r: 0.33, n: 41, seed: 11, favorable: false, verdict: 'Lien faible · plausible', sentence: 'Au-delà de 400 kcal de déficit, tes séances te paraissent un point plus dures.', caveat: 'r = 0,33 sur 41 séances. Cohérent avec MN-02 : le garde-fou connaît déjà ce seuil.', keep: 'Garder la piste' },
+      { label: 'Pas × poids', x: ['socle', 'Pas quotidiens', 'moyenne de la semaine', 'pas'], y: ['nutrition', 'Variation du poids', 'la semaine', 'poids'], lag: 'même semaine', context: 'toutes les semaines', unit: 'une semaine', r: -0.08, n: 12, seed: 5, favorable: null, verdict: 'Pas de lien visible', sentence: 'Sur 12 semaines, tes pas ne disent rien de ton poids.', caveat: 'r = −0,08. Rien à tester ici : autant le savoir, et regarder ailleurs.', keep: 'Noter : pas de lien' },
+    ];
+    var p = PRESETS[this.state.i];
+    var rnd = (function (a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; var t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; })(p.seed);
+    var gauss = function () { return (rnd() + rnd() + rnd() - 1.5) / 0.5; };
+    var slope = p.r, noise = Math.sqrt(1 - p.r * p.r);
+    var xs = [], ys = [], i;
+    for (i = 0; i < p.n; i++) { var gx = gauss(); var gy = slope * gx + noise * gauss(); xs.push(gx); ys.push(gy); }
+    var sx = function (v) { return 16 + (Math.max(-2.2, Math.min(2.2, v)) + 2.2) / 4.4 * 126; };
+    var sy = function (v) { return 108 - (Math.max(-2.2, Math.min(2.2, v)) + 2.2) / 4.4 * 98; };
+    var dots = '';
+    for (i = 0; i < p.n; i++) { var cx = sx(xs[i]).toFixed(1), cy = sy(ys[i]).toFixed(1); dots += 'M' + cx + ',' + cy + ' m-2.4,0 a2.4,2.4 0 1,0 4.8,0 a2.4,2.4 0 1,0 -4.8,0 '; }
+    var fit = 'M' + sx(-2) + ',' + sy(-2 * slope).toFixed(1) + ' L' + sx(2) + ',' + sy(2 * slope).toFixed(1);
+    var w = 0.55;
+    var band = 'M' + sx(-2) + ',' + sy(-2 * slope + w).toFixed(1) + ' L' + sx(2) + ',' + sy(2 * slope + w).toFixed(1) + ' L' + sx(2) + ',' + sy(2 * slope - w).toFixed(1) + ' L' + sx(-2) + ',' + sy(-2 * slope - w).toFixed(1) + ' Z';
+    var lx = '', ly = '';
+    for (i = 0; i < 12; i++) { var a = Math.sin(i * 0.9 + p.seed) * 0.8 + gauss() * 0.35; var b = p.r * a + Math.sqrt(1 - p.r * p.r) * gauss() * 0.6; var X = (i / 11 * 146 + 2).toFixed(1); lx += (i ? 'L' : 'M') + X + ',' + (60 - a * 30).toFixed(1); ly += (i ? 'L' : 'M') + X + ',' + (60 - b * 30).toFixed(1); }
+    var side = function (s) { var c = PIL[s[0]]; return { pillar: c.pillar, color: c.color, soft: c.soft, line: c.line, name: s[1], when: s[2], short: s[3] }; };
+    var self = this;
+    var tone = p.favorable === null ? '#c9b79a' : p.favorable ? '#c5d69a' : '#e0b155';
+    return {
+      presets: PRESETS.map(function (q, k) { var on = k === self.state.i; return { label: q.label, pick: function () { self.setState({ i: k }); }, bg: on ? '#33291f' : 'transparent', ink: on ? '#fffaf2' : '#5c4a35', border: on ? '#33291f' : '#e2d3bc' }; }),
+      x: side(p.x), y: side(p.y), lag: p.lag, context: p.context, unit: p.unit,
+      dots: dots, fit: fit, band: band, bandFill: p.favorable === null ? 'rgba(120,106,89,.12)' : p.favorable ? 'rgba(102,113,75,.16)' : 'rgba(180,127,49,.18)', fitColor: p.favorable === null ? '#90897d' : p.favorable ? '#66714b' : '#b47f31',
+      lineX: lx, lineY: ly,
+      verdict: p.verdict, verdictColor: tone, glow: p.favorable === null ? '#786a59' : p.favorable ? '#52703a' : '#b47f31',
+      stats: p.n + ' paires · ' + (p.favorable === null ? 'aucune piste' : 'piste'),
+      sentence: p.sentence, caveat: p.caveat, keepText: p.keep, testOp: p.favorable === null ? 0.35 : 1,
+    };
+  }
+}
+</script>
+</body>
+</html>

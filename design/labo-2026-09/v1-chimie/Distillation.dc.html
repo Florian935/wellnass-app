@@ -1,0 +1,124 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #120d08; }
+    a { color: #e0a97f; }
+    a:hover { color: #f2c9a4; }
+    @keyframes flow { to { stroke-dashoffset: -28; } }
+    @keyframes drop { 0% { transform: translateY(0); opacity: 0; } 15% { opacity: 1; } 80% { opacity: 1; } 100% { transform: translateY(34px); opacity: 0; } }
+    @keyframes flame { 0%, 100% { transform: scaleY(1); } 50% { transform: scaleY(1.18); } }
+    @keyframes boil { 0% { transform: translateY(0); opacity: 0; } 20% { opacity: .9; } 100% { transform: translateY(-40px); opacity: 0; } }
+    @keyframes glowv { 0%, 100% { opacity: .5; } 50% { opacity: .9; } }
+    .dr { transform-box: fill-box; animation: drop 1.6s ease-in infinite; }
+    .fl { transform-box: fill-box; transform-origin: 50% 100%; animation: flame .5s ease-in-out infinite; }
+    .bo { animation: boil 1.4s linear infinite; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: radial-gradient(90% 40% at 72% 20%, #3b2c17 0%, #1c150e 55%, #120d08 100%); color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; padding: 14px 20px 22px; gap: 12px;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+      <div style="font-weight: 600; font-size: 14px;">Distillation</div>
+    </div>
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #c9b79a;">19/10/2026</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 4px;">
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #e0b155;">Fin du cycle · 8 semaines</div>
+    <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1px; line-height: 1.02;">L'essence de ta v2</div>
+  </div>
+
+  <svg width="350" height="170" viewBox="0 0 350 196" style="display: block; flex: none;">
+    <defs>
+      <clipPath id="bal"><circle cx="92" cy="122" r="44"></circle></clipPath>
+      <clipPath id="vial"><circle cx="286" cy="164" r="20"></circle></clipPath>
+      <linearGradient id="mixd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#d97fa0"></stop><stop offset=".5" stop-color="#6fa8ef"></stop><stop offset="1" stop-color="#a9ba7e"></stop></linearGradient>
+      <radialGradient id="gold" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#f2d28a" stop-opacity=".7"></stop><stop offset="1" stop-color="#f2d28a" stop-opacity="0"></stop></radialGradient>
+    </defs>
+    <!-- flamme -->
+    <ellipse cx="92" cy="186" rx="34" ry="5" fill="#3a2e22"></ellipse>
+    <path class="fl" d="M92,184 C80,176 84,166 92,156 C100,166 104,176 92,184 Z" fill="#6fa8ef" opacity=".85"></path>
+    <path class="fl" d="M92,184 C86,179 88,172 92,166 C96,172 98,179 92,184 Z" fill="#f2d28a" style="animation-delay: -.2s;"></path>
+    <!-- ballon -->
+    <g clip-path="url(#bal)">
+      <rect x="40" y="130" width="110" height="50" fill="url(#mixd)" opacity=".8"></rect>
+      <circle class="bo" cx="80" cy="162" r="2.5" fill="#fff"></circle>
+      <circle class="bo" cx="96" cy="166" r="2" fill="#fff" style="animation-delay: -.5s;"></circle>
+      <circle class="bo" cx="108" cy="160" r="2.6" fill="#fff" style="animation-delay: -.9s;"></circle>
+    </g>
+    <circle cx="92" cy="122" r="44" fill="rgba(255,255,255,.04)" stroke="rgba(244,236,221,.6)" stroke-width="2"></circle>
+    <!-- col de cygne -->
+    <path d="M92,78 L92,56 C92,26 150,20 192,48 L262,98 C270,104 276,112 276,128" fill="none" stroke="rgba(244,236,221,.55)" stroke-width="8" stroke-linecap="round"></path>
+    <path d="M92,78 L92,56 C92,26 150,20 192,48 L262,98 C270,104 276,112 276,128" fill="none" stroke="#1c150e" stroke-width="4" stroke-linecap="round"></path>
+    <path d="M92,78 L92,56 C92,26 150,20 192,48 L262,98 C270,104 276,112 276,128" fill="none" stroke="#f2d28a" stroke-width="2" stroke-dasharray="4 10" style="animation: flow 1s linear infinite;"></path>
+    <line x1="200" y1="54" x2="254" y2="92" stroke="rgba(111,168,239,.3)" stroke-width="22" stroke-linecap="round"></line>
+    <!-- gouttes -->
+    <circle class="dr" cx="276" cy="130" r="3" fill="#f2d28a"></circle>
+    <circle class="dr" cx="276" cy="130" r="2.4" fill="#f2d28a" style="animation-delay: -.8s;"></circle>
+    <!-- fiole d'essence -->
+    <circle cx="286" cy="164" r="34" fill="url(#gold)" style="animation: glowv 2.4s ease-in-out infinite;"></circle>
+    <g clip-path="url(#vial)"><rect x="262" y="160" width="48" height="30" fill="#e0b155"></rect></g>
+    <circle cx="286" cy="164" r="20" fill="rgba(255,255,255,.05)" stroke="rgba(244,236,221,.7)" stroke-width="1.8"></circle>
+    <rect x="280" y="136" width="12" height="10" rx="2" fill="none" stroke="rgba(244,236,221,.7)" stroke-width="1.8"></rect>
+    <line x1="0" y1="193" x2="350" y2="193" stroke="#3a2e22" stroke-width="3"></line>
+  </svg>
+
+  <!-- résultats -->
+  <div style="display: flex; flex-direction: column; border-radius: 18px; background: rgba(255,255,255,.06); border: 1px solid rgba(244,236,221,.12); padding: 4px 14px;">
+    <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(244,236,221,.1);">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a9ba7e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>
+      <div style="flex: 1;"><div style="font-size: 12px; color: #c9b79a;">Total SBD</div><div style="font-size: 12.5px; color: #c9b79a;">projeté 378 à 392 · dans la fourchette</div></div>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -.5px;">381 kg</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; padding: 9px 0;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#e0b155" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"></line></svg>
+      <div style="flex: 1;"><div style="font-size: 12px; color: #c9b79a;">10 km</div><div style="font-size: 12.5px; color: #c9b79a;">objectif 48:00 · manqué de 34 s</div></div>
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -.5px;">48:34</div>
+    </div>
+  </div>
+
+  <!-- l'essence -->
+  <div style="display: flex; flex-direction: column; gap: 7px; padding: 0 2px;">
+    <div style="display: flex; gap: 10px;">
+      <div style="width: 8px; height: 8px; border-radius: 50%; background: #a9ba7e; margin-top: 6px; flex: none;"></div>
+      <div style="font-size: 13.5px; line-height: 19px;"><b>Ce qui a porté</b> · <span style="color: #d9ccb6;">1,9 g/kg de protéines en moyenne, et le fractionné déplacé au jeudi.</span></div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <div style="width: 8px; height: 8px; border-radius: 50%; background: #8a7e72; margin-top: 6px; flex: none;"></div>
+      <div style="font-size: 13.5px; line-height: 19px;"><b>Sans effet visible</b> · <span style="color: #d9ccb6;">la sieste de 20 minutes, essai non concluant.</span></div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <div style="width: 8px; height: 8px; border-radius: 50%; background: #e0b155; margin-top: 6px; flex: none;"></div>
+      <div style="font-size: 13.5px; line-height: 19px;"><b>Ce qui a coûté</b> · <span style="color: #d9ccb6;">les deux semaines à 5 séances : la récupération n'a pas suivi, le 10 km a stagné.</span></div>
+    </div>
+    <div style="font-size: 12px; line-height: 17px; color: #c9b79a;">Des associations observées sur toi, pas des preuves. Un doute ? Il part en essai.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #c9b79a;">La v3 proposée</div>
+    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+      <div style="display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 11px 0 4px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(244,236,221,.14);"><div style="width: 26px; height: 26px; border-radius: 7px; border: 1.5px solid #e07a98; box-sizing: border-box; color: #e07a98; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 11.5px; display: flex; align-items: center; justify-content: center;">Fq</div><span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700;">5 → 4</span></div>
+      <div style="display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 11px 0 4px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(244,236,221,.14);"><div style="width: 26px; height: 26px; border-radius: 7px; border: 1.5px solid #6fa8ef; box-sizing: border-box; color: #6fa8ef; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 11.5px; display: flex; align-items: center; justify-content: center;">Fr</div><span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700;">affûtage J-10</span></div>
+      <div style="display: flex; align-items: center; gap: 6px; height: 34px; padding: 0 11px 0 4px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(244,236,221,.14);"><div style="width: 26px; height: 26px; border-radius: 7px; border: 1.5px solid #a9ba7e; box-sizing: border-box; color: #a9ba7e; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 11.5px; display: flex; align-items: center; justify-content: center;">Pr</div><span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 12px; font-weight: 700;">1,9 gardé</span></div>
+    </div>
+  </div>
+
+  <div style="margin-top: auto; display: flex; flex-direction: column; gap: 6px;">
+    <div style="height: 52px; border-radius: 16px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;">Composer la v3 depuis l'essence</div>
+    <div style="text-align: center; font-size: 12px; color: #c9b79a;">Rien n'est appliqué sans toi</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

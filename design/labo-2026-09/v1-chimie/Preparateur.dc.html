@@ -1,0 +1,103 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #120d08; }
+    a { color: #e0a97f; }
+    a:hover { color: #f2c9a4; }
+    .mono { font-family: 'Space Mono', ui-monospace, monospace; }
+    .chip { display: flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 4px; border-radius: 999px; background: rgba(255,255,255,.06); border: 1px solid rgba(244,236,221,.14); box-sizing: border-box; }
+    .sym { width: 24px; height: 24px; border-radius: 7px; box-sizing: border-box; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+    @keyframes eq { 0%, 100% { transform: scaleY(.35); } 50% { transform: scaleY(1); } }
+    @keyframes typein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .bar { width: 3px; height: 18px; border-radius: 2px; background: #e0a97f; transform-origin: 50% 50%; animation: eq 1s ease-in-out infinite; }
+  </style>
+</helmet>
+
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: radial-gradient(100% 50% at 50% 100%, #3a2718 0%, #1c150e 55%, #120d08 100%); color: #f4ecdd; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; padding: 14px 20px 22px; gap: 12px;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+    <div style="display: flex; align-items: center; gap: 6px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg>
+      <div style="font-weight: 600; font-size: 14px;">Préparateur</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: #c9b79a; border: 1px solid rgba(244,236,221,.2); border-radius: 999px; padding: 4px 10px;">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+      IA · données agrégées
+    </div>
+  </div>
+
+  <!-- ta demande -->
+  <div style="align-self: flex-end; max-width: 300px; display: flex; flex-direction: column; gap: 6px; align-items: flex-end;">
+    <div style="background: rgba(224,169,127,.14); border: 1px solid rgba(224,169,127,.3); border-radius: 18px 18px 6px 18px; padding: 10px 14px; font-size: 14.5px; line-height: 21px;">« Je veux courir un 10 km sous 48 minutes mi-novembre sans perdre ma force. J'ai quatre créneaux par semaine. »</div>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <div style="display: flex; align-items: center; gap: 3px; height: 18px;"><div class="bar" style="animation-delay: -.1s; animation-play-state: paused; transform: scaleY(.5);"></div><div class="bar" style="animation-play-state: paused; transform: scaleY(.9);"></div><div class="bar" style="animation-play-state: paused; transform: scaleY(.6);"></div><div class="bar" style="animation-play-state: paused; transform: scaleY(.8);"></div><div class="bar" style="animation-play-state: paused; transform: scaleY(.4);"></div></div>
+      <div class="mono" style="font-size: 10.5px; color: #c9b79a;">dicté · 0:09</div>
+    </div>
+  </div>
+
+  <div style="font-size: 15px; line-height: 22px; animation: typein .5s ease-out both;">Voici un brouillon. Chaque dose a été vérifiée par le moteur du Labo avant de te la montrer.</div>
+
+  <!-- brouillon -->
+  <div style="background: rgba(255,255,255,.05); border: 1px solid rgba(244,236,221,.14); border-radius: 22px; padding: 14px; display: flex; flex-direction: column; gap: 12px; animation: typein .5s .15s ease-out both;">
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <svg width="46" height="56" viewBox="0 0 46 56" style="display: block; flex: none;">
+        <defs><clipPath id="pf"><path d="M18,4 L18,17 A18,18 0 1,0 28,17 L28,4 Z"></path></clipPath></defs>
+        <g clip-path="url(#pf)"><rect x="0" y="22" width="46" height="5" fill="#e0b155"></rect><rect x="0" y="27" width="46" height="8" fill="#e07a98"></rect><rect x="0" y="35" width="46" height="11" fill="#6fa8ef"></rect><rect x="0" y="46" width="46" height="10" fill="#a9ba7e"></rect></g>
+        <path d="M18,4 L18,17 A18,18 0 1,0 28,17 L28,4 Z" fill="none" stroke="rgba(244,236,221,.65)" stroke-width="1.6"></path>
+      </svg>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 19px; letter-spacing: -.4px;">Affûtage 10 km</div>
+        <div class="mono" style="font-size: 10.5px; color: #c9b79a;">BROUILLON · 8 SEMAINES · 4 CRÉNEAUX</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+      <div class="chip"><div class="sym" style="border: 1.5px solid #e07a98; color: #e07a98;">Fq</div><span class="mono" style="font-size: 11.5px; font-weight: 700;">2 / sem</span></div>
+      <div class="chip"><div class="sym" style="border: 1.5px solid #6fa8ef; color: #6fa8ef;">Km</div><span class="mono" style="font-size: 11.5px; font-weight: 700;">30 km</span></div>
+      <div class="chip"><div class="sym" style="border: 1.5px solid #6fa8ef; color: #6fa8ef;">Fr</div><span class="mono" style="font-size: 11.5px; font-weight: 700;">1 → 2</span></div>
+      <div class="chip"><div class="sym" style="border: 1.5px solid #a9ba7e; color: #a9ba7e;">Pr</div><span class="mono" style="font-size: 11.5px; font-weight: 700;">1,8 g/kg</span></div>
+      <div class="chip"><div class="sym" style="border: 1.5px solid #a9ba7e; color: #a9ba7e;">Gl</div><span class="mono" style="font-size: 11.5px; font-weight: 700;">périodisés</span></div>
+      <div class="chip"><div class="sym" style="border: 1.5px solid #e0b155; color: #e0b155;">So</div><span class="mono" style="font-size: 11.5px; font-weight: 700;">7 h 30</span></div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 7px; padding-top: 10px; border-top: 1px solid rgba(244,236,221,.1);">
+      <div class="mono" style="font-size: 10px; font-weight: 700; letter-spacing: 1.1px; text-transform: uppercase; color: #c9b79a;">Vérifié par le calcul</div>
+      <div style="display: flex; gap: 8px; font-size: 13px; line-height: 18px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#f2d28a" style="flex: none; margin-top: 1px;"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"></path></svg><span>Glucides × fractionné : synergie active</span></div>
+      <div style="display: flex; gap: 8px; font-size: 13px; line-height: 18px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a9ba7e" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 1px;"><path d="M5 12l5 5 9-10"></path></svg><span>Squat placé 48 h avant le fractionné</span></div>
+      <div style="display: flex; gap: 8px; font-size: 13px; line-height: 18px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#c9b79a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex: none; margin-top: 1px;"><path d="M3 20h18"></path><path d="M4 16l5-6 4 3 7-8"></path></svg><span>10 km au 15/11 : <b>47:50</b> <span style="color: #c9b79a;">(47:10 – 48:40), confiance moyenne</span></span></div>
+    </div>
+  </div>
+
+  <!-- suppositions -->
+  <div style="display: flex; flex-direction: column; gap: 6px; animation: typein .5s .3s ease-out both;">
+    <div class="mono" style="font-size: 10.5px; font-weight: 700; letter-spacing: 1.3px; text-transform: uppercase; color: #c9b79a;">Ce que j'ai supposé</div>
+    <div style="display: flex; align-items: center; gap: 10px; min-height: 44px; border-bottom: 1px solid rgba(244,236,221,.1);">
+      <div style="flex: 1; font-size: 13px; line-height: 18px;">Deux séances de force suffisent à l'entretenir <span style="color: #c9b79a;">· niveau B</span></div>
+      <div style="font-size: 13px; font-weight: 700; color: #e0a97f;">Modifier</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 10px; min-height: 44px;">
+      <div style="flex: 1; font-size: 13px; line-height: 18px;">Tes créneaux : lun., mer., jeu. et sam. <span style="color: #c9b79a;">· ton planning</span></div>
+      <div style="font-size: 13px; font-weight: 700; color: #e0a97f;">Modifier</div>
+    </div>
+  </div>
+
+  <div style="margin-top: auto; display: flex; flex-direction: column; gap: 8px;">
+    <div style="display: flex; gap: 10px;">
+      <div style="width: 52px; height: 52px; flex: none; border-radius: 50%; border: 1.5px solid rgba(244,236,221,.35); display: flex; align-items: center; justify-content: center; box-sizing: border-box;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f4ecdd" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><line x1="12" y1="18" x2="12" y2="22"></line></svg>
+      </div>
+      <div style="flex: 1; height: 52px; border-radius: 16px; background: #dd6e40; color: #1c150e; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 15px;">Poser sur la paillasse</div>
+    </div>
+    <div style="text-align: center; font-size: 11.5px; color: #c9b79a;">Les chiffres viennent du moteur de l'app, pas du modèle.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

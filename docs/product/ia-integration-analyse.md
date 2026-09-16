@@ -1,6 +1,8 @@
 # Intégration de l'IA dans l'app — analyse (modèles, architecture, coûts)
 
-> **État : exploration / aide à la décision.** Rédigé le 15/07/2026 à la demande de Florian.
+> **État : exploration / aide à la décision.** Rédigé le 15/07/2026 à la demande de Florian,
+> **complété le 15/09/2026** d'un §7 « Tester en gratuit » (paliers gratuits du marché, piège de
+> l'entraînement sur nos données, fournisseur devenu un réglage).
 > Objectif : cadrer **quel(s) modèle(s)** utiliser, **comment** les brancher (architecture, sécurité,
 > RGPD) et **combien ça coûte** pour deux usages IA envisagés. Pas encore une US ; sert de base
 > d'arbitrage Florian & Damien. Tarifs Anthropic **au 24/06/2026** (cache de la doc API) — **à
@@ -188,7 +190,92 @@ sont payantes**. Modèle freemium retenu :
 
 ---
 
-## 7. Recommandation : MVP et phasage
+## 7. Tester en gratuit avant d'engager un budget
+
+> **Ajouté le 15/09/2026**, à la demande de Florian : « est-ce qu'on peut brancher de l'IA gratuite
+> pour tester ? ». La réponse est oui — mais pas pour la raison qu'on croit, et pas sans une règle.
+
+### 7.1 Ce qui existe réellement en gratuit
+
+Les offres ci-dessous sont des **paliers gratuits permanents**, pas des crédits d'essai. Les quotas
+sont ceux relevés au **15/09/2026** ; ils bougent sans préavis (Google a resserré ses limites en
+avril 2026 et déplacé les modèles Pro en payant).
+
+| Fournisseur | Quota gratuit | Carte bancaire | Remarque |
+|---|---|:---:|---|
+| **Google AI Studio (Gemini)** | Flash ~10 req/min · 1 500 req/jour ; Flash-Lite ~15/min · 1 000/jour | non | Le plus généreux. ⚠️ voir 7.2 |
+| **Groq** | Llama 3.3 70B ~30 req/min · 1 000/jour | non | Inférence très rapide, endpoint compatible OpenAI |
+| **Mistral (La Plateforme)** | Palier gratuit réel, catalogue large | non, mais **vérification d'identité** | Hébergement **UE** — le plus propre côté RGPD |
+| **Cerebras** | Modèles ouverts, débit élevé | non | |
+| **GitHub Models** | Catalogue multi-éditeurs, simple compte GitHub | non | Quotas faibles, suffisant pour prototyper |
+| **Cloudflare Workers AI** | Allocation quotidienne | non | |
+| **OpenRouter** | Modèles suffixés `:free`, **une seule clé pour tous** | non | Le plus pratique pour comparer plusieurs modèles |
+| Anthropic / OpenAI | Pas de palier gratuit permanent — crédits d'essai seulement | oui | Les fournisseurs cibles du §3 |
+
+### 7.2 Le piège qui décide de tout : l'entraînement sur nos données
+
+Sur le **palier gratuit** de Google AI Studio, les requêtes et les réponses **peuvent être utilisées
+pour améliorer les modèles Google**. Ce n'est pas un défaut de configuration : c'est la contrepartie
+du gratuit, et elle ne se désactive qu'en activant la facturation (Tier 1+).
+
+Or ce que cette app enverrait, ce sont des **poids, des repas, de l'activité physique** — des données
+personnelles relevant de la santé (§5). Le §5 exige la **non-utilisation pour l'entraînement** ; le
+palier gratuit de Gemini y contrevient frontalement.
+
+> 🔴 **Règle, non négociable : le gratuit se teste sur des données FACTICES.** Jamais sur le compte
+> d'un utilisateur réel, jamais sur des données de recette dérivées d'une personne réelle. Le script
+> [`supabase/scripts/ia-purge-et-dataset.sql`](../../supabase/scripts/ia-purge-et-dataset.sql) existe
+> pour ça : il remet un compte de test à plat et le repeuple avec un historique **entièrement
+> inventé**.
+
+Mistral (UE, palier gratuit) est plus propre de ce point de vue, au prix d'une vérification
+d'identité et d'une disponibilité géographique variable.
+
+### 7.3 Ce que le gratuit fait économiser — et ce qu'il ne fait pas économiser
+
+**Pas de l'argent.** Les estimations du §4 le disent : un bilan hebdomadaire en Haiku coûte
+~0,008 $. Une campagne de recette de 500 bilans revient à **~4 $**. Le palier gratuit n'est donc pas
+une optimisation de coût — à cette échelle, il n'y a rien à optimiser.
+
+**Ce qu'il fait gagner**, c'est de ne pas avoir à trancher maintenant : pas de compte facturé à
+ouvrir, pas de fournisseur définitif à choisir, pas de DPA à négocier avant d'avoir la moindre idée
+de ce que l'IA rend sur nos données. On explore, puis on décide.
+
+**Ce qu'il ne dit pas** : la qualité finale. La réponse d'un Flash gratuit ne préjuge en rien de
+celle d'un Sonnet 5. Juger la valeur produit suppose de repasser sur le modèle cible — et ça coûte
+quelques euros, pas plus.
+
+### 7.4 Conséquence d'architecture : le fournisseur devient un réglage
+
+Le §5 imposait déjà un **proxy serveur** (la clé ne peut pas vivre dans l'APK). Ce volet ajoute une
+exigence : la fonction Edge `ai-assist` est **agnostique du fournisseur**, et bascule par variable
+d'environnement.
+
+```
+App mobile ──JWT──▶ Edge Function ai-assist ──▶ ┌─ AI_PROVIDER=gemini    (gratuit, test)
+  (aucun secret)     JWT · consentement ·       ├─ AI_PROVIDER=anthropic (cible, payant)
+                     quota · taille             └─ …tout autre, via un adaptateur
+```
+
+Gemini, Groq, Mistral, Cerebras et OpenRouter exposent tous un endpoint **compatible OpenAI** :
+changer de fournisseur revient à changer deux variables, jamais à retoucher l'app — qui ne connaît
+qu'un nom de fonction. C'est ce qui rend l'exploration gratuite **non jetable** : tout ce qui est
+construit pendant la phase de test (le proxy, les gardes, le prompt, et surtout **le choix de ce
+qu'on envoie**) est conservé quand on bascule sur le fournisseur payant.
+
+### 7.5 Phasage recommandé
+
+1. **Explorer en gratuit** — Gemini Flash (ou OpenRouter pour comparer plusieurs modèles côte à
+   côte), sur **données factices**. On valide la plomberie, le prompt, et le format du contexte
+   envoyé. C'est ce que livre l'US IA-LAB-01.
+2. **Juger la qualité** — repasser sur le modèle cible du §3, sur les mêmes questions, et comparer.
+   Coût : quelques euros.
+3. **Mettre en production** — fournisseur payant avec DPA, non-entraînement, `inference_geo` en
+   Europe, consentement explicite, plafonds. Les prérequis du §5 redeviennent tous obligatoires.
+
+---
+
+## 8. Recommandation : MVP et phasage
 
 Commencer **petit, mesurable, gated**, puis étendre :
 
@@ -207,7 +294,7 @@ Commencer **petit, mesurable, gated**, puis étendre :
 
 ---
 
-## 8. Risques & points d'attention
+## 9. Risques & points d'attention
 
 - **Hallucination / conseil santé** : un chatbot muscu/nutrition peut donner un conseil faux ou
   inadapté (blessure, pathologie). **Garde-fous** : prompt de sécurité (ne pas poser de diagnostic
@@ -224,7 +311,7 @@ Commencer **petit, mesurable, gated**, puis étendre :
 
 ---
 
-## 9. Réponses directes aux questions posées
+## 10. Réponses directes aux questions posées
 
 - **Quel modèle ?** Pas un modèle unique : **Haiku 4.5** (insights routiniers, batch), **Sonnet 5**
   (chatbot + analyses croisées — le workhorse), **Opus 4.8** (root-cause + génération de programme
@@ -236,3 +323,7 @@ Commencer **petit, mesurable, gated**, puis étendre :
   à gater en premium avec quotas. Voir §4.
 - **Prérequis non négociables** : proxy backend (clé jamais dans l'app), consentement + RGPD, plafonds
   de coût. Voir §5.
+- **Peut-on tester en gratuit ?** Oui — Gemini, Groq, Mistral et consorts ont de vrais paliers
+  gratuits. Mais le gratuit n'économise pas d'argent (une campagne de recette coûte ~4 $) : il évite
+  d'avoir à choisir un fournisseur maintenant. **Contrepartie décisive** : le palier gratuit de Gemini
+  peut utiliser nos requêtes pour entraîner ses modèles → **données factices uniquement**. Voir §7.

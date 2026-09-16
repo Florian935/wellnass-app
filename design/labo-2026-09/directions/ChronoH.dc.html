@@ -1,0 +1,272 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; } a:hover { color: #8a3c1f; }
+    @keyframes haloP { 0%, 100% { opacity: .12; } 50% { opacity: .42; } }
+    .halo { animation: haloP 2s ease-in-out infinite; }
+    @keyframes rise { from { opacity: .35; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    @keyframes secH { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes flowH { to { stroke-dashoffset: -14; } }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+  <div style="flex: none; position: relative; overflow: hidden; background: radial-gradient(72% 58% at 12% 8%, rgba(107,0,40,.92) 0%, rgba(107,0,40,0) 72%), radial-gradient(70% 56% at 94% 14%, rgba(42,100,173,.9) 0%, rgba(42,100,173,0) 72%), radial-gradient(90% 60% at 50% 104%, rgba(58,86,34,.95) 0%, rgba(58,86,34,0) 74%), #1c150e; color: #fff; border-radius: 0 0 30px 30px; padding: 12px 20px 14px; display: flex; flex-direction: column; gap: 4px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+      <div style="display: flex; align-items: center; gap: 6px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg><div style="font-weight: 600; font-size: 14px;">Le Labo</div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: .8px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.26);">CONCEPT H</div>
+    </div>
+    <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -.8px; line-height: 1.05;">Le chrono</div>
+      <div style="font-size: 13px; color: rgba(255,255,255,.8);">tes piliers sur un cadran</div>
+    </div>
+    <svg width="350" height="330" viewBox="0 0 350 330" style="display: block; flex: none; overflow: visible;">
+      <defs>
+        <linearGradient id="caseH" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#e9e4da"></stop><stop offset=".35" stop-color="#8b847a"></stop><stop offset=".6" stop-color="#d9d2c7"></stop><stop offset="1" stop-color="#5c554b"></stop></linearGradient>
+        <radialGradient id="dialH" cx=".45" cy=".35" r=".8"><stop offset="0" stop-color="#3a2d20"></stop><stop offset=".7" stop-color="#1c150e"></stop><stop offset="1" stop-color="#110c08"></stop></radialGradient>
+        <radialGradient id="subH" cx=".45" cy=".35" r=".8"><stop offset="0" stop-color="#2a2016"></stop><stop offset="1" stop-color="#120d08"></stop></radialGradient>
+        <linearGradient id="glassH" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".16"></stop><stop offset=".45" stop-color="#fff" stop-opacity="0"></stop></linearGradient>
+      </defs>
+      <!-- couronne et poussoirs -->
+      <rect x="164" y="0" width="22" height="16" rx="4" fill="url(#caseH)" stroke="#3a322a" stroke-width="1"></rect>
+      <g fill="url(#caseH)" stroke="#3a322a" stroke-width="1">
+        <rect x="-8" y="-150" width="16" height="12" rx="3" transform="translate(175 166) rotate(-40)"></rect>
+        <rect x="-8" y="-150" width="16" height="12" rx="3" transform="translate(175 166) rotate(40)"></rect>
+      </g>
+      <text x="52.4" y="63.2" font-family="Space Mono, monospace" font-size="7.5" font-weight="700" letter-spacing=".8" fill="rgba(255,255,255,.6)" text-anchor="end">CYCLE</text>
+      <text x="297.6" y="63.2" font-family="Space Mono, monospace" font-size="7.5" font-weight="700" letter-spacing=".8" fill="rgba(255,255,255,.6)">BILAN</text>
+      <!-- boîtier et lunette de la semaine -->
+      <circle cx="175" cy="166" r="152" fill="url(#caseH)"></circle>
+      <circle cx="175" cy="166" r="148" fill="#241a12"></circle>
+      <path d="M182.6,21.2 A145,145 0 0,1 283.5,69.8" fill="none" stroke="#e07a98" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ m0 }}; transition: opacity .3s;"></path>
+      <path d="M181.7,38.7 A127.5,127.5 0 0,1 270.4,81.4" fill="none" stroke="#6fa8ef" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ c0 }}; transition: opacity .3s;"></path>
+      <text x="234" y="47" font-family="Space Mono, monospace" font-size="10" font-weight="700" fill="#f4ecdd" text-anchor="middle" style="opacity: {{ l0 }};">L</text>
+      <line x1="175" y1="42" x2="175" y2="18" stroke="rgba(0,0,0,.45)" stroke-width="1.2"></line><path d="M292.9,81.7 A145,145 0 0,1 317.9,190.8" fill="none" stroke="#e07a98" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ m1 }}; transition: opacity .3s;"></path>
+      <path d="M278.7,91.8 A127.5,127.5 0 0,1 300.6,187.8" fill="none" stroke="#6fa8ef" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ c1 }}; transition: opacity .3s;"></path>
+      <text x="307.6" y="139.2" font-family="Space Mono, monospace" font-size="10" font-weight="700" fill="#f4ecdd" text-anchor="middle" style="opacity: {{ l1 }};">M</text>
+      <line x1="271.9" y1="88.7" x2="290.7" y2="73.7" stroke="rgba(0,0,0,.45)" stroke-width="1.2"></line><path d="M314.5,205.6 A145,145 0 0,1 244.7,293.2" fill="none" stroke="#e07a98" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ m2 }}; transition: opacity .3s;"></path>
+      <path d="M297.6,200.8 A127.5,127.5 0 0,1 236.3,277.8" fill="none" stroke="#6fa8ef" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ c2 }}; transition: opacity .3s;"></path>
+      <text x="281.3" y="254.3" font-family="Space Mono, monospace" font-size="10" font-weight="700" fill="#f4ecdd" text-anchor="middle" style="opacity: {{ l2 }};">M</text>
+      <line x1="295.9" y1="193.6" x2="319.3" y2="198.9" stroke="rgba(0,0,0,.45)" stroke-width="1.2"></line><path d="M231,299.8 A145,145 0 0,1 119,299.8" fill="none" stroke="#e07a98" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ m3 }}; transition: opacity .3s;"></path>
+      <path d="M224.2,283.6 A127.5,127.5 0 0,1 125.8,283.6" fill="none" stroke="#6fa8ef" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ c3 }}; transition: opacity .3s;"></path>
+      <text x="175" y="305.5" font-family="Space Mono, monospace" font-size="10" font-weight="700" fill="#f4ecdd" text-anchor="middle" style="opacity: {{ l3 }};">J</text>
+      <line x1="228.8" y1="277.7" x2="239.2" y2="299.3" stroke="rgba(0,0,0,.45)" stroke-width="1.2"></line><path d="M105.3,293.2 A145,145 0 0,1 35.5,205.6" fill="none" stroke="#e07a98" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ m4 }}; transition: opacity .3s;"></path>
+      <path d="M113.7,277.8 A127.5,127.5 0 0,1 52.4,200.8" fill="none" stroke="#6fa8ef" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ c4 }}; transition: opacity .3s;"></path>
+      <text x="68.7" y="254.3" font-family="Space Mono, monospace" font-size="10" font-weight="700" fill="#f4ecdd" text-anchor="middle" style="opacity: {{ l4 }};">V</text>
+      <line x1="121.2" y1="277.7" x2="110.8" y2="299.3" stroke="rgba(0,0,0,.45)" stroke-width="1.2"></line><path d="M32.1,190.8 A145,145 0 0,1 57.1,81.7" fill="none" stroke="#e07a98" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ m5 }}; transition: opacity .3s;"></path>
+      <path d="M49.4,187.8 A127.5,127.5 0 0,1 71.3,91.8" fill="none" stroke="#6fa8ef" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ c5 }}; transition: opacity .3s;"></path>
+      <text x="42.4" y="139.2" font-family="Space Mono, monospace" font-size="10" font-weight="700" fill="#f4ecdd" text-anchor="middle" style="opacity: {{ l5 }};">S</text>
+      <line x1="54.1" y1="193.6" x2="30.7" y2="198.9" stroke="rgba(0,0,0,.45)" stroke-width="1.2"></line><path d="M66.5,69.8 A145,145 0 0,1 167.4,21.2" fill="none" stroke="#e07a98" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ m6 }}; transition: opacity .3s;"></path>
+      <path d="M79.6,81.4 A127.5,127.5 0 0,1 168.3,38.7" fill="none" stroke="#6fa8ef" stroke-width="3.5" stroke-linecap="round" style="opacity: {{ c6 }}; transition: opacity .3s;"></path>
+      <text x="116" y="47" font-family="Space Mono, monospace" font-size="10" font-weight="700" fill="#f4ecdd" text-anchor="middle" style="opacity: {{ l6 }};">D</text>
+      <line x1="78.1" y1="88.7" x2="59.3" y2="73.7" stroke="rgba(0,0,0,.45)" stroke-width="1.2"></line>
+      <!-- cadran -->
+      <circle cx="175" cy="166" r="122" fill="url(#dialH)" stroke="#0c0906" stroke-width="2"></circle>
+      <line x1="175" y1="60" x2="175" y2="46" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="186.8" y1="53.6" x2="187.5" y2="46.7" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="198.5" y1="55.5" x2="199.9" y2="48.6" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="209.9" y1="58.5" x2="212.1" y2="51.9" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="221" y1="62.8" x2="223.8" y2="56.4" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="228" y1="74.2" x2="235" y2="62.1" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="241.4" y1="74.6" x2="245.5" y2="68.9" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="250.6" y1="82" x2="255.3" y2="76.8" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="259" y1="90.4" x2="264.2" y2="85.7" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="266.4" y1="99.6" x2="272.1" y2="95.5" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="266.8" y1="113" x2="278.9" y2="106" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="278.2" y1="120" x2="284.6" y2="117.2" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="282.5" y1="131.1" x2="289.1" y2="128.9" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="285.5" y1="142.5" x2="292.4" y2="141.1" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="287.4" y1="154.2" x2="294.3" y2="153.5" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="281" y1="166" x2="295" y2="166" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="287.4" y1="177.8" x2="294.3" y2="178.5" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="285.5" y1="189.5" x2="292.4" y2="190.9" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="282.5" y1="200.9" x2="289.1" y2="203.1" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="278.2" y1="212" x2="284.6" y2="214.8" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="266.8" y1="219" x2="278.9" y2="226" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="266.4" y1="232.4" x2="272.1" y2="236.5" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="259" y1="241.6" x2="264.2" y2="246.3" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="250.6" y1="250" x2="255.3" y2="255.2" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="241.4" y1="257.4" x2="245.5" y2="263.1" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="228" y1="257.8" x2="235" y2="269.9" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="221" y1="269.2" x2="223.8" y2="275.6" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="209.9" y1="273.5" x2="212.1" y2="280.1" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="198.5" y1="276.5" x2="199.9" y2="283.4" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="186.8" y1="278.4" x2="187.5" y2="285.3" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="175" y1="272" x2="175" y2="286" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="163.2" y1="278.4" x2="162.5" y2="285.3" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="151.5" y1="276.5" x2="150.1" y2="283.4" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="140.1" y1="273.5" x2="137.9" y2="280.1" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="129" y1="269.2" x2="126.2" y2="275.6" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="122" y1="257.8" x2="115" y2="269.9" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="108.6" y1="257.4" x2="104.5" y2="263.1" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="99.4" y1="250" x2="94.7" y2="255.2" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="91" y1="241.6" x2="85.8" y2="246.3" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="83.6" y1="232.4" x2="77.9" y2="236.5" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="83.2" y1="219" x2="71.1" y2="226" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="71.8" y1="212" x2="65.4" y2="214.8" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="67.5" y1="200.9" x2="60.9" y2="203.1" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="64.5" y1="189.5" x2="57.6" y2="190.9" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="62.6" y1="177.8" x2="55.7" y2="178.5" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="69" y1="166" x2="55" y2="166" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="62.6" y1="154.2" x2="55.7" y2="153.5" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="64.5" y1="142.5" x2="57.6" y2="141.1" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="67.5" y1="131.1" x2="60.9" y2="128.9" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="71.8" y1="120" x2="65.4" y2="117.2" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="83.2" y1="113" x2="71.1" y2="106" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="83.6" y1="99.6" x2="77.9" y2="95.5" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="91" y1="90.4" x2="85.8" y2="85.7" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="99.4" y1="82" x2="94.7" y2="76.8" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="108.6" y1="74.6" x2="104.5" y2="68.9" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="122" y1="74.2" x2="115" y2="62.1" stroke="rgba(255,255,255,.62)" stroke-width="2.2"></line><line x1="129" y1="62.8" x2="126.2" y2="56.4" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="140.1" y1="58.5" x2="137.9" y2="51.9" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="151.5" y1="55.5" x2="150.1" y2="48.6" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line><line x1="163.2" y1="53.6" x2="162.5" y2="46.7" stroke="rgba(255,255,255,.26)" stroke-width="0.8"></line>
+      <text x="175" y="88" font-family="Space Mono, monospace" font-size="7.5" font-weight="700" letter-spacing="2.2" fill="rgba(255,255,255,.62)" text-anchor="middle">FITTRIO · LABO</text>
+      <text x="175" y="99" font-family="Hanken Grotesk, sans-serif" font-size="9.5" font-weight="600" fill="{{ paceColor }}" text-anchor="middle">{{ pace }}</text>
+      <sc-if value="{{ arcMC }}" hint-placeholder-val="{{ true }}">
+        <path d="M218.8,76.1 A100,100 0 0,1 272.4,143.5" fill="none" stroke="#e0b155" stroke-width="2.4" stroke-dasharray="3 4" style="animation: flowH 1s linear infinite;"></path>
+      </sc-if>
+      <g transform="translate(120 154)">
+        <circle r="38" fill="url(#subH)" stroke="#e07a98" stroke-width="2"></circle>
+        <circle r="27" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="3.5" stroke-dasharray="131.95 999" transform="rotate(135)"></circle>
+        <circle r="27" fill="none" stroke="#e07a98" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="{{ dm }}" transform="rotate(135)" style="transition: stroke-dasharray .45s ease;"></circle>
+        <line x1="-21.9" y1="21.9" x2="-24" y2="24" stroke="rgba(255,255,255,.4)" stroke-width="1.4"></line><line x1="-29.5" y1="9.6" x2="-32.3" y2="10.5" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="-30.6" y1="-4.8" x2="-33.6" y2="-5.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="-25.1" y1="-18.2" x2="-27.5" y2="-20" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="-14.1" y1="-27.6" x2="-15.4" y2="-30.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="0" y1="-31" x2="0" y2="-34" stroke="rgba(255,255,255,.4)" stroke-width="1.4"></line><line x1="14.1" y1="-27.6" x2="15.4" y2="-30.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="25.1" y1="-18.2" x2="27.5" y2="-20" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="30.6" y1="-4.8" x2="33.6" y2="-5.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="29.5" y1="9.6" x2="32.3" y2="10.5" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="21.9" y1="21.9" x2="24" y2="24" stroke="rgba(255,255,255,.4)" stroke-width="1.4"></line>
+        <g style="transform: {{ nm }}; transition: transform .6s cubic-bezier(.3,1.5,.5,1);"><line x1="-6" y1="0" x2="25" y2="0" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"></line></g>
+        <circle r="3.4" fill="#e07a98"></circle>
+        <text y="18" font-family="Bricolage Grotesque, sans-serif" font-size="12" font-weight="800" fill="#fff" text-anchor="middle">{{ vmTxt }}</text>
+        <text y="28" font-family="Space Mono, monospace" font-size="5.8" font-weight="700" letter-spacing=".6" fill="rgba(255,255,255,.7)" text-anchor="middle">SÉANCES</text>
+      </g>
+      <g transform="translate(230 154)">
+        <circle r="38" fill="url(#subH)" stroke="#6fa8ef" stroke-width="2"></circle>
+        <circle r="27" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="3.5" stroke-dasharray="131.95 999" transform="rotate(135)"></circle>
+        <circle r="27" fill="none" stroke="#6fa8ef" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="{{ dc }}" transform="rotate(135)" style="transition: stroke-dasharray .45s ease;"></circle>
+        <line x1="-21.9" y1="21.9" x2="-24" y2="24" stroke="rgba(255,255,255,.4)" stroke-width="1.4"></line><line x1="-29.5" y1="9.6" x2="-32.3" y2="10.5" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="-30.6" y1="-4.8" x2="-33.6" y2="-5.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="-25.1" y1="-18.2" x2="-27.5" y2="-20" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="-14.1" y1="-27.6" x2="-15.4" y2="-30.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="0" y1="-31" x2="0" y2="-34" stroke="rgba(255,255,255,.4)" stroke-width="1.4"></line><line x1="14.1" y1="-27.6" x2="15.4" y2="-30.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="25.1" y1="-18.2" x2="27.5" y2="-20" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="30.6" y1="-4.8" x2="33.6" y2="-5.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="29.5" y1="9.6" x2="32.3" y2="10.5" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="21.9" y1="21.9" x2="24" y2="24" stroke="rgba(255,255,255,.4)" stroke-width="1.4"></line>
+        <g style="transform: {{ nc }}; transition: transform .6s cubic-bezier(.3,1.5,.5,1);"><line x1="-6" y1="0" x2="25" y2="0" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"></line></g>
+        <circle r="3.4" fill="#6fa8ef"></circle>
+        <text y="18" font-family="Bricolage Grotesque, sans-serif" font-size="12" font-weight="800" fill="#fff" text-anchor="middle">{{ vcTxt }}</text>
+        <text y="28" font-family="Space Mono, monospace" font-size="5.8" font-weight="700" letter-spacing=".6" fill="rgba(255,255,255,.7)" text-anchor="middle">KM / SEM</text>
+      </g>
+      <g transform="translate(175 226)">
+        <circle r="38" fill="url(#subH)" stroke="#a9ba7e" stroke-width="2"></circle>
+        <circle r="27" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="3.5" stroke-dasharray="131.95 999" transform="rotate(135)"></circle>
+        <circle r="27" fill="none" stroke="{{ nColor }}" stroke-width="3.5" stroke-linecap="round" stroke-dasharray="{{ dn }}" transform="rotate(135)" style="transition: stroke-dasharray .45s ease;"></circle>
+        <line x1="-21.9" y1="21.9" x2="-24" y2="24" stroke="rgba(255,255,255,.4)" stroke-width="1.4"></line><line x1="-29.5" y1="9.6" x2="-32.3" y2="10.5" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="-30.6" y1="-4.8" x2="-33.6" y2="-5.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="-25.1" y1="-18.2" x2="-27.5" y2="-20" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="-14.1" y1="-27.6" x2="-15.4" y2="-30.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="0" y1="-31" x2="0" y2="-34" stroke="rgba(255,255,255,.4)" stroke-width="1.4"></line><line x1="14.1" y1="-27.6" x2="15.4" y2="-30.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="25.1" y1="-18.2" x2="27.5" y2="-20" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="30.6" y1="-4.8" x2="33.6" y2="-5.3" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="29.5" y1="9.6" x2="32.3" y2="10.5" stroke="rgba(255,255,255,.4)" stroke-width="0.7"></line><line x1="21.9" y1="21.9" x2="24" y2="24" stroke="rgba(255,255,255,.4)" stroke-width="1.4"></line>
+        <g style="transform: {{ nn }}; transition: transform .6s cubic-bezier(.3,1.5,.5,1);"><line x1="-6" y1="0" x2="25" y2="0" stroke="#f4ecdd" stroke-width="2" stroke-linecap="round"></line></g>
+        <circle r="3.4" fill="#a9ba7e"></circle>
+        <text y="18" font-family="Bricolage Grotesque, sans-serif" font-size="12" font-weight="800" fill="#fff" text-anchor="middle">{{ vnTxt }}</text>
+        <text y="28" font-family="Space Mono, monospace" font-size="5.8" font-weight="700" letter-spacing=".6" fill="rgba(255,255,255,.7)" text-anchor="middle">RÉSERVE</text>
+      </g>
+      <rect x="271" y="157" width="24" height="18" rx="2" fill="#f4ecdd" stroke="#0c0906" stroke-width="1.2"></rect>
+      <text x="283" y="170" font-family="Space Mono, monospace" font-size="9" font-weight="700" fill="#1c150e" text-anchor="middle">S3</text>
+      <!-- la trotteuse du chronomètre -->
+      <g transform="translate(175 166)">
+        <g class="secH" style="animation: {{ sec }};"><line x1="0" y1="24" x2="0" y2="-112" stroke="#dd6e40" stroke-width="1.8" stroke-linecap="round"></line><circle cy="18" r="5" fill="#dd6e40"></circle><circle cy="-104" r="2.2" fill="#f4ecdd"></circle></g>
+        <circle r="6.5" fill="url(#caseH)" stroke="#0c0906" stroke-width="1"></circle><circle r="2.4" fill="#dd6e40"></circle>
+      </g>
+      <circle cx="175" cy="166" r="122" fill="#f08a7e" style="opacity: {{ guardOp }}; transition: opacity .4s;"></circle>
+      <path d="M64.1,125.6 A118,118 0 0,1 215.4,55.1 L175,166 Z" fill="url(#glassH)"></path>
+      <sc-if value="{{ zmc.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="175" cy="124" r="18" fill="{{ zmc.fill }}" opacity=".25" class="halo"></circle>
+          <path d="M167,104 L173,104 L176,116 L170,116 Z" fill="{{ zmc.ring }}" opacity=".85"></path>
+          <path d="M183,104 L177,104 L174,116 L180,116 Z" fill="{{ zmc.ring }}" opacity=".6"></path>
+          <circle cx="175" cy="124" r="11" fill="{{ zmc.fill }}" stroke="{{ zmc.ring }}" stroke-width="2"></circle>
+          <circle cx="175" cy="124" r="7.5" fill="none" stroke="{{ zmc.fg }}" stroke-opacity=".35" stroke-width="1"></circle>
+          <text x="175" y="128" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zmc.fg }}" text-anchor="middle">{{ zmc.n }}</text>
+        </sc-if>
+      <sc-if value="{{ zmn.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="137" cy="200" r="18" fill="{{ zmn.fill }}" opacity=".25" class="halo"></circle>
+          <path d="M129,180 L135,180 L138,192 L132,192 Z" fill="{{ zmn.ring }}" opacity=".85"></path>
+          <path d="M145,180 L139,180 L136,192 L142,192 Z" fill="{{ zmn.ring }}" opacity=".6"></path>
+          <circle cx="137" cy="200" r="11" fill="{{ zmn.fill }}" stroke="{{ zmn.ring }}" stroke-width="2"></circle>
+          <circle cx="137" cy="200" r="7.5" fill="none" stroke="{{ zmn.fg }}" stroke-opacity=".35" stroke-width="1"></circle>
+          <text x="137" y="204" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zmn.fg }}" text-anchor="middle">{{ zmn.n }}</text>
+        </sc-if>
+      <sc-if value="{{ zcn.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="213" cy="200" r="18" fill="{{ zcn.fill }}" opacity=".25" class="halo"></circle>
+          <path d="M205,180 L211,180 L214,192 L208,192 Z" fill="{{ zcn.ring }}" opacity=".85"></path>
+          <path d="M221,180 L215,180 L212,192 L218,192 Z" fill="{{ zcn.ring }}" opacity=".6"></path>
+          <circle cx="213" cy="200" r="11" fill="{{ zcn.fill }}" stroke="{{ zcn.ring }}" stroke-width="2"></circle>
+          <circle cx="213" cy="200" r="7.5" fill="none" stroke="{{ zcn.fg }}" stroke-opacity=".35" stroke-width="1"></circle>
+          <text x="213" y="204" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zcn.fg }}" text-anchor="middle">{{ zcn.n }}</text>
+        </sc-if>
+      <sc-if value="{{ ztri.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="175" cy="66" r="18" fill="{{ ztri.fill }}" opacity=".25" class="halo"></circle>
+          <path d="M167,46 L173,46 L176,58 L170,58 Z" fill="{{ ztri.ring }}" opacity=".85"></path>
+          <path d="M183,46 L177,46 L174,58 L180,58 Z" fill="{{ ztri.ring }}" opacity=".6"></path>
+          <circle cx="175" cy="66" r="11" fill="{{ ztri.fill }}" stroke="{{ ztri.ring }}" stroke-width="2"></circle>
+          <circle cx="175" cy="66" r="7.5" fill="none" stroke="{{ ztri.fg }}" stroke-opacity=".35" stroke-width="1"></circle>
+          <text x="175" y="70" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ ztri.fg }}" text-anchor="middle">{{ ztri.n }}</text>
+        </sc-if>
+    </svg>
+    <div style="display: flex; justify-content: space-between; align-items: center; height: 22px;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.3px; color: {{ verdictColor }};">{{ verdict }}</div>
+      <div style="font-size: 12px; color: rgba(255,255,255,.8);">énergie <b style="color: {{ fuelColor }};">{{ fuelWord }}</b></div>
+    </div>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 10px 20px 18px; min-height: 0;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Joue avec tes leviers</div><div style="font-size: 12px; color: #786a59;">mêmes règles partout</div></div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">
+      <sc-for list="{{ levers }}" as="l" hint-placeholder-count="4">
+        <div style="display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 4px; border-radius: 16px; background: #fffaf2; border: 1px solid #ece0cd;">
+          <div style="display: flex; align-items: center; gap: 6px;"><sc-if value="{{ l.isMuscu }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6b0028" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect><line x1="1.5" y1="10.5" x2="1.5" y2="13.5"></line><line x1="22.5" y1="10.5" x2="22.5" y2="13.5"></line></svg></sc-if><sc-if value="{{ l.isCourse }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a64ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 3-4 6-4s3 4 6 4 3-7 6-7"></path><circle cx="21" cy="10" r="1.2" fill="#2a64ad"></circle></svg></sc-if><sc-if value="{{ l.isNutrition }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#52703a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-5 0-8-4-8-9 0-4 3-6 5-6 1.5 0 2.3.7 3 .7s1.5-.7 3-.7c2 0 5 2 5 6 0 5-3 9-8 9z"></path><path d="M12 7c0-2 1-4 3-4"></path></svg></sc-if><span style="font-weight: 700; font-size: 13px; color: {{ l.color }};">{{ l.name }}</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div onClick="{{ l.minus }}" style="width: 44px; height: 40px; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; opacity: {{ l.minusOp }};"><div style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></div></div>
+            <div style="display: flex; flex-direction: column; align-items: center;"><span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px;">{{ l.dose }}</span><span style="font-size: 10px; color: #786a59;">{{ l.unit }}</span></div>
+            <div onClick="{{ l.plus }}" style="width: 44px; height: 40px; display: flex; align-items: center; justify-content: flex-end; cursor: pointer; opacity: {{ l.plusOp }};"><div style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><line x1="12" y1="5" x2="12" y2="19"></line></svg></div></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Croisements</div><div style="font-size: 12px; color: #786a59;">{{ reacCount }}</div></div>
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <sc-for list="{{ reactions }}" as="r" hint-placeholder-count="2">
+        <div style="display: flex; gap: 9px; align-items: center; min-height: 46px; box-sizing: border-box; padding: 5px 11px; border-radius: 14px; background: {{ r.bg }}; border: 1px solid {{ r.border }}; animation: rise .3s ease-out both;">
+          <svg width="24" height="20" viewBox="0 0 26 22" style="flex: none;"><circle cx="9" cy="11" r="7.5" fill="{{ r.ca }}" fill-opacity=".2" stroke="{{ r.ca }}" stroke-width="1.6"></circle><circle cx="17" cy="11" r="7.5" fill="{{ r.cb }}" fill-opacity=".2" stroke="{{ r.cb }}" stroke-width="1.6"></circle></svg>
+          <div style="flex: 1; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; gap: 6px;"><span style="font-weight: 700; font-size: 13px;">{{ r.title }}</span><span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: {{ r.fg }}; margin-top: 2px; white-space: nowrap;">{{ r.kindLabel }}</span></div>
+            <div style="font-size: 12px; line-height: 15px; color: #786a59;">{{ r.text }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { fq: 4, km: 30, kc: 1, gl: false };
+
+  renderVals() {
+    var engine = function engine(s, self) {
+  var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  var KC = [0, -250, -500];
+  var charge = s.fq * 9 + s.km * 1.4 + 12;
+  var base = 3 * 9 + 25 * 1.4 + 12;
+  var jump = Math.round((charge / base - 1) * 100);
+  var recup = clamp(Math.round(104 - Math.max(0, charge - 60) * 1.1 - [0, 10, 26][s.kc]), 6, 100);
+  var fuel = clamp(Math.round(72 + (s.gl ? 16 : 0) - [0, 14, 34][s.kc] - Math.max(0, s.km - 25) * 1.2), 6, 100);
+  var guard = s.kc === 2 && (s.km >= 35 || s.fq >= 5);
+  var R = [];
+  if (guard) R.push({ kind: 'guard', zone: 'tri', a: 'course', b: 'nutrition', title: 'Déficit × volume', text: '−500 kcal avec ' + s.km + ' km : le cycle ne peut pas partir.' });
+  if (s.fq >= 4 && s.km >= 30) R.push({ kind: 'tension', zone: 'mc', a: 'muscu', b: 'course', title: 'Jambes × fractionné', text: 'Squat lundi, 800 m mardi : ~3 s par fraction.' });
+  if (jump > 15) R.push({ kind: 'tension', zone: 'mc', a: 'muscu', b: 'course', title: 'Charge combinée +' + jump + ' %', text: 'Au-delà de +10 %, la récup ne suit plus.' });
+  if (s.kc === 2 && !guard) R.push({ kind: 'tension', zone: 'mn', a: 'nutrition', b: 'muscu', title: 'Déficit × force', text: 'À −500 kcal, ton squat a perdu 3 % en v1.' });
+  if (s.gl) R.push({ kind: 'syn', zone: 'cn', a: 'nutrition', b: 'course', title: 'Glucides × fractionné', text: '+1,5 g/kg les jours durs : l’allure tient.' });
+  if (s.fq >= 3 && s.kc < 2) R.push({ kind: 'syn', zone: 'mn', a: 'nutrition', b: 'muscu', title: 'Protéines × musculation', text: '1,8 g/kg couvre tes séances, même en déficit.' });
+  var order = { guard: 0, tension: 1, syn: 2 };
+  R.sort(function (x, y) { return order[x.kind] - order[y.kind]; });
+
+  var TONES = {
+    syn: { label: 'synergie', fg: '#66714b', bg: 'rgba(102,113,75,.08)', border: 'rgba(102,113,75,.28)', fill: '#f2d28a', ring: '#f2d28a', mfg: '#1c150e', line: '#f2d28a' },
+    tension: { label: 'tension', fg: '#8a6419', bg: '#f7ead6', border: '#e9cfa0', fill: '#1c150e', ring: '#e0b155', mfg: '#e0b155', line: '#e0b155' },
+    guard: { label: 'garde-fou', fg: '#b23b2e', bg: 'rgba(178,59,46,.07)', border: 'rgba(178,59,46,.35)', fill: '#f08a7e', ring: '#f08a7e', mfg: '#1c150e', line: '#f08a7e' },
+  };
+  var PC = { muscu: '#6b0028', course: '#2a64ad', nutrition: '#52703a' };
+  var zone = function (z) {
+    var list = R.filter(function (r) { return r.zone === z; });
+    if (!list.length) return { show: false, n: '', fill: 'none', ring: 'none', fg: 'none', kind: '', line: 'rgba(255,255,255,.16)' };
+    var t = TONES[list[0].kind];
+    return { show: true, n: list.length, fill: t.fill, ring: t.ring, fg: t.mfg, kind: list[0].kind, line: t.line };
+  };
+  var nT = R.filter(function (r) { return r.kind !== 'syn'; }).length;
+  var set = function (k, v) { return function () { var o = {}; o[k] = v; self.setState(o); }; };
+  var KMS = [20, 25, 30, 35, 40], kmI = KMS.indexOf(s.km);
+  var tone = function (v) { return v < 35 ? '#f08a7e' : v < 60 ? '#e0b155' : '#a9ba7e'; };
+  return {
+    charge: charge, jump: jump, recup: recup, fuel: fuel, guard: guard, R: R, nT: nT,
+    zmc: zone('mc'), zmn: zone('mn'), zcn: zone('cn'), ztri: zone('tri'),
+    verdict: guard ? 'Formule bloquée' : nT ? 'Tes piliers se gênent' : 'Tes piliers s’accordent',
+    verdictColor: guard ? '#f08a7e' : nT ? '#e0b155' : '#c5d69a',
+    fuelWord: fuel < 35 ? 'à sec' : fuel < 60 ? 'juste' : 'pleine', fuelColor: tone(fuel),
+    reactions: R.slice(0, 2).map(function (r) { var t = TONES[r.kind]; return { title: r.title, text: r.text, kindLabel: t.label, fg: t.fg, bg: t.bg, border: t.border, ca: PC[r.a], cb: PC[r.b] }; }),
+    reacCount: R.length ? (R.length > 2 ? '2 sur ' + R.length : R.length + (R.length > 1 ? ' actifs' : ' actif')) : 'aucun',
+    levers: [
+      { name: 'Musculation', unit: 'séances', color: '#6b0028', soft: 'rgba(107,0,40,.08)', dose: String(s.fq), minus: set('fq', Math.max(2, s.fq - 1)), plus: set('fq', Math.min(5, s.fq + 1)), minusOp: s.fq > 2 ? 1 : 0.3, plusOp: s.fq < 5 ? 1 : 0.3, isMuscu: true },
+      { name: 'Course', unit: 'km / sem', color: '#2a64ad', soft: 'rgba(42,100,173,.08)', dose: String(s.km), minus: set('km', KMS[Math.max(0, kmI - 1)]), plus: set('km', KMS[Math.min(4, kmI + 1)]), minusOp: kmI > 0 ? 1 : 0.3, plusOp: kmI < 4 ? 1 : 0.3, isCourse: true },
+      { name: 'Balance', unit: 'kcal / jour', color: '#52703a', soft: 'rgba(82,112,58,.09)', dose: KC[s.kc] === 0 ? '0' : String(KC[s.kc]).replace('-', '−'), minus: set('kc', Math.min(2, s.kc + 1)), plus: set('kc', Math.max(0, s.kc - 1)), minusOp: s.kc < 2 ? 1 : 0.3, plusOp: s.kc > 0 ? 1 : 0.3, isNutrition: true },
+      { name: 'Glucides', unit: 'périodisés', color: '#52703a', soft: 'rgba(82,112,58,.09)', dose: s.gl ? 'oui' : 'non', minus: set('gl', false), plus: set('gl', true), minusOp: s.gl ? 1 : 0.3, plusOp: s.gl ? 0.3 : 1, isNutrition: true },
+    ],
+  };
+};
+    var view = function viewH(s, E) {
+  var MU = { 2: [0, 3], 3: [0, 2, 4], 4: [0, 2, 3, 5], 5: [0, 1, 2, 4, 5] }[s.fq];
+  var CO = { 20: [1, 6], 25: [1, 4, 6], 30: [1, 3, 6], 35: [1, 3, 5, 6], 40: [1, 2, 4, 6] }[s.km];
+  var o = {}, d, L = 131.95;
+  for (d = 0; d < 7; d++) {
+    var mu = MU.indexOf(d) >= 0, co = CO.indexOf(d) >= 0;
+    o['m' + d] = mu ? 1 : 0.08; o['c' + d] = co ? 1 : 0.08; o['l' + d] = mu || co ? 1 : 0.4;
+  }
+  var vm = s.fq / 6, vc = s.km / 40, vn = E.fuel / 100;
+  o.dm = (vm * L).toFixed(1) + ' 999'; o.dc = (vc * L).toFixed(1) + ' 999'; o.dn = (vn * L).toFixed(1) + ' 999';
+  o.nm = 'rotate(' + (135 + vm * 270).toFixed(1) + 'deg)'; o.nc = 'rotate(' + (135 + vc * 270).toFixed(1) + 'deg)'; o.nn = 'rotate(' + (135 + vn * 270).toFixed(1) + 'deg)';
+  o.nColor = E.fuelColor;
+  o.vmTxt = String(s.fq); o.vcTxt = String(s.km); o.vnTxt = E.fuelWord;
+  o.sec = E.guard ? 'none' : E.nT ? 'secH 6s steps(12) infinite' : 'secH 12s linear infinite';
+  o.guardOp = E.guard ? 0.2 : 0;
+  o.arcMC = E.zmc.kind === 'tension';
+  o.pace = E.guard ? 'arrêté' : E.nT ? 'rythme haché' : 'rythme régulier';
+  o.paceColor = E.guard ? '#f08a7e' : E.nT ? '#e0b155' : '#c5d69a';
+  return o;
+};
+    var E = engine(this.state, this);
+    var V = view(this.state, E);
+    var out = {};
+    Object.keys(E).forEach(function (k) { out[k] = E[k]; });
+    Object.keys(V).forEach(function (k) { out[k] = V[k]; });
+    return out;
+  }
+}
+</script>
+</body>
+</html>

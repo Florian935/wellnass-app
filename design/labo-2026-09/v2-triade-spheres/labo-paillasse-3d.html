@@ -1,0 +1,260 @@
+<title>La triade du Labo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+  :root {
+    --paper: #f7eede; --surface: #fffaf2; --line: #ece0cd; --line-strong: #90897d; --ink: #33291f; --mute: #786a59;
+    --accent: #b14f2b; --on-accent: #ffffff; --track: #eadcc6;
+    --ok: #66714b; --ok-bg: rgba(102,113,75,.09); --ok-line: rgba(102,113,75,.3);
+    --warn: #8a6419; --warn-bg: #f7ead6; --warn-line: #e9cfa0;
+    --bad: #b23b2e; --bad-bg: rgba(178,59,46,.07); --bad-line: rgba(178,59,46,.35);
+    --muscu: #6b0028; --course: #2a64ad; --nutrition: #52703a; --socle: #8a6419;
+    --panel: #33291f; --panel-ink: #f0e4d0; --panel-mute: #c9b79a;
+    --stage: radial-gradient(72% 58% at 12% 8%, rgba(107,0,40,.92) 0%, rgba(107,0,40,0) 72%), radial-gradient(70% 56% at 94% 14%, rgba(42,100,173,.9) 0%, rgba(42,100,173,0) 72%), radial-gradient(90% 60% at 50% 104%, rgba(58,86,34,.95) 0%, rgba(58,86,34,0) 74%), #1c150e;
+    --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+    --body: 'Hanken Grotesk', 'Segoe UI', system-ui, sans-serif;
+    --mono: 'Space Mono', ui-monospace, 'Cascadia Mono', monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --paper: #1c150e; --surface: #30271e; --line: #3a2e22; --line-strong: #797169; --ink: #f4ecdd; --mute: #c9b79a;
+      --accent: #dd6e40; --on-accent: #1c150e; --track: #362c22;
+      --ok: #a9ba7e; --ok-bg: rgba(169,186,126,.1); --ok-line: rgba(169,186,126,.3);
+      --warn: #e0b155; --warn-bg: #312414; --warn-line: #4a3a1e;
+      --bad: #e0524a; --bad-bg: rgba(224,82,74,.1); --bad-line: rgba(224,82,74,.4);
+      --muscu: #e07a98; --course: #6fa8ef; --nutrition: #a9ba7e; --socle: #e0b155;
+      --panel: #241e18; color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --paper: #1c150e; --surface: #30271e; --line: #3a2e22; --line-strong: #797169; --ink: #f4ecdd; --mute: #c9b79a;
+    --accent: #dd6e40; --on-accent: #1c150e; --track: #362c22;
+    --ok: #a9ba7e; --ok-bg: rgba(169,186,126,.1); --ok-line: rgba(169,186,126,.3);
+    --warn: #e0b155; --warn-bg: #312414; --warn-line: #4a3a1e;
+    --bad: #e0524a; --bad-bg: rgba(224,82,74,.1); --bad-line: rgba(224,82,74,.4);
+    --muscu: #e07a98; --course: #6fa8ef; --nutrition: #a9ba7e; --socle: #e0b155;
+    --panel: #241e18; color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45; }
+  button { font: inherit; color: inherit; }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .p-muscu { color: var(--muscu); fill: var(--muscu); stroke: var(--muscu); }
+  .p-course { color: var(--course); fill: var(--course); stroke: var(--course); }
+  .p-nutrition { color: var(--nutrition); fill: var(--nutrition); stroke: var(--nutrition); }
+  .p-socle { color: var(--socle); fill: var(--socle); stroke: var(--socle); }
+
+  .lab { display: grid; grid-template-columns: minmax(0, 1fr); }
+  .stage-wrap { position: relative; background: var(--stage); color: #fff; border-radius: 0 0 30px 30px; overflow: hidden; display: flex; flex-direction: column; }
+  .top { position: relative; z-index: 3; display: flex; align-items: center; gap: 10px; padding-block: 10px; padding-inline: 16px; }
+  .brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 14px; margin-right: auto; }
+  .brand small { font-family: var(--mono); font-weight: 400; font-size: 11px; color: rgba(255,255,255,.75); letter-spacing: .3px; }
+  .tool { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-width: 44px; min-height: 44px; padding: 0 12px; border-radius: 14px; border: 1px solid rgba(255,255,255,.22); background: rgba(255,255,255,.12); color: #fff; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .tool.toggle[aria-pressed="false"] { color: rgba(255,255,255,.55); }
+  .tool:focus-visible { outline-color: #fff; }
+  .stage { position: relative; height: min(52vh, 460px); min-height: 300px; }
+  .stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: pan-y; cursor: grab; }
+  .stage-note { position: absolute; left: 16px; right: 16px; bottom: 14px; margin: 0; font-size: 12px; color: rgba(255,255,255,.78); pointer-events: none; }
+  .fallback { display: none; position: absolute; inset: 0; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 8px 16px 12px; color: rgba(255,255,255,.82); }
+  #tri2d { width: 100%; max-width: 460px; flex: 1; min-height: 0; overflow: visible; }
+  .f2 { transform-box: fill-box; transform-origin: center; animation: breathe2 5s ease-in-out infinite; transition: r .35s ease; }
+  .f2-course { animation-delay: -1.6s; } .f2-nutrition { animation-delay: -3.1s; }
+  .ring2 { transform-box: fill-box; transform-origin: center; animation: souffle2 6s ease-in-out infinite; }
+  .mk2 { transform-box: fill-box; transform-origin: center; animation: pop2 .35s ease-out both; }
+  @keyframes breathe2 { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+  @keyframes souffle2 { 0%, 100% { opacity: .45; } 50% { opacity: .85; } }
+  @keyframes pop2 { from { transform: scale(.4); } to { transform: none; } }
+  .fb-note { margin: 0; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 10px; font-size: 12px; text-align: center; }
+  .fb-link { background: none; border: 0; color: #fff; font-weight: 700; text-decoration: underline; min-height: 44px; padding: 0 4px; cursor: pointer; }
+  .fb-note code { font-family: var(--mono); font-size: 10.5px; color: rgba(255,255,255,.55); }
+  .no3d canvas, .no3d .stage-note { display: none; }
+  .no3d .fallback { display: flex; }
+
+  .toast { position: absolute; left: 16px; right: 16px; top: 8px; max-width: 420px; padding: 10px 14px; border-radius: 14px; background: rgba(28,21,14,.78); border: 1px solid rgba(255,255,255,.2); display: grid; gap: 2px; opacity: 0; transform: translateY(-8px); transition: opacity .25s, transform .25s; pointer-events: none; backdrop-filter: blur(8px); color: #fff; z-index: 2; }
+  .toast.show { opacity: 1; transform: none; }
+  .toast b { font-size: 14px; }
+  .toast span { font-size: 13px; color: rgba(255,255,255,.8); }
+  .toast.k-syn { border-color: rgba(242,210,138,.6); }
+  .toast.k-tension { border-color: rgba(224,177,85,.6); }
+  .toast.k-guard { border-color: rgba(240,138,126,.7); }
+
+  .panel { padding-block: 18px 0; padding-inline: 16px; display: flex; flex-direction: column; gap: 22px; }
+  .head { display: grid; gap: 6px; }
+  .pill { justify-self: start; font-family: var(--mono); font-weight: 700; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--accent); }
+  h1 { margin: 0; font-family: var(--display); font-weight: 800; font-size: clamp(26px, 4vw, 32px); letter-spacing: -.9px; line-height: 1.05; text-wrap: balance; }
+  .fine { font-size: 12.5px; color: var(--mute); margin: 0; }
+
+  .balance { display: grid; gap: 10px; }
+  .verdict { font-family: var(--display); font-weight: 700; font-size: 20px; letter-spacing: -.4px; }
+  .verdict.ok { color: var(--ok); } .verdict.warn { color: var(--warn); } .verdict.bad { color: var(--bad); }
+  #gauges { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+  .gauge-top { display: flex; justify-content: space-between; gap: 4px; font-size: 12px; font-weight: 600; flex-wrap: wrap; }
+  .track { height: 6px; border-radius: 3px; background: var(--track); overflow: hidden; margin-top: 5px; }
+  .fill { height: 100%; border-radius: 3px; transition: width .4s ease; }
+  .t-ok { color: var(--ok); } .t-warn { color: var(--warn); } .t-bad { color: var(--bad); }
+  .t-bg-ok { background: var(--ok); } .t-bg-warn { background: var(--warn); } .t-bg-bad { background: var(--bad); }
+
+  .hint { margin: 0; padding: 10px 14px; border-radius: 14px; border: 1px dashed var(--line-strong); color: var(--mute); font-size: 13px; }
+  .sec-h { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; gap: 8px; }
+  .sec-h h2 { margin: 0; font-family: var(--mono); font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: var(--mute); }
+  .sec-h span { font-size: 12px; color: var(--mute); }
+
+  #levers, #levers ul { list-style: none; margin: 0; padding: 0; }
+  #levers { display: grid; gap: 14px; }
+  .group-h { display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; padding-bottom: 2px; }
+  .lever { display: flex; align-items: center; gap: 8px; min-height: 50px; border-bottom: 1px solid var(--line); }
+  .lever-pick { flex: 1; min-height: 44px; background: none; border: 0; padding: 0 0 0 10px; text-align: left; cursor: pointer; font-weight: 600; font-size: 14px; color: var(--ink); border-left: 3px solid transparent; border-radius: 0; }
+  .lever.sel .lever-pick { border-left-color: currentColor; font-weight: 700; }
+  .group.p-muscu .lever.sel .lever-pick { border-left-color: var(--muscu); }
+  .group.p-course .lever.sel .lever-pick { border-left-color: var(--course); }
+  .group.p-nutrition .lever.sel .lever-pick { border-left-color: var(--nutrition); }
+  .group.p-socle .lever.sel .lever-pick { border-left-color: var(--socle); }
+  .dose { display: flex; align-items: center; color: var(--ink); }
+  .dose output { min-width: 108px; text-align: center; font-family: var(--mono); font-weight: 700; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+  .step { width: 44px; height: 44px; border-radius: 50%; border: 0; background: none; cursor: pointer; position: relative; font-size: 18px; font-weight: 700; color: var(--ink); }
+  .step::before { content: ''; position: absolute; inset: 7px; border-radius: 50%; border: 1.5px solid var(--line-strong); }
+  .step:disabled { opacity: .3; cursor: default; }
+
+  #reactions { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+  .reac { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 14px; background: var(--surface); border: 1px solid var(--line); }
+  .lens { flex: none; margin-top: 2px; }
+  .lens circle { fill-opacity: .2; stroke-width: 1.6; }
+  .reac-body { flex: 1; display: grid; gap: 1px; }
+  .reac-top { display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .reac-top b { font-size: 14px; }
+  .reac-kind { font-family: var(--mono); font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; white-space: nowrap; }
+  .reac-text { font-size: 13px; color: var(--mute); }
+  .reac code { font-family: var(--mono); font-size: 10.5px; color: var(--mute); }
+  .reac.k-syn { background: var(--ok-bg); border-color: var(--ok-line); } .reac.k-syn .reac-kind { color: var(--ok); }
+  .reac.k-tension { background: var(--warn-bg); border-color: var(--warn-line); } .reac.k-tension .reac-kind { color: var(--warn); }
+  .reac.k-guard { background: var(--bad-bg); border-color: var(--bad-line); } .reac.k-guard .reac-kind { color: var(--bad); }
+  .reac.empty { color: var(--mute); font-size: 13px; }
+
+  .card { padding: 14px; border-radius: 20px; background: var(--surface); border: 1px solid var(--line); display: grid; gap: 10px; }
+  .tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tabs button { min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: none; cursor: pointer; font-size: 12.5px; font-weight: 600; color: var(--mute); }
+  .tabs button[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .proj-val { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .proj-val b { font-family: var(--display); font-weight: 800; font-size: 30px; letter-spacing: -.8px; font-variant-numeric: tabular-nums; }
+  .proj-val span { font-size: 12.5px; color: var(--mute); }
+  #projChart svg { width: 100%; height: auto; display: block; }
+  #projChart .axis { stroke: var(--line-strong); stroke-opacity: .5; }
+  #projChart .tick { fill: var(--mute); font-family: var(--mono); font-size: 9.5px; }
+  #projChart .goal { stroke: var(--warn); stroke-dasharray: 4 4; }
+  #projChart .goal-t { fill: var(--warn); }
+  #projChart .ghost { fill: none; stroke: var(--line-strong); stroke-opacity: .6; stroke-width: 1.5; stroke-dasharray: 3 4; }
+  #projChart .band { fill: var(--accent); fill-opacity: .14; }
+  #projChart .mid { fill: none; stroke: var(--accent); stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+  #projChart .dot { fill: var(--ink); stroke: var(--paper); stroke-width: 2; }
+
+  #essResults { list-style: none; margin: 0; padding: 0; display: grid; }
+  #essResults li { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+  #essResults span { display: grid; font-size: 13px; }
+  #essResults small { color: var(--mute); font-size: 12px; }
+  #essResults b { font-family: var(--display); font-weight: 800; font-size: 22px; letter-spacing: -.5px; font-variant-numeric: tabular-nums; }
+  .ess-line { margin: 0; font-size: 13.5px; }
+  .ess-line b { display: block; font-size: 12px; color: var(--mute); font-weight: 600; }
+  #essChanges { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  #essChanges li { font-family: var(--mono); font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 999px; border: 1px solid var(--line-strong); }
+
+  .actions { position: sticky; bottom: 0; display: grid; gap: 6px; padding-block: 14px 16px; background: linear-gradient(to bottom, transparent, var(--paper) 28%); }
+  .primary { min-height: 52px; border-radius: 16px; border: 0; background: var(--accent); color: var(--on-accent); font-weight: 700; font-size: 15px; cursor: pointer; box-shadow: 0 10px 24px -10px rgba(177,79,43,.6); }
+  .primary:disabled { background: none; color: var(--mute); border: 1.5px solid var(--line); cursor: default; box-shadow: none; }
+  .secondary { min-height: 44px; border-radius: 14px; border: 0; background: none; color: var(--mute); font-weight: 600; font-size: 13.5px; cursor: pointer; }
+
+  @media (max-width: 520px) {
+    .brand small { display: none; }
+    .tool span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+    .dose output { min-width: 88px; font-size: 12px; }
+    .gauge-top { flex-direction: column; gap: 0; }
+  }
+  @media (min-width: 960px) {
+    .lab { grid-template-columns: minmax(0, 1fr) 460px; height: 100vh; }
+    .stage-wrap { border-radius: 0 32px 32px 0; }
+    .stage { height: auto; flex: 1; min-height: 0; }
+    .panel { overflow-y: auto; }
+  }
+  body.fiche .stage { display: none; }
+  body.fiche .lab { grid-template-columns: minmax(0, 1fr); height: auto; }
+  body.fiche .stage-wrap { border-radius: 0 0 24px 24px; }
+  body.fiche .panel { max-width: 640px; width: 100%; margin-inline: auto; overflow: visible; }
+  @media (prefers-reduced-motion: reduce) { .toast, .fill { transition: none; } }
+</style>
+
+<main class="lab">
+  <section class="stage-wrap" aria-label="La triade de tes piliers">
+    <header class="top">
+      <div class="brand">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.8" aria-hidden="true"><circle cx="9" cy="10" r="6"></circle><circle cx="15" cy="10" r="6"></circle><circle cx="12" cy="15" r="6"></circle></svg>
+        <span>Le Labo <small>prototype · données fictives</small></span>
+      </div>
+      <button class="tool toggle" id="btnSound" type="button" aria-pressed="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H2v6h4l5 4z"></path><path d="M15.5 8.5a5 5 0 0 1 0 7"></path></svg><span>Son</span></button>
+      <button class="tool toggle" id="btnVoice" type="button" aria-pressed="true"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg><span>Voix</span></button>
+      <button class="tool" id="btnView" type="button" aria-pressed="false"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><circle cx="4" cy="6" r="1"></circle><circle cx="4" cy="12" r="1"></circle><circle cx="4" cy="18" r="1"></circle></svg><span>Vue sobre</span></button>
+    </header>
+    <div class="stage">
+      <canvas id="scene" aria-hidden="true"></canvas>
+      <div class="fallback">
+        <svg id="tri2d" viewBox="0 0 350 250" aria-hidden="true"></svg>
+        <p class="fb-note" role="status"><span>Triade en 2D : <span id="fbReason">la 3D n’a pas démarré.</span></span><button type="button" class="fb-link" id="fbRetry">Réessayer la 3D</button><code id="fbCode"></code></p>
+      </div>
+      <div class="toast" id="toast" role="status" aria-live="polite"></div>
+      <p class="stage-note">Glisse pour tourner autour · touche un pilier pour voir ses leviers</p>
+    </div>
+  </section>
+
+  <section class="panel" aria-label="Composer ta formule">
+    <div class="head">
+      <span class="pill" id="stagePill">Ta formule</span>
+      <h1 id="formulaName">Hybride d’automne · v2</h1>
+      <p class="fine">Objectif : 10 km sous 48 min le 15/11, sans lâcher la force. Règles inspirées du catalogue d'analyses, chiffres fictifs.</p>
+    </div>
+
+    <div class="balance">
+      <div class="verdict ok" id="verdict">Tes piliers s’accordent</div>
+      <div id="gauges"></div>
+    </div>
+
+    <p class="hint" id="hint">Essaie : monte les séances à 4 et le fractionné à 2, regarde les piliers se gêner. Puis active les glucides périodisés.</p>
+
+    <div>
+      <div class="sec-h"><h2>Leviers</h2><span>tous tes piliers, un seul écran</span></div>
+      <ul id="levers"></ul>
+    </div>
+
+    <div>
+      <div class="sec-h"><h2>Croisements</h2><span id="reacCount"></span></div>
+      <ul id="reactions"></ul>
+    </div>
+
+    <div class="card" id="projection" hidden>
+      <div class="sec-h" style="margin:0"><h2>Projection</h2><span id="projWeek">Semaine 0 sur 8</span></div>
+      <div class="tabs" role="group" aria-label="Objectif projeté">
+        <button type="button" data-metric="run" aria-pressed="true">10 km</button>
+        <button type="button" data-metric="sbd" aria-pressed="false">Total SBD</button>
+        <button type="button" data-metric="kg" aria-pressed="false">Poids</button>
+      </div>
+      <div class="proj-val"><b id="projValue">49:10</b><span id="projRange">point de départ</span></div>
+      <div id="projChart"></div>
+    </div>
+
+    <div class="card" id="essence" hidden>
+      <div class="sec-h" style="margin:0"><h2>Ce que ce cycle t'a appris</h2><span>associations, pas des preuves</span></div>
+      <ul id="essResults"></ul>
+      <p class="ess-line"><b>Ce qui a porté</b><span id="essCarried"></span></p>
+      <p class="ess-line"><b>Ce qui a coûté</b><span id="essCost"></span></p>
+      <div><div class="sec-h" style="margin-bottom:6px"><h2>La version suivante</h2><span>rien n'est appliqué sans toi</span></div><ul id="essChanges"></ul></div>
+    </div>
+
+    <div class="actions">
+      <button class="primary" id="primary" type="button">Lancer le cycle · 8 semaines</button>
+      <button class="secondary" id="secondary" type="button" hidden>Revenir à la v2</button>
+    </div>
+  </section>
+</main>
+
+<script src="three.min.js"></script>
+<script src="moteur.js"></script>
+<script src="scene.js"></script>
+<script src="app.js"></script>

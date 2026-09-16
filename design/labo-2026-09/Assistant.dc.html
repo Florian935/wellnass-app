@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.025); } }
+    @keyframes impact { 0% { transform: scale(.55); opacity: .55; } 100% { transform: scale(1.12); opacity: 0; } }
+    @keyframes flow { to { stroke-dashoffset: -64; } }
+    @keyframes level { from { transform: translateX(0); } to { transform: translateX(-48px); } }
+    @keyframes halo { 0%, 100% { transform: scale(1); opacity: .5; } 50% { transform: scale(1.5); opacity: 0; } }
+    @keyframes souffle { 0%, 100% { transform: scale(.985); opacity: .45; } 50% { transform: scale(1.015); opacity: .8; } }
+    @keyframes rise { from { opacity: .35; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+    .fb { transform-box: fill-box; transform-origin: center; }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+  <div style="flex: none; position: relative; overflow: hidden; background: radial-gradient(72% 58% at 12% 8%, rgba(107,0,40,.92) 0%, rgba(107,0,40,0) 72%), radial-gradient(70% 56% at 94% 14%, rgba(42,100,173,.9) 0%, rgba(42,100,173,0) 72%), radial-gradient(90% 60% at 50% 104%, rgba(58,86,34,.95) 0%, rgba(58,86,34,0) 74%), #1c150e; color: #fff; border-radius: 0 0 30px 30px; padding: 14px 20px 20px; display: flex; flex-direction: column; gap: 8px; ">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+      <div style="display: flex; align-items: center; gap: 6px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg><div style="font-weight: 600; font-size: 14px;">Composer</div></div>
+      <div style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: rgba(255,255,255,.85); border: 1px solid rgba(255,255,255,.3); border-radius: 999px; padding: 4px 10px;"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.85)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>IA · données agrégées</div>
+    </div>
+    <div style="align-self: flex-end; max-width: 300px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.26); border-radius: 18px 18px 6px 18px; padding: 10px 14px; font-size: 14.5px; line-height: 21px;">« Je veux courir un 10 km sous 48 minutes mi-novembre sans perdre ma force. J'ai quatre créneaux. »</div>
+    <div style="align-self: flex-end; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; color: rgba(255,255,255,.75);">dicté · 0:09</div>
+    <div style="display: flex; gap: 12px; align-items: center;">
+      <svg width="150" height="108" viewBox="0 0 350 250" style="display: block; flex: none; overflow: visible;">
+      <defs><radialGradient id="iag-muscu" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#e07a98" stop-opacity=".62"></stop><stop offset=".7" stop-color="#e07a98" stop-opacity=".22"></stop><stop offset="1" stop-color="#e07a98" stop-opacity=".08"></stop></radialGradient><radialGradient id="iag-course" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#6fa8ef" stop-opacity=".62"></stop><stop offset=".7" stop-color="#6fa8ef" stop-opacity=".22"></stop><stop offset="1" stop-color="#6fa8ef" stop-opacity=".08"></stop></radialGradient><radialGradient id="iag-nutrition" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#a9ba7e" stop-opacity=".62"></stop><stop offset=".7" stop-color="#a9ba7e" stop-opacity=".22"></stop><stop offset="1" stop-color="#a9ba7e" stop-opacity=".08"></stop></radialGradient><clipPath id="iaclip-n"><circle cx="175" cy="168" r="68"></circle></clipPath></defs>
+      
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="130" cy="90" r="56" fill="url(#iag-muscu)" stroke="#e07a98" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 5s ease-in-out 0s infinite;"></circle><circle class="fb" cx="130" cy="90" r="56" fill="none" stroke="#e07a98" stroke-width="2" style="animation: impact 2.8s ease-out infinite;"></circle></g>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="220" cy="90" r="76" fill="url(#iag-course)" stroke="#6fa8ef" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 5.7s ease-in-out -1.3s infinite;"></circle><circle cx="220" cy="90" r="69" fill="none" stroke="#6fa8ef" stroke-width="1.6" stroke-dasharray="10 22" stroke-linecap="round" opacity=".85" style="animation: flow 2.4s linear infinite;"></circle></g>
+      <g style="mix-blend-mode: screen;"><circle class="fb" cx="175" cy="168" r="68" fill="url(#iag-nutrition)" stroke="#a9ba7e" stroke-opacity=".85" stroke-width="1.5" style="animation: breathe 6.4s ease-in-out -2.6s infinite;"></circle><g clip-path="url(#iaclip-n)"><g style="animation: level 3.2s linear infinite;"><path d="M47,180 q12,-6 24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 t24,0 L303,240 L47,240 Z" fill="#a9ba7e" opacity=".22"></path></g></g></g>
+      <circle cx="175" cy="116" r="4" fill="#fff"></circle><circle cx="175" cy="116" r="8" fill="none" stroke="#fff" stroke-opacity=".5" stroke-width="1"></circle>
+      <circle class="fb" cx="223" cy="144" r="12" fill="#f2d28a" style="animation: halo 2.2s ease-out infinite;"></circle><circle cx="223" cy="144" r="11.5" fill="#f2d28a" stroke="#f2d28a" stroke-width="2"></circle><text x="223" y="148" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="#1c150e" text-anchor="middle">1</text>
+      
+    </svg>
+      <div style="flex: 1; display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.4px; line-height: 1.1;">Affûtage 10 km</div>
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; color: rgba(255,255,255,.8);">BROUILLON · 8 SEMAINES</div>
+        <div style="font-size: 12.5px; line-height: 17px; color: rgba(255,255,255,.85);">La course prend la place, la force passe en entretien.</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 6px;"><span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px 0 7px; border-radius: 999px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e07a98" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect><line x1="1.5" y1="10.5" x2="1.5" y2="13.5"></line><line x1="22.5" y1="10.5" x2="22.5" y2="13.5"></line></svg>2 séances</span><span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px 0 7px; border-radius: 999px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6fa8ef" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 3-4 6-4s3 4 6 4 3-7 6-7"></path><circle cx="21" cy="10" r="1.2" fill="#6fa8ef"></circle></svg>30 km · 2 fractionnés</span><span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px 0 7px; border-radius: 999px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a9ba7e" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-5 0-8-4-8-9 0-4 3-6 5-6 1.5 0 2.3.7 3 .7s1.5-.7 3-.7c2 0 5 2 5 6 0 5-3 9-8 9z"></path><path d="M12 7c0-2 1-4 3-4"></path></svg>1,8 g/kg</span><span style="display: inline-flex; align-items: center; gap: 5px; height: 26px; padding: 0 9px 0 7px; border-radius: 999px; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); font-size: 12px; font-weight: 600; color: #fff; white-space: nowrap;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#e0b155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5z"></path></svg>7 h 30</span></div>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 22px; min-height: 0;">
+    <div style="display: flex; flex-direction: column; gap: 7px;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Vérifié par le calcul, pas par le modèle</div>
+      <div style="display: flex; gap: 8px; font-size: 13px; line-height: 18px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="#b47f31"><path d="M12 2l2.4 6.6L21 11l-6.6 2.4L12 20l-2.4-6.6L3 11l6.6-2.4z"></path></svg><span>Glucides × fractionné : synergie active</span></div>
+      <div style="display: flex; gap: 8px; font-size: 13px; line-height: 18px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#66714b" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg><span>Squat placé 48 h avant chaque fractionné</span></div>
+      <div style="display: flex; gap: 8px; font-size: 13px; line-height: 18px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"></path><path d="M4 16l5-6 4 3 7-8"></path></svg><span>10 km au 15/11 : <b>47:50</b> <span style="color: #786a59;">(47:10 – 48:40), confiance moyenne</span></span></div>
+    </div>
+    <div style="display: flex; flex-direction: column;">
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Ce que j'ai supposé</div>
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 46px; border-bottom: 1px solid #ece0cd;"><div style="flex: 1; font-size: 13.5px;">Deux séances suffisent à entretenir ta force <span style="color: #786a59;">· niveau B</span></div><div style="font-weight: 700; font-size: 13px; color: #b14f2b;">Modifier</div></div>
+      <div style="display: flex; align-items: center; gap: 10px; min-height: 46px;"><div style="flex: 1; font-size: 13.5px;">Tes créneaux : lun., mer., jeu. et sam. <span style="color: #786a59;">· ton planning</span></div><div style="font-weight: 700; font-size: 13px; color: #b14f2b;">Modifier</div></div>
+    </div>
+    <div style="margin-top: auto; display: flex; gap: 10px;">
+      <div style="width: 52px; height: 52px; flex: none; border-radius: 50%; border: 1.5px solid #33291f; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"></rect><path d="M5 11a7 7 0 0 0 14 0"></path><line x1="12" y1="18" x2="12" y2="22"></line></svg></div>
+      <div style="height: 52px; border-radius: 16px; background: #b14f2b; color: #fff; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 700; font-size: 15px; box-shadow: 0 10px 24px -8px rgba(177,79,43,.55); flex: 1;">Ouvrir dans Composer</div>
+    </div>
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

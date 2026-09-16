@@ -1,0 +1,507 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; }
+    a:hover { color: #8a3c1f; }
+    .br { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+    .mo { font-family: 'Space Mono', ui-monospace, monospace; }
+    .kicker { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #786a59; }
+    .rule { height: 1px; background: #e2d3bc; }
+    .h2 { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: -1.1px; line-height: 1.05; margin: 8px 0 0; color: #33291f; }
+    .card { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 20px; display: flex; flex-direction: column; gap: 8px; }
+    .card-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 20px; letter-spacing: -.5px; line-height: 1.15; color: #33291f; }
+    .card-b { font-size: 13.5px; line-height: 1.5; color: #786a59; text-wrap: pretty; }
+    .panel { background: #33291f; color: #f0e4d0; border-radius: 22px; padding: 22px; display: flex; flex-direction: column; gap: 10px; position: relative; overflow: hidden; }
+    .panel-k { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.4px; text-transform: uppercase; color: #d9a888; }
+    .panel-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 23px; letter-spacing: -.7px; line-height: 1.12; color: #fff; }
+    .panel-b { font-size: 13.5px; line-height: 1.55; color: #c9b79a; text-wrap: pretty; }
+    .halo { position: absolute; width: 180px; height: 180px; border-radius: 50%; background: #b14f2b; opacity: .22; filter: blur(30px); top: -60px; right: -50px; }
+
+    /* Banque d'idées */
+    .fam { display: flex; flex-direction: column; gap: 0; }
+    .fam-h { display: flex; align-items: baseline; gap: 10px; padding-bottom: 10px; border-bottom: 1.5px solid #33291f; }
+    .fam-l { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #b14f2b; }
+    .fam-n { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 21px; letter-spacing: -.5px; color: #33291f; }
+    .fam-c { font-size: 12.5px; color: #786a59; margin-left: auto; }
+    .idea { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid #ece0cd; }
+    .num { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; margin-top: 1px; }
+    .h1c { background: #d98a5f; color: #33291f; }
+    .h2c { background: #b14f2b; color: #fff; }
+    .h3c { background: #6a2610; color: #fff; }
+    .star { box-shadow: 0 0 0 2px #f7eede, 0 0 0 3.5px #33291f; }
+    .idea-n { font-weight: 700; font-size: 15px; color: #33291f; line-height: 1.3; }
+    .idea-d { font-size: 13px; line-height: 1.5; color: #786a59; margin-top: 2px; text-wrap: pretty; }
+    .meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; align-items: center; }
+    .pill { font-size: 11px; font-weight: 600; color: #5c4a35; border: 1px solid #e2d3bc; border-radius: 999px; padding: 2px 8px; line-height: 1.4; }
+    .pill-e { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; background: #f3ddd0; color: #a34e2c; border-radius: 999px; padding: 2px 8px; }
+    .ext { font-size: 11.5px; color: #8a6419; font-style: italic; }
+
+    table.models { width: 100%; border-collapse: collapse; }
+    table.models th { text-align: left; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; letter-spacing: 1.2px; text-transform: uppercase; color: #786a59; font-weight: 400; padding: 0 14px 10px 0; border-bottom: 1.5px solid #33291f; }
+    table.models td { padding: 13px 14px 13px 0; border-bottom: 1px solid #ece0cd; font-size: 13.5px; line-height: 1.45; color: #33291f; vertical-align: top; }
+    table.models td.m { font-weight: 700; white-space: nowrap; }
+    table.models td.p { font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; white-space: nowrap; }
+    table.models td.o { color: #786a59; }
+
+    .mini { background: #fffaf2; border: 1px solid #ece0cd; border-radius: 18px; padding: 14px; display: flex; flex-direction: column; gap: 6px; }
+    .mini-n { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; color: #b14f2b; }
+    .mini-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.4px; line-height: 1.1; color: #33291f; }
+    .mini-b { font-size: 12.5px; line-height: 1.45; color: #786a59; text-wrap: pretty; }
+
+    .hz { display: flex; flex-direction: column; gap: 10px; }
+    .hz-li { font-size: 13.5px; line-height: 1.45; color: #33291f; display: flex; gap: 8px; }
+    .hz-li span.d { width: 7px; height: 7px; border-radius: 50%; margin-top: 7px; flex: none; }
+
+    .risk { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 20px; padding: 14px 0; border-bottom: 1px solid #ece0cd; }
+    .risk-t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.3px; color: #33291f; line-height: 1.2; }
+    .risk-b { font-size: 13.5px; line-height: 1.55; color: #786a59; text-wrap: pretty; }
+  </style>
+</helmet>
+
+<div style="width: 1200px; box-sizing: border-box; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; padding: 56px 60px 64px; display: flex; flex-direction: column; gap: 52px;">
+
+  <!-- En-tête -->
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 48px;">
+    <div style="max-width: 780px;">
+      <div class="kicker">FitTrio · carnet d'innovation · 13/09/2026</div>
+      <h1 class="br" style="font-weight: 800; font-size: 60px; letter-spacing: -2.2px; line-height: .98; margin: 12px 0 0;">Ce que personne n'a encore osé</h1>
+      <p style="font-size: 16px; line-height: 1.58; color: #786a59; margin: 16px 0 0; text-wrap: pretty;">Tu m'as demandé de pousser le concept à fond. J'ai relu l'état du dépôt, la soixantaine d'idées déjà captées dans IDEAS.md et les trois explorations de la semaine (Mon corps, dashboards immersifs, objectif &amp; guidage), puis regardé ce que le marché a sorti en 2026. Il en sort <strong style="color: #33291f;">38 idées — 27 inédites, 11 qui poussent plus loin une piste déjà notée — dont 10 maquettées</strong>, et une conviction&nbsp;: notre innovation ne sera pas un chatbot.</p>
+    </div>
+    <div style="flex: none; width: 250px; display: flex; flex-direction: column; gap: 6px;">
+      <div class="kicker">Comment lire</div>
+      <div style="font-size: 13px; color: #786a59; line-height: 1.5;">Cette planche, puis les dix écrans à droite&nbsp;: rangée du haut, le moteur local&nbsp;; rangée du bas, l'IA et les sens du téléphone. Les données des maquettes sont fictives.</div>
+    </div>
+  </div>
+
+  <div class="rule"></div>
+
+  <!-- 01 Constat -->
+  <div style="display: flex; flex-direction: column; gap: 18px;">
+    <div>
+      <div class="kicker">01 — Le constat</div>
+      <div class="h2">Ce que le marché a déjà</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+      <div class="card">
+        <div class="card-t">Le coach IA est devenu la norme</div>
+        <div class="card-b">MyFitnessPal a sorti son AI Coach à l'été 2026, Fitbit un coach Gemini, Oura son Advisor, Whoop son Coach, Strava son Athlete Intelligence. Un chat de plus, en 2027, arriverait après tout le monde.</div>
+      </div>
+      <div class="card">
+        <div class="card-t">Strava parle déjà à Claude</div>
+        <div class="card-b">Depuis juin 2026, un connecteur MCP laisse les abonnés interroger leur historique depuis Claude. En lecture seule — et pour un seul pilier.</div>
+      </div>
+      <div class="card">
+        <div class="card-t">La photo d'assiette est banalisée</div>
+        <div class="card-b">Cal AI en a fait un produit entier&nbsp;; MacroFactor y ajoute la dictée («&nbsp;deux œufs, une tartine&nbsp;») et un TDEE qui se recale chaque semaine.</div>
+      </div>
+      <div class="card">
+        <div class="card-t">La récup musculaire existe… en muscu seule</div>
+        <div class="card-b">Fitbod colore les muscles selon leur récupération. Ta sortie longue de la veille, ton déficit ou ta nuit de cinq heures n'y entrent pas.</div>
+      </div>
+    </div>
+    <div class="panel" style="flex-direction: row; align-items: center; gap: 36px; padding: 26px 30px;">
+      <div class="halo"></div>
+      <div style="flex: none; width: 300px; position: relative;">
+        <div class="panel-k">Notre carte à jouer</div>
+        <div class="panel-t" style="font-size: 27px; margin-top: 8px;">Un seul corps, vu par les trois piliers</div>
+      </div>
+      <div class="panel-b" style="font-size: 15px; position: relative;">Aucun de ces acteurs ne voit, dans une même base, <strong style="color: #f0e4d0;">la barre, le bitume, l'assiette, le sommeil, le cycle et les douleurs</strong>. FitTrio si — hors ligne, avec un catalogue d'analyses déjà largement codé. Toutes les idées qui suivent exploitent ce fait. Presque aucune n'a besoin d'un chatbot.</div>
+    </div>
+  </div>
+
+  <!-- 02 Règles -->
+  <div style="display: flex; flex-direction: column; gap: 18px;">
+    <div>
+      <div class="kicker">02 — Le cadre</div>
+      <div class="h2">Trois règles pour innover sans trahir le produit</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+      <div class="panel">
+        <div class="panel-k">Règle 1</div>
+        <div class="panel-t">Les piliers se parlent, à voix haute</div>
+        <div class="panel-b">Chaque idée croise au moins deux piliers, ou le socle (sommeil, cycle, douleurs). Une idée mono-pilier, un concurrent spécialisé la fera toujours mieux que nous.</div>
+      </div>
+      <div class="panel">
+        <div class="panel-k">Règle 2</div>
+        <div class="panel-t">Le moteur calcule, l'IA raconte</div>
+        <div class="panel-b">Les chiffres sortent d'un calcul local et testé. Le modèle lit (photos, captures, texte), choisit les pistes et rédige. C'est déjà posé dans IDEAS le 25/07&nbsp;: on le généralise.</div>
+      </div>
+      <div class="panel">
+        <div class="panel-k">Règle 3</div>
+        <div class="panel-t">La preuve avant la promesse</div>
+        <div class="panel-b">Fourchettes, niveau de confiance, pistes écartées affichées, «&nbsp;d'où vient ce chiffre&nbsp;». Là où les autres affirment, FitTrio montre son travail&nbsp;: l'honnêteté devient une fonctionnalité.</div>
+      </div>
+    </div>
+    <div style="font-size: 13.5px; color: #786a59; line-height: 1.5;">Les garde-fous du cadrage tiennent toujours&nbsp;: hors ligne d'abord (B), intégration opt-in (H), pas de boucle de jeu en V1 (C) — et <strong style="color: #33291f;">rien de tout ceci avant la publication Play Store</strong>.</div>
+  </div>
+
+  <!-- 03 Les dix écrans -->
+  <div style="display: flex; flex-direction: column; gap: 18px;">
+    <div>
+      <div class="kicker">03 — Les dix écrans maquettés, à droite de cette planche</div>
+      <div class="h2">Dix idées qu'on peut déjà voir</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px;">
+      <div class="mini"><div class="mini-n">01 · Course</div><div class="mini-t">Le Fantôme</div><div class="mini-b">Cours contre toi-même d'il y a trois semaines, l'écart annoncé à la voix.</div></div>
+      <div class="mini"><div class="mini-n">02 · Alim × Course</div><div class="mini-t">Le Réservoir</div><div class="mini-b">Une jauge de glycogène estimée qui se vide aux séances et prévient avant le fractionné.</div></div>
+      <div class="mini"><div class="mini-n">03 · 3 piliers</div><div class="mini-t">Météo intérieure</div><div class="mini-b">Tes prévisions de forme à sept jours, fourchette comprise, et ta fenêtre record.</div></div>
+      <div class="mini"><div class="mini-n">04 · 3 piliers</div><div class="mini-t">Labo N=1</div><div class="mini-b">De vraies expériences sur toi&nbsp;: protocole alterné, verdict avec son incertitude.</div></div>
+      <div class="mini"><div class="mini-n">05 · Socle</div><div class="mini-t">Carte des leviers</div><div class="mini-b">Ton graphe de corrélations&nbsp;; les liens douteux partent au Labo pour être testés.</div></div>
+      <div class="mini"><div class="mini-n">06 · 3 piliers · IA</div><div class="mini-t">L'Enquête</div><div class="mini-b">«&nbsp;Pourquoi je stagne&nbsp;?&nbsp;» Un dossier de preuves, pistes écartées comprises.</div></div>
+      <div class="mini"><div class="mini-n">07 · 3 piliers · IA</div><div class="mini-t">Le Conseil des trois</div><div class="mini-b">Quand tes objectifs se contredisent, trois voix plaident et tu tranches.</div></div>
+      <div class="mini"><div class="mini-n">08 · Muscu × Course · IA</div><div class="mini-t">Colle ton plan</div><div class="mini-b">Une capture de plan ChatGPT devient 24 séances structurées à valider.</div></div>
+      <div class="mini"><div class="mini-n">09 · Muscu · caméra</div><div class="mini-t">Vitesse de barre</div><div class="mini-b">Le téléphone mesure chaque répétition et dit quand arrêter la série.</div></div>
+      <div class="mini"><div class="mini-n">10 · Course · 3D</div><div class="mini-t">Survol 3D</div><div class="mini-b">Ta sortie rejouée en relief, le ruban coloré par l'allure.</div></div>
+    </div>
+  </div>
+
+  <!-- 04 Banque -->
+  <div style="display: flex; flex-direction: column; gap: 22px;">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+      <div>
+        <div class="kicker">04 — La banque</div>
+        <div class="h2">38 idées, huit familles</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-end;">
+        <div style="display: flex; gap: 14px; align-items: center; font-size: 12.5px; color: #5c4a35;">
+          <span style="display: flex; align-items: center; gap: 6px;"><span class="num h1c" style="width: 18px; height: 18px; font-size: 9px; margin: 0;">H1</span>sans réseau ni IA</span>
+          <span style="display: flex; align-items: center; gap: 6px;"><span class="num h2c" style="width: 18px; height: 18px; font-size: 9px; margin: 0;">H2</span>après la 1ʳᵉ US IA</span>
+          <span style="display: flex; align-items: center; gap: 6px;"><span class="num h3c" style="width: 18px; height: 18px; font-size: 9px; margin: 0;">H3</span>les paris</span>
+          <span style="display: flex; align-items: center; gap: 8px;"><span class="num star" style="width: 16px; height: 16px; background: #fffaf2; margin: 0;"></span>maquettée</span>
+        </div>
+        <div style="font-size: 12px; color: #786a59;">Effort&nbsp;: <b class="mo" style="color: #a34e2c;">S</b> quelques jours · <b class="mo" style="color: #a34e2c;">M</b> 1 à 3 semaines · <b class="mo" style="color: #a34e2c;">L</b> 1 à 2 mois · <span class="ext">↳ prolonge</span> = recoupe une idée déjà dans IDEAS.md</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 40px; align-items: start;">
+
+      <!-- Colonne gauche -->
+      <div style="display: flex; flex-direction: column; gap: 30px;">
+
+        <div class="fam">
+          <div class="fam-h"><span class="fam-l">A</span><span class="fam-n">Le corps, rendu visible</span><span class="fam-c">3D &amp; visualisation</span></div>
+          <div class="idea"><div class="num h2c">1</div><div><div class="idea-n">Carte de fatigue croisée</div><div class="idea-d">Les muscles chauffent avec la muscu <em>et</em> la course (quadriceps, mollets, fessiers), puis refroidissent selon un modèle de récupération que l'apport en protéines module.</div><div class="meta"><span class="pill">Muscu · Course · Alim</span><span class="pill">local</span><span class="pill-e">M</span><span class="ext">↳ prolonge Mon corps (12/09)</span></div></div></div>
+          <div class="idea"><div class="num h3c star">2</div><div><div class="idea-n">Survol 3D de la sortie</div><div class="idea-d">Replay cinématique en relief, ruban coloré par l'allure, fractions et «&nbsp;où tu as lâché&nbsp;» posés sur le terrain.</div><div class="meta"><span class="pill">Course</span><span class="pill">MapLibre déjà installé + relief</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h2c">3</div><div><div class="idea-n">Le curseur du temps</div><div class="idea-d">Un doigt glisse sur l'année&nbsp;: poids, charges, allures et silhouette bougent ensemble, comme un film de soi.</div><div class="meta"><span class="pill">3 piliers</span><span class="pill">local</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h3c">4</div><div><div class="idea-n">Sculpture de saison</div><div class="idea-d">Ton année en objet 3D génératif — un anneau par semaine, l'épaisseur pour la charge, la couleur pour le pilier — partageable, exportable en fichier d'impression 3D.</div><div class="meta"><span class="pill">3 piliers</span><span class="pill">3D</span><span class="pill-e">L</span><span class="ext">↳ prolonge Wrapped (13/07)</span></div></div></div>
+        </div>
+
+        <div class="fam">
+          <div class="fam-h"><span class="fam-l">B</span><span class="fam-n">L'intelligence qui enquête</span><span class="fam-c">moteur + IA</span></div>
+          <div class="idea"><div class="num h2c star">5</div><div><div class="idea-n">L'Enquête</div><div class="idea-d">«&nbsp;Pourquoi je stagne&nbsp;?&nbsp;» Un agent utilise le catalogue d'analyses comme outils et rend un dossier&nbsp;: pistes classées, pistes écartées, une expérience à tenter.</div><div class="meta"><span class="pill">3 piliers + bien-être</span><span class="pill">IA avec outils</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h2c star">6</div><div><div class="idea-n">Le Conseil des trois</div><div class="idea-d">Quand les objectifs se contredisent, trois voix plaident chiffres à l'appui&nbsp;; le moteur chiffre deux compromis, tu choisis.</div><div class="meta"><span class="pill">3 piliers</span><span class="pill">moteur + IA</span><span class="pill-e">M</span><span class="ext">↳ prolonge Objectif hybride (25/07)</span></div></div></div>
+          <div class="idea"><div class="num h2c star">7</div><div><div class="idea-n">Labo N=1</div><div class="idea-d">Des expériences protocolées sur toi — alternance tirée au sort, à l'aveugle quand c'est possible&nbsp;: caféine, créatine, heure de séance, glucides la veille.</div><div class="meta"><span class="pill">3 piliers</span><span class="pill">local</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h3c star">8</div><div><div class="idea-n">Carte des leviers</div><div class="idea-d">Ton graphe de corrélations personnelles&nbsp;: épaisseur pour la force du lien, pointillé quand il est incertain, un appui l'envoie au Labo.</div><div class="meta"><span class="pill">socle</span><span class="pill">local</span><span class="pill-e">L</span><span class="ext">↳ prolonge Moteur de corrélations (13/07)</span></div></div></div>
+          <div class="idea"><div class="num h1c">9</div><div><div class="idea-n">D'où vient ce chiffre&nbsp;?</div><div class="idea-d">Un appui long sur n'importe quel nombre montre sa chaîne de calcul (TDEE ← 14 pesées ← apports) et sa fiabilité.</div><div class="meta"><span class="pill">socle</span><span class="pill">local</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h2c">10</div><div><div class="idea-n">La mémoire visible</div><div class="idea-d">Ce que l'IA a retenu de toi, en phrases claires, modifiable et supprimable ligne à ligne.</div><div class="meta"><span class="pill">socle</span><span class="pill">IA</span><span class="pill-e">S</span></div></div></div>
+          <div class="idea"><div class="num h2c">11</div><div><div class="idea-n">L'app qui s'efface</div><div class="idea-d">Elle mesure ton autonomie et propose de retirer du guidage à mesure que tu apprends. Une app conçue pour qu'on ait de moins en moins besoin d'elle.</div><div class="meta"><span class="pill">socle</span><span class="pill">local</span><span class="pill-e">S</span><span class="ext">↳ prolonge Guidage (12/09)</span></div></div></div>
+        </div>
+
+        <div class="fam">
+          <div class="fam-h"><span class="fam-l">C</span><span class="fam-n">Saisir sans saisir</span><span class="fam-c">vision &amp; voix</span></div>
+          <div class="idea"><div class="num h2c star">12</div><div><div class="idea-n">Colle ton plan</div><div class="idea-d">Capture, PDF ou texte d'un plan (ChatGPT, coach, magazine)&nbsp;: des séances structurées, allures et échauffements compris, avec les points douteux signalés.</div><div class="meta"><span class="pill">Muscu · Course</span><span class="pill">IA vision</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h2c">13</div><div><div class="idea-n">Le menu du resto</div><div class="idea-d">Photo de la carte&nbsp;: les plats classés selon ce qu'il te reste et la séance de demain.</div><div class="meta"><span class="pill">Alim · entraînement</span><span class="pill">IA vision</span><span class="pill-e">S</span></div></div></div>
+          <div class="idea"><div class="num h2c">14</div><div><div class="idea-n">Assiette avant / après</div><div class="idea-d">Deux photos, et l'app retire les restes&nbsp;: on compte ce qui a été mangé, pas ce qui a été servi.</div><div class="meta"><span class="pill">Alim</span><span class="pill">IA vision</span><span class="pill-e">S</span><span class="ext">↳ prolonge Repas photo (13/07)</span></div></div></div>
+          <div class="idea"><div class="num h1c">15</div><div><div class="idea-n">Dicter sa série</div><div class="idea-d">«&nbsp;80, 8, RPE 8&nbsp;»&nbsp;: reconnaissance vocale Android sur l'appareil, grammaire fermée — zéro IA, zéro réseau.</div><div class="meta"><span class="pill">Muscu</span><span class="pill">local</span><span class="pill-e">M</span><span class="ext">↳ prolonge Annonces vocales (13/07)</span></div></div></div>
+          <div class="idea"><div class="num h1c">16</div><div><div class="idea-n">Mémoire des machines</div><div class="idea-d">Un QR collé sur la machine&nbsp;: réglages retenus (siège 4, dossier 2) et dernière charge, au scan.</div><div class="meta"><span class="pill">Muscu</span><span class="pill">local</span><span class="pill-e">S</span></div></div></div>
+          <div class="idea"><div class="num h2c">17</div><div><div class="idea-n">Carnet vocal d'après-séance</div><div class="idea-d">Vingt secondes de ressenti dictées, transcrites sur l'appareil, qui nourrissent le check-in et l'Enquête.</div><div class="meta"><span class="pill">socle</span><span class="pill">local + IA</span><span class="pill-e">S</span></div></div></div>
+        </div>
+
+      </div>
+
+      <!-- Colonne droite -->
+      <div style="display: flex; flex-direction: column; gap: 30px;">
+
+        <div class="fam">
+          <div class="fam-h"><span class="fam-l">D</span><span class="fam-n">Le terrain devient partenaire</span><span class="fam-c">course</span></div>
+          <div class="idea"><div class="num h1c star">18</div><div><div class="idea-n">Le Fantôme</div><div class="idea-d">Cours contre toi-même d'il y a N semaines sur le même parcours&nbsp;: l'écart en mètres et en secondes, à l'écran et à la voix.</div><div class="meta"><span class="pill">Course</span><span class="pill">local</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h3c">19</div><div><div class="idea-n">Le fantôme en son spatial</div><div class="idea-d">Dans le casque, tu l'entends derrière toi, sur ta gauche, qui revient.</div><div class="meta"><span class="pill">Course</span><span class="pill">audio</span><span class="pill-e">L</span></div></div></div>
+          <div class="idea"><div class="num h3c">20</div><div><div class="idea-n">Le parcours qui épouse la séance</div><div class="idea-d">Une boucle générée où les fractions tombent sur le plat et les montées sur la récupération.</div><div class="meta"><span class="pill">Course</span><span class="pill">routage serveur</span><span class="pill-e">L</span></div></div></div>
+          <div class="idea"><div class="num h3c">21</div><div><div class="idea-n">Duo à distance</div><div class="idea-d">Deux villes, une même séance en direct&nbsp;: «&nbsp;Léa vient de boucler sa 4ᵉ fraction&nbsp;».</div><div class="meta"><span class="pill">Course · Muscu</span><span class="pill">temps réel</span><span class="pill-e">L</span></div></div></div>
+          <div class="idea"><div class="num h2c">22</div><div><div class="idea-n">Le plan jusque dans la montre</div><div class="idea-d">Les séances planifiées partent dans Health Connect, qui porte désormais un type «&nbsp;exercice planifié&nbsp;» lisible par les montres.</div><div class="meta"><span class="pill">Muscu · Course</span><span class="pill">Health Connect</span><span class="pill-e">M</span></div></div></div>
+        </div>
+
+        <div class="fam">
+          <div class="fam-h"><span class="fam-l">E</span><span class="fam-n">L'assiette branchée sur l'effort</span><span class="fam-c">nutrition</span></div>
+          <div class="idea"><div class="num h1c star">23</div><div><div class="idea-n">Le Réservoir</div><div class="idea-d">Une jauge de glycogène estimée sur la journée&nbsp;: elle se vide aux séances, se remplit aux glucides, et prévient avant le fractionné.</div><div class="meta"><span class="pill">Alim · Course · Muscu</span><span class="pill">local</span><span class="pill-e">M</span><span class="ext">↳ prolonge FUEL-01</span></div></div></div>
+          <div class="idea"><div class="num h1c">24</div><div><div class="idea-n">La recette élastique</div><div class="idea-d">La même recette, portions recalculées selon la séance du lendemain.</div><div class="meta"><span class="pill">Alim · entraînement</span><span class="pill">local</span><span class="pill-e">S</span></div></div></div>
+          <div class="idea"><div class="num h1c">25</div><div><div class="idea-n">La fenêtre d'avant-course</div><div class="idea-d">«&nbsp;Tu cours à 18&nbsp;h&nbsp;30&nbsp;: repas complet avant 15&nbsp;h, collation vers 17&nbsp;h&nbsp;» — calculé depuis ton planning.</div><div class="meta"><span class="pill">Alim · Course</span><span class="pill">local</span><span class="pill-e">S</span></div></div></div>
+          <div class="idea"><div class="num h2c">26</div><div><div class="idea-n">Le frigo décide du dîner</div><div class="idea-d">Photo du frigo&nbsp;: trois dîners qui tiennent tes macros de demain.</div><div class="meta"><span class="pill">Alim</span><span class="pill">IA vision</span><span class="pill-e">M</span><span class="ext">↳ prolonge Garde-manger (13/07)</span></div></div></div>
+        </div>
+
+        <div class="fam">
+          <div class="fam-h"><span class="fam-l">F</span><span class="fam-n">Les sens du téléphone</span><span class="fam-c">sans montre</span></div>
+          <div class="idea"><div class="num h3c star">27</div><div><div class="idea-n">Vitesse de barre à la caméra</div><div class="idea-d">Téléphone posé, pastille sur le disque&nbsp;: la vitesse de chaque répétition, et sa chute qui dit quand arrêter la série.</div><div class="meta"><span class="pill">Muscu</span><span class="pill">vision sur l'appareil</span><span class="pill-e">L</span></div></div></div>
+          <div class="idea"><div class="num h2c">28</div><div><div class="idea-n">Le saut du matin</div><div class="idea-d">Trois sauts téléphone en main&nbsp;: la hauteur estimée devient un signal de fraîcheur dans le score de forme.</div><div class="meta"><span class="pill">Muscu · Course</span><span class="pill">capteurs</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h3c">29</div><div><div class="idea-n">Le pouls au doigt</div><div class="idea-d">Doigt sur la caméra et le flash&nbsp;: le pouls de repos du matin, sans montre. Aucune allégation médicale.</div><div class="meta"><span class="pill">socle</span><span class="pill">caméra</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h1c">30</div><div><div class="idea-n">La respiration haptique</div><div class="idea-d">Après un fractionné, le téléphone «&nbsp;respire&nbsp;» dans la main pour aider à redescendre.</div><div class="meta"><span class="pill">Course · bien-être</span><span class="pill">local</span><span class="pill-e">S</span></div></div></div>
+        </div>
+
+        <div class="fam">
+          <div class="fam-h"><span class="fam-l">G</span><span class="fam-n">Se projeter</span><span class="fam-c">anticipation</span></div>
+          <div class="idea"><div class="num h2c star">31</div><div><div class="idea-n">Météo intérieure</div><div class="idea-d">Prévisions de forme à sept jours, fourchette comprise, depuis la charge prévue, le sommeil, le cycle et les apports planifiés.</div><div class="meta"><span class="pill">3 piliers</span><span class="pill">local</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h2c">32</div><div><div class="idea-n">La semaine qui se replie</div><div class="idea-d">«&nbsp;Mardi je finis tard, jeudi je pars&nbsp;»&nbsp;: séances, repas et glucides se réorganisent d'eux-mêmes.</div><div class="meta"><span class="pill">3 piliers</span><span class="pill">moteur + IA</span><span class="pill-e">L</span><span class="ext">↳ prolonge Collisions &amp; Vie réelle</span></div></div></div>
+          <div class="idea"><div class="num h2c">33</div><div><div class="idea-n">Séance sous contraintes</div><div class="idea-d">«&nbsp;25 min, un banc, deux haltères de 12&nbsp;kg, jambes cassées&nbsp;»&nbsp;: une séance qui respecte douleurs, fatigue et ce qui manque à ta semaine.</div><div class="meta"><span class="pill">Muscu · socle</span><span class="pill">IA + garde-fous</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h1c">34</div><div><div class="idea-n">Lettre à ton futur toi</div><div class="idea-d">Enregistrée en fixant un objectif, rejouée à l'échéance… ou le jour où tu décroches.</div><div class="meta"><span class="pill">socle</span><span class="pill">local</span><span class="pill-e">S</span></div></div></div>
+          <div class="idea"><div class="num h3c">35</div><div><div class="idea-n">Le film de ta saison</div><div class="idea-d">Une story verticale générée sur l'appareil&nbsp;: survols, records, courbes qui s'animent.</div><div class="meta"><span class="pill">3 piliers</span><span class="pill">local</span><span class="pill-e">M</span><span class="ext">↳ prolonge Wrapped (13/07)</span></div></div></div>
+        </div>
+
+        <div class="fam">
+          <div class="fam-h"><span class="fam-l">H</span><span class="fam-n">Un écosystème ouvert</span><span class="fam-c">plateforme</span></div>
+          <div class="idea"><div class="num h2c">36</div><div><div class="idea-n">Apporte ton IA</div><div class="idea-d">Tes données exposées, pilier par pilier et avec ton accord, à l'assistant de ton choix (Claude, ChatGPT…) via MCP. Strava l'a fait pour un pilier&nbsp;; notre coût d'IA serait nul.</div><div class="meta"><span class="pill">3 piliers</span><span class="pill">serveur</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h2c">37</div><div><div class="idea-n">Le lien kiné</div><div class="idea-d">Quinze jours de douleurs et de charge partagés à un kiné, révocables à tout moment.</div><div class="meta"><span class="pill">socle</span><span class="pill">serveur</span><span class="pill-e">M</span></div></div></div>
+          <div class="idea"><div class="num h3c">38</div><div><div class="idea-n">Les programmes vivants</div><div class="idea-d">Un programme partagé montre, anonymement, comment l'ont vécu ceux qui l'ont suivi&nbsp;: taux de complétion, séance la plus sautée.</div><div class="meta"><span class="pill">socle</span><span class="pill">serveur</span><span class="pill-e">L</span></div></div></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- 05 Graphique -->
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 40px;">
+      <div>
+        <div class="kicker">05 — Où miser</div>
+        <div class="h2">Différenciation contre effort</div>
+      </div>
+      <div style="font-size: 13px; color: #786a59; max-width: 470px; line-height: 1.5; text-align: right;">Positions estimées à dire d'expert, pas mesurées. Le numéro renvoie à la banque&nbsp;; la couleur donne l'horizon, le cercle noir marque les idées maquettées.</div>
+    </div>
+    <div style="background: #fffaf2; border: 1px solid #ece0cd; border-radius: 22px; padding: 18px 20px 12px;">
+      <svg width="1038" height="540" viewBox="0 0 1080 562" role="img" aria-label="Nuage de points des 38 idées selon l'effort et la différenciation" style="display: block; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+        <!-- grille -->
+        <g stroke="#efe4d3" stroke-width="1">
+          <line x1="70" y1="30" x2="1050" y2="30"></line>
+          <line x1="70" y1="176.9" x2="1050" y2="176.9"></line>
+          <line x1="70" y1="323.75" x2="1050" y2="323.75"></line>
+          <line x1="70" y1="470.6" x2="1050" y2="470.6"></line>
+        </g>
+        <g stroke="#e2d3bc" stroke-width="1" stroke-dasharray="3 4">
+          <line x1="396" y1="22" x2="396" y2="500"></line>
+          <line x1="724" y1="22" x2="724" y2="500"></line>
+        </g>
+        <line x1="70" y1="500" x2="1050" y2="500" stroke="#90897d" stroke-width="1"></line>
+        <!-- axes -->
+        <g font-size="12" fill="#786a59" font-family="Space Mono, ui-monospace, monospace">
+          <text x="58" y="34" text-anchor="end">5</text>
+          <text x="58" y="181" text-anchor="end">4</text>
+          <text x="58" y="328" text-anchor="end">3</text>
+          <text x="58" y="475" text-anchor="end">2</text>
+        </g>
+        <g font-size="12.5" fill="#5c4a35" font-weight="600">
+          <text x="233" y="524" text-anchor="middle">S · quelques jours</text>
+          <text x="560" y="524" text-anchor="middle">M · 1 à 3 semaines</text>
+          <text x="887" y="524" text-anchor="middle">L · 1 à 2 mois</text>
+        </g>
+        <text x="560" y="552" text-anchor="middle" font-size="12" fill="#786a59">Effort estimé →</text>
+        <text transform="translate(20 265) rotate(-90)" text-anchor="middle" font-size="12" fill="#786a59">Différenciation →</text>
+        <g font-size="12" fill="#786a59" font-style="italic">
+          <text x="84" y="52">Fort et abordable : commencer ici</text>
+          <text x="1040" y="492" text-anchor="end">Cher et banal : ne pas faire</text>
+        </g>
+
+        <!-- points : H1 #d98a5f · H2 #b14f2b · H3 #6a2610 -->
+        <g font-family="Space Mono, ui-monospace, monospace" font-size="10" font-weight="700" text-anchor="middle">
+          <g><title>1 · Carte de fatigue croisée</title><circle cx="609" cy="147" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="609" y="150.5" fill="#fff">1</text></g>
+          <g><title>2 · Survol 3D</title><circle cx="560" cy="265" r="11" fill="#6a2610" stroke="#33291f" stroke-width="2.5"></circle><text x="560" y="268.5" fill="#fff">2</text></g>
+          <g><title>3 · Le curseur du temps</title><circle cx="499" cy="287" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="499" y="290.5" fill="#fff">3</text></g>
+          <g><title>4 · Sculpture de saison</title><circle cx="854" cy="192" r="11" fill="#6a2610" stroke="#fffaf2" stroke-width="2"></circle><text x="854" y="195.5" fill="#fff">4</text></g>
+          <g><title>5 · L'Enquête</title><circle cx="707" cy="89" r="11" fill="#b14f2b" stroke="#33291f" stroke-width="2.5"></circle><text x="707" y="92.5" fill="#fff">5</text></g>
+          <g><title>6 · Le Conseil des trois</title><circle cx="633" cy="74" r="11" fill="#b14f2b" stroke="#33291f" stroke-width="2.5"></circle><text x="633" y="77.5" fill="#fff">6</text></g>
+          <g><title>7 · Labo N=1</title><circle cx="584" cy="52" r="11" fill="#b14f2b" stroke="#33291f" stroke-width="2.5"></circle><text x="584" y="55.5" fill="#fff">7</text></g>
+          <g><title>8 · Carte des leviers</title><circle cx="805" cy="133" r="11" fill="#6a2610" stroke="#33291f" stroke-width="2.5"></circle><text x="805" y="136.5" fill="#fff">8</text></g>
+          <g><title>9 · D'où vient ce chiffre ?</title><circle cx="486" cy="236" r="11" fill="#d98a5f" stroke="#fffaf2" stroke-width="2"></circle><text x="486" y="239.5" fill="#33291f">9</text></g>
+          <g><title>10 · La mémoire visible</title><circle cx="290" cy="324" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="290" y="327.5" fill="#fff">10</text></g>
+          <g><title>11 · L'app qui s'efface</title><circle cx="339" cy="192" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="339" y="195.5" fill="#fff">11</text></g>
+          <g><title>12 · Colle ton plan</title><circle cx="560" cy="162" r="11" fill="#b14f2b" stroke="#33291f" stroke-width="2.5"></circle><text x="560" y="165.5" fill="#fff">12</text></g>
+          <g><title>13 · Le menu du resto</title><circle cx="364" cy="250" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="364" y="253.5" fill="#fff">13</text></g>
+          <g><title>14 · Assiette avant / après</title><circle cx="315" cy="383" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="315" y="386.5" fill="#fff">14</text></g>
+          <g><title>15 · Dicter sa série</title><circle cx="511" cy="353" r="11" fill="#d98a5f" stroke="#fffaf2" stroke-width="2"></circle><text x="511" y="356.5" fill="#33291f">15</text></g>
+          <g><title>16 · Mémoire des machines</title><circle cx="217" cy="412" r="11" fill="#d98a5f" stroke="#fffaf2" stroke-width="2"></circle><text x="217" y="415.5" fill="#33291f">16</text></g>
+          <g><title>17 · Carnet vocal</title><circle cx="389" cy="427" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="389" y="430.5" fill="#fff">17</text></g>
+          <g><title>18 · Le Fantôme</title><circle cx="437" cy="221" r="11" fill="#d98a5f" stroke="#33291f" stroke-width="2.5"></circle><text x="437" y="224.5" fill="#33291f">18</text></g>
+          <g><title>19 · Le fantôme en son spatial</title><circle cx="780" cy="177" r="11" fill="#6a2610" stroke="#fffaf2" stroke-width="2"></circle><text x="780" y="180.5" fill="#fff">19</text></g>
+          <g><title>20 · Le parcours qui épouse la séance</title><circle cx="903" cy="148" r="11" fill="#6a2610" stroke="#fffaf2" stroke-width="2"></circle><text x="903" y="151.5" fill="#fff">20</text></g>
+          <g><title>21 · Duo à distance</title><circle cx="879" cy="265" r="11" fill="#6a2610" stroke="#fffaf2" stroke-width="2"></circle><text x="879" y="268.5" fill="#fff">21</text></g>
+          <g><title>22 · Le plan jusque dans la montre</title><circle cx="462" cy="441" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="462" y="444.5" fill="#fff">22</text></g>
+          <g><title>23 · Le Réservoir</title><circle cx="535" cy="118" r="11" fill="#d98a5f" stroke="#33291f" stroke-width="2.5"></circle><text x="535" y="121.5" fill="#33291f">23</text></g>
+          <g><title>24 · La recette élastique</title><circle cx="254" cy="294" r="11" fill="#d98a5f" stroke="#fffaf2" stroke-width="2"></circle><text x="254" y="297.5" fill="#33291f">24</text></g>
+          <g><title>25 · La fenêtre d'avant-course</title><circle cx="241" cy="338" r="11" fill="#d98a5f" stroke="#fffaf2" stroke-width="2"></circle><text x="241" y="341.5" fill="#33291f">25</text></g>
+          <g><title>26 · Le frigo décide du dîner</title><circle cx="609" cy="368" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="609" y="371.5" fill="#fff">26</text></g>
+          <g><title>27 · Vitesse de barre</title><circle cx="842" cy="89" r="11" fill="#6a2610" stroke="#33291f" stroke-width="2.5"></circle><text x="842" y="92.5" fill="#fff">27</text></g>
+          <g><title>28 · Le saut du matin</title><circle cx="658" cy="206" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="658" y="209.5" fill="#fff">28</text></g>
+          <g><title>29 · Le pouls au doigt</title><circle cx="683" cy="397" r="11" fill="#6a2610" stroke="#fffaf2" stroke-width="2"></circle><text x="683" y="400.5" fill="#fff">29</text></g>
+          <g><title>30 · La respiration haptique</title><circle cx="193" cy="383" r="11" fill="#d98a5f" stroke="#fffaf2" stroke-width="2"></circle><text x="193" y="386.5" fill="#33291f">30</text></g>
+          <g><title>31 · Météo intérieure</title><circle cx="670" cy="118" r="11" fill="#b14f2b" stroke="#33291f" stroke-width="2.5"></circle><text x="670" y="121.5" fill="#fff">31</text></g>
+          <g><title>32 · La semaine qui se replie</title><circle cx="952" cy="118" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="952" y="121.5" fill="#fff">32</text></g>
+          <g><title>33 · Séance sous contraintes</title><circle cx="695" cy="294" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="695" y="297.5" fill="#fff">33</text></g>
+          <g><title>34 · Lettre à ton futur toi</title><circle cx="168" cy="353" r="11" fill="#d98a5f" stroke="#fffaf2" stroke-width="2"></circle><text x="168" y="356.5" fill="#33291f">34</text></g>
+          <g><title>35 · Le film de ta saison</title><circle cx="646" cy="324" r="11" fill="#6a2610" stroke="#fffaf2" stroke-width="2"></circle><text x="646" y="327.5" fill="#fff">35</text></g>
+          <g><title>36 · Apporte ton IA</title><circle cx="450" cy="169" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="450" y="172.5" fill="#fff">36</text></g>
+          <g><title>37 · Le lien kiné</title><circle cx="560" cy="471" r="11" fill="#b14f2b" stroke="#fffaf2" stroke-width="2"></circle><text x="560" y="474.5" fill="#fff">37</text></g>
+          <g><title>38 · Les programmes vivants</title><circle cx="928" cy="309" r="11" fill="#6a2610" stroke="#fffaf2" stroke-width="2"></circle><text x="928" y="312.5" fill="#fff">38</text></g>
+        </g>
+        <!-- libellés des maquettées -->
+        <g font-size="12.5" font-weight="700" fill="#33291f">
+          <text x="568" y="56" text-anchor="end">Labo N=1</text>
+          <text x="648" y="58">Conseil des trois</text>
+          <text x="724" y="93">L'Enquête</text>
+          <text x="859" y="93">Vitesse de barre</text>
+          <text x="788" y="137" text-anchor="end">Carte des leviers</text>
+          <text x="654" y="122" text-anchor="end">Météo intérieure</text>
+          <text x="519" y="122" text-anchor="end">Réservoir</text>
+          <text x="560" y="190" text-anchor="middle">Colle ton plan</text>
+          <text x="421" y="225" text-anchor="end">Fantôme</text>
+          <text x="577" y="269">Survol 3D</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- 06 Horizons -->
+  <div style="display: flex; flex-direction: column; gap: 18px;">
+    <div>
+      <div class="kicker">06 — Le séquencement</div>
+      <div class="h2">Trois horizons</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; align-items: stretch;">
+      <div class="card" style="gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;"><span class="num h1c" style="margin: 0;">H1</span><div class="card-t">Sans réseau, sans IA</div></div>
+        <div class="card-b">Dès l'après-lancement. Tout tient dans l'architecture actuelle&nbsp;: PowerSync, GPS, voix Android, haptique.</div>
+        <div class="hz">
+          <div class="hz-li"><span class="d" style="background: #d98a5f;"></span><span><b>Le Fantôme</b> · Le Réservoir</span></div>
+          <div class="hz-li"><span class="d" style="background: #d98a5f;"></span><span>D'où vient ce chiffre&nbsp;?</span></div>
+          <div class="hz-li"><span class="d" style="background: #d98a5f;"></span><span>Dicter sa série · Mémoire des machines</span></div>
+          <div class="hz-li"><span class="d" style="background: #d98a5f;"></span><span>Recette élastique · Fenêtre d'avant-course</span></div>
+          <div class="hz-li"><span class="d" style="background: #d98a5f;"></span><span>Respiration haptique · Lettre à ton futur toi</span></div>
+        </div>
+      </div>
+      <div class="card" style="gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;"><span class="num h2c" style="margin: 0;">H2</span><div class="card-t">L'IA branchée</div></div>
+        <div class="card-b">Après la 1ʳᵉ US IA, qui pose le socle une fois pour toutes&nbsp;: proxy Edge Function, consentement IA séparé, plafonds de coût, inférence en UE. C'est aussi là que SOCLE-01 (RevenueCat) trouve enfin quelque chose à ouvrir.</div>
+        <div class="hz">
+          <div class="hz-li"><span class="d" style="background: #b14f2b;"></span><span><b>L'Enquête</b> · Le Conseil des trois · Colle ton plan</span></div>
+          <div class="hz-li"><span class="d" style="background: #b14f2b;"></span><span>Menu du resto · Assiette avant/après · Frigo</span></div>
+          <div class="hz-li"><span class="d" style="background: #b14f2b;"></span><span>Semaine qui se replie · Séance sous contraintes</span></div>
+          <div class="hz-li"><span class="d" style="background: #b14f2b;"></span><span>Apporte ton IA · Lien kiné · Plan dans la montre</span></div>
+          <div class="hz-li"><span class="d" style="background: #b14f2b;"></span><span>Labo N=1 · Météo intérieure · Fatigue croisée — locaux, mais ils demandent des semaines d'historique</span></div>
+        </div>
+      </div>
+      <div class="card" style="gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 10px;"><span class="num h3c" style="margin: 0;">H3</span><div class="card-t">Les paris</div></div>
+        <div class="card-b">Chacun commence par un essai technique jetable, hors pipeline, sur un Android moyen. On ne cadre une US que si l'essai tient.</div>
+        <div class="hz">
+          <div class="hz-li"><span class="d" style="background: #6a2610;"></span><span><b>Vitesse de barre</b> — essai de 2 à 3 jours</span></div>
+          <div class="hz-li"><span class="d" style="background: #6a2610;"></span><span>Survol 3D · Carte des leviers</span></div>
+          <div class="hz-li"><span class="d" style="background: #6a2610;"></span><span>Fantôme en son spatial · Parcours qui épouse la séance</span></div>
+          <div class="hz-li"><span class="d" style="background: #6a2610;"></span><span>Duo à distance · Programmes vivants</span></div>
+          <div class="hz-li"><span class="d" style="background: #6a2610;"></span><span>Sculpture de saison · Film de saison · Pouls au doigt</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 07 Modèles -->
+  <div style="display: flex; flex-direction: column; gap: 18px;">
+    <div>
+      <div class="kicker">07 — Fable 5.1 &amp; compagnie</div>
+      <div class="h2">Quel modèle pour quoi</div>
+    </div>
+    <div style="display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 36px; align-items: start;">
+      <table class="models">
+        <thead><tr><th>Usage</th><th>Modèle</th><th>Entrée / sortie · 1 M tokens</th><th>Ordre de grandeur</th></tr></thead>
+        <tbody>
+          <tr><td>Classer une demande, router, lire un menu simple</td><td class="m">Haiku 4.5</td><td class="p">1 $ / 5 $</td><td class="o">moins d'un centime l'appel</td></tr>
+          <tr><td>Rédiger l'Enquête et les voix du Conseil, lire une capture de plan</td><td class="m">Sonnet 5</td><td class="p">2–3 $ / 10–15 $</td><td class="o">quelques centimes l'appel</td></tr>
+          <tr><td>Enquête difficile à plusieurs outils, semaine qui se replie</td><td class="m">Opus 5</td><td class="p">5 $ / 25 $</td><td class="o">10 à 40 centimes l'enquête</td></tr>
+          <tr><td>Hors production&nbsp;: auditer le catalogue d'analyses, écrire et relire les règles, préparer le contenu que le coach valide</td><td class="m">Fable 5.1</td><td class="p">10 $ / 50 $</td><td class="o">au lot, jamais dans l'app</td></tr>
+        </tbody>
+      </table>
+      <div style="display: flex; flex-direction: column; gap: 12px; font-size: 13.5px; line-height: 1.55; color: #786a59;">
+        <div><strong style="color: #33291f;">Fable 5.1 fabrique, l'app exécute.</strong> Le plus capable des modèles, mais ses tours longs et son prix le réservent à l'atelier&nbsp;: il produit des règles et du contenu que l'app fait ensuite tourner en local, sans réseau.</div>
+        <div><strong style="color: #33291f;">La voix ne part pas au modèle.</strong> Claude ne traite pas l'audio&nbsp;: la dictée passe par la reconnaissance vocale d'Android, sur l'appareil, et seul le texte sort. La vision (photos, captures, PDF), elle, est native.</div>
+        <div><strong style="color: #33291f;">Le fournisseur reste interchangeable.</strong> Proxy côté serveur + moteur local&nbsp;: le même raisonnement vaut pour les modèles d'OpenAI que tu évoques.</div>
+        <div style="font-size: 12px;">Tarifs de la documentation Anthropic (cache du 24/06/2026). Sonnet 5 était annoncé à 3&nbsp;$ / 15&nbsp;$ après son tarif de lancement du 31/08&nbsp;: à revérifier. Ordres de grandeur estimés avec cache de prompt, non mesurés.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 08 Risques -->
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="margin-bottom: 8px;">
+      <div class="kicker">08 — Lucidité</div>
+      <div class="h2">Ce qui peut mal tourner</div>
+    </div>
+    <div class="risk"><div class="risk-t">La promesse santé</div><div class="risk-b">Vitesse de barre, pouls, saut, réservoir&nbsp;: ce sont des estimations. Aucune allégation médicale, des fourchettes partout, et la déclaration Play «&nbsp;Health apps&nbsp;» à relire avant chaque capteur ajouté.</div></div>
+    <div class="risk"><div class="risk-t">La santé chez un tiers</div><div class="risk-b">Consentement IA séparé, minimisation (des agrégats, pas le brut), inférence en UE — et une politique de confidentialité à réécrire&nbsp;: celle préparée pour la fiche Play affirme aujourd'hui qu'aucune donnée n'est partagée.</div></div>
+    <div class="risk"><div class="risk-t">Le gadget 3D</div><div class="risk-b">Une vue 3D doit répondre à une question qu'un graphe 2D pose mal («&nbsp;où ai-je lâché dans la côte&nbsp;?&nbsp;»). Sinon c'est une démo, pas une fonctionnalité. Même règle que pour le mouvement&nbsp;: elle ne porte jamais seule l'information.</div></div>
+    <div class="risk"><div class="risk-t">Le démarrage à froid</div><div class="risk-b">Météo, Leviers, Labo et Enquête ont besoin de semaines d'historique. L'état «&nbsp;pas encore assez de données&nbsp;» se dessine dès la maquette, pas en recette.</div></div>
+    <div class="risk" style="border-bottom: none;"><div class="risk-t">La file de recette</div><div class="risk-b">58 US attendent déjà une recette sur appareil. Empiler du code avant de vider cette file, c'est empiler du non-validé.</div></div>
+  </div>
+
+  <!-- 09 Recommandation -->
+  <div style="display: flex; flex-direction: column; gap: 18px;">
+    <div>
+      <div class="kicker">09 — Mon avis</div>
+      <div class="h2">Si je ne devais en garder que trois</div>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px;">
+      <div class="panel">
+        <div class="halo"></div>
+        <div class="panel-k" style="position: relative;">1 · le plus rentable</div>
+        <div class="panel-t" style="position: relative;">Le Fantôme</div>
+        <div class="panel-b" style="position: relative;">Tout existe déjà&nbsp;: la trace GPS, les annonces vocales, le suivi de cible en direct. Du waouh dès la première semaine, sans réseau ni IA.</div>
+      </div>
+      <div class="panel">
+        <div class="halo"></div>
+        <div class="panel-k" style="position: relative;">2 · la meilleure 1ʳᵉ US IA</div>
+        <div class="panel-t" style="position: relative;">L'Enquête</div>
+        <div class="panel-b" style="position: relative;">Elle consomme le catalogue d'analyses déjà codé, pose le socle IA pour toutes les autres, et se prête naturellement à une offre payante.</div>
+      </div>
+      <div class="panel">
+        <div class="halo"></div>
+        <div class="panel-k" style="position: relative;">3 · la plus belle démonstration</div>
+        <div class="panel-t" style="position: relative;">Le Réservoir</div>
+        <div class="panel-b" style="position: relative;">On voit littéralement la course vider l'assiette. Le différenciateur tient dans une jauge qu'on comprend en une seconde.</div>
+      </div>
+    </div>
+    <div class="card" style="flex-direction: row; gap: 28px; align-items: center; padding: 20px 24px;">
+      <div style="flex: none; width: 210px;"><div class="kicker">Et un pari, tout de suite</div><div class="card-t" style="margin-top: 6px;">L'essai vitesse de barre</div></div>
+      <div class="card-b" style="font-size: 14px;">Deux à trois jours, jetables. Des apps de vitesse de barre existent, mais isolées&nbsp;: aucune ne relie la fatigue mesurée d'une série à la sortie de la veille et à l'assiette du soir. Si la détection tient sur un Android moyen, c'est la fonctionnalité dont on parlera.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 0; margin-top: 8px;">
+      <div class="kicker" style="margin-bottom: 10px;">Décisions à prendre — Florian ou Damien</div>
+      <div class="risk"><div class="risk-t mo" style="font-size: 14px; color: #b14f2b;">D1</div><div class="risk-b" style="color: #33291f;">Choisir trois idées à faire passer par <b>/us</b> — après LANCE-01, pas avant.</div></div>
+      <div class="risk"><div class="risk-t mo" style="font-size: 14px; color: #b14f2b;">D2</div><div class="risk-b" style="color: #33291f;">Inscrire les trois règles du §02 dans bonnes-pratiques.md, pour qu'elles s'appliquent à toute future US «&nbsp;intelligente&nbsp;».</div></div>
+      <div class="risk"><div class="risk-t mo" style="font-size: 14px; color: #b14f2b;">D3</div><div class="risk-b" style="color: #33291f;">Désigner la première US IA (ma recommandation&nbsp;: l'Enquête), qui débloque le proxy, le consentement et SOCLE-01.</div></div>
+      <div class="risk"><div class="risk-t mo" style="font-size: 14px; color: #b14f2b;">D4</div><div class="risk-b" style="color: #33291f;">Autoriser l'essai vitesse de barre (2 à 3 jours, hors pipeline, jetable).</div></div>
+      <div class="risk" style="border-bottom: none;"><div class="risk-t mo" style="font-size: 14px; color: #b14f2b;">D5</div><div class="risk-b" style="color: #33291f;">Verser les 38 idées dans IDEAS.md, au statut «&nbsp;nouvelle&nbsp;», pour qu'elles ne meurent pas avec cette planche.</div></div>
+    </div>
+  </div>
+
+  <!-- Pied -->
+  <div class="rule"></div>
+  <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 40px; font-size: 12px; line-height: 1.6; color: #786a59;">
+    <div>
+      <div class="kicker" style="margin-bottom: 8px;">Sources marché consultées le 13/09/2026</div>
+      <a href="https://blog.myfitnesspal.com/summer-2026-release/">MyFitnessPal — Summer 2026 release</a> · <a href="https://press.strava.com/articles/strava-launches-mcp-connector">Strava — MCP connector</a> · <a href="https://ouraring.com/blog/oura-advisor/">Oura Advisor</a> · <a href="https://www.solutelabs.com/blog/future-of-fitness">AI fitness trends 2026</a> · <a href="https://macrofactor.com/macrofactor-vs-cal-ai/">MacroFactor vs Cal AI</a> · <a href="https://help.fitbod.me/hc/en-us/articles/360006269014-Muscle-Recovery">Fitbod — Muscle Recovery</a> · <a href="https://developer.android.com/health-and-fitness/health-connect">Android — Health Connect</a> · <a href="https://www.tomshardware.com/peripherals/wearable-tech/resourceful-runner-can-race-my-own-ghost-using-homemade-meta-ray-ban-display-app-also-adds-bonus-coins-mini-leaderboard-and-more">Course contre son fantôme sur lunettes (mai 2026)</a>
+    </div>
+    <div>
+      <div class="kicker" style="margin-bottom: 8px;">Périmètre de ce document</div>
+      Une idéation, pas une spécification&nbsp;: aucune ligne de code applicatif, aucune migration. Recoupements vérifiés dans IDEAS.md, BACKLOG.md, ETAT.md et les analyses du 12/09. Maquettes aux couleurs et polices de l'app (clair et sombre), données fictives. Positions du graphique et efforts estimés, à réévaluer au cadrage.
+    </div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

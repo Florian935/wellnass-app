@@ -1,0 +1,228 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+  <style>
+    body { margin: 0; background: #f7eede; }
+    a { color: #b14f2b; } a:hover { color: #8a3c1f; }
+    @keyframes haloP { 0%, 100% { opacity: .12; } 50% { opacity: .42; } }
+    .halo { animation: haloP 2s ease-in-out infinite; }
+    @keyframes rise { from { opacity: .35; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+    @keyframes flowF { from { transform: translateX(0); } to { transform: translateX(-72px); } }
+    @keyframes swayF { 0%, 100% { transform: translateY(-3px); } 50% { transform: translateY(3px); } }
+    @keyframes frayF { 0%, 100% { opacity: .5; } 50% { opacity: 1; } }
+    .frayF { animation: frayF .5s steps(2) infinite; }
+    @keyframes sparkF { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+    .sparkF { animation: sparkF .6s ease-in-out infinite; }
+  </style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+  <div style="flex: none; position: relative; overflow: hidden; background: radial-gradient(72% 58% at 12% 8%, rgba(107,0,40,.92) 0%, rgba(107,0,40,0) 72%), radial-gradient(70% 56% at 94% 14%, rgba(42,100,173,.9) 0%, rgba(42,100,173,0) 72%), radial-gradient(90% 60% at 50% 104%, rgba(58,86,34,.95) 0%, rgba(58,86,34,0) 74%), #1c150e; color: #fff; border-radius: 0 0 30px 30px; padding: 12px 20px 14px; display: flex; flex-direction: column; gap: 4px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; height: 44px;">
+      <div style="display: flex; align-items: center; gap: 6px;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg><div style="font-weight: 600; font-size: 14px;">Le Labo</div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: .8px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.14); border: 1px solid rgba(255,255,255,.26);">CONCEPT F</div>
+    </div>
+    <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -.8px; line-height: 1.05;">La corde</div>
+      <div style="font-size: 13px; color: rgba(255,255,255,.8);">tes piliers, tressés</div>
+    </div>
+    <svg width="350" height="330" viewBox="0 0 350 330" style="display: block; flex: none; overflow: visible;">
+      <defs>
+        <clipPath id="clipF1"><rect x="124" y="120" width="{{ w1 }}" height="120"></rect></clipPath>
+        <clipPath id="clipF2"><rect x="{{ x2 }}" y="120" width="{{ w2 }}" height="120"></rect></clipPath>
+        <linearGradient id="gripF" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#4a3a2c"></stop><stop offset=".5" stop-color="#2a2016"></stop><stop offset="1" stop-color="#15100b"></stop></linearGradient>
+        <radialGradient id="ironF" cx=".35" cy=".3" r=".8"><stop offset="0" stop-color="#6b6158"></stop><stop offset=".6" stop-color="#2f2821"></stop><stop offset="1" stop-color="#15100b"></stop></radialGradient>
+        <radialGradient id="spotF" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff4e0" stop-opacity=".12"></stop><stop offset="1" stop-color="#fff4e0" stop-opacity="0"></stop></radialGradient>
+      </defs>
+      <ellipse cx="220" cy="176" rx="150" ry="120" fill="url(#spotF)"></ellipse>
+      <text x="200" y="34" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" letter-spacing="1.2" fill="rgba(255,255,255,.7)" text-anchor="middle">TA FORMULE · UNE SEULE CORDE</text>
+      <text x="200" y="58" font-family="Bricolage Grotesque, sans-serif" font-size="22" font-weight="800" fill="{{ ropeColor }}" text-anchor="middle">{{ ropeWord }}</text>
+      <g style="animation: {{ sway }};">
+        <path d="M121,152.7 C104,152.7 104,92 84,92" fill="none" stroke="#e07a98" stroke-width="{{ wM }}" stroke-linecap="round" style="transition: stroke-width .35s;"></path><line x1="84" y1="92" x2="74" y2="84" stroke="#e07a98" stroke-width="1.6" stroke-linecap="round"></line><line x1="84" y1="92" x2="74" y2="89" stroke="#e07a98" stroke-width="1.6" stroke-linecap="round"></line><line x1="84" y1="92" x2="74" y2="95" stroke="#e07a98" stroke-width="1.6" stroke-linecap="round"></line><line x1="84" y1="92" x2="74" y2="100" stroke="#e07a98" stroke-width="1.6" stroke-linecap="round"></line>
+      <text x="68" y="89" font-family="Space Mono, monospace" font-size="9" font-weight="700" letter-spacing=".8" fill="#ff9ec0" text-anchor="end">MUSCU</text>
+      <text x="68" y="104" font-family="Hanken Grotesk, sans-serif" font-size="11.5" font-weight="600" fill="#fff" text-anchor="end">{{ mTxt }}</text><path d="M121,170 C104,170 104,176 84,176" fill="none" stroke="#6fa8ef" stroke-width="{{ wC }}" stroke-linecap="round" style="transition: stroke-width .35s;"></path><line x1="84" y1="176" x2="74" y2="168" stroke="#6fa8ef" stroke-width="1.6" stroke-linecap="round"></line><line x1="84" y1="176" x2="74" y2="173" stroke="#6fa8ef" stroke-width="1.6" stroke-linecap="round"></line><line x1="84" y1="176" x2="74" y2="179" stroke="#6fa8ef" stroke-width="1.6" stroke-linecap="round"></line><line x1="84" y1="176" x2="74" y2="184" stroke="#6fa8ef" stroke-width="1.6" stroke-linecap="round"></line>
+      <text x="68" y="173" font-family="Space Mono, monospace" font-size="9" font-weight="700" letter-spacing=".8" fill="#b7d6ff" text-anchor="end">COURSE</text>
+      <text x="68" y="188" font-family="Hanken Grotesk, sans-serif" font-size="11.5" font-weight="600" fill="#fff" text-anchor="end">{{ cTxt }}</text><path d="M121,187.3 C104,187.3 104,250 84,250" fill="none" stroke="#a9ba7e" stroke-width="{{ wN }}" stroke-linecap="round" style="transition: stroke-width .35s;"></path><line x1="84" y1="250" x2="74" y2="242" stroke="#a9ba7e" stroke-width="1.6" stroke-linecap="round"></line><line x1="84" y1="250" x2="74" y2="247" stroke="#a9ba7e" stroke-width="1.6" stroke-linecap="round"></line><line x1="84" y1="250" x2="74" y2="253" stroke="#a9ba7e" stroke-width="1.6" stroke-linecap="round"></line><line x1="84" y1="250" x2="74" y2="258" stroke="#a9ba7e" stroke-width="1.6" stroke-linecap="round"></line>
+      <text x="68" y="247" font-family="Space Mono, monospace" font-size="9" font-weight="700" letter-spacing=".8" fill="#d8e6b4" text-anchor="end">NUTRITION</text>
+      <text x="68" y="262" font-family="Hanken Grotesk, sans-serif" font-size="11.5" font-weight="600" fill="#fff" text-anchor="end">{{ nTxt }}</text>
+        <g clip-path="url(#clipF1)"><g style="animation: {{ flow }};"><path d="M168,187.3 L170,185.3 L172,182.9 L174,180 L176,176.8 L178,173.5 L180,170 L182,166.5 L184,163.2 L186,160 L188,157.1 L190,154.7 L192,152.7 M238,188.8 L240,187.3 L242,185.3 L244,182.9 L246,180 L248,176.8 L250,173.5 L252,170 L254,166.5 L256,163.2 L258,160 L260,157.1 L262,154.7 L264,152.7 M310,188.8 L312,187.3 L314,185.3 L316,182.9 L318,180 L320,176.8 L322,173.5 L324,170 L326,166.5 L328,163.2 L330,160 L332,157.1 L334,154.7 L336,152.7 M384,187.3 L386,185.3 L388,182.9 L390,180 L392,176.8 L394,173.5 L396,170 L398,166.5 L400,163.2 L402,160" fill="none" stroke="#6b0028" stroke-width="{{ wM }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M144,187.3 L146,185.3 L148,182.9 L150,180 L152,176.8 L154,173.5 L156,170 L158,166.5 L160,163.2 L162,160 L164,157.1 L166,154.7 L168,152.7 M216,187.3 L218,185.3 L220,182.9 L222,180 L224,176.8 L226,173.5 L228,170 L230,166.5 L232,163.2 L234,160 L236,157.1 L238,154.7 M288,187.3 L290,185.3 L292,182.9 L294,180 L296,176.8 L298,173.5 L300,170 L302,166.5 L304,163.2 L306,160 L308,157.1 L310,154.7 M360,187.3 L362,185.3 L364,182.9 L366,180 L368,176.8 L370,173.5 L372,170 L374,166.5 L376,163.2 L378,160 L380,157.1 L382,154.7 L384,152.7" fill="none" stroke="#1d4586" stroke-width="{{ wC }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M120,187.3 L120,187.3 L122,185.3 L124,182.9 L126,180 L128,176.8 L130,173.5 L132,170 L134,166.5 L136,163.2 L138,160 L140,157.1 L142,154.7 L144,152.7 M192,187.3 L194,185.3 L196,182.9 L198,180 L200,176.8 L202,173.5 L204,170 L206,166.5 L208,163.2 L210,160 L212,157.1 L214,154.7 L216,152.7 M264,187.3 L266,185.3 L268,182.9 L270,180 L272,176.8 L274,173.5 L276,170 L278,166.5 L280,163.2 L282,160 L284,157.1 L286,154.7 L288,152.7 M336,187.3 L338,185.3 L340,182.9 L342,180 L344,176.8 L346,173.5 L348,170 L350,166.5 L352,163.2 L354,160 L356,157.1 L358,154.7 L360,152.7" fill="none" stroke="#3a5622" stroke-width="{{ wN }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M120,152.7 L120,152.7 L122,151.2 L124,150.3 L126,150 L128,150.3 L130,151.2 L132,152.7 M154,185.3 L156,187.3 L158,188.8 L160,189.7 L162,190 L164,189.7 L166,188.8 L168,187.3 M192,152.7 L194,151.2 L196,150.3 L198,150 L200,150.3 L202,151.2 M228,187.3 L230,188.8 L232,189.7 L234,190 L236,189.7 L238,188.8 M264,152.7 L266,151.2 L268,150.3 L270,150 L272,150.3 L274,151.2 M300,187.3 L302,188.8 L304,189.7 L306,190 L308,189.7 L310,188.8 M336,152.7 L338,151.2 L340,150.3 L342,150 L344,150.3 L346,151.2 L348,152.7 M372,187.3 L374,188.8 L376,189.7 L378,190 L380,189.7 L382,188.8 L384,187.3" fill="none" stroke="#e07a98" stroke-width="{{ wM }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M132,187.3 L134,188.8 L136,189.7 L138,190 L140,189.7 L142,188.8 L144,187.3 M168,152.7 L170,151.2 L172,150.3 L174,150 L176,150.3 L178,151.2 L180,152.7 M202,185.3 L204,187.3 L206,188.8 L208,189.7 L210,190 L212,189.7 L214,188.8 L216,187.3 M238,154.7 L240,152.7 L242,151.2 L244,150.3 L246,150 L248,150.3 L250,151.2 L252,152.7 M274,185.3 L276,187.3 L278,188.8 L280,189.7 L282,190 L284,189.7 L286,188.8 L288,187.3 M310,154.7 L312,152.7 L314,151.2 L316,150.3 L318,150 L320,150.3 L322,151.2 L324,152.7 M348,187.3 L350,188.8 L352,189.7 L354,190 L356,189.7 L358,188.8 L360,187.3 M384,152.7 L386,151.2 L388,150.3 L390,150 L392,150.3 L394,151.2 L396,152.7" fill="none" stroke="#6fa8ef" stroke-width="{{ wC }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M144,152.7 L146,151.2 L148,150.3 L150,150 L152,150.3 L154,151.2 M180,187.3 L182,188.8 L184,189.7 L186,190 L188,189.7 L190,188.8 L192,187.3 M216,152.7 L218,151.2 L220,150.3 L222,150 L224,150.3 L226,151.2 L228,152.7 M252,187.3 L254,188.8 L256,189.7 L258,190 L260,189.7 L262,188.8 L264,187.3 M288,152.7 L290,151.2 L292,150.3 L294,150 L296,150.3 L298,151.2 L300,152.7 M324,187.3 L326,188.8 L328,189.7 L330,190 L332,189.7 L334,188.8 L336,187.3 M360,152.7 L362,151.2 L364,150.3 L366,150 L368,150.3 L370,151.2 L372,152.7 M396,187.3 L398,188.8 L400,189.7 L402,190" fill="none" stroke="#a9ba7e" stroke-width="{{ wN }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M132,152.7 L134,154.7 L136,157.1 L138,160 L140,163.2 L142,166.5 L144,170 L146,173.5 L148,176.8 L150,180 L152,182.9 L154,185.3 M202,151.2 L204,152.7 L206,154.7 L208,157.1 L210,160 L212,163.2 L214,166.5 L216,170 L218,173.5 L220,176.8 L222,180 L224,182.9 L226,185.3 L228,187.3 M274,151.2 L276,152.7 L278,154.7 L280,157.1 L282,160 L284,163.2 L286,166.5 L288,170 L290,173.5 L292,176.8 L294,180 L296,182.9 L298,185.3 L300,187.3 M348,152.7 L350,154.7 L352,157.1 L354,160 L356,163.2 L358,166.5 L360,170 L362,173.5 L364,176.8 L366,180 L368,182.9 L370,185.3 L372,187.3" fill="none" stroke="#e07a98" stroke-width="{{ wM }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M132,152.7 L134,154.7 L136,157.1 L138,160 L140,163.2 L142,166.5 L144,170 L146,173.5 L148,176.8 L150,180 L152,182.9 L154,185.3 M202,151.2 L204,152.7 L206,154.7 L208,157.1 L210,160 L212,163.2 L214,166.5 L216,170 L218,173.5 L220,176.8 L222,180 L224,182.9 L226,185.3 L228,187.3 M274,151.2 L276,152.7 L278,154.7 L280,157.1 L282,160 L284,163.2 L286,166.5 L288,170 L290,173.5 L292,176.8 L294,180 L296,182.9 L298,185.3 L300,187.3 M348,152.7 L350,154.7 L352,157.1 L354,160 L356,163.2 L358,166.5 L360,170 L362,173.5 L364,176.8 L366,180 L368,182.9 L370,185.3 L372,187.3" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="{{ hM }}" stroke-linecap="round" transform="translate(0 -2)"></path><path d="M120,170 L120,170 L122,173.5 L124,176.8 L126,180 L128,182.9 L130,185.3 L132,187.3 M180,152.7 L182,154.7 L184,157.1 L186,160 L188,163.2 L190,166.5 L192,170 L194,173.5 L196,176.8 L198,180 L200,182.9 L202,185.3 M252,152.7 L254,154.7 L256,157.1 L258,160 L260,163.2 L262,166.5 L264,170 L266,173.5 L268,176.8 L270,180 L272,182.9 L274,185.3 M324,152.7 L326,154.7 L328,157.1 L330,160 L332,163.2 L334,166.5 L336,170 L338,173.5 L340,176.8 L342,180 L344,182.9 L346,185.3 L348,187.3 M396,152.7 L398,154.7 L400,157.1 L402,160" fill="none" stroke="#6fa8ef" stroke-width="{{ wC }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M120,170 L120,170 L122,173.5 L124,176.8 L126,180 L128,182.9 L130,185.3 L132,187.3 M180,152.7 L182,154.7 L184,157.1 L186,160 L188,163.2 L190,166.5 L192,170 L194,173.5 L196,176.8 L198,180 L200,182.9 L202,185.3 M252,152.7 L254,154.7 L256,157.1 L258,160 L260,163.2 L262,166.5 L264,170 L266,173.5 L268,176.8 L270,180 L272,182.9 L274,185.3 M324,152.7 L326,154.7 L328,157.1 L330,160 L332,163.2 L334,166.5 L336,170 L338,173.5 L340,176.8 L342,180 L344,182.9 L346,185.3 L348,187.3 M396,152.7 L398,154.7 L400,157.1 L402,160" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="{{ hC }}" stroke-linecap="round" transform="translate(0 -2)"></path><path d="M154,151.2 L156,152.7 L158,154.7 L160,157.1 L162,160 L164,163.2 L166,166.5 L168,170 L170,173.5 L172,176.8 L174,180 L176,182.9 L178,185.3 L180,187.3 M228,152.7 L230,154.7 L232,157.1 L234,160 L236,163.2 L238,166.5 L240,170 L242,173.5 L244,176.8 L246,180 L248,182.9 L250,185.3 L252,187.3 M300,152.7 L302,154.7 L304,157.1 L306,160 L308,163.2 L310,166.5 L312,170 L314,173.5 L316,176.8 L318,180 L320,182.9 L322,185.3 L324,187.3 M372,152.7 L374,154.7 L376,157.1 L378,160 L380,163.2 L382,166.5 L384,170 L386,173.5 L388,176.8 L390,180 L392,182.9 L394,185.3 L396,187.3" fill="none" stroke="#a9ba7e" stroke-width="{{ wN }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M154,151.2 L156,152.7 L158,154.7 L160,157.1 L162,160 L164,163.2 L166,166.5 L168,170 L170,173.5 L172,176.8 L174,180 L176,182.9 L178,185.3 L180,187.3 M228,152.7 L230,154.7 L232,157.1 L234,160 L236,163.2 L238,166.5 L240,170 L242,173.5 L244,176.8 L246,180 L248,182.9 L250,185.3 L252,187.3 M300,152.7 L302,154.7 L304,157.1 L306,160 L308,163.2 L310,166.5 L312,170 L314,173.5 L316,176.8 L318,180 L320,182.9 L322,185.3 L324,187.3 M372,152.7 L374,154.7 L376,157.1 L378,160 L380,163.2 L382,166.5 L384,170 L386,173.5 L388,176.8 L390,180 L392,182.9 L394,185.3 L396,187.3" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="{{ hN }}" stroke-linecap="round" transform="translate(0 -2)"></path></g></g>
+        <g clip-path="url(#clipF2)"><g style="animation: {{ flow }};"><path d="M168,187.3 L170,185.3 L172,182.9 L174,180 L176,176.8 L178,173.5 L180,170 L182,166.5 L184,163.2 L186,160 L188,157.1 L190,154.7 L192,152.7 M238,188.8 L240,187.3 L242,185.3 L244,182.9 L246,180 L248,176.8 L250,173.5 L252,170 L254,166.5 L256,163.2 L258,160 L260,157.1 L262,154.7 L264,152.7 M310,188.8 L312,187.3 L314,185.3 L316,182.9 L318,180 L320,176.8 L322,173.5 L324,170 L326,166.5 L328,163.2 L330,160 L332,157.1 L334,154.7 L336,152.7 M384,187.3 L386,185.3 L388,182.9 L390,180 L392,176.8 L394,173.5 L396,170 L398,166.5 L400,163.2 L402,160" fill="none" stroke="#6b0028" stroke-width="{{ wM }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M144,187.3 L146,185.3 L148,182.9 L150,180 L152,176.8 L154,173.5 L156,170 L158,166.5 L160,163.2 L162,160 L164,157.1 L166,154.7 L168,152.7 M216,187.3 L218,185.3 L220,182.9 L222,180 L224,176.8 L226,173.5 L228,170 L230,166.5 L232,163.2 L234,160 L236,157.1 L238,154.7 M288,187.3 L290,185.3 L292,182.9 L294,180 L296,176.8 L298,173.5 L300,170 L302,166.5 L304,163.2 L306,160 L308,157.1 L310,154.7 M360,187.3 L362,185.3 L364,182.9 L366,180 L368,176.8 L370,173.5 L372,170 L374,166.5 L376,163.2 L378,160 L380,157.1 L382,154.7 L384,152.7" fill="none" stroke="#1d4586" stroke-width="{{ wC }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M120,187.3 L120,187.3 L122,185.3 L124,182.9 L126,180 L128,176.8 L130,173.5 L132,170 L134,166.5 L136,163.2 L138,160 L140,157.1 L142,154.7 L144,152.7 M192,187.3 L194,185.3 L196,182.9 L198,180 L200,176.8 L202,173.5 L204,170 L206,166.5 L208,163.2 L210,160 L212,157.1 L214,154.7 L216,152.7 M264,187.3 L266,185.3 L268,182.9 L270,180 L272,176.8 L274,173.5 L276,170 L278,166.5 L280,163.2 L282,160 L284,157.1 L286,154.7 L288,152.7 M336,187.3 L338,185.3 L340,182.9 L342,180 L344,176.8 L346,173.5 L348,170 L350,166.5 L352,163.2 L354,160 L356,157.1 L358,154.7 L360,152.7" fill="none" stroke="#3a5622" stroke-width="{{ wN }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M120,152.7 L120,152.7 L122,151.2 L124,150.3 L126,150 L128,150.3 L130,151.2 L132,152.7 M154,185.3 L156,187.3 L158,188.8 L160,189.7 L162,190 L164,189.7 L166,188.8 L168,187.3 M192,152.7 L194,151.2 L196,150.3 L198,150 L200,150.3 L202,151.2 M228,187.3 L230,188.8 L232,189.7 L234,190 L236,189.7 L238,188.8 M264,152.7 L266,151.2 L268,150.3 L270,150 L272,150.3 L274,151.2 M300,187.3 L302,188.8 L304,189.7 L306,190 L308,189.7 L310,188.8 M336,152.7 L338,151.2 L340,150.3 L342,150 L344,150.3 L346,151.2 L348,152.7 M372,187.3 L374,188.8 L376,189.7 L378,190 L380,189.7 L382,188.8 L384,187.3" fill="none" stroke="#e07a98" stroke-width="{{ wM }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M132,187.3 L134,188.8 L136,189.7 L138,190 L140,189.7 L142,188.8 L144,187.3 M168,152.7 L170,151.2 L172,150.3 L174,150 L176,150.3 L178,151.2 L180,152.7 M202,185.3 L204,187.3 L206,188.8 L208,189.7 L210,190 L212,189.7 L214,188.8 L216,187.3 M238,154.7 L240,152.7 L242,151.2 L244,150.3 L246,150 L248,150.3 L250,151.2 L252,152.7 M274,185.3 L276,187.3 L278,188.8 L280,189.7 L282,190 L284,189.7 L286,188.8 L288,187.3 M310,154.7 L312,152.7 L314,151.2 L316,150.3 L318,150 L320,150.3 L322,151.2 L324,152.7 M348,187.3 L350,188.8 L352,189.7 L354,190 L356,189.7 L358,188.8 L360,187.3 M384,152.7 L386,151.2 L388,150.3 L390,150 L392,150.3 L394,151.2 L396,152.7" fill="none" stroke="#6fa8ef" stroke-width="{{ wC }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M144,152.7 L146,151.2 L148,150.3 L150,150 L152,150.3 L154,151.2 M180,187.3 L182,188.8 L184,189.7 L186,190 L188,189.7 L190,188.8 L192,187.3 M216,152.7 L218,151.2 L220,150.3 L222,150 L224,150.3 L226,151.2 L228,152.7 M252,187.3 L254,188.8 L256,189.7 L258,190 L260,189.7 L262,188.8 L264,187.3 M288,152.7 L290,151.2 L292,150.3 L294,150 L296,150.3 L298,151.2 L300,152.7 M324,187.3 L326,188.8 L328,189.7 L330,190 L332,189.7 L334,188.8 L336,187.3 M360,152.7 L362,151.2 L364,150.3 L366,150 L368,150.3 L370,151.2 L372,152.7 M396,187.3 L398,188.8 L400,189.7 L402,190" fill="none" stroke="#a9ba7e" stroke-width="{{ wN }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M132,152.7 L134,154.7 L136,157.1 L138,160 L140,163.2 L142,166.5 L144,170 L146,173.5 L148,176.8 L150,180 L152,182.9 L154,185.3 M202,151.2 L204,152.7 L206,154.7 L208,157.1 L210,160 L212,163.2 L214,166.5 L216,170 L218,173.5 L220,176.8 L222,180 L224,182.9 L226,185.3 L228,187.3 M274,151.2 L276,152.7 L278,154.7 L280,157.1 L282,160 L284,163.2 L286,166.5 L288,170 L290,173.5 L292,176.8 L294,180 L296,182.9 L298,185.3 L300,187.3 M348,152.7 L350,154.7 L352,157.1 L354,160 L356,163.2 L358,166.5 L360,170 L362,173.5 L364,176.8 L366,180 L368,182.9 L370,185.3 L372,187.3" fill="none" stroke="#e07a98" stroke-width="{{ wM }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M132,152.7 L134,154.7 L136,157.1 L138,160 L140,163.2 L142,166.5 L144,170 L146,173.5 L148,176.8 L150,180 L152,182.9 L154,185.3 M202,151.2 L204,152.7 L206,154.7 L208,157.1 L210,160 L212,163.2 L214,166.5 L216,170 L218,173.5 L220,176.8 L222,180 L224,182.9 L226,185.3 L228,187.3 M274,151.2 L276,152.7 L278,154.7 L280,157.1 L282,160 L284,163.2 L286,166.5 L288,170 L290,173.5 L292,176.8 L294,180 L296,182.9 L298,185.3 L300,187.3 M348,152.7 L350,154.7 L352,157.1 L354,160 L356,163.2 L358,166.5 L360,170 L362,173.5 L364,176.8 L366,180 L368,182.9 L370,185.3 L372,187.3" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="{{ hM }}" stroke-linecap="round" transform="translate(0 -2)"></path><path d="M120,170 L120,170 L122,173.5 L124,176.8 L126,180 L128,182.9 L130,185.3 L132,187.3 M180,152.7 L182,154.7 L184,157.1 L186,160 L188,163.2 L190,166.5 L192,170 L194,173.5 L196,176.8 L198,180 L200,182.9 L202,185.3 M252,152.7 L254,154.7 L256,157.1 L258,160 L260,163.2 L262,166.5 L264,170 L266,173.5 L268,176.8 L270,180 L272,182.9 L274,185.3 M324,152.7 L326,154.7 L328,157.1 L330,160 L332,163.2 L334,166.5 L336,170 L338,173.5 L340,176.8 L342,180 L344,182.9 L346,185.3 L348,187.3 M396,152.7 L398,154.7 L400,157.1 L402,160" fill="none" stroke="#6fa8ef" stroke-width="{{ wC }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M120,170 L120,170 L122,173.5 L124,176.8 L126,180 L128,182.9 L130,185.3 L132,187.3 M180,152.7 L182,154.7 L184,157.1 L186,160 L188,163.2 L190,166.5 L192,170 L194,173.5 L196,176.8 L198,180 L200,182.9 L202,185.3 M252,152.7 L254,154.7 L256,157.1 L258,160 L260,163.2 L262,166.5 L264,170 L266,173.5 L268,176.8 L270,180 L272,182.9 L274,185.3 M324,152.7 L326,154.7 L328,157.1 L330,160 L332,163.2 L334,166.5 L336,170 L338,173.5 L340,176.8 L342,180 L344,182.9 L346,185.3 L348,187.3 M396,152.7 L398,154.7 L400,157.1 L402,160" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="{{ hC }}" stroke-linecap="round" transform="translate(0 -2)"></path><path d="M154,151.2 L156,152.7 L158,154.7 L160,157.1 L162,160 L164,163.2 L166,166.5 L168,170 L170,173.5 L172,176.8 L174,180 L176,182.9 L178,185.3 L180,187.3 M228,152.7 L230,154.7 L232,157.1 L234,160 L236,163.2 L238,166.5 L240,170 L242,173.5 L244,176.8 L246,180 L248,182.9 L250,185.3 L252,187.3 M300,152.7 L302,154.7 L304,157.1 L306,160 L308,163.2 L310,166.5 L312,170 L314,173.5 L316,176.8 L318,180 L320,182.9 L322,185.3 L324,187.3 M372,152.7 L374,154.7 L376,157.1 L378,160 L380,163.2 L382,166.5 L384,170 L386,173.5 L388,176.8 L390,180 L392,182.9 L394,185.3 L396,187.3" fill="none" stroke="#a9ba7e" stroke-width="{{ wN }}" stroke-linecap="round" stroke-linejoin="round" style="transition: stroke-width .35s;"></path><path d="M154,151.2 L156,152.7 L158,154.7 L160,157.1 L162,160 L164,163.2 L166,166.5 L168,170 L170,173.5 L172,176.8 L174,180 L176,182.9 L178,185.3 L180,187.3 M228,152.7 L230,154.7 L232,157.1 L234,160 L236,163.2 L238,166.5 L240,170 L242,173.5 L244,176.8 L246,180 L248,182.9 L250,185.3 L252,187.3 M300,152.7 L302,154.7 L304,157.1 L306,160 L308,163.2 L310,166.5 L312,170 L314,173.5 L316,176.8 L318,180 L320,182.9 L322,185.3 L324,187.3 M372,152.7 L374,154.7 L376,157.1 L378,160 L380,163.2 L382,166.5 L384,170 L386,173.5 L388,176.8 L390,180 L392,182.9 L394,185.3 L396,187.3" fill="none" stroke="rgba(255,255,255,.4)" stroke-width="{{ hN }}" stroke-linecap="round" transform="translate(0 -2)"></path></g></g>
+        <rect x="116" y="144" width="16" height="52" rx="5" fill="url(#gripF)" stroke="#6b5a48" stroke-width="1.2"></rect>
+        <g stroke="rgba(244,236,221,.3)" stroke-width="1.5"><line x1="117" y1="152" x2="131" y2="156"></line><line x1="117" y1="161" x2="131" y2="165"></line><line x1="117" y1="170" x2="131" y2="174"></line><line x1="117" y1="179" x2="131" y2="183"></line><line x1="117" y1="188" x2="131" y2="192"></line></g>
+        <sc-if value="{{ breakShow }}" hint-placeholder-val="{{ false }}">
+          <g stroke="#f08a7e" stroke-width="2" stroke-linecap="round" class="sparkF">
+            <line x1="214" y1="150" x2="222" y2="138"></line><line x1="214" y1="190" x2="224" y2="200"></line><line x1="246" y1="150" x2="238" y2="138"></line><line x1="246" y1="190" x2="236" y2="200"></line>
+          </g>
+        </sc-if>
+        <sc-if value="{{ frayMC }}" hint-placeholder-val="{{ true }}"><g stroke="#e0b155" stroke-width="1.5" stroke-linecap="round" class="frayF"><line x1="196" y1="170" x2="184" y2="154"></line><line x1="196" y1="170" x2="192" y2="150"></line><line x1="196" y1="170" x2="202" y2="152"></line><line x1="196" y1="170" x2="209" y2="158"></line><line x1="196" y1="170" x2="186" y2="186"></line><line x1="196" y1="170" x2="198" y2="190"></line><line x1="196" y1="170" x2="208" y2="185"></line></g></sc-if>
+        <sc-if value="{{ frayMN }}" hint-placeholder-val="{{ true }}"><g stroke="#e0b155" stroke-width="1.5" stroke-linecap="round" class="frayF"><line x1="150" y1="170" x2="138" y2="154"></line><line x1="150" y1="170" x2="146" y2="150"></line><line x1="150" y1="170" x2="156" y2="152"></line><line x1="150" y1="170" x2="163" y2="158"></line><line x1="150" y1="170" x2="140" y2="186"></line><line x1="150" y1="170" x2="152" y2="190"></line><line x1="150" y1="170" x2="162" y2="185"></line></g></sc-if>
+        <path d="M318,190 L318,226" stroke="#c9b79a" stroke-width="5" stroke-linecap="round"></path>
+        <rect x="296" y="144" width="44" height="52" rx="14" fill="url(#gripF)" stroke="#6b5a48" stroke-width="1.2"></rect>
+        <g stroke="rgba(244,236,221,.28)" stroke-width="2"><line x1="304" y1="147" x2="298" y2="193"></line><line x1="312" y1="147" x2="306" y2="193"></line><line x1="320" y1="147" x2="314" y2="193"></line><line x1="328" y1="147" x2="322" y2="193"></line></g>
+        <g style="transform: {{ kbScale }}; transition: transform .45s cubic-bezier(.3,1.4,.5,1);">
+          <path d="M-16,-14 C-18,-40 18,-40 16,-14" fill="none" stroke="#3a322a" stroke-width="9" stroke-linecap="round"></path>
+          <path d="M-16,-14 C-18,-40 18,-40 16,-14" fill="none" stroke="rgba(255,255,255,.18)" stroke-width="2" stroke-linecap="round"></path>
+          <circle r="28" cy="8" fill="url(#ironF)" stroke="#15100b" stroke-width="1.2"></circle>
+          <ellipse cx="-9" cy="-4" rx="8" ry="5" fill="rgba(255,255,255,.18)" transform="rotate(-30 -9 -4)"></ellipse>
+          <text y="12" font-family="Bricolage Grotesque, sans-serif" font-size="15" font-weight="800" fill="#f4ecdd" text-anchor="middle">{{ kbTxt }}</text>
+          <text y="23" font-family="Space Mono, monospace" font-size="5.5" font-weight="700" letter-spacing=".6" fill="rgba(244,236,221,.7)" text-anchor="middle">CHARGE</text>
+        </g>
+        <sc-if value="{{ zmn.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="150" cy="170" r="18" fill="{{ zmn.fill }}" opacity=".25" class="halo"></circle>
+          <path d="M142,150 L148,150 L151,162 L145,162 Z" fill="{{ zmn.ring }}" opacity=".85"></path>
+          <path d="M158,150 L152,150 L149,162 L155,162 Z" fill="{{ zmn.ring }}" opacity=".6"></path>
+          <circle cx="150" cy="170" r="11" fill="{{ zmn.fill }}" stroke="{{ zmn.ring }}" stroke-width="2"></circle>
+          <circle cx="150" cy="170" r="7.5" fill="none" stroke="{{ zmn.fg }}" stroke-opacity=".35" stroke-width="1"></circle>
+          <text x="150" y="174" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zmn.fg }}" text-anchor="middle">{{ zmn.n }}</text>
+        </sc-if>
+        <sc-if value="{{ zmc.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="196" cy="170" r="18" fill="{{ zmc.fill }}" opacity=".25" class="halo"></circle>
+          <path d="M188,150 L194,150 L197,162 L191,162 Z" fill="{{ zmc.ring }}" opacity=".85"></path>
+          <path d="M204,150 L198,150 L195,162 L201,162 Z" fill="{{ zmc.ring }}" opacity=".6"></path>
+          <circle cx="196" cy="170" r="11" fill="{{ zmc.fill }}" stroke="{{ zmc.ring }}" stroke-width="2"></circle>
+          <circle cx="196" cy="170" r="7.5" fill="none" stroke="{{ zmc.fg }}" stroke-opacity=".35" stroke-width="1"></circle>
+          <text x="196" y="174" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zmc.fg }}" text-anchor="middle">{{ zmc.n }}</text>
+        </sc-if>
+        <sc-if value="{{ zcn.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="272" cy="170" r="18" fill="{{ zcn.fill }}" opacity=".25" class="halo"></circle>
+          <path d="M264,150 L270,150 L273,162 L267,162 Z" fill="{{ zcn.ring }}" opacity=".85"></path>
+          <path d="M280,150 L274,150 L271,162 L277,162 Z" fill="{{ zcn.ring }}" opacity=".6"></path>
+          <circle cx="272" cy="170" r="11" fill="{{ zcn.fill }}" stroke="{{ zcn.ring }}" stroke-width="2"></circle>
+          <circle cx="272" cy="170" r="7.5" fill="none" stroke="{{ zcn.fg }}" stroke-opacity=".35" stroke-width="1"></circle>
+          <text x="272" y="174" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ zcn.fg }}" text-anchor="middle">{{ zcn.n }}</text>
+        </sc-if>
+        <sc-if value="{{ ztri.show }}" hint-placeholder-val="{{ false }}">
+          <circle cx="229" cy="170" r="19" fill="{{ ztri.fill }}" opacity=".25" class="halo"></circle>
+          <path d="M221,149 L227,149 L230,161 L224,161 Z" fill="{{ ztri.ring }}" opacity=".85"></path>
+          <path d="M237,149 L231,149 L228,161 L234,161 Z" fill="{{ ztri.ring }}" opacity=".6"></path>
+          <circle cx="229" cy="170" r="12" fill="{{ ztri.fill }}" stroke="{{ ztri.ring }}" stroke-width="2"></circle>
+          <circle cx="229" cy="170" r="8.5" fill="none" stroke="{{ ztri.fg }}" stroke-opacity=".35" stroke-width="1"></circle>
+          <text x="229" y="174" font-family="Space Mono, monospace" font-size="11" font-weight="700" fill="{{ ztri.fg }}" text-anchor="middle">{{ ztri.n }}</text>
+        </sc-if>
+      </g>
+      <text x="175" y="318" font-family="Hanken Grotesk, sans-serif" font-size="12" fill="rgba(255,255,255,.75)" text-anchor="middle">L’épaisseur de chaque brin suit ta dose ; un nœud, c’est un croisement.</text>
+    </svg>
+    <div style="display: flex; justify-content: space-between; align-items: center; height: 22px;">
+      <div style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -.3px; color: {{ verdictColor }};">{{ verdict }}</div>
+      <div style="font-size: 12px; color: rgba(255,255,255,.8);">énergie <b style="color: {{ fuelColor }};">{{ fuelWord }}</b></div>
+    </div>
+  </div>
+  <div style="flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 10px 20px 18px; min-height: 0;">
+    <div style="display: flex; justify-content: space-between; align-items: baseline;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Joue avec tes leviers</div><div style="font-size: 12px; color: #786a59;">mêmes règles partout</div></div>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px;">
+      <sc-for list="{{ levers }}" as="l" hint-placeholder-count="4">
+        <div style="display: flex; flex-direction: column; gap: 2px; padding: 8px 10px 4px; border-radius: 16px; background: #fffaf2; border: 1px solid #ece0cd;">
+          <div style="display: flex; align-items: center; gap: 6px;"><sc-if value="{{ l.isMuscu }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6b0028" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect><line x1="1.5" y1="10.5" x2="1.5" y2="13.5"></line><line x1="22.5" y1="10.5" x2="22.5" y2="13.5"></line></svg></sc-if><sc-if value="{{ l.isCourse }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#2a64ad" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17c3 0 3-4 6-4s3 4 6 4 3-7 6-7"></path><circle cx="21" cy="10" r="1.2" fill="#2a64ad"></circle></svg></sc-if><sc-if value="{{ l.isNutrition }}" hint-placeholder-val="{{ false }}"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#52703a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-5 0-8-4-8-9 0-4 3-6 5-6 1.5 0 2.3.7 3 .7s1.5-.7 3-.7c2 0 5 2 5 6 0 5-3 9-8 9z"></path><path d="M12 7c0-2 1-4 3-4"></path></svg></sc-if><span style="font-weight: 700; font-size: 13px; color: {{ l.color }};">{{ l.name }}</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <div onClick="{{ l.minus }}" style="width: 44px; height: 40px; display: flex; align-items: center; justify-content: flex-start; cursor: pointer; opacity: {{ l.minusOp }};"><div style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line></svg></div></div>
+            <div style="display: flex; flex-direction: column; align-items: center;"><span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px;">{{ l.dose }}</span><span style="font-size: 10px; color: #786a59;">{{ l.unit }}</span></div>
+            <div onClick="{{ l.plus }}" style="width: 44px; height: 40px; display: flex; align-items: center; justify-content: flex-end; cursor: pointer; opacity: {{ l.plusOp }};"><div style="width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid #90897d; display: flex; align-items: center; justify-content: center; box-sizing: border-box;"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="3" stroke-linecap="round"><line x1="5" y1="12" x2="19" y2="12"></line><line x1="12" y1="5" x2="12" y2="19"></line></svg></div></div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display: flex; justify-content: space-between; align-items: baseline; margin-top: 4px;"><div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.3px; text-transform: uppercase; color: #786a59;">Croisements</div><div style="font-size: 12px; color: #786a59;">{{ reacCount }}</div></div>
+    <div style="display: flex; flex-direction: column; gap: 5px;">
+      <sc-for list="{{ reactions }}" as="r" hint-placeholder-count="2">
+        <div style="display: flex; gap: 9px; align-items: center; min-height: 46px; box-sizing: border-box; padding: 5px 11px; border-radius: 14px; background: {{ r.bg }}; border: 1px solid {{ r.border }}; animation: rise .3s ease-out both;">
+          <svg width="24" height="20" viewBox="0 0 26 22" style="flex: none;"><circle cx="9" cy="11" r="7.5" fill="{{ r.ca }}" fill-opacity=".2" stroke="{{ r.ca }}" stroke-width="1.6"></circle><circle cx="17" cy="11" r="7.5" fill="{{ r.cb }}" fill-opacity=".2" stroke="{{ r.cb }}" stroke-width="1.6"></circle></svg>
+          <div style="flex: 1; display: flex; flex-direction: column;">
+            <div style="display: flex; justify-content: space-between; gap: 6px;"><span style="font-weight: 700; font-size: 13px;">{{ r.title }}</span><span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: {{ r.fg }}; margin-top: 2px; white-space: nowrap;">{{ r.kindLabel }}</span></div>
+            <div style="font-size: 12px; line-height: 15px; color: #786a59;">{{ r.text }}</div>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { fq: 4, km: 30, kc: 1, gl: false };
+
+  renderVals() {
+    var engine = function engine(s, self) {
+  var clamp = function (v, a, b) { return Math.max(a, Math.min(b, v)); };
+  var KC = [0, -250, -500];
+  var charge = s.fq * 9 + s.km * 1.4 + 12;
+  var base = 3 * 9 + 25 * 1.4 + 12;
+  var jump = Math.round((charge / base - 1) * 100);
+  var recup = clamp(Math.round(104 - Math.max(0, charge - 60) * 1.1 - [0, 10, 26][s.kc]), 6, 100);
+  var fuel = clamp(Math.round(72 + (s.gl ? 16 : 0) - [0, 14, 34][s.kc] - Math.max(0, s.km - 25) * 1.2), 6, 100);
+  var guard = s.kc === 2 && (s.km >= 35 || s.fq >= 5);
+  var R = [];
+  if (guard) R.push({ kind: 'guard', zone: 'tri', a: 'course', b: 'nutrition', title: 'Déficit × volume', text: '−500 kcal avec ' + s.km + ' km : le cycle ne peut pas partir.' });
+  if (s.fq >= 4 && s.km >= 30) R.push({ kind: 'tension', zone: 'mc', a: 'muscu', b: 'course', title: 'Jambes × fractionné', text: 'Squat lundi, 800 m mardi : ~3 s par fraction.' });
+  if (jump > 15) R.push({ kind: 'tension', zone: 'mc', a: 'muscu', b: 'course', title: 'Charge combinée +' + jump + ' %', text: 'Au-delà de +10 %, la récup ne suit plus.' });
+  if (s.kc === 2 && !guard) R.push({ kind: 'tension', zone: 'mn', a: 'nutrition', b: 'muscu', title: 'Déficit × force', text: 'À −500 kcal, ton squat a perdu 3 % en v1.' });
+  if (s.gl) R.push({ kind: 'syn', zone: 'cn', a: 'nutrition', b: 'course', title: 'Glucides × fractionné', text: '+1,5 g/kg les jours durs : l’allure tient.' });
+  if (s.fq >= 3 && s.kc < 2) R.push({ kind: 'syn', zone: 'mn', a: 'nutrition', b: 'muscu', title: 'Protéines × musculation', text: '1,8 g/kg couvre tes séances, même en déficit.' });
+  var order = { guard: 0, tension: 1, syn: 2 };
+  R.sort(function (x, y) { return order[x.kind] - order[y.kind]; });
+
+  var TONES = {
+    syn: { label: 'synergie', fg: '#66714b', bg: 'rgba(102,113,75,.08)', border: 'rgba(102,113,75,.28)', fill: '#f2d28a', ring: '#f2d28a', mfg: '#1c150e', line: '#f2d28a' },
+    tension: { label: 'tension', fg: '#8a6419', bg: '#f7ead6', border: '#e9cfa0', fill: '#1c150e', ring: '#e0b155', mfg: '#e0b155', line: '#e0b155' },
+    guard: { label: 'garde-fou', fg: '#b23b2e', bg: 'rgba(178,59,46,.07)', border: 'rgba(178,59,46,.35)', fill: '#f08a7e', ring: '#f08a7e', mfg: '#1c150e', line: '#f08a7e' },
+  };
+  var PC = { muscu: '#6b0028', course: '#2a64ad', nutrition: '#52703a' };
+  var zone = function (z) {
+    var list = R.filter(function (r) { return r.zone === z; });
+    if (!list.length) return { show: false, n: '', fill: 'none', ring: 'none', fg: 'none', kind: '', line: 'rgba(255,255,255,.16)' };
+    var t = TONES[list[0].kind];
+    return { show: true, n: list.length, fill: t.fill, ring: t.ring, fg: t.mfg, kind: list[0].kind, line: t.line };
+  };
+  var nT = R.filter(function (r) { return r.kind !== 'syn'; }).length;
+  var set = function (k, v) { return function () { var o = {}; o[k] = v; self.setState(o); }; };
+  var KMS = [20, 25, 30, 35, 40], kmI = KMS.indexOf(s.km);
+  var tone = function (v) { return v < 35 ? '#f08a7e' : v < 60 ? '#e0b155' : '#a9ba7e'; };
+  return {
+    charge: charge, jump: jump, recup: recup, fuel: fuel, guard: guard, R: R, nT: nT,
+    zmc: zone('mc'), zmn: zone('mn'), zcn: zone('cn'), ztri: zone('tri'),
+    verdict: guard ? 'Formule bloquée' : nT ? 'Tes piliers se gênent' : 'Tes piliers s’accordent',
+    verdictColor: guard ? '#f08a7e' : nT ? '#e0b155' : '#c5d69a',
+    fuelWord: fuel < 35 ? 'à sec' : fuel < 60 ? 'juste' : 'pleine', fuelColor: tone(fuel),
+    reactions: R.slice(0, 2).map(function (r) { var t = TONES[r.kind]; return { title: r.title, text: r.text, kindLabel: t.label, fg: t.fg, bg: t.bg, border: t.border, ca: PC[r.a], cb: PC[r.b] }; }),
+    reacCount: R.length ? (R.length > 2 ? '2 sur ' + R.length : R.length + (R.length > 1 ? ' actifs' : ' actif')) : 'aucun',
+    levers: [
+      { name: 'Musculation', unit: 'séances', color: '#6b0028', soft: 'rgba(107,0,40,.08)', dose: String(s.fq), minus: set('fq', Math.max(2, s.fq - 1)), plus: set('fq', Math.min(5, s.fq + 1)), minusOp: s.fq > 2 ? 1 : 0.3, plusOp: s.fq < 5 ? 1 : 0.3, isMuscu: true },
+      { name: 'Course', unit: 'km / sem', color: '#2a64ad', soft: 'rgba(42,100,173,.08)', dose: String(s.km), minus: set('km', KMS[Math.max(0, kmI - 1)]), plus: set('km', KMS[Math.min(4, kmI + 1)]), minusOp: kmI > 0 ? 1 : 0.3, plusOp: kmI < 4 ? 1 : 0.3, isCourse: true },
+      { name: 'Balance', unit: 'kcal / jour', color: '#52703a', soft: 'rgba(82,112,58,.09)', dose: KC[s.kc] === 0 ? '0' : String(KC[s.kc]).replace('-', '−'), minus: set('kc', Math.min(2, s.kc + 1)), plus: set('kc', Math.max(0, s.kc - 1)), minusOp: s.kc < 2 ? 1 : 0.3, plusOp: s.kc > 0 ? 1 : 0.3, isNutrition: true },
+      { name: 'Glucides', unit: 'périodisés', color: '#52703a', soft: 'rgba(82,112,58,.09)', dose: s.gl ? 'oui' : 'non', minus: set('gl', false), plus: set('gl', true), minusOp: s.gl ? 1 : 0.3, plusOp: s.gl ? 0.3 : 1, isNutrition: true },
+    ],
+  };
+};
+    var view = function viewF(s, E) {
+  var guard = E.guard;
+  var tone = E.nT ? 'effilochée' : 'solide';
+  return {
+    wM: (10 + (s.fq - 2) * 3).toFixed(1), wC: (10 + (s.km - 20) / 20 * 9).toFixed(1), wN: (8 + E.fuel / 9).toFixed(1),
+    hM: ((10 + (s.fq - 2) * 3) * 0.28).toFixed(1), hC: ((10 + (s.km - 20) / 20 * 9) * 0.28).toFixed(1), hN: ((8 + E.fuel / 9) * 0.28).toFixed(1),
+    kbScale: 'translate(318px, 262px) scale(' + (0.7 + Math.min(1, Math.max(0, (E.charge - 60) / 60)) * 0.55).toFixed(3) + ')', kbTxt: String(Math.round(E.charge)),
+    flow: guard ? 'none' : 'flowF ' + (3.2 - (E.charge - 60) / 60 * 1.6).toFixed(2) + 's linear infinite',
+    sway: E.nT && !guard ? 'swayF .9s ease-in-out infinite' : 'swayF 3.6s ease-in-out infinite',
+    w1: guard ? 92 : 200, x2: guard ? 246 : 330, w2: guard ? 84 : 0,
+    breakShow: guard,
+    ropeWord: guard ? 'rompue' : tone, ropeColor: guard ? '#f08a7e' : E.nT ? '#e0b155' : '#c5d69a',
+    frayMC: E.zmc.kind === 'tension', frayMN: E.zmn.kind === 'tension',
+    mTxt: s.fq + ' séances', cTxt: s.km + ' km', nTxt: 'énergie ' + E.fuelWord,
+  };
+};
+    var E = engine(this.state, this);
+    var V = view(this.state, E);
+    var out = {};
+    Object.keys(E).forEach(function (k) { out[k] = E[k]; });
+    Object.keys(V).forEach(function (k) { out[k] = V[k]; });
+    return out;
+  }
+}
+</script>
+</body>
+</html>

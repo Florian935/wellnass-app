@@ -1,0 +1,136 @@
+{
+  "artboards": [
+    {
+      "file": "Main.dc.html",
+      "title": "Compte rendu — le Labo",
+      "x": 0,
+      "y": 0,
+      "w": 1200,
+      "h": 8800,
+      "print": "flow"
+    },
+    {
+      "file": "Entree.dc.html",
+      "title": "01 · Entrée du labo",
+      "x": 1320,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Paillasse.dc.html",
+      "title": "02 · La paillasse (jouable)",
+      "x": 1790,
+      "y": 0,
+      "w": 390,
+      "h": 844,
+      "is_interactive": true
+    },
+    {
+      "file": "Tranche.dc.html",
+      "title": "03 · Ta formule tranche",
+      "x": 2260,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Elements.dc.html",
+      "title": "04 · Table des éléments",
+      "x": 2730,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "FicheProteines.dc.html",
+      "title": "05 · Fiche Protéines",
+      "x": 3200,
+      "y": 0,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Incubateur.dc.html",
+      "title": "06 · Incubation",
+      "x": 1320,
+      "y": 1080,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Essai.dc.html",
+      "title": "07 · Essai sur toi",
+      "x": 1790,
+      "y": 1080,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Distillation.dc.html",
+      "title": "08 · Distillation",
+      "x": 2260,
+      "y": 1080,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Carnet.dc.html",
+      "title": "09 · Carnet de labo",
+      "x": 2730,
+      "y": 1080,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Preparateur.dc.html",
+      "title": "10 · Le préparateur (IA)",
+      "x": 1320,
+      "y": 2160,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "Etagere.dc.html",
+      "title": "11 · L'étagère",
+      "x": 1790,
+      "y": 2160,
+      "w": 390,
+      "h": 844
+    },
+    {
+      "file": "UnPilier.dc.html",
+      "title": "12 · Un seul pilier",
+      "x": 2260,
+      "y": 2160,
+      "w": 390,
+      "h": 844
+    }
+  ],
+  "annotations": [
+    {
+      "id": "rangee-composer",
+      "x": 1320,
+      "y": -150,
+      "w": 900,
+      "text": "Rangée 1 — Composer. La scène sombre est l'atelier ; le papier crème, ce qu'on lit. La paillasse se règle au doigt. Données fictives."
+    },
+    {
+      "id": "rangee-vivre",
+      "x": 1320,
+      "y": 930,
+      "w": 900,
+      "text": "Rangée 2 — Vivre la formule : incubation, essai sur soi, distillation, carnet. Même personnage fictif : objectif 10 km sous 48 min le 15/11."
+    },
+    {
+      "id": "rangee-entrer",
+      "x": 1320,
+      "y": 2010,
+      "w": 900,
+      "text": "Rangée 3 — Entrer autrement : par la voix (IA), par une formule prête, ou avec un seul pilier activé (décision H)."
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  }
+}

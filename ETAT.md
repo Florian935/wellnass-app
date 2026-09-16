@@ -86,7 +86,7 @@ avant de pouvoir publier.
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 | **FANT-01** — Le Fantôme — courir contre soi-même sur le même parcours | `spec` | `dev` | [5.41] |
-| **LETTRE-01** — Lettre à ton futur toi — un message écrit en fixant un objectif, rouvert à l'échéance | `spec` | `dev` | [7.31] |
+| **LETTRE-01** — Lettre à ton futur toi — un message écrit en fixant un objectif, rouvert à l'échéance | `spec` | `dev` | [7.32] |
 | **RESERV-01** — Le Réservoir — la jauge de glucides de la journée | `spec` | `dev` | [4.45] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -114,7 +114,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1240 · `main` a **1237** commits de retard sur `dev` |
+| Commits | 1241 · `main` a **1238** commits de retard sur `dev` |
 | Specs d'US | 157 au total — 85 clôturées, 72 en cours |
 | Migrations | 102/104 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -127,11 +127,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `5ed60eb`  fix(dev): rattache les 12 fichiers d'IA-LAB-01 a leur documentation deja poussee
 - `71baf1c`  feat(depense): la depense d'une seance, et les activites que l'app ignorait
 - `0f93f0b`  chore(labo01): pousse les migrations, deploie la sync rule et active l'ecriture
 - `9b10cb8`  feat(labo01): le Labo, la ou tes piliers se croisent (roadmap 7.30)
 - `1869dff`  chore(guid01): integre dev, pousse la migration et active l'ecriture du guidage
-- `2b43b72`  feat(guid01): l'objectif pilote les 3 piliers, et le guidage devient reglable
 
 ---
 
