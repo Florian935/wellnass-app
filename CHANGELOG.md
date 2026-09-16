@@ -10,6 +10,51 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 16/09/2026 (quater) — IA-LAB-01 : le raisonnement de Gemini mangeait toute la réponse
+
+Trouvé à la **première vraie question posée dans le labo** : « La demande a échoué », sans autre
+indication. Ni la clé, ni le modèle, ni le réseau — un piège documenté de l'API Gemini.
+
+### La cause
+
+Sur Gemini 2.5+ et 3.x, **`maxOutputTokens` est un budget commun au raisonnement interne et à la
+réponse**, et le raisonnement est actif par défaut sur les modèles Flash. Avec 2 048 jetons, un
+contexte de 90 jours et une question de fond, le modèle dépensait tout à réfléchir puis renvoyait un
+**HTTP 200** avec `finishReason: "MAX_TOKENS"` et un tableau `parts` **vide**. Le code voyait un
+texte vide, concluait « échec », et n'en disait pas plus.
+
+### Le défaut de conception derrière le bug
+
+Le vrai problème n'est pas d'avoir mal dimensionné un budget — c'est que **l'échec ne portait aucune
+information**. La fonction distinguait déjà `refused` et `misconfigured` avec leur détail, mais tout
+le reste tombait dans un `failed` muet. Un cas qu'on ne peut pas diagnostiquer depuis le téléphone
+coûte un aller-retour complet de recette, ce qu'il vient de faire.
+
+### Corrigé
+
+- **Budget de sortie de `coach` : 2 048 → 8 192 jetons.** Une réponse de 250 mots pèse ~400 jetons ;
+  tout le reste est la marge de raisonnement, et elle doit être généreuse parce qu'on ne contrôle pas
+  vers quel modèle `gemini-flash-latest` pointe un jour donné.
+- **`thinkingConfig: { thinkingBudget: 0 }`** envoyé à Gemini, **avec repli automatique** : ce champ
+  appartient à la génération 2.x, la 3.x attend `thinkingLevel` et le rejette en 400. Plutôt que de
+  deviner la génération derrière un alias `-latest` qui changera, on tente et on rejoue une fois sans
+  si le modèle n'en veut pas.
+- **Une réponse vide dit désormais pourquoi** : `finishReason`, jetons de raisonnement consommés,
+  budget alloué — remontés jusqu'à l'écran. Ce sont des **métadonnées du modèle**, elles ne portent
+  aucune donnée de l'utilisateur. Même raisonnement que l'exception déjà consentie pour
+  `ai_misconfigured` : taire une cause qui ne parle que de notre configuration ne protège personne et
+  coûte une passe de recette.
+
+### Technique / Notes
+
+- **Correction 100 % serveur** : `npx supabase functions deploy ai-assist --use-api`. Aucun rebuild,
+  aucun rechargement de l'app — le client passait déjà `detail` et l'écran l'affichait déjà.
+- Le dépôt et le déploiement sont de nouveau alignés (le décalage entre les deux avait déjà mordu le
+  16/09 au matin).
+- **Vérifications** : `npm run typecheck` ✅ · `npm run lint` ✅ · `npm run test` — 216 suites,
+  exit 0 lu sans pipe ✅.
+
+
 ## 16/09/2026 (quater) — LABO-01 : la vraie cause, `pillarsOn` n'était jamais déclaré
 
 Le correctif précédent (canvas de zéro pixel) était réel mais **n'était pas ce qui bloquait**. Après

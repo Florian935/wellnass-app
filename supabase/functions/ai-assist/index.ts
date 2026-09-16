@@ -57,8 +57,16 @@ const MAX_PROMPT_CHARS = 4000;
 const MAX_CONTEXT_CHARS = 8000;
 const MAX_QUESTION_CHARS = 500;
 
-/** Réponses courtes et structurées pour `photo`/`ask` ; `coach` a le droit de développer. */
-const MAX_TOKENS: Record<string, number> = { photo: 2048, ask: 512, coach: 2048 };
+/**
+ * Budget de sortie par type d'appel.
+ *
+ * 🔴 **8192 pour `coach`, et ce n'est pas du confort.** Chez Gemini, ce budget est **commun au
+ * raisonnement interne et à la réponse** (voir `providers.ts`). À 2048, le modèle épuisait tout en
+ * réfléchissant et rendait une réponse **vide** — l'échec constaté à la première recette. Une
+ * réponse de 250 mots pèse ~400 jetons : le reste est la marge de raisonnement, et elle doit être
+ * généreuse parce qu'on ne contrôle pas vers quel modèle `gemini-flash-latest` pointe.
+ */
+const MAX_TOKENS: Record<string, number> = { photo: 2048, ask: 512, coach: 8192 };
 
 const CORS_HEADERS = {
   'Access-Control-Allow-Origin': '*',
@@ -265,8 +273,14 @@ Deno.serve(async (request: Request) => {
         502,
       );
     }
-    console.error('[ai-assist] appel modèle en échec');
-    return json({ error: 'ai_failed' }, 502);
+    // Le `detail` d'un échec est **facultatif** et n'est rempli que par des cas où il décrit le
+    // comportement du MODÈLE (réponse vide, raison d'arrêt), jamais l'infrastructure ni
+    // l'utilisateur. Le taire rendrait ces cas indiagnosticables depuis le téléphone — c'est ce qui
+    // a coûté une passe de recette le 16/09/2026.
+    console.error('[ai-assist] appel modèle en échec', result.detail ?? '');
+    return result.detail
+      ? json({ error: 'ai_failed', detail: result.detail }, 502)
+      : json({ error: 'ai_failed' }, 502);
   }
 
   // ── Le compteur, après un appel réussi ────────────────────────────────────────────────────────

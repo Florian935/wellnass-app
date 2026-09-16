@@ -121,34 +121,62 @@ type GeminiResponse = {
     finishReason?: string;
   }>;
   promptFeedback?: { blockReason?: string };
+  usageMetadata?: { thoughtsTokenCount?: number; candidatesTokenCount?: number };
 };
 
-async function callGemini(config: ProviderConfig, request: ProviderRequest): Promise<ProviderResult> {
+/**
+ * 🔴 **Le piège qui a fait échouer la première recette (16/09/2026).**
+ *
+ * Sur Gemini 2.5+ et 3.x, `maxOutputTokens` est un budget **commun au raisonnement interne et à la
+ * réponse**, et le raisonnement est actif par défaut sur les modèles Flash. Le modèle peut donc
+ * dépenser tout le budget à réfléchir et renvoyer un **200** avec `finishReason: "MAX_TOKENS"` et un
+ * tableau `parts` **vide**. Vu du client, c'est « la demande a échoué », sans aucune piste.
+ *
+ * `thinkingBudget: 0` éteint le raisonnement. Le champ appartient à la génération 2.x ; la 3.x
+ * attend `thinkingLevel` et **rejette** celui-ci en 400. D'où le repli plus bas : on tente, et si le
+ * modèle n'en veut pas, on rejoue sans — plutôt que de deviner à quel modèle `-latest` pointe
+ * aujourd'hui, ce qui changera de toute façon dans trois mois.
+ */
+const THINKING_OFF = { thinkingBudget: 0 };
+
+function geminiBody(request: ProviderRequest, withThinkingConfig: boolean): string {
   const parts: Array<Record<string, unknown>> = [{ text: request.prompt }];
   if (request.image) {
     parts.push({
       inline_data: { mime_type: request.image.mediaType, data: request.image.base64 },
     });
   }
-
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': config.apiKey },
-      body: JSON.stringify({
-        system_instruction: { parts: [{ text: request.system }] },
-        contents: [{ role: 'user', parts }],
-        generationConfig: {
-          maxOutputTokens: request.maxTokens,
-          // Basse mais non nulle : on veut des réponses reproductibles pour comparer deux
-          // fournisseurs sur la même question, sans figer la formulation au point de ne plus rien
-          // apprendre d'une seconde exécution.
-          temperature: 0.4,
-        },
-      }),
+  return JSON.stringify({
+    system_instruction: { parts: [{ text: request.system }] },
+    contents: [{ role: 'user', parts }],
+    generationConfig: {
+      maxOutputTokens: request.maxTokens,
+      // Basse mais non nulle : on veut des réponses reproductibles pour comparer deux
+      // fournisseurs sur la même question, sans figer la formulation au point de ne plus rien
+      // apprendre d'une seconde exécution.
+      temperature: 0.4,
+      ...(withThinkingConfig ? { thinkingConfig: THINKING_OFF } : {}),
     },
-  );
+  });
+}
+
+async function callGemini(config: ProviderConfig, request: ProviderRequest): Promise<ProviderResult> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent`;
+  const headers = { 'Content-Type': 'application/json', 'x-goog-api-key': config.apiKey };
+
+  let response = await fetch(url, { method: 'POST', headers, body: geminiBody(request, true) });
+
+  // Repli : le modèle a refusé `thinkingConfig` (génération 3.x). On rejoue sans, une seule fois.
+  // Le budget de sortie, lui, reste large — c'est ce qui laisse de la place au raisonnement.
+  if (response.status === 400) {
+    const body = await response.text();
+    if (body.includes('thinking') || body.includes('thinkingConfig')) {
+      console.warn('[ai-assist] thinkingConfig refusé par le modèle, seconde tentative sans');
+      response = await fetch(url, { method: 'POST', headers, body: geminiBody(request, false) });
+    } else {
+      return classifyHttpError(400, body);
+    }
+  }
 
   if (!response.ok) return classifyHttpError(response.status, await response.text());
 
@@ -166,7 +194,21 @@ async function callGemini(config: ProviderConfig, request: ProviderRequest): Pro
     .join('')
     .trim();
 
-  return text.length > 0 ? { ok: true, text } : { ok: false, kind: 'failed' };
+  if (text.length > 0) return { ok: true, text };
+
+  // Une réponse vide n'est plus un échec muet : on dit POURQUOI elle est vide. `finishReason` et le
+  // compteur de jetons de raisonnement sont des métadonnées du modèle — ils ne portent aucune donnée
+  // de l'utilisateur, et sans eux ce cas est indiagnosticable depuis le téléphone.
+  const reason = payload.candidates?.[0]?.finishReason ?? 'inconnue';
+  const thoughts = payload.usageMetadata?.thoughtsTokenCount;
+  return {
+    ok: false,
+    kind: 'failed',
+    detail:
+      `Le modèle n'a produit aucun texte (finishReason=${reason}` +
+      (thoughts ? `, ${thoughts} jetons de raisonnement` : '') +
+      `). Budget de sortie : ${request.maxTokens} jetons.`,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────────

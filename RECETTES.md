@@ -4129,8 +4129,14 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
   redéployer, poser une question → l'écran dit « configuration invalide » **et affiche le message du
   fournisseur**. Sans ce détail, la cause serait indevinable. Remettre ensuite le secret à sa valeur
   (ou le retirer pour retomber sur `gemini-flash-latest`).
-- [ ] **35.** **Sans clé** (`supabase secrets unset GEMINI_API_KEY`, redéployer) → « Aucune clé de
-  fournisseur n'est posée côté serveur ». **Aucun appel n'est facturé** dans cet état.
+- [ ] **35.** **Sans clé** (`npx supabase secrets unset GEMINI_API_KEY`, redéployer) → « Aucune clé
+  de fournisseur n'est posée côté serveur ». **Aucun appel n'est facturé** dans cet état.
+- [ ] **35 bis.** 🔴 **Réponse vide du modèle.** Corrigé le 16/09/2026 : chez Gemini,
+  `maxOutputTokens` est un budget **commun au raisonnement et à la réponse**, et le modèle rendait un
+  200 avec `parts` vide après avoir tout dépensé à réfléchir. Vérifier qu'une question de fond
+  (« Quel lien vois-tu entre mes piliers ? », la plus coûteuse) **aboutit**. Si elle échoue, le
+  message doit maintenant nommer `finishReason` et les jetons de raisonnement — un échec muet serait
+  une régression à part entière.
 
 ### Non-régression et étanchéité
 
