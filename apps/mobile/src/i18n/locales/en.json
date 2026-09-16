@@ -3934,7 +3934,7 @@
       "durationTitle": "Estimated duration per session",
       "durationKnown_one": "{{session}}: about {{count}} minute",
       "durationKnown_other": "{{session}}: about {{count}} minutes",
-      "durationUnknown": "Cannot be verified with the programme data",
+      "durationUnknownFor": "{{session}}: cannot be verified with the programme data",
       "coverageTitle": "Coverage of your priorities",
       "knownSets_one": "{{zone}}: {{count}} planned set with a specific muscle",
       "knownSets_other": "{{zone}}: {{count}} planned sets with a specific muscle",
@@ -3966,6 +3966,7 @@
       "prepare": "The copy could not be created. Your context and proposals remain on screen.",
       "context": {
         "load": "Your saved context cannot be read right now. Your draft remains on screen.",
+        "loadNoDraft": "Your saved context cannot be read right now. Try again when you are back online: nothing is lost.",
         "conflict": "The profile changed. Your draft has been kept; try again after the data is read.",
         "profile_missing": "Your profile is unavailable. Your draft has been kept.",
         "unauthenticated": "Sign in again to save this context. Your draft has been kept.",

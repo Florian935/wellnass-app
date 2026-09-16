@@ -9,6 +9,55 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 16/09/2026 (bis) — CORPS-04 : les quatre points différés sont soldés
+
+Branche `feature/corps04-programme-compatible`, base `d7e85bed`. Les quatre « minors » que le
+ledger SDD avait renvoyés à la revue finale sont traités, **chacun en TDD** — test rouge observé,
+et vérifié qu'il échouait pour la bonne raison, avant la moindre ligne de code.
+
+**① Un verdict par champ, au lieu d'un verdict pour quatre** — `rowToProfile` validait
+`strength_session_minutes` et `strength_equipment` dans le **même** `safeParse` composite que
+`training_level` et `weekly_availability`, qui appartiennent à GUID-01. Une seule valeur invalide
+n'importe où — une valeur héritée, ou écrite par un client plus récent — rabattait les **deux**
+champs CORPS-04 à `null` : une durée de séance parfaitement valide disparaissait sans message, et
+« Trouver un programme compatible » repartait de zéro. Deux schémas par champ
+(`strengthSessionMinutesFieldSchema`, `strengthEquipmentFieldSchema`) sont posés dans `shared`, et
+`strengthProgramContextSchema` **en dérive** : le refus des doublons et l'ordre canonique du
+matériel ne vivent plus qu'à un seul endroit. 6 tests neufs.
+
+**② Le verrou de sauvegarde était un état React** — `persistContext` se gardait avec `saving`, relu
+depuis la fermeture du rendu courant : deux appuis dans le même cycle le voyaient tous les deux à
+`false`, le bouton n'étant pas encore désactivé. Les deux sauvegardes partaient avec le **même**
+`expectedUpdatedAt`, la seconde vouée au conflit CAS — l'écran annonçait une erreur de concurrence
+pour un geste unique. Second `useActionLock` (un verrou par action, jamais par écran), exactement
+le patron déjà en place pour la préparation de copie et que le hook documente.
+
+**③ Illisible n'est pas vide** — à la toute première lecture en erreur, sans brouillon, l'écran
+affichait « Ton profil de musculation n'est pas encore disponible. Ouvre-le pour renseigner ton
+contexte. » Le profil existe peut-être depuis des mois ; il est seulement illisible à cet instant.
+L'invitation poussait à **ressaisir** une donnée déjà saisie. Libellé dédié
+`errors.context.loadNoDraft` (FR + EN) — la formulation « ton brouillon reste affiché » n'ayant
+aucun sens quand il n'y a pas de brouillon — et carte « profil indisponible » désormais
+conditionnée à l'**absence** d'erreur de lecture.
+
+**④ Une ponctuation hors traduction** — la branche « durée connue » passe par une phrase complète,
+la branche « durée inconnue » assemblait `{nom}: ` en JSX. Deux-points collé (faux en français) et
+ordre nom/valeur figé dans le code, qu'aucun traducteur ne pouvait déplacer. Phrase complète
+`card.durationUnknownFor` (FR + EN) ; la clé morte `durationUnknown` est retirée et la parité FR/EN
+reste verte.
+
+**Validation** — 7 002 tests passent : 587 admin, 3 055 shared, 3 360 mobile. `typecheck` et `lint`
+ne rapportent **aucune** erreur venant de ces changements. 🔴 La passe complète n'est possible
+qu'en neutralisant localement, le temps du contrôle, l'export `./ai-context` de
+`packages/shared/src/index.ts` — le défaut de `dev` décrit au commit précédent, qui empêche le
+chargement de 310 suites. La neutralisation a été **restaurée et vérifiée** (`git diff` vide sur ce
+fichier) avant ce commit. Les deux seules suites encore rouges, `settings-screen` et
+`route-declarations`, sont celles de `dev` (`AiLabSection` absent, route `ai-lab` orpheline).
+
+**Suivi** — CORPS-04 reste en `recette`. §69 passe de 15 à **18 critères** : les trois points neufs
+sont visibles à l'écran et méritent d'être joués sur téléphone. Ledger SDD clos, aucun minor
+ouvert. Aucun push.
+
 ## 16/09/2026 — Mon corps rejoint dev : LABO-01 et DEPENSE intégrés
 
 Branche `feature/corps04-programme-compatible`, fusion de `dev` (`71baf1c0`).

@@ -3934,7 +3934,7 @@
       "durationTitle": "Durée estimée par séance",
       "durationKnown_one": "{{session}} : environ {{count}} minute",
       "durationKnown_other": "{{session}} : environ {{count}} minutes",
-      "durationUnknown": "Non vérifiable avec les données du programme",
+      "durationUnknownFor": "{{session}} : non vérifiable avec les données du programme",
       "coverageTitle": "Couverture de tes priorités",
       "knownSets_one": "{{zone}} : {{count}} série prévue avec un muscle précis",
       "knownSets_other": "{{zone}} : {{count}} séries prévues avec un muscle précis",
@@ -3966,6 +3966,7 @@
       "prepare": "La copie n’a pas pu être créée. Ton contexte et les propositions restent affichés.",
       "context": {
         "load": "Ton contexte enregistré ne peut pas être relu pour le moment. Ton brouillon reste affiché.",
+        "loadNoDraft": "Ton contexte enregistré ne peut pas être relu pour le moment. Réessaie quand la connexion revient : rien n’est perdu.",
         "conflict": "Le profil a changé. Ton brouillon est conservé ; réessaie après la relecture des données.",
         "profile_missing": "Ton profil n’est pas disponible. Ton brouillon est conservé.",
         "unauthenticated": "Reconnecte-toi pour enregistrer ce contexte. Ton brouillon est conservé.",

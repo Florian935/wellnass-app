@@ -110,11 +110,11 @@ export function StrengthProgramRecommendationCard({
           const sessionName = session.name ?? t('bodyTraining.unnamedSession');
           return (
             <Text key={session.id} style={[styles.line, { color: colors.textMuted }]}>
+              {/* Les deux branches passent par une phrase complète. Assembler « nom » + « : » en
+                  JSX figeait dans le code un ordre et une ponctuation que seule la traduction a le
+                  droit de fixer — et posait un deux-points collé, faux en français. */}
               {duration === null
-                ? <>
-                    <Text style={[styles.sessionName, { color: colors.text }]}>{sessionName}: </Text>
-                    {t('strengthProgramFinder.card.durationUnknown')}
-                  </>
+                ? t('strengthProgramFinder.card.durationUnknownFor', { session: sessionName })
                 : t('strengthProgramFinder.card.durationKnown', {
                     session: sessionName,
                     count: duration,

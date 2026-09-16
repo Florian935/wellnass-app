@@ -328,7 +328,9 @@ it('nomme honnêtement durée inconnue et couverture générale sans action édi
   await render(<BodyTrainingProgramsScreen />);
   await tap('Comparer les programmes');
 
-  expect(screen.getByText(/Non vérifiable avec les données du programme/)).toBeTruthy();
+  // La durée inconnue porte désormais le nom de la séance, comme la durée connue : la phrase
+  // commence par ce nom, donc « non » y est minuscule.
+  expect(screen.getByText(/ : non vérifiable avec les données du programme/)).toBeTruthy();
   expect(screen.getByText('Association générale seulement : Bras')).toBeTruthy();
   expect(screen.getByText('Matériel non disponible dans ton contexte')).toBeTruthy();
   expect(screen.queryByRole('button', { name: 'Préparer ce programme' })).toBeNull();
@@ -567,4 +569,77 @@ it('garde les candidats valides malgré un avertissement de lecture partielle', 
   expect(screen.getByText(/Certains programmes n’ont pas pu être lus/)).toBeTruthy();
   await tap('Comparer les programmes');
   expect(screen.getByText('Bras et épaules')).toBeTruthy();
+});
+
+// 🔴 Défaut différé en Task 5 de CORPS-04. `persistContext` se gardait avec l'état React `saving`,
+// qui n'est relu qu'au rendu suivant : deux appuis tombant dans le même cycle voyaient tous les
+// deux `saving === false`, et le bouton n'avait pas encore eu le temps de se désactiver. Deux
+// sauvegardes partaient donc avec le MÊME `expectedUpdatedAt` — la seconde était vouée au conflit
+// CAS, et l'utilisateur recevait une erreur pour une action qu'il n'avait faite qu'une fois. C'est
+// exactement le cas que `useActionLock` documente, déjà utilisé pour la préparation de copie.
+it('ne lance qu’une seule sauvegarde de contexte sur un double appui dans le même rendu', async () => {
+  await render(<BodyTrainingProgramsScreen />);
+  await fireEvent.press(screen.getByRole('radio', { name: '60 minutes maximum' }));
+
+  const save = screen.getByRole('button', { name: 'Enregistrer mon contexte' });
+  await act(async () => {
+    fireEvent.press(save);
+    fireEvent.press(save);
+  });
+
+  expect(saveContext).toHaveBeenCalledTimes(1);
+});
+
+// 🔴 Défaut différé en Task 5 de CORPS-04. Le message spécifique de lecture impossible était
+// conditionné à l'existence d'un brouillon. À la TOUTE PREMIÈRE lecture en erreur, il n'y en a pas
+// encore : l'écran retombait sur « Ton profil de musculation n'est pas encore disponible. Ouvre-le
+// pour renseigner ton contexte. » — soit exactement le contraire de la vérité. Le profil existe
+// peut-être depuis des mois ; il est seulement illisible à cet instant (hors ligne, lecture en
+// échec). Inviter à le « renseigner » pousse à ressaisir une donnée déjà saisie.
+it('distingue un contexte illisible d’un contexte jamais renseigné à la première lecture', async () => {
+  useContext.mockReturnValue({ ...contextState(null), error: new Error('offline') });
+  await render(<BodyTrainingProgramsScreen />);
+
+  expect(
+    screen.queryByText(
+      'Ton profil de musculation n’est pas encore disponible. Ouvre-le pour renseigner ton contexte.',
+    ),
+  ).toBeNull();
+  expect(screen.getByRole('alert')).toBeTruthy();
+  expect(
+    screen.getByText(
+      'Ton contexte enregistré ne peut pas être relu pour le moment. Réessaie quand la connexion revient : rien n’est perdu.',
+    ),
+  ).toBeTruthy();
+});
+
+it('invite bien à renseigner le profil quand le contexte est vide SANS erreur', async () => {
+  useContext.mockReturnValue(contextState(null));
+  await render(<BodyTrainingProgramsScreen />);
+
+  expect(
+    screen.getByText(
+      'Ton profil de musculation n’est pas encore disponible. Ouvre-le pour renseigner ton contexte.',
+    ),
+  ).toBeTruthy();
+});
+
+// 🔴 Défaut différé en Task 5 de CORPS-04. La branche « durée connue » passe par une phrase
+// complète (`durationKnown` → « Séance A : environ 45 minutes »), mais la branche « durée
+// inconnue » assemblait le nom de séance en JSX avec un deux-points ASCII collé, hors traduction.
+// Deux conséquences : la ponctuation française est fausse (le deux-points veut une espace avant),
+// et un traducteur ne peut pas changer cet assemblage — l'ordre nom/valeur est figé dans le code
+// alors que toutes les langues ne le placent pas ainsi.
+it('nomme la séance de la même façon que la durée soit connue ou non', async () => {
+  setCandidates([
+    candidate({ id: 'general', name: 'Haut du corps', musclePrimary: 'arms', sets: null, sessions: 1 }),
+  ]);
+  await render(<BodyTrainingProgramsScreen />);
+  await tap('Comparer les programmes');
+
+  expect(
+    screen.getByText('Séance 1 : non vérifiable avec les données du programme'),
+  ).toBeTruthy();
+  // L'ancien assemblage JSX produisait « Séance 1: » — deux-points collé, faux en français.
+  expect(screen.queryByText(/Séance 1: /)).toBeNull();
 });

@@ -19,7 +19,8 @@ import {
   computeWeightGoalProgress,
   coerceWorkoutDisplayLevel,
   parseJsonColumn,
-  strengthProgramContextSchema,
+  strengthEquipmentFieldSchema,
+  strengthSessionMinutesFieldSchema,
   type ProfileRow,
   type WeightGoalProgress,
 } from '@wellness/shared';
@@ -100,15 +101,18 @@ const SELECT_CURRENT = 'SELECT * FROM profiles WHERE deleted_at IS NULL LIMIT 1'
 
 /** Convertit une ligne SQLite (snake_case) → objet de domaine (camelCase). */
 function rowToProfile(row: ProfileDbRow): Profile {
-  const strengthContext = strengthProgramContextSchema.safeParse({
-    level: row.training_level,
-    weeklyAvailability: row.weekly_availability,
-    sessionMinutes: row.strength_session_minutes,
-    equipment:
-      row.strength_equipment === null
-        ? null
-        : parseJsonColumn<unknown>(row.strength_equipment, row.strength_equipment),
-  });
+  // US CORPS-04 — **un verdict par champ, délibérément.** Ces deux colonnes étaient validées dans
+  // le même `safeParse` que `training_level` et `weekly_availability` (GUID-01) : une seule valeur
+  // invalide, fût-elle étrangère à CORPS-04, rabattait les DEUX champs à `null`. Une durée de
+  // séance parfaitement valide disparaissait alors sans message, et « Trouver un programme
+  // compatible » repartait de zéro. `null` doit vouloir dire « jamais répondu » ou « cette
+  // valeur-ci est illisible », jamais « une autre colonne est illisible ».
+  const sessionMinutes = strengthSessionMinutesFieldSchema.safeParse(row.strength_session_minutes);
+  const equipment = strengthEquipmentFieldSchema.safeParse(
+    row.strength_equipment === null
+      ? null
+      : parseJsonColumn<unknown>(row.strength_equipment, row.strength_equipment),
+  );
 
   return {
     id: row.id,
@@ -137,8 +141,8 @@ function rowToProfile(row: ProfileDbRow): Profile {
     trainingFocus: row.training_focus as Profile['trainingFocus'],
     trainingLevel: row.training_level as Profile['trainingLevel'],
     weeklyAvailability: row.weekly_availability,
-    strengthSessionMinutes: strengthContext.success ? strengthContext.data.sessionMinutes : null,
-    strengthEquipment: strengthContext.success ? strengthContext.data.equipment : null,
+    strengthSessionMinutes: sessionMinutes.success ? sessionMinutes.data : null,
+    strengthEquipment: equipment.success ? equipment.data : null,
     guidanceRegime: row.guidance_regime as Profile['guidanceRegime'],
     guidanceStrength: row.guidance_strength as Profile['guidanceStrength'],
     guidanceCardio: row.guidance_cardio as Profile['guidanceCardio'],

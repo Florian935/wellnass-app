@@ -106,6 +106,9 @@ function BodyTrainingProgramsSession({ accountId }: { accountId: string | null }
   const contextSource = useStrengthProgramContext();
   const repository = useStrengthProgramCandidates();
   const lockPreparation = useActionLock();
+  // Un verrou par action, jamais un par écran : partager celui de la préparation empêcherait
+  // d'enregistrer son contexte pendant qu'une copie est en vol, ce qui n'est pas le but.
+  const lockContextSave = useActionLock();
   const [hasLoadedCore, setHasLoadedCore] = useState(false);
   const [fallbackContext, setFallbackContext] = useState<StrengthProgramContextSnapshot | null>(
     () =>
@@ -228,27 +231,37 @@ function BodyTrainingProgramsSession({ accountId }: { accountId: string | null }
     }
     const draft = draftContext;
     const expectedUpdatedAt = savedContext.updatedAt;
-    setSaving(true);
-    setFailure(null);
-    void saveStrengthProgramContext(draft, expectedUpdatedAt)
-      .then((saved: StrengthProgramContextSnapshot) => {
+    // ⚠️ `saving` ci-dessus est un **état React** : il ne garde rien. Deux appuis tombant dans le
+    // même cycle de rendu le lisent tous les deux à `false`, et le bouton n'est pas encore
+    // désactivé. Les deux sauvegardes partaient alors avec le **même** `expectedUpdatedAt` : la
+    // seconde était vouée au conflit CAS, et l'écran affichait une erreur de concurrence pour un
+    // geste unique. Seule une ref lue et écrite sans attendre un rendu tient — c'est exactement ce
+    // que fait `useActionLock`, et pourquoi la préparation de copie en a déjà un. L'état `saving`
+    // reste utile pour l'affichage ; il ne peut simplement pas servir de verrou.
+    void lockContextSave(async () => {
+      setSaving(true);
+      setFailure(null);
+      try {
+        const saved: StrengthProgramContextSnapshot = await saveStrengthProgramContext(
+          draft,
+          expectedUpdatedAt,
+        );
         if (currentAccountId() !== accountId) return;
         setFallbackContext(saved);
         setDraftPreferences(contextPreferences(saved.context));
         setOptimisticContext({ ...saved, previousUpdatedAt: expectedUpdatedAt });
         setComparison(null);
-      })
-      .catch((error: unknown) => {
+      } catch (error: unknown) {
         const code =
-          error && typeof error === 'object' && 'code' in error
-            ? String(error.code)
-            : 'save';
+          error && typeof error === 'object' && 'code' in error ? String(error.code) : 'save';
         const known = ['conflict', 'profile_missing', 'unauthenticated', 'invalid'].includes(code)
           ? code
           : 'save';
         setFailure(t(`strengthProgramFinder.errors.context.${known}`));
-      })
-      .finally(() => setSaving(false));
+      } finally {
+        setSaving(false);
+      }
+    });
   };
 
   const compare = () => {
@@ -410,7 +423,12 @@ function BodyTrainingProgramsSession({ accountId }: { accountId: string | null }
           </View>
         ) : null}
 
-        {!prioritiesUnavailable && !savedContext ? (
+        {/* ⚠️ `!contextReadFailed` est la condition qui compte ici. Sans elle, une lecture en
+            échec — hors ligne, SQLite indisponible — affichait « ton profil n'est pas encore
+            disponible, ouvre-le pour le renseigner » : l'invitation à **ressaisir** une donnée
+            déjà saisie, peut-être depuis des mois. Un contexte illisible n'est pas un contexte
+            vide, et l'écran ne doit jamais confondre les deux. */}
+        {!prioritiesUnavailable && !savedContext && !contextReadFailed ? (
           <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
             <Text accessibilityRole="alert" style={[styles.sectionTitle, { color: colors.text }]}>
               {t('strengthProgramFinder.context.unavailable')}
@@ -435,9 +453,16 @@ function BodyTrainingProgramsSession({ accountId }: { accountId: string | null }
           />
         ) : null}
 
-        {contextReadFailed && draftContext ? (
+        {/* Deux formulations, parce que la promesse n'est pas la même : avec un brouillon on peut
+            dire « il reste affiché », sans brouillon il n'y a rien à afficher et la seule chose
+            honnête à dire est que rien n'est perdu. */}
+        {contextReadFailed ? (
           <Text accessibilityRole="alert" style={[styles.alert, { color: colors.danger }]}>
-            {t('strengthProgramFinder.errors.context.load')}
+            {t(
+              draftContext
+                ? 'strengthProgramFinder.errors.context.load'
+                : 'strengthProgramFinder.errors.context.loadNoDraft',
+            )}
           </Text>
         ) : null}
         {failure ? (

@@ -4151,3 +4151,6 @@ ni n'active jamais automatiquement le programme courant.
 - [ ] 13. Tester une source modifiée puis supprimée avant confirmation et un conflit de profil depuis un second appareil : message compréhensible, aucune copie partielle et aucune activation silencieuse.
 - [ ] 14. FR/EN, clair/sombre, écran étroit et police système agrandie : aucun texte brut ou tronqué, cartes et confirmations lisibles, actions accessibles sans geste caché.
 - [ ] 15. TalkBack : titres, compatibilité, raisons, alertes, sélection du contexte et état des boutons sont annoncés ; ordre de lecture logique et cibles tactiles d'au moins 44 px.
+- [ ] 16. Passer hors ligne **avant** la toute première ouverture de l'écran, sur un compte qui a déjà un contexte enregistré : le message doit dire que le contexte est **illisible pour le moment**, et **jamais** proposer de renseigner un profil déjà rempli. Rétablir le réseau : le contexte revient tel quel.
+- [ ] 17. Double appui rapide sur « Enregistrer mon contexte » : une seule sauvegarde, et aucune erreur de concurrence pour un geste unique. Vérifier aussi qu'une sauvegarde reste possible pendant qu'une préparation de copie est en vol.
+- [ ] 18. Un programme dont une séance a une durée estimable et une autre non : les deux lignes se lisent pareil (« Nom de séance : … »), en FR et en EN. Aucun deux-points collé en français.

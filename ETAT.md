@@ -112,7 +112,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/corps04-programme-compatible` (modifications non commitées) |
-| Commits | 1262 · `main` a **1237** commits de retard sur `dev` |
+| Commits | 1266 · `main` a **1237** commits de retard sur `dev` |
 | Specs d'US | 157 au total — 87 clôturées, 70 en cours |
 | Migrations | 105/105 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -123,11 +123,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `d7e85be`  merge: rattraper dev dans le lot Mon corps (LABO-01 + DEPENSE)
+- `71baf1c`  feat(depense): la depense d'une seance, et les activites que l'app ignorait
 - `90ead68`  fix(db): conserver l'historique cloud de corps04
 - `0683f19`  docs(corps): passer le programme compatible en recette
-- `4ca64b0`  fix(corps): ouvrir la copie préparée
-- `e145efb`  fix(corps): fiabiliser le choix de programme
-- `432d85b`  feat(corps): choisir un programme compatible
+- `0f93f0b`  chore(labo01): pousse les migrations, deploie la sync rule et active l'ecriture
 
 ---
 

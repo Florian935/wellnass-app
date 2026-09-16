@@ -28,6 +28,37 @@ const strengthSessionMinutesValueSchema = z.union([
   z.literal(90),
 ]);
 
+/**
+ * Les deux champs durables de CORPS-04, **validables séparément**.
+ *
+ * ⚠️ `strengthProgramContextSchema` valide les quatre champs du contexte d'un seul tenant, et c'est
+ * juste pour l'éditeur : on n'y enregistre rien de partiel. Mais un **lecteur** qui s'en sert pour
+ * mapper une ligne de `profiles` hérite d'un défaut : une valeur invalide n'importe où rabat *tous*
+ * les champs. Or `level` et `weeklyAvailability` appartiennent à GUID-01 — une valeur héritée, ou
+ * écrite par un client plus récent, effacerait en silence une durée de séance parfaitement valide.
+ * Chaque lecteur doit donc pouvoir demander un verdict **par champ**, et ces deux schémas sont là
+ * pour ça. Le schéma composite ci-dessous les réutilise : une seule source de vérité par champ.
+ */
+export const strengthSessionMinutesFieldSchema = strengthSessionMinutesValueSchema.nullable();
+
+export const strengthEquipmentFieldSchema = z
+  .array(equipmentSchema)
+  .nonempty()
+  .nullable()
+  .superRefine((equipment, refinement) => {
+    if (equipment && new Set(equipment).size !== equipment.length) {
+      refinement.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Le matériel ne doit pas contenir de doublon.',
+      });
+    }
+  })
+  // Ordre canonique : le matériel est un ensemble, pas une liste ordonnée. Le figer ici évite que
+  // deux appareils affichent la même sélection dans deux ordres différents.
+  .transform((equipment): Equipment[] | null =>
+    equipment === null ? null : EQUIPMENTS.filter((item) => equipment.includes(item)),
+  );
+
 export const strengthSessionMinutesSchema = z
   .enum(['30', '45', '60', '75', '90'])
   .transform((value): StrengthSessionMinutes => Number(value) as StrengthSessionMinutes);
@@ -39,33 +70,18 @@ export type StrengthProgramContext = {
   equipment: Equipment[] | null;
 };
 
+// Composé à partir des deux schémas par champ ci-dessus : le refus des doublons et l'ordre
+// canonique du matériel y vivent une seule fois, et l'éditeur comme les lecteurs appliquent
+// exactement la même règle. Zod préfixe tout seul le chemin de l'erreur par `equipment`.
 export const strengthProgramContextSchema = z
   .object({
     level: trainingLevelSchema.nullable(),
     weeklyAvailability: z.number().int().min(1).max(7).nullable(),
-    sessionMinutes: strengthSessionMinutesValueSchema.nullable(),
-    equipment: z.array(equipmentSchema).nonempty().nullable(),
+    sessionMinutes: strengthSessionMinutesFieldSchema,
+    equipment: strengthEquipmentFieldSchema,
   })
   .strict()
-  .superRefine((context, refinement) => {
-    if (context.equipment && new Set(context.equipment).size !== context.equipment.length) {
-      refinement.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ['equipment'],
-        message: 'Le matériel ne doit pas contenir de doublon.',
-      });
-    }
-  })
-  .transform((context): StrengthProgramContext => {
-    const selectedEquipment = context.equipment;
-    return {
-      ...context,
-      equipment:
-        selectedEquipment === null
-          ? null
-          : EQUIPMENTS.filter((equipment) => selectedEquipment.includes(equipment)),
-    };
-  });
+  .transform((context): StrengthProgramContext => context);
 
 const candidatePlanSchema = z
   .object({
