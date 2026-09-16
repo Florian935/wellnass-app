@@ -48,7 +48,7 @@ Colonne **Statut** = **avancement réel du code** (réconcilié le 06/08/2026, *
 | **V0.9** | Enrichissements avant lancement *(ajoutée le 28/07/2026)* | Rétention (check-in, objectifs, bilan, joker de streak), mensurations, pas quotidiens, finitions UX de recette | 14 | ~57h |
 | **V1.0** | Lancement store | Publication Play Store (Android) | 1 | — |
 | **V1.1** | Post-lancement | Import de données, planning repas, liste de courses | 4 | ~18h |
-| **[Hors cadrage](#hors-périmètre-de-cadrage--livré-en-cours-de-route)** | Né après le 04/07, déjà livré | Refonte muscu, widgets multi-formes, micronutriments, refonte nutrition… | 38 | *non estimé* |
+| **[Hors cadrage](#hors-périmètre-de-cadrage--livré-en-cours-de-route)** | Né après le 04/07, déjà livré | Refonte muscu, widgets multi-formes, micronutriments, refonte nutrition… | 42 | *non estimé* |
 | **Ultérieur — iOS** | Portage iOS (hors lancement) | App Store + OAuth Apple | 2 | — |
 | | | **Total (périmètre de lancement)** | **210** | **~534h** |
 
@@ -422,6 +422,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | 6.4 | Infobulle de valeur au tap sur les graphiques | Tap sur une courbe ou un histogramme → date complète + valeur exacte. | 🟢 | ✅ | UX-01 — **première idée promue depuis [IDEAS.md](../../IDEAS.md)**. Couvre les 6 surfaces graphiques via 2 composants mutualisés. |
 | 6.5 | Silhouette personnelle et intention visuelle | Mannequin 2D paramétrique, départ et objectif distincts, comparaison et sauvegarde hors-ligne. | 🟢 | ✅ | **CORPS-02 — 13/09/2026** : trois bases, sept proportions et sept intentions, face/dos, curseurs accessibles, mensurations comme repères datés. Document JSON versionné dans user_settings, sauvegarde atomique et refus de conflit local. Migration appliquée ; version Android validée par Florian le 13/09/2026, US clôturée. Rendu 3D et génération d’entraînement ultérieurs. |
 | 6.6 | Priorités confirmées et lecture du programme | Choisir 1 à 3 priorités depuis l'objectif visuel, les conserver et lire leur présence dans le programme actif. | 🟢 | ✅ | **CORPS-03 — 14/09/2026** : confirmation, édition et effacement explicites, stockage offline séparé du dessin, contrôle de concurrence sur les deux documents. Séries prévues par passage dans le programme, associations fines/générales distinctes et liens vers chaque muscle. Migration appliquée ; recette Android §65 en attente. L'adaptation automatique des séances reste ultérieure. |
+| 6.7 | Choisir un programme compatible avec mes priorités | Comparer le programme actif et les programmes éditoriaux selon les priorités, le niveau, les jours, la durée et le matériel, puis préparer une copie personnelle inactive. | 🟢 | ✅ | **CORPS-04 — code livré le 16/09/2026**, en recette → [spec](../specs/functional/us/corps04-programme-compatible.md) · [plan](../plans/corps04-programme-compatible.md) · [RECETTES.md](../../RECETTES.md) §66, à recetter dans la même campagne finale que CORPS-03 §65. Classement déterministe et expliqué, contexte offline, lecture SQLite cohérente et copie transactionnelle sans modifier l'original ni le programme actif. Migration `20260915115333` appliquée au cloud : deux colonnes nullable sur `profiles`, aucune sync rule à redéployer (`select *`). L'activation et l'adaptation automatique des séances restent des gestes distincts hors de ce lot. |
 | 7.13 | Grille de widgets multi-formes | Généralise la personnalisation du dashboard aux **3 hubs** (accueil, muscu, course) : 16 widgets × 3 formes, réordonnancement, masquage, compaction. | 🟢 | ✅ | WIDGETS-01. Chantier majeur, demande Damien d'après la maquette `FitTrio - Widgets`. |
 | 1.27 | Parcours « 7 jours pour démarrer » | Mini-programme d'activation guidé (7 jours, tous piliers actifs), pour atteindre vite le « aha moment » sans exiger d'historique. | 🟢 | ✅ | **ACTIV-01 — code livré le 03/08/2026** → [spec](../specs/functional/us/activ01-parcours-7-jours.md) · [plan](../plans/activ01-parcours-7-jours.md) · [maquette](../../design/activ01-parcours-7-jours/activ01-parcours-7-jours.html), en recette → [RECETTES.md](../../RECETTES.md). Idée promue depuis [IDEAS.md](../../IDEAS.md) (13/07/2026). Widget d'accueil auto-masquant (`'always'`, wiré dans `isWidgetActive`), aucune notification, 1 colonne additive (`profiles.activation_path_dismissed_at`), aucune sync rule. Distinct de l'onboarding (1.7-1.11). ⚠️ **Contenu des 7 jours = brouillon**, à valider par Florian/Damien. |
 | 7.19 | Widget écran d'accueil Android | Widget du **launcher** Android (hors de l'app) : série, séance du jour, kcal restantes. Dernier candidat non démarré de la 2ᵉ salve d'enrichissements. | 🟡 | ✅ | **LAUNCHER-01 — code livré le 03/08/2026**, en recette → [spec](../specs/functional/us/launcher01-widget-ecran-accueil.md) · [plan](../plans/launcher01-widget-ecran-accueil.md) · [maquette](../../design/launcher01-widget-ecran-accueil/launcher01-widget-ecran-accueil.html) · [RECETTES.md](../../RECETTES.md). Idée promue depuis [IDEAS.md](../../IDEAS.md) (13/07/2026), initialement estimée « le plus cher des 5 » (natif Kotlin). **Recherche technique : révisée à la baisse** — `react-native-android-widget` (JSX → RemoteViews, config plugin Expo, aucun Kotlin écrit à la main) tient la promesse ; spike de compatibilité SDK 57/New Architecture **confirmé sur device** (build + widget affiché). Distinct des 16 widgets **in-app** (WIDGETS-01, 7.13) — vocabulaire « widget launcher » explicitement pour ne pas confondre. Données recalculées hors React (Headless JS, singleton PowerSync partagé), aucune duplication de logique métier (streak/TDEE réutilisés de `@wellness/shared`). ⚠️ **Dépendance native neuve : second build requis** avant recette (comme PARTAGE-01/RUN-F2a/MUSC-F9). |
@@ -477,15 +478,15 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 233 | ~95 % |
+| ✅ Livré | 234 | ~95 % |
 | 🟡 Partiel (5.24, 3.52, 5.40, 3.60) | 4 | ~2 % |
 | ⬜ À faire (9.2, 1.20) | 2 | ~1 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **245** | |
+| **Total périmètre de lancement** | **246** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
-> **CORPS-03, 14/09/2026** ajoute **6.6** : priorités confirmées et lecture factuelle du programme actif. Recette Android §65 en attente. **CORPS-02 (6.5)** et **CORPS-01 (6.2)** restent validés par Florian le 13/09/2026. Le rendu 3D et l'adaptation automatique des séances restent ultérieurs.
+> **CORPS-04, 16/09/2026** ajoute **6.7** : comparaison expliquée des programmes compatibles et préparation d'une copie personnelle inactive. Recette Android §66 groupée avec CORPS-03 §65. **CORPS-02 (6.5)** et **CORPS-01 (6.2)** restent validés par Florian le 13/09/2026. Le rendu 3D et l'adaptation automatique des séances restent ultérieurs.
 
 > **240 → 241 le 13/09/2026** : la ligne **7.29**, DASH-01. Elle ne rallonge pas le périmètre au
 > sens d'un nouveau besoin — elle **refond les quatre écrans d'atterrissage**, dont la relecture du
@@ -571,10 +572,10 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | V0.9 (17) | 15 | 2 | 0 | 0 | 0 | 🆕 **Créée le 28/07/2026** (+2 le 30/07 : 1.25 / 1.26, CYCLE-01) — enrichissements retenus depuis [IDEAS.md](../../IDEAS.md), construits pendant les délais externes de Google. **17 lignes** (9.16 incluse, cf. V0.8). 🟡 = **3.52** (MUSC-F14 : l'éditeur de programme n'a pas de parcours « remplacer ») et **4.37** (NUTR-F2 : vivier limité aux aliments récents) — les 2 seuls trous réels. Les 12 autres 🟡 d'avant le 06/08/2026 étaient de la **dette de recette**, pas du code manquant. |
 | V1.0 (1) | 0 | 0 | 1 | 0 | 0 | Publication Play Store (dépend de V0.8 **et V0.9**) |
 | V1.1 (4) | 3 | 0 | 1 | 0 | 0 | **3 des 4 items livrés le 04/08/2026** (4.27 / 4.28 / 4.29, US REPAS-01) : remontés de V1.1 dans le périmètre courant par arbitrage Florian, le code étant en avance sur le cahier des charges pendant les délais externes de Google. Reste **1.20** (import GPX/CSV), seul item encore ⬜ de cette version. |
-| Hors cadrage (41) | 40 | 1 | 0 | 0 | 0 | Comptage des lignes après réunion de CORPS et `origin/dev` le 15/09/2026 : DASH-01 (7.29), GUID-01 (1.30), MUSCU-UX03 (3.61), CORPS-02 (6.5) et CORPS-03 (6.6) inclus. MOTION-01 (3.60) reste partiel. |
+| Hors cadrage (42) | 41 | 1 | 0 | 0 | 0 | Comptage des lignes après ajout de CORPS-04 le 16/09/2026 : DASH-01 (7.29), GUID-01 (1.30), MUSCU-UX03 (3.61), CORPS-02 (6.5), CORPS-03 (6.6) et CORPS-04 (6.7) inclus. MOTION-01 (3.60) reste partiel. |
 
-- **245 fonctionnalités** dans le périmètre de lancement — **comptées depuis les lignes du tableau**, après réunion de CORPS et `origin/dev` le 15/09/2026. L'ancienne mention « 223 » ne tenait pas compte des ajouts livrés depuis.
-- **~534 h** de code brut estimées, hors intégration, tests et itérations UX — l'estimation ne couvre pas les 41 items hors cadrage.
+- **246 fonctionnalités** dans le périmètre de lancement — **comptées depuis les lignes du tableau**, après ajout de CORPS-04 le 16/09/2026. L'ancienne mention « 223 » ne tenait pas compte des ajouts livrés depuis.
+- **~534 h** de code brut estimées, hors intégration, tests et itérations UX — l'estimation ne couvre pas les 42 items hors cadrage.
 - **+ 2 items reportés** en section « Ultérieur — iOS » (9.1, 1.3).
 - **+ ~10 US d'analyse** suivies au [catalogue](../product/analyses-donnees.md), hors décompte.
 
@@ -605,6 +606,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**16/09/2026 — CORPS-04 (6.7) : programme compatible expliqué**
+Nouvelle ligne ✅ : classement local par priorités et contraintes, préparation d'une copie inactive ; recette §66 groupée avec CORPS-03.
+Compteurs recalculés depuis les lignes : **234 livrés / 4 partiels / 2 à faire sur 246**. Deux reportés et quatre abandonnés.
 
 **14/09/2026 — CORPS-03 (6.6) : priorités et lecture du programme**
 Nouvelle ligne ✅ : confirmation distincte du dessin et séries prévues avec précision des associations ; recette §65.

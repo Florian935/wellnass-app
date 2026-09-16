@@ -3688,3 +3688,33 @@ permet ensuite de consulter leur présence dans les séances du modèle.
 
 L'adaptation automatique d'un programme, le dosage des séries et les prévisions de transformation
 physique ne font pas partie de cet incrément.
+
+---
+
+## 66. CORPS-04 — Choisir un programme compatible avec mes priorités
+
+Spec : [CORPS-04](docs/specs/functional/us/corps04-programme-compatible.md).
+Branche `feature/corps04-programme-compatible`, worktree `.claude/worktrees/mon-corps`.
+Cette recette se joue sur le **même APK et dans la même campagne finale « Mon corps »** que
+CORPS-03 (§65). Les validations automatisées, la migration cloud et l'inspection de l'APK ne
+remplacent pas les contrôles ci-dessous sur téléphone ; aucun critère device n'est prévalidé.
+
+Chemin : **Musculation → Suivre → Mon corps → Mes priorités d'entraînement → Trouver un programme compatible**.
+Préparer une proposition crée une copie personnelle inactive et ouvre son éditeur. Cela ne remplace
+ni n'active jamais automatiquement le programme courant.
+
+- [ ] 1. Sans priorités CORPS-03 confirmées, l'entrée renvoie vers leur confirmation. Après confirmation, revenir ouvre bien la comparaison sans perdre les choix.
+- [ ] 2. Le contexte reprend le niveau et les jours du profil. Toute donnée absente s'affiche comme à confirmer, jamais comme un choix déjà fait. Durées proposées : 30, 45, 60, 75 et 90 minutes seulement.
+- [ ] 3. Choisir du matériel, enregistrer, fermer puis rouvrir : durée et matériel sont conservés. « Tout le matériel » n'enregistre pas une liste vide. Vérifier mode avion, redémarrage, retour du réseau et isolation entre deux comptes.
+- [ ] 4. La comparaison n'écrit rien par elle-même. Elle inclut le programme actif et les programmes éditoriaux publiés lisibles localement, jamais les autres programmes personnels.
+- [ ] 5. Un programme avec trop de séances ou du matériel explicitement absent est exclu tant qu'une proposition compatible existe. Modifier jours, matériel ou durée puis recalculer change les résultats de façon cohérente.
+- [ ] 6. Une durée estimable est affichée par séance. Une durée impossible à calculer est annoncée « non vérifiable », jamais comme zéro. Si aucune proposition n'est entièrement compatible, les contraintes à revoir sont expliquées sans présenter le résultat comme compatible.
+- [ ] 7. Trois propositions au maximum, dans un ordre stable après fermeture/réouverture. Chaque carte explique priorités couvertes, niveau, jours, matériel et durée ; aucun score opaque ni promesse de résultat physique.
+- [ ] 8. Avec une à trois priorités, vérifier les muscles fins couverts et absents. Une association générale (« jambes », par exemple) reste nommée mais ne devient jamais une correspondance fine inventée.
+- [ ] 9. Si le programme actuel est le meilleur choix, il porte « Conserver ce programme » et ouvre son éditeur sans copie ni modification. Vérifier aussi programme actuel seul, bibliothèque vide et erreur de lecture distincte d'une liste vide.
+- [ ] 10. « Préparer ce programme » affiche une confirmation indiquant que l'original reste intact. Annuler ne crée rien. Confirmer crée une seule copie personnelle avec le suffixe localisé, la laisse inactive et ouvre directement son éditeur.
+- [ ] 11. Après la copie, le programme source, le programme actif et leur planning restent inchangés. Les séances, exercices, séries, répétitions, charges, repos, ordre et traductions disponibles correspondent à la source sans dosage ajouté.
+- [ ] 12. Double appui sur la confirmation : une seule copie. Changer le contexte, les priorités, le compte ou la source entre comparaison et confirmation invalide la proposition, conserve le brouillon utile et demande un recalcul explicite.
+- [ ] 13. Tester une source modifiée puis supprimée avant confirmation et un conflit de profil depuis un second appareil : message compréhensible, aucune copie partielle et aucune activation silencieuse.
+- [ ] 14. FR/EN, clair/sombre, écran étroit et police système agrandie : aucun texte brut ou tronqué, cartes et confirmations lisibles, actions accessibles sans geste caché.
+- [ ] 15. TalkBack : titres, compatibilité, raisons, alertes, sélection du contexte et état des boutons sont annoncés ; ordre de lecture logique et cibles tactiles d'au moins 44 px.

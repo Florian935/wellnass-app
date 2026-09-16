@@ -1,11 +1,11 @@
 ---
 id: CORPS-04
 titre: "Choisir un programme compatible avec mes priorités"
-roadmap: []
+roadmap: [6.7]
 catalogue: []
-etape: design
+etape: recette
 branche: feature/corps04-programme-compatible
-maj: 15/09/2026
+maj: 16/09/2026
 ---
 
 # CORPS-04 — Un programme compatible, expliqué avant d'être choisi
@@ -186,3 +186,18 @@ La recette globale vérifiera contexte complet/incomplet, filtre jours/matériel
 inconnue, classement stable, programme actuel, aucune correspondance fine, trois priorités,
 bibliothèque vide, changement concurrent, duplication unique et inactive, original intact,
 éditeur ouvert, offline/redémarrage, deux comptes, FR/EN, clair/sombre, grande police et TalkBack.
+
+## Livraison en recette — 16/09/2026
+
+La migration cloud `20260915115333_corps04_strength_program_context` est appliquée. Un second
+dry-run confirme que la base distante est à jour ; les types régénérés portent les deux colonnes
+sur `profiles.Row`, `Insert` et `Update`. `profiles` étant déjà publiée et synchronisée en
+`select *`, aucune sync rule n'est à redéployer.
+
+Les suites ciblées passent : 34 tests Vitest sur le moteur et le profil, puis 106 tests Jest sur
+les repositories SQL, les deux écrans et le décodage JSON PowerSync. L'APK release Android a été
+construit avec les quatre ABI, signé en v2 et contrôlé contre son bundle embarqué. La recette
+device reste volontairement non cochée dans [RECETTES.md](../../../../RECETTES.md) §66 et se joue
+dans la même campagne finale « Mon corps » que CORPS-03 §65. Les trois points device différés à
+la fin de Task 5 — métriques natives, parcours TalkBack et alerte système — restent dans cette
+recette ; aucun changement applicatif supplémentaire n'est introduit par la clôture.

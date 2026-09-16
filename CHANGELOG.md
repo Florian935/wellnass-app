@@ -9,6 +9,50 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 16/09/2026 — CORPS-04 : programme compatible livré en recette
+
+Branche `feature/corps04-programme-compatible`, base `4ca64b05`.
+
+**Livré** — Depuis les priorités CORPS-03 confirmées, le parcours compare le programme muscu actif
+et les programmes éditoriaux publiés selon cinq dimensions lisibles : muscles fins demandés,
+niveau, jours disponibles, matériel et durée estimée par séance. L'ordre est déterministe et montre
+au plus trois propositions. Une donnée inconnue reste explicitement inconnue ; une association
+musculaire générale n'est jamais transformée en correspondance fine et aucun score de résultat
+physique n'est affiché.
+
+**Choix réversible** — Comparer n'écrit rien. Le programme courant peut être conservé et rouvert.
+Préparer une proposition relit la source et son empreinte dans une transaction, crée une seule copie
+personnelle inactive avec suffixe localisé, puis ouvre son éditeur. La source, le programme actif et
+le planning restent intacts ; activation et adaptation des séances demeurent des gestes séparés.
+Les changements de compte, de priorités, de contexte ou de source invalident une proposition avant
+copie, et le double appui est verrouillé.
+
+**Offline et cloud** — Le contexte durable ajoute `profiles.strength_session_minutes` et
+`profiles.strength_equipment`, deux colonnes nullable portées par la migration
+`20260915115333_corps04_strength_program_context`. Le dry-run n'a proposé que CORPS-04 après
+alignement local temporaire sur cinq migrations plus récentes déjà présentes au cloud. Push avec
+`--include-all` réussi, liste locale/distante alignée, second dry-run à jour et types cloud
+régénérés : les deux champs figurent dans Row/Insert/Update. `profiles` est déjà publiée et lue en
+`select *` : aucune sync rule à redéployer. L'avertissement de cache pg-delta/Docker est survenu
+après l'application SQL et n'a pas empêché la vérification distante.
+
+**Validation** — Suites ciblées : 34 tests Vitest et 106 tests Jest. La campagne complète fraîche
+passe 6 812 tests (admin : 587, mobile : 3 299, shared : 2 926), puis `npm run lint`,
+`npm run typecheck`, `node scripts/etat.mjs --check` et `git diff --check` à zéro. Les sorties
+exactes sont consignées dans le rapport Task 6.
+`assembleRelease` réussit avec le SDK Android injecté dans le processus, sans clean ni prebuild.
+APK `app-release.apk` : 200 345 651 octets, horodaté `2026-09-16 07:47:58 +02:00`, SHA-256
+`DD916DEDD6AFDFE0EC45FDDC508F87E44E5407A447EC20B11C844D216630BCD4`, signature v2 valide et
+quatre ABI (`arm64-v8a`, `armeabi-v7a`, `x86`, `x86_64`). Le bundle généré et celui embarqué sont
+identiques (SHA-256 `5B530D97B9C842BEF73378CF6538E51498E4B7873D6DDFD1AA5D0251A02ECF90`) et contiennent les
+libellés/colonnes CORPS-04 contrôlés.
+
+**Suivi** — CORPS-04 passe en recette, ligne roadmap 6.7 et section 66. Compteurs recalculés depuis
+les lignes : 234 livrés / 4 partiels / 2 à faire sur 246, plus 2 reportés et 4 abandonnés. Les
+15 critères device restent non cochés et seront joués dans la même campagne finale que CORPS-03.
+Les trois contrôles device différés de Task 5 (métriques natives, TalkBack, alerte système) ne sont
+pas modifiés par cette clôture. Aucun push ni merge.
+
 ## 15/09/2026 — CORPS-04 : cadrage du programme compatible
 
 Branche `feature/corps04-programme-compatible`, base `c83e7aa5` incluant CORPS-01 à CORPS-03.
