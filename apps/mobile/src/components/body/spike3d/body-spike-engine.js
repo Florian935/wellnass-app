@@ -20,6 +20,9 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+// Le cadrage est du calcul pur : il vit dans un module testable, pas ici.
+import { fitToView } from './fit-to-view';
+
 /** three r128 n'applique que 8 influences simultanées par maillage, et ignore le reste en silence. */
 export const MORPH_LIMIT_R128 = 8;
 
@@ -134,14 +137,26 @@ export function createBodySpikeScene(canvas, opts) {
           if (opts.onMeshError) opts.onMeshError('aucun maillage dans le glb');
           return;
         }
-        // Le maillage est debout, pieds à y = 0 : sans recentrage il sort du cadre par le haut.
-        // On le recentre sur sa boîte englobante et on l'ajuste à la hauteur visible.
+        // Le maillage est debout, pieds à y = 0 : sans recadrage il sort du cadre par le haut.
+        //
+        // 🔴 L'ORDRE COMPTE, et s'être trompé a coûté une recette. La transformation locale d'un
+        // objet three est `T · R · S` : la géométrie est mise à l'échelle **autour de l'origine de
+        // l'objet**, PUIS translatée par `position`. Soustraire le centre avant de mettre à
+        // l'échelle laisse donc un résidu de `centre × (échelle − 1)` — ici ~0,8 unité vers le
+        // haut, soit exactement la tête coupée observée le 16/09/2026. Le décalage doit être
+        // **mis à l'échelle lui aussi**.
         var boite = new THREE.Box3().setFromObject(gltf.scene);
-        var centre = boite.getCenter(new THREE.Vector3());
-        var taille = boite.getSize(new THREE.Vector3());
-        gltf.scene.position.sub(centre);
-        var hauteur = taille.y || 1;
-        gltf.scene.scale.setScalar(3.4 / hauteur);
+        var ajustement = fitToView(
+          { min: { x: boite.min.x, y: boite.min.y, z: boite.min.z },
+            max: { x: boite.max.x, y: boite.max.y, z: boite.max.z } },
+          { fov: camera.fov, distance: camera.position.z, y: camera.position.y },
+        );
+        gltf.scene.scale.setScalar(ajustement.scale);
+        gltf.scene.position.set(
+          ajustement.position.x,
+          ajustement.position.y,
+          ajustement.position.z,
+        );
         world.add(gltf.scene);
         maillagePret = true;
         if (opts.onMeshReady) opts.onMeshReady(meshes.length);

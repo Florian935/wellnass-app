@@ -1,4 +1,4 @@
-/* eslint-disable */
+/* eslint-disable no-var -- portage a l'identique du prototype (ES5), voir l'en-tete ci-dessous. */
 /**
  * US LABO-01 — la scène 3D du Labo (three.js r128), portage du prototype validé le 15/09/2026
  * (design/labo-2026-09/prototype/scene.js).
@@ -40,7 +40,7 @@ import * as THREE from 'three';
 export function createLabScene(canvas, opts) {
     opts = opts || {};
     var probeGl = null;
-    try { var probe = document.createElement('canvas'); probeGl = probe.getContext('webgl2') || probe.getContext('webgl') || probe.getContext('experimental-webgl'); } catch (e) { probeGl = null; }
+    try { var probe = document.createElement('canvas'); probeGl = probe.getContext('webgl2') || probe.getContext('webgl') || probe.getContext('experimental-webgl'); } catch (_e) { probeGl = null; }
     if (!probeGl) return { ok: false, reason: 'webgl' };
     var renderer = null, lastError = '';
     [{ antialias: true, alpha: true }, { antialias: false, alpha: true, powerPreference: 'low-power', precision: 'mediump' }].some(function (cfg) {
@@ -601,6 +601,14 @@ export function createLabScene(canvas, opts) {
 
     /* ───────── état poussé par l'app ───────── */
     var state = { fq: 3, km: 25, fr: 1, pr: 1.8, kc: -250, gl: 0, so: 7.5, fuel: 60, guard: false, stage: 'compose', week: 0, bilan: 0, selected: null, mode: 'formula', real: null, focus: null };
+    // Les piliers activés. 🔴 Cette déclaration manquait, et le fichier est un module ES — donc en
+    // mode strict, où une affectation sur un identifiant inconnu ne crée PAS un global : elle lève.
+    // `setPillars()` levait donc à chaque appel, et surtout `frame()` levait au PREMIER tour de
+    // boucle — une exception dans un callback `requestAnimationFrame` ne replanifie rien, la boucle
+    // mourait sur place et le canvas restait noir pour toujours, sans erreur visible à l'écran.
+    // Défaut par défaut à `true` : une scène qui n'a pas encore reçu ses piliers montre tout, elle
+    // ne se cache pas.
+    var pillarsOn = { muscu: true, course: true, nutrition: true };
     var pulses = { muscu: 0, course: 0, nutrition: 0 };
     var fullNights = 5;
     function refreshInfield() {
@@ -753,8 +761,8 @@ export function createLabScene(canvas, opts) {
       };
     }
     function refreshMaterials() { scene.traverse(function (o) { (Array.isArray(o.material) ? o.material : [o.material]).forEach(function (mt) { if (mt) mt.needsUpdate = true; }); }); }
-    function usePost(on) {
-      if (on && !post) { try { post = makePost(); } catch (e) { post = null; } }
+    function applyPost(on) {
+      if (on && !post) { try { post = makePost(); } catch (_e) { post = null; } }
       if (!on && post) { post.dispose(); post = null; }
       renderer.toneMapping = post ? THREE.NoToneMapping : THREE.ACESFilmicToneMapping;
       glow = post ? 3.2 : 1;
@@ -772,7 +780,7 @@ export function createLabScene(canvas, opts) {
     resize();
     setValues({});
     scene.traverse(function (o) { (Array.isArray(o.material) ? o.material : [o.material]).forEach(function (mt) { if (mt && mt.blending === THREE.AdditiveBlending) glowMat(mt); }); });
-    usePost(quality !== 'low');
+    applyPost(quality !== 'low');
 
     /* ───────── boucle ───────── */
     var time = 0, last = performance.now(), v3 = new THREE.Vector3(), look = new THREE.Vector3(), warm = new THREE.Color(0xfff1e0);
@@ -791,7 +799,7 @@ export function createLabScene(canvas, opts) {
       // Le téléphone ne suit pas (moins de ~30 images/s) : on coupe la post-production, puis on allège les ombres.
       if (!perf.done) {
         perf.n += 1;
-        if (perf.n > 30) { perf.acc += raw; if (perf.n >= 90) { perf.done = true; var avg = perf.acc / 60; if (avg > 0.034 && post) usePost(false); if (avg > 0.05) { renderer.setPixelRatio(1); key.shadow.mapSize.set(1024, 1024); if (key.shadow.map) { key.shadow.map.dispose(); key.shadow.map = null; } resize(); } } }
+        if (perf.n > 30) { perf.acc += raw; if (perf.n >= 90) { perf.done = true; var avg = perf.acc / 60; if (avg > 0.034 && post) applyPost(false); if (avg > 0.05) { renderer.setPixelRatio(1); key.shadow.mapSize.set(1024, 1024); if (key.shadow.map) { key.shadow.map.dispose(); key.shadow.map = null; } resize(); } } }
       }
       // Mouvement réduit : les transitions sont instantanées.
       var k = reduced ? 1 : 1 - Math.pow(0.02, dt), m = reduced ? 0 : 1;
@@ -946,7 +954,7 @@ export function createLabScene(canvas, opts) {
       discovery.scale.setScalar(Math.max(0.001, discovery.scale.x + ((state.bilan > 0.55 ? 1 : 0.001) - discovery.scale.x) * k));
       discovery.rotation.y = Math.sin(time * 0.8) * 0.5 * m + yaw;
 
-      if (post) { try { post.render(time); } catch (e) { usePost(false); } }
+      if (post) { try { post.render(time); } catch (_e) { applyPost(false); } }
       if (!post) { renderer.setRenderTarget(null); renderer.render(scene, camera); }
     }
     raf = requestAnimationFrame(frame);

@@ -9,6 +9,38 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 16/09/2026 (septies) — Spike 3D : la 3D tourne à 61 fps, et la tête ne sort plus du cadre
+
+Deuxième recette sur téléphone (Florian). **La scène s'affiche** : 61 images par seconde, première
+image en **10 ms**, maillage chargé, 14 cibles de morph présentes. C'est la réponse à l'inconnue ⑤,
+celle qui pouvait arrêter le lot — et elle est franchement favorable.
+
+**Le défaut restant était arithmétique, pas visuel** — le modèle apparaissait tronqué par le haut.
+La transformation locale d'un objet three est `T · R · S` : la géométrie est mise à l'échelle
+**autour de l'origine de l'objet**, *puis* translatée par `position`. Soustraire le centre **avant**
+de mettre à l'échelle laisse donc un résidu de `centre × (échelle − 1)` — ici ~0,8 unité vers le
+haut, exactement la tête coupée.
+
+**Le calcul sort du moteur** — c'est de l'arithmétique pure ; elle n'a rien à faire dans un fichier
+qui ne tourne que dans une WebView et qu'aucun test ne peut atteindre. Elle vit désormais dans
+`fit-to-view.ts`, couverte par **6 tests** qui reproduisent l'ordre `T · S` de three et vérifient
+que le corps tombe dans le tronc de vision. 🔴 Le filet a été éprouvé : en réintroduisant le bug
+exact, **3 des 6 tests tombent**, dont « laisse le corps entièrement dans le champ visible ». Un
+test qu'on n'a pas vu échouer ne prouve rien.
+
+La hauteur visible est maintenant **calculée** depuis le champ de vision et la distance de la
+caméra, au lieu d'une constante en dur, et le corps est centré sur la **hauteur du regard** (`y` de
+la caméra) et non sur `y = 0` — deux erreurs distinctes qui se compensaient mal.
+
+**Ce qui reste à traiter** — le maillage lui-même. Florian : « assez primaire », « ça ne ressemble
+pas vraiment à l'anatomie humaine ». C'est exact et c'était assumé pour la v1 (tubes, coques de bras
+interpénétrées, 2 885 sommets) : elle servait à mesurer, pas à plaire. Une v2 anatomiquement lisible
+— groupes musculaires devinables, bras soudés au torse — est en cours, **au même contrat technique**
+(mêmes 14 noms de cibles, même découpe 7/3/4, sparse, chargeable en r128), pour que le code de
+l'app n'ait pas à bouger.
+
+**Validation** — `typecheck`, `lint` et `test` passent : **7 095 tests**, 216 suites mobiles.
+
 ## 16/09/2026 (sexies) — Spike 3D : le maillage se chargeait, le verdict était rendu trop tôt
 
 Première recette du spike sur téléphone (Florian, 16/09). L'écran affichait **« Scène 3D
