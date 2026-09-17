@@ -15,29 +15,29 @@
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
-> `builds/mon-corps-spike3d-16092026.apk` (hors dépôt, ignoré par git), construit le
-> **16/09/2026 à 15:54** depuis le **dépôt principal** sur `dev`, **201,4 Mo**, SHA-256
-> `ff921ab3192cfeccbedd184f0fd91f388c2eefbba926d54420e4ce0bf7c6fc43`, signature **v2**
-> (certificat Android Debug — installable par transfert, autoriser les « sources inconnues »).
+> `builds/mon-corps-spike3d-16092026.apk`, construit le **17/09/2026 à 11:52** depuis le dépôt
+> principal sur `dev`, **207,8 Mo**, SHA-256
+> `29390c07860953f31e38e903170de5519fb193ee3a06b282117d69b10b00dbe4`, signature **v2**.
 >
-> ⚠️ **Les APK du 16/09 à 13:42 et 14:52 sont périmés.** Le premier affichait « aucun maillage dans
-> le glb » (verdict rendu avant la fin d'un `parse()` asynchrone), le second tronquait la tête
-> (décalage non mis à l'échelle). Celui-ci porte les deux correctifs **et** le maillage v2.
+> ⚠️ **Tous les APK précédents sont périmés** (13:42, 14:52 et 15:54 le 16/09). Celui-ci porte : le
+> chargement asynchrone du maillage, le cadrage corrigé, **la rotation dans le bon sens**, la
+> **lecture des cibles de morph sacrifiées**, et le **maillage v3**.
 >
-> **Le maillage a changé** : v2 anatomique, 27 044 triangles contre 5 728, avec deltoïdes,
-> pectoraux, abdominaux, dorsaux en V, quadriceps et mollets lisibles, bras soudés au torse. Les
-> planches de contrôle sont dans `builds/apercu-maillage-v2/` — à regarder **avant** la recette,
-> pour juger l'anatomie à tête reposée plutôt que sur un téléphone.
+> **Maillage v3** — 44 866 triangles, groupes musculaires séparés par des sillons d'insertion
+> (deltoïde/pectoral, biceps/triceps, trois chefs du quadriceps, deux du mollet, V des dorsaux).
+> Amplitudes revues : « tout au max » donne un athlète massif, sans anneau à la taille ni rebord
+> aux hanches. Planches dans `builds/apercu-maillage-v3/` — `ctrl-comparaison.png` montre v2 contre
+> v3, `ctrl-extremes.png` les combinaisons en découpé.
 >
-> Vérifié dans l'archive : la page du spike pointe vers un bundle DOM de **3 555 Ko** (présent,
-> maillage v2 inclus), celle du Labo vers 1 002 Ko. ⚠️ **Quatre bundles orphelins** (~4,9 Mo)
-> traînent dans les assets — `mergeReleaseAssets` ne purge pas les anciens. Inoffensif en recette.
-> 🔴 **Ne pas corriger par `gradlew clean`** : essayé le 16/09, il efface les sources codegen JNI et
-> le build suivant échoue sur `Android-autolinking.cmake`. Purger le dossier `www.bundle` des
-> `intermediates` ne suffit pas non plus (Gradle considère le packaging à jour). À traiter avant un
-> build Play Store, pas avant une recette.
-> ⚠️ **Tout le JS est cuit dans l'APK** : un changement de code impose un rebuild. Pour itérer vite,
-> dev client + Metro (mode A de
+> Vérifié dans l'archive : la page du spike pointe vers un bundle DOM de **4 657 Ko**, celle du Labo
+> vers 1 001 Ko. Le correctif de rotation est confirmé **par la source map embarquée**
+> (`down.yaw + (e.clientX`, ancien signe absent). 🔴 **Le poids devient un sujet** : 4,6 Mo pour une
+> seule scène, contre 1,5 Mo avec le maillage v1. Un éditeur livré devrait n'embarquer que la
+> variante découpée, ou baisser la finesse de grille, ou ouvrir la voie `assetExts` — à instruire si
+> le spike conclut au feu vert.
+> ⚠️ Un build **ne peut pas** être purgé par `gradlew clean` (il casse le codegen JNI) ; des bundles
+> DOM orphelins s'accumulent dans les assets. Inoffensif en recette, à traiter avant le Play Store.
+> ⚠️ **Tout le JS est cuit dans l'APK** : pour itérer vite, dev client + Metro (mode A de
 > [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md)).
 > **⑪ une §70 est arrivée, et ce n'est pas une fonctionnalité** : le **spike 3D** de la silhouette.
 > Un écran de mesure volontairement moche, qui sera **supprimé** après. 🔴 Ne pas y chercher de
@@ -4262,7 +4262,8 @@ maillage entre par le bundle DOM en base64 ; un second composant DOM **duplique*
 
 - [ ] 1. L'écran s'ouvre et **montre un corps**. S'il reste vide, il doit **dire pourquoi** (« webgl », « taille:0x0 », « silence de la scène après 5 s ») — un écran vide muet est un défaut du spike, pas un résultat.
 - [ ] 2. Noter **« Première image »** en millisecondes, et les **images par seconde** au repos.
-- [ ] 3. Variante **« Maillage unique (14 morphs) »**, bouton **« Tout pousser au max »** : compter **combien de zones du corps bougent réellement**. Attendu : 8 sur 14. Noter lesquelles restent immobiles.
+- [ ] 3. Variante **« Maillage unique (14 morphs) »**, bouton **« Tout pousser au max »** : l'écran **nomme** les cibles sacrifiées. Vérifier à l'œil que ce sont bien ces zones-là qui restent immobiles — attendu : 8 appliquées sur 14. Le corps paraît alors difforme, et c'est **normal** : des zones gonflées à côté de zones intactes.
+- [ ] 3bis. Glisser le doigt de **gauche à droite** : le corps doit tourner **vers la droite**. Puis de haut en bas.
 - [ ] 4. Variante **« Découpé (3 × ≤ 8) »**, même geste : les **14** zones doivent répondre. Noter les fps.
 - [ ] 5. Regarder les **jonctions** au cou, à la taille et aux hanches sur la variante découpée, aux valeurs extrêmes : trou, décrochement, arête visible ? C'est le critère qui décide entre « découper » et « monter three ».
 - [ ] 6. **Faire tourner la silhouette au doigt** pendant qu'on pousse un curseur. Noter les fps pendant le geste. **≥ 30 est le seuil de décision.**

@@ -154,6 +154,55 @@ vérité.
 - **Vérifié** : typecheck 3 workspaces à 0, lint à **0 erreur et 0 avertissement** sur `engine.js`
   désormais réellement linté, suite complète verte. Commit précédent : `8d3807db`.
 
+## 17/09/2026 (bis) — Spike 3D : le maillage v3, chaque muscle a enfin son contour
+
+Retour de Florian sur la v2 : « se rapprocher de la planche 2D » et « quand on pousse tout au max,
+c'est tout déformé ». Les deux sont traités.
+
+**Les sillons d'insertion** — la v2 était en « argile lisse » : les volumes existaient mais se
+fondaient les uns dans les autres, là où la planche 2D de `AnatomyFigure` sépare chaque groupe par
+un contour net. La v3 creuse les séparations : sillon deltopectoral, deltoïde/triceps,
+biceps/triceps, trapèze en losange, V des dorsaux, infra-épineux, érecteurs, ligne blanche et ligne
+semi-lunaire, obliques, trois chefs du quadriceps plus la ligne du sartorius, deux chefs des
+ischio-jambiers, deux des gastrocnémiens, crête tibiale, pli glutéal. **44 866 triangles** contre
+27 044 (grille de 11 mm au lieu de 14).
+
+⚠️ Détail qui compte : les sillons sont **soustraits au champ de distance**, et leur tracé est
+projeté sur la peau par lancer de rayon. Une première version en capsules libres creusait des
+entailles noires et jusqu'à une **cavité interne dans le thorax**. Comme les normales sont le
+gradient du SDF, les sillons se lisent aussi avec les **normales de base** — celles que l'app
+utilise, `morphNormals: false` étant imposé par le plafond des 8.
+
+**Les extrêmes** — amplitudes revues (proportions ±11 % au tronc, ±18 % aux membres avec un
+fondu croisé au genou ; intentions en **forme de muscle**, chaque ventre gonflant le long de sa
+normale avec un profil en cloche nul aux tendons, articulations immobiles). Et surtout, les plans de
+découpe ne coupent plus net : la couture tronc/jambes descend à y = 0,76 avec atténuation sur 10 cm
+de haut de cuisse, celle du haut suit le rebord costal en biais. Résultat : « tout +1 » donne un
+athlète massif **sans anneau à la taille ni rebord aux hanches**, « props −1 » un gabarit fin
+crédible.
+
+⚠️ Une limite demeure, et elle est **dans le contrat** : à « poitrine +1 et taille +1 », un léger
+pincement subsiste, parce que deux morphs appartenant à des parties différentes doivent tous deux
+être nuls sur la couture qui les sépare. Il tombe sur le bord inférieur des pectoraux et se lit
+comme un rebord de pectoral.
+
+**Vérifié avant embarquement** : 14 cibles sparse, `morphTargetsRelative`, jonctions à 135 et 126
+sommets partagés avec **0 normale divergente et 0 delta incohérent**, **0 face retournée ni
+dégénérée sur 26 cas** (chaque cible à ses extrêmes plus 5 combinaisons), maillage fermé en une
+seule composante. Générateur versionné dans `scripts/spike3d/v3/`.
+
+**🔴 Le poids devient un sujet** — 1 366 Ko par fichier, **4 657 Ko** pour le bundle DOM du spike,
+contre 1 468 Ko à la v1. Un éditeur livré devrait n'embarquer que la variante **découpée**, baisser
+la finesse de grille, ou ouvrir la voie `assetExts` restée non testée. À instruire si le spike
+conclut au feu vert — ce n'est plus négligeable.
+
+**APK** `builds/mon-corps-spike3d-16092026.apk`, 17/09 à 11:52, 207,8 Mo, SHA-256 `29390c078609…`.
+Le correctif de rotation y est confirmé **par la source map embarquée** (`down.yaw + (e.clientX`,
+ancien signe à zéro occurrence) — les commentaires étant retirés du bundle de production, c'est le
+seul contrôle possible depuis l'archive.
+
+**Validation** — `typecheck`, `lint` et `test` passent : **7 105 tests**, 217 suites mobiles.
+
 ## 17/09/2026 — Spike 3D : la rotation suivait le doigt à l'envers, et le plafond se lit enfin
 
 Troisième recette de Florian. Trois retours, trois natures.
