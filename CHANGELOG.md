@@ -10,6 +10,63 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 17/09/2026 (quater) — IA-LAB-01 : ce qui compte dans une progression, c'est ce qui ne progresse pas
+
+Premier verdict complet sur S1, et première comparaison entre deux modèles. Les deux enseignements
+sont plus utiles que le correctif qu'ils ont produit.
+
+### S1 raté — et pas seulement raté : contredit
+
+À « pourquoi je stagne en musculation ? », `gemini-3.5-flash-lite` a cité les charges **qui
+montent** (presse 191 contre 179, squat 134 contre 126) et conclu « tes charges progressent
+encore ». Le développé couché, bloqué à 82,5 kg depuis sept semaines, n'apparaît que dans les
+indicateurs de réussite — présenté comme un mouvement censé **continuer** d'augmenter.
+
+🔴 **C'est un mode d'échec distinct de l'hallucination, et plus dangereux en production.** Aucun
+chiffre n'est faux ; c'est la lecture qui l'est. Une conclusion fluide, confiante et à l'envers se
+détecte beaucoup moins bien qu'un nombre inventé.
+
+### La part qui nous revient
+
+La liste de progression était triée par **charge absolue** (`ORDER BY recent_max DESC`). Le
+développé couché à 82,5 kg arrivait donc derrière la presse à 191 kg, le soulevé de terre et le
+squat : le seul exercice intéressant classé dernier, par un critère sans rapport avec la question.
+
+Corrigé — tri par **progression croissante** : stagnations et reculs en tête, exercices sans
+historique précédent en fin (ils n'ont pas régressé, ils viennent de commencer).
+
+⚠️ **Ce qui n'a PAS été fait, et c'est délibéré** : aucune mention « À L'ARRÊT » ajoutée à côté des
+charges identiques. Rendre une donnée lisible et répondre à la place du modèle sont deux choses
+différentes — et étiqueter la stagnation rendrait impossible de tester si le modèle sait la voir.
+La frontière est là : on trie, on n'annote pas.
+
+### Première comparaison entre modèles
+
+`gemini-flash-latest` avait **trouvé** l'angle mort (épaules, bras, gainage). `gemini-3.5-flash-lite`
+ne le mentionne pas, sur le même contexte et la même question. Premier point de mesure concret : le
+Lite est sensiblement plus faible sur les questions discriminantes.
+
+Conséquence pour la suite : **évaluer la qualité produit sur un Lite sous-estimerait le résultat**.
+Le Lite reste le bon choix pour éprouver la plomberie et la lisibilité du contexte (il est plus
+sévère, et son quota dure) ; juger ce que l'IA apporterait vraiment demande au minimum un Flash
+standard, et en toute rigueur le modèle cible du §3 de l'analyse.
+
+### Corrigé
+
+- **Tri de `progression`** par écart croissant dans
+  [`ai-context-repository.ts`](apps/mobile/src/data/repositories/ai-context-repository.ts), et
+  contrat d'ordre écrit dans le type : le rendu respecte l'ordre du producteur et ne retrie jamais.
+- **Backticks retirés d'un commentaire SQL** : il vit dans un template literal TypeScript, où un
+  accent grave ferme la chaîne. Le typecheck l'a attrapé, mais la cause n'avait rien d'évident —
+  d'où la note laissée sur place.
+
+### Technique / Notes
+
+- ⚠️ **Correction côté app** : demande un rechargement du bundle Metro, pas un redéploiement.
+- **Vérifications** : `npm run lint` ✅ · `npm run typecheck` ✅ · `npm run test` — 217 suites,
+  exit 0 lu sans pipe ✅.
+
+
 ## 17/09/2026 (ter) — IA-LAB-01 : tenir la distance sur un palier gratuit
 
 Trois obstacles rencontrés en recette, tous côté fournisseur, tous résolus dans la fonction Edge.

@@ -276,7 +276,21 @@ export function useAiSnapshot(windowDays: number = AI_CONTEXT_WINDOW_DAYS): {
        AND w.finished_at >= ?
      GROUP BY e.id
      HAVING MAX(CASE WHEN w.finished_at >= ? THEN s.weight_kg END) IS NOT NULL
-     ORDER BY recent_max DESC
+     -- 🔴 Trié par PROGRESSION croissante, pas par charge absolue.
+     --
+     -- Le tri par charge absolue mettait le développé couché bloqué à 82,5 kg en fin de liste,
+     -- derrière la presse à 191 kg et le squat à 134 — c'est-à-dire que le seul exercice
+     -- intéressant était classé dernier, par un critère sans rapport avec la question. En recette
+     -- (17/09/2026), le modèle a cité les charges qui montent et conclu « tes charges progressent
+     -- encore », en ratant la stagnation qui était pourtant sous ses yeux.
+     --
+     -- Ce qui compte dans une liste de progression, c'est **ce qui ne progresse pas**. Les
+     -- stagnations et les reculs passent donc en tête. Les exercices sans historique précédent
+     -- (previous_max nul) vont en fin : ils n'ont pas régressé, ils viennent de commencer.
+     --
+     -- ⚠️ Aucun accent grave dans ce commentaire : il vit dans un template literal TypeScript, où
+     -- il fermerait la chaîne. Le typecheck l'a attrapé, mais la cause n'était pas évidente.
+     ORDER BY (previous_max IS NULL) ASC, (recent_max - previous_max) ASC
      LIMIT ${MAX_TOP_SETS}`,
     [recentIso, previousIso, recentIso, lang, previousIso, recentIso],
   );

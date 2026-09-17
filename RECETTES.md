@@ -4117,6 +4117,12 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 - [ ] **22.** « **Pourquoi je stagne en musculation ?** » → le modèle doit voir que le **développé
   couché est bloqué depuis ~7 semaines** alors que le **squat continue de monter** (S1). Une réponse
   générique (« varie tes exercices ») = échec.
+  ⚠️ **17/09/2026 : ÉCHEC sur `gemini-3.5-flash-lite`**, et un échec d'un genre à part — le modèle a
+  cité les charges qui montent et affirmé « tes charges progressent encore », c'est-à-dire l'inverse
+  du signal. **Aucun chiffre faux, une lecture fausse** : plus difficile à repérer qu'une
+  hallucination, et plus dangereux en production. Part de responsabilité de notre côté : la liste
+  était triée par charge absolue, ce qui reléguait le seul exercice bloqué en fin. Corrigé (tri par
+  progression croissante). **À rejouer**, et à rejouer aussi sur un Flash standard.
 - [ ] **23.** « **Est-ce que je mange assez ?** » → doit relever la **chute calorique** (2700 →
   2150 kcal) et surtout la **chute des protéines** (165 → 115 g) à volume inchangé (S2).
 - [ ] **24.** « **Fais-moi le bilan** » → doit mentionner la **fatigue récente** : énergie et humeur

@@ -98,6 +98,10 @@ export type AiSnapshotStrength = {
   /**
    * Charge max par exercice sur les deux fenêtres. C'est **ici** que se voit une stagnation : deux
    * valeurs identiques disent « bloqué depuis un mois », ce qu'un seul maximum ne dira jamais.
+   *
+   * ⚠️ **L'ordre porte du sens** : le producteur classe par progression croissante, donc les
+   * stagnations et les reculs d'abord. Le rendu le respecte et ne retrie jamais. Trier par charge
+   * absolue reléguait le seul exercice bloqué en fin de liste (recette du 17/09/2026).
    */
   progression: readonly { exercise: string; recentMaxKg: number; previousMaxKg: number | null }[];
 };
