@@ -116,7 +116,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1286 · `main` a **1283** commits de retard sur `dev` |
+| Commits | 1288 · `main` a **1285** commits de retard sur `dev` |
 | Specs d'US | 161 au total — 87 clôturées, 74 en cours |
 | Migrations | 105/105 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -127,11 +127,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `a9a624f`  fix(ia-verification): le controle de coherence criait au loup sur une base saine
+- `fe225f6`  docs(datasets): les deux jeux de donnees s'ecrasaient en silence
 - `24f1e3d`  fix(ia-lab01): nomme les groupes musculaires jamais travailles
 - `22f0ae9`  spike(corps3d): maillage v3, chaque muscle a son contour et les extremes tiennent
 - `9b4239d`  chore(labo01): un jeu de donnees pour voir les trois disques du Labo
-- `81d46a8`  fix(labo01): la scene montrait le prevu et pas le vecu, et n'annoncait pas son chargement
-- `64109dd`  fix(spike3d): rotation dans le bon sens, et le plafond des 8 se lit au lieu de se deviner
 
 ---
 

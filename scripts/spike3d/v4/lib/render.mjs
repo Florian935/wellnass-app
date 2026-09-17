@@ -52,7 +52,7 @@ export function render(mesh, opts = {}) {
   }
   const zbuf = new Float32Array(W * H).fill(Infinity);
   const img = new Float32Array(W * H * 3);
-  const bg = opts.background ?? [0.93, 0.92, 0.90];
+  const bg = opts.background ?? (opts.silhouette ? [1, 1, 1] : [0.93, 0.92, 0.90]);
   for (let i = 0; i < W * H; i++) { img[3 * i] = bg[0]; img[3 * i + 1] = bg[1]; img[3 * i + 2] = bg[2]; }
   const baseColor = opts.color ?? [0.91, 0.80, 0.71];
   // lumières (direction VERS la lumière, monde) — clé chaude en haut à gauche devant, contre-jours
@@ -103,6 +103,7 @@ export function render(mesh, opts = {}) {
         nz = q0 * N[3 * a + 2] + q1 * N[3 * b + 2] + q2 * N[3 * c + 2];
         const l = Math.hypot(nx, ny, nz) || 1; nx /= l; ny /= l; nz /= l;
       }
+      if (opts.silhouette) { img[3 * idx] = 0; img[3 * idx + 1] = 0; img[3 * idx + 2] = 0; continue; }
       const n = [nx, ny, nz];
       // hémisphérique
       const hk = 0.5 + 0.5 * ny;

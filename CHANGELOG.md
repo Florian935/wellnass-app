@@ -259,6 +259,59 @@ vérité.
 - **Vérifié** : typecheck 3 workspaces à 0, lint à **0 erreur et 0 avertissement** sur `engine.js`
   désormais réellement linté, suite complète verte. Commit précédent : `8d3807db`.
 
+## 17/09/2026 (ter) — Spike 3D : maillage v4, on creuse au lieu d'ajouter
+
+Retour de Florian sur la v3 : « ça commence à être vraiment bien », mais « les abdos sont vachement
+en relief **de profil**, les épaules super rondes, et les avant-bras bizarres ».
+
+**Ce n'était pas trois défauts, c'était la méthode.** La v2 et la v3 posaient chaque muscle comme un
+ellipsoïde **dépassant de la peau de 2 à 3 cm**. De face, les sillons se lisaient. De profil, ces
+volumes ajoutés devenaient des **boules collées** : pectoraux et abdominaux saillant comme des
+masses séparées, deltoïdes sphériques, avant-bras renflés sans direction. Or la planche 2D de
+`AnatomyFigure` fait l'inverse — silhouette extérieure lisse et juste, muscles lus par leurs
+**contours**, jamais par du volume ajouté.
+
+**L'approche est donc inversée.** Enveloppe corporelle lisse d'abord (95 volumes fusionnés à k ≥
+0,03), puis 28 ventres musculaires posés **tangents à la peau** — le relief n'est plus que le congé
+de fusion — et 47 sillons d'insertion qui font tout le travail de lisibilité.
+
+**Mesuré, pas jugé à l'œil** (écart max à une moyenne glissante de 7 cm, au repos, v3 → v4) :
+
+| | v3 | v4 |
+|---|---:|---:|
+| abdomen de profil | 18,8 mm | **5,7 mm** |
+| pectoral de profil | 8,2 mm | **5,8 mm** |
+| pectoral à `goals +1` | 11,1 mm | **6,6 mm** |
+| avant-bras | 4,4 mm | **2,3 mm** |
+| mollet à `goals +1` | 8,5 mm | **2,0 mm** |
+| relief moyen des 28 ventres | 20-30 mm | **4,5 mm** |
+
+Le profil médian de l'abdomen passe d'un creux de 25 mm à **13 mm sur 30 cm** — quasi plat, comme
+un abdomen sec réel. Et la planche de **silhouette en aplat noir** le montre sans discussion : le
+contour de profil de la v3 était crénelé, celui de la v4 est continu.
+
+**Et ça coûte moins cher** : 35 324 triangles contre 44 866, **−22 % de poids** (1 066 Ko par
+fichier), bundle DOM du spike à **3 854 Ko** contre 4 657. Creuser est plus économe qu'ajouter.
+
+**Deux bugs trouvés en chemin** par le générateur lui-même : `surfacePoint` plafonnait la sortie du
+solide à 6 cm, si bien que les ventres de cuisse restaient **enfouis** (relief 0,2 mm au lieu de 5) ;
+et le bras posé à 9 mm du tronc pinçait l'aisselle.
+
+**Vérifié avant embarquement** : 14 cibles sparse, `morphTargetsRelative`, jonctions à 103 et 110
+sommets partagés avec **0 normale divergente et 0 delta incohérent**, **0 face retournée ni
+dégénérée sur 26 cas**, maillage fermé en une composante. Provenance du bundle confirmée par
+l'arithmétique : 803 Ko économisés sur le base64, 803 Ko de moins dans le bundle.
+
+⚠️ **Ce qui reste, et qui n'est plus de la géométrie** : les sillons lisent comme des **traits
+sombres** là où la planche 2D a des liserés clairs. C'est une affaire de **rendu** — lumière
+rasante, occlusion ambiante, teinte des sillons — pas de maillage. Ajouter de la géométrie ne
+fermera pas cet écart. Restent aussi un crénelage des sillons diagonaux (aliasing de grille à
+12 mm), une aisselle un peu creuse, et la tête, les mains et les pieds inchangés depuis la v2.
+
+**APK** `builds/mon-corps-spike3d-16092026.apk`, 17/09 à 15:56, 212,0 Mo, SHA-256 `4aa7eba43ee4…`.
+
+**Validation** — `typecheck`, `lint` et `test` passent : **7 105 tests**, 217 suites mobiles.
+
 ## 17/09/2026 (bis) — Spike 3D : le maillage v3, chaque muscle a enfin son contour
 
 Retour de Florian sur la v2 : « se rapprocher de la planche 2D » et « quand on pousse tout au max,

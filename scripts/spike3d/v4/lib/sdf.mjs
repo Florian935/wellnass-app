@@ -61,6 +61,38 @@ export class Body {
     if (opts.rot) mat = mul3(mat, rotMatrix(...opts.rot)); // rotation additionnelle dans le repère local
     return this.ellipsoid(c, r, { ...opts, mat, rot: undefined });
   }
+  /** Demi-étendue (fonction support) d'un ellipsoïde de demi-axes r et matrice mat le long de la direction unitaire d. */
+  static support(r, mat, d) {
+    const m = mat ?? [1, 0, 0, 0, 1, 0, 0, 0, 1];
+    // composantes de d dans le repère local : Rᵀ·d
+    const l0 = m[0] * d[0] + m[3] * d[1] + m[6] * d[2], l1 = m[1] * d[0] + m[4] * d[1] + m[7] * d[2], l2 = m[2] * d[0] + m[5] * d[1] + m[8] * d[2];
+    return Math.hypot(r[0] * l0, r[1] * l1, r[2] * l2);
+  }
+  /**
+   * Ventre musculaire TANGENT À LA PEAU (v4) : ellipsoïde recalé pour que son point extrême le long de `dir`
+   * affleure la peau de l'enveloppe déjà construite (unions seules), décalé de `relief` (m, + = dépasse,
+   * − = enfoui). Le relief visible vient surtout du congé de la fusion (≈ k/4 là où les deux surfaces
+   * coïncident) : k = 0,012 → ~3 mm, k = 0,02 → ~5 mm. Le ventre ne modifie donc jamais la silhouette
+   * au-delà de quelques millimètres — les sillons font la lisibilité. Renvoie la primitive (+x).
+   */
+  belly(c, r, dir, opts = {}) {
+    const l = Math.hypot(dir[0], dir[1], dir[2]); const d = [dir[0] / l, dir[1] / l, dir[2] / l];
+    const mat = opts.mat ?? (opts.rot ? rotMatrix(...opts.rot) : null);
+    const ext = Body.support(r, mat, d);
+    const skin = this.surfacePoint(c, 12, d);
+    const relief = opts.relief ?? 0;
+    const cc = [skin[0] + (relief - ext) * d[0], skin[1] + (relief - ext) * d[1], skin[2] + (relief - ext) * d[2]];
+    const p = this.ellipsoid(cc, r, { ...opts, mat, rot: undefined });
+    p.skin = skin; p.tangentDir = d;
+    return p;
+  }
+  /** Ventre tangent posé le long d'un axe a→b (repère comme muscle()) : t fraction, off décalage monde. */
+  bellyAlong(a, b, t, off, r, dir, opts = {}) {
+    const c = [a[0] + (b[0] - a[0]) * t + off[0], a[1] + (b[1] - a[1]) * t + off[1], a[2] + (b[2] - a[2]) * t + off[2]];
+    let mat = frameAlong([b[0] - a[0], b[1] - a[1], b[2] - a[2]]);
+    if (opts.rot) mat = mul3(mat, rotMatrix(...opts.rot));
+    return this.belly(c, r, dir, { ...opts, mat, rot: undefined });
+  }
   /**
    * Sillon : creux LARGE ET PEU PROFOND épousant la surface, le long d'une polyligne de points monde.
    * Chaque point est d'abord PROJETÉ sur la peau (sphere-tracing sur les unions seules), la polyligne
@@ -101,7 +133,7 @@ export class Body {
       // le tronc derrière le bras…), sinon le « premier contact » serait la face arrière de ce solide
       const at = (s) => this.dist(p[0] + d[0] * s, p[1] + d[1] * s, p[2] + d[2] * s, true);
       let s = 0;
-      while (at(s) < 0 && s < 0.06) s += 0.001;
+      while (at(s) < 0 && s < 0.12) s += 0.001; // v4 : 12 cm (le rayon de la cuisse dépasse 6 cm — sinon les ventres de cuisse restaient enfouis)
       if (at(s) >= 0) {
         const s0 = s;
         while (s < s0 + 0.10 && at(s + 0.002) >= 0) s += 0.002;

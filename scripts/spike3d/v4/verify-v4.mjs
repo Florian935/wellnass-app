@@ -1,9 +1,9 @@
-// verify-v3.mjs — recharge les .glb produits avec le VRAI GLTFLoader de three r128 (node_modules du dépôt) et
+// verify-v4.mjs (repris de verify-v3, plafond de poids = poids v3) — recharge les .glb produits avec le VRAI GLTFLoader de three r128 (node_modules du dépôt) et
 // contrôle le contrat : triangles, 14 noms exacts (single) / découpe 7-3-4 (split), encodage sparse,
 // morphTargetsRelative, normales présentes, poids des fichiers < 1,5 Mo, jonctions du split (coordonnées ET
 // normales identiques, deltas cohérents), maillage fermé (single : 0 arête ouverte, 1 composante), et
 // 0 face retournée / dégénérée à tous les extrêmes ET aux combinaisons — calculé sur les données RECHARGÉES.
-// Usage : node verify-v3.mjs out/body-v3-single.glb out/body-v3-split.glb
+// Usage : node verify-v4.mjs out/body-v4-single.glb out/body-v4-split.glb
 import fs from 'node:fs';
 import path from 'node:path';
 import { loadThree, THREE_ROOT, THREE_VERSION } from 'file:///C:/wellness-app/scripts/spike3d/three-env.mjs';
@@ -18,7 +18,9 @@ const EXPECTED_SPLIT = {
   body_trunk: ['prop_waist', 'prop_hips', 'goal_glutes'],
   body_legs: ['prop_thighs', 'prop_calves', 'goal_thighs', 'goal_calves'],
 };
-const MAX_BYTES = 1.5 * 1024 * 1024;
+// v4 : le plafond est le POIDS DE LA V3 (mesuré : 1 398 840 o single, 1 406 548 o split) — ne pas dépasser, essayer de descendre
+const V3_BYTES = { single: 1398840, split: 1406548 };
+const maxBytesFor = (file) => (/split/.test(file) ? V3_BYTES.split : V3_BYTES.single);
 let failures = 0;
 const fail = (msg) => { failures++; console.log('   ✖ ' + msg); };
 
@@ -58,7 +60,8 @@ console.log(`GLTFLoader de three ${THREE_VERSION} (REVISION ${THREE.REVISION}) �
 const loaded = {};
 for (const file of files) {
   const size = fs.statSync(file).size;
-  console.log(`■ ${path.basename(file)}  (${kb(size)}, ${size} octets) ${size <= MAX_BYTES ? '✔ < 1,5 Mo' : '✖ > 1,5 Mo'}`);
+  const MAX_BYTES = maxBytesFor(file);
+  console.log(`■ ${path.basename(file)}  (${kb(size)}, ${size} octets) ${size <= MAX_BYTES ? '✔' : '✖'} vs v3 ${kb(MAX_BYTES)} : ${((size / MAX_BYTES - 1) * 100).toFixed(1)} %`);
   if (size > MAX_BYTES) failures++;
   // encodage sparse dans le JSON brut
   const json = glbJson(file);

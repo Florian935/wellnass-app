@@ -15,28 +15,24 @@
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
-> `builds/mon-corps-spike3d-16092026.apk`, construit le **17/09/2026 à 11:52** depuis le dépôt
-> principal sur `dev`, **207,8 Mo**, SHA-256
-> `29390c07860953f31e38e903170de5519fb193ee3a06b282117d69b10b00dbe4`, signature **v2**.
+> `builds/mon-corps-spike3d-16092026.apk`, construit le **17/09/2026 à 15:56** depuis le dépôt
+> principal sur `dev`, **212,0 Mo**, SHA-256
+> `4aa7eba43ee483d7dfbf30e70ff297238896759ecdd75f1e0c6d1ec9391fa68c`, signature **v2**.
+> ⚠️ **Tous les APK précédents sont périmés.**
 >
-> ⚠️ **Tous les APK précédents sont périmés** (13:42, 14:52 et 15:54 le 16/09). Celui-ci porte : le
-> chargement asynchrone du maillage, le cadrage corrigé, **la rotation dans le bon sens**, la
-> **lecture des cibles de morph sacrifiées**, et le **maillage v3**.
+> **Maillage v4** — l'approche est inversée : enveloppe corporelle lisse d'abord, muscles lus par
+> des **sillons creusés** et un relief de quelques millimètres, au lieu de volumes ajoutés qui
+> saillaient de 2 à 3 cm. Mesuré au repos : le creux de l'abdomen de profil passe de 25 mm à 13 mm
+> sur 30 cm, le relief moyen des 28 ventres musculaires de 20-30 mm à **4,5 mm**. 35 324 triangles,
+> **−22 % de poids**. Planches dans `builds/apercu-maillage-v4/` — regarder d'abord
+> `ctrl-silhouette.png` (contour pur, v3 contre v4) et `ctrl-profil.png`.
 >
-> **Maillage v3** — 44 866 triangles, groupes musculaires séparés par des sillons d'insertion
-> (deltoïde/pectoral, biceps/triceps, trois chefs du quadriceps, deux du mollet, V des dorsaux).
-> Amplitudes revues : « tout au max » donne un athlète massif, sans anneau à la taille ni rebord
-> aux hanches. Planches dans `builds/apercu-maillage-v3/` — `ctrl-comparaison.png` montre v2 contre
-> v3, `ctrl-extremes.png` les combinaisons en découpé.
->
-> Vérifié dans l'archive : la page du spike pointe vers un bundle DOM de **4 657 Ko**, celle du Labo
-> vers 1 001 Ko. Le correctif de rotation est confirmé **par la source map embarquée**
-> (`down.yaw + (e.clientX`, ancien signe absent). 🔴 **Le poids devient un sujet** : 4,6 Mo pour une
-> seule scène, contre 1,5 Mo avec le maillage v1. Un éditeur livré devrait n'embarquer que la
-> variante découpée, ou baisser la finesse de grille, ou ouvrir la voie `assetExts` — à instruire si
-> le spike conclut au feu vert.
-> ⚠️ Un build **ne peut pas** être purgé par `gradlew clean` (il casse le codegen JNI) ; des bundles
-> DOM orphelins s'accumulent dans les assets. Inoffensif en recette, à traiter avant le Play Store.
+> Vérifié dans l'archive : bundle DOM du spike **3 854 Ko** (contre 4 657 à la v3), Labo 1 001 Ko.
+> 🔴 **Le poids reste un sujet** pour un éditeur livré : n'embarquer que la variante découpée,
+> baisser la finesse de grille (une variante à 915 Ko existe), ou ouvrir la voie `assetExts` restée
+> non testée.
+> ⚠️ `gradlew clean` casse le codegen JNI ; des bundles DOM orphelins s'accumulent dans les assets.
+> Inoffensif en recette, à traiter avant le Play Store.
 > ⚠️ **Tout le JS est cuit dans l'APK** : pour itérer vite, dev client + Metro (mode A de
 > [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md)).
 > **⑪ une §70 est arrivée, et ce n'est pas une fonctionnalité** : le **spike 3D** de la silhouette.

@@ -1,4 +1,4 @@
-// morphs.mjs (v3) — les 14 cibles de morph : champs de déplacement continus (m) pondérés par des masques
+// morphs.mjs (v4, repris de la v3) — les 14 cibles de morph : champs de déplacement continus (m) pondérés par des masques
 // d'appartenance aux groupes de primitives. Deux familles, deux mécaniques :
 //   • prop_* (proportions, poids signé −1…+1) : mise à l'échelle RADIALE d'un segment autour de son axe
 //     (ossature large/étroite), amplitudes modestes (±12 % tronc, ±18 % membres), fenêtres longues.
@@ -69,15 +69,15 @@ const mirror = (p, s) => [s * p[0], p[1], p[2]];
 // ─── croissance musculaire des intentions : [nom de primitive, amplitude (m) au poids 1, exposant du profil] ───
 // Le profil en cloche (1 − u²)^pow suit le grand axe de l'ellipsoïde : 1 au ventre, 0 aux tendons.
 export const GROWTH = {
-  goal_shoulders: [['deltoïde', 0.014, 0.4, [0.3, 0.2, 0]], ['deltoïde pointe', 0.008, 1], ['trapèze sup', 0.006, 1]],
-  goal_chest: [['pectoral', 0.016, 0.7, [0, 0, 0.5]], ['pectoral claviculaire', 0.008, 1, [0, 0, 0.5]]],
-  goal_back: [['grand dorsal', 0.016, 0.6, [0.2, 0, -0.4]], ['trapèze moyen', 0.008, 0.7], ['infra-épineux', 0.007, 1], ['grand rond', 0.006, 1], ['érecteur', 0.007, 1]],
-  goal_arms: [['biceps', 0.014, 0.8], ['triceps', 0.015, 0.8], ['brachial', 0.006, 1], ['fléchisseurs', 0.009, 1], ['brachio-radial', 0.008, 1], ['extenseurs', 0.006, 1]],
-  goal_glutes: [['grand glutéal', 0.012, 0.6, [0, 0.1, -0.9]], ['moyen glutéal', 0.006, 1]],
-  goal_thighs: [['droit fémoral', 0.015, 0.8], ['vaste externe', 0.016, 0.8], ['vaste interne', 0.012, 1], ['biceps fémoral', 0.013, 0.8], ['semi-tendineux', 0.012, 0.8], ['adducteurs', 0.006, 1]],
-  goal_calves: [['gastrocnémien médial', 0.016, 0.7], ['gastrocnémien latéral', 0.014, 0.7], ['soléaire', 0.008, 1], ['tibial antérieur', 0.005, 1]],
+  goal_shoulders: [['deltoïde', 0.012, 0.5, [0.3, 0.15, 0]], ['trapèze sup', 0.005, 1]],
+  goal_chest: [['pectoral', 0.013, 0.7, [0, -0.1, 0.5]], ['pectoral claviculaire', 0.006, 1, [0, 0, 0.5]]],
+  goal_back: [['grand dorsal', 0.013, 0.6, [0.2, 0, -0.4]], ['trapèze moyen', 0.007, 0.7], ['infra-épineux', 0.006, 1], ['grand rond', 0.005, 1], ['érecteur', 0.006, 1]],
+  goal_arms: [['biceps', 0.012, 0.8], ['triceps', 0.013, 0.8], ['brachial', 0.005, 1], ['fléchisseurs', 0.008, 1], ['brachio-radial', 0.007, 1], ['extenseurs', 0.005, 1]],
+  goal_glutes: [['grand glutéal', 0.011, 0.6, [0, 0.1, -0.9]], ['moyen glutéal', 0.005, 1]],
+  goal_thighs: [['droit fémoral', 0.013, 0.8], ['vaste externe', 0.014, 0.8], ['vaste interne', 0.011, 1], ['biceps fémoral', 0.012, 0.8], ['semi-tendineux', 0.011, 0.8], ['adducteurs', 0.005, 1]],
+  goal_calves: [['gastrocnémien médial', 0.014, 0.7], ['gastrocnémien latéral', 0.012, 0.7], ['soléaire', 0.007, 1], ['tibial antérieur', 0.004, 1]],
 };
-const R_MUSCLE = 0.024; // portée du poids d'un muscle autour de sa surface
+const R_MUSCLE = 0.028; // portée du poids d'un muscle autour de sa surface (v4 : ventres tangents, un peu plus large)
 
 /**
  * Prépare, pour chaque sommet : masques d'appartenance par groupe, point d'axe du membre, et pour chaque
