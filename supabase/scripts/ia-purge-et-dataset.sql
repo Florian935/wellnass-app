@@ -2,6 +2,27 @@
 -- US IA-LAB-01 — REMISE À PLAT + JEU DE DONNÉES FACTICES POUR TESTER L'IA
 -- =================================================================================================
 --
+-- ⚠️⚠️ CES DEUX SCRIPTS DE JEU DE DONNÉES S'EXCLUENT MUTUELLEMENT ⚠️⚠️
+--
+--   · supabase/scripts/ia-purge-et-dataset.sql   — 120 jours, 6 signaux plantés  (US IA-LAB-01)
+--   · supabase/scripts/labo-dataset.sql          — 1 semaine, 3 disques visibles (US LABO-01)
+--
+-- Les deux effacent les MÊMES tables (séances, courses, journal alimentaire, pesées, bien-être) et
+-- les repeuplent différemment. Jouer l'un APRÈS l'autre ne « complète » rien : le second écrase.
+--
+-- 🔴 Pire : ils n'effacent pas exactement le même périmètre. `daily_steps`, `activities`,
+-- `personal_goals`, `water_entries`, `body_measurements`, `pain_reports` et six autres tables
+-- survivent à `labo-dataset` mais pas à `ia-purge-et-dataset`. Enchaîner les deux laisse donc une
+-- base **chimère** : une semaine de séances, et 90 jours de pas.
+--
+-- ── Comment ça s'est vu (17/09/2026) ─────────────────────────────────────────────────────────────
+-- Le labo IA a rendu une analyse parfaitement cohérente sur une base qui ne l'était pas : 26 séances
+-- (Labo) mais 620 min de vélo (IA), 1589 kcal (Labo) mais 9457 pas (IA). Aucun chiffre inventé —
+-- le modèle lisait fidèlement un monstre. Une heure perdue à soupçonner une hallucination.
+--
+-- 👉 **Rejouer le script voulu remet tout d'aplomb** : chacun commence par tout effacer. Vérifier
+--    ensuite avec `ia-verification.sql`, dont la ligne « Cohérence » détecte précisément ce cas.
+--
 -- ⚠️ CE N'EST PAS UNE MIGRATION DE SCHÉMA. C'est un script de DONNÉES.
 --    → À jouer dans le SQL Editor de Supabase (cloud `nsxzflxsgovriwwvflxe`),
 --      PAS via `npm run db:push`. Ne modifie aucune structure de table.

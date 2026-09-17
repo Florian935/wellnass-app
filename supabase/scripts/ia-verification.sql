@@ -155,6 +155,21 @@ select 61, 'S6 plateau', 'poids : première → dernière pesée (la perte globa
                           where b3.deleted_at is null order by log_date desc limit 1)), '—'),
        '~82 → ~78 — la perte A EU LIEU, mais elle s''est arrêtée (ligne 60)'
 
+-- ── 🔴 Cohérence : la base est-elle bien celle d'IA-LAB-01, et elle seule ? ─────────────────────
+-- `labo-dataset.sql` (US LABO-01) efface les séances et les courses mais PAS les pas ni les
+-- activités. Enchaîner les deux scripts laisse une base chimère — une semaine de séances et 90 jours
+-- de pas — sur laquelle toute analyse est fausse sans qu'aucun chiffre ne soit faux. Comparer les
+-- deux étendues le révèle en une ligne.
+union all
+select 65, 'Cohérence', 'étendue muscu / étendue pas (en jours)',
+       coalesce((select (select (current_date - min(w.finished_at)::date)::text
+                           from public.workouts w join moi m on m.id = w.user_id
+                          where w.deleted_at is null) || ' j  /  '
+                     || (select (current_date - min(d.log_date))::text
+                           from public.daily_steps d join moi m2 on m2.id = d.user_id
+                          where d.deleted_at is null) || ' j'), '—'),
+       'les DEUX doivent valoir ~120 j. Un écart = labo-dataset.sql joué par-dessus → rejouer ia-purge-et-dataset.sql'
+
 -- ── Le consentement, volontairement éteint ──────────────────────────────────────────────────────
 union all
 select 70, 'Consentement', 'ai_consent_at (doit être vide)',

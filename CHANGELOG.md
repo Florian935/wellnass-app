@@ -10,6 +10,54 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 17/09/2026 (bis) — Les deux jeux de données se marchaient dessus
+
+Le labo IA a rendu une analyse **parfaitement cohérente sur une base qui ne l'était pas** : 26 séances
+de musculation mais 620 min de vélo, 1589 kcal/jour mais 9457 pas. Une heure passée à soupçonner une
+hallucination, pour un problème qui n'était pas dans le modèle.
+
+### La cause
+
+`labo-dataset.sql` (US LABO-01, écrit le 17/09 par une autre session) et `ia-purge-et-dataset.sql`
+(US IA-LAB-01) effacent tous deux les mêmes tables — séances, courses, journal alimentaire, pesées,
+bien-être — et les repeuplent différemment : une semaine pour voir les trois disques du Labo, 120
+jours avec six signaux plantés pour évaluer l'IA.
+
+🔴 **Mais ils n'effacent pas le même périmètre.** `daily_steps`, `activities`, `personal_goals`,
+`water_entries`, `body_measurements`, `pain_reports` et six autres tables survivent à
+`labo-dataset` et pas à l'autre. Les enchaîner laisse donc une base **chimère**, dont aucune moitié
+n'est fausse et dont l'ensemble ne veut rien dire.
+
+### Ce que ça a prouvé, par accident
+
+**Le modèle n'a rien inventé.** Chacun de ses chiffres était exact — ils venaient simplement de deux
+jeux de données différents. Le critère anti-hallucination ([§67.28](RECETTES.md)) tient donc même
+quand les données, elles, sont absurdes. C'est une validation plus sévère que celle qu'on avait
+prévue.
+
+Et **S4 est trouvé** : « aucune série pour les épaules, les bras et le tronc ». Le correctif de
+`untrainedMuscles` livré le matin même fonctionne.
+
+### Ajouté
+
+- **Avertissement croisé en tête des deux scripts** : ils s'excluent mutuellement, le second écrase
+  le premier, et la liste des douze tables qui survivent à l'un mais pas à l'autre y figure. Avec le
+  récit de ce qui s'est passé — un avertissement sans son histoire se lit comme une précaution de
+  style et se saute.
+- **Ligne « Cohérence » dans [`ia-verification.sql`](supabase/scripts/ia-verification.sql)** :
+  compare l'étendue de l'historique muscu à celle des pas quotidiens. Les deux doivent valoir ~120
+  jours ; un écart signe la chimère et dit quoi rejouer. Le cas est désormais détectable en une
+  ligne, avant d'interroger le modèle.
+
+### Technique / Notes
+
+- **Rien à redéployer, rien à recharger** : la correction est documentaire et porte sur les scripts
+  SQL. Le remède est de **rejouer le script voulu**, qui commence par tout effacer.
+- Aucune des deux équipes n'a eu tort : les deux scripts sont justes séparément. Ce qui manquait,
+  c'est que chacun **ignorait l'existence de l'autre** — le coût réel d'un dépôt travaillé par
+  plusieurs sessions en parallèle.
+
+
 ## 17/09/2026 — IA-LAB-01 : l'angle mort était invisible pour le modèle
 
 Première vraie réponse obtenue dans le labo, et premier verdict de recette. Le résultat est double :
