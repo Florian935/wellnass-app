@@ -156,25 +156,54 @@ select 61, 'S6 plateau', 'poids : première → dernière pesée (la perte globa
        '~82 → ~78 — la perte A EU LIEU, mais elle s''est arrêtée (ligne 60)'
 
 -- ── 🔴 Cohérence : la base est-elle bien celle d'IA-LAB-01, et elle seule ? ─────────────────────
--- `labo-dataset.sql` (US LABO-01) efface les séances et les courses mais PAS les pas ni les
--- activités. Enchaîner les deux scripts laisse une base chimère — une semaine de séances et 90 jours
--- de pas — sur laquelle toute analyse est fausse sans qu'aucun chiffre ne soit faux. Comparer les
--- deux étendues le révèle en une ligne.
+-- `labo-dataset.sql` (US LABO-01) ne crée que la **semaine en cours**, et n'efface ni les pas ni les
+-- activités. Enchaîner les deux laisse une base chimère — une semaine de séances et 90 jours de pas —
+-- sur laquelle toute analyse est fausse sans qu'aucun chiffre ne soit faux.
+--
+-- ⚠️ **Corrigé le 17/09/2026.** La première version exigeait ~120 j des deux côtés et criait à la
+-- chimère sur une base parfaitement saine : le script génère les pas sur **90 jours** et le bien-être
+-- sur **75**, volontairement. L'attendu contredisait le script qu'il était censé contrôler. Un
+-- garde-fou qui hurle à tort est pire que pas de garde-fou — on apprend à l'ignorer, et il ne sert
+-- plus le jour où il a raison.
+--
+-- Le seul discriminant fiable est donc **l'étendue de la musculation** : 120 jours si ce script a
+-- tourné en dernier, ~7 si c'est `labo-dataset`.
 union all
-select 65, 'Cohérence', 'étendue muscu / étendue pas (en jours)',
+select 65, 'Cohérence', 'étendue muscu / pas / bien-être (jours)',
        coalesce((select (select (current_date - min(w.finished_at)::date)::text
                            from public.workouts w join moi m on m.id = w.user_id
-                          where w.deleted_at is null) || ' j  /  '
+                          where w.deleted_at is null) || ' / '
                      || (select (current_date - min(d.log_date))::text
                            from public.daily_steps d join moi m2 on m2.id = d.user_id
-                          where d.deleted_at is null) || ' j'), '—'),
-       'les DEUX doivent valoir ~120 j. Un écart = labo-dataset.sql joué par-dessus → rejouer ia-purge-et-dataset.sql'
+                          where d.deleted_at is null) || ' / '
+                     || (select (current_date - min(b.log_date))::text
+                           from public.daily_wellbeing b join moi m3 on m3.id = b.user_id
+                          where b.deleted_at is null)), '—'),
+       '~120 / ~90 / ~75 PAR CONSTRUCTION — les trois profondeurs sont volontairement différentes'
+union all
+select 66, 'Cohérence', 'verdict',
+       coalesce((select case
+                   when (current_date - min(w.finished_at)::date) >= 100
+                     then 'OK — jeu de données IA-LAB-01 intact'
+                   else '🔴 CHIMÈRE : historique muscu de seulement '
+                        || (current_date - min(w.finished_at)::date)::text
+                        || ' j. labo-dataset.sql a été joué par-dessus → rejouer ia-purge-et-dataset.sql'
+                 end
+                   from public.workouts w join moi m on m.id = w.user_id
+                  where w.deleted_at is null), 'aucune séance — le script n''a pas tourné'),
+       'OK attendu'
 
 -- ── Le consentement, volontairement éteint ──────────────────────────────────────────────────────
 union all
 select 70, 'Consentement', 'ai_consent_at (doit être vide)',
-       coalesce((select ai_consent_at::text from public.user_settings s join moi on moi.id = s.user_id
-                  where s.deleted_at is null limit 1), 'NULL — correct, à activer dans l''app'),
-       'NULL'
+       -- ⚠️ **Attendu corrigé le 17/09/2026.** Le script ne touche PAS `ai_consent_at` : un
+       -- consentement déjà donné survit à une régénération, et c'est voulu — révoquer le
+       -- consentement de quelqu'un parce qu'il refait son jeu de test serait un comportement
+       -- surprenant. Les deux valeurs sont donc normales, seul le sens change.
+       coalesce((select 'consenti le ' || ai_consent_at::date::text
+                   from public.user_settings s join moi on moi.id = s.user_id
+                  where s.deleted_at is null and ai_consent_at is not null limit 1),
+                'NULL — le labo est éteint, à activer dans les Réglages'),
+       'NULL sur un compte neuf ; une date si tu as déjà activé le labo. Les deux sont corrects.'
 
 order by ord;
