@@ -25,6 +25,7 @@ import {
   AI_TREND_WINDOW_DAYS,
   buildAiContext,
   localDayKey,
+  MUSCLE_GROUPS,
   type AiSnapshot,
   type AiSnapshotActivity,
 } from '@wellness/shared';
@@ -410,6 +411,12 @@ export function useAiSnapshot(windowDays: number = AI_CONTEXT_WINDOW_DAYS): {
               sessions: s.sessions ?? 0,
               totalVolumeKg: s.volume ?? 0,
               avgSessionMinutes: s.avg_seconds ? s.avg_seconds / 60 : null,
+              // Le complément de `byMuscle` sur la taxonomie fermée : ce qui n'a JAMAIS été
+              // travaillé. Calculé ici plutôt que déduit par le lecteur, parce que personne — ni un
+              // humain ni un modèle — ne remarque ce qui n'est pas écrit.
+              untrainedMuscles: MUSCLE_GROUPS.filter(
+                (group) => !byMuscle.data.some((row) => row.muscle === group),
+              ),
               byMuscle: byMuscle.data
                 .filter((row): row is MuscleRow & { muscle: string } => row.muscle !== null)
                 .map((row) => ({

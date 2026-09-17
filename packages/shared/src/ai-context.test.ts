@@ -40,6 +40,7 @@ const FULL: AiSnapshot = {
       { muscle: 'legs', sets: 96, volumeKg: 78200 },
       { muscle: 'back', sets: 88, volumeKg: 54100 },
     ],
+    untrainedMuscles: ['shoulders', 'arms', 'core'],
     topSets: [
       { exercise: 'Squat', weightKg: 120, reps: 5 },
       { exercise: 'Développé couché', weightKg: 92.5, reps: 3 },
@@ -238,6 +239,23 @@ describe('les tendances rendent les évolutions visibles', () => {
 
   it('S5 — une allure plus lente apparaît comme telle', () => {
     expect(context).toContain('allure 338 s/km contre 318 s/km');
+  });
+
+  /**
+   * 🔴 **Le signal que la recette du 17/09/2026 a montré introuvable.** À « quel est mon angle
+   * mort ? », le modèle avait répondu par le déficit calorique — juste, mais à côté. Il ne pouvait
+   * pas faire mieux : on ne lui montrait que les groupes travaillés, jamais la liste complète.
+   */
+  it('S4 — les groupes JAMAIS travaillés sont nommés, pas seulement omis', () => {
+    expect(context).toContain('Aucune série sur : shoulders, arms, core.');
+  });
+
+  it("ne ment pas par omission quand tous les groupes sont travaillés", () => {
+    const complet: AiSnapshot = {
+      ...FULL,
+      strength: { ...FULL.strength!, untrainedMuscles: [] },
+    };
+    expect(buildAiContext(complet)).not.toContain('Aucune série sur');
   });
 
   it('🔴 S6 — un plateau se lit « stable », là où les deux bornes disaient « perte »', () => {

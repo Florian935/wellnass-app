@@ -4127,6 +4127,10 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
   en baisse, stress en hausse, sommeil raccourci (S3).
 - [ ] **25.** 🔴 « **Quel est mon angle mort ?** » → doit dire **épaules / bras / gainage : zéro
   série en 120 jours** (S4). C'est la question la plus discriminante.
+  ⚠️ **Première tentative du 17/09/2026 : ÉCHEC**, et le défaut était de notre côté — le contexte ne
+  listait que les groupes **travaillés**, sans jamais dire que la taxonomie en compte six. Le modèle
+  a répondu par le déficit calorique, ce qui était la meilleure réponse atteignable. Corrigé par la
+  ligne `Aucune série sur : …`. **À rejouer après rechargement du bundle.**
 - [ ] **26.** « **Quel lien vois-tu entre mes piliers ?** » → doit relier S2 (sous-alimentation) à
   S1/S3/S5 : *un déficit trop agressif sur un volume maintenu produit de la fatigue qui bloque la
   progression*. C'est **la** bonne réponse.

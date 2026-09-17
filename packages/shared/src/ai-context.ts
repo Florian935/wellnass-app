@@ -76,6 +76,23 @@ export type AiSnapshotStrength = {
   totalVolumeKg: number;
   avgSessionMinutes: number | null;
   byMuscle: readonly { muscle: string; sets: number; volumeKg: number }[];
+  /**
+   * 🔴 Les groupes musculaires **sans une seule série** sur la période.
+   *
+   * ── Pourquoi ça ne contredit PAS R5 (« une section absente est omise, jamais mise à zéro ») ─────
+   * R5 parle d'un **pilier que la personne ne suit pas** : y écrire « 0 sortie » ferait conclure à
+   * l'inactivité au lieu du désintérêt. Ici c'est l'inverse. La musculation EST suivie, et la
+   * taxonomie des groupes est **fermée et connue** (`MUSCLE_GROUPS`, six entrées) : un groupe à zéro
+   * n'est pas une donnée manquante, c'est un fait — et souvent le plus intéressant de tous.
+   *
+   * ── Ce qui a rendu ce champ nécessaire (recette du 17/09/2026) ──────────────────────────────────
+   * À la question « quel est mon angle mort ? », le modèle a répondu par le déficit calorique — une
+   * bonne analyse, mais pas la réponse. Le vrai angle mort (zéro série d'épaules, de bras et de
+   * gainage en 120 jours) lui était **inatteignable** : on ne lui montrait que `back, chest, legs`,
+   * sans jamais lui dire que la liste en compte six. L'absence n'est pas une donnée tant qu'on ne la
+   * nomme pas.
+   */
+  untrainedMuscles: readonly string[];
   /** Les séries les plus lourdes par exercice — la trace de progression la plus lisible. */
   topSets: readonly { exercise: string; weightKg: number; reps: number }[];
   /**
@@ -229,6 +246,9 @@ export function buildAiContext(snapshot: AiSnapshot): string {
         .map((t) => `${t.exercise} ${num(t.weightKg)} kg × ${t.reps}`)
         .join(' · ');
       lines.push(`  Meilleures séries : ${detail}.`);
+    }
+    if (s.untrainedMuscles.length > 0) {
+      lines.push(`  Aucune série sur : ${s.untrainedMuscles.join(', ')}.`);
     }
     if (s.progression.length > 0) {
       const detail = s.progression

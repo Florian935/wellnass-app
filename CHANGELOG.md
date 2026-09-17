@@ -10,6 +10,63 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 17/09/2026 — IA-LAB-01 : l'angle mort était invisible pour le modèle
+
+Première vraie réponse obtenue dans le labo, et premier verdict de recette. Le résultat est double :
+ce qui marche est solide, et ce qui manque était **structurellement inatteignable**.
+
+### Ce que la réponse a prouvé
+
+🔴 **Aucune hallucination.** Les dix-huit nombres cités par le modèle (2150,1 · 2693,1 · 115,2 ·
+164 · 359,4 · 452 · 2,5 · 3,4 · 3,5 · 2,6 · 6170 · 9457,1 · 345,6 · 323,5 · 77,9 · 78,3 · 191 · 179)
+proviennent **tous** de la section `TENDANCES` du contexte. C'est le critère
+[§67.28](RECETTES.md) — celui qui décide si cette surface pourra un jour alimenter un écran
+produit — et il passe au premier essai.
+
+Le modèle a trouvé **S2, S3, S5 et S6** et les a **reliés causalement** : restriction accrue →
+récupération dégradée → vitesse et dynamisme en baisse. C'est exactement l'histoire écrite dans le
+script de jeu de données.
+
+### Le défaut
+
+À la question « **quel est mon angle mort ?** », il a répondu par le déficit calorique. Bonne
+analyse, mauvaise question : l'angle mort planté (S4) est **zéro série d'épaules, de bras et de
+gainage en 120 jours**.
+
+Il ne pouvait pas faire mieux. Le contexte listait `back, chest, legs` — les groupes **travaillés** —
+sans jamais dire que `MUSCLE_GROUPS` en compte **six**. Le modèle n'avait aucun moyen de déduire
+l'existence de ce qu'on ne lui montrait pas.
+
+**C'est le même défaut que les tendances, une couche plus bas** : demander de trouver quelque chose
+que le contexte n'exprime pas. L'absence n'est pas une donnée tant qu'on ne la nomme pas.
+
+### Corrigé
+
+- **`AiSnapshotStrength.untrainedMuscles`** — les groupes sans une seule série sur la période,
+  calculés comme le complément de `byMuscle` sur la taxonomie fermée. Rendus sur leur propre ligne :
+  `Aucune série sur : shoulders, arms, core.`
+- **Pourquoi ça ne contredit pas R5** (« une section absente est omise, jamais mise à zéro ») : R5
+  vise un **pilier non suivi**, où écrire « 0 sortie » ferait conclure à l'inactivité plutôt qu'au
+  désintérêt. Ici la musculation **est** suivie et la taxonomie est **fermée et connue** — un groupe
+  à zéro n'est pas une donnée manquante, c'est un fait, et souvent le plus intéressant. La nuance est
+  écrite dans le type, parce qu'elle ressemble de loin à une contradiction.
+- **2 tests** : le rendu nomme les groupes absents ; il ne dit rien quand les six sont travaillés.
+
+### Technique / Notes
+
+- ⚠️ **Correction côté app, pas serveur** : contrairement aux trois précédentes, celle-ci vit dans
+  `packages/shared` et le repository. Elle demande un **rechargement du bundle** (Metro), pas un
+  redéploiement de la fonction Edge.
+- Les correctifs de la fonction Edge livrés entre-temps (reprise automatique sur 429/5xx après le
+  `503 UNAVAILABLE` constaté en recette, détail sur tous les chemins d'échec) étaient déjà dans
+  `HEAD`, committés par une autre session. Dépôt et déploiement (version 4) sont alignés.
+- **Reste à recetter** : « Pourquoi je stagne en musculation ? » n'a pas encore été posée — S1
+  (développé couché bloqué pendant que le squat monte) est l'autre signal discriminant, et le seul
+  qui n'a encore reçu aucun verdict.
+- **Vérifications** : `npm run lint` ✅ · `npm run typecheck` ✅ · `npm run test` — 217 suites,
+  3 080 tests Vitest + Jest, **exit 0 lu sans pipe** ✅.
+
+
 ## 17/09/2026 — LABO-01 : la scène montrait le prévu, pas le vécu — et un indicateur de chargement
 
 Deux retours de recette sur device, une fois la 3D enfin visible.
