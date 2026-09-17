@@ -10,6 +10,67 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 17/09/2026 (ter) — IA-LAB-01 : tenir la distance sur un palier gratuit
+
+Trois obstacles rencontrés en recette, tous côté fournisseur, tous résolus dans la fonction Edge.
+Aucun ne touchait l'app, aucun ne demandait de rebuild.
+
+### 🔴 Le bug le plus instructif : une logique fondée sur du texte libre
+
+Bascule sur `gemini-3.5-flash-lite` → `400 INVALID_ARGUMENT`. Cause : les modèles de génération
+**3.x** rejettent `thinkingConfig: { thinkingBudget: 0 }` (ils attendent `thinkingLevel`).
+
+Le repli existait pourtant — rejouer sans ce champ — mais il se déclenchait en cherchant le mot
+« thinking » **dans le message de Google**. Or Google répond `"Request contains an invalid
+argument."` : générique, sans jamais nommer le champ fautif. Le repli ne s'est donc **jamais**
+déclenché.
+
+**La leçon dépasse ce cas : ne jamais fonder une décision sur le texte libre d'un fournisseur.** Il
+n'est ni stable, ni documenté, ni forcément en anglais, et il change sans préavis. C'est du code qui
+marche le jour où on l'écrit et casse en silence six mois plus tard.
+
+Corrigé : **tout** 400 déclenche une seconde tentative sans `thinkingConfig`, sans condition. Ça ne
+coûte une requête que sur un 400, et si l'erreur venait d'ailleurs elle revient identique — on n'a
+rien masqué, juste écarté une hypothèse. Le message final le dit alors explicitement (« inchangé
+après une tentative sans thinkingConfig — la cause est ailleurs »), sinon on chercherait longtemps un
+champ qui n'a jamais été en cause.
+
+### Ajouté — le modèle de repli
+
+`GEMINI_FALLBACK_MODEL` : sur le palier gratuit de Google, le quota est **par modèle**. Un second
+modèle est donc un second budget, et c'est ce qui évite d'arrêter une session d'évaluation à
+mi-course après une douzaine de questions (constaté : `429` sur le quota par minute).
+
+Deux garde-fous :
+- **Seul un 429 déclenche le repli.** Une erreur de configuration ou une réponse vide n'a aucune
+  raison de mieux se passer ailleurs : elle serait juste masquée, et on perdrait le diagnostic.
+- En cas de double échec, le détail **nomme les deux modèles** essayés — sans quoi on croirait que le
+  principal a échoué seul.
+
+Vide par défaut : je ne devine pas un identifiant, un mauvais nom donnerait un 404.
+
+### Corrigé — le message de quota était coupé avant l'information utile
+
+Troncature des erreurs HTTP portée de 350 à **900 caractères**. Google nomme la **métrique** épuisée
+(par minute, par jour, par modèle) *après* une longue URL de documentation : à 350, le message
+s'arrêtait exactement avant. On lisait « quota dépassé » sans savoir s'il fallait attendre une minute
+ou jusqu'au lendemain — deux gestes opposés, aucun moyen de choisir.
+
+### Technique / Notes
+
+- **Correction 100 % serveur** (version 11 de la fonction), déjà déployée. L'app n'a pas changé.
+- Le catalogue des modèles disponibles se demande à Google, il est propre à chaque clé :
+  `GET https://generativelanguage.googleapis.com/v1beta/models?key=…`. Six variantes **Flash-Lite** y
+  figurent, avec les meilleurs quotas gratuits. `gemini-flash-latest` — le défaut — pointe vers le
+  Flash le plus récent, donc le plus demandé : c'est la source des `429` et `503` répétés.
+- ⚠️ **Une clé API a été exposée en clair** dans un copier-coller de terminal pendant la recette
+  (historique bash inclus). Elle a été signalée pour révocation immédiate. Risque réel faible (palier
+  gratuit, sans facturation), mais le réflexe compte : les clés passent par le presse-papier, jamais
+  par la ligne de commande.
+- **Vérifications** : `npm run lint` ✅ · `npm run typecheck` ✅ · `npm run test` — 217 suites,
+  exit 0 lu sans pipe ✅.
+
+
 ## 17/09/2026 (bis) — Les deux jeux de données se marchaient dessus
 
 Le labo IA a rendu une analyse **parfaitement cohérente sur une base qui ne l'était pas** : 26 séances

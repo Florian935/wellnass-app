@@ -43,6 +43,8 @@ export type ProviderResult =
 export type ProviderConfig = {
   provider: AiProvider;
   model: string;
+  /** Gemini seulement : modèle de secours quand le quota du premier est épuisé. */
+  fallbackModel?: string | null;
   apiKey: string;
 };
 
@@ -81,6 +83,10 @@ export function readProviderConfig(env: (key: string) => string | undefined): Pr
       // an (3.5 → 3.7 → 3.8 en 2026), et un identifiant figé finit en 404 sans que personne n'ait
       // rien changé. `GEMINI_MODEL` permet d'épingler une version précise pour comparer.
       model: env('GEMINI_MODEL')?.trim() || 'gemini-flash-latest',
+      // Sur le palier gratuit, **chaque modèle a son propre quota**. Un second modèle, c'est donc un
+      // second budget — et c'est ce qui permet de continuer à évaluer quand le premier est épuisé.
+      // Vide par défaut : je ne devine pas un identifiant, un mauvais nom donnerait un 404.
+      fallbackModel: env('GEMINI_FALLBACK_MODEL')?.trim() || null,
       apiKey: geminiKey,
     };
   }
@@ -89,6 +95,7 @@ export function readProviderConfig(env: (key: string) => string | undefined): Pr
   return {
     provider,
     model: env('ANTHROPIC_MODEL')?.trim() || 'claude-sonnet-5',
+    fallbackModel: null,
     apiKey: anthropicKey,
   };
 }
@@ -161,10 +168,14 @@ async function fetchWithRetry(
 }
 
 function classifyHttpError(status: number, body: string, attempts = 1): ProviderResult {
+  // 900 et non 350 : le message de quota de Google nomme la **métrique** épuisée (par minute, par
+  // jour, par modèle) après une longue URL de documentation. Tronqué à 350, il s'arrêtait
+  // exactement avant — on lisait « quota dépassé » sans savoir s'il fallait attendre une minute ou
+  // jusqu'au lendemain. Deux gestes opposés, et aucun moyen de choisir.
   const detail =
     `HTTP ${status}` +
     (attempts > 1 ? ` après ${attempts} tentatives` : '') +
-    ` — ${body.slice(0, 350)}`;
+    ` — ${body.slice(0, 900)}`;
   if (status === 400 || status === 401 || status === 403 || status === 404) {
     return { ok: false, kind: 'misconfigured', detail: body.slice(0, 400) };
   }
@@ -220,9 +231,17 @@ function geminiBody(request: ProviderRequest, withThinkingConfig: boolean): stri
   });
 }
 
-async function callGemini(config: ProviderConfig, request: ProviderRequest): Promise<ProviderResult> {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent`;
-  const headers = { 'Content-Type': 'application/json', 'x-goog-api-key': config.apiKey };
+/**
+ * Un appel complet à un modèle Gemini donné. Extrait de `callGemini` pour pouvoir être rejoué tel
+ * quel sur le **modèle de repli** quand le quota du premier tombe.
+ */
+async function callGeminiModel(
+  model: string,
+  apiKey: string,
+  request: ProviderRequest,
+): Promise<ProviderResult> {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
+  const headers = { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey };
 
   let { response, attempts } = await fetchWithRetry(url, {
     method: 'POST',
@@ -230,19 +249,39 @@ async function callGemini(config: ProviderConfig, request: ProviderRequest): Pro
     body: geminiBody(request, true),
   });
 
-  // Repli : le modèle a refusé `thinkingConfig` (génération 3.x). On rejoue sans, une seule fois.
-  // Le budget de sortie, lui, reste large — c'est ce qui laisse de la place au raisonnement.
+  /*
+   * Repli sur 400 : le modèle a probablement refusé `thinkingConfig` (génération 3.x, qui attend
+   * `thinkingLevel`). On rejoue **sans**, une seule fois.
+   *
+   * 🔴 **Rejouer sur TOUT 400, et non sur ceux dont le message parle de « thinking ».** La première
+   * version cherchait ce mot dans la réponse de Google ; or Google répond
+   * `"Request contains an invalid argument."` — générique, sans jamais nommer le champ fautif. Le
+   * repli ne se déclenchait donc jamais, et basculer sur un modèle 3.x rendait une erreur de
+   * configuration au lieu d'une réponse (constaté le 17/09/2026 avec `gemini-3.5-flash-lite`).
+   *
+   * La leçon dépasse ce cas : **ne jamais fonder une logique sur le texte libre d'un fournisseur.**
+   * Il n'est ni stable, ni documenté, ni forcément en anglais. Un second appel coûte une seconde et
+   * ne se produit que sur un 400 ; si l'erreur venait d'ailleurs, elle revient identique et remonte
+   * telle quelle — on n'a rien masqué, juste écarté une hypothèse.
+   */
   if (response.status === 400) {
-    const body = await response.text();
-    if (body.includes('thinking') || body.includes('thinkingConfig')) {
-      console.warn('[ai-assist] thinkingConfig refusé par le modèle, seconde tentative sans');
-      ({ response, attempts } = await fetchWithRetry(url, {
-        method: 'POST',
-        headers,
-        body: geminiBody(request, false),
-      }));
-    } else {
-      return classifyHttpError(400, body, attempts);
+    const first = await response.text();
+    console.warn('[ai-assist] 400 du modèle, seconde tentative sans thinkingConfig');
+    ({ response, attempts } = await fetchWithRetry(url, {
+      method: 'POST',
+      headers,
+      body: geminiBody(request, false),
+    }));
+    if (response.status === 400) {
+      // Toujours 400 sans `thinkingConfig` : ce n'était pas lui. L'erreur est réelle, et on le dit
+      // — sans quoi on chercherait longtemps un champ qui n'a jamais été en cause.
+      const second = await response.text();
+      return classifyHttpError(
+        400,
+        `${second}
+(inchangé après une tentative sans thinkingConfig — la cause est ailleurs. Première réponse : ${first.slice(0, 200)})`,
+        attempts,
+      );
     }
   }
 
@@ -276,6 +315,36 @@ async function callGemini(config: ProviderConfig, request: ProviderRequest): Pro
       `Le modèle n'a produit aucun texte (finishReason=${reason}` +
       (thoughts ? `, ${thoughts} jetons de raisonnement` : '') +
       `). Budget de sortie : ${request.maxTokens} jetons.`,
+  };
+}
+
+/**
+ * Appelle le modèle principal, puis **le modèle de repli** si le quota du premier est épuisé.
+ *
+ * ── Pourquoi c'est utile et pas juste malin ──────────────────────────────────────────────────────
+ * Sur le palier gratuit de Google, le quota est **par modèle**. Un second modèle est donc un second
+ * budget, et c'est exactement ce qu'il faut pour ne pas arrêter une session d'évaluation à mi-course
+ * parce qu'on a posé douze questions d'affilée (constaté le 17/09/2026).
+ *
+ * ⚠️ **Seul un 429 déclenche le repli.** Une erreur de configuration ou une réponse vide n'a aucune
+ * raison de mieux se passer sur un autre modèle : elle serait juste masquée, et on perdrait le
+ * diagnostic. Le détail final nomme les **deux** modèles essayés, sans quoi on croirait que le
+ * principal a échoué seul.
+ */
+async function callGemini(config: ProviderConfig, request: ProviderRequest): Promise<ProviderResult> {
+  const primary = await callGeminiModel(config.model, config.apiKey, request);
+
+  const quotaExhausted =
+    !primary.ok && primary.kind === 'failed' && (primary.detail ?? '').startsWith('HTTP 429');
+  if (!quotaExhausted || !config.fallbackModel) return primary;
+
+  console.warn(`[ai-assist] quota épuisé sur ${config.model}, repli sur ${config.fallbackModel}`);
+  const fallback = await callGeminiModel(config.fallbackModel, config.apiKey, request);
+  if (fallback.ok) return fallback;
+
+  return {
+    ...fallback,
+    detail: `Quota épuisé sur ${config.model}, et le repli ${config.fallbackModel} a échoué aussi : ${fallback.detail ?? 'sans détail'}`,
   };
 }
 

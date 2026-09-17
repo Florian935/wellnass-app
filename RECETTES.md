@@ -4156,6 +4156,18 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
   (ou le retirer pour retomber sur `gemini-flash-latest`).
 - [ ] **35.** **Sans clé** (`npx supabase secrets unset GEMINI_API_KEY`, redéployer) → « Aucune clé
   de fournisseur n'est posée côté serveur ». **Aucun appel n'est facturé** dans cet état.
+- [ ] **34 bis.** 🔴 **Quota épuisé, et comment continuer.** Le palier gratuit plafonne par minute
+  ET par jour, **modèle par modèle**. Un `429` n'est donc pas un mur : changer de modèle rend un
+  budget neuf. Lister ceux que ta clé autorise —
+  `GET https://generativelanguage.googleapis.com/v1beta/models?key=…` (⚠️ jamais la clé en ligne de
+  commande : presse-papier) — puis :
+  `npx supabase secrets set GEMINI_MODEL=gemini-3.5-flash-lite` et
+  `GEMINI_FALLBACK_MODEL=gemini-2.5-flash-lite`, redéployer. La fonction bascule **seule** sur le
+  repli quand le principal sature. Vérifier que le pied de réponse nomme bien le modèle qui a
+  répondu — c'est ce qui rend la comparaison possible.
+  ⚠️ Les modèles **3.x** gardent leur raisonnement actif (le champ qui l'éteint est propre à la 2.x)
+  et consomment donc une part du budget de 8 192 jetons. Les **2.x** sont plus rapides et durent plus
+  longtemps à quota égal.
 - [ ] **35 bis.** 🔴 **Réponse vide du modèle.** Corrigé le 16/09/2026 : chez Gemini,
   `maxOutputTokens` est un budget **commun au raisonnement et à la réponse**, et le modèle rendait un
   200 avec `parts` vide après avoir tout dépensé à réfléchir. Vérifier qu'une question de fond
