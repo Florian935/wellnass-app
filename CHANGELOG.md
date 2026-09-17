@@ -10,6 +10,50 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 17/09/2026 — LABO-01 : la scène montrait le prévu, pas le vécu — et un indicateur de chargement
+
+Deux retours de recette sur device, une fois la 3D enfin visible.
+
+### Corrigé
+
+🔴 **Un pilier où l'on a fait sans avoir prévu disparaissait de la scène.** Le mapper poussait le
+**prévu** seul : `values.km` et `reality.sessions` venaient de `plannedKm` / `planned`. Or la scène
+allume la piste sur `state.km > 0` et empile un disque par séance. Résultat sur une semaine réelle —
+0 séance prévue, **0,0 km prévu mais 7,5 km courus** — seule l'assiette restait : la piste
+s'éteignait alors que le panneau, trois centimètres plus bas, affichait « 7,5 sur 0,0 km ».
+
+La scène contredisait le texte, et se lisait comme cassée. Le volume d'un pilier est désormais
+`max(prévu, fait)` (`weekVolume`, pur et testé) : **la semaine telle qu'elle s'est passée**, pas
+telle qu'elle avait été planifiée. Le fait ne remplace pas le prévu, il s'y ajoute — une semaine à
+4 séances prévues dont 2 faites garde bien ses 4 disques, 2 pleins et 2 fantômes.
+
+⚠️ **Ce qui n'est PAS changé, et c'est délibéré** : un pilier actif dont la semaine est réellement
+vide (0 prévu, 0 fait) n'a toujours aucun disque. C'est exact, et fabriquer un contenu pour remplir
+l'image reviendrait à inventer des données d'entraînement. Si l'absence doit se voir autrement qu'en
+creux, c'est un choix de design à trancher, pas un défaut à corriger en douce.
+
+### Ajouté
+
+- **Un indicateur de chargement sur la scène.** Le montage prend 3-4 s sur device (WebView + three +
+  les textures dessinées au canvas). Pendant ce temps l'écran était vide et muet — exactement la
+  lecture « c'est cassé » qu'ont déjà produite les deux défauts précédents. On affiche maintenant un
+  `ActivityIndicator` et « La scène se monte… », et le texte d'aide n'apparaît qu'une fois la scène
+  prête. L'état existait déjà : c'est le drapeau `answered` du chien de garde, réutilisé.
+  **Mouvement réduit respecté** : le texte reste, le tourniquet disparaît.
+- Clé `lab.stage.loading` (FR + EN).
+
+### Technique — notes
+
+- **2 tests neufs** sur `scene-state` figent la règle : fait-sans-prévu garde le pilier dans la
+  scène, et le prévu l'emporte quand il dépasse le fait.
+- ⚠️ **Le harnais headless n'a pas pu servir cette fois** : SwiftShader a saturé la machine et Chrome
+  est sorti en timeout à chaque tentative après la première. Le correctif tient par la lecture du
+  moteur (`trackShow` suit `state.km > 0`, la pile suit `real.sessions`) et par les tests unitaires,
+  qui sont de toute façon le bon garde-fou — une capture ne tourne pas en CI.
+- 🔴 **Un nouvel APK est nécessaire.**
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0, suite complète verte (3 438 tests mobile).
+
+
 ## 16/09/2026 (quater) — IA-LAB-01 : le raisonnement de Gemini mangeait toute la réponse
 
 Trouvé à la **première vraie question posée dans le labo** : « La demande a échoué », sans autre

@@ -4780,7 +4780,8 @@
       "known": "Ce que tu sais de toi",
       "hint": "Glisse pour tourner autour · touche un disque pour t’en approcher",
       "hintFocus": "Touche le vide pour revenir à l’ensemble",
-      "fallback": "La 3D n’a pas démarré : voici les mêmes disques, en 2D."
+      "fallback": "La 3D n’a pas démarré : voici les mêmes disques, en 2D.",
+      "loading": "La scène se monte…"
     },
     "scene": {
       "brand": "FITTRIO",

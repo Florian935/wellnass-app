@@ -3961,6 +3961,14 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
   faisait **zéro pixel de haut** : WebGL tournait, la scène se déclarait OK, et on ne voyait rien.
   Vérifier que les disques occupent toute la hauteur de la scène, en portrait **et** après une
   rotation de l'écran.
+- [ ] **50.** 🔴 **La scène montre le VÉCU, pas le prévu** (correctif du 17/09). Sur une semaine où
+  l'on a couru **sans l'avoir planifié** (0 km prévu, des km faits), la **piste doit être visible**.
+  Idem pour une séance de muscu faite hors programme : elle doit poser son disque. ⚠️ Un pilier
+  actif dont la semaine est **réellement vide** (0 prévu, 0 fait) n'a pas de disque — c'est voulu,
+  ce n'est pas un défaut.
+- [ ] **51.** **L'attente est dite.** À l'arrivée sur le Labo, pendant les 3-4 s de montage de la
+  scène : un indicateur et « La scène se monte… ». Le texte d'aide (« Glisse pour tourner ») ne doit
+  apparaître qu'**après**. Avec **Mouvement réduit** activé : le texte reste, le tourniquet non.
 - [ ] **43.** Ouvrir et quitter l'onglet Labo **dix fois** de suite : pas de ralentissement
   progressif ni de chauffe anormale — la scène doit se libérer à la sortie.
 

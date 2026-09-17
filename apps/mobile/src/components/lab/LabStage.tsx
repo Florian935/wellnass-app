@@ -12,7 +12,7 @@
  */
 
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -57,6 +57,8 @@ export function LabStage({ state, caption, onPick, onLand }: Props) {
     return () => clearTimeout(timer);
   }, [answered]);
 
+  /** Tant que la scène n'a pas répondu, elle est en train de se monter : on le montre. */
+  const loading = !answered && status.ok;
   const hint = state.focus === null ? t('lab.stage.hint') : t('lab.stage.hintFocus');
 
   return (
@@ -81,11 +83,21 @@ export function LabStage({ state, caption, onPick, onLand }: Props) {
         </Pressable>
       )}
 
+      {/* La scène met 3-4 s à démarrer (WebView + three + textures dessinées au canvas). Sans rien
+          pendant ce temps, l'écran se lit comme cassé — c'est d'ailleurs exactement l'erreur de
+          lecture qu'a produite le canvas de zéro pixel. On le dit, plutôt que de laisser deviner. */}
+      {loading ? (
+        <View style={styles.loader} pointerEvents="none">
+          {state.reducedMotion ? null : <ActivityIndicator color={stage.inkMuted} />}
+          <Text style={[styles.loaderText, { color: stage.inkMuted }]}>{t('lab.stage.loading')}</Text>
+        </View>
+      ) : null}
+
       <View style={[styles.overlay, { paddingTop: insets.top + 10 }]} pointerEvents="none">
         <Text style={[styles.caption, { color: stage.inkMuted }]}>{caption.toUpperCase()}</Text>
         <View style={styles.spacer} />
         <Text style={[styles.hint, { color: stage.inkMuted }]}>
-          {status.ok ? hint : t('lab.stage.fallback')}
+          {loading ? '' : status.ok ? hint : t('lab.stage.fallback')}
         </Text>
       </View>
     </View>
@@ -96,6 +108,8 @@ const styles = StyleSheet.create({
   stage: { overflow: 'hidden', borderBottomLeftRadius: 30, borderBottomRightRadius: 30 },
   fill: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 },
   overlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingBottom: 14 },
+  loader: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, alignItems: 'center', justifyContent: 'center', gap: 10 },
+  loaderText: { fontFamily: fontFamily.mono, fontSize: 11, letterSpacing: 0.8 },
   spacer: { flex: 1 },
   caption: { fontFamily: fontFamily.mono, fontSize: 10.5, letterSpacing: 1.1 },
   hint: { fontFamily: fontFamily.body, fontSize: 12 },

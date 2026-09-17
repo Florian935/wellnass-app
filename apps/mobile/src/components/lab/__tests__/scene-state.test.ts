@@ -139,6 +139,33 @@ describe('mode semaine', () => {
     expect(state.reality!.nights).toEqual([null, 1, 0, null, null, null, null]);
   });
 
+  it('🔴 un pilier où l’on a FAIT sans avoir prévu reste dans la scène', () => {
+    const week = semaine();
+    // Le cas réel du 16/09 : rien de planifié, 7,5 km courus quand même.
+    week.progress.strength = { done: 0, planned: 0, next: null };
+    week.progress.running = { doneKm: 7.5, plannedKm: 0, next: null };
+
+    const state = depuisSemaine(week);
+
+    // La scène allume la piste sur `values.km` : en prenant le PRÉVU seul, le pilier course
+    // disparaissait de l'image pendant que le panneau juste dessous affichait « 7,5 sur 0,0 km ».
+    expect(state.values.km).toBe(7.5);
+    expect(state.reality!.km).toBe(7.5);
+    expect(state.reality!.kmDone).toBe(7.5);
+  });
+
+  it('le prévu l’emporte quand il dépasse le fait : les séances restantes gardent leur disque', () => {
+    const week = semaine();
+    week.progress.strength = { done: 2, planned: 4, next: null };
+
+    const state = depuisSemaine(week);
+
+    // 4 disques, dont 2 pleins et 2 fantômes — le fait ne remplace pas le prévu, il s'y ajoute.
+    expect(state.values.fq).toBe(4);
+    expect(state.reality!.sessions).toBe(4);
+    expect(state.reality!.sessionsDone).toBe(2);
+  });
+
   it('chaque proposition ouverte pose une médaille, un garde-fou allume la garde', () => {
     const week = semaine({
       proposals: [proposition({ id: 'a' }), proposition({ id: 'b', kind: 'overtraining', tone: 'guard', pair: ['sleep', 'strength'] })],

@@ -4780,7 +4780,8 @@
       "known": "What you know about yourself",
       "hint": "Drag to orbit · tap a disc to move closer",
       "hintFocus": "Tap empty space to zoom back out",
-      "fallback": "3D did not start: here are the same discs, in 2D."
+      "fallback": "3D did not start: here are the same discs, in 2D.",
+      "loading": "Building the scene…"
     },
     "scene": {
       "brand": "FITTRIO",

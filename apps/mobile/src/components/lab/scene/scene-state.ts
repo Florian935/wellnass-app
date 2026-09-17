@@ -92,6 +92,21 @@ export function nightMark(sleepMinutes: number | null): number | null {
   return sleepMinutes === null ? null : sleepMinutes >= GOOD_NIGHT_MINUTES ? 1 : 0;
 }
 
+/**
+ * Le volume d'un pilier **tel que la semaine s'est passée** : le plus grand du prévu et du fait.
+ *
+ * 🔴 Le prévu seul ne suffit pas. La scène pilote la pile de disques sur le nombre de séances et
+ * l'existence de la piste sur les kilomètres : prendre le **prévu** faisait disparaître le pilier
+ * de quelqu'un qui a couru 7,5 km sans les avoir planifiés — pendant que le panneau, juste en
+ * dessous, affichait « 7,5 sur 0,0 km ». La scène contredisait le texte, et se lisait comme cassée.
+ *
+ * Le fait ne remplace pas le prévu, il s'y ajoute : une semaine à 4 séances prévues dont 2 faites
+ * garde bien ses 4 disques (2 pleins, 2 fantômes).
+ */
+export function weekVolume(planned: number | null | undefined, done: number | null | undefined): number {
+  return Math.max(planned ?? 0, done ?? 0);
+}
+
 export function labSceneFromWeek(input: {
   week: LabWeek;
   activePillars: readonly Pillar[];
@@ -111,8 +126,8 @@ export function labSceneFromWeek(input: {
     mode: 'week',
     pillars: pillarsOf(input.activePillars),
     values: {
-      fq: week.progress.strength?.planned ?? 0,
-      km: week.progress.running?.plannedKm ?? 0,
+      fq: weekVolume(week.progress.strength?.planned, week.progress.strength?.done),
+      km: weekVolume(week.progress.running?.plannedKm, week.progress.running?.doneKm),
       fr: week.days.reduce((n, d) => n + d.running.filter((s) => s.sessionType === 'fractionne').length, 0),
       ...dishValues(input.objective, target.min),
       so: 7.5,
@@ -121,9 +136,9 @@ export function labSceneFromWeek(input: {
       guard: open.some((p) => p.tone === 'guard'),
     },
     reality: {
-      sessions: week.progress.strength?.planned ?? 0,
+      sessions: weekVolume(week.progress.strength?.planned, week.progress.strength?.done),
       sessionsDone: week.progress.strength?.done ?? 0,
-      km: week.progress.running?.plannedKm ?? 0,
+      km: weekVolume(week.progress.running?.plannedKm, week.progress.running?.doneKm),
       kmDone: week.progress.running?.doneKm ?? 0,
       protein: gPerKg === null ? 1 : Math.max(0.6, Math.min(1.1, gPerKg / target.min)),
       nights: week.days.map((d) => nightMark(d.sleepMinutes)),
