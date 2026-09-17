@@ -110,6 +110,42 @@ vérité.
 - **Vérifié** : typecheck 3 workspaces à 0, lint à **0 erreur et 0 avertissement** sur `engine.js`
   désormais réellement linté, suite complète verte. Commit précédent : `8d3807db`.
 
+## 17/09/2026 — Spike 3D : la rotation suivait le doigt à l'envers, et le plafond se lit enfin
+
+Troisième recette de Florian. Trois retours, trois natures.
+
+**① La rotation était inversée** — glisser de gauche à droite faisait tourner le corps de droite à
+gauche, la sensation de pousser le modèle par l'arrière. Avec `rotation.y` positif, le point de face
+`(0, 0, 1)` part vers `+X`, donc vers la droite du spectateur : un `dx` positif doit **augmenter** le
+lacet, pas le diminuer. Une ligne. ⚠️ Le moteur du Labo porte **le même signe** et donc
+probablement la même inversion : à vérifier lors de sa recette, ce n'est pas corrigé ici puisque ce
+n'est pas le même lot.
+
+**② « Tout au max » est difforme — et la moitié de la cause est structurelle.** En maillage unique,
+les 14 influences ne tiennent pas dans les 8 emplacements de three r128. Quand les 14 valent 1, le
+tri par valeur absolue est à égalité partout et l'ordre de déclaration tranche : **6 cibles sont
+jetées en silence**. Le corps affiché est donc une déformation **partielle** — des zones gonflées
+contre des zones intactes, ce qui est exactement ce qui se voit comme « déformé ».
+
+C'était jusqu'ici présenté comme « comptez à l'œil combien de zones bougent ». On peut faire mieux :
+l'algorithme de `WebGLMorphtargets.update` est déterministe et tient en quelques lignes. Il est
+rejoué dans `morph-budget.ts` (6 tests), et l'écran **nomme désormais les cibles sacrifiées** au
+lieu de demander de les deviner — avec l'invitation à basculer en « Découpé », où chaque partie a
+son propre budget de 8 et où les 14 s'appliquent vraiment. La mesure centrale du spike passe ainsi
+d'un jugement visuel à une lecture.
+
+⚠️ L'autre moitié de la cause, elle, appartient au maillage : la v2 avoue un anneau « pneu » à la
+taille et un rebord au-dessus des cuisses. Une **v3** est en cours, avec révision des amplitudes et
+recouvrement des champs de déplacement de part et d'autre des plans de découpe.
+
+**③ Se rapprocher de la planche 2D** — la v2 est en « argile lisse » : les volumes sont là mais se
+fondent les uns dans les autres, là où la planche 2D de `AnatomyFigure` sépare chaque groupe par un
+contour net. La v3 creusera les sillons d'insertion (deltoïde/pectoral, biceps/triceps, chefs du
+quadriceps et du mollet, grand dorsal/grand rond), budget porté à 40-60 k triangles — la v2 tient
+60 fps à 27 k, la marge existe.
+
+**Validation** — `typecheck`, `lint` et `test` passent : **7 101 tests**, 217 suites mobiles.
+
 ## 16/09/2026 (octies) — Spike 3D : un vrai corps, et un maillage anatomique qui tient dans le Mo
 
 Retour de recette de Florian sur la v1 du maillage : « assez primaire », « ça ne ressemble pas

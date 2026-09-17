@@ -1,4 +1,4 @@
-# État du projet — 16/09/2026
+# État du projet — 17/09/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -116,7 +116,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1280 · `main` a **1277** commits de retard sur `dev` |
+| Commits | 1281 · `main` a **1278** commits de retard sur `dev` |
 | Specs d'US | 161 au total — 87 clôturées, 74 en cours |
 | Migrations | 105/105 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -127,11 +127,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `06458ec`  spike(corps3d): un maillage anatomique, et le cout reel d'un vrai corps
 - `44a26df`  fix(ia-lab01): le raisonnement de Gemini mangeait toute la reponse
 - `a93b389`  docs(labo01): trace la vraie cause de la scene vide, pillarsOn jamais declare
 - `8d6a571`  fix(spike3d): la tete sortait du cadre, le calcul sort du moteur
 - `2863ec5`  fix(spike3d): le verdict sur le maillage etait rendu avant son chargement
-- `641907d`  chore(git): ignorer builds/, les sorties de build locales
 
 ---
 

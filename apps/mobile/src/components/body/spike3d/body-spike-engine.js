@@ -209,7 +209,11 @@ export function createBodySpikeScene(canvas, opts) {
   canvas.addEventListener('pointerdown', onDown);
   var onMove = function (e) {
     if (!down) return;
-    yawT = down.yaw - (e.clientX - down.x) * 0.006;
+    // Le doigt **emmène** le modèle : glisser vers la droite fait tourner le corps vers la droite.
+    // Avec `rotation.y` positif, le point de face (0, 0, 1) part vers +X, c'est-à-dire la droite du
+    // spectateur — donc un `dx` positif doit **augmenter** le lacet. Le signe inverse donnait la
+    // sensation de pousser le corps par l'arrière, et il a été signalé dès la première prise en main.
+    yawT = down.yaw + (e.clientX - down.x) * 0.006;
     pitchT = Math.max(-0.35, Math.min(0.35, down.pitch + (e.clientY - down.y) * 0.003));
   };
   window.addEventListener('pointermove', onMove);

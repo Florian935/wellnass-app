@@ -96,19 +96,79 @@ export function readProviderConfig(env: (key: string) => string | undefined): Pr
 /**
  * ⚠️ **Exception délibérée à la règle « le message du fournisseur ne remonte jamais ».**
  *
- * Un 400/401/403/404 d'un fournisseur d'inférence est une erreur de **configuration** — modèle
- * inconnu, clé révoquée, API non activée sur le projet — et son message ne contient jamais de donnée
- * d'utilisateur : il parle de notre projet, pas de la personne qui a posé la question. Le taire
- * transformerait une faute de frappe dans `GEMINI_MODEL` en « l'IA ne marche pas », sans aucun moyen
- * de savoir pourquoi depuis le téléphone.
+ * La réponse d'erreur d'un fournisseur d'inférence décrit **son** service et **notre** configuration
+ * — modèle inconnu, clé révoquée, quota épuisé, panne de son côté. Elle ne contient jamais de donnée
+ * de la personne qui a posé la question : celle-ci est dans la requête, pas dans l'erreur.
  *
- * Tout le reste (429, 5xx, réseau) reste opaque : ça, ça peut parler d'infrastructure.
+ * 🔴 **Aucun échec ne doit être muet.** La première version ne remontait le détail que pour les
+ * 4xx de configuration ; tout le reste tombait dans un `failed` sans information, et deux passes de
+ * recette y sont passées (16/09/2026). Un 429 « quota épuisé » et une panne 503 appellent des gestes
+ * opposés — attendre, ou alerter — et rien à l'écran ne permettait de les distinguer.
+ *
+ * Le **code** reste distinct : `misconfigured` pour ce qu'on peut corriger nous-mêmes (4xx),
+ * `failed` pour ce qu'on subit (429, 5xx). Seul le détail devient systématique.
  */
-function classifyHttpError(status: number, body: string): ProviderResult {
+/**
+ * Codes qui méritent une seconde chance, et pas une erreur à l'écran.
+ *
+ * 🔴 **Constaté en recette le 17/09/2026** : Gemini renvoie `503 UNAVAILABLE — "This model is
+ * currently experiencing high demand"` de façon intermittente sur le palier gratuit. Rien de cassé
+ * chez nous, rien à corriger : le modèle est saturé pendant quelques secondes. Afficher une erreur
+ * pour ça, c'est transformer un hoquet de trois secondes en échec de fonctionnalité.
+ *
+ * `429` y figure aussi : le palier gratuit plafonne à ~10 requêtes/minute, et deux questions posées
+ * coup sur coup suffisent à le toucher. Les 5xx sont des pannes passagères du fournisseur.
+ *
+ * ⚠️ **Les 4xx de configuration n'y sont PAS.** Une clé invalide le restera à la troisième
+ * tentative : réessayer ne ferait que retarder un message qu'il faut lire tout de suite.
+ */
+const RETRYABLE_STATUS = new Set([429, 500, 502, 503, 504]);
+
+/** Trois tentatives au total. Au-delà, ce n'est plus un hoquet, et l'attente devient visible. */
+const MAX_ATTEMPTS = 3;
+
+/**
+ * Attente avant la tentative `n`, en millisecondes : 700, puis 1400. Exponentielle, avec une part
+ * aléatoire — sans elle, deux appareils qui butent sur la même saturation repartiraient exactement
+ * en même temps et la prolongeraient.
+ */
+function backoffMs(attempt: number): number {
+  return 700 * 2 ** (attempt - 1) + Math.floor(Math.random() * 250);
+}
+
+/**
+ * `fetch` avec reprise sur les codes transitoires. Seul le **statut** décide : le corps de la
+ * réponse n'est pas lu ici, il doit rester consommable par l'appelant.
+ *
+ * Renvoie aussi le nombre de tentatives, pour que le message d'erreur final puisse dire « après
+ * 3 essais » — un échec après une seule tentative et un échec après trois n'appellent pas le même
+ * geste de la part de celui qui le lit.
+ */
+async function fetchWithRetry(
+  url: string,
+  init: RequestInit,
+): Promise<{ response: Response; attempts: number }> {
+  let attempt = 1;
+  for (;;) {
+    const response = await fetch(url, init);
+    if (!RETRYABLE_STATUS.has(response.status) || attempt >= MAX_ATTEMPTS) {
+      return { response, attempts: attempt };
+    }
+    console.warn(`[ai-assist] ${response.status} du fournisseur, tentative ${attempt}/${MAX_ATTEMPTS}`);
+    await new Promise((resolve) => setTimeout(resolve, backoffMs(attempt)));
+    attempt += 1;
+  }
+}
+
+function classifyHttpError(status: number, body: string, attempts = 1): ProviderResult {
+  const detail =
+    `HTTP ${status}` +
+    (attempts > 1 ? ` après ${attempts} tentatives` : '') +
+    ` — ${body.slice(0, 350)}`;
   if (status === 400 || status === 401 || status === 403 || status === 404) {
     return { ok: false, kind: 'misconfigured', detail: body.slice(0, 400) };
   }
-  return { ok: false, kind: 'failed' };
+  return { ok: false, kind: 'failed', detail };
 }
 
 // ─────────────────────────────────────────────────────────────────────────────────────────────────
@@ -164,7 +224,11 @@ async function callGemini(config: ProviderConfig, request: ProviderRequest): Pro
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(config.model)}:generateContent`;
   const headers = { 'Content-Type': 'application/json', 'x-goog-api-key': config.apiKey };
 
-  let response = await fetch(url, { method: 'POST', headers, body: geminiBody(request, true) });
+  let { response, attempts } = await fetchWithRetry(url, {
+    method: 'POST',
+    headers,
+    body: geminiBody(request, true),
+  });
 
   // Repli : le modèle a refusé `thinkingConfig` (génération 3.x). On rejoue sans, une seule fois.
   // Le budget de sortie, lui, reste large — c'est ce qui laisse de la place au raisonnement.
@@ -172,13 +236,17 @@ async function callGemini(config: ProviderConfig, request: ProviderRequest): Pro
     const body = await response.text();
     if (body.includes('thinking') || body.includes('thinkingConfig')) {
       console.warn('[ai-assist] thinkingConfig refusé par le modèle, seconde tentative sans');
-      response = await fetch(url, { method: 'POST', headers, body: geminiBody(request, false) });
+      ({ response, attempts } = await fetchWithRetry(url, {
+        method: 'POST',
+        headers,
+        body: geminiBody(request, false),
+      }));
     } else {
-      return classifyHttpError(400, body);
+      return classifyHttpError(400, body, attempts);
     }
   }
 
-  if (!response.ok) return classifyHttpError(response.status, await response.text());
+  if (!response.ok) return classifyHttpError(response.status, await response.text(), attempts);
 
   const payload = (await response.json()) as GeminiResponse;
 
@@ -233,7 +301,7 @@ async function callAnthropic(
   }
   content.push({ type: 'text', text: request.prompt });
 
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const { response, attempts } = await fetchWithRetry('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -248,7 +316,7 @@ async function callAnthropic(
     }),
   });
 
-  if (!response.ok) return classifyHttpError(response.status, await response.text());
+  if (!response.ok) return classifyHttpError(response.status, await response.text(), attempts);
 
   const payload = (await response.json()) as AnthropicResponse;
   if (payload.stop_reason === 'refusal') return { ok: false, kind: 'refused' };
@@ -259,10 +327,21 @@ async function callAnthropic(
     .join('')
     .trim();
 
-  return text.length > 0 ? { ok: true, text } : { ok: false, kind: 'failed' };
+  if (text.length > 0) return { ok: true, text };
+  return {
+    ok: false,
+    kind: 'failed',
+    detail: `Le modèle n'a produit aucun texte (stop_reason=${payload.stop_reason ?? 'inconnue'}).`,
+  };
 }
 
-/** Aiguille vers l'adaptateur. Une panne réseau est un `failed`, jamais une exception qui remonte. */
+/**
+ * Aiguille vers l'adaptateur. Une panne réseau est un `failed`, jamais une exception qui remonte.
+ *
+ * Le message de l'exception est **nommé** dans le détail : une coupure DNS, un délai dépassé et un
+ * JSON illisible produisent tous trois le même écran sans lui, alors qu'ils n'ont ni la même cause
+ * ni le même remède. C'est le dernier chemin muet qui restait.
+ */
 export async function callProvider(
   config: ProviderConfig,
   request: ProviderRequest,
@@ -273,6 +352,7 @@ export async function callProvider(
       : await callAnthropic(config, request);
   } catch (error) {
     console.error('[ai-assist] appel fournisseur en échec', error);
-    return { ok: false, kind: 'failed' };
+    const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+    return { ok: false, kind: 'failed', detail: `Appel au fournisseur impossible — ${message.slice(0, 300)}` };
   }
 }

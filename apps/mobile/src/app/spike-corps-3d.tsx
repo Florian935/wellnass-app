@@ -28,6 +28,7 @@ import {
   type BodySpikeProportion,
   type BodySpikeVariant,
 } from '@/components/body/spike3d/body-spike-state';
+import { morphBudget } from '@/components/body/spike3d/morph-budget';
 
 const PAS_PROPORTION = 0.25;
 const PAS_INTENTION = 1;
@@ -42,6 +43,14 @@ export default function SpikeCorps3DScreen() {
   const state = useMemo(
     () => bodySpikeState({ ...neutralSpikeInput(), variant, proportions, goals }),
     [variant, proportions, goals],
+  );
+
+  // Ce que three appliquera vraiment : en maillage unique, les 14 influences ne tiennent pas dans
+  // les 8 emplacements. On rejoue sa sélection pour NOMMER les sacrifiées au lieu de demander à
+  // l'œil de les deviner. En découpé, chaque partie a son propre budget, donc rien n'est jeté.
+  const budget = useMemo(
+    () => (variant === 'single' ? morphBudget(state.influences) : null),
+    [variant, state.influences],
   );
 
   const pousserTout = () => {
@@ -80,11 +89,17 @@ export default function SpikeCorps3DScreen() {
             Influences demandées : {state.requested} / 14 — plafond three r128 :{' '}
             {stats ? stats.limite : 8} par maillage
           </Text>
-          {state.requested > 8 && variant === 'single' ? (
-            <Text style={styles.alert}>
-              Plus de 8 influences sur un maillage unique : three en ignore une partie SANS erreur.
-              Compter à l’œil combien de zones bougent réellement — c’est la mesure.
-            </Text>
+          {budget?.overflow ? (
+            <>
+              <Text style={styles.alert}>
+                three applique {budget.applied.length} influences sur {state.requested} et jette les
+                autres SANS erreur. Les zones ci-dessous ne bougeront pas, quoi que dise le curseur :
+              </Text>
+              <Text style={styles.ignored}>{budget.ignored.join(' · ')}</Text>
+              <Text style={styles.alert}>
+                Bascule en « Découpé » : chaque partie a son propre budget de 8, les 14 s’appliquent.
+              </Text>
+            </>
           ) : null}
         </View>
 
@@ -188,6 +203,7 @@ const styles = StyleSheet.create({
   panelTitle: { color: '#f4e6d8', fontSize: 15, fontWeight: '700', marginBottom: 4 },
   metric: { color: '#d9c7b8', fontSize: 13 },
   alert: { color: '#ffb4a2', fontSize: 12, marginTop: 6 },
+  ignored: { color: '#ff8f7a', fontSize: 12, fontWeight: '700', marginTop: 2 },
   row: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { backgroundColor: '#2a2024', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 10 },
   chipOn: { backgroundColor: '#6b0028' },
