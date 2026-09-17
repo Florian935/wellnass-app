@@ -116,7 +116,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1282 · `main` a **1279** commits de retard sur `dev` |
+| Commits | 1283 · `main` a **1280** commits de retard sur `dev` |
 | Specs d'US | 161 au total — 87 clôturées, 74 en cours |
 | Migrations | 105/105 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -127,11 +127,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `81d46a8`  fix(labo01): la scene montrait le prevu et pas le vecu, et n'annoncait pas son chargement
 - `64109dd`  fix(spike3d): rotation dans le bon sens, et le plafond des 8 se lit au lieu de se deviner
 - `06458ec`  spike(corps3d): un maillage anatomique, et le cout reel d'un vrai corps
 - `44a26df`  fix(ia-lab01): le raisonnement de Gemini mangeait toute la reponse
 - `a93b389`  docs(labo01): trace la vraie cause de la scene vide, pillarsOn jamais declare
-- `8d6a571`  fix(spike3d): la tete sortait du cadre, le calcul sort du moteur
 
 ---
 

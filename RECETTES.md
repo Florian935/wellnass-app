@@ -3847,6 +3847,16 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 > (`@expo/dom-webview`, déjà fourni par `expo` 57) et `three` est une dépendance neuve : l'APK
 > existant **ne suffit pas**. Même contrainte que PARTAGE-01, RUN-F2a, MUSC-F9 et LAUNCHER-01.
 >
+> 🔵 **Pour voir les TROIS disques** : sur un compte à 0 séance et 0 km cette semaine, seule
+> l'assiette s'affiche — c'est exact, mais increcettable. Jouer
+> [supabase/scripts/labo-dataset.sql](supabase/scripts/labo-dataset.sql) dans le SQL Editor
+> (e-mail à renseigner en tête). Il fabrique la semaine en cours sur les trois piliers — muscu
+> 2 faites / 4 prévues, course 14,5 km courus / 24 prévus, nutrition et sommeil — plus 8 semaines
+> d'historique pour que « Pourquoi ? » et « Acquis » aient de quoi calculer.
+> ⚠️ **Il efface les données personnelles du compte visé** (hard delete). Il ne touche **ni**
+> l'authentification, **ni** les profils, **ni** la bibliothèque partagée. Une requête de
+> vérification est fournie à la fin du fichier.
+>
 > ⚠️ Les onglets « Pourquoi ? » et « Acquis » ont besoin d'**historique** : sur un compte neuf ils
 > afficheront légitimement leur état vide. C'est un critère à part entière (§66.30), pas un défaut.
 
