@@ -11,7 +11,7 @@
  */
 
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, View, type AlertButton } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { MAX_ACTIVE_GOALS } from '@wellness/shared';
 
@@ -21,7 +21,13 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { GoalCard } from '@/components/goals/GoalCard';
 import { GoalFormSheet } from '@/components/goals/GoalFormSheet';
-import { deleteGoal, useGoals } from '@/data/repositories/goal-repository';
+import { GoalLetterSheet } from '@/components/goals/GoalLetterSheet';
+import {
+  deleteGoal,
+  markGoalLetterOpened,
+  useGoals,
+  type GoalWithProgress,
+} from '@/data/repositories/goal-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -30,19 +36,52 @@ export default function GoalsScreen() {
   const { colors } = useTheme();
   const { active, finished, isLoading } = useGoals();
   const [formOpen, setFormOpen] = useState(false);
+  // US LETTRE-01 — on retient l'ID, pas l'objectif : la feuille suit ainsi les modifications du
+  // texte sans rouvrir, et se referme d'elle-même si l'objectif disparaît.
+  const [letterGoalId, setLetterGoalId] = useState<string | null>(null);
 
   const atCap = active.length >= MAX_ACTIVE_GOALS;
   const isEmpty = !isLoading && active.length === 0 && finished.length === 0;
 
-  const confirmDelete = (id: string) => {
-    Alert.alert(t('goals.deleteConfirmTitle'), t('goals.deleteConfirmBody'), [
+  const letterGoal =
+    letterGoalId === null
+      ? null
+      : ([...active, ...finished].find((goal) => goal.id === letterGoalId) ?? null);
+
+  /**
+   * Ouvre le mot (US LETTRE-01). `triggered` = ouverture par un des trois déclencheurs (R3) : ce
+   * n'est que dans ce cas que la lettre est marquée comme ouverte. Une relecture volontaire (D3)
+   * ne consomme pas le déclencheur — sinon la proposition disparaîtrait avant d'avoir servi.
+   */
+  const openLetter = (goal: GoalWithProgress, triggered: boolean) => {
+    setLetterGoalId(goal.id);
+    if (triggered) void markGoalLetterOpened(goal.id, goal.letterOpenedAt !== null);
+  };
+
+  const confirmDelete = (goal: GoalWithProgress) => {
+    /*
+     * Troisième déclencheur (R3-c) : la lettre est proposée **avant** la confirmation, sur la même
+     * alerte. C'est le moment où elle sert le plus — et relire renonce à supprimer : rien n'est
+     * détruit tant que « Supprimer » n'a pas été touché une seconde fois.
+     */
+    const hasLetter = goal.letterText !== null;
+    const buttons: AlertButton[] = [
       { text: t('common.cancel'), style: 'cancel' },
+      ...(hasLetter
+        ? [{ text: t('goals.letter.open'), onPress: () => openLetter(goal, true) }]
+        : []),
       {
         text: t('goals.delete'),
         style: 'destructive',
-        onPress: () => void deleteGoal(id),
+        onPress: () => void deleteGoal(goal.id),
       },
-    ]);
+    ];
+
+    const body = hasLetter
+      ? [t('goals.deleteConfirmBody'), t('goals.letter.onDelete')].join('\n\n')
+      : t('goals.deleteConfirmBody');
+
+    Alert.alert(t('goals.deleteConfirmTitle'), body, buttons);
   };
 
   return (
@@ -79,7 +118,12 @@ export default function GoalsScreen() {
                   {t('goals.sectionActive')}
                 </Text>
                 {active.map((goal) => (
-                  <GoalCard key={goal.id} goal={goal} onDelete={() => confirmDelete(goal.id)} />
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    onDelete={() => confirmDelete(goal)}
+                    onOpenLetter={(triggered) => openLetter(goal, triggered)}
+                  />
                 ))}
               </View>
             )}
@@ -90,7 +134,12 @@ export default function GoalsScreen() {
                   {t('goals.sectionFinished')}
                 </Text>
                 {finished.map((goal) => (
-                  <GoalCard key={goal.id} goal={goal} onDelete={() => confirmDelete(goal.id)} />
+                  <GoalCard
+                    key={goal.id}
+                    goal={goal}
+                    onDelete={() => confirmDelete(goal)}
+                    onOpenLetter={(triggered) => openLetter(goal, triggered)}
+                  />
                 ))}
               </View>
             )}
@@ -99,6 +148,7 @@ export default function GoalsScreen() {
       </ScrollView>
 
       <GoalFormSheet visible={formOpen} onClose={() => setFormOpen(false)} />
+      <GoalLetterSheet goal={letterGoal} onClose={() => setLetterGoalId(null)} />
     </Screen>
   );
 }

@@ -1419,6 +1419,9 @@ export type Database = {
           exercise_id: string | null
           id: string
           kind: string
+          letter_opened_at: string | null
+          letter_text: string | null
+          letter_written_at: string | null
           start_date: string
           start_value: number | null
           target_value: number
@@ -1432,6 +1435,9 @@ export type Database = {
           exercise_id?: string | null
           id: string
           kind: string
+          letter_opened_at?: string | null
+          letter_text?: string | null
+          letter_written_at?: string | null
           start_date: string
           start_value?: number | null
           target_value: number
@@ -1445,6 +1451,9 @@ export type Database = {
           exercise_id?: string | null
           id?: string
           kind?: string
+          letter_opened_at?: string | null
+          letter_text?: string | null
+          letter_written_at?: string | null
           start_date?: string
           start_value?: number | null
           target_value?: number

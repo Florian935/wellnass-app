@@ -3205,7 +3205,32 @@
     "deleteConfirmBody": "Il disparaîtra de la liste, verdict compris. Cette action ne s'annule pas.",
     "a11yRing": "{{pct}} pour cent : {{current}} sur {{target}}",
     "widgetEmpty": "Aucun objectif en cours.",
-    "seeAll": "Voir tous mes objectifs"
+    "seeAll": "Voir tous mes objectifs",
+    "letter": {
+      "field": {
+        "label": "Écris un mot à ton futur toi",
+        "hint": "Tu le reliras à l'échéance. Personne d'autre ne le verra.",
+        "placeholder": "Pourquoi tu t'y mets, aujourd'hui…"
+      },
+      "counter": "{{chars}} / {{max}}",
+      "sealed": "Un mot scellé · {{date}}",
+      "open": "Relire ton mot",
+      "title": "Ton mot",
+      "written": "Écrit le {{date}}, il y a {{age}}",
+      "ageToday": "moins d'un jour",
+      "ageDays_one": "{{count}} jour",
+      "ageDays_other": "{{count}} jours",
+      "ageMonths_one": "{{count}} mois",
+      "ageMonths_other": "{{count}} mois",
+      "close": "Refermer",
+      "edit": "Modifier",
+      "save": "Enregistrer",
+      "onDeadline": "Tu avais écrit un mot en te lançant.",
+      "onAchieved": "Tu y es. Relis ce que tu écrivais en te lançant.",
+      "onDelete": "Tu avais écrit un mot en te lançant. Le relire avant de supprimer ?",
+      "deleted": "Mot supprimé",
+      "saveFailed": "Le mot n'a pas pu être enregistré. Réessaie."
+    }
   },
   "review": {
     "title": "Bilan de la semaine",

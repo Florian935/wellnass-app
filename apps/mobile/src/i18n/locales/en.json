@@ -3205,7 +3205,32 @@
     "deleteConfirmBody": "It will disappear from the list, verdict included. This can't be undone.",
     "a11yRing": "{{pct}} percent: {{current}} of {{target}}",
     "widgetEmpty": "No goal in progress.",
-    "seeAll": "See all my goals"
+    "seeAll": "See all my goals",
+    "letter": {
+      "field": {
+        "label": "Write a note to your future self",
+        "hint": "You'll read it at the deadline. No one else will see it.",
+        "placeholder": "Why you're starting, today…"
+      },
+      "counter": "{{chars}} / {{max}}",
+      "sealed": "A sealed note · {{date}}",
+      "open": "Read your note",
+      "title": "Your note",
+      "written": "Written on {{date}}, {{age}} ago",
+      "ageToday": "less than a day",
+      "ageDays_one": "{{count}} day",
+      "ageDays_other": "{{count}} days",
+      "ageMonths_one": "{{count}} month",
+      "ageMonths_other": "{{count}} months",
+      "close": "Close",
+      "edit": "Edit",
+      "save": "Save",
+      "onDeadline": "You wrote a note when you started.",
+      "onAchieved": "You made it. Read what you wrote when you started.",
+      "onDelete": "You wrote a note when you started. Read it before deleting?",
+      "deleted": "Note deleted",
+      "saveFailed": "Your note couldn't be saved. Try again."
+    }
   },
   "review": {
     "title": "Weekly review",

@@ -22,6 +22,7 @@ import { useQuery } from '@powersync/react';
 import {
   computeGoalProgress,
   estimate1RM,
+  normaliseLetter,
   localDayKey,
   MAX_ACTIVE_GOALS,
   type GoalKind,
@@ -33,7 +34,7 @@ import {
 
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
-import { insertWithSyncFields, softDelete } from './_sql';
+import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
 import { useTodayKey } from '@/hooks/useTodayKey';
 
 /** Un objectif enrichi de sa progression calculée et du nom de l'exercice visé. */
@@ -41,6 +42,12 @@ export type GoalWithProgress = PersonalGoal & {
   progress: GoalProgress;
   /** Nom résolu de l'exercice visé, `null` pour un objectif de course. */
   exerciseName: string | null;
+  /** US LETTRE-01 — le mot scellé, `null` si l'objectif n'en porte pas (R5). */
+  letterText: string | null;
+  /** Date d'écriture ou de dernière modification du mot. */
+  letterWrittenAt: string | null;
+  /** Première ouverture par un DÉCLENCHEUR (R3) — pas par une relecture volontaire. */
+  letterOpenedAt: string | null;
 };
 
 type GoalDbRow = {
@@ -52,6 +59,9 @@ type GoalDbRow = {
   start_date: string;
   deadline: string;
   exercise_name: string | null;
+  letter_text: string | null;
+  letter_written_at: string | null;
+  letter_opened_at: string | null;
 };
 
 /**
@@ -65,6 +75,7 @@ type GoalDbRow = {
 const SELECT_GOALS = `
   SELECT g.id, g.kind, g.target_value, g.start_value, g.exercise_id,
          g.start_date, g.deadline,
+         g.letter_text, g.letter_written_at, g.letter_opened_at,
          COALESCE(tl.name, tfr.name) AS exercise_name
   FROM personal_goals g
   LEFT JOIN exercise_translations tl  ON tl.exercise_id = g.exercise_id AND tl.lang = ?
@@ -183,6 +194,9 @@ export function useGoals(): {
       return {
         ...goal,
         exerciseName: row.exercise_name,
+        letterText: row.letter_text,
+        letterWrittenAt: row.letter_written_at,
+        letterOpenedAt: row.letter_opened_at,
         progress: computeGoalProgress({ goal, runs, lifts, todayKey }),
       };
     });
@@ -242,6 +256,8 @@ export type CreateGoalInput = {
   startValue?: number | null;
   startDate: string;
   deadline: string;
+  /** US LETTRE-01 — facultatif : un objectif sans lettre se comporte comme avant (R5). */
+  letterText?: string | null;
 };
 
 /**
@@ -261,6 +277,10 @@ export async function createGoal(input: CreateGoalInput): Promise<string> {
     throw new Error(`Plafond atteint : ${MAX_ACTIVE_GOALS} objectifs actifs au maximum.`);
   }
 
+  // US LETTRE-01 — un texte vide ou blanc ne crée pas de lettre : pas d'enveloppe sur la carte,
+  // pas de date d'écriture. L'objectif est alors en tout point celui d'avant cette US (R5).
+  const letter = normaliseLetter(input.letterText);
+
   return insertWithSyncFields('personal_goals', {
     user_id: currentUserId(),
     kind: input.kind,
@@ -269,7 +289,35 @@ export async function createGoal(input: CreateGoalInput): Promise<string> {
     exercise_id: input.exerciseId ?? null,
     start_date: input.startDate,
     deadline: input.deadline,
+    letter_text: letter,
+    letter_written_at: letter === null ? null : nowUtc(),
+    letter_opened_at: null,
   });
+}
+
+/**
+ * Écrit ou efface le mot d'un objectif (US LETTRE-01, D4).
+ *
+ * Un texte vide **supprime** la lettre : l'enveloppe disparaît plutôt que de rester sur un mot vide
+ * qui se proposerait à la relecture (spec §6). La date d'écriture suit chaque modification — une
+ * lettre n'est pas un contrat, et bloquer l'édition ferait perdre des mots à la première faute.
+ */
+export async function setGoalLetter(goalId: string, text: string | null): Promise<void> {
+  const letter = normaliseLetter(text);
+  await patch('personal_goals', goalId, {
+    letter_text: letter,
+    letter_written_at: letter === null ? null : nowUtc(),
+  });
+}
+
+/**
+ * Marque le mot comme ouvert **par un déclencheur** (R3). Idempotent : la première ouverture fait
+ * foi, une relecture volontaire ne l'écrase pas — sans quoi l'app reproposerait indéfiniment
+ * « relire ton mot » à chaque passage sur la carte.
+ */
+export async function markGoalLetterOpened(goalId: string, alreadyOpened: boolean): Promise<void> {
+  if (alreadyOpened) return;
+  await patch('personal_goals', goalId, { letter_opened_at: nowUtc() });
 }
 
 /**

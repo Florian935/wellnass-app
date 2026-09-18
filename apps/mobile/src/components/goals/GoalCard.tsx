@@ -25,9 +25,14 @@ import { useTheme } from '@/theme/useTheme';
 type Props = {
   goal: GoalWithProgress;
   onDelete?: () => void;
+  /**
+   * US LETTRE-01 — ouvre le mot scellé. `triggered` dit si l'ouverture vient d'un **déclencheur**
+   * (R3) ou d'une relecture volontaire (D3) : seul le premier cas marque la lettre comme ouverte.
+   */
+  onOpenLetter?: (triggered: boolean) => void;
 };
 
-export function GoalCard({ goal, onDelete }: Props) {
+export function GoalCard({ goal, onDelete, onOpenLetter }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const units = useUnits();
@@ -60,6 +65,22 @@ export function GoalCard({ goal, onDelete }: Props) {
         : null;
 
   const title = isRun ? t('goals.kinds.run_distance') : (goal.exerciseName ?? t('goals.kinds.exercise_1rm'));
+
+  /*
+   * US LETTRE-01 — les déclencheurs (R3). L'app ne montre JAMAIS la lettre d'elle-même en dehors
+   * d'eux : ici elle ne fait que **proposer** de la relire, une fois, tant qu'elle n'a pas été
+   * ouverte par ce chemin. Le troisième déclencheur (la suppression) vit sur l'écran, avant la
+   * confirmation.
+   */
+  const hasLetter = goal.letterText !== null;
+  const trigger =
+    !hasLetter || goal.letterOpenedAt !== null
+      ? null
+      : progress.status === 'achieved'
+        ? 'onAchieved'
+        : progress.status === 'missed'
+          ? 'onDeadline'
+          : null;
 
   return (
     <View style={[styles.card, { borderColor: colors.border, backgroundColor: colors.surface }]}>
@@ -116,6 +137,36 @@ export function GoalCard({ goal, onDelete }: Props) {
         </View>
       </View>
 
+      {/*
+        L'enveloppe, jamais le texte (R2) : la date d'écriture suffit à dire qu'un mot existe.
+        Elle porte un libellé complet — une icône seule n'annoncerait rien à TalkBack (§9).
+      */}
+      {hasLetter && (
+        <View style={[styles.letter, { borderTopColor: colors.border }]}>
+          <Text style={[styles.sealed, { color: colors.textMuted }]} maxFontSizeMultiplier={1.3}>
+            {t('goals.letter.sealed', { date: formatDayFull(goal.letterWrittenAt) })}
+          </Text>
+          {trigger !== null && (
+            <Text style={[styles.letterPrompt, { color: colors.text }]} maxFontSizeMultiplier={1.4}>
+              {t(`goals.letter.${trigger}`)}
+            </Text>
+          )}
+          {onOpenLetter !== undefined && (
+            <Pressable
+              onPress={() => onOpenLetter(trigger !== null)}
+              accessibilityRole="button"
+              accessibilityLabel={t('goals.letter.open')}
+              hitSlop={8}
+              style={styles.letterButton}
+            >
+              <Text style={[styles.letterOpen, { color: colors.accent }]} maxFontSizeMultiplier={1.3}>
+                {t('goals.letter.open')}
+              </Text>
+            </Pressable>
+          )}
+        </View>
+      )}
+
       {onDelete !== undefined && (
         <Pressable
           onPress={onDelete}
@@ -144,6 +195,12 @@ const styles = StyleSheet.create({
   metaRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   meta: { fontFamily: fontFamily.body, fontSize: 12.5 },
   verdict: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
+  // US LETTRE-01 — l'enveloppe : séparée du reste par un filet, jamais par la seule couleur.
+  letter: { borderTopWidth: 1, paddingTop: 8, gap: 4 },
+  sealed: { fontFamily: fontFamily.body, fontSize: 12.5 },
+  letterPrompt: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
+  letterButton: { alignSelf: 'flex-start', minHeight: 44, justifyContent: 'center' },
+  letterOpen: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   // Cible tactile : 44 de hauteur + hitSlop 12 → bien au-delà des 48 dp exigés.
   delete: { alignSelf: 'flex-end', minHeight: 44, justifyContent: 'center', paddingHorizontal: 4 },
   deleteLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },

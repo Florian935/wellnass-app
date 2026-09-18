@@ -850,6 +850,12 @@ const personal_goals = new Table({
   exercise_id: column.text,
   start_date: column.text,
   deadline: column.text,
+  // US LETTRE-01 — le mot écrit à son futur soi. Déclaré ICI sous peine de panne silencieuse : la
+  // colonne existerait en base et resterait invisible du client, l'écriture partirait dans le vide
+  // sans erreur (leçon de CYCLE-01, repayée le 18/09 sur FANT-01).
+  letter_text: column.text,
+  letter_written_at: column.text,
+  letter_opened_at: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

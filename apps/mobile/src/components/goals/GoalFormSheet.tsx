@@ -18,8 +18,11 @@ import { useTranslation } from 'react-i18next';
 import {
   addDays,
   GOAL_KINDS,
+  LETTER_MAX_LENGTH,
   localDayKey,
   MAX_ACTIVE_GOALS,
+  shouldShowCounter,
+  truncateLetter,
   validateGoalTarget,
   type GoalKind,
 } from '@wellness/shared';
@@ -71,6 +74,9 @@ function GoalForm({ onDone }: { onDone: () => void }) {
   const [search, setSearch] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // US LETTRE-01 — replié par défaut (R5) : un objectif sans lettre se crée exactement comme avant.
+  const [letterOpen, setLetterOpen] = useState(false);
+  const [letterText, setLetterText] = useState('');
 
   const { exercises } = useExercises(search);
   // Liste volontairement courte : au-delà, on cherche. Afficher 200 exercices dans une feuille de
@@ -118,6 +124,8 @@ function GoalForm({ onDone }: { onDone: () => void }) {
         startValue: kind === 'exercise_1rm' ? startValue : null,
         startDate,
         deadline,
+        // Vide = pas de lettre : le repository normalise, l'objectif n'en porte tout simplement pas.
+        letterText,
       });
       onDone();
     } catch {
@@ -228,6 +236,52 @@ function GoalForm({ onDone }: { onDone: () => void }) {
         label={(option) => t('goals.weeks', { count: Number(option) })}
       />
 
+      {/*
+        US LETTRE-01 — le mot à son futur soi. Replié : proposé, jamais imposé (R5). Une invitation
+        dépliée d'office transformerait la création d'objectif en devoir de rédaction.
+      */}
+      {letterOpen ? (
+        <>
+          <Text style={[styles.label, { color: colors.text }]}>
+            {t('goals.letter.field.label')}
+          </Text>
+          <Text style={[styles.hint, { color: colors.textMuted }]}>
+            {t('goals.letter.field.hint')}
+          </Text>
+          <TextInput
+            value={letterText}
+            onChangeText={(next) => setLetterText(truncateLetter(next))}
+            multiline
+            maxLength={LETTER_MAX_LENGTH}
+            placeholder={t('goals.letter.field.placeholder')}
+            placeholderTextColor={colors.textMuted}
+            accessibilityLabel={t('goals.letter.field.label')}
+            maxFontSizeMultiplier={1.4}
+            style={[styles.input, styles.letterInput, { color: colors.text, borderColor: colors.border }]}
+          />
+          {/* Le compteur n'apparaît qu'à l'approche de la limite (D6) : plus tôt, il ne fait que compter. */}
+          {shouldShowCounter(letterText.length) && (
+            <Text
+              style={[styles.counter, { color: colors.textMuted }]}
+              accessibilityLiveRegion="polite"
+            >
+              {t('goals.letter.counter', { chars: letterText.length, max: LETTER_MAX_LENGTH })}
+            </Text>
+          )}
+        </>
+      ) : (
+        <Pressable
+          onPress={() => setLetterOpen(true)}
+          accessibilityRole="button"
+          accessibilityLabel={t('goals.letter.field.label')}
+          style={styles.letterToggle}
+        >
+          <Text style={[styles.letterToggleLabel, { color: colors.accent }]} maxFontSizeMultiplier={1.3}>
+            {t('goals.letter.field.label')}
+          </Text>
+        </Pressable>
+      )}
+
       {validationError !== null && (
         <Text style={[styles.error, { color: colors.danger }]} accessibilityRole="alert">
           {validationError === 'target_below_start'
@@ -278,6 +332,10 @@ const styles = StyleSheet.create({
   targetRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   targetInput: { flex: 1, textAlign: 'right' },
   unit: { fontFamily: fontFamily.bodySemi, fontSize: 14, minWidth: 34 },
+  letterInput: { minHeight: 120, paddingVertical: 10, textAlignVertical: 'top', fontFamily: fontFamily.body },
+  counter: { fontFamily: fontFamily.body, fontSize: 12.5, textAlign: 'right' },
+  letterToggle: { minHeight: 48, justifyContent: 'center' },
+  letterToggleLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   picker: { borderWidth: 1, borderRadius: 12, overflow: 'hidden' },
   pickerRow: { paddingHorizontal: 12, minHeight: 48, justifyContent: 'center' },
   pickerLabel: { fontFamily: fontFamily.body, fontSize: 14 },

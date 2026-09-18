@@ -10,6 +10,86 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 18/09/2026 (ter) — LETTRE-01 : la lettre à ton futur toi
+
+Branche : `dev` (travail direct, décision Florian). Commit précédent : `da306359`. **Troisième et
+dernière US du lot 1** de la salve « carnet d'innovation » du 13/09/2026 (idée 34) — la plus petite,
+et la seule qui joue sur la **rétention émotionnelle** plutôt que sur la donnée.
+
+### Ajouté
+
+- **Un mot écrit à son futur soi, scellé avec l'objectif.** À la création d'un objectif (OBJ-01), un
+  champ **replié** propose d'écrire quelques lignes. Le mot ne se relit pas au quotidien : il se
+  rouvre dans exactement **trois cas** — échéance passée, objectif atteint, suppression.
+- `packages/shared/src/goal-letter.ts` (+ tests, Vitest) — les règles pures : `normaliseLetter`
+  (un texte vidé **supprime** la lettre), `truncateLetter` / `shouldShowCounter` (1 000 caractères,
+  compteur à partir de 800), `letterAgeDays` (jours pleins, **jamais négatif** : une date future,
+  venue d'un appareil à l'horloge décalée, compte pour 0 au lieu d'afficher « il y a −3 jours »).
+- `apps/mobile/src/components/goals/GoalLetterSheet.tsx` — la feuille de lecture : ancienneté puis
+  texte (l'ordre visuel est l'ordre TalkBack), édition tant que l'objectif est en cours (D4),
+  « Refermer ». **Seul endroit** où le texte apparaît (R2). Exporte `formatLetterAge`.
+- `GoalCard.tsx` — l'**enveloppe** : « Un mot scellé · JJ/MM/AAAA », **jamais le contenu**. Quand
+  l'objectif est terminé et que le mot n'a pas encore été ouvert par un déclencheur, la carte propose
+  de le relire, **une fois**.
+- `goals.tsx` — le troisième déclencheur : la confirmation de suppression propose de relire le mot
+  **avant** de supprimer. Relire **annule** la suppression : rien n'est effacé sans un second geste.
+- `GoalFormSheet.tsx` — le champ replié, avec son compteur à l'approche de la limite.
+- Migration `supabase/migrations/20260918182701_lettre01_goal_letter.sql` : `letter_text`,
+  `letter_written_at`, `letter_opened_at` sur `personal_goals` + `check` de longueur `not valid`
+  (toutes les lignes existantes sont `null` : rien à revalider). **Poussée sur le cloud**, types
+  régénérés, registre `supabase/MIGRATIONS.md` coché.
+- i18n `goals.letter.*` **FR + EN** (23 clés), parité vérifiée par le test existant.
+- Test de composant `apps/mobile/src/components/goals/__tests__/GoalLetter.test.tsx` (9 tests) :
+  les trois déclencheurs, le déclencheur **consommé**, et la garantie que le texte ne fuit jamais
+  hors de la feuille.
+- `RECETTES.md` **§73** (16 critères).
+
+### Modifié
+
+- `goal-repository.ts` — `GoalWithProgress` porte les trois champs, `SELECT_GOALS` les lit,
+  `createGoal` accepte un `letterText` facultatif ; nouveaux `setGoalLetter` (texte vide ⇒ lettre
+  supprimée) et `markGoalLetterOpened` (**idempotent** : la première ouverture fait foi).
+- `apps/mobile/src/powersync/schema.ts` — les trois colonnes déclarées côté client.
+- Roadmap : ligne **7.32** créée en « Hors périmètre de cadrage », compteur livré **241 → 242**,
+  total **253 → 254**, et ligne « Hors cadrage » du détail par version **recomptée ligne à ligne**
+  (elle était périmée de 7 lignes : 42 annoncées, 50 réelles).
+
+### Corrigé
+
+- 🔴 **La spec s'appuyait sur une notification qui n'existe pas.** R3-a annonçait que la notification
+  d'échéance d'OBJ-01 (`scheduleDatedReminder`, « déjà en place ») mentionnerait la lettre. Vérification
+  faite : **OBJ-01 ne planifie aucune notification** — sa décision D4 les a explicitement écartées
+  (« jalons visuels seuls ») et les renvoyait à MUSC-F8 / NUTR-F1. En créer une ici aurait été **hors
+  périmètre** (§2 interdit toute notification nouvelle) et aurait touché la déclaration Play à
+  l'instant où l'on cherche à soumettre. Le déclencheur « échéance » devient **in-app** : la carte de
+  l'objectif terminé propose de relire. **Les trois déclencheurs restent trois, et aucun ne dépend
+  plus d'une permission** — ce qui rend au passage le critère de recette « notifications refusées »
+  trivialement vrai. Spec, plan et roadmap mis à jour ; la correction est datée dans la spec.
+- R6 corrigé : la lettre entre dans l'export RGPD **sans rien à câbler**. Vérifié dans
+  `apps/mobile/src/lib/data-export.ts` : l'export lit `SELECT * FROM personal_goals`, donc les trois
+  colonnes en font partie dès leur création. La spec demandait « à ajouter à l'export » — c'était un
+  faux travail.
+
+### Technique — notes
+
+- **Aucune sync rule à redéployer** : `personal_goals` est publiée depuis la migration
+  `20260729131013`. Le réflexe « migration ⇒ sync rule » ne vaut que pour une **table** neuve —
+  mais les colonnes, elles, **doivent** être déclarées dans `powersync/schema.ts`, faute de quoi
+  elles existent en base et restent invisibles du client (panne silencieuse de CYCLE-01, re-rencontrée
+  sur FANT-01 le matin même).
+- **La feuille suit l'objectif par son ID**, pas par une copie : l'écran retrouve l'objectif dans les
+  listes vivantes. Une modification du texte se voit donc **sans rouvrir**, et la feuille se referme
+  d'elle-même si l'objectif disparaît.
+- `letter_opened_at` n'est posé que par les **déclencheurs** : une relecture volontaire ne le
+  consomme pas. Sans cette distinction, l'app cesserait de proposer la lettre au moment précis où
+  elle sert — ou la reproposerait indéfiniment.
+- **Aucun `{{count}}` sur le compteur de caractères** : `count` déclenche la pluralisation i18next.
+  Le compteur passe par `{{chars}}` / `{{max}}` (spec §7 corrigée en conséquence) ; l'ancienneté, elle,
+  utilise bien `count` avec ses formes plurielles.
+- Étape **design sautée** (surfaces existantes : carte, feuille, formulaire), comme FANT-01.
+- Vérifié : `lint` 0 · `typecheck` 0 (3 workspaces) · `npm run test` **code de sortie 0**,
+  **6 607 tests** (3 464 Jest + 3 143 Vitest).
+
 ## 18/09/2026 (bis) — RESERV-01 : le Réservoir, la journée vue en glucides
 
 Branche : `dev` (travail direct, décision Florian). Commit précédent : `65e3a196`. Deuxième US du

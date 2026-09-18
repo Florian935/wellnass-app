@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **18/09/2026** — **72 sections**.
+> Dernière mise à jour : **18/09/2026** — **73 sections**.
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -4373,3 +4373,44 @@ plan : [reserv01-reservoir-glucides.md](docs/plans/reserv01-reservoir-glucides.m
 
 **Ce qui n'est volontairement pas là** : protéines et lipides (tranché le 15/09), nutrition
 intra-effort, heure réelle des repas (`consumed_at` n'existe pas encore).
+
+## 73. LETTRE-01 — Lettre à ton futur toi : un mot scellé avec l'objectif (`dev`)
+
+Spec : [lettre01-lettre-futur-moi.md](docs/specs/functional/us/lettre01-lettre-futur-moi.md) ·
+plan : [lettre01-lettre-futur-moi.md](docs/plans/lettre01-lettre-futur-moi.md) · implémentée le 18/09/2026.
+
+> ⚠️ **Migration poussée sur le cloud** (`20260918182701_lettre01_goal_letter.sql`) : trois colonnes
+> sur `personal_goals`. Aucune sync rule à redéployer (la table est déjà publiée), mais **un APK à
+> jour est nécessaire** — les colonnes sont déclarées côté client dans `powersync/schema.ts`.
+
+> 🔎 **Ce qui a changé par rapport à la spec initiale** : le déclencheur « échéance » ne passe **pas**
+> par une notification (OBJ-01 n'en planifie aucune, sa décision D4). Il est in-app : l'objectif
+> terminé propose de relire le mot sur sa carte. Aucune notification n'a été ajoutée.
+
+- [ ] **1. Un objectif sans mot se crée exactement comme avant** : le champ reste replié, rien
+      n'apparaît sur la carte, aucun message nulle part.
+- [ ] **2. Écrire un mot à la création** : la carte affiche « Un mot scellé · JJ/MM/AAAA » — et
+      **pas** le texte.
+- [ ] **3. La saisie s'arrête à 1 000 caractères**, le compteur apparaît à partir de 800 (coller un
+      texte plus long : il est coupé, jamais enregistré au-delà).
+- [ ] **4. Relire volontairement** depuis la carte : le texte s'affiche avec « Écrit le …, il y a … ».
+- [ ] **5. Modifier le mot** (objectif en cours) : le texte et la **date d'écriture** sont à jour sur
+      la carte.
+- [ ] **6. Vider le texte puis enregistrer** : « Mot supprimé », et l'enveloppe disparaît de la carte.
+- [ ] **7. Objectif atteint** : la carte propose « Tu y es. Relis ce que tu écrivais en te lançant. »
+- [ ] **8. Échéance passée sans réussite** : la carte propose « Tu avais écrit un mot en te lançant. »
+- [ ] **9. Après une ouverture par déclencheur, la proposition ne revient plus** — le bouton
+      « Relire ton mot », lui, reste.
+- [ ] **10. Supprimer un objectif avec un mot** : la confirmation propose de le relire **avant** de
+      supprimer ; relire **annule** la suppression (rien n'est effacé).
+- [ ] **11. Supprimer un objectif sans mot** : la confirmation est exactement celle d'avant.
+- [ ] **12. Notifications coupées** : aucun des trois déclencheurs n'en dépend, tout fonctionne.
+- [ ] **13. Mode avion** : écrire, relire, modifier. Au retour du réseau, la synchro rattrape.
+- [ ] **14. Second appareil** : après synchro, le mot est là, avec sa date.
+- [ ] **15. Accessibilité** : TalkBack annonce l'enveloppe en entier (« un mot scellé, …»), lit la
+      feuille dans l'ordre ancienneté → texte ; à 1,5× de police, rien n'est coupé.
+- [ ] **16. Export RGPD** (Réglages → mes données) : l'archive contient `letter_text`. Il n'y avait
+      rien à câbler — l'export lit toute la table — c'est justement ce qu'on vérifie.
+
+**Ce qui n'est volontairement pas là** : la lettre à la voix (permission micro juste avant la
+soumission Play — D1), la lettre hors objectif, le partage, toute notification.
