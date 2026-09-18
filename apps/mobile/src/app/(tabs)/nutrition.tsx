@@ -49,6 +49,7 @@ import { useTheme } from '@/theme/useTheme';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { MacroSuggestionCard } from '@/components/nutrition/MacroSuggestionCard';
 import { ExplainSheet } from '@/components/explain/ExplainSheet';
+import { FuelTankCard } from '@/components/nutrition/FuelTankCard';
 import { NutritionStage, type QuickFood } from '@/components/nutrition/NutritionStage';
 import { StageScrollView } from '@/components/stage/StageScrollView';
 import type { MacroKey } from '@/components/nutrition/MacroTriple';
@@ -334,6 +335,13 @@ export default function NutritionScreen() {
           « Ajouter une activité » — la seule porte de saisie pour qui n'a activé que la nutrition.
         */}
         <DayEnergyCard dayKey={day} consumedKcal={totals.kcal} />
+
+        {/*
+          US RESERV-01 — « Réservoir » : la même journée, vue en glucides disponibles. Placée juste
+          après l'énergie parce qu'elle répond à la question suivante (« est-ce que j'ai de quoi
+          tenir ma séance de ce soir ? ») et qu'elle se tait quand elle n'a rien à dire.
+        */}
+        <FuelTankCard dayKey={day} atHour={hour} />
 
         {/* Journée vide (4.18) — un état plein plutôt qu'une simple ligne pointillée : c'est le
             premier écran d'un nouvel utilisateur, et « copier hier » y est l'action la plus utile. */}

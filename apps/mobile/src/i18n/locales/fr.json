@@ -692,6 +692,21 @@
         "servings_plural": "{{count}} prises au-dessus du repère ({{grams}} g)",
         "needsWeight": "Ajoute une pesée pour voir tes protéines par prise"
       }
+    },
+    "fuelTank": {
+      "title": "Réservoir",
+      "subtitle": "Glucides disponibles, estimés",
+      "level": "≈ {{percent}} %",
+      "grams": "≈ {{grams}} g sur ~{{capacity}} g",
+      "gramsUnit": "{{grams}} g",
+      "estimate": "Estimation, pas une mesure",
+      "noMeal": "Aucun repas saisi aujourd’hui",
+      "a11y": "Réservoir à {{percent}} %. Au plus bas : {{lowest}} % vers {{hour}}.",
+      "action": {
+        "title": "Ajoute ~{{grams}} g de glucides",
+        "body": "Sans ça, ta séance de {{time}} descendrait vers {{percent}} %.",
+        "hint": "Des idées de collation dans les suggestions d’aliments"
+      }
     }
   },
   "food": {
@@ -4066,6 +4081,16 @@
       "level": "Ton niveau n'entre pas dans le calcul : il agit à travers les charges, le rythme et le ressenti.",
       "device": "Chiffre lu sur ta montre : {{value}} kcal actives",
       "target": "Ce que ta cible retient : {{value}} kcal, le bas de la fourchette"
+    },
+    "glycogen": {
+      "capacity": "Capacité estimée : {{value}}",
+      "start": "Au réveil : {{value}}",
+      "meals": "{{count}} repas saisis : +{{value}}",
+      "noMeal": "Aucun repas saisi aujourd’hui",
+      "sessions": "{{count}} séance(s) : −{{value}}",
+      "rest": "Dépense de repos : −{{value}}",
+      "now": "Niveau estimé maintenant : {{value}}",
+      "estimate": "Un stock estimé depuis ton poids et ta journée — jamais mesuré."
     }
   },
   "brief": {

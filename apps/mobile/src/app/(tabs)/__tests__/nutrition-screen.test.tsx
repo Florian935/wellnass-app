@@ -183,6 +183,9 @@ jest.mock('@expo/vector-icons', () => {
 // US DEPENSE-03 : la carte « Ta journée en énergie » a ses propres tests ; ici elle tirerait
 // settings-repository et tout le graphe i18n dans un test d'écran qui mocke react-i18next.
 jest.mock('@/components/energy/DayEnergyCard', () => ({ DayEnergyCard: () => null }));
+// US RESERV-01 : la carte Réservoir tire la chaîne des repositories, donc l'initialisation i18n de
+// l'app. Elle a son propre test ; ici on la neutralise, comme DayEnergyCard juste au-dessus.
+jest.mock('@/components/nutrition/FuelTankCard', () => ({ FuelTankCard: () => null }));
 
 jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 

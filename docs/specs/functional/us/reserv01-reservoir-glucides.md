@@ -3,9 +3,9 @@ id: RESERV-01
 titre: "Le Réservoir — la jauge de glucides de la journée"
 roadmap: [4.45]
 catalogue: [RN-07, RN-08]
-etape: spec
+etape: recette
 branche: dev
-maj: 15/09/2026
+maj: 18/09/2026
 ---
 
 # US RESERV-01 — Le Réservoir
@@ -96,6 +96,9 @@ planifiée, la carte propose une quantité de glucides : le **plus petit multipl
 terminer la séance au-dessus du seuil, plafonné à 120 g. L'action renvoie vers la suggestion
 d'aliments existante (NUTR-F2) filtrée sur les glucides. Sans séance planifiée, **aucune action** :
 une jauge basse un soir de repos n'est pas un problème.
+⚠️ **Quand 120 g ne suffisent pas** (grosse séance sur une journée à jeun), la carte conseille 120 g
+et la projection **reste sous le seuil** : elle le dit, plutôt que de conseiller 300 g d'un coup —
+un conseil qu'on ne peut pas suivre ne vaut rien, et l'absorption les étalerait de toute façon (R3).
 
 **R8 — Honnêteté.** La carte porte en permanence la mention « estimation » et expose le bouton
 **« Pourquoi ? »** (composant `ExplainButton` livré par DASH-01) : une fonction `explainGlycogen`

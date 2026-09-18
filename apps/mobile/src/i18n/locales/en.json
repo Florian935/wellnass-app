@@ -692,6 +692,21 @@
         "servings_plural": "{{count}} servings above the benchmark ({{grams}} g)",
         "needsWeight": "Add a weigh-in to see protein per serving"
       }
+    },
+    "fuelTank": {
+      "title": "Fuel tank",
+      "subtitle": "Estimated carbs available",
+      "level": "≈ {{percent}}%",
+      "grams": "≈ {{grams}} g of ~{{capacity}} g",
+      "gramsUnit": "{{grams}} g",
+      "estimate": "An estimate, not a measurement",
+      "noMeal": "No meal logged today",
+      "a11y": "Tank at {{percent}}%. Lowest: {{lowest}}% around {{hour}}.",
+      "action": {
+        "title": "Add ~{{grams}} g of carbs",
+        "body": "Without it, your {{time}} session would drop to about {{percent}}%.",
+        "hint": "Snack ideas in the food suggestions"
+      }
     }
   },
   "food": {
@@ -4066,6 +4081,16 @@
       "level": "Your training level is not part of the calculation: it shows up through loads, pace and effort.",
       "device": "Number from your watch: {{value}} active kcal",
       "target": "What your target keeps: {{value}} kcal, the bottom of the range"
+    },
+    "glycogen": {
+      "capacity": "Estimated capacity: {{value}}",
+      "start": "On waking: {{value}}",
+      "meals": "{{count}} meals logged: +{{value}}",
+      "noMeal": "No meal logged today",
+      "sessions": "{{count}} session(s): −{{value}}",
+      "rest": "Resting use: −{{value}}",
+      "now": "Estimated level now: {{value}}",
+      "estimate": "A stock estimated from your weight and your day — never measured."
     }
   },
   "brief": {

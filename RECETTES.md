@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **18/09/2026** — **71 sections**.
+> Dernière mise à jour : **18/09/2026** — **72 sections**.
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -4334,3 +4334,42 @@ plan : [fant01-fantome-course.md](docs/plans/fant01-fantome-course.md) · implé
 
 **Ce qui n'est volontairement pas là** (spec §2) : pas de fantôme sur la carte, pas de rejeu, pas de
 fantôme d'un autre utilisateur, pas de comparaison phase par phase sur un fractionné.
+
+## 72. RESERV-01 — Le Réservoir : la jauge de glucides de la journée (`dev`)
+
+Spec : [reserv01-reservoir-glucides.md](docs/specs/functional/us/reserv01-reservoir-glucides.md) ·
+plan : [reserv01-reservoir-glucides.md](docs/plans/reserv01-reservoir-glucides.md) · implémentée le 18/09/2026.
+
+> ⚠️ **Une estimation, pas une mesure.** Toute la carte repose sur un modèle : capacité déduite du
+> poids, dépense convertie depuis DEPENSE-01, heures de repas conventionnelles. Ce qu'on recette,
+> c'est la **cohérence** (le sens des variations, la justesse des messages), pas l'exactitude d'un
+> gramme.
+
+- [ ] **1. Sans poids, pas de carte.** Compte sans pesée : la carte n'apparaît pas. Ajouter un poids
+      la fait apparaître.
+- [ ] **2. Le repas remonte la jauge à son heure.** Ajouter 80 g de glucides au déjeuner : la courbe
+      monte vers 12 h 30, pas le matin.
+- [ ] **3. Un gros repas s'étale.** 150 g d'un coup ne font pas un mur vertical : la montée dure.
+- [ ] **4. La séance vide la jauge.** Terminer une séance de muscu ou une course fait descendre la
+      courbe sur la durée de la séance, d'autant plus qu'elle est intense.
+- [ ] **5. La séance planifiée apparaît dans la projection**, avant d'avoir eu lieu (elle doit avoir
+      une **heure** — sans heure, elle est ignorée, c'est voulu).
+- [ ] **6. L'action n'apparaît que s'il y a une séance à venir.** Jauge basse un soir sans séance :
+      aucune action.
+- [ ] **7. La quantité conseillée est ronde** (multiple de 10 g) et cohérente : plus la séance est
+      grosse, plus elle est grande, plafonnée à 120 g.
+- [ ] **8. Suivre le conseil fait disparaître l'action** : ajouter les glucides au journal et vérifier.
+- [ ] **9. « Pourquoi ? » explique la chaîne** : capacité, départ, repas, séances, repos, niveau — et
+      un niveau de confiance qui **baisse** si la dernière pesée est vieille ou s'il y a moins de
+      deux repas saisis.
+- [ ] **10. Jour passé** : la courbe s'affiche, la projection n'a plus de sens (aucune séance future).
+- [ ] **11. Mode avion** : identique, tout est local.
+- [ ] **12. Accessibilité** : TalkBack lit l'équivalent textuel de la courbe (« Réservoir à 55 %. Au
+      plus bas : 22 % vers 19 h 15 »). À 1,5× de police, rien n'est coupé.
+- [ ] **13. Les cibles du journal n'ont pas bougé** : les grammes cibles affichés ailleurs (MN-04)
+      sont exactement les mêmes qu'avant.
+- [ ] **14. Sans pilier Course ni Muscu actif** : la carte reste lisible (courbe décroissante), sans
+      action.
+
+**Ce qui n'est volontairement pas là** : protéines et lipides (tranché le 15/09), nutrition
+intra-effort, heure réelle des repas (`consumed_at` n'existe pas encore).

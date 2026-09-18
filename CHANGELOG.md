@@ -10,6 +10,61 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 18/09/2026 (bis) — RESERV-01 : le Réservoir, la journée vue en glucides
+
+Branche : `dev` (travail direct, décision Florian). Commit précédent : `65e3a196`. Deuxième US du
+**lot 1** de la salve « carnet d'innovation » (idée 23).
+
+Le journal sait dire ce qui a été mangé depuis minuit et ce qu'il reste jusqu'à minuit. Il ne sait
+pas répondre à la question qui compte quand on s'entraîne le soir : **est-ce que j'ai de quoi tenir
+ma séance de 18 h 30 ?** Un total atteint à 22 h ne sert à rien à 18 h.
+
+**Glucides seulement** — l'extension aux protéines et aux lipides, étudiée le 15/09, a été
+abandonnée par Florian après examen : les protéines ne se stockent pas (l'excédent est oxydé) et les
+réserves de lipides couvrent des dizaines d'heures d'effort. Une jauge qui se vide y aurait affiché
+un mensonge.
+
+### Ajouté
+
+- **`packages/shared/src/fuel-tank.ts`** — le moteur, pur et testé (23 cas, 100 % lignes/fonctions) :
+  capacité déduite du poids, simulation de la journée par pas de 5 min (absorption **plafonnée** à
+  60 g/h, vidange de repos, coût des séances réparti sur leur durée), niveau borné à `[0, capacité]`,
+  minimum projeté, et conseil de collation — **plus petit multiple de 10 g** qui fait terminer la
+  séance au-dessus de la zone basse, plafonné à 120 g.
+- **`explainGlycogen`** (`explain.ts`) — la chaîne « Pourquoi ? » de DASH-01 : capacité, départ,
+  apports, séances, repos, niveau, plus la phrase qui désamorce le malentendu (« estimé, jamais
+  mesuré »). La confiance **vient des données** : poids de plus de 30 jours ou moins de deux repas
+  saisis ⇒ confiance basse.
+- **`fuel-repository.ts`** — l'assemblage : repas groupés par type à leur **heure conventionnelle**
+  (`food_entries` ne porte pas de `consumed_at`), séances réalisées **telles que DEPENSE-01 les a
+  estimées** (kcal **et** MET), séances planifiées du reste de la journée pour la projection.
+- **`FuelTankCard.tsx`** — jauge, courbe du jour avec sa zone basse, seconde courbe « avec la
+  collation », action, bouton « Pourquoi ? », et un **équivalent textuel** de la courbe pour TalkBack.
+- **RECETTES.md §72** — 14 critères cochables.
+
+### Technique — notes
+
+- 🔴 **Aucune dépense n'est recalculée** (spec D4) : le Réservoir convertit en grammes ce que
+  `energy.ts` a déjà estimé. Deux estimations concurrentes de la même séance, c'est le défaut qui a
+  coûté l'US GARDE-01. Les séances **planifiées**, elles, n'ont pas de dépense : convention explicite
+  (1 h, MET 6 en muscu / 8 en course) passée par la **même** fonction `estimateMetEnergy`.
+- 🔴 **Aucune cible du journal n'est touchée** : MN-04 reste l'autorité sur les grammes cibles, comme
+  FUEL-01 l'avait déjà acté.
+- ⚠️ **Quand 120 g ne suffisent pas** (grosse séance sur une journée à jeun), la carte conseille
+  120 g et la projection reste basse. C'est assumé et écrit dans la spec : un conseil qu'on ne peut
+  pas suivre ne vaut rien, et l'absorption l'étalerait de toute façon.
+- Le test de l'écran nutrition neutralise la carte (comme `DayEnergyCard`) : elle tire la chaîne des
+  repositories, donc l'initialisation i18n de l'app.
+- Un test rouge en cours de route, et c'était **le test** qui avait tort : il exigeait que la
+  collation conseillée repasse toujours au-dessus du seuil, alors que le plafond de 120 g peut ne pas
+  suffire. Scénario corrigé, comportement documenté.
+- **Aucune migration, aucune sync rule, aucune écriture** : recettable sur l'APK existant.
+- Qualité : `npm run lint` 0, `npm run typecheck` 0, `npm run test` **code de sortie 0**
+  (3 455 tests mobile, 24 fichiers Vitest).
+- ⚠️ **Parité i18n rouge, mais pas de ce lot** : `coach.motivant.verdict.warmup` et
+  `coach.sobre.verdict.warmup` sont vides **depuis avant** ces commits (vérifié sur `HEAD`). À
+  reprendre par le chantier coach.
+
 ## 18/09/2026 — FANT-01 : courir contre soi-même
 
 Branche : `dev` (travail direct, décision Florian du 15/09/2026, par exception à la règle « une

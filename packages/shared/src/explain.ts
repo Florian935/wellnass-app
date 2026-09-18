@@ -121,6 +121,60 @@ export function explainEnergy(input: {
   return { steps, confidence: input.confidence };
 }
 
+/**
+ * US RESERV-01 (R8) — d'où sort la jauge de glucides.
+ *
+ * Cinq étapes, dans l'ordre où la journée se déroule : la capacité, le départ, ce qui a rempli, ce
+ * qui a vidé, et le niveau du moment. La confiance **vient des données**, pas du calcul : un poids
+ * ancien ou un journal vide rendent l'estimation fragile, et l'explication doit le dire — elle ne
+ * peut pas être plus sûre que le chiffre qu'elle explique.
+ */
+export function explainGlycogen(input: {
+  capacityG: number;
+  startG: number;
+  mealsCarbsG: number;
+  mealsCount: number;
+  sessionsCostG: number;
+  sessionsCount: number;
+  restDrainG: number;
+  nowG: number;
+  weightAgeDays: number | null;
+}): Explanation {
+  const steps: ExplainStep[] = [
+    { key: 'explain.glycogen.capacity', value: input.capacityG },
+    { key: 'explain.glycogen.start', value: Math.round(input.startG) },
+  ];
+
+  steps.push(
+    input.mealsCount > 0
+      ? {
+          key: 'explain.glycogen.meals',
+          value: Math.round(input.mealsCarbsG),
+          params: { count: input.mealsCount },
+        }
+      : { key: 'explain.glycogen.noMeal' },
+  );
+
+  if (input.sessionsCount > 0) {
+    steps.push({
+      key: 'explain.glycogen.sessions',
+      value: Math.round(input.sessionsCostG),
+      params: { count: input.sessionsCount },
+    });
+  }
+
+  steps.push({ key: 'explain.glycogen.rest', value: Math.round(input.restDrainG) });
+  steps.push({ key: 'explain.glycogen.now', value: Math.round(input.nowG) });
+  // La phrase qui désamorce le malentendu garanti : ce n'est pas une mesure.
+  steps.push({ key: 'explain.glycogen.estimate' });
+
+  const weightStale = input.weightAgeDays === null || input.weightAgeDays > 30;
+  const confidence: Confidence =
+    weightStale || input.mealsCount < 2 ? 'low' : input.sessionsCount === 0 ? 'medium' : 'high';
+
+  return { steps, confidence };
+}
+
 export function explainCalorieTarget(input: {
   tdee: number;
   objectiveDeltaKcal: number;
