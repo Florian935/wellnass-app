@@ -34,11 +34,19 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 
 jest.mock('@/data/repositories/run-repository', () => ({
   useActiveRun: jest.fn(() => ({ run: null, isLoading: false })),
+  // US FANT-01 : le choix du fantôme (écriture au démarrage) et la liste des candidats.
+  setRunGhost: jest.fn().mockResolvedValue(undefined),
+  useGhostCandidates: jest.fn(() => ({ candidates: [], isLoading: false })),
+  GHOST_SUGGESTIONS: 3,
   startRun: jest.fn(),
   cancelRun: jest.fn(),
 }));
 // `startManualClock` : le mode sans GPS a désormais son propre chrono (US CARDIO-UX01, R1b).
 // Sans ce mock, l'écran plante — et c'est exactement le chemin que le test suivant vérifie.
+// US FANT-01 : le sélecteur de fantôme tire `useUnits`, donc l'initialisation i18n de l'app.
+// Il a son propre test ; ici on le remplace par un marqueur, comme `Screen`.
+jest.mock('@/components/running/GhostPicker', () => ({ GhostPicker: () => null }));
+
 jest.mock('@/running/tracker', () => ({
   startTracking: jest.fn(),
   startManualClock: jest.fn(),

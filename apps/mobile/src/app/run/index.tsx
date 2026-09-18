@@ -8,7 +8,13 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
-import { cancelRun, startRun, useActiveRun } from '@/data/repositories/run-repository';
+import {
+  cancelRun,
+  setRunGhost,
+  startRun,
+  useActiveRun,
+} from '@/data/repositories/run-repository';
+import { GhostPicker } from '@/components/running/GhostPicker';
 import { powerSync } from '@/powersync/system';
 import { startManualClock, startTracking } from '@/running/tracker';
 import { fontFamily } from '@/theme/fonts';
@@ -36,6 +42,8 @@ export default function RunStartScreen() {
   const { run: active, isLoading } = useActiveRun();
 
   const [source, setSource] = useState<RunSource>('gps');
+  // US FANT-01 — le fantôme choisi avant le départ, écrit une seule fois sur la course (R8).
+  const [ghostRunId, setGhostRunId] = useState<string | null>(null);
   const [starting, setStarting] = useState(false);
   const lockStart = useActionLock();
 
@@ -56,6 +64,7 @@ export default function RunStartScreen() {
       setStarting(true);
       try {
         const id = await startRun(source, plannedSessionId);
+        if (ghostRunId !== null) await setRunGhost(id, ghostRunId);
         const startedAtMs = await readStartedAtMs(id);
 
         if (source === 'manual') {
@@ -158,6 +167,11 @@ export default function RunStartScreen() {
               onPress={() => setSource('manual')}
             />
           </Card>
+
+          {/* US FANT-01 — proposé, jamais imposé (D1) : sans choix, la course démarre comme avant. */}
+          {source === 'gps' ? (
+            <GhostPicker selectedId={ghostRunId} onSelect={setGhostRunId} />
+          ) : null}
 
           <Button
             label={starting ? t('running.start.starting') : t('running.start.startCta')}

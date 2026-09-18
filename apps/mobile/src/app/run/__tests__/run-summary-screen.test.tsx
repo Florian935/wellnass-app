@@ -38,6 +38,8 @@ import { useRouter } from 'expo-router';
 
 jest.mock('@/data/repositories/run-repository', () => ({
   useRun: jest.fn(() => ({ run: null, isLoading: false })),
+  // US FANT-01 : le résumé lit le fantôme de la course. Sans fantôme par défaut, la ligne ne rend rien.
+  useRunGhost: jest.fn(() => ({ ghost: null, isLoading: false })),
   useRunTarget: jest.fn(() => null),
   // US RUN-F4 (lot F) — réalisé par répétition. Défaut vide : la section « fraction par
   // fraction » est alors absente, ce qui est le cas de toutes les courses de ce fichier

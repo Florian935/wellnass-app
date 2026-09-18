@@ -2,6 +2,7 @@ import {
   compareToTarget,
   feelingFromStoredRpe,
   feelingToStoredRpe,
+  ghostGap,
   formatDayFull,
   pausedSeconds,
   WORKOUT_FEELINGS,
@@ -26,9 +27,11 @@ import {
   setRunFeedback,
   unlinkPlannedSession,
   useRun,
+  useRunGhost,
   useRunTarget,
 } from '@/data/repositories/run-repository';
 import { detectAndStoreRunRecords } from '@/data/repositories/running-record-repository';
+import { formatGapDistance } from '@/components/running/GhostBand';
 import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -89,13 +92,30 @@ function formatMmSs(totalSeconds: number): string {
  * écran ne la re-termine pas : il complète le ressenti et, pour une course manuelle, ses chiffres.
  */
 export default function RunSummaryScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
   const units = useUnits();
   const { id } = useLocalSearchParams<{ id?: string }>();
 
   const { run, isLoading } = useRun(id);
+  // US FANT-01 — l'écart final : la distance du coureur moins celle du fantôme au même temps net.
+  const { ghost } = useRunGhost(run?.ghostRunId ?? null);
+  const ghostGapLabel = (() => {
+    if (ghost === null) return '';
+    const gap = ghostGap({
+      profile: ghost.profile,
+      runnerDistanceM: run?.distanceM ?? 0,
+      netSeconds: run?.durationSeconds ?? 0,
+      avgPaceSPerKm: run?.avgPaceSPerKm ?? null,
+    });
+    const { value, symbol } = formatGapDistance(gap.meters, units.system);
+    return gap.status === 'level'
+      ? t('running.ghost.level')
+      : gap.meters >= 0
+        ? t('running.ghost.ahead', { meters: `${value} ${symbol}` })
+        : t('running.ghost.behind', { meters: `${value} ${symbol}` });
+  })();
   const target = useRunTarget(run?.plannedSessionId ?? null);
 
   const comparison = useMemo(
@@ -294,6 +314,21 @@ export default function RunSummaryScreen() {
         title={t('running.summary.doneTitle')}
         subtitle={formatDayFull(run.startedAt)}
       />
+
+      {/* US FANT-01 — la course affrontée, rappelée une fois la course finie (spec §3). */}
+      {ghost !== null ? (
+        <Card>
+          <Text style={[styles.ghostLine, { color: colors.textMuted }]}>
+            {t('running.ghost.summary', {
+              date: new Intl.DateTimeFormat(i18n.language, { day: 'numeric', month: 'short' }).format(
+                new Date(ghost.finishedAt),
+              ),
+            })}
+            {'  '}
+            <Text style={{ color: colors.text }}>{ghostGapLabel}</Text>
+          </Text>
+        </Card>
+      ) : null}
 
       {/* Célébration d'un ou plusieurs records battus */}
       {beatenRecords.length > 0 ? <CelebrationBanner distances={beatenRecords} /> : null}
@@ -540,6 +575,7 @@ function CelebrationBanner({ distances }: { distances: RecordDistanceKey[] }) {
 }
 
 const styles = StyleSheet.create({
+  ghostLine: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
   loading: { fontFamily: fontFamily.body, fontSize: 15, textAlign: 'center', marginTop: 32 },
   empty: { fontFamily: fontFamily.body, fontSize: 15, textAlign: 'center', marginTop: 32 },
   sectionTitle: { fontFamily: fontFamily.displaySemi, fontSize: 15 },

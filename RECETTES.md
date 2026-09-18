@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **16/09/2026** — **70 sections**.
+> Dernière mise à jour : **18/09/2026** — **71 sections**.
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -4295,3 +4295,42 @@ maillage entre par le bundle DOM en base64 ; un second composant DOM **duplique*
 après dix ouvertures → on cadre l'US d'éditeur 3D. Jonctions cassées → on tranche entre monter three
 (ce qui **rouvre l'ADR-008**) et la déformation par squelette, non couverte ici. fps insuffisant →
 retour au rendu 2D précalculé, et le SVG existant reste la seule chose livrée.
+
+## 71. FANT-01 — Le Fantôme : courir contre soi-même (`dev`)
+
+Spec : [fant01-fantome-course.md](docs/specs/functional/us/fant01-fantome-course.md) ·
+plan : [fant01-fantome-course.md](docs/plans/fant01-fantome-course.md) · implémentée le 18/09/2026.
+
+> ⚠️ **Se recette à deux courses** : il faut d'abord une course GPS terminée d'au moins 500 m au
+> départ d'un endroit donné, puis une seconde course partie du **même** endroit. Sans cette première
+> course, le sélecteur dira « aucune course comparable ici » — ce qui est le comportement attendu,
+> pas un défaut.
+
+- [ ] **1. Sans fantôme, rien ne change.** Démarrer une course sans rien sélectionner : l'écran de
+      suivi est strictement identique à avant (aucune bande, aucune annonce).
+- [ ] **2. La bonne course est proposée.** Sur un départ déjà couru, l'écran de départ propose la
+      course passée avec la bonne date, la bonne distance et la bonne durée.
+- [ ] **3. Loin du départ, aucune proposition.** À plus de 300 m du départ d'une course passée
+      (ou avec la localisation refusée), la carte dit « aucune course comparable ici ».
+- [ ] **4. L'écart est cohérent.** Au départ il vaut à peu près l'opposé de la distance du fantôme,
+      puis il monte quand on accélère et descend quand on ralentit.
+- [ ] **5. Le dépassement s'annonce une fois.** Passer devant (ou se faire passer) déclenche **une**
+      annonce vocale, pas deux — annonces vocales activées dans le profil coureur.
+- [ ] **6. Pas de bavardage.** Deux annonces de fantôme ne tombent jamais à moins de 60 s d'écart.
+- [ ] **7. La pause fige l'écart.** Mettre la course en pause : l'écart ne bouge plus ; la reprise le
+      fait repartir.
+- [ ] **8. Fantôme terminé.** Quand le temps dépasse la durée du fantôme, la bande dit « fantôme
+      terminé » et l'écart se fige.
+- [ ] **9. Aller-retour d'écran.** Quitter l'écran de suivi et y revenir : aucune annonce au retour,
+      l'écart est toujours là.
+- [ ] **10. Le résumé se souvient.** Après la course, le résumé affiche « Contre ton fantôme du … »
+      avec l'écart final.
+- [ ] **11. Mode avion.** Tout fonctionne sans réseau, y compris le choix du fantôme.
+- [ ] **12. Accessibilité.** TalkBack lit la bande d'un bloc (« fantôme du 25 août, 42 mètres
+      d'avance ») ; à 1,5× de police, rien n'est coupé et les lignes de choix restent cliquables.
+- [ ] **13. Unités impériales.** En réglage impérial, l'écart s'affiche en **yards** à l'écran.
+- [ ] **14. Deux appareils.** Le fantôme choisi sur un téléphone se retrouve sur l'autre après
+      synchro (colonne `ghost_run_id`, déjà poussée sur le cloud).
+
+**Ce qui n'est volontairement pas là** (spec §2) : pas de fantôme sur la carte, pas de rejeu, pas de
+fantôme d'un autre utilisateur, pas de comparaison phase par phase sur un fractionné.

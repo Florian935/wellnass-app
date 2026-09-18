@@ -2801,6 +2801,27 @@
       "correctCta": "Correct the distance",
       "correctHint": "The GPS track is left untouched: only the recorded distance changes, and the average pace is recomputed.",
       "saveCorrection": "Save correction"
+    },
+    "ghost": {
+      "cta": "Race a ghost",
+      "none": "No comparable run here",
+      "pick": "Pick another run",
+      "option": "{{date}} · {{distance}} in {{duration}}",
+      "selected": "Ghost · {{date}}",
+      "clear": "Remove ghost",
+      "ahead": "{{meters}} m ahead",
+      "behind": "{{meters}} m behind",
+      "level": "Neck and neck",
+      "finished": "Ghost finished · {{gap}}",
+      "seconds": "that's {{seconds}} s",
+      "summary": "Against your ghost from {{date}}",
+      "voice": {
+        "ahead": "You are {{meters}} metres ahead of your ghost.",
+        "behind": "You are {{meters}} metres behind your ghost.",
+        "passed": "You just passed your ghost.",
+        "overtaken": "Your ghost just passed you."
+      },
+      "a11y": "Ghost from {{date}}, {{gap}}"
     }
   },
   "planning": {

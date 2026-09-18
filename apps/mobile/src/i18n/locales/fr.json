@@ -2801,6 +2801,27 @@
       "correctCta": "Corriger la distance",
       "correctHint": "La trace GPS n’est pas modifiée : seule la distance retenue change, et l’allure moyenne est recalculée.",
       "saveCorrection": "Enregistrer la correction"
+    },
+    "ghost": {
+      "cta": "Courir contre un fantôme",
+      "none": "Aucune course comparable ici",
+      "pick": "Choisir une autre course",
+      "option": "{{date}} · {{distance}} en {{duration}}",
+      "selected": "Fantôme · {{date}}",
+      "clear": "Retirer le fantôme",
+      "ahead": "+{{meters}} m d'avance",
+      "behind": "{{meters}} m de retard",
+      "level": "Au coude à coude",
+      "finished": "Fantôme terminé · {{gap}}",
+      "seconds": "soit {{seconds}} s",
+      "summary": "Contre ton fantôme du {{date}}",
+      "voice": {
+        "ahead": "Tu as {{meters}} mètres d'avance sur ton fantôme.",
+        "behind": "Tu as {{meters}} mètres de retard sur ton fantôme.",
+        "passed": "Tu viens de passer devant ton fantôme.",
+        "overtaken": "Ton fantôme vient de passer devant."
+      },
+      "a11y": "Fantôme du {{date}}, {{gap}}"
     }
   },
   "planning": {

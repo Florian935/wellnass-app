@@ -49,6 +49,9 @@ import {
   computeKmSplits,
   computePolarisation,
   decodeTrack,
+  buildGhostProfile,
+  isGhostCandidate,
+  type GhostProfile,
   type Polarisation,
   // US RUN-F4 (lot F) — réalisé par répétition.
   type RunIntervalDraft,
@@ -89,6 +92,8 @@ export type ActiveRun = {
   gpsTrack: string | null;
   /** US RUN-F2b : occurrence planifiée d'origine, `null` pour une course libre. */
   plannedSessionId: string | null;
+  /** US FANT-01 : course passée affrontée comme fantôme, `null` si aucune (R8). */
+  ghostRunId: string | null;
   /**
    * US RUN-F2d : progression du guidage fractionné — index de la phase courante dans la séquence
    * linéarisée (`expandIntervalPhases`), et distance/durée cumulées de la course au moment où
@@ -149,6 +154,8 @@ export type RunDetail = {
   plannedSessionId: string | null;
   /** Terrain (US RUN-F3, D3), `null` si non renseigné. */
   terrain: RunTerrain | null;
+  /** US FANT-01 : la course affrontée comme fantôme, `null` si aucune (R8). */
+  ghostRunId: string | null;
   /** Dénivelé cumulé (US RUN-F1b), `null` = donnée absente (course manuelle ou antérieure). */
   elevationGainM: number | null;
   elevationLossM: number | null;
@@ -197,6 +204,7 @@ export type FinishInput = {
 type ActiveRunDbRow = {
   id: string;
   source: string;
+  ghost_run_id: string | null;
   started_at: string;
   duration_seconds: number | null;
   distance_m: number | null;
@@ -241,6 +249,7 @@ type RunDetailDbRow = {
   gps_track: string | null;
   planned_session_id: string | null;
   terrain: string | null;
+  ghost_run_id: string | null;
   elevation_gain_m: number | null;
   elevation_loss_m: number | null;
 };
@@ -252,6 +261,7 @@ type RunDetailDbRow = {
 /** Course active de l'utilisateur courant (au plus une). */
 const SELECT_ACTIVE_RUN = `
   SELECT id, source, started_at, duration_seconds, distance_m, gps_track, planned_session_id,
+         ghost_run_id,
          interval_phase_index, interval_phase_start_distance_m, interval_phase_start_duration_s
   FROM runs
   WHERE status = 'active' AND deleted_at IS NULL
@@ -301,7 +311,7 @@ export const SELECT_HISTORY_FOR_TEST = SELECT_HISTORY;
 /** Détail d'une course par id (tous statuts, non supprimée). */
 const SELECT_RUN_BY_ID = `
   SELECT id, source, status, started_at, finished_at, duration_seconds, distance_m,
-         avg_pace_s_per_km, rpe, notes, gps_track, planned_session_id, terrain,
+         avg_pace_s_per_km, rpe, notes, gps_track, planned_session_id, terrain, ghost_run_id,
          elevation_gain_m, elevation_loss_m
   FROM runs
   WHERE id = ? AND deleted_at IS NULL
@@ -322,6 +332,7 @@ function rowToActiveRun(row: ActiveRunDbRow): ActiveRun {
     durationSeconds: row.duration_seconds,
     gpsTrack: row.gps_track,
     plannedSessionId: row.planned_session_id,
+    ghostRunId: row.ghost_run_id,
     intervalPhaseIndex: row.interval_phase_index,
     intervalPhaseStartDistanceM: row.interval_phase_start_distance_m,
     intervalPhaseStartDurationS: row.interval_phase_start_duration_s,
@@ -368,6 +379,7 @@ function rowToRunDetail(row: RunDetailDbRow): RunDetail {
     notes: row.notes,
     gpsTrack: row.gps_track,
     plannedSessionId: row.planned_session_id,
+    ghostRunId: row.ghost_run_id,
     terrain: terrain.success ? terrain.data : null,
     elevationGainM: row.elevation_gain_m,
     elevationLossM: row.elevation_loss_m,
@@ -1462,4 +1474,138 @@ export function usePolarisation(): { polarisation: Polarisation | null; isLoadin
   );
 
   return { polarisation, isLoading: runsLoading || profileLoading };
+}
+
+// ---------------------------------------------------------------------------
+// US FANT-01 — Le Fantôme : candidats, choix, profil
+// ---------------------------------------------------------------------------
+
+/** Fenêtre de recherche des fantômes : au-delà, la comparaison n'intéresse plus personne. */
+export const GHOST_WINDOW_DAYS = 90;
+
+/** Nombre de propositions affichées d'emblée (spec R2) ; le reste s'ouvre à la demande. */
+export const GHOST_SUGGESTIONS = 3;
+
+/**
+ * Courses candidates au fantôme (US FANT-01, R2).
+ *
+ * Même parti pris que `SELECT_RUNS_WITH_TRACK_SINCE` : une requête **dédiée**, bornée dans le temps,
+ * plutôt que `gps_track` ajouté à `SELECT_HISTORY` — qui alimente l'accueil et les statistiques et
+ * chargerait alors toutes les traces de l'utilisateur en mémoire.
+ */
+export const SELECT_GHOST_CANDIDATES = `
+  SELECT id, finished_at, distance_m, duration_seconds, gps_track
+  FROM runs
+  WHERE status = 'completed' AND deleted_at IS NULL
+    AND gps_track IS NOT NULL
+    AND finished_at >= ?
+  ORDER BY finished_at DESC
+`;
+
+export type GhostCandidate = {
+  id: string;
+  finishedAt: string;
+  distanceM: number;
+  durationSeconds: number | null;
+};
+
+type GhostCandidateRow = {
+  id: string;
+  finished_at: string | null;
+  distance_m: number | null;
+  duration_seconds: number | null;
+  gps_track: string | null;
+};
+
+/**
+ * Les courses passées affrontables depuis ici (US FANT-01, R2).
+ *
+ * `null` en position de départ (GPS pas encore fixé) ⇒ **liste vide**, jamais une liste au hasard :
+ * proposer une course partie d'une autre ville serait pire que de ne rien proposer.
+ *
+ * ⚠️ **Le décodage est le coût de cette liste** (même avertissement que `usePolarisation`) : il a
+ * lieu une fois par jeu de lignes, dans un `useMemo` qui ne dépend que des lignes et de la position
+ * arrondie — sinon chaque point GPS reçu relancerait le décodage de toutes les traces.
+ */
+export function useGhostCandidates(start: { lat: number; lng: number } | null): {
+  candidates: GhostCandidate[];
+  isLoading: boolean;
+} {
+  const windowStart = useWindowStartUtc(GHOST_WINDOW_DAYS);
+  const { data, isLoading } = useQuery<GhostCandidateRow>(SELECT_GHOST_CANDIDATES, [windowStart]);
+
+  // La position n'entre dans les dépendances qu'arrondie à ~10 m : au mètre près, le filtre se
+  // relancerait à chaque fix GPS pour un résultat identique.
+  const latKey = start ? Math.round(start.lat * 10_000) : null;
+  const lngKey = start ? Math.round(start.lng * 10_000) : null;
+
+  const candidates = useMemo<GhostCandidate[]>(() => {
+    if (latKey === null || lngKey === null) return [];
+    const rows = data ?? [];
+    const out: GhostCandidate[] = [];
+    for (const row of rows) {
+      if (!row.gps_track || !row.finished_at) continue;
+      const points = decodeTrack(row.gps_track);
+      const eligible = isGhostCandidate({
+        distanceM: row.distance_m,
+        points,
+        startLat: latKey / 10_000,
+        startLng: lngKey / 10_000,
+      });
+      if (!eligible) continue;
+      out.push({
+        id: row.id,
+        finishedAt: row.finished_at,
+        distanceM: row.distance_m ?? 0,
+        durationSeconds: row.duration_seconds,
+      });
+    }
+    return out;
+  }, [data, latKey, lngKey]);
+
+  return { candidates, isLoading };
+}
+
+/**
+ * Pose le fantôme sur une course (US FANT-01, R8). Écrit **une fois**, au démarrage : le fantôme
+ * d'une course ne change pas en cours de route, sans quoi l'écart afficherait une comparaison avec
+ * deux courses différentes selon le moment.
+ */
+export async function setRunGhost(runId: string, ghostRunId: string | null): Promise<void> {
+  await patch('runs', runId, { ghost_run_id: ghostRunId });
+}
+
+export type RunGhost = {
+  id: string;
+  finishedAt: string;
+  profile: GhostProfile;
+};
+
+/**
+ * Le fantôme d'une course : sa ligne et son profil décodé (US FANT-01, R1).
+ *
+ * `null` si la course n'a pas de fantôme, si celui-ci a été supprimé depuis (R9) ou si sa trace est
+ * devenue illisible — dans les trois cas l'écran retombe sur son affichage sans fantôme.
+ */
+export function useRunGhost(ghostRunId: string | null | undefined): {
+  ghost: RunGhost | null;
+  isLoading: boolean;
+} {
+  const { data, isLoading } = useQuery<GhostCandidateRow>(
+    `SELECT id, finished_at, distance_m, duration_seconds, gps_track
+     FROM runs
+     WHERE id = ? AND deleted_at IS NULL
+     LIMIT 1`,
+    [ghostRunId ?? ''],
+  );
+
+  const ghost = useMemo<RunGhost | null>(() => {
+    const row = (data ?? [])[0];
+    if (!ghostRunId || !row?.gps_track || !row.finished_at) return null;
+    const profile = buildGhostProfile(decodeTrack(row.gps_track));
+    if (profile === null) return null;
+    return { id: row.id, finishedAt: row.finished_at, profile };
+  }, [data, ghostRunId]);
+
+  return { ghost, isLoading: ghostRunId ? isLoading : false };
 }

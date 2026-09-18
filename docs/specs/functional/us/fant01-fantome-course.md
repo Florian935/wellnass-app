@@ -3,9 +3,9 @@ id: FANT-01
 titre: "Le Fantôme — courir contre soi-même sur le même parcours"
 roadmap: [5.41]
 catalogue: []
-etape: spec
+etape: recette
 branche: dev
-maj: 15/09/2026
+maj: 18/09/2026
 ---
 
 # US FANT-01 — Le Fantôme
@@ -96,7 +96,7 @@ annonce de dépassement ne tombe. On n'extrapole jamais un fantôme au-delà de 
 1. **aux seuils de distance existants** (RUN-F2a) : l'écart est ajouté à l'annonce déjà prononcée ;
 2. **au changement de statut** devant ↔ derrière, une seule fois par changement.
 
-Elles suivent le réglage `voiceAnnouncements` du profil coureur : **aucun nouveau réglage**. Comme
+Elles suivent le réglage `voiceAnnouncementsEnabled` du profil coureur : **aucun nouveau réglage**. Comme
 RUN-F2a et RUN-F4 lot E, elles sont déclenchées **depuis l'écran**, jamais depuis la tâche de fond —
 donc pas d'annonce écran éteint, limite assumée et identique aux trois autres.
 

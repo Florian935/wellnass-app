@@ -9,6 +9,7 @@ import {
   instantPace,
   resolveHeroMetric,
   resolveSegmentBanner,
+  ghostGap,
   resolveSessionPace,
   simplifyTrack,
   type HeroMetric,
@@ -22,6 +23,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { GhostBand } from '@/components/running/GhostBand';
 import { RouteMap } from '@/components/running/RouteMap';
 import { SegmentBanner } from '@/components/running/SegmentBanner';
 import { SyncStatus } from '@/components/SyncStatus';
@@ -30,12 +32,14 @@ import {
   finishRun,
   useActiveRun,
   useIntervalBlocksForRun,
+  useRunGhost,
   useRunTarget,
 } from '@/data/repositories/run-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
 import { pauseTracking, resumeTracking, stopTracking } from '@/running/tracker';
 import { getLiveNetSeconds, getPaused, subscribePaused } from '@/running/tracker-task';
 import { useDistanceAnnouncements } from '@/running/announcements';
+import { useGhostGuidance } from '@/running/ghost-guidance';
 import { useIntervalGuidance, toPhaseBlockInput } from '@/running/interval-guidance';
 import { usePaceGuidance } from '@/running/pace-guidance';
 import { fontFamily } from '@/theme/fonts';
@@ -141,6 +145,20 @@ export default function RunActiveScreen() {
   const netSeconds = useNetSeconds(active?.id, active?.durationSeconds ?? null);
 
   const avgPaceValue = isGps ? averagePace(distanceM, netSeconds) : null;
+
+  // US FANT-01 — l'écart au fantôme. `useRunGhost` décode la trace une seule fois (R10) ; le calcul
+  // lui-même est pur et ne coûte rien à chaque rendu.
+  const { ghost } = useRunGhost(active?.ghostRunId ?? null);
+  const gap =
+    ghost === null
+      ? null
+      : ghostGap({
+          profile: ghost.profile,
+          runnerDistanceM: distanceM,
+          netSeconds,
+          avgPaceSPerKm: avgPaceValue,
+        });
+  useGhostGuidance({ gap, netSeconds, ghostDate: ghost?.finishedAt ?? null });
   const instantPaceValue = isGps ? instantPace(points) : null;
 
   // US RUN-F2a (5.19) : annonces vocales périodiques, GPS uniquement (spec R4). Hook appelé
@@ -537,6 +555,8 @@ export default function RunActiveScreen() {
             </View>
           ) : null}
         </View>
+
+        <GhostBand gap={gap} ghostDate={ghost?.finishedAt ?? null} />
 
         {/* Allure cible du moment + écart, jamais en couleur d'alerte (règle de ton RUN-F2b R4). */}
         {isGps && effectivePaceRange ? (

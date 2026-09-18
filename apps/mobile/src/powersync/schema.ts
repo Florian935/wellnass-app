@@ -509,6 +509,10 @@ const runs = new Table({
   // absente d'ici échoue silencieusement à l'écriture (leçon du 01/08/2026, CYCLE-01).
   planned_session_id: column.text,
   terrain: column.text,
+  // US FANT-01 (5.41) : la course passée affrontée comme fantôme. Même leçon que ci-dessus — sans
+  // cette ligne, la colonne existe en base mais reste invisible côté client, et le choix du coureur
+  // se perdrait sans la moindre erreur.
+  ghost_run_id: column.text,
   // US RUN-F1b (5.32) : scalaires cumulés en direct par le tracker, comme distance_m/
   // duration_seconds — jamais recalculés depuis gps_track. `null` = donnée absente (course
   // manuelle, ou course enregistrée avant cette US), jamais 0 (spec R5/§0).

@@ -44,6 +44,8 @@ import { useRouter } from 'expo-router';
 
 jest.mock('@/data/repositories/run-repository', () => ({
   useActiveRun: jest.fn(() => ({ run: null, isLoading: false })),
+  // US FANT-01 : sans fantôme, la bande ne rend rien et l'écran reste celui d'avant (critère 1).
+  useRunGhost: jest.fn(() => ({ ghost: null, isLoading: false })),
   useRunTarget: jest.fn(() => null),
   useIntervalBlocksForRun: jest.fn(() => ({ sessionType: null, blocks: [] })),
   finishRun: jest.fn().mockResolvedValue(undefined),

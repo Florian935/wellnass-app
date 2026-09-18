@@ -10,6 +10,67 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 18/09/2026 — FANT-01 : courir contre soi-même
+
+Branche : `dev` (travail direct, décision Florian du 15/09/2026, par exception à la règle « une
+branche par US »). Commit précédent : `0f2142c3`. Première US du **lot 1** de la salve
+« carnet d'innovation » (idée 18) — voir
+[analyse-innovation-2026-09.md](docs/product/analyse-innovation-2026-09.md).
+
+L'app savait comparer une course **à un objectif** (RUN-F2b) et **à une allure cible** (RUN-F4) ;
+elle ne savait pas la comparer **à une autre course**. C'est pourtant la question que le coureur se
+pose sur sa boucle habituelle — et il ne pouvait y répondre qu'après coup, dans l'historique.
+
+### Ajouté
+
+- **`packages/shared/src/run-ghost.ts`** — le moteur, pur et testé (30 cas, 100 % lignes/fonctions,
+  93,75 % branches ; les deux branches restantes sont défensives et commentées comme telles) :
+  profil `(temps net, distance cumulée)` construit depuis la trace décodée, distance interpolée par
+  **dichotomie**, écart en mètres, statut (devant / derrière / coude à coude / terminé), conversion
+  en secondes, éligibilité d'un candidat, et décision d'annonce.
+  ⚠️ **Nommé `run-ghost.ts` et non `ghost.ts`** : ce nom appartient déjà au fantôme **musculation**
+  de MUSCU-UX03 (comparaison de tonnage). Deux piliers, deux fantômes, deux modules.
+- **`GhostPicker.tsx`** — le choix avant le départ : jusqu'à 3 courses proposées, le reste à la
+  demande. Lit la **dernière position connue** *uniquement si la permission est déjà accordée* — pas
+  de boîte de dialogue système avant que le coureur ait appuyé sur « démarrer ».
+- **`GhostBand.tsx`** — la bande de l'écran de suivi, plus `formatGapDistance` (mètres ou **yards**),
+  réutilisée par le résumé.
+- **`ghost-guidance.ts`** — l'annonce vocale, calquée sur `pace-guidance.ts` : la décision vit dans
+  le moteur pur, le hook tient l'état et parle. Suit le réglage `voiceAnnouncementsEnabled`
+  existant : **aucun nouvel interrupteur**.
+- **Migration `20260918123307_fant01_ghost_run_id`** — `runs.ghost_run_id`, additive et nullable,
+  `on delete set null` (supprimer le fantôme ne doit pas emporter la course qui l'a affronté).
+  Poussée sur le cloud le 18/09/2026, cochée au registre.
+- **RECETTES.md §71** — 14 critères cochables, dont l'avertissement « se recette à deux courses ».
+
+### Modifié
+
+- `run-repository.ts` : `SELECT_GHOST_CANDIDATES`, `useGhostCandidates`, `setRunGhost`,
+  `useRunGhost`, et `ghost_run_id` propagé dans `ActiveRun` et `RunDetail`.
+- `run/index.tsx` (sélecteur, écriture au démarrage), `run/active.tsx` (bande + voix),
+  `run/summary.tsx` (ligne « Contre ton fantôme du … »).
+- `powersync/schema.ts`, `database.types.ts`, `i18n/locales/{fr,en}.json` (espace `running.ghost.*`).
+
+### Technique — notes
+
+- 🔴 **Le test-garde SQL a fait son travail.** `sql-prepare-sweep.test.ts` a refusé les deux requêtes
+  tant que `ghost_run_id` manquait au **schéma PowerSync local** : c'est exactement la panne
+  silencieuse de CYCLE-01 et `daily_step_goal` (colonne en base, invisible côté client, aucune
+  erreur). Sans ce garde-fou, le choix du coureur se serait perdu sans le moindre signal.
+- ✅ **Aucune sync rule à redéployer** : `runs` est publiée depuis le 07/07/2026 et lue en `select *`
+  — l'étape manuelle du dashboard PowerSync ne concerne que l'ajout d'une **table**.
+- Trois suites d'écran existantes ont dû compléter leurs mocks (`useRunGhost`, `setRunGhost`,
+  `useGhostCandidates`) ; le test de l'écran de départ neutralise `GhostPicker`, qui tire
+  `useUnits` et donc l'initialisation i18n de l'app.
+- Relecture du diff : deux corrections avant commit — un import hors ordre alphabétique, et surtout
+  **l'unité codée en dur** dans le résumé (mètres) alors que la spec §7 demande des yards en réglage
+  impérial. Le formateur de la bande est désormais partagé.
+- ⚠️ **Étape « design » sautée** : le workflow prévoit une maquette avant le code. Ici l'écran
+  s'insère dans des surfaces existantes (départ, suivi, résumé) et la maquette de la planche
+  d'idéation en tenait lieu. À valider en recette sur device.
+- Qualité : `npm run lint` 0, `npm run typecheck` 0, `npm run test` **code de sortie 0**
+  (3 447 tests mobile, 24 fichiers Vitest).
+
 ## 17/09/2026 (quater) — IA-LAB-01 : ce qui compte dans une progression, c'est ce qui ne progresse pas
 
 Premier verdict complet sur S1, et première comparaison entre deux modèles. Les deux enseignements

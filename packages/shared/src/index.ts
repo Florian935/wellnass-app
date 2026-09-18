@@ -84,6 +84,7 @@ export * from './recipe';
 export * from './bodyweight';
 export * from './weight-goal';
 export * from './muscle-balance';
+export * from './run-ghost';
 export * from './running';
 export * from './run-target';
 export * from './gpx';

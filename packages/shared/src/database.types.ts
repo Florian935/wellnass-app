@@ -2169,6 +2169,7 @@ export type Database = {
           elevation_gain_m: number | null
           elevation_loss_m: number | null
           finished_at: string | null
+          ghost_run_id: string | null
           gps_track: string | null
           id: string
           interval_phase_index: number | null
@@ -2193,6 +2194,7 @@ export type Database = {
           elevation_gain_m?: number | null
           elevation_loss_m?: number | null
           finished_at?: string | null
+          ghost_run_id?: string | null
           gps_track?: string | null
           id: string
           interval_phase_index?: number | null
@@ -2217,6 +2219,7 @@ export type Database = {
           elevation_gain_m?: number | null
           elevation_loss_m?: number | null
           finished_at?: string | null
+          ghost_run_id?: string | null
           gps_track?: string | null
           id?: string
           interval_phase_index?: number | null
@@ -2233,6 +2236,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "runs_ghost_run_id_fkey"
+            columns: ["ghost_run_id"]
+            isOneToOne: false
+            referencedRelation: "runs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "runs_user_id_fkey"
             columns: ["user_id"]

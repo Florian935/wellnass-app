@@ -396,6 +396,7 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | # | Fonctionnalité | Description | Autonomie Claude | Statut | Remarques |
 |---|---|---|:---:|:---:|---|
+| 5.41 | Le Fantôme — courir contre soi-même | Choisir une course passée partie du même endroit, voir l'écart en mètres à temps égal pendant toute la course, l'entendre à la voix, le retrouver au résumé. | Élevée | ✅ | **FANT-01, 18/09/2026** — première US du lot 1 de la salve « carnet d'innovation » (idée 18). Moteur pur `run-ghost.ts` (30 tests) : profil temps net / distance depuis la trace, interpolation par dichotomie, écart et statut. Migration `runs.ghost_run_id` poussée le jour même ; ✅ aucune sync rule à redéployer. 🔴 Le test-garde `sql-prepare-sweep` a rattrapé l'oubli du schéma PowerSync local — la panne silencieuse de CYCLE-01. ⚠️ Étape « design » sautée (surfaces existantes). En recette → [RECETTES.md](../../RECETTES.md) §71 · [spec](../specs/functional/us/fant01-fantome-course.md) · [plan](../plans/fant01-fantome-course.md) · [analyse](../product/analyse-innovation-2026-09.md). |
 | 1.23 | Sélecteur de langue | Bascule FR / EN depuis les Réglages. | 🟢 | ✅ | La langue était figée à la création du compte (suivait la locale OS). `Segment` FR/EN dans les Réglages. |
 | 3.43 | Niveaux d'affichage de la séance | Simplifiée / Normale / Détaillée — l'écran de séance s'adapte au besoin. | 🟢 | ✅ | MUSC-F13. Colonne `profiles.workout_display_level`. |
 | 3.44 | Unification programme → planning → séance | Un seul flux : activer un programme le planifie, démarrer depuis le calendrier marque l'occurrence `done`. | 🟢 | ✅ | Refonte-A (socle). Migration `planned_session_id`. Corrige un défaut structurel propagé au running. |
@@ -483,12 +484,12 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 
 | Statut | Nombre | % |
 |---|:---:|:---:|
-| ✅ Livré | 239 | ~95 % |
+| ✅ Livré | 240 | ~95 % |
 | 🟡 Partiel (5.24, 3.52, 5.40, 3.60) | 4 | ~2 % |
 | ⬜ À faire (9.2, 1.20) | 2 | ~1 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **251** | |
+| **Total périmètre de lancement** | **252** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
 
 > **CORPS-04, 16/09/2026** ajoute **6.7** : comparaison expliquée des programmes compatibles et préparation d'une copie personnelle inactive. Recette Android §69 groupée avec CORPS-03 §68. **CORPS-02 (6.5)** et **CORPS-01 (6.2)** restent validés par Florian le 13/09/2026. Le rendu 3D et l'adaptation automatique des séances restent ultérieurs.
@@ -628,6 +629,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**18/09/2026 — FANT-01, le Fantôme (lot 1 du carnet d'innovation)**
+Nouvelle ligne **5.41** en « Hors périmètre de cadrage » : la fonctionnalité naît d'une idéation du
+13/09, pas du cadrage. Compteur livré 239 → 240. En recette (RECETTES §71).
 
 **16/09/2026 — Réunion du lot « Mon corps » avec `dev`**
 Fusion de LABO-01 (7.30) et du lot DEPENSE (4.42-4.44) dans le lot CORPS-01→04. Compteurs recalculés
