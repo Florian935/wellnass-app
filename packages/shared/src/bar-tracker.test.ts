@@ -163,3 +163,54 @@ describe('suggestThreshold', () => {
     expect(suggestThreshold(noire)).toBeGreaterThanOrEqual(60);
   });
 });
+
+describe('mode sombre et garde-fou de couverture', () => {
+  it('suit une marque SOMBRE sur fond clair', () => {
+    // Le cas « je n'ai rien de fluo, mais j'ai du scotch noir » : même principe, seuil inversé.
+    const plane = planeWithDisc([{ x: 120, y: 80, radius: 9, luma: 15 }], { background: 230 });
+    const found = trackBrightPoint(plane, { threshold: 120, step: 1, mode: 'dark' })!;
+
+    expect(Math.abs(found.x - 120)).toBeLessThan(1);
+    expect(Math.abs(found.y - 80)).toBeLessThan(1);
+  });
+
+  it('🔴 mode inversé par erreur : c’est le FOND qui devient la marque, et la couverture le dit', () => {
+    // Sur une marque claire posée sur fond sombre, le mode sombre ne rend pas `null` : il retient
+    // tout le fond, et rend son centre — une position stable, crédible, et parfaitement fausse.
+    // C'est le même piège que le disque entier, et c'est le même garde-fou qui l'attrape.
+    const claire = planeWithDisc([{ x: 120, y: 80, radius: 9 }]);
+    const found = trackBrightPoint(claire, { threshold: 120, step: 1, mode: 'dark' })!;
+
+    expect(found.coverage).toBeGreaterThan(0.9);
+  });
+
+  it('🔴 une tache qui remplit la fenêtre se signale par sa couverture', () => {
+    /*
+     * LE piège du suivi sans marque : viser le disque entier. Quand la tache remplit la fenêtre de
+     * recherche, son centre de gravité EST le centre de la fenêtre — donc la position précédente.
+     * Le suivi se fige, la trajectoire reste lisse, les vitesses restent plausibles, et rien en aval
+     * ne peut le détecter. Seule la couverture le dit.
+     */
+    const enorme = planeWithDisc([{ x: 160, y: 120, radius: 200 }]);
+    const found = trackBrightPoint(enorme, {
+      threshold: 120,
+      step: 1,
+      previous: { x: 160, y: 120 },
+      searchRadius: 40,
+    })!;
+
+    expect(found.coverage).toBeGreaterThan(0.9);
+  });
+
+  it('une vraie marque, elle, occupe une petite part de la fenêtre', () => {
+    const plane = planeWithDisc([{ x: 160, y: 120, radius: 8 }]);
+    const found = trackBrightPoint(plane, {
+      threshold: 120,
+      step: 1,
+      previous: { x: 160, y: 120 },
+      searchRadius: 40,
+    })!;
+
+    expect(found.coverage).toBeLessThan(0.15);
+  });
+});

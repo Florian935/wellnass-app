@@ -34,9 +34,20 @@ export type LumaPlane = {
 /** Zone de recherche, en fractions de l'image (0 → 1). */
 export type TrackRegion = { x: number; y: number; width: number; height: number };
 
+/**
+ * Ce qu'on suit : une marque **claire** sur fond sombre, ou l'inverse.
+ *
+ * Le mode sombre existe pour les cas où il n'y a rien de clair sous la main — un bout de scotch noir
+ * sur une barre chromée, par exemple. ⚠️ Dans les deux cas la marque doit rester **petite** : voir
+ * `coverage` et le garde-fou qui l'accompagne.
+ */
+export type TrackMode = 'bright' | 'dark';
+
 export type TrackOptions = {
-  /** Luminance minimale (0-255) pour qu'un pixel compte comme « la pastille ». */
+  /** Luminance de bascule (0-255) : au-dessus en mode clair, en dessous en mode sombre. */
   threshold: number;
+  /** Clair sur fond sombre (défaut) ou sombre sur fond clair. */
+  mode?: TrackMode;
   /** Pas d'échantillonnage : 1 = tous les pixels, 4 = un sur 4 en x et en y. */
   step?: number;
   /** Restreint la recherche à une portion de l'image. */
@@ -55,6 +66,16 @@ export type TrackResult = {
   y: number;
   /** Nombre de pixels retenus — sert à juger la solidité de la détection. */
   pixels: number;
+  /**
+   * Part de la fenêtre de recherche occupée par la tache, de 0 à 1.
+   *
+   * 🔴 **Le garde-fou contre la mesure crédible et fausse.** Si la tache remplit la fenêtre — un
+   * disque entier, un mur éclairé, un fond uniforme — son centre de gravité **est** le centre de la
+   * fenêtre, donc la position précédente : le suivi se fige et rend une barre parfaitement immobile,
+   * avec une trajectoire lisse et des vitesses plausibles. Rien, en aval, ne peut le détecter. Au
+   * delà de ~0,6, l'appelant doit refuser la mesure plutôt que l'afficher.
+   */
+  coverage: number;
 };
 
 /** Valeurs par défaut : un réglage de départ, à réétalonner sur des images réelles. */
@@ -84,6 +105,7 @@ export function trackBrightPoint(plane: LumaPlane, options: TrackOptions): Track
   const step = options.step ?? TRACK_DEFAULT_STEP;
   const minPixels = options.minPixels ?? TRACK_DEFAULT_MIN_PIXELS;
   const threshold = options.threshold;
+  const dark = options.mode === 'dark';
 
   // Fenêtre de recherche : la région demandée, resserrée autour du point précédent s'il existe.
   let left = 0;
@@ -112,15 +134,17 @@ export function trackBrightPoint(plane: LumaPlane, options: TrackOptions): Track
   let sumX = 0;
   let sumY = 0;
   let count = 0;
+  let examined = 0;
 
   for (let y = top; y < bottom; y += step) {
     const rowStart = y * plane.bytesPerRow;
     for (let x = left; x < right; x += step) {
       const luma = plane.data[rowStart + x] ?? 0;
-      if (luma < threshold) continue;
-      // Le poids est l'excédent au-dessus du seuil : les pixels de bordure, à moitié dans la tache,
-      // pèsent donc moins que son cœur. C'est ce qui donne la précision sous-pixellique.
-      const weight = luma - threshold + 1;
+      examined += 1;
+      // Le poids est l'écart au seuil : les pixels de bordure, à moitié dans la tache, pèsent moins
+      // que son cœur. C'est ce qui donne la précision sous-pixellique.
+      const weight = dark ? threshold - luma + 1 : luma - threshold + 1;
+      if (weight <= 1) continue;
       sumWeight += weight;
       sumX += x * weight;
       sumY += y * weight;
@@ -128,9 +152,14 @@ export function trackBrightPoint(plane: LumaPlane, options: TrackOptions): Track
     }
   }
 
-  if (count < minPixels || sumWeight <= 0) return null;
+  if (count < minPixels || sumWeight <= 0 || examined === 0) return null;
 
-  return { x: sumX / sumWeight, y: sumY / sumWeight, pixels: count };
+  return {
+    x: sumX / sumWeight,
+    y: sumY / sumWeight,
+    pixels: count,
+    coverage: count / examined,
+  };
 }
 
 /**

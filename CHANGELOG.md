@@ -10,6 +10,34 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 19/09/2026 (quater) — Spike VBT-01 : sans pastille sous la main
+
+Branche : `dev`. Commit précédent : `d61a5d54`. Répond à une question de Florian avant sa séance :
+« c'est grave si je n'ai pas de pastille ? »
+
+### Ajouté
+
+- **Mode « marque sombre »** dans `bar-tracker.ts` : scotch noir sur barre chromée, à défaut de
+  quoi que ce soit de clair. Bascule à l'écran.
+- 🔴 **`coverage` — le garde-fou contre la mesure crédible et fausse.** Le suivi rend désormais la
+  part de la fenêtre de recherche occupée par la tache. Au-delà de 60 %, l'écran **refuse** la
+  position et l'enregistre comme un **trou**. Sans ça, viser le disque entier — ou se tromper de
+  mode — donne une tache qui remplit la fenêtre, dont le centre de gravité **est** le centre de la
+  fenêtre, donc la position précédente : le suivi se fige, la trajectoire reste lisse, les vitesses
+  restent plausibles, et **rien en aval ne peut le rattraper**. C'est le pire mode d'échec possible
+  pour cette fonctionnalité, et le seul qui ne se voit pas.
+- 4 tests, dont celui du mode inversé par erreur : sur une marque claire, le mode sombre ne rend pas
+  `null` mais retient **tout le fond** — même piège, même garde-fou.
+
+### Technique — notes
+
+- La réponse produit à « sans pastille ? » : n'importe quelle petite marque contrastée solidaire de
+  la barre convient (scotch, papier, post-it). Ce qui ne convient pas, c'est **le disque lui-même** :
+  le suivi n'est pas un détecteur de cercle, contrairement aux apps du marché citées dans
+  l'[analyse §6.1](docs/product/analyse-innovation-2026-09.md). Protocole en salle mis à jour.
+- Vérifié : `lint` 0 · `typecheck` 0 · `npm run test` **code de sortie 0**, **6 662 tests**
+  (3 464 Jest + 3 198 Vitest).
+
 ## 19/09/2026 (ter) — Spike VBT-01 : fusion dans `dev` et écran réglable en salle
 
 Branche : `dev` (fusion de `spike/vbt01-camera`). Commit précédent : `53d95bdc`.

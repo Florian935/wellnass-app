@@ -196,8 +196,16 @@ est documenté dans [dev-build-android-local.md](./dev-build-android-local.md).
 
 1. **Poser** le téléphone de profil, perpendiculaire au plan du mouvement, à 1,5–2 m, vers la
    mi-hauteur du trajet. Fixe : sol, banc, sac. Jamais tenu.
-2. **Coller la pastille** (fluo, quelques centimètres) sur l'extrémité de la barre ou au centre du
-   disque, bien visible de l'objectif.
+2. **Fixer une marque** sur l'extrémité de la barre ou au centre du disque, bien visible de
+   l'objectif. Une pastille fluo est l'idéal, mais **n'importe quoi de petit et de contrasté fait
+   l'affaire** : scotch blanc, post-it plié, bout de papier, élastique clair. À défaut de clair, un
+   scotch **noir** sur une barre chromée marche aussi — l'écran a une bascule « inverser ».
+   🔴 **Ne jamais viser le disque entier** : le suivi est un centre de gravité de luminance, pas un
+   détecteur de cercle. Une tache qui remplit la fenêtre de recherche a son centre de gravité au
+   centre de la fenêtre, c'est-à-dire à la position précédente — le suivi se fige et rend une barre
+   parfaitement immobile, avec une trajectoire lisse et des vitesses plausibles. L'écran refuse
+   désormais ce cas (couverture > 60 % de la fenêtre) et le dit en toutes lettres, mais la bonne
+   réponse reste : **une petite marque**.
 3. **Régler le seuil** avant de charger : monter jusqu'à ce que la ligne du haut passe au vert et
    ne montre plus que la pastille (~40 à 400 px retenus). Si elle saute au plafond, baisser.
 4. **Relever le diamètre du disque en pixels** : bouger le réglage « disque » jusqu'à ce que

@@ -44,6 +44,7 @@ import {
   trackBrightPoint,
   type BarSample,
   type BarSetAnalysis,
+  type TrackMode,
 } from '@wellness/shared';
 
 /**
@@ -59,6 +60,15 @@ const ANALYSIS_RESOLUTION = CommonResolutions.VGA_4_3;
 /** Réglages de départ, tous ajustables à l'écran. */
 const INITIAL_THRESHOLD = 170;
 const INITIAL_PLATE_PX = 120;
+
+/**
+ * Au-delà de cette part de la fenêtre de recherche occupée par la tache, on REFUSE la mesure.
+ *
+ * C'est le garde-fou du suivi sans marque : une tache qui remplit la fenêtre a son centre de gravité
+ * au centre de la fenêtre, c'est-à-dire à la position précédente. Le suivi se fige, la trajectoire
+ * reste lisse et les vitesses restent plausibles — rien, en aval, ne peut le rattraper.
+ */
+const MAX_COVERAGE = 0.6;
 
 /** Une ligne de réglage : libellé, valeur, deux boutons. */
 function Tuner({
@@ -98,7 +108,15 @@ export default function SpikeVbtScreen() {
   const [platePx, setPlatePx] = useState(INITIAL_PLATE_PX);
   const [threshold, setThreshold] = useState(INITIAL_THRESHOLD);
   /** Retour vivant du suivi, rafraîchi une image sur dix : voir le point AVANT de lancer la série. */
-  const [live, setLive] = useState<{ x: number; y: number; pixels: number; w: number; h: number } | null>(null);
+  const [live, setLive] = useState<{
+    x: number;
+    y: number;
+    pixels: number;
+    coverage: number;
+    w: number;
+    h: number;
+  } | null>(null);
+  const [mode, setMode] = useState<TrackMode>('bright');
   const [count, setCount] = useState(0);
 
   /** Les échantillons de la série. Un `ref` : 30 écritures/s dans un état React tueraient l'écran. */
@@ -113,6 +131,7 @@ export default function SpikeVbtScreen() {
   const lastY = useSharedValue(-1);
   const thresholdSV = useSharedValue(INITIAL_THRESHOLD);
   const capturing = useSharedValue(false);
+  const darkSV = useSharedValue(false);
 
   const setThresholdBoth = useCallback(
     (next: number) => {
@@ -125,12 +144,15 @@ export default function SpikeVbtScreen() {
 
   /** Appelé depuis le worklet, une fois par image. Volontairement minuscule. */
   const onSample = useCallback(
-    (t: number, y: number | null, x: number, pixels: number, w: number, h: number) => {
-      if (capturing.get()) samples.current.push({ t, y });
+    (t: number, y: number | null, x: number, pixels: number, coverage: number, w: number, h: number) => {
+      // Une tache qui remplit la fenêtre est un faux suivi : on l'enregistre comme un TROU, pas
+      // comme une position. Mieux vaut une série refusée qu'une série lisse et fausse.
+      const suspect = coverage > MAX_COVERAGE;
+      if (capturing.get()) samples.current.push({ t, y: suspect ? null : y });
 
       frames.current += 1;
       if (frames.current % 10 !== 0) return;
-      setLive(y === null ? null : { x, y, pixels, w, h });
+      setLive(y === null ? null : { x, y, pixels, coverage, w, h });
       setCount(samples.current.length);
     },
     [capturing],
@@ -156,6 +178,7 @@ export default function SpikeVbtScreen() {
           },
           {
             threshold: thresholdSV.get(),
+            mode: darkSV.get() ? 'dark' : 'bright',
             step: 2,
             previous: lastX.get() < 0 ? null : { x: lastX.get(), y: lastY.get() },
             searchRadius: 80,
@@ -177,6 +200,7 @@ export default function SpikeVbtScreen() {
           found === null ? null : found.y,
           found === null ? -1 : found.x,
           found === null ? 0 : found.pixels,
+          found === null ? 0 : found.coverage,
           luma.width,
           luma.height,
         );
@@ -232,11 +256,35 @@ export default function SpikeVbtScreen() {
       <Camera device={device} isActive outputs={[frameOutput]} style={StyleSheet.absoluteFill} />
 
       <View style={styles.overlay}>
-        <Text style={[styles.text, live === null ? styles.lost : styles.locked]}>
+        <Text
+          style={[
+            styles.text,
+            live === null || live.coverage > MAX_COVERAGE ? styles.lost : styles.locked,
+          ]}
+        >
           {live === null
-            ? 'POINT PERDU — augmente ou baisse le seuil'
-            : `suivi : x ${live.x.toFixed(1)} · y ${live.y.toFixed(1)} · ${live.pixels} px · image ${live.w}×${live.h}`}
+            ? 'POINT PERDU — ajuste le seuil, dans un sens puis dans l’autre'
+            : live.coverage > MAX_COVERAGE
+              ? `TACHE TROP GRANDE (${Math.round(live.coverage * 100)} % de la fenêtre) — vise une petite marque, pas le disque`
+              : `suivi : x ${live.x.toFixed(1)} · y ${live.y.toFixed(1)} · ${live.pixels} px · ${Math.round(live.coverage * 100)} % · image ${live.w}×${live.h}`}
         </Text>
+
+        <View style={styles.tuner}>
+          <Text style={styles.text}>
+            {mode === 'bright' ? 'marque claire sur fond sombre' : 'marque sombre sur fond clair'}
+          </Text>
+          <Pressable
+            onPress={() => {
+              const next: TrackMode = mode === 'bright' ? 'dark' : 'bright';
+              setMode(next);
+              darkSV.set(next === 'dark');
+            }}
+            style={styles.smallButton}
+            hitSlop={8}
+          >
+            <Text style={styles.buttonLabel}>inverser</Text>
+          </Pressable>
+        </View>
 
         <Tuner label="seuil" value={threshold} suffix="" step={10} onChange={setThresholdBoth} />
         <Tuner

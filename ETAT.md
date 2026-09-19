@@ -117,7 +117,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1300 · `main` a **1294** commits de retard sur `dev` |
+| Commits | 1301 · `main` a **1298** commits de retard sur `dev` |
 | Specs d'US | 161 au total — 87 clôturées, 74 en cours |
 | Migrations | 107/107 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -128,11 +128,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `d61a5d5`  feat(vbt01): l'essai caméra dans dev, réglable en salle
 - `fef2b62`  Merge branch 'spike/vbt01-camera' into dev
 - `53d95bd`  feat(vbt01): le suivi du point en JS pur, et la chaîne éprouvée bout en bout
 - `e85e39f`  docs(vbt01): le lien vers l'écran d'essai ne résout que sur la branche
 - `1f3d490`  feat(vbt01): spike caméra — suivi du point en JS pur, aucun module natif
-- `72fc32e`  feat(vbt01): spike vitesse de barre — la moitié « calcul », prouvée sans caméra
 
 ---
 
