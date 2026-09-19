@@ -15,7 +15,9 @@ import { useTranslation } from 'react-i18next';
 import Svg, { Circle, Path } from 'react-native-svg';
 import type { LabExperimentKind, LabQuestion } from '@wellness/shared';
 
+import { LabNarration } from './LabNarration';
 import { Lens } from './Lens';
+import { buildLabDossier } from './lab-dossier';
 import { formatDecimal, formatPace } from './lab-format';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -24,6 +26,11 @@ type Props = {
   questions: LabQuestion[];
   selectedId: string | null;
   runningExperiments: readonly LabExperimentKind[];
+  /**
+   * US NARR-01 — le consentement IA est donné. Faux (le défaut), **aucun bouton n'apparaît** : le
+   * panneau est alors exactement celui d'avant cette US.
+   */
+  canNarrate?: boolean;
   onSelect: (id: string) => void;
   onStartExperiment: (kind: LabExperimentKind) => void;
   onGoToWeek: () => void;
@@ -60,7 +67,7 @@ function Sparkline({ question, unitFormat }: { question: LabQuestion; unitFormat
   );
 }
 
-export function LabWhyPanel({ questions, selectedId, runningExperiments, onSelect, onStartExperiment, onGoToWeek }: Props) {
+export function LabWhyPanel({ questions, selectedId, runningExperiments, canNarrate = false, onSelect, onStartExperiment, onGoToWeek }: Props) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const locale = i18n.language;
@@ -108,6 +115,15 @@ export function LabWhyPanel({ questions, selectedId, runningExperiments, onSelec
         <Sparkline question={question} unitFormat={unitFormat} />
         <Text style={[styles.cardNote, { color: colors.textMuted }]}>{t('lab.why.eightWeeks')}</Text>
       </View>
+
+      {/*
+        US NARR-01 — le résumé, au-dessus du dossier et jamais à sa place. Monté avec une clé par
+        question : changer de dossier efface le résumé précédent, qui parlait d'un autre constat.
+        Sans suspect, il n'y a rien à raconter — donc pas de bouton.
+      */}
+      {canNarrate && question.suspects.length > 0 ? (
+        <LabNarration key={question.id} dossier={buildLabDossier(question, test, t)} />
+      ) : null}
 
       <View style={styles.section}>
         <View style={styles.sectionHead}>

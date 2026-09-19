@@ -10,6 +10,62 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 19/09/2026 (quinquies) — NARR-01 : l'IA raconte le dossier, et ne peut pas inventer un chiffre
+
+Branche : `dev` (travail direct, décision Florian). Commit précédent : `30b97601`. **Première US du
+lot IA** de la salve « carnet d'innovation » (idée 5).
+
+### Ce que l'inventaire a changé
+
+🔴 **« L'Enquête » était déjà livrée.** L'analyse du 13/09 la recommandait comme première US IA ;
+l'inventaire du 19/09 montre que LABO-01 l'a construite — [`lab-investigations.ts`](packages/shared/src/lab-investigations.ts)
+et l'onglet « Pourquoi ? » : plateau détecté, suspects classés par force, facteurs **écartés**
+affichés, facteurs **non jugeables** affichés aussi, expérience qui tranche. Et le socle IA était
+posé par IA-LAB-01 (fonction Edge, consentement, quotas, liste blanche). L'US s'est donc réduite à
+ce qui manquait vraiment : **la première lecture**. Même constat qu'avec l'idée 9, déjà couverte par
+DASH-01 — la salve d'idéation a surestimé deux fois ce qui restait à construire.
+
+### Ajouté
+
+- `packages/shared/src/ai-narration.ts` (+ 20 tests) — **le garde-fou** : extraction des nombres
+  d'un texte, écritures équivalentes d'une même valeur, verdict, et l'invite (FR + EN).
+- `apps/mobile/src/lib/ai/narrate.ts` (+ 7 tests) — invite → appel `coach` → verdict.
+- `apps/mobile/src/components/lab/LabNarration.tsx` (+ 5 tests) — le bloc « Résumer », son
+  chargement, son résultat et **son refus**.
+- `apps/mobile/src/components/lab/lab-dossier.ts` — le dossier construit avec **les mêmes `t()`
+  que le panneau** : une seule source, donc aucun écart entre ce qui est montré et ce qui est envoyé.
+- i18n `lab.why.narrate.*` FR + EN, `RECETTES.md` **§74** (12 critères).
+
+### Technique — notes
+
+- 🔴 **Le garde-fou est mécanique, pas contractuel.** L'invite système d'IA-LAB-01 demandait déjà au
+  modèle de n'employer que les chiffres fournis ; cette US **vérifie qu'il a obéi**. C'est toute la
+  différence entre une promesse et une garantie — et la seule raison pour laquelle une narration peut
+  exister dans une app qui affiche des chiffres de santé.
+- **Le refus est total et sans seconde tentative** : un seul nombre inconnu jette tout le résumé.
+  Garder les phrases « propres » demanderait au lecteur de deviner lesquelles le sont, et réessayer
+  masquerait la **fréquence** du défaut — or c'est justement ce que la recette doit mesurer (§74,
+  critère 9).
+- 🔴 **Le vrai point dur n'était pas d'attraper l'invention, c'était de ne pas rejeter un résumé
+  juste.** Premier faux refus rencontré en test : le dossier stocke 365 minutes de sommeil et les
+  affiche « 6 h 05 » ; un modèle qui recopie honnêtement citait alors deux nombres — 6 et 5 —
+  introuvables dans les valeurs brutes. D'où la règle retenue (R8) : **les nombres autorisés sont
+  ceux du dossier affiché**, texte compris. Le modèle ne peut citer que ce qu'on lui a donné, et tout
+  ce qu'on lui a donné est autorisé.
+- ⚠️ **Portée assumée** : le garde-fou porte sur les **nombres**, pas sur le sens. Une phrase fausse
+  sans chiffre passerait. C'est écrit dans la spec (D4), et à l'écran (« le résumé lit le dossier ;
+  il ne le remplace pas »).
+- ✅ **Aucune migration, aucune sync rule, aucune route serveur, aucun secret** : le type `coach` de
+  la fonction Edge suffit. Recettable sur un APK construit depuis `dev`, à condition que les trois
+  gestes d'IA-LAB-01 soient faits (clé Gemini, déploiement, consentement).
+- **Une clé i18n de moins qu'annoncé** : les pannes serveur réutilisent `aiLab.errors.<code>`. Deux
+  phrases pour une même panne divergeraient à la première retouche.
+- Le test de l'écran Labo a dû bouchonner `settings-repository` (sinon l'import tire i18n) ; son
+  `settings: null` vérifie au passage que **sans consentement, le panneau est exactement celui
+  d'avant**.
+- Vérifié : `lint` 0 · `typecheck` 0 · `npm run test` **code de sortie 0**, **6 694 tests**
+  (3 476 Jest + 3 218 Vitest).
+
 ## 19/09/2026 (quater) — Spike VBT-01 : sans pastille sous la main
 
 Branche : `dev`. Commit précédent : `d61a5d54`. Répond à une question de Florian avant sa séance :

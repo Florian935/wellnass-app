@@ -173,3 +173,5 @@ export * from './morning-brief';
 export * from './data-confidence';
 export * from './ai-assist';
 export * from './ai-context';
+// US NARR-01 — narration vérifiée d'un dossier d'enquête.
+export * from './ai-narration';

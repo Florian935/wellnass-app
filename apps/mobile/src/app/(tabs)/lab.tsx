@@ -48,6 +48,8 @@ import {
 } from '@/components/lab/scene/scene-state';
 import { applyAdaptationForToday, reschedulePlannedSession } from '@/data/repositories/planned-session-repository';
 import { finishLabExperiment, startLabExperiment, stopLabExperiment } from '@/data/repositories/lab-experiment-repository';
+// US NARR-01 : le consentement IA décide de la présence du bouton « Résumer », et de rien d'autre.
+import { useSettings } from '@/data/repositories/settings-repository';
 import {
   nextMondayKey,
   useLabComposer,
@@ -85,6 +87,7 @@ export default function LabScreen() {
   const router = useRouter();
   const todayKey = useTodayKey();
   const reducedMotion = useAppReducedMotion();
+  const { settings } = useSettings();
   const lockApply = useActionLock();
 
   const activePillars = useLabPillars();
@@ -326,6 +329,7 @@ export default function LabScreen() {
             questions={questions}
             selectedId={question?.id ?? null}
             runningExperiments={runningKinds}
+            canNarrate={settings?.aiConsentAt != null}
             onSelect={(id) => {
               setQuestionId(id);
               setFocus(null);

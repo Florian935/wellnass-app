@@ -63,6 +63,12 @@ jest.mock('@/data/repositories/planned-session-repository', () => ({
   reschedulePlannedSession: jest.fn(async () => undefined),
   applyAdaptationForToday: jest.fn(async () => undefined),
 }));
+// US NARR-01 : l'écran lit les réglages pour savoir si le consentement IA est donné. Non bouchonné,
+// l'import tire i18n et fait tomber toute la suite. `settings: null` = pas de consentement, donc
+// le panneau « Pourquoi ? » reste exactement celui d'avant l'US — ce que ces tests vérifient.
+jest.mock('@/data/repositories/settings-repository', () => ({
+  useSettings: () => ({ settings: null, isLoading: false }),
+}));
 jest.mock('@/data/repositories/nutrition-repository', () => ({ upsertNutritionProfile: jest.fn(async () => undefined) }));
 jest.mock('@/data/repositories/running-profile-repository', () => ({ upsertRunnerProfile: jest.fn(async () => undefined) }));
 

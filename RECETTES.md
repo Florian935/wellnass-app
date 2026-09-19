@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **18/09/2026** — **73 sections**.
+> Dernière mise à jour : **19/09/2026** — **74 sections**.
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -4414,3 +4414,35 @@ plan : [lettre01-lettre-futur-moi.md](docs/plans/lettre01-lettre-futur-moi.md) �
 
 **Ce qui n'est volontairement pas là** : la lettre à la voix (permission micro juste avant la
 soumission Play — D1), la lettre hors objectif, le partage, toute notification.
+
+## 74. NARR-01 — L'IA raconte le dossier d'enquête (`dev`)
+
+Spec : [narr01-narration-dossier.md](docs/specs/functional/us/narr01-narration-dossier.md) ·
+plan : [narr01-narration-dossier.md](docs/plans/narr01-narration-dossier.md) · implémentée le 19/09/2026.
+
+> ⚠️ **Prérequis** : le Labo IA doit être **activé** (Réglages → Labo IA) et la fonction Edge
+> `ai-assist` déployée avec une clé Gemini posée — les trois gestes d'IA-LAB-01 (§67). Sans
+> consentement, cette US n'affiche **rien** : c'est le premier critère.
+
+> 🔎 **Ce que cette US n'est pas** : l'Enquête elle-même est déjà livrée par LABO-01 (§66). Ici on
+> n'ajoute qu'une **lecture** du dossier — et le garde-fou qui la rend acceptable.
+
+- [ ] **1. Sans consentement IA** : l'onglet « Pourquoi ? » est identique à avant. **Aucun bouton.**
+- [ ] **2. Avec consentement** : « Résumer » apparaît sur un dossier qui a au moins un suspect.
+- [ ] **3. Le résumé tient en deux ou trois phrases** et parle bien du dossier affiché.
+- [ ] **4. Tous les chiffres cités sont dans le dossier** — vérifier un par un au moins une fois.
+      C'est **la** garantie de l'US : un chiffre du résumé introuvable à l'écran est un bug grave.
+- [ ] **5. Le dossier reste entier sous le résumé** : suspects, écartés, non jugeables, expérience.
+- [ ] **6. Changer de dossier** (autre question) efface le résumé précédent.
+- [ ] **7. Mode avion** : message clair, dossier intact, aucun écran cassé.
+- [ ] **8. Quota épuisé** (20 appels/jour) : message d'IA-LAB-01, dossier intact.
+- [ ] **9. Un refus se voit** : si le modèle s'écarte, « Résumé écarté : il citait un chiffre absent
+      du dossier ». **Noter combien de fois ça arrive sur dix demandes** — c'est la mesure qui dira
+      si cette surface peut s'ouvrir un jour à tout le monde.
+- [ ] **10. FR puis EN** : le résumé revient dans la langue de l'app.
+- [ ] **11. TalkBack** lit le résumé dès son apparition ; à 1,5× de police, rien n'est coupé.
+- [ ] **12. Rien n'est stocké** : quitter l'écran et revenir ne rejoue pas le résumé, et n'en
+      réaffiche pas un ancien.
+
+**Ce qui n'est volontairement pas là** : le dialogue, la mémoire d'une fois sur l'autre, le résumé
+automatique à l'ouverture, et le Conseil des trois (CONS-01).

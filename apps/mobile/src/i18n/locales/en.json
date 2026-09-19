@@ -5104,7 +5104,15 @@
       "startExperiment": "Start the experiment (4 weeks)",
       "alreadyRunning": "Already running",
       "honest": "Associations found in your data, not proof. The experiment settles it.",
-      "kg": "{{value}} kg"
+      "kg": "{{value}} kg",
+      "narrate": {
+        "cta": "Summarize",
+        "loading": "Reading the file…",
+        "source": "Summarized by AI, checked against the file.",
+        "limit": "The summary reads the file; it doesn’t replace it.",
+        "rejected": "Summary discarded: it quoted a number that isn’t in the file.",
+        "invalid": "Summary discarded: unusable answer."
+      }
     },
     "questions": {
       "liftPlateau": {

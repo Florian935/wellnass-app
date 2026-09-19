@@ -5104,7 +5104,15 @@
       "startExperiment": "Lancer l’expérience (4 semaines)",
       "alreadyRunning": "Déjà en cours",
       "honest": "Des associations trouvées dans tes données, pas des preuves. L’expérience tranche.",
-      "kg": "{{value}} kg"
+      "kg": "{{value}} kg",
+      "narrate": {
+        "cta": "Résumer",
+        "loading": "Lecture du dossier…",
+        "source": "Résumé par l’IA, vérifié contre le dossier.",
+        "limit": "Le résumé lit le dossier ; il ne le remplace pas.",
+        "rejected": "Résumé écarté : il citait un chiffre absent du dossier.",
+        "invalid": "Résumé écarté : réponse inexploitable."
+      }
     },
     "questions": {
       "liftPlateau": {
