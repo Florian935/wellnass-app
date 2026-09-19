@@ -66,6 +66,47 @@ const ACCENT: Record<PillarKey, keyof Palette> = {
 const AMOUNT: Record<ColorScheme, number> = { light: 0.22, dark: 0.3 };
 
 /**
+ * US CARDIO-UX02 — **le même taux de mélange ne rend pas la même quantité de couleur.**
+ *
+ * Retour de Florian en recette (19/09/2026) : « le héros du cardio est super cool avec ce petit
+ * bleu, le problème c'est que ce n'est pas repris sur le reste des écrans du pilier ». Mesuré, ce
+ * n'est pas une affaire de goût — c'est une conséquence de `tintPreservingLuminance`.
+ *
+ * Chroma (écart max−min des canaux, proxy de saturation à luminance égale) de la surface sombre
+ * teintée, à `AMOUNT.dark = 0,3`, contre la surface neutre `#30271e` dont la chroma vaut **18** :
+ *
+ * | pilier      | teinte    | surface   | chroma |
+ * |-------------|-----------|-----------|--------|
+ * | accueil     | `#b14f2b` | `#3b2317` | 36     |
+ * | labo        | `#8a6419` | `#332713` | 32     |
+ * | musculation | `#7c2734` | `#3c211f` | 29     |
+ * | nutrition   | `#2e4419` | `#292a19` | 17     |
+ * | **course**  | `#1d4586` | `#242934` | **16** |
+ *
+ * La course est le seul pilier dont la surface teintée est **moins colorée que la surface neutre
+ * qu'elle remplace** : le bleu enlève le brun sans rien mettre à la place. La cause est mécanique —
+ * le bleu ne pèse que 0,0722 dans la luminance, donc atteindre la clarté de la base depuis une
+ * teinte bleue force la mise à l'échelle très haut, et la mise à l'échelle désature. Les teintes
+ * chaudes n'ont pas ce problème : c'est pour ça que quatre piliers sur cinq n'ont rien révélé.
+ *
+ * Le correctif n'est pas de « monter le curseur » partout, ce qui ferait virer les piliers chauds
+ * au bonbon (l'écueil documenté sur `AMOUNT`) : c'est un **gain par pilier**, posé là où la mesure
+ * le demande. `running: 1.5` amène la surface sombre à `#1f293c` (chroma 29) — exactement la bande
+ * des autres piliers, pas au-delà.
+ *
+ * ⚠️ Le contrat de lisibilité est **intact par construction** : le gain ne change que `amount`, et
+ * `tintPreservingLuminance` conserve la luminance quel que soit `amount`. `__tests__/contrast.test.ts`
+ * le re-vérifie pilier par pilier.
+ */
+const TINT_GAIN: Record<PillarKey, number> = {
+  home: 1,
+  strength: 1,
+  running: 1.5,
+  nutrition: 1,
+  lab: 1,
+};
+
+/**
  * Le **fond** bouge moins que les cartes : la page doit rester la page, et garder son écart avec
  * les surfaces posées dessus. Sans ce facteur, fond et carte convergent vers la même teinte et la
  * carte cesse de se détacher.
@@ -94,7 +135,9 @@ export function pillarPalette(scheme: ColorScheme, pillar: PillarKey): Palette {
 
   const base = palettes[scheme];
   const tint = TINT[pillar];
-  const amount = AMOUNT[scheme];
+  // Le gain est borné à 1 : `tintPreservingLuminance` clampe déjà son paramètre, mais un `amount`
+  // au-delà de 1 rendrait la table `TINT_GAIN` illisible (« 2 » et « 4 » donneraient le même rendu).
+  const amount = Math.min(1, AMOUNT[scheme] * TINT_GAIN[pillar]);
   const next: Palette = { ...base };
 
   for (const token of TINTED) {

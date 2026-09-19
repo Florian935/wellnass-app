@@ -143,6 +143,56 @@ describe('resolveRunWeek — ma semaine (constat F37)', () => {
     expect(semaine().targetFrequency).toBe(3);
   });
 
+  it('🔴 goalCount — le dénominateur est le MÊME pour la scène et pour la carte', () => {
+    // Audit CARDIO-UX02, défaut 2 : la scène affichait « 2 / 0 faites » (doneCount / plannedCount)
+    // pendant que la carte, deux blocs plus bas, affichait « 2 / 3 faites » (repli sur la
+    // fréquence visée appliqué dans le composant). Les deux lisent désormais `goalCount`.
+    const sansProgramme = resolveRunWeek({
+      weekStartKey: '2026-09-07',
+      todayKey: '2026-09-10',
+      runs: [
+        { dayKey: '2026-09-07', distanceM: 9000, durationSeconds: 3060, elevationGainM: 45 },
+        { dayKey: '2026-09-09', distanceM: 8000, durationSeconds: 2760, elevationGainM: 45 },
+      ],
+      planned: [],
+      targetFrequency: 3,
+    });
+
+    expect(sansProgramme.plannedCount).toBe(0);
+    expect(sansProgramme.goalCount).toBe(3);
+    // Avec un programme, la fréquence visée reste prioritaire : c'est l'objectif déclaré, pas le
+    // contenu d'une semaine qui peut être allégée.
+    expect(semaine().goalCount).toBe(3);
+  });
+
+  it('goalCount retombe sur le prévu quand aucune fréquence n’est déclarée', () => {
+    const w = resolveRunWeek({
+      weekStartKey: '2026-09-07',
+      todayKey: '2026-09-07',
+      runs: [],
+      planned: [
+        { dayKey: '2026-09-08', done: false },
+        { dayKey: '2026-09-10', done: false },
+      ],
+      targetFrequency: null,
+    });
+
+    expect(w.goalCount).toBe(2);
+  });
+
+  it('goalCount vaut 0 quand il n’y a ni programme ni fréquence — et c’est au rendu de se taire', () => {
+    const w = resolveRunWeek({
+      weekStartKey: '2026-09-07',
+      todayKey: '2026-09-07',
+      runs: [{ dayKey: '2026-09-07', distanceM: 5000, durationSeconds: 1500, elevationGainM: 0 }],
+      planned: [],
+      targetFrequency: null,
+    });
+
+    // On ne fabrique pas un objectif par défaut : « 1 / 3 » inventerait une intention.
+    expect(w.goalCount).toBe(0);
+  });
+
   it('un jour à plusieurs séances reste « à faire » s’il en reste une', () => {
     const w = resolveRunWeek({
       weekStartKey: '2026-09-07',

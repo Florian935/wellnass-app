@@ -36,6 +36,11 @@ import { useRouter } from 'expo-router';
 // Mocks
 // ---------------------------------------------------------------------------
 
+// US CARDIO-UX02 — chaque écran du pilier déclare désormais sa couleur (`useMenuFocus`). Le hook
+// s'appuie sur `useFocusEffect`, absent des mocks d'`expo-router` de ces fichiers : on le neutralise
+// ici, comme le font déjà les quatre tests d'onglet.
+jest.mock('@/hooks/useMenuFocus', () => ({ useMenuFocus: jest.fn() }));
+
 jest.mock('@/data/repositories/run-repository', () => ({
   useRun: jest.fn(() => ({ run: null, isLoading: false })),
   // US FANT-01 : le résumé lit le fantôme de la course. Sans fantôme par défaut, la ligne ne rend rien.

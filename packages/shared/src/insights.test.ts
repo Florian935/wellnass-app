@@ -40,11 +40,12 @@ describe('constantes', () => {
     expect(INSIGHT_FAMILIES).toEqual(['alert', 'change', 'celebration']);
   });
 
-  it('déclare 13 identifiants, tous distincts', () => {
+  it('déclare 16 identifiants, tous distincts', () => {
     // 12 depuis INSIGHTS-02 (+readiness, +concurrent_interference, +activity_level), 13 depuis
-    // MUSCU-UX05 (+exercise_neglected, pour le fil du jour du hub muscu).
-    expect(INSIGHT_ORDER).toHaveLength(13);
-    expect(new Set(INSIGHT_ORDER).size).toBe(13);
+    // MUSCU-UX05 (+exercise_neglected, pour le fil du jour du hub muscu), 16 depuis CARDIO-UX02
+    // (+run_record_recent, +pace_trend, +polarisation, pour le fil du jour du hub course).
+    expect(INSIGHT_ORDER).toHaveLength(16);
+    expect(new Set(INSIGHT_ORDER).size).toBe(16);
   });
 
   it('place le garde-fou de surcharge en tête — rien ne passe devant le risque de blessure', () => {

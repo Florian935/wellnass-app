@@ -35,11 +35,24 @@ import { formatGapDistance } from '@/components/running/GhostBand';
 import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
+import { stageTheme } from '@/theme/stage';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
-/** Couleurs de la charte pour le bandeau de célébration (bordeaux + doré). */
-const CELEBRATION_BG = '#7c2734';
-const CELEBRATION_ACCENT = '#c9a96e';
+/**
+ * Couleurs du bandeau de célébration — **celles du pilier Course** (US CARDIO-UX02).
+ *
+ * ⚠️ Elles étaient en dur, et c'était `#7c2734` : la teinte exacte de la **scène Musculation**.
+ * Un record de course se célébrait donc en bordeaux, sur un écran bleu, sans que personne l'ait
+ * décidé — vestige d'un copier-coller depuis le résumé de séance muscu. Les deux valeurs viennent
+ * désormais de `stageTheme('running')`, dont chaque couple encre/fond est mesuré par
+ * `theme/__tests__/stage.test.ts`.
+ *
+ * Le `'dark'` passé en second argument n'est pas un choix : la scène Course est **indépendante du
+ * thème** (le bleu nuit est déjà sombre, un thème sombre n'a rien à y changer — voir l'en-tête de
+ * `theme/stage.ts`). La constante peut donc vivre au niveau module, comme avant.
+ */
+const CELEBRATION_STAGE = stageTheme('running', 'dark');
 
 /** Clé i18n du libellé de distance pour chaque record canonique. */
 const RECORD_DISTANCE_KEY: Record<RecordDistanceKey, string> = {
@@ -92,6 +105,13 @@ function formatMmSs(totalSeconds: number): string {
  * écran ne la re-termine pas : il complète le ressenti et, pour une course manuelle, ses chiffres.
  */
 export default function RunSummaryScreen() {
+  // US CARDIO-UX02 — **l'identité du pilier appartient à l'écran, pas à l'onglet d'où l'on vient.**
+  // `useMenuFocus` n'était appelé que par les cinq onglets : un écran course ouvert depuis
+  // l'Accueil (`NowCard`, `QuickActions`, `RecordRecentCard` y poussent tous vers `/run…`)
+  // héritait du terracotta de l'accueil. Le déclarer ici rend la couleur du pilier vraie quel
+  // que soit le chemin — un test de garde vérifie qu'aucun écran course ne l'oublie.
+  useMenuFocus('running');
+
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -561,14 +581,25 @@ function CelebrationBanner({ distances }: { distances: RecordDistanceKey[] }) {
   const includes5k = ordered.includes('5k');
 
   return (
-    <CelebrationCard style={styles.celebration}>
+    <CelebrationCard
+      style={[styles.celebration, { backgroundColor: CELEBRATION_STAGE.surfaces[1] }]}
+    >
       <Text style={styles.celebrationSpark}>🏅</Text>
-      <Text style={styles.celebrationTitle}>{t('running.records.newRecordTitle')}</Text>
-      <Text style={styles.celebrationBody}>
+      <Text style={[styles.celebrationTitle, { color: CELEBRATION_STAGE.ink }]}>
+        {t('running.records.newRecordTitle')}
+      </Text>
+      <Text style={[styles.celebrationBody, { color: CELEBRATION_STAGE.ink }]}>
         {t('running.records.newRecordBody', { distances: labels.join(', ') })}
       </Text>
       {includes5k ? (
-        <Text style={styles.celebrationRef}>★ {t('running.records.refPaceUpdated')}</Text>
+        // `accent` est documenté dans `theme/stage.ts` comme la couleur de la **matière**, « jamais
+        // porteuse de texte » — parce qu'il n'est pas mesuré contre toutes les teintes du dégradé
+        // (3,99:1 sur `surfaces[0]`). Ici le fond est épinglé à `surfaces[1]`, où il donne
+        // **6,26:1** : au-dessus du seuil, et c'est ce qui rend la ligne de mise à jour de l'allure
+        // de référence distincte du corps sans changer de taille.
+        <Text style={[styles.celebrationRef, { color: CELEBRATION_STAGE.accent }]}>
+          ★ {t('running.records.refPaceUpdated')}
+        </Text>
       ) : null}
     </CelebrationCard>
   );
@@ -647,19 +678,13 @@ const styles = StyleSheet.create({
 
   // Célébration de record
   celebration: {
-    backgroundColor: CELEBRATION_BG,
     borderRadius: 16,
     padding: 16,
     gap: 4,
     overflow: 'hidden',
   },
   celebrationSpark: { fontSize: 30, position: 'absolute', top: 8, right: 14 },
-  celebrationTitle: { fontFamily: fontFamily.displayBold, fontSize: 19, color: '#ffffff' },
-  celebrationBody: { fontFamily: fontFamily.body, fontSize: 14, color: '#ffffff' },
-  celebrationRef: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 13,
-    color: CELEBRATION_ACCENT,
-    marginTop: 6,
-  },
+  celebrationTitle: { fontFamily: fontFamily.displayBold, fontSize: 19 },
+  celebrationBody: { fontFamily: fontFamily.body, fontSize: 14 },
+  celebrationRef: { fontFamily: fontFamily.bodySemi, fontSize: 13, marginTop: 6 },
 });

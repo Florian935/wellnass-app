@@ -145,6 +145,17 @@ export type RunWeekSummary = {
   doneCount: number;
   /** Séances prévues cette semaine (faites + à faire). */
   plannedCount: number;
+  /**
+   * Le **dénominateur affichable** de « n faites sur m » — `targetFrequency`, à défaut `plannedCount`.
+   *
+   * ⚠️ Il existe parce que le hub et sa propre carte ne disaient pas la même chose sur la même
+   * semaine (audit CARDIO-UX02, défaut 2) : la scène rendait `doneCount / plannedCount` et
+   * affichait « 2 / 0 faites » sur un compte sans programme, pendant que `RunWeekBand`, deux
+   * blocs plus bas, appliquait le repli sur la fréquence visée et affichait « 2 / 3 faites ».
+   * Le repli vivait dans le composant : il ne pouvait donc valoir que pour lui. Il vit désormais
+   * ici, une fois, et les deux surfaces lisent le même champ.
+   */
+  goalCount: number;
   distanceM: number;
   durationSeconds: number;
   elevationGainM: number;
@@ -203,10 +214,16 @@ export function resolveRunWeek(input: {
     });
   }
 
+  const plannedCount = input.planned.length;
+
   return {
     days,
     doneCount: runDays.size,
-    plannedCount: input.planned.length,
+    plannedCount,
+    // Sans programme, `plannedCount` vaut 0 et « 2 / 0 » n'est pas une lecture : la fréquence
+    // visée reprend la main. Sans l'une ni l'autre, le dénominateur reste 0 et les surfaces
+    // choisissent de se taire (voir `RunWeekCard`).
+    goalCount: input.targetFrequency ?? plannedCount,
     distanceM: input.runs.reduce((sum, r) => sum + (r.distanceM ?? 0), 0),
     durationSeconds: input.runs.reduce((sum, r) => sum + (r.durationSeconds ?? 0), 0),
     elevationGainM: input.runs.reduce((sum, r) => sum + (r.elevationGainM ?? 0), 0),

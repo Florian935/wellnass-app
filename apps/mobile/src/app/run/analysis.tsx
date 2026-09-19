@@ -32,6 +32,7 @@ import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 /** Formate une durée en secondes → `H h MM min SS s` / `MM min SS s` / `SS s`. */
 function formatDuration(totalSeconds: number | null): string {
@@ -59,6 +60,13 @@ function formatDuration(totalSeconds: number | null): string {
  * manquaient à l'app : **corriger** (constat F19) et **supprimer** (constat F18).
  */
 export default function RunAnalysisScreen() {
+  // US CARDIO-UX02 — **l'identité du pilier appartient à l'écran, pas à l'onglet d'où l'on vient.**
+  // `useMenuFocus` n'était appelé que par les cinq onglets : un écran course ouvert depuis
+  // l'Accueil (`NowCard`, `QuickActions`, `RecordRecentCard` y poussent tous vers `/run…`)
+  // héritait du terracotta de l'accueil. Le déclarer ici rend la couleur du pilier vraie quel
+  // que soit le chemin — un test de garde vérifie qu'aucun écran course ne l'oublie.
+  useMenuFocus('running');
+
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

@@ -58,6 +58,10 @@ export const INSIGHT_ORDER = [
   // Elle ne doit jamais passer devant une alerte de charge.
   'activity_level',
   'record_recent',
+  // US CARDIO-UX02 — le pendant course de `record_recent` : un record de distance (RUN-03). Juste
+  // derrière lui et pas devant, parce qu'un record de charge tombe plus rarement qu'un record de
+  // distance sur un compte qui débute la course — et qu'à fraîcheur égale le plus rare vaut mieux.
+  'run_record_recent',
   'goal_achieved',
   'weekly_decision',
   'muscle_neglected',
@@ -66,8 +70,15 @@ export const INSIGHT_ORDER = [
   // actionnable — on sait quoi ajouter à la séance — mais il passe derrière, parce qu'un déséquilibre
   // de groupe a des conséquences que l'oubli d'un exercice n'a pas.
   'exercise_neglected',
+  // US CARDIO-UX02 — l'allure passe **devant** les variations de volume : un coureur mesure son
+  // progrès en vitesse, pas en kilomètres cumulés. C'est la même hiérarchie que côté muscu, où
+  // « Tes charges » a détrôné le tonnage hebdomadaire (MUSCU-UX05, défaut 4).
+  'pace_trend',
   'tonnage_change',
   'distance_change',
+  // US CARDIO-UX02 — ferme la liste : la polarisation est une lecture de **composition**, pas un
+  // fait nouveau. Elle ne doit jamais prendre la place d'un changement daté.
+  'polarisation',
 ] as const;
 export type InsightId = (typeof INSIGHT_ORDER)[number];
 

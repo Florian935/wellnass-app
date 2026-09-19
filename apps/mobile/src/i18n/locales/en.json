@@ -3684,6 +3684,17 @@
       "exercise_neglected": {
         "title": "{{subject}}, none for {{weeks}} weeks",
         "body": "A favourite you stopped doing without deciding to. Putting it back in a session is enough."
+      },
+      "run_record_recent": {
+        "title": "{{subject}} record — {{time}}"
+      },
+      "pace_trend": {
+        "title": "Your pace moved by {{seconds}} s/km",
+        "title_up": "You're running {{seconds}} s/km faster this month",
+        "title_down": "You're running {{seconds}} s/km slower this month"
+      },
+      "polarisation": {
+        "title": "{{lowPct}} % of your volume is easy running"
       }
     }
   },
@@ -5388,6 +5399,64 @@
       "confirmBody": "A numeric summary of your data will leave the device for a third-party provider on every question. The free tier used for testing may use it to train its models. Only enable this on fake data.",
       "cancel": "Cancel",
       "accept": "Enable"
+    }
+  },
+  "runningHub": {
+    "directory": "Programs, planning, history",
+    "pace": {
+      "title": {
+        "onboarding": "Your best pace",
+        "established": "Your pace"
+      },
+      "window": "{{days}} d vs {{days}} d",
+      "runs_one": "{{count}} run",
+      "runs_other": "{{count}} runs",
+      "onboardingCaption": "{{distance}} covered so far. A few more runs and we can compare two months.",
+      "delta_one": "{{count}} s/km",
+      "delta_other": "{{count}} s/km",
+      "caption": {
+        "up": "Faster than the previous month, which was at {{previous}}.",
+        "down": "Slower than the previous month, which was at {{previous}}.",
+        "flat": "Same level as the previous month ({{previous}})."
+      },
+      "trendLabel": "90-day trend",
+      "sampleLabel": "Runs compared",
+      "sample": "{{current}} vs {{previous}}"
+    },
+    "week": {
+      "hint": "Open the planner",
+      "doneOnly_one": "{{count}} run",
+      "doneOnly_other": "{{count}} runs",
+      "program": "Program: {{name}}"
+    },
+    "engine": {
+      "title": "Your engine",
+      "meta_one": "{{count}} run",
+      "meta_other": "{{count}} runs",
+      "low": "easy",
+      "high": "hard",
+      "reference": "Across {{km}} tracked km. The commonly cited benchmark is ~{{reference}} % easy — a benchmark, not a target.",
+      "a11y": "Volume split: {{low}} % easy, {{high}} % hard, across {{km}} kilometres. Cited benchmark: {{reference}} % easy."
+    },
+    "records": {
+      "title": "Your records",
+      "a11y": "Record over {{distance}}: {{time}}"
+    },
+    "lifetime": {
+      "line_one": "{{distance}} since the start, in {{duration}} and {{count}} run",
+      "line_other": "{{distance}} since the start, in {{duration}} and {{count}} runs"
+    },
+    "directorySheet": {
+      "title": "The Running pillar",
+      "subtitle": "Everything that organises your running, in one place.",
+      "programs": "Programs",
+      "programsDesc": "Follow a plan, or build one.",
+      "planning": "Planning",
+      "planningDesc": "Your sessions, week by week.",
+      "history": "History & stats",
+      "historyDesc": "Your runs, your curves, your records.",
+      "profile": "Runner profile",
+      "profileDesc": "Reference pace, target frequency, voice."
     }
   }
 }

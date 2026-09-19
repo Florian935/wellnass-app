@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **19/09/2026** — **78 sections**.
+> Dernière mise à jour : **19/09/2026** — **79 sections**.
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -4615,3 +4615,91 @@ Canvas de design : **Hub Musculation** (7 planches).
 - [ ] **17. Jour de séance / jour de repos / lendemain de record** : les trois doivent donner trois
       écrans différents, pas seulement trois en-têtes différents.
 - [ ] **18. FR et EN** sur toutes les cartes neuves ; à 1,5× de police, rien n'est coupé.
+
+---
+
+## 79. CARDIO-UX02 — Refonte du hub Course (`dev`)
+
+Spec : [cardio-ux02-refonte-hub-course.md](docs/specs/functional/us/cardio-ux02-refonte-hub-course.md) ·
+[plan](docs/plans/cardio-ux02-refonte-hub-course.md) · demandée et livrée le 19/09/2026.
+
+> 🔎 **Même passe que §78, sur le pilier voisin.** Dix surfaces deviennent **sept cartes et trois
+> lignes**. La cause est identique à celle du hub muscu : sur **25 analyses course** au catalogue,
+> **15 sont livrées** — le hub en montrait **4**.
+
+> 🟠 **Le point à trancher en recette** : le hub course **perd sa grille de widgets** (Historique,
+> Programmes, Planning, Temps d'entraînement) et donc sa personnalisation. Aucune migration : une
+> disposition enregistrée devient simplement illisible. C'est le **seul** endroit du lot qui retire
+> une capacité — comme pour la muscu il y a quelques heures. Si ça ne va pas, on le saura là.
+
+> ⚠️ **Maquettes absentes.** Le skill `/design` n'est pas invocable depuis une session d'agent : il
+> est réservé à une invocation explicite de ta part. Rien n'a été produit à la place. Le rendu se
+> juge donc **directement sur device**, et le brief de maquette est en fin de section.
+
+### A — Le bleu, partout
+
+- [ ] **1. 🔴 Les cartes sous le héros sont bleutées**, plus brunes. Comparer avec la capture du
+      19/09 : le fond de page et les cartes doivent avoir basculé du brun chaud au bleu-gris.
+- [ ] **2. 🔴 La carte « Ton allure » est un vrai panneau bleu**, au dégradé du héros — c'est la
+      seule de l'écran dans ce traitement.
+- [ ] **3. Accents bleus** partout dans le pilier : chips du jour, courbes, boutons, pastilles de
+      la semaine, segmenté de « Programmes de course », radio de « Course libre ».
+- [ ] **4. 🔴 Entrer dans le pilier **depuis l'Accueil** (raccourci « Courir » ou la carte
+      « Maintenant ») : l'écran de course doit être **bleu**, pas terracotta. C'était le défaut —
+      la couleur dépendait de l'onglet d'où l'on venait.
+- [ ] **5. Idem pour `Historique & stats`** ouvert depuis la carte « Record récent » de l'Accueil.
+- [ ] **6. 🔴 Le bandeau de record** au résumé d'une course est **bleu nuit**, plus bordeaux (c'était
+      la teinte exacte de la scène Musculation, en dur dans le fichier).
+- [ ] **7. Thème clair** : refaire 1 à 6. Les cartes doivent être d'un blanc légèrement bleuté, les
+      textes rester parfaitement lisibles.
+- [ ] **8. Accessibilité** : TalkBack lit bien la carte d'allure et la bande de records ; contraste
+      des textes sur le panneau bleu (à l'œil, en plein soleil si possible).
+
+### B — Le dashboard
+
+- [ ] **9. 🔴 Le compteur de la semaine est le MÊME en haut et en bas.** C'était le défaut le plus
+      visible : le héros disait « 2 / 0 faites », la carte « 2 / 3 faites ». Vérifier avec **et**
+      sans programme actif.
+- [ ] **10. Sans programme ni fréquence visée déclarée**, on lit « 2 sorties » — pas « 2 / 0 ».
+- [ ] **11. Le fil du jour** apparaît en tête du corps, une phrase + un chevron, et **change** d'un
+      jour à l'autre (ou après une sortie qui bat un record).
+- [ ] **12. Quand il n'y a rien à dire, il n'y a pas de bande** — ni bande vide, ni « aucune analyse ».
+- [ ] **13. « Ton allure »** est la plus grande carte : allure médiane du mois, écart avec le mois
+      précédent, courbe 90 j, tendance et nombre de sorties comparées.
+- [ ] **14. 🔴 Le sens de lecture** : quand tu cours **plus vite**, la flèche monte, la phrase dit
+      « plus rapide », et **la courbe monte** (elle est retournée exprès : une allure qui baisse est
+      un progrès).
+- [ ] **15. 🔴 Compte récent (< 3 sorties sur l'un des deux mois)** : la carte affiche « Ta meilleure
+      allure » et le cumul parcouru, **pas** un écart.
+- [ ] **16. Un écart de moins de 3 s/km** se dit « au même niveau », sans flèche — on n'annonce pas
+      un progrès qu'on ne distingue pas du bruit GPS.
+- [ ] **17. « Ma semaine »** porte les 7 jours **et** la prochaine séance datée **et** le nom du
+      programme — les widgets Planning et Programmes ont disparu dans cette carte.
+- [ ] **18. « Ton moteur »** montre la répartition endurance / intensité en une barre à deux parts,
+      avec le repère ~80 % **cité, jamais présenté comme un objectif**.
+- [ ] **19. Sans allure de référence au profil**, « Ton moteur » ne s'affiche pas du tout.
+- [ ] **20. « Tes records »** défile à l'horizontale, une cellule par distance, chrono **formaté**
+      (« 24 min 10 s », jamais « 1450 ») et date du record.
+- [ ] **21. « Ta charge »** est **descendue** sous les records : c'est un garde-fou, pas un progrès.
+- [ ] **22. « Ton total »** est une **ligne**, pas une carte, et se tait à zéro course.
+- [ ] **23. L'annuaire** en pied d'écran ouvre une feuille à **quatre** destinations : Programmes,
+      Planning, Historique & stats, Profil coureur. Les quatre routent correctement.
+- [ ] **24. Sur un compte neuf (0 course)** : tout le corps se tait, seule la scène reste. Aucune
+      carte ne s'excuse, aucun « — » ni « aucune donnée ».
+- [ ] **25. Sortie manuelle (sans GPS)** : « Ton allure » fonctionne, « Ton moteur », « Tes records »
+      et « Km par km » se taisent.
+
+### C — Ce qui n'a pas été fait, et qu'il faut savoir
+
+- ⚠️ **Les maquettes.** À produire par `/design` si tu veux itérer sur le rendu avant de valider.
+  Brief proposé : *les deux états du hub (compte fourni / compte neuf), les deux visages de
+  « Ton allure », la planche de comparaison avant/après sur l'identité bleue, et le panneau de
+  pilier comme brique de design system réutilisable par les cinq piliers.*
+- ⚠️ **Les piliers Muscu et Nutrition ont le même défaut d'identité par écran** (`/workout`,
+  `/exercises`, `/nutrition-stats`… héritent de l'onglet d'où l'on vient). **Constaté, non
+  corrigé** — porté au [BACKLOG](BACKLOG.md). Le test de garde est prêt à les accueillir.
+- ⚠️ **RUN-11, RUN-17, RUN-20** (negative split, zones d'allure, dégradation sur sortie longue)
+  restent dans `Historique & stats` : les remonter aussi aurait crevé le budget de blocs.
+- ⚠️ **« Ton allure » mélange les types de séance.** `runs` ne porte pas de `session_type` (le mur
+  qui laisse RUN-07 en attente) : l'allure médiane mêle fractionnés, sorties longues et récups. La
+  médiane sur 30 jours absorbe ce mélange tant que la composition des semaines ne change pas.

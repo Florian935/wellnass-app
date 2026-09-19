@@ -20,6 +20,7 @@ import { startManualClock, startTracking } from '@/running/tracker';
 import { fontFamily } from '@/theme/fonts';
 import { useActionLock } from '@/hooks/useActionLock';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 /**
  * Écran de démarrage d'une course libre (Running R1, 5.12).
@@ -34,6 +35,13 @@ import { useTheme } from '@/theme/useTheme';
  *   course quand une séance planifiée du jour est démarrée depuis là — sinon absent (course libre).
  */
 export default function RunStartScreen() {
+  // US CARDIO-UX02 — **l'identité du pilier appartient à l'écran, pas à l'onglet d'où l'on vient.**
+  // `useMenuFocus` n'était appelé que par les cinq onglets : un écran course ouvert depuis
+  // l'Accueil (`NowCard`, `QuickActions`, `RecordRecentCard` y poussent tous vers `/run…`)
+  // héritait du terracotta de l'accueil. Le déclarer ici rend la couleur du pilier vraie quel
+  // que soit le chemin — un test de garde vérifie qu'aucun écran course ne l'oublie.
+  useMenuFocus('running');
+
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

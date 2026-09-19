@@ -3684,6 +3684,17 @@
       "exercise_neglected": {
         "title": "{{subject}}, plus depuis {{weeks}} semaines",
         "body": "Un favori que tu as cessé de faire sans le décider. Le remettre dans une séance suffit."
+      },
+      "run_record_recent": {
+        "title": "Record {{subject}} — {{time}}"
+      },
+      "pace_trend": {
+        "title": "Ton allure a bougé de {{seconds}} s/km",
+        "title_up": "Tu cours {{seconds}} s/km plus vite ce mois-ci",
+        "title_down": "Tu cours {{seconds}} s/km plus lentement ce mois-ci"
+      },
+      "polarisation": {
+        "title": "{{lowPct}} % de ton volume en endurance"
       }
     }
   },
@@ -5388,6 +5399,64 @@
       "confirmBody": "Un résumé chiffré de tes données quittera l'appareil vers un fournisseur tiers à chaque question. Le palier gratuit utilisé pour les tests peut s'en servir pour entraîner ses modèles. À n'activer que sur des données factices.",
       "cancel": "Annuler",
       "accept": "J'active"
+    }
+  },
+  "runningHub": {
+    "directory": "Programmes, planning, historique",
+    "pace": {
+      "title": {
+        "onboarding": "Ta meilleure allure",
+        "established": "Ton allure"
+      },
+      "window": "{{days}} j vs {{days}} j",
+      "runs_one": "{{count}} sortie",
+      "runs_other": "{{count}} sorties",
+      "onboardingCaption": "{{distance}} parcourus depuis le début. Encore quelques sorties et on pourra comparer deux mois.",
+      "delta_one": "{{count}} s/km",
+      "delta_other": "{{count}} s/km",
+      "caption": {
+        "up": "Plus rapide que le mois précédent, qui était à {{previous}}.",
+        "down": "Plus lent que le mois précédent, qui était à {{previous}}.",
+        "flat": "Au même niveau que le mois précédent ({{previous}})."
+      },
+      "trendLabel": "Tendance 90 j",
+      "sampleLabel": "Sorties comparées",
+      "sample": "{{current}} vs {{previous}}"
+    },
+    "week": {
+      "hint": "Ouvre le planning",
+      "doneOnly_one": "{{count}} sortie",
+      "doneOnly_other": "{{count}} sorties",
+      "program": "Programme : {{name}}"
+    },
+    "engine": {
+      "title": "Ton moteur",
+      "meta_one": "{{count}} sortie",
+      "meta_other": "{{count}} sorties",
+      "low": "endurance",
+      "high": "intensité",
+      "reference": "Sur {{km}} km tracés. Le repère souvent cité est ~{{reference}} % en endurance — c'est un repère, pas un objectif.",
+      "a11y": "Répartition du volume : {{low}} % en endurance, {{high}} % en intensité, sur {{km}} kilomètres. Repère cité : {{reference}} % en endurance."
+    },
+    "records": {
+      "title": "Tes records",
+      "a11y": "Record sur {{distance}} : {{time}}"
+    },
+    "lifetime": {
+      "line_one": "{{distance}} depuis le début, en {{duration}} et {{count}} sortie",
+      "line_other": "{{distance}} depuis le début, en {{duration}} et {{count}} sorties"
+    },
+    "directorySheet": {
+      "title": "Le pilier Course",
+      "subtitle": "Tout ce qui organise ta course, au même endroit.",
+      "programs": "Programmes",
+      "programsDesc": "Suivre un plan, ou en créer un.",
+      "planning": "Planning",
+      "planningDesc": "Tes séances, semaine par semaine.",
+      "history": "Historique & stats",
+      "historyDesc": "Tes sorties, tes courbes, tes records.",
+      "profile": "Profil coureur",
+      "profileDesc": "Allure de référence, fréquence visée, voix."
     }
   }
 }

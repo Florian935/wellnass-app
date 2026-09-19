@@ -9,6 +9,139 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 19/09/2026 (nonies) — CARDIO-UX02 : le bleu sur tout le pilier, et un hub Course qui dit où on en est
+
+Branche : `dev` (travail direct, décision Florian). Commit précédent : `78f27b9e`. **Lot complet
+livré d'une seule vague** : la même passe que MUSCU-UX05, onze heures plus tard, sur le pilier
+voisin. Demande de Florian, captures d'écran à l'appui — « le héros du cardio est super cool avec
+ce petit bleu, mais ce n'est pas repris sur le reste », et « le dashboard, je le trouve pas
+probant ».
+
+Spec : [cardio-ux02-refonte-hub-course.md](docs/specs/functional/us/cardio-ux02-refonte-hub-course.md) ·
+[plan](docs/plans/cardio-ux02-refonte-hub-course.md) · recette : [RECETTES.md](RECETTES.md) §79 (25 critères).
+
+### Le constat — six défauts, une cause
+
+Sur **25 analyses course** au catalogue, **15 sont livrées** — le hub en montrait **4**. ALLURE-01
+en avait livré quatre d'un coup le 07/08 (RUN-08, RUN-11, RUN-17, RUN-20) ; aucune n'est jamais
+remontée jusqu'au hub. Et `selectInsights` (INSIGHTS-01) n'était appelé **nulle part** côté course.
+Mot pour mot le diagnostic de MUSCU-UX05.
+
+Trois des six défauts sont **mesurés**, pas ressentis :
+
+1. **Le hub et sa propre carte se contredisaient.** `RunStage` rendait `doneCount / plannedCount`
+   (« 2 / 0 faites »), `RunWeekBand` appliquait deux blocs plus bas le repli sur la fréquence visée
+   (« 2 / 3 faites »). Le repli vivait **dans le composant** : il ne pouvait valoir que pour lui.
+2. **La course était le seul pilier dont la surface teintée est MOINS colorée que la surface neutre
+   qu'elle remplace** — chroma **16** contre 18, là où l'accueil est à 36, le labo à 32, la muscu à
+   29. Cause mécanique : `tintPreservingLuminance` désature les teintes froides (le bleu ne pèse que
+   0,0722 dans la luminance). Quatre piliers sur cinq n'avaient donc rien révélé.
+3. **L'identité du pilier dépendait de l'onglet d'où l'on venait.** `useMenuFocus` n'était appelé
+   que par les cinq écrans d'onglet ; or l'Accueil pousse vers `/run`, `/run/active` et
+   `/running-history`. Entrer dans la Course par l'Accueil rendait **tout le pilier en terracotta**.
+
+### Ajouté
+
+- **`packages/shared/src/pace-progress.ts`** (+ 9 tests) — `computePaceProgress`, la brique de
+  « Ton allure ». Deux visages choisis par les **données** : `onboarding` (meilleure allure tenue +
+  cumul) et `established` (médiane des 30 derniers jours contre les 30 précédents). Trois règles
+  anti-bruit : médiane jamais moyenne, deux fenêtres pleines ou rien (3 sorties minimum dans
+  chacune), plancher de 3 s/km sous lequel on dit « stable ».
+- **Trois adaptateurs d'insight course** dans `insight-adapters.ts` (+ 9 tests) :
+  `candidateFromRunningRecord` (RUN-03), `candidateFromPaceProgress` (RUN-05),
+  `candidateFromPolarisation` (RUN-08). `INSIGHT_ORDER` passe de 13 à **16** identifiants —
+  `pace_trend` est placé **devant** `tonnage_change` / `distance_change` : un coureur mesure son
+  progrès en vitesse, pas en kilomètres cumulés.
+- **`RunWeekSummary.goalCount`** (+ 3 tests) — le dénominateur affichable, `targetFrequency` à
+  défaut `plannedCount`, calculé **une seule fois** dans `resolveRunWeek`. À zéro (ni programme ni
+  fréquence), les surfaces affichent le nombre de sorties **sans dénominateur** : inventer un
+  objectif serait prêter une intention.
+- **`components/stage/PillarPanel.tsx`** — le **panneau de pilier** : une grande surface au dégradé
+  de la scène, dans le corps de la page, réservée à **une** carte par écran. Monter le gain de
+  teinte ne suffisait pas : il manquait une surface, pas de la saturation. Ses encres viennent de
+  `stageTheme` (mesurées), jamais de la palette — `colors.text` serait illisible sur un bleu profond.
+  Brique de design system, utilisable par les cinq piliers.
+- **`theme/pillar.ts` — `TINT_GAIN` par pilier**, `running: 1.5`, qui amène la surface sombre à
+  `#1f293c` (chroma 29 — la bande des autres piliers, pas au-delà). Le contrat de lisibilité est
+  **intact par construction** : le gain ne change que `amount`, et `tintPreservingLuminance`
+  conserve la luminance quel que soit `amount`.
+- **Six surfaces neuves** dans le hub : `RunThread` (le fil du jour, **un** insight jamais trois),
+  `PaceProgressCard` (la carte dominante, sur le panneau), `RunWeekCard` (la semaine **et** ce qu'il
+  reste), `RunEngineCard` (la polarisation RUN-08, jamais remontée depuis ALLURE-01),
+  `RunRecordWall` (les records, en bande horizontale), `RunLifetimeLine` (une ligne, pas une carte),
+  plus `RunDirectorySheet` + sa ligne d'annuaire.
+- **`data/repositories/run-cards-repository.ts`** — `usePaceProgress`, `useRunLifetime`,
+  `useRunningThread`. Que du câblage : aucune requête SQL neuve, aucune analyse calculée ici.
+- **Trois fichiers de test neufs** : `running-screen.test.tsx` (le hub n'en avait **aucun**, là où
+  les quatre autres onglets en ont un depuis MUSCU-UX01 — c'est ce qui a laissé vivre le défaut 1),
+  `run-hub-cards-ux02.test.tsx` (16 tests, la règle de silence de chaque carte),
+  `pillar-identity.test.ts` (garde de source : aucun écran course ne peut oublier son pilier).
+
+### Modifié
+
+- **`app/(tabs)/running.tsx`** — corps recomposé. **Dix surfaces deviennent sept cartes et trois
+  lignes** : le budget ne bouge pas, CARDIO-UX01 ayant déjà resserré cet écran le 10/09. La scène,
+  la résolution d'état et le calcul de la semaine sont inchangés ; seul le libellé de semaine passe
+  de `plannedCount` à `goalCount`. `RunLoadCard` **descend** sous les records : un garde-fou n'est
+  pas un progrès.
+- **Les 9 écrans empilés du pilier** (`run/`, `running-history/`, `running-programs/`,
+  `running-profile`) déclarent `useMenuFocus('running')`.
+- **`run/summary.tsx`** — le bandeau de célébration prend les couleurs de `stageTheme('running')`.
+- **i18n FR + EN** : `runningHub.*` et 3 entrées `insights.cards.*`. Les titres à variante utilisent
+  le mécanisme **`context` natif d'i18next** (`title_up` / `title_down`), la même forme que les
+  `body_up` / `body_down` déjà en place. **138 lignes ajoutées par locale, aucune modifiée.**
+
+### Supprimé
+
+- `components/widgets/running-widgets.tsx` **et son test**, `components/running/RunWeekBand.tsx`.
+
+⚠️ **Le hub course perd sa grille de widgets, donc sa personnalisation.** Aucune migration : les
+préférences `running` du registre deviennent inertes, exactement comme celles du hub muscu depuis
+MUSCU-UX05. `RUNNING_WIDGET_IDS` et `MAX_RUNNING_WIDGETS` restent dans `shared` — les retirer
+toucherait le registre, les destinations et les préférences enregistrées pour un gain nul.
+**C'est le seul point du lot qui retire une capacité : à confirmer en recette (§79).**
+
+### Corrigé
+
+- **« 2 / 0 faites »** en tête de hub sur un compte sans programme. Corrigé **à la source**, pas
+  dans le composant. Test de garde vu **rouge** avant le correctif.
+- **Le bandeau de record de course était en bordeaux** : `#7c2734` en dur dans `run/summary.tsx`,
+  c'est-à-dire la teinte **exacte** de la scène Musculation. Vestige d'un copier-coller depuis le
+  résumé de séance muscu.
+- **L'identité du pilier ne dépend plus du chemin d'entrée.**
+
+### Technique — notes
+
+- ⚠️ **Collision de nom attrapée au typecheck** : `PACE_MIN_RUNS` existait déjà dans
+  `lab-investigations.ts` et `shared/index.ts` réexporte tout à plat. Renommé
+  `PACE_PROGRESS_MIN_RUNS`, avec la raison écrite sur la constante.
+- ⚠️ **Neuf suites de tests course** ont cassé à l'ajout de `useMenuFocus` : leurs mocks
+  d'`expo-router` n'exposent pas `useFocusEffect`. Mock du hook ajouté, comme le font déjà les
+  quatre tests d'onglet.
+- 🔴 **Deux pièges de test, notés pour la prochaine fois** : une fabrique `jest.mock()` ne peut pas
+  référencer une variable du module (l'échec se lit « render n'a pas été appelé », pas « variable
+  hors portée ») ; et `render` est **asynchrone** ici (React 19 + RNTL) — sans `await`, `screen`
+  reste détaché et l'erreur ressemble à la précédente.
+- 🔴 **Le repère ~80/20 de la polarisation est dit, jamais jugé** : les deux nombres partent côte à
+  côte en métriques, la formulation ne désigne pas de « bon » côté. C'est la réserve inscrite au
+  catalogue sur RUN-08 (décision D5 d'ALLURE-01), reportée telle quelle.
+- ⚠️ **« Ton allure » mélange les types de séance**, et c'est assumé : `runs` ne porte pas de
+  `session_type` (le mur qui laisse RUN-07 en attente). La médiane sur 30 jours absorbe le mélange
+  tant que la composition des semaines ne change pas ; elle ne le corrige pas.
+- ⚠️ **Étape design non franchie** : le skill `/design` est réservé à une invocation explicite de
+  Florian et n'est pas lançable depuis une session d'agent. **Rien n'a été produit à la place** — le
+  skill interdit explicitement de reproduire son travail par un autre moyen. Brief de maquette en
+  fin de §79.
+- ⚠️ **Les piliers Muscu et Nutrition ont le même défaut d'identité par écran** : constaté, **non
+  corrigé** (une trentaine d'écrans sans recette), porté au backlog sous **IDENT-01**. Le test de
+  garde est écrit pour les accueillir en une ligne par dossier.
+- ✅ **Aucune migration, aucune sync rule à redéployer, aucune dépendance native neuve.**
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0 **sans warning**, **3 741 tests Jest**
+  (224 suites) et **3 286 tests Vitest** (160 fichiers) verts — code de sortie lu **sans pipe**.
+  Parité i18n : aucune clé manquante ni valeur vide issue de ce lot (le script reste rouge sur
+  4 valeurs vides **préexistantes**, `coach.{motivant,sobre}.verdict.warmup`, vérifiées identiques
+  avant et après).
+
 ## 19/09/2026 (octies) — MUSCU-UX05 : le hub Musculation a enfin quelque chose à dire (+ bordeaux adouci)
 
 Branche : `dev` (travail direct, décision Florian). Commit précédent : `9202a1b7`. **Lot complet

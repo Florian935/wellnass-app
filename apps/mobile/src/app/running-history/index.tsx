@@ -60,6 +60,7 @@ import { useUnits } from '@/hooks/useUnits';
 import { useWindowStartKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 // ---------------------------------------------------------------------------
 // Constantes de toggles
@@ -117,6 +118,13 @@ function isoToDate(iso: string): string {
 // ---------------------------------------------------------------------------
 
 export default function RunningHistoryScreen() {
+  // US CARDIO-UX02 — **l'identité du pilier appartient à l'écran, pas à l'onglet d'où l'on vient.**
+  // `useMenuFocus` n'était appelé que par les cinq onglets : un écran course ouvert depuis
+  // l'Accueil (`NowCard`, `QuickActions`, `RecordRecentCard` y poussent tous vers `/run…`)
+  // héritait du terracotta de l'accueil. Le déclarer ici rend la couleur du pilier vraie quel
+  // que soit le chemin — un test de garde vérifie qu'aucun écran course ne l'oublie.
+  useMenuFocus('running');
+
   const { t } = useTranslation();
   const { colors } = useTheme();
   // Chargement consolidé au niveau écran : `useRunHistory` est la source unique des

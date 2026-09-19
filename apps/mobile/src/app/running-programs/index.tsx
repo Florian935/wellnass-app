@@ -31,6 +31,7 @@ import {
 import { useActionLock } from '@/hooks/useActionLock';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 // Onglets de l'écran : mes programmes / bibliothèque éditoriale.
 const TABS = ['mine', 'library'] as const;
@@ -49,6 +50,13 @@ const LEVEL_OPTIONS: readonly LevelFilter[] = [ALL, ...PROGRAM_LEVELS];
 const DURATION_OPTIONS: readonly DurationFilter[] = [ALL, 6, 8, 10, 12];
 
 export default function RunningProgramsScreen() {
+  // US CARDIO-UX02 — **l'identité du pilier appartient à l'écran, pas à l'onglet d'où l'on vient.**
+  // `useMenuFocus` n'était appelé que par les cinq onglets : un écran course ouvert depuis
+  // l'Accueil (`NowCard`, `QuickActions`, `RecordRecentCard` y poussent tous vers `/run…`)
+  // héritait du terracotta de l'accueil. Le déclarer ici rend la couleur du pilier vraie quel
+  // que soit le chemin — un test de garde vérifie qu'aucun écran course ne l'oublie.
+  useMenuFocus('running');
+
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

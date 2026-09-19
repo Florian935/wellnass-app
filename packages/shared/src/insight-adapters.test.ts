@@ -9,13 +9,17 @@ import {
   candidateFromGoalAchieved,
   candidateFromMuscleBalance,
   candidateFromOvertrainingGuard,
+  candidateFromPaceProgress,
+  candidateFromPolarisation,
   candidateFromRecentRecord,
+  candidateFromRunningRecord,
   candidateFromTrainingLoad,
   candidateFromWeeklyDecision,
   candidatesFromWeeklyChanges,
   type GoalCandidateInput,
   type InsightSources,
   type RecordCandidateInput,
+  type RunRecordCandidateInput,
 } from './insight-adapters';
 import type { MuscleBalance, MuscleGroupBalance } from './muscle-balance';
 import type { MuscleGroup } from './exercise';
@@ -567,5 +571,136 @@ describe('buildInsightCandidates', () => {
       }),
     );
     expect(out.map((c) => c.id)).toEqual(['record_recent']);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US CARDIO-UX02 — les trois sources course
+// ---------------------------------------------------------------------------
+
+describe('candidateFromRunningRecord', () => {
+  const rec = (over: Partial<RunRecordCandidateInput> = {}): RunRecordCandidateInput => ({
+    distanceKey: '5k',
+    label: '5 km',
+    bestTimeSeconds: 1450,
+    achievedOn: '2026-09-17',
+    ...over,
+  });
+
+  it('se tait sans record', () => {
+    expect(candidateFromRunningRecord([])).toBeNull();
+  });
+
+  it('retient le plus récent, distance en variant et chrono en métrique', () => {
+    const c = candidateFromRunningRecord([
+      rec({ distanceKey: '1k', label: '1 km', bestTimeSeconds: 245, achievedOn: '2026-05-02' }),
+      rec(),
+    ]);
+    expect(c).toMatchObject({
+      id: 'run_record_recent',
+      family: 'celebration',
+      variant: '5k',
+      subject: '5 km',
+      metrics: { seconds: 1450 },
+      occurredOn: '2026-09-17',
+      pillars: ['running'],
+    });
+  });
+
+  it('écarte un chrono inexploitable plutôt que de l’afficher', () => {
+    // Précédent réel du dépôt : `bestSegmentTimeFromSamples` a déjà rendu un `NaN` écrivable en base.
+    expect(candidateFromRunningRecord([rec({ bestTimeSeconds: Number.NaN })])).toBeNull();
+    expect(candidateFromRunningRecord([rec({ bestTimeSeconds: 0 })])).toBeNull();
+  });
+});
+
+describe('candidateFromPaceProgress', () => {
+  it('se tait sur les visages qui ne portent pas de comparaison', () => {
+    expect(candidateFromPaceProgress({ kind: 'empty' })).toBeNull();
+    expect(
+      candidateFromPaceProgress({
+        kind: 'onboarding',
+        bestPaceSPerKm: 320,
+        bestDayKey: '2026-09-10',
+        runs: 2,
+        totalDistanceM: 16000,
+      }),
+    ).toBeNull();
+  });
+
+  it('se tait sur un écart classé stable', () => {
+    expect(
+      candidateFromPaceProgress({
+        kind: 'established',
+        currentPaceSPerKm: 330,
+        previousPaceSPerKm: 331,
+        deltaSPerKm: 1,
+        direction: 'flat',
+        runsCurrent: 4,
+        runsPrevious: 4,
+        trend: 'stable',
+      }),
+    ).toBeNull();
+  });
+
+  it('porte l’écart en valeur absolue, le sens en variant', () => {
+    const c = candidateFromPaceProgress({
+      kind: 'established',
+      currentPaceSPerKm: 322,
+      previousPaceSPerKm: 344,
+      deltaSPerKm: 22,
+      direction: 'up',
+      runsCurrent: 5,
+      runsPrevious: 4,
+      trend: 'improving',
+    });
+    expect(c).toMatchObject({
+      id: 'pace_trend',
+      family: 'change',
+      variant: 'up',
+      metrics: { seconds: 22, paceSPerKm: 322 },
+      occurredOn: null,
+      pillars: ['running'],
+    });
+
+    const down = candidateFromPaceProgress({
+      kind: 'established',
+      currentPaceSPerKm: 350,
+      previousPaceSPerKm: 330,
+      deltaSPerKm: -20,
+      direction: 'down',
+      runsCurrent: 3,
+      runsPrevious: 3,
+      trend: 'declining',
+    });
+    // L'écart est toujours positif dans `metrics` : c'est `variant` qui dit le sens, comme pour
+    // `tonnage_change` — et c'est ce qui permet à VIE-01 de museler la baisse seule.
+    expect(down?.metrics.seconds).toBe(20);
+    expect(down?.variant).toBe('down');
+  });
+});
+
+describe('candidateFromPolarisation', () => {
+  it('se tait quand la brique n’a rien à dire', () => {
+    expect(candidateFromPolarisation(null)).toBeNull();
+  });
+
+  it('transporte la part basse ET le repère — jamais un jugement', () => {
+    const c = candidateFromPolarisation({
+      lowIntensityPct: 83,
+      highIntensityPct: 17,
+      totalKm: 46,
+      runCount: 6,
+    });
+    expect(c).toMatchObject({
+      id: 'polarisation',
+      family: 'change',
+      metrics: { lowPct: 83, referencePct: 80, km: 46 },
+      occurredOn: null,
+      pillars: ['running'],
+    });
+    // Aucun `variant` : il n'y a pas de « bon » et de « mauvais » côté du repère (réserve du
+    // catalogue sur RUN-08, reportée telle quelle).
+    expect(c?.variant).toBeUndefined();
   });
 });

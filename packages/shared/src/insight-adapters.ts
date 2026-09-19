@@ -16,6 +16,9 @@
  */
 
 import type { GoalKind, GoalStatus } from './goals';
+import type { PaceProgress } from './pace-progress';
+import { POLARISATION_REFERENCE_LOW_PCT, type Polarisation } from './pace-zone-mix';
+import type { RecordDistanceKey } from './pace-records';
 import { EVEN_SHARE, type MuscleBalance, type MuscleGroupBalance } from './muscle-balance';
 import { NOTABLE_CHANGE_PCT, type InsightCandidate } from './insights';
 import type { RecordType } from './records';
@@ -192,6 +195,47 @@ export function candidateFromRecentRecord(
   };
 }
 
+/**
+ * Un record de course, réduit à ce dont l'adaptateur a besoin (US CARDIO-UX02).
+ *
+ * `label` est **déjà résolu** (« 5 km », « Semi ») : la table `RUNNING_RECORD_DISTANCES` porte des
+ * clés, pas des libellés, et `shared` ne traduit pas — même règle que `exerciseName` plus haut.
+ */
+export type RunRecordCandidateInput = {
+  distanceKey: RecordDistanceKey;
+  label: string;
+  bestTimeSeconds: number;
+  /** **Clé de jour** du record (`AAAA-MM-JJ`), jamais un ISO complet. */
+  achievedOn: string;
+};
+
+/**
+ * Le record de course le plus récent (RUN-03).
+ *
+ * ⚠️ `running_pace_records` ne garde **qu'une ligne par distance** : il n'y a pas d'historique, donc
+ * pas d'écart avec le record précédent à afficher. C'est la même limite que la scène d'arrivée
+ * assume déjà (« l'app ne garde pas l'historique des records, donc l'écart avec l'estimation d'hier
+ * n'est pas calculable »). On dit le chrono, et rien de plus.
+ *
+ * La porte des 14 jours du moteur fait le reste du travail : un record de mars ne remonte pas.
+ */
+export function candidateFromRunningRecord(
+  records: ReadonlyArray<RunRecordCandidateInput>,
+): InsightCandidate | null {
+  const usable = records.filter((r) => Number.isFinite(r.bestTimeSeconds) && r.bestTimeSeconds > 0);
+  if (usable.length === 0) return null;
+  const latest = [...usable].sort((a, b) => b.achievedOn.localeCompare(a.achievedOn))[0]!;
+  return {
+    id: 'run_record_recent',
+    family: 'celebration',
+    variant: latest.distanceKey,
+    metrics: { seconds: Math.round(latest.bestTimeSeconds) },
+    subject: latest.label,
+    occurredOn: latest.achievedOn,
+    pillars: ['running'],
+  };
+}
+
 /** Un objectif clos, réduit à ce dont l'adaptateur a besoin. `label` est **déjà résolu**. */
 export type GoalCandidateInput = {
   label: string;
@@ -351,6 +395,61 @@ export function candidatesFromWeeklyChanges(review: WeeklyReview): InsightCandid
   push('tonnage_change', 'strength');
   push('distance_change', 'running');
   return out;
+}
+
+/**
+ * L'écart d'allure entre les deux fenêtres de 30 jours (RUN-05 / `pace-progress.ts`).
+ *
+ * Ne produit **rien** sur un visage `onboarding` ou `empty` : ils ne portent pas de comparaison, et
+ * R1 interdit une affirmation sans chiffre. Ne produit rien non plus sur un écart classé `flat` —
+ * « ton allure n'a pas bougé » n'est pas un insight, c'est un silence qui s'est cru utile.
+ *
+ * `occurredOn: null` : c'est un **état** mesuré sur une fenêtre glissante, pas un fait daté. Il ne
+ * se périme donc pas au bout des 14 jours, exactement comme `muscle_neglected`.
+ */
+export function candidateFromPaceProgress(progress: PaceProgress): InsightCandidate | null {
+  if (progress.kind !== 'established') return null;
+  if (progress.direction === 'flat') return null;
+  return {
+    id: 'pace_trend',
+    family: 'change',
+    variant: progress.direction,
+    metrics: {
+      seconds: Math.abs(progress.deltaSPerKm),
+      paceSPerKm: progress.currentPaceSPerKm,
+    },
+    occurredOn: null,
+    pillars: ['running'],
+  };
+}
+
+/**
+ * La polarisation de l'entraînement (RUN-08), livrée par ALLURE-01 le 07/08/2026 et restée
+ * jusqu'ici confinée au bas de `/running-history`.
+ *
+ * ⚠️ Le repère ~80/20 est **nommé, jamais prescrit** — c'est la réserve inscrite au catalogue, et
+ * elle est reportée telle quelle : les deux nombres partent en `metrics`, la formulation i18n les
+ * met côte à côte sans dire lequel est « bon ». Un coureur en préparation 5 km a de bonnes raisons
+ * d'être à 70/30.
+ */
+export function candidateFromPolarisation(
+  polarisation: Polarisation | null,
+): InsightCandidate | null {
+  // `computePolarisation` rend déjà `null` sous le seuil de courses ou sans allure de référence :
+  // on ne redouble pas sa garde ici, on lui fait confiance (même parti pris que les autres
+  // adaptateurs, qui ne recalculent jamais la condition d'existence de leur source).
+  if (polarisation === null) return null;
+  return {
+    id: 'polarisation',
+    family: 'change',
+    metrics: {
+      lowPct: Math.round(polarisation.lowIntensityPct),
+      referencePct: POLARISATION_REFERENCE_LOW_PCT,
+      km: polarisation.totalKm,
+    },
+    occurredOn: null,
+    pillars: ['running'],
+  };
 }
 
 // ---------------------------------------------------------------------------
