@@ -153,7 +153,8 @@ Une cadence de 30 i/s suffit ; 60 i/s donne de la marge.
 
 ### 5.1 bis L'écran d'essai
 
-[`apps/mobile/src/app/spike-vbt.tsx`](../../../apps/mobile/src/app/spike-vbt.tsx) — caméra, suivi
+`apps/mobile/src/app/spike-vbt.tsx` — **sur la branche uniquement**, donc pas de lien : le fichier
+n'existe pas sur `dev`, et un lien relatif cassé y serait plus trompeur qu'utile. Caméra, suivi
 image par image dans un worklet, et l'analyse à l'arrêt de la série : cadence tenue, images perdues,
 vitesse de chaque rep, perte, verdict d'exploitabilité.
 
