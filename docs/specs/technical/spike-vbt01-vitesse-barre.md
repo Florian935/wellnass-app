@@ -45,6 +45,18 @@ posée à la caméra en **exigence chiffrée**.
   vitesse de pointe de chacune, **qualité de la trace**, perte de vitesse et **signal d'arrêt** ;
 - `estimateRir(vitesse, profil)` — répétitions en réserve, **`null` sans profil mesuré** (§6).
 
+[`packages/shared/src/bar-tracker.ts`](../../../packages/shared/src/bar-tracker.ts) — le **suivi**
+du point sur une image, 10 tests. Centre de gravité **pondéré par la luminance** (donc
+sous-pixellique : c'est ce qui sépare un suivi à ±1 px d'un suivi à ±5 px), **accroché à la position
+précédente** (sans quoi le néon du plafond vole le suivi à la première image), et qui rend `null`
+plutôt qu'une position douteuse.
+
+[`bar-velocity-chain.test.ts`](../../../packages/shared/src/bar-velocity-chain.test.ts) — les deux
+moitiés **branchées l'une sur l'autre** sur une vidéo fabriquée image par image (5 tests). C'est là
+que se logent les fautes de raccord, invisibles dans chaque moitié prise isolément : l'axe vertical
+inversé entre le repère image et le monde, l'échelle pixels → mètres, le décalage d'une ligne à
+l'autre. À 30 i/s, la chaîne complète retrouve les vitesses jouées à moins de 0,05 m/s.
+
 Trois comportements valent d'être notés, parce qu'ils viennent chacun d'un cas réel :
 
 1. **Le point de blocage ne coupe pas la répétition en deux.** Un squat lourd s'arrête presque à
@@ -115,22 +127,55 @@ Une cadence de 30 i/s suffit ; 60 i/s donne de la marge.
 
 ## 5. Ce qui reste : la moitié caméra
 
-### 5.1 Le chemin technique, vérifié le 19/09/2026
+### 5.1 Le chemin technique, installé et compilé le 19/09/2026
+
+> Tout ce qui suit vit sur la branche **`spike/vbt01-camera`**. `dev` n'a **aucune dépendance
+> native nouvelle** : rien de ceci ne doit atterrir dans le build de soumission Play.
 
 - ❌ **`expo-camera` ne peut pas faire ce travail.** Vérifié dans l'API installée (SDK 57) : les
   seuls rappels exposés sont `onBarcodeScanned`, `onCameraReady`, `onPictureSaved`… **aucun accès aux
-  images**. Il n'y a pas de contournement : `takePictureAsync` en boucle plafonne à quelques images
-  par seconde.
-- ✅ **`react-native-vision-camera` 5.2.3** est la voie documentée (CameraX côté Android, *frame
-  processors*). Dépendances de pair à installer avec : `react-native-nitro-modules` (0.37.1) et
-  `react-native-nitro-image`.
-- ⚠️ **C'est un ajout natif** : nouveau dev build obligatoire, et le plugin de config à déclarer dans
-  [`app.json`](../../../apps/mobile/app.json).
+  images**. Pas de contournement : `takePictureAsync` en boucle plafonne à quelques images/s.
+- ✅ **`react-native-vision-camera` 5.2.3** installé, avec `react-native-nitro-modules` (0.37.1),
+  `react-native-nitro-image` (0.15.2) et `react-native-vision-camera-worklets` (5.2.3), que le
+  traitement d'images exige. Aucun conflit de version avec Expo 57 / RN 0.86.
+- 🟢 **Découverte qui change le coût du chantier : aucun module natif à écrire.** L'API v5 donne les
+  pixels **depuis un worklet JavaScript** — `frame.getPlanes()[0].getPixelBuffer()` rend un
+  `ArrayBuffer` sur le plan de luminance. L'[analyse du 13/09](../../product/analyse-innovation-2026-09.md)
+  prévoyait « un traitement natif branché sur les frame processors (OpenCV ou ML Kit), la friction
+  connue sous Expo » : ce n'est plus nécessaire. Le suivi tient dans
+  [`bar-tracker.ts`](../../../packages/shared/src/bar-tracker.ts), en TypeScript, testé au sol.
+- ✅ **Pas de plugin de config à déclarer** : la v5 s'appuie sur l'autolinking
+  (`react-native.config.js`), et `prebuild` la prend donc telle quelle. ⚠️ **Nouveau dev build
+  obligatoire** — dépendance native.
 - ✅ **Aucune permission nouvelle** : `CAMERA` est déjà déclarée (plugin `expo-camera`, pour le scan
-  de codes-barres). ⚠️ En revanche le **texte** de la permission devra être élargi — il ne parle
-  aujourd'hui que des codes-barres.
-- 🔴 **Rien de tout cela ne doit atterrir dans le build de soumission Play.** La moitié caméra vit
-  donc sur une branche dédiée, jetable, et `dev` reste sans dépendance native nouvelle.
+  de codes-barres). ⚠️ En revanche le **texte** de la permission devra être élargi le jour d'une
+  livraison — il ne parle aujourd'hui que des codes-barres.
+
+### 5.1 bis L'écran d'essai
+
+`apps/mobile/src/app/spike-vbt.tsx` — **sur la branche uniquement**, donc pas de lien : le fichier
+n'existe pas sur `dev`, et un lien relatif cassé y serait plus trompeur qu'utile. Caméra, suivi
+image par image dans un worklet, et l'analyse à l'arrêt de la série : cadence tenue, images perdues,
+vitesse de chaque rep, perte, verdict d'exploitabilité.
+
+🔴 **Écrit contre l'API réelle (lue dans le paquet installé) et compilé — mais jamais exécuté**,
+faute de device dans la boucle. Le raccord caméra → worklet est donc **la première chose à déboguer**,
+pas la mesure : la chaîne logicielle, elle, est couverte par 47 tests.
+
+Pour le faire tourner :
+
+```sh
+git checkout spike/vbt01-camera
+npm install
+cd apps/mobile && npm run build:dev     # dev build EAS — dépendance native, l'APK actuel ne suffit pas
+```
+
+L'écran s'ouvre sur la route `/spike-vbt` (déclarée dans le layout racine, atteignable par un lien
+direct ; aucune entrée de menu — c'est voulu).
+
+Deux réglages en dur à ajuster avant la première série, en haut du fichier : `DEFAULT_PLATE_PX`
+(diamètre apparent du disque dans l'image analysée) et `LUMA_THRESHOLD` (seuil de luminance de la
+pastille).
 
 ### 5.2 Ce que l'essai device doit mesurer
 
@@ -176,6 +221,7 @@ ensuite. Trois mouvements, 5 séries, une seule personne suffit.
 
 | Moitié | État |
 |---|---|
-| Calcul | ✅ **Livrée et prouvée sur trace simulée** (19/09/2026), 32 tests |
-| Caméra | ⬜ **Ouverte** — branche dédiée, essai device requis |
+| Calcul | ✅ **Livrée et prouvée** (19/09/2026) — 32 tests de mesure + 10 de suivi + 5 de bout en bout |
+| Caméra — logiciel | ✅ **Écrit et compilé** sur `spike/vbt01-camera` : aucun module natif nécessaire |
+| Caméra — device | ⬜ **Ouverte** — dev build + essai en salle, jamais exécuté à ce jour |
 | Décision go/no-go | ⏳ **En attente de l'essai device** |

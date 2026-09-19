@@ -116,7 +116,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1295 · `main` a **1292** commits de retard sur `dev` |
+| Commits | 1296 · `main` a **1293** commits de retard sur `dev` |
 | Specs d'US | 161 au total — 87 clôturées, 74 en cours |
 | Migrations | 107/107 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -127,11 +127,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `72fc32e`  feat(vbt01): spike vitesse de barre — la moitié « calcul », prouvée sans caméra
 - `e4a861e`  feat(lettre01): la lettre à ton futur toi — un mot scellé avec l'objectif
 - `da30635`  feat(reserv01): le Réservoir — la journée vue en glucides disponibles
 - `65e3a19`  docs(innovation): recapitulatif PDF de la session — 38 idees, tri, lot 1
 - `421735c`  feat(fant01): le Fantôme — courir contre soi-même sur le même parcours
-- `0f2142c`  fix(ia-lab01): trie la progression par ce qui ne progresse pas
 
 ---
 

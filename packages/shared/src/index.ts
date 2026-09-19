@@ -89,6 +89,7 @@ export * from './fuel-tank';
 export * from './run-ghost';
 // Spike VBT-01 — vitesse de barre (moitié calcul, sans caméra).
 export * from './bar-velocity';
+export * from './bar-tracker';
 export * from './running';
 export * from './run-target';
 export * from './gpx';

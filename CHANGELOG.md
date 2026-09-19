@@ -10,6 +10,42 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 19/09/2026 (bis) — Spike VBT-01 : le suivi du point, et la chaîne bout en bout
+
+Branche : `dev` pour ce qui n'a **aucune dépendance native** ; le reste (caméra, écran d'essai) vit
+sur `spike/vbt01-camera`, poussée le même jour. Commit précédent : `72fc32ec`.
+
+### Ajouté
+
+- `packages/shared/src/bar-tracker.ts` (+ 10 tests) — suivi d'un point clair sur un plan de
+  luminance, en **JavaScript pur**, compatible worklet.
+- `packages/shared/src/bar-velocity-chain.test.ts` (5 tests) — la chaîne **entière**, d'une image
+  fabriquée à la décision d'arrêter la série.
+
+### Technique — notes
+
+- 🟢 **Découverte qui change le coût du chantier : aucun module natif à écrire.** VisionCamera 5
+  donne les pixels **depuis un worklet JavaScript** (`frame.getPlanes()[0].getPixelBuffer()`).
+  L'[analyse du 13/09](docs/product/analyse-innovation-2026-09.md) prévoyait « un traitement natif
+  branché sur les frame processors (OpenCV ou ML Kit), la friction connue sous Expo » : ce n'est plus
+  nécessaire. C'est la différence entre un essai de deux jours et un chantier de deux semaines.
+- **Deux choix du suivi, chacun tiré d'un mode d'échec réel** : centre de gravité **pondéré par la
+  luminance** (position sous-pixellique — le banc a montré qu'à ±8 px la mesure s'effondre) et
+  **accrochage à la position précédente** (sans quoi le néon du plafond, plus brillant que la
+  pastille, vole le suivi à la première image où la barre passe devant une zone sombre — et la
+  trajectoire obtenue reste parfaitement lisse, donc indétectable en aval).
+- 🔴 **Le test de bout en bout est celui qui compte** : les fautes de raccord — axe vertical inversé
+  entre le repère image et le monde, échelle pixels → mètres, décalage d'une ligne à l'autre quand
+  `bytesPerRow > width` — sont invisibles dans chaque moitié prise isolément et rendent des vitesses
+  parfaitement crédibles. À 30 i/s, la chaîne complète retrouve les vitesses jouées à moins de
+  0,05 m/s.
+- **Ce qui reste sur la branche** : `react-native-vision-camera` 5.2.3 + nitro + worklets, et
+  l'écran d'essai `spike-vbt.tsx` — écrit contre l'API réelle et compilé, **jamais exécuté**.
+  Un dev build est nécessaire pour l'essai en salle.
+- ✅ **`dev` reste sans dépendance native nouvelle** : vérifié après rapatriement.
+- Vérifié : `lint` 0 · `typecheck` 0 · `npm run test` **code de sortie 0**, **6 654 tests**
+  (3 464 Jest + 3 190 Vitest).
+
 ## 19/09/2026 — Spike VBT-01 : la moitié « calcul » de la vitesse de barre
 
 Branche : `dev` (travail direct, décision Florian). Commit précédent : `e4a861ed`. **Essai de
