@@ -10,6 +10,57 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 19/09/2026 — Spike VBT-01 : la moitié « calcul » de la vitesse de barre
+
+Branche : `dev` (travail direct, décision Florian). Commit précédent : `e4a861ed`. **Essai de
+faisabilité, pas une US** : sa seule sortie est un go / no-go, et aucune spec n'est cadrée tant qu'il
+n'est pas tranché ([BACKLOG](BACKLOG.md), candidate VBT-01).
+
+### Ajouté
+
+- `packages/shared/src/bar-velocity.ts` (+ 32 tests) — trajectoire d'un point → répétitions,
+  vitesse moyenne concentrique, vitesse de pointe, qualité de la trace, perte de vitesse et signal
+  d'arrêt. **Aucune caméra, aucune image** : le module est pur.
+- `docs/specs/technical/spike-vbt01-vitesse-barre.md` — le rapport : critères de sortie, mesures,
+  essais négatifs, chemin technique vérifié pour la moitié caméra, règle de décision.
+
+### Technique — notes
+
+- 🔴 **Le découpage qui rend l'essai utile** : la chaîne a deux moitiés de risque très inégales —
+  **suivre le point** (mesurable seulement sur device) et **transformer la trajectoire en décision**
+  (mesurable tout de suite). Les traiter ensemble serait la façon la plus chère de découvrir un
+  problème : un écart de 0,1 m/s constaté en salle ne dirait pas s'il vient de la caméra ou de
+  l'arithmétique.
+- 🔴 **Résultat central : la décision est plus juste que l'affichage.** Sur trajectoires simulées à
+  vitesse connue (5 tirages de bruit par condition), la vitesse absolue d'une répétition porte 0,02 à
+  0,08 m/s d'erreur, mais la **perte de vitesse** — ce qui déclenche « pose la barre » — reste juste
+  à 1-5 points partout, parce que les biais se simplifient dans un rapport. Le seuil −20 % est donc
+  solide bien avant le chiffre affiché.
+- 🔴 **Le facteur limitant n'est pas la cadence, c'est la précision du suivi.** À ±3 px tout tient,
+  même à 24 i/s ; à ±8 px l'écart maximal explose à 0,437 m/s. Exigence chiffrée transmise à la
+  moitié caméra : ±3 px, avec au moins 300 px pour 45 cm dans le cadre.
+- **Trois essais négatifs conservés** (ils coûtent cher à refaire) : affiner les bornes entre deux
+  images par une parabole **dégrade** (la borne d'une rep est un coin, pas un extremum lisse) ;
+  borner la montée sur un dénivelé fixe **dégrade dans les deux sens** (rep rapide allongée de 13 %,
+  rep lente raccourcie de 17 %) ; lisser sur un nombre fixe d'images est juste à 60 i/s et désastreux
+  en dessous. Retenus : seuil de bornes **relatif à la vitesse de pointe** (8 %) et lissage exprimé
+  en **durée** (80 ms).
+- ⚠️ **Ces constantes sont des réglages, pas des vérités** : elles ont été ajustées sur des
+  trajectoires simulées et devront être réétalonnées sur des traces réelles.
+- ❌ **`expo-camera` ne peut pas faire ce travail** — vérifié dans l'API du SDK 57 installé : aucun
+  accès aux images. La voie est `react-native-vision-camera` 5.2.3 + `react-native-nitro-modules`,
+  donc un **ajout natif**. 🔴 Il ne doit pas entrer dans le build de soumission Play : la moitié
+  caméra ira sur une branche dédiée, `dev` reste sans dépendance native nouvelle.
+- ✅ **Aucune permission nouvelle** : `CAMERA` est déjà déclarée pour le scan de codes-barres.
+  ⚠️ Son **texte** devra être élargi le jour où la mesure sera livrée.
+- ⚠️ **La maquette promet un RIR que la mesure ne peut pas tenir** : convertir une vitesse en
+  répétitions en réserve exige une vitesse d'échec propre à la personne et à l'exercice.
+  `estimateRir` rend donc `null` sans profil mesuré — décision à prendre au cadrage.
+- **Pas de ligne de roadmap** : un spike ne livre aucune fonctionnalité utilisateur. La ligne sera
+  créée le jour du go, avec l'US.
+- Vérifié : `lint` 0 · `typecheck` 0 (3 workspaces) · `npm run test` **code de sortie 0**,
+  **6 639 tests** (3 464 Jest + 3 175 Vitest).
+
 ## 18/09/2026 (ter) — LETTRE-01 : la lettre à ton futur toi
 
 Branche : `dev` (travail direct, décision Florian). Commit précédent : `da306359`. **Troisième et
