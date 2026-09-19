@@ -3680,6 +3680,10 @@
       "activity_level": {
         "title": "Ton niveau d’activité a changé",
         "body": "{{runningDays}} jours de course sur les 14 derniers — ton besoin calorique de base a probablement bougé."
+      },
+      "exercise_neglected": {
+        "title": "{{subject}}, plus depuis {{weeks}} semaines",
+        "body": "Un favori que tu as cessé de faire sans le décider. Le remettre dans une séance suffit."
       }
     }
   },
@@ -3757,6 +3761,42 @@
       "programsDesc": "Bibliothèque éditoriale et tes programmes.",
       "templates": "Mes templates",
       "templatesDesc": "Tes routines réutilisables pour les séances libres."
+    },
+    "loads": {
+      "title": {
+        "onboarding": "Depuis le début",
+        "established": "Tes charges"
+      },
+      "weeks_one": "{{count}} semaine",
+      "weeks_other": "{{count}} semaines",
+      "upOf": "{{up}} sur {{total}} montent",
+      "onboardingCaption": "au {{exercise}}, depuis ta première séance",
+      "medianCaption_one": "médiane sur ton exercice régulier",
+      "medianCaption_other": "médiane sur tes {{count}} exercices réguliers",
+      "flat": "stagne",
+      "hint": "1RM estimé (Epley) sur tes séries de 3 à 10 reps."
+    },
+    "body": {
+      "title": "Ton corps",
+      "meta": "14 jours",
+      "neglected": "Le {{muscle}} décroche. Un exercice suffirait à le remettre dans la course.",
+      "forgotten_one": "{{exercise}}, plus depuis {{count}} semaine.",
+      "forgotten_other": "{{exercise}}, plus depuis {{count}} semaines.",
+      "balanced": "Réparti comme il faut sur les six groupes."
+    },
+    "wall": {
+      "title": "Le mur",
+      "count_one": "{{count}} record récent",
+      "count_other": "{{count}} records récents",
+      "first": "premier record",
+      "a11y": "{{exercise}}, {{value}} le {{date}}"
+    },
+    "lifetime": {
+      "value": "{{tonnes}} t",
+      "caption_one": "soulevée sur {{count}} séance",
+      "caption_other": "soulevées sur {{count}} séances",
+      "a11y_one": "{{tonnes}} tonnes soulevées sur {{count}} séance",
+      "a11y_other": "{{tonnes}} tonnes soulevées sur {{count}} séances"
     }
   },
   "hydration": {
@@ -4289,7 +4329,10 @@
         "done": "séance faite",
         "planned": "séance prévue",
         "empty": "rien de prévu",
-        "rest": "repos"
+        "rest": "repos",
+        "next": "Prochaine : {{name}}, {{day}}",
+        "remaining_one": "Il reste {{count}} séance pour tenir ta semaine.",
+        "remaining_other": "Il reste {{count}} séances pour tenir ta semaine."
       },
       "reach": {
         "title": "À ta portée",

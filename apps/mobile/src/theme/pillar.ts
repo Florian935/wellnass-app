@@ -5,7 +5,8 @@
  * Recette du 19/09/2026, Florian : « la carte du haut est jolie, mais les cartes en dessous, c'est
  * pas du tout ISO ». Mesuré, l'onglet Musculation portait **trois identités** sur un seul écran :
  *
- *  - la **scène** en bordeaux `#6b0028 → #2d0011`, accent rose `#ff9ec0`  (`theme/stage.ts`) ;
+ *  - la **scène** en bordeaux `#6b0028 → #2d0011`, accent rose `#ff9ec0`  (`theme/stage.ts`,
+ *    adouci en `#7c2734 → #330f22` le 19/09 — voir l'en-tête de `stage.ts`) ;
  *  - la **barre d'onglets** en rose `#e07a98`                              (`colors.pillarStrength`) ;
  *  - les **cartes** en brun `#30271e`, accent terracotta `#dd6e40`        (palette neutre).
  *
@@ -41,7 +42,7 @@ export type PillarKey = (typeof PILLAR_KEYS)[number];
  */
 const TINT: Record<PillarKey, string> = {
   home: '#b14f2b',
-  strength: '#6b0028',
+  strength: '#7c2734',
   running: '#1d4586',
   nutrition: '#2e4419',
   lab: '#8a6419',

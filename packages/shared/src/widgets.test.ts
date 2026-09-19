@@ -4,9 +4,7 @@ import {
   LAYOUT_VERSION,
   MAX_HOME_WIDGETS,
   MAX_RUNNING_WIDGETS,
-  MAX_STRENGTH_WIDGETS,
   WIDGET_SCREENS,
-  STRENGTH_WIDGET_IDS,
   RUNNING_WIDGET_IDS,
   WIDGET_REGISTRY,
   GRID_COLS,
@@ -97,18 +95,14 @@ describe('WIDGET_REGISTRY', () => {
     expect(HOME_WIDGET_IDS).toHaveLength(8);
     // Les hubs **gagnent** ce que l accueil perd : INSIGHTS-02 y a cree les destinations de
     // `record-recent` et `training-time`, qui n en avaient aucune de valable.
-    // US MUSCU-UX01 : ramené de 7 à 3 le 10/09/2026. Les 4 retirés ont chacun une destination,
-    // documentée à côté du registre.
-    expect(STRENGTH_WIDGET_IDS).toHaveLength(3);
     expect(RUNNING_WIDGET_IDS).toHaveLength(4);
     expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
     // ── Résolution de merge du 10/09/2026 ───────────────────────────────────────────────────
     // Les deux branches ont retiré un id de cette assertion, chacune le sien : ACCUEIL-01 a sorti
     // `today-session` de la grille (il est devenu la zone épinglée, cf. le test juste en dessous),
-    // et MUSCU-UX01 a retiré `strength-programs` du hub muscu (remplacé par la barre de
-    // progression du programme). Les deux suppressions sont valides : on garde un id **vivant**
-    // de chaque registre.
-    expect(WIDGET_REGISTRY.strength.pillars['strength-planning']).toEqual(['strength']);
+    // et MUSCU-UX01 a retiré `strength-programs` du hub muscu. US MUSCU-UX05 (19/09/2026) est
+    // allée au bout : le hub muscu n'a plus de grille du tout, donc plus d'entrée de registre.
+    expect(WIDGET_REGISTRY.running.pillars['running-planning']).toEqual(['running']);
   });
 
   it('n a plus de widget `today-session` — il est devenu la zone epinglee de l accueil', () => {
@@ -137,14 +131,6 @@ describe('WIDGET_REGISTRY', () => {
     // casse la CI. Le depasser reste **possible** — il faut modifier cette ligne, donc en faire un
     // arbitrage conscient : c'est exactement ce que l'ADR demandait depuis le 16/07/2026.
     expect(HOME_WIDGET_IDS.length).toBeLessThanOrEqual(MAX_HOME_WIDGETS);
-  });
-
-  it('ne depasse pas le plafond du hub muscu (US MUSCU-UX01)', () => {
-    // Meme cliquet que ci-dessus, pose le 10/09/2026 : le hub muscu n'en avait aucun, et c'est
-    // exactement pour ca qu'il est passe de 4 a 7 widgets sans qu'aucun arbitrage n'ait eu lieu.
-    // Le hub porte deja une zone Agir epinglee au-dessus de la grille : le budget vertical
-    // restant ne vaut pas celui de l'accueil, d'ou un plafond plus bas.
-    expect(STRENGTH_WIDGET_IDS.length).toBeLessThanOrEqual(MAX_STRENGTH_WIDGETS);
   });
 
   it('ne depasse pas le plafond du hub course (US CARDIO-UX01)', () => {
@@ -236,7 +222,7 @@ describe('defaultScreenLayout', () => {
     assertNoOverlap(layout.widgets);
   });
   it('nouvelle instance à chaque appel', () => {
-    expect(defaultScreenLayout('strength')).not.toBe(defaultScreenLayout('strength'));
+    expect(defaultScreenLayout('running')).not.toBe(defaultScreenLayout('running'));
   });
 });
 
@@ -623,13 +609,13 @@ describe('migration implicite de l’ancienne résolution', () => {
     // Leurs formes par défaut n'ont pas changé : y toucher écraserait des choix réels.
     const v1 = {
       screens: {
-        strength: {
-          widgets: [{ id: 'strength-history', visible: true, size: 'large', col: 0, row: 0 }],
+        running: {
+          widgets: [{ id: 'running-history', visible: true, size: 'large', col: 0, row: 0 }],
         },
       },
     };
     const parsed = parseMultiScreenLayout(v1)!;
-    expect(parsed.screens.strength!.widgets[0]!.size).toBe('large');
+    expect(parsed.screens.running!.widgets[0]!.size).toBe('large');
   });
 
   it('une forme `row` inconnue d’un ancien client est acceptée telle quelle', () => {

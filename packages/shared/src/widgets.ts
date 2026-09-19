@@ -33,7 +33,14 @@ import type { Pillar } from './pillar';
 export type WidgetSize = 'row' | 'small' | 'wide' | 'large';
 
 /** Hubs qui hébergent une grille de widgets. */
-export const WIDGET_SCREENS = ['home', 'strength', 'running'] as const;
+/**
+ * ⚠️ **`strength` a quitté cette liste le 19/09/2026 (US MUSCU-UX05).** Le hub muscu n'a plus de
+ * grille : ses trois tuiles étaient de l'administration (un volume hebdomadaire, une date, un
+ * planning vide les trois quarts du temps) et l'audit les a fait sortir au profit de cartes qui
+ * disent quelque chose. Une disposition enregistrée pour cet écran devient simplement illisible —
+ * aucune migration, la boucle de `widget-layout-repository` ne la parcourt plus.
+ */
+export const WIDGET_SCREENS = ['home', 'running'] as const;
 export type WidgetScreen = (typeof WIDGET_SCREENS)[number];
 
 // ---------------------------------------------------------------------------
@@ -89,35 +96,6 @@ export const HOME_WIDGET_IDS = [
   'cycle',
 ] as const;
 
-/**
- * Muscu : la **zone Suivre** du hub — 3 widgets, tous porteurs de données.
- *
- * ── Registre ramené de 7 à 3 le 10/09/2026 (US MUSCU-UX01) ───────────────────────────────────────
- * L'accueil avait un plafond opposable depuis INSIGHTS-02 ; le hub muscu n'en avait **aucun**, et
- * c'est exactement pour ça qu'il a dérivé pendant que l'accueil se dégonflait. Avec la carte
- * d'action et la ligne d'annuaire, il affichait 9 blocs sans hiérarchie — et, faute de prédicat
- * `isActive`, ses 7 tuiles se rendaient **même vides** : environ 2,4 écrans de scroll sur un
- * compte neuf.
- *
- * Chacun des 4 retirés a une destination, et aucune n'est une régression :
- *  - `strength-programs`   → la **barre de progression du programme** (zone Agir) mène au même
- *    endroit en disant enfin quelque chose d'utile : « semaine 3 sur 8 · 14/24 séances ».
- *  - `strength-templates`  → la ligne d'annuaire « Exercices, programmes, templates » en pied de
- *    hub. ⚠️ Ce point d'entrée avait été créé par **US Refonte-D** (22/07/2026) précisément pour
- *    être permanent : le déplacer est un arbitrage assumé, validé par Florian le 10/09/2026, pas
- *    un oubli.
- *  - `strength-records`    → `/progress` › Vue d'ensemble, section « Records récents ».
- *  - `strength-training-time` → `/progress` › Vue d'ensemble.
- *
- * Les deux derniers étaient d'ailleurs arrivés ici par INSIGHTS-02 faute de meilleure destination ;
- * l'onglet « Vue d'ensemble » de Progression, créé par cette US, en est une vraie.
- */
-export const STRENGTH_WIDGET_IDS = [
-  'strength-planning',
-  'strength-progress',
-  'strength-history',
-] as const;
-
 /** Course : les 3 modules-aperçu du hub, widgetisés. Ordre = disposition par défaut (maquette validée). */
 export const RUNNING_WIDGET_IDS = [
   'running-history',
@@ -160,23 +138,9 @@ export const RUNNING_WIDGET_IDS = [
 export const MAX_HOME_WIDGETS = 8;
 
 /**
- * Plafond de la zone Suivre du hub muscu (US MUSCU-UX01), **appliqué par un test**.
- *
- * Même cliquet que `MAX_HOME_WIDGETS`, et pour la même raison : sans lui, le registre muscu est
- * passé de 4 à 7 sans qu'aucun arbitrage n'ait eu lieu. Ce n'est pas une limite technique, c'est
- * le moyen de rendre un `+1` **conscient** — le dépasser reste possible, mais impose de modifier
- * le test, donc d'en discuter.
- *
- * Pourquoi 3, et pas 4-6 comme l'accueil : le hub muscu porte déjà une **zone Agir épinglée** au-
- * dessus de la grille (la carte du jour, qui occupe presque un demi-écran) et une ligne d'annuaire
- * en pied. Le budget vertical restant ne vaut pas celui de l'accueil.
- */
-export const MAX_STRENGTH_WIDGETS = 3;
-
-/**
  * Plafond de la grille du hub course (US CARDIO-UX01, R3-2), **appliqué par un test**.
  *
- * Même cliquet que `MAX_HOME_WIDGETS` et `MAX_STRENGTH_WIDGETS` : ajouter une tuile doit coûter
+ * Même cliquet que `MAX_HOME_WIDGETS` : ajouter une tuile doit coûter
  * un arbitrage, pas un `+1` silencieux.
  *
  * Pourquoi 4 et pas 3 comme la muscu : le hub course garde ses quatre destinations (historique,
@@ -191,11 +155,10 @@ export const MAX_STRENGTH_WIDGETS = 3;
 export const MAX_RUNNING_WIDGETS = 4;
 
 export type HomeWidgetId = (typeof HOME_WIDGET_IDS)[number];
-export type StrengthWidgetId = (typeof STRENGTH_WIDGET_IDS)[number];
 export type RunningWidgetId = (typeof RUNNING_WIDGET_IDS)[number];
 
-/** Identifiant d'un widget, tous hubs confondus (scopé par préfixe pour muscu/course). */
-export type WidgetId = HomeWidgetId | StrengthWidgetId | RunningWidgetId;
+/** Identifiant d'un widget, tous hubs confondus (scopé par préfixe pour la course). */
+export type WidgetId = HomeWidgetId | RunningWidgetId;
 
 /**
  * Réglages **booléens** capables de garder un widget. Volontairement une liste fermée et courte :
@@ -301,18 +264,6 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       'real-life': 'row',
       // Jour du cycle, phase, prédiction : trois lignes.
       cycle: 'wide',
-    },
-  },
-  strength: {
-    ids: STRENGTH_WIDGET_IDS,
-    pillars: uniformPillar(STRENGTH_WIDGET_IDS, 'strength'),
-    // US MUSCU-UX01 : deux `small` sur la première ligne (planning + volume de la semaine), puis
-    // la dernière séance en bande. La zone Suivre tient ainsi sous la zone Agir sans repousser
-    // l'action hors de l'écran — c'était tout l'objet du dégonflage.
-    defaultSize: {
-      'strength-planning': 'small',
-      'strength-progress': 'small',
-      'strength-history': 'wide',
     },
   },
   running: {

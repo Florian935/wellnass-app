@@ -288,6 +288,40 @@ export function candidateFromMuscleBalance(balance: MuscleBalance): InsightCandi
   };
 }
 
+/** Un favori délaissé, réduit à ce dont l'adaptateur a besoin. `name` est **déjà résolu**. */
+export type NeglectedCandidateInput = {
+  name: string;
+  weeksSince: number;
+  neverPracticed: boolean;
+};
+
+/**
+ * Le favori le plus délaissé (EXEC-01 / MUSC-21).
+ *
+ * ⚠️ Un exercice **jamais pratiqué** depuis son ajout aux favoris est écarté : `weeksSince` n'y
+ * mesure alors que l'ancienneté du favori, pas un abandon. Dire « tu n'as pas fait ça depuis
+ * 12 semaines » d'un exercice qu'on n'a jamais fait serait faux, et c'est le genre de phrase qui
+ * fait perdre confiance dans toutes les autres.
+ *
+ * `occurredOn: null` : c'est un **état**, pas un fait daté — il ne se périme donc pas au bout des
+ * 14 jours de `isStale`, exactement comme `muscle_neglected`.
+ */
+export function candidateFromNeglectedExercise(
+  neglected: ReadonlyArray<NeglectedCandidateInput>,
+): InsightCandidate | null {
+  const actionable = neglected.filter((n) => !n.neverPracticed && n.weeksSince > 0);
+  if (actionable.length === 0) return null;
+  const worst = actionable.reduce((a, b) => (b.weeksSince > a.weeksSince ? b : a));
+  return {
+    id: 'exercise_neglected',
+    family: 'change',
+    metrics: { weeks: worst.weeksSince },
+    subject: worst.name,
+    occurredOn: null,
+    pillars: ['strength'],
+  };
+}
+
 /**
  * Les variations de tonnage et de distance de la semaine close, au-delà de ±15 %
  * (`NOTABLE_CHANGE_PCT`). Sans ce seuil, l'écran annoncerait « ton tonnage a bougé de 0,4 % ».

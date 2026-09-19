@@ -1,49 +1,68 @@
 /**
- * Hub Musculation — **deux zones** (US MUSCU-UX01, 10/09/2026).
+ * Hub Musculation — **un écran qui a quelque chose à dire** (US MUSCU-UX05, 19/09/2026).
  *
  * ── Ce que cet écran était ───────────────────────────────────────────────────────────────────────
- * Une carte d'action, une ligne « bibliothèque », et une grille de **sept widgets** rendus quoi
- * qu'il arrive. Faute de prédicat `isActive` — que l'accueil passait déjà — les sept tuiles se
- * montraient **même vides** : environ 2,4 écrans de scroll sur un compte neuf, dont l'essentiel
- * n'avait rien à dire. Neuf blocs, aucune hiérarchie entre eux.
+ * Neuf surfaces, toutes de la même forme, qui répondaient à « où en suis-je administrativement ».
+ * L'audit du 19/09 a relevé cinq défauts, et une cause sous les cinq :
  *
- * Et sans programme actif, l'action mise en avant était « Séance libre », la moins structurée :
- * le problème 3 de l'audit de juillet, revenu par la porte du cas « pas encore de programme ».
+ *  1. **Le haut changeait cinq fois, le bas jamais.** La scène a cinq états ; le corps rendait les
+ *     mêmes six blocs dans les cinq cas — un jour de repos et le lendemain d'un record affichaient
+ *     le même écran.
+ *  2. **La moitié des blocs parlaient de ce qui manque** : « encore 3 mesures et la projection
+ *     devient possible », « rien de prévu ces prochains jours »… sur un compte qui soulevait
+ *     17 tonnes par semaine.
+ *  3. **Une seule forme, répétée neuf fois.** « Tu es à une série d'un record » avait le même poids
+ *     visuel que « rien de prévu ».
+ *  4. **Le plus gros chiffre était rangé en bas**, sous un « ▼ 49 % » sans référence écrite — et le
+ *     volume hebdomadaire n'est pas une mesure de progrès : il monte quand on s'entraîne plus
+ *     longtemps, pas quand on devient plus fort.
+ *  5. **Le bas de l'écran était un cul-de-sac** : une date, un volume, un planning vide.
  *
- * ── Ce qu'il est ─────────────────────────────────────────────────────────────────────────────────
- *   1 · `StrengthStage`      — la scène (US DASH-01) : les quatre états de la zone Agir, plus le
- *                              moment « après la séance », la silhouette qui encaisse l'impact et
- *                              le record à portée du jour
- *   2 · `StrengthWeekCard`   — la semaine séance par séance, touchable
- *   3 · `NearRecordsCard`    — « à ta portée », les trois records les plus proches
- *   4 · `ProgramProgressBar` — « semaine 3 sur 8 », le repère que MUSC-F15 calculait sans l'afficher
- *   5 · `SuggestedPrograms`  — trois propositions, seulement quand il n'y a pas de programme
- *   6 · `WidgetGrid`         — la zone **Suivre**, 3 widgets plafonnés et masqués s'ils sont vides
+ * **La cause** : sur 36 analyses muscu au catalogue, 20 sont livrées et testées — le hub en montrait
+ * **une**. Et `selectInsights` (INSIGHTS-01), qui sait choisir les analyses pertinentes de l'instant
+ * par pilier, n'était appelé ni ici ni nulle part côté muscu.
  *
- * ⚠️ La zone Agir et la ligne d'annuaire **ne sont pas des widgets** : elles ne consomment aucune
- * place au plafond `MAX_STRENGTH_WIDGETS`. Même distinction que sur l'accueil.
+ * ── La contrainte qui tient la refonte ──────────────────────────────────────────────────────────
+ * MUSCU-UX01 avait **ramené** ce hub de 9 blocs à 6 le 10/09. « Plus sympa » ne pouvait donc pas
+ * vouloir dire « plus de blocs », sinon on refaisait l'inflation qui a justifié la coupe. Le budget
+ * ne bouge pas : **neuf surfaces d'administration deviennent six cartes et deux lignes.**
+ *
+ * Sortent : « Et si… », le widget Volume total, le widget Dernière, le widget Planning — et avec
+ * eux la grille de widgets du hub. Entrent : le fil du jour, Tes charges, Ton corps, Le mur.
+ *
+ * ── L'ordre, et pourquoi ────────────────────────────────────────────────────────────────────────
+ *   1 · `StrengthStage`      — la scène (US DASH-01), inchangée : cinq états, la silhouette
+ *   2 · `DayThread`          — **la seule chose qui change tous les jours** (défaut 1)
+ *   3 · `LoadProgressCard`   — la carte dominante : « est-ce que je progresse ? » (défaut 4)
+ *   4 · `NearRecordsCard`    — promue : c'était déjà la meilleure carte de l'écran
+ *   5 · `BodyBalanceCard`    — la silhouette cesse de décorer
+ *   6 · `StrengthWeekCard`   — la semaine ET le planning, fusionnés
+ *   7 · `RecordWall`         — les records tombés, en bande horizontale (défaut 3)
+ *   8 · `LifetimeLine`       — une ligne, pas une carte
+ *
+ * Chaque carte **se tait quand elle n'a rien à dire** : c'est le défaut 2 traité à la racine.
  */
 
 import { useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { localDayKey, type StrengthWidgetId, type WidgetId, type WidgetSize } from '@wellness/shared';
-import { Screen } from '@/components/Screen';
-import { ScreenHeader } from '@/components/ScreenHeader';
-import { BodyExplorerLink } from '@/components/body/BodyExplorerLink';
+import { Ionicons } from '@expo/vector-icons';
+import { localDayKey } from '@wellness/shared';
+import { PressableScale } from '@/components/motion/PressableScale';
+import { BodyBalanceCard } from '@/components/strength/BodyBalanceCard';
+import { DayThread } from '@/components/strength/DayThread';
 import { DirectorySheet } from '@/components/strength/DirectorySheet';
+import { LifetimeLine } from '@/components/strength/LifetimeLine';
+import { LoadProgressCard } from '@/components/strength/LoadProgressCard';
 import { NearRecordsCard } from '@/components/strength/NearRecordsCard';
 import { ProgramProgressBar } from '@/components/strength/ProgramProgressBar';
+import { RecordWall } from '@/components/strength/RecordWall';
 import { StrengthStage, type StrengthScene } from '@/components/strength/StrengthStage';
 import { StrengthWeekCard } from '@/components/strength/StrengthWeekCard';
-import { WhatIfCard } from '@/components/strength/WhatIfCard';
 import { SuggestedPrograms } from '@/components/strength/SuggestedPrograms';
 import { TrainingContextSheet } from '@/components/strength/TrainingContextSheet';
 import { StageScrollView } from '@/components/stage/StageScrollView';
-import { CustomizeButton } from '@/components/widgets/CustomizeButton';
-import { WidgetGrid } from '@/components/widgets/WidgetGrid';
-import { STRENGTH_WIDGETS } from '@/components/widgets/strength-widgets';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import {
   startWorkout,
@@ -79,12 +98,10 @@ export default function StrengthScreen() {
   const { profile } = useProfile();
   const [starting, setStarting] = useState(false);
   const lockStart = useActionLock();
-  const [editing, setEditing] = useState(false);
-  const [dragging, setDragging] = useState(false);
   // US MUSCU-UX03, R-MO-3 : la question du mode, posée **une seule fois**, et seulement à
   // quelqu'un qui n'a encore rien fait. `pendingStart` retient l'action à rejouer après le choix.
-  const modeChosen = useSessionMode((state) => state.chosen);
-  const setSessionMode = useSessionMode((state) => state.setMode);
+  const modeChosen = useSessionMode((s) => s.chosen);
+  const setSessionMode = useSessionMode((s) => s.setMode);
   const [pendingStart, setPendingStart] = useState<(() => void) | null>(null);
   // US GUID-01 — la feuille « niveau + disponibilité », et le programme qu'on ouvrira juste après.
   const [contextSheetVisible, setContextSheetVisible] = useState(false);
@@ -97,17 +114,8 @@ export default function StrengthScreen() {
   // `DirectorySheet`.
   const [directoryOpen, setDirectoryOpen] = useState(false);
 
-  // ── Widgets conditionnels ─────────────────────────────────────────────────────────────────
-  // Le défaut corrigé : sans ce prédicat, une tuile sans donnée réserve quand même sa case et
-  // laisse un carré vide. L'accueil le passait déjà ; ce hub ne le passait pas.
   const { workouts } = useWorkoutHistory();
   const { templates } = useWorkoutTemplates();
-  const isWidgetActive = (id: WidgetId) => {
-    // Le planning reste utile vide (il montre la semaine) ; l'historique et la progression, non.
-    if (id === 'strength-history') return workouts.length > 0;
-    if (id === 'strength-progress') return workouts.length > 0;
-    return true;
-  };
 
   /** Faut-il poser la question du mode avant de démarrer ? (R-MO-3) */
   const askMode = (run: () => void): boolean => {
@@ -252,57 +260,17 @@ export default function StrengthScreen() {
     switch (scene.kind) {
       case 'onboarding':
         return onStartFree();
-      case 'today':
-        return router.push('/planning');
       default:
         return router.push('/planning');
     }
   };
 
-  const renderWidget = (id: WidgetId, size: WidgetSize) => {
-    const Widget = STRENGTH_WIDGETS[id as StrengthWidgetId];
-    return <Widget size={size} />;
-  };
-
-  /** La grille et son intertitre — le même contenu dans les deux modes. */
-  const grid = (
-    <WidgetGrid
-      screen="strength"
-      editing={editing}
-      renderWidget={renderWidget}
-      onDragActiveChange={setDragging}
-      isActive={isWidgetActive}
-    />
-  );
-
-  /**
-   * Le mode édition **n'a pas de scène** : réorganiser des widgets sous une scène qui, elle, ne se
-   * déplace pas ferait croire qu'elle est déplaçable aussi — la raison qui masquait déjà la carte
-   * épinglée (US MUSCU-UX01).
-   */
-  if (editing) {
-    return (
-      <Screen edges={['top']}>
-        <ScreenHeader
-          title={t('pillars.strength')}
-          action={<CustomizeButton editing={editing} onToggle={() => setEditing((v) => !v)} />}
-        />
-        <ScrollView
-          contentContainerStyle={styles.scroll}
-          showsVerticalScrollIndicator={false}
-          scrollEnabled={!dragging}
-        >
-          {grid}
-        </ScrollView>
-      </Screen>
-    );
-  }
+  const openExercise = (exerciseId: string) => router.push(`/exercises/${exerciseId}`);
 
   return (
     <StageScrollView
       pillar="strength"
       testID="strength-screen"
-      scrollEnabled={!dragging}
       compactTitle={t('pillars.strength')}
       compactValue={progress ? t('stage.strength.weekCard.meta', { done: progress.done, planned: progress.total }) : undefined}
       stage={
@@ -331,17 +299,23 @@ export default function StrengthScreen() {
         />
       }
     >
-      {/* §4.4 — la semaine, séance par séance : le hub disait « semaine 3 sur 8 » sans jamais dire
-          ce qu'il restait à faire cette semaine. */}
+      {/* La seule chose qui change tous les jours. Se tait s'il n'y a rien à dire. */}
+      <DayThread onPress={() => router.push('/insights')} />
+
+      {/* La carte dominante : « est-ce que je progresse ? ». */}
+      <LoadProgressCard onPress={() => router.push('/progress')} />
+
+      {/* Déjà la meilleure carte de l'écran avant la refonte — elle remonte. */}
+      <NearRecordsCard onOpenExercise={openExercise} />
+
+      {/* La silhouette au travail, plus en décor. */}
+      <BodyBalanceCard onPress={() => router.push('/body')} />
+
+      {/* La semaine ET la prochaine séance : le widget Planning a fondu ici. */}
       <StrengthWeekCard onOpenDay={() => router.push('/planning')} />
 
-      {/* §4.4 — « à ta portée » : MUSC-09 détectait les records sans jamais dire de combien on
-          était loin. */}
-      <NearRecordsCard onOpenExercise={(exerciseId) => router.push(`/exercises/${exerciseId}`)} />
-
-      {/* §6.3 — « Et si… » : trois leviers, un moteur déterministe, et l'éventail d'incertitude
-          affiché avec le chiffre. La carte dit ce qui manque quand l'historique est trop court. */}
-      <WhatIfCard baselineSessions={progress ? progress.total / Math.max(1, progress.totalWeeks) : 3} />
+      {/* Le trophée, pas seulement la carotte — et le seul bloc qui ne se lit pas de haut en bas. */}
+      <RecordWall onOpenExercise={openExercise} />
 
       {/* L'avancement du programme, quand il y en a un. */}
       {progress && programName ? (
@@ -377,23 +351,28 @@ export default function StrengthScreen() {
         />
       ) : null}
 
-      <View style={styles.sectionHead}>
-        <Text style={[styles.sectionLabel, { color: colors.textMuted }]}>
-          {t('strengthHub.followSection')}
+      {/* Une ligne, pas une carte — elle ferme la page sans ajouter une boîte de plus. */}
+      <LifetimeLine onPress={() => router.push('/progress')} />
+
+      {/* L'annuaire, en pied : la section « Suivre » et sa grille de widgets ont disparu avec les
+          trois tuiles d'administration qu'elle portait. */}
+      <PressableScale
+        haptic="select"
+        onPress={() => setDirectoryOpen(true)}
+        accessibilityRole="button"
+        // Pas d' : le libellé visible EST le nom accessible. En poser un
+        // dupliquerait celui de l'icône de la scène, et TalkBack annoncerait deux fois la même
+        // chose sans pouvoir les distinguer — trouvé par le test du hub.
+        testID="strength-directory-link"
+        style={[styles.directory, { backgroundColor: colors.surface, borderColor: colors.border }]}
+      >
+        <Ionicons name="library-outline" size={20} color={colors.accent} />
+        <Text style={[styles.directoryLabel, { color: colors.text }]} numberOfLines={1}>
+          {t('strengthHub.directory')}
         </Text>
-        <View style={[styles.rule, { backgroundColor: colors.border }]} />
-        <CustomizeButton editing={editing} onToggle={() => setEditing((v) => !v)} />
-      </View>
+        <Ionicons name="chevron-forward" size={15} color={colors.textMuted} />
+      </PressableScale>
 
-      <BodyExplorerLink />
-
-      {grid}
-
-      {/* La question du mode, posée une seule fois (US MUSCU-UX03, R-MO-3). Elle rejoue ensuite
-          l'action qui l'avait déclenchée : l'utilisateur voulait démarrer, pas régler quelque chose. */}
-      {/* US GUID-01 — les deux questions manquantes, posées devant la bibliothèque. Elle rejoue
-          ensuite l'action qui l'avait déclenchée : l'utilisateur voulait voir un programme, pas
-          remplir un formulaire. Même patron que la feuille de mode ci-dessous. */}
       <TrainingContextSheet
         visible={contextSheetVisible}
         onClose={() => {
@@ -427,6 +406,8 @@ export default function StrengthScreen() {
         colors={colors}
       />
 
+      {/* La question du mode, posée une seule fois (US MUSCU-UX03, R-MO-3). Elle rejoue ensuite
+          l'action qui l'avait déclenchée : l'utilisateur voulait démarrer, pas régler quelque chose. */}
       <SessionModeSheet
         visible={pendingStart !== null}
         onClose={() => setPendingStart(null)}
@@ -443,13 +424,14 @@ export default function StrengthScreen() {
 }
 
 const styles = StyleSheet.create({
-  scroll: { gap: 12, paddingBottom: 24 },
-  sectionHead: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 8 },
-  sectionLabel: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 11,
-    letterSpacing: 0.9,
-    textTransform: 'uppercase',
+  directory: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 11,
+    borderWidth: 1,
+    borderRadius: 16,
+    padding: 13,
+    minHeight: 48,
   },
-  rule: { flex: 1, height: 1 },
+  directoryLabel: { flex: 1, fontFamily: fontFamily.bodyBold, fontSize: 13 },
 });

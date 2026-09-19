@@ -115,6 +115,7 @@ export * from './planning';
 export * from './run-stats';
 export * from './comparison';
 export * from './contrast';
+export * from './load-progress';
 export * from './root-route';
 export * from './streak';
 export * from './training-day';

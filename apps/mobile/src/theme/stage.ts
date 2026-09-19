@@ -41,16 +41,37 @@ export type StageTheme = {
 const GLASS_ON_DARK = 'rgba(255,255,255,0.12)';
 const GLASS_BORDER_ON_DARK = 'rgba(255,255,255,0.22)';
 
+/**
+ * ── Le bordeaux adouci, 19/09/2026 ───────────────────────────────────────────────────────────────
+ * Retour de Florian en recette : « pas très smooth, pas très sexy ». Le défaut était mesurable, pas
+ * une affaire de goût — les trois arrêts d'origine (`#6b0028 → #440019 → #2d0011`) étaient à
+ * **100 % de saturation** (canal vert à zéro sur les trois), et la clarté tombait de 21 % à 9 %.
+ * Une teinte pleinement saturée qui plonge vers le noir se lit comme du néon, pas comme du vin.
+ *
+ * Trois corrections, dans cet ordre d'importance :
+ *  1. **Désaturer** (100 % → 52-57 %) : c'est ce qui enlève l'arête dure.
+ *  2. **Réchauffer le départ** (337° → 351°) : un vrai bordeaux tire sur le rouge profond, pas sur
+ *     le magenta.
+ *  3. **Faire dériver la teinte** de 22° vers la prune en descendant (351° → 329°), et remonter le
+ *     plancher de clarté (9 % → 13 %) : le dégradé devient un balayage au lieu d'une chute.
+ *
+ * Écarté : une variante plus chaude encore (352°, 52 %) se rapprochait trop du terracotta de
+ * l'Accueil — deux piliers ne doivent pas se confondre d'un coup d'œil.
+ */
 const STRENGTH: StageTheme = {
-  gradient: ['#6b0028', '#440019', '#2d0011'],
-  surfaces: ['#6b0028', '#440019', '#2d0011'],
+  gradient: ['#7c2734', '#58182b', '#330f22'],
+  surfaces: ['#7c2734', '#58182b', '#330f22'],
   ink: '#ffffff',
-  inkMuted: '#e2a8bd',
+  // Remonté avec le fond : l'ancien #e2a8bd restait lisible, mais paraissait sale sur une surface
+  // moins saturée.
+  inkMuted: '#f2c0cb',
   glass: GLASS_ON_DARK,
   glassBorder: GLASS_BORDER_ON_DARK,
   solid: '#ffffff',
-  onSolid: '#6b0028',
-  accent: '#ff9ec0',
+  onSolid: '#7c2734',
+  // La matière (halo de la silhouette) suit la même désaturation — #ff9ec0 était le rose le plus
+  // saturé de toute l'app.
+  accent: '#f2a6c2',
 };
 
 const RUNNING: StageTheme = {

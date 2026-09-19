@@ -61,6 +61,11 @@ export const INSIGHT_ORDER = [
   'goal_achieved',
   'weekly_decision',
   'muscle_neglected',
+  // US MUSCU-UX05 — même nature que le précédent, un cran plus fin : un groupe musculaire décroche
+  // (`muscle_neglected`) contre UN exercice favori qu'on a cessé de faire. Le second est plus
+  // actionnable — on sait quoi ajouter à la séance — mais il passe derrière, parce qu'un déséquilibre
+  // de groupe a des conséquences que l'oubli d'un exercice n'a pas.
+  'exercise_neglected',
   'tonnage_change',
   'distance_change',
 ] as const;

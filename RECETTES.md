@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **19/09/2026** — **77 sections**.
+> Dernière mise à jour : **19/09/2026** — **78 sections**.
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -4566,3 +4566,52 @@ implémentée le 19/09/2026, suite directe de la recette du même jour.
       **dans les deux thèmes**.
 - [ ] **11. Désactiver le réglage** : on retombe sur l'accent du pilier, pas sur l'orange.
 - [ ] **12. TalkBack + police 1,5×** sur le hub muscu et l'accueil : rien de coupé, rien d'illisible.
+
+## 78. MUSCU-UX05 — Refonte du hub Musculation (`dev`)
+
+Spec : [muscu-ux05-refonte-hub.md](docs/specs/functional/us/muscu-ux05-refonte-hub.md) ·
+audit et maquettes validés par Florian le 19/09/2026, code livré le même jour.
+Canvas de design : **Hub Musculation** (7 planches).
+
+> 🔎 **Le hub change entièrement.** Neuf surfaces d'administration deviennent six cartes et deux
+> lignes. Le budget ne bouge pas — MUSCU-UX01 avait ramené cet écran de 9 blocs à 6 onze jours plus
+> tôt, et « plus sympa » ne devait pas vouloir dire « plus de blocs ».
+
+> 🟠 **Le point à trancher en recette** : le hub muscu **perd sa grille de widgets** (Volume total,
+> Dernière, Planning) et donc sa personnalisation. C'est la conséquence directe de la maquette
+> validée, et c'est le seul endroit de la refonte qui **retire** une capacité. Si ça ne va pas, on
+> le saura là.
+
+- [ ] **1. Le fil du jour** apparaît en tête du corps, avec une phrase et un chevron. Il **change**
+      d'un jour à l'autre (ou après une séance qui bat un record).
+- [ ] **2. Quand il n'y a rien à dire, il n'y a pas de bande** — pas de bande vide ni de « aucune
+      analyse disponible ».
+- [ ] **3. « Tes charges »** est la plus grande carte, et donne un pourcentage médian + le détail
+      par exercice, avec les charges avant → après.
+- [ ] **4. 🔴 Compte récent (< 8 semaines)** : la carte affiche « Depuis le début » et des **gains
+      en kilos**, pas un pourcentage.
+- [ ] **5. 🔴 Un exercice commencé il y a dix jours n'apparaît PAS** dans la liste : sans référence
+      avant la fenêtre, il n'y a pas d'écart à afficher.
+- [ ] **6. Un exercice qui stagne** est écrit « stagne », en ambre, et ne compte pas dans « X sur Y
+      montent ».
+- [ ] **7. La ligne de limite** est lisible sous la carte : « 1RM estimé (Epley) sur tes séries de 3
+      à 10 reps ».
+- [ ] **8. Les trois mouvements désignés** (Réglages → module force) et pratiqués : vérifier que la
+      variante force est cohérente. Sans désignation, la carte reste sur « Tes charges ».
+- [ ] **9. « Ton corps »** montre les barres par groupe **et** la silhouette, avec le groupe qui
+      décroche en ambre des deux côtés.
+- [ ] **10. Sous 12 séries au total**, la carte « Ton corps » ne s'affiche pas du tout.
+- [ ] **11. « Cette semaine »** porte les 7 jours **et** la prochaine séance en une ligne — le
+      widget Planning a disparu.
+- [ ] **12. « Le mur »** défile à l'horizontale, montre les records **tombés** avec leur gain, et un
+      premier record dit « premier record » plutôt que « +0 kg ».
+- [ ] **13. « Ton total »** est une **ligne**, pas une carte, et se tait à zéro.
+- [ ] **14. L'annuaire** est en pied d'écran **et** sur l'icône 📚 de la scène — les deux ouvrent la
+      même feuille à trois destinations.
+- [ ] **15. 🔴 TalkBack** : balayer tout l'écran. L'annuaire ne doit être annoncé **qu'une fois** par
+      élément (le lien de pied n'a volontairement pas de libellé propre : son texte visible suffit).
+- [ ] **16. Compte neuf, zéro séance** : l'écran ne doit afficher **aucune** carte vide ni aucune
+      phrase d'excuse. La scène et les programmes suggérés suffisent.
+- [ ] **17. Jour de séance / jour de repos / lendemain de record** : les trois doivent donner trois
+      écrans différents, pas seulement trois en-têtes différents.
+- [ ] **18. FR et EN** sur toutes les cartes neuves ; à 1,5× de police, rien n'est coupé.

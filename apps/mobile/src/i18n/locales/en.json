@@ -3680,6 +3680,10 @@
       "activity_level": {
         "title": "Your activity level has shifted",
         "body": "{{runningDays}} running days over the last 14 — your baseline calorie need has probably moved."
+      },
+      "exercise_neglected": {
+        "title": "{{subject}}, none for {{weeks}} weeks",
+        "body": "A favourite you stopped doing without deciding to. Putting it back in a session is enough."
       }
     }
   },
@@ -3757,6 +3761,42 @@
       "programsDesc": "Editorial library and your programs.",
       "templates": "My templates",
       "templatesDesc": "Your reusable routines for free workouts."
+    },
+    "loads": {
+      "title": {
+        "onboarding": "Since day one",
+        "established": "Your loads"
+      },
+      "weeks_one": "{{count}} week",
+      "weeks_other": "{{count}} weeks",
+      "upOf": "{{up}} of {{total}} going up",
+      "onboardingCaption": "on {{exercise}}, since your first workout",
+      "medianCaption_one": "median across your regular exercise",
+      "medianCaption_other": "median across your {{count}} regular exercises",
+      "flat": "flat",
+      "hint": "Estimated 1RM (Epley) from your sets of 3 to 10 reps."
+    },
+    "body": {
+      "title": "Your body",
+      "meta": "14 days",
+      "neglected": "{{muscle}} is falling behind. One exercise would bring it back.",
+      "forgotten_one": "{{exercise}}, none for {{count}} week.",
+      "forgotten_other": "{{exercise}}, none for {{count}} weeks.",
+      "balanced": "Evenly spread across the six groups."
+    },
+    "wall": {
+      "title": "The wall",
+      "count_one": "{{count}} recent record",
+      "count_other": "{{count}} recent records",
+      "first": "first record",
+      "a11y": "{{exercise}}, {{value}} on {{date}}"
+    },
+    "lifetime": {
+      "value": "{{tonnes}} t",
+      "caption_one": "lifted over {{count}} workout",
+      "caption_other": "lifted over {{count}} workouts",
+      "a11y_one": "{{tonnes}} tonnes lifted over {{count}} workout",
+      "a11y_other": "{{tonnes}} tonnes lifted over {{count}} workouts"
     }
   },
   "hydration": {
@@ -4289,7 +4329,10 @@
         "done": "session done",
         "planned": "session planned",
         "empty": "nothing planned",
-        "rest": "rest"
+        "rest": "rest",
+        "next": "Next: {{name}}, {{day}}",
+        "remaining_one": "{{count}} workout left to hit your week.",
+        "remaining_other": "{{count}} workouts left to hit your week."
       },
       "reach": {
         "title": "Within reach",

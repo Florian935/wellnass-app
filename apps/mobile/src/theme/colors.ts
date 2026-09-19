@@ -96,7 +96,9 @@ export const palettes: Record<ColorScheme, Palette> = {
     panelMuted: '#c9b79a',
     panelAccent: '#d9a888',
     pillarHome: '#b14f2b', // 4,53 / fond · 5,0 / surface (= accent)
-    pillarStrength: '#6b0028', // 12,2 / surface
+    // Suit le bordeaux adouci de la scène (19/09/2026) : le token de texte et la couleur de
+    // marque du pilier ne peuvent pas diverger. 9,2 / surface teintée — largement au-dessus de 4,5.
+    pillarStrength: '#7c2734',
     pillarRunning: '#2a64ad', // 5,18 / fond — #2f6fc0 de maquette : 4,39
     pillarNutrition: '#52703a', // 4,88 / fond — #5c7a3f de maquette : 4,23
     pillarLab: '#7a5714', // 5,0 / fond — le doré #8a6419 tombait à 4,33

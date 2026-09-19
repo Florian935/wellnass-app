@@ -38,7 +38,7 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 /** Couleurs de la charte pour le bandeau de célébration (bordeaux + doré). */
-const CELEBRATION_BG = '#6b0028';
+const CELEBRATION_BG = '#7c2734';
 const CELEBRATION_ACCENT = '#c9a96e';
 
 /** Clé i18n du libellé de distance pour chaque record canonique. */

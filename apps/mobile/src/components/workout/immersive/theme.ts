@@ -21,7 +21,7 @@ export const immersivePalette: Palette = palettes.dark;
  * Échelle de chaleur du corps (spec §5.11), de l'éteint à l'or. Cinq valeurs interpolées —
  * l'interpolation elle-même vit dans `heatColor` pour rester testable à l'œil sur la maquette.
  */
-export const HEAT_SCALE = ['#30271e', '#6b0028', '#b14f2b', '#dd6e40', '#e0b155'] as const;
+export const HEAT_SCALE = ['#30271e', '#7c2734', '#b14f2b', '#dd6e40', '#e0b155'] as const;
 
 /** Couleur d'un muscle pour une chaleur 0 → 1. Interpolation linéaire entre les cinq paliers. */
 export function heatColor(value: number): string {
@@ -45,4 +45,4 @@ function hexToRgb(hex: string): number[] {
 /** Ambre des records et de l'enjeu — la seule couleur qui n'appartient pas à la palette de l'app. */
 export const RECORD_AMBER = '#e0b155';
 /** Fond des cartes de record (bordeaux du pilier muscu, déjà utilisé par la carte de partage). */
-export const RECORD_BG = '#6b0028';
+export const RECORD_BG = '#7c2734';

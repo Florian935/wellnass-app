@@ -16,6 +16,15 @@
  *
  * La quatrième carte — **jour de repos** — n'existait pas avant cette US : rien ne s'affichait
  * entre deux séances d'un programme actif, sinon l'invitation à improviser une séance libre.
+ *
+ * ── Recomposé le 19/09/2026 (US MUSCU-UX05) ─────────────────────────────────────────────────────
+ * Le hub n'a plus de **grille de widgets** : ses trois tuiles étaient de l'administration et sont
+ * sorties avec la zone « Suivre ». Les tests de tuile vide (`isActive`) disparaissent donc avec
+ * elle — ce qui les remplace, c'est que **chaque carte se tait d'elle-même** quand elle n'a rien
+ * à dire, ce que vérifient leurs fichiers respectifs.
+ *
+ * Ce qui reste ici est ce qui est propre à l'écran : la garde de double appui, le rendu de l'état
+ * qu'on lui donne, le câblage des gestes, et la composition.
  */
 import React from 'react';
 import { Alert } from 'react-native';
@@ -81,20 +90,28 @@ jest.mock('@/hooks/useTodayKey', () => ({
 }));
 jest.mock('@/hooks/useMenuFocus', () => ({ useMenuFocus: jest.fn() }));
 
-/**
- * La grille a ses propres tests : ici, une sonde qui **expose le prédicat `isActive`**. C'est le
- * seul moyen de vérifier depuis l'écran qu'une tuile sans donnée est bien exclue — le défaut que
- * l'US corrige, et qui ne se voit pas autrement qu'en comptant des cases vides à l'œil.
- */
-let isActiveSpy: ((id: string) => boolean) | undefined;
-jest.mock('@/components/widgets/WidgetGrid', () => ({
-  WidgetGrid: (props: { isActive?: (id: string) => boolean }) => {
-    isActiveSpy = props.isActive;
-    return null;
-  },
-}));
-jest.mock('@/components/widgets/CustomizeButton', () => ({ CustomizeButton: () => null }));
-jest.mock('@/components/widgets/strength-widgets', () => ({ STRENGTH_WIDGETS: {} }));
+// Les cartes neuves ont leurs propres tests : ici, des sondes qui prouvent seulement qu'elles sont
+// montées, et à quel geste elles sont câblées.
+jest.mock('@/components/strength/DayThread', () => {
+  const { Text } = require('react-native');
+  return { DayThread: () => <Text>sonde-fil</Text> };
+});
+jest.mock('@/components/strength/LoadProgressCard', () => {
+  const { Text } = require('react-native');
+  return { LoadProgressCard: () => <Text>sonde-charges</Text> };
+});
+jest.mock('@/components/strength/BodyBalanceCard', () => {
+  const { Text } = require('react-native');
+  return { BodyBalanceCard: () => <Text>sonde-corps</Text> };
+});
+jest.mock('@/components/strength/RecordWall', () => {
+  const { Text } = require('react-native');
+  return { RecordWall: () => <Text>sonde-mur</Text> };
+});
+jest.mock('@/components/strength/LifetimeLine', () => {
+  const { Text } = require('react-native');
+  return { LifetimeLine: () => <Text>sonde-total</Text> };
+});
 
 jest.mock('@/components/Screen', () => {
   const { View } = require('react-native');
@@ -204,7 +221,6 @@ beforeEach(() => {
   // premier démarrage. Ces tests portent sur les chemins **après** ce choix ; le cas de la feuille
   // a son propre bloc plus bas.
   useSessionMode.setState({ mode: 'classic', chosen: true, hydrated: true });
-  isActiveSpy = undefined;
   boutonsAlerte = [];
   jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, boutons) => {
     boutonsAlerte = (boutons ?? []) as typeof boutonsAlerte;
@@ -431,40 +447,28 @@ describe('annuaire', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Zone Suivre : aucune tuile vide
+// Composition : six cartes et deux lignes, plus aucune grille
 // ---------------------------------------------------------------------------
 
-describe('zone Suivre', () => {
-  it('ouvre Mon corps même sans historique de séances', async () => {
-    await afficher({ kind: 'onboarding' });
-    await taper(screen.getByRole('button', { name: 'bodyExplorer.title' }));
-    expect(push).toHaveBeenCalledWith('/body');
+describe('composition du hub', () => {
+  it('🔴 monte les cartes de sens, et AUCUNE grille de widgets', async () => {
+    await afficher({ kind: 'today', session: sessionDuJour() });
+
+    for (const sonde of ['sonde-fil', 'sonde-charges', 'sonde-corps', 'sonde-mur', 'sonde-total']) {
+      expect(screen.getByText(sonde)).toBeTruthy();
+    }
+    // La zone « Suivre » et son bouton « Personnaliser » ont disparu avec les trois tuiles
+    // d'administration : plus rien ne doit les rappeler.
+    expect(screen.queryByText('strengthHub.followSection')).toBeNull();
   });
 
-  it('🔴 exclut historique et progression tant qu’aucune séance n’existe', async () => {
-    // LE défaut du hub : la grille ne recevait pas de prédicat, donc une tuile sans donnée
-    // réservait quand même sa case — 2,4 écrans de scroll de carrés vides sur un compte neuf.
-    mockHistory.mockReturnValue({ workouts: [], isLoading: false });
-    await afficher({ kind: 'onboarding' });
+  it('l’annuaire est atteignable en pied d’écran, pas seulement par l’icône de la scène', async () => {
+    await afficher({ kind: 'today', session: sessionDuJour() });
 
-    expect(isActiveSpy).toBeDefined();
-    expect(isActiveSpy!('strength-history')).toBe(false);
-    expect(isActiveSpy!('strength-progress')).toBe(false);
-  });
+    await taper(screen.getByTestId('strength-directory-link'));
+    await taper(screen.getByTestId('directory-templates'));
 
-  it('les monte dès qu’une séance existe', async () => {
-    mockHistory.mockReturnValue({ workouts: [{ id: 'w1' }], isLoading: false });
-    await afficher({ kind: 'onboarding' });
-
-    expect(isActiveSpy!('strength-history')).toBe(true);
-    expect(isActiveSpy!('strength-progress')).toBe(true);
-  });
-
-  it('garde le planning même vide — il montre la semaine à venir', async () => {
-    mockHistory.mockReturnValue({ workouts: [], isLoading: false });
-    await afficher({ kind: 'onboarding' });
-
-    expect(isActiveSpy!('strength-planning')).toBe(true);
+    expect(push).toHaveBeenCalledWith('/templates');
   });
 });
 

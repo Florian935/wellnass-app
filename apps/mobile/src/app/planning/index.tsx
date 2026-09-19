@@ -73,7 +73,7 @@ const TOAST_MS = 2500;
  * Couleur de pilier « muscu » : bordeaux de la charte (fixe, hors thème clair/sombre —
  * la palette d'app ne porte pas ce rôle ; mirroir de la maquette `--strength`).
  */
-const STRENGTH_COLOR = '#6b0028';
+const STRENGTH_COLOR = '#7c2734';
 
 /** Construit une `Date` locale depuis une clé AAAA-MM-JJ (jamais `new Date('AAAA-MM-JJ')`). */
 function dateFromKey(key: string): Date {

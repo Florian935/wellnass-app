@@ -9,6 +9,117 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 19/09/2026 (octies) — MUSCU-UX05 : le hub Musculation a enfin quelque chose à dire (+ bordeaux adouci)
+
+Branche : `dev` (travail direct, décision Florian). Commit précédent : `9202a1b7`. **Lot complet
+livré d'une seule vague** sur sa décision : audit, refonte du hub, et l'ajustement de la couleur du
+pilier demandé juste avant.
+
+### Le constat qui a tout déterminé
+
+Sur **36 analyses muscu** au catalogue, **20 sont livrées et testées** — le hub en montrait **une**
+(les records à portée). Et `selectInsights` (INSIGHTS-01), qui sait choisir les 1 à 3 analyses les
+plus pertinentes de l'instant **par pilier**, n'était appelé ni sur ce hub ni nulle part côté
+muscu : ses consommateurs étaient l'accueil, `/insights` et une carte du dashboard. **La pièce
+manquante n'était pas une donnée, c'était ce branchement.**
+
+### Modifié — le hub, recomposé
+
+🔴 **Le budget ne bouge pas, et c'est la contrainte qui tient la refonte.** MUSCU-UX01 avait
+**ramené** cet écran de 9 blocs à 6 onze jours plus tôt, et un test plafonnait le registre à
+3 widgets. « Plus sympa » ne pouvait donc pas vouloir dire « plus de blocs » — sinon on refaisait
+l'inflation qui a justifié la coupe. **Neuf surfaces d'administration deviennent six cartes et deux
+lignes.**
+
+| Sortant | Pourquoi |
+|---|---|
+| « Et si… » | Ne dit ce qu'elle vaut qu'après 3 mesures de plus |
+| Widget Volume total | Le volume monte quand on s'entraîne plus longtemps, pas quand on devient plus fort |
+| Widget Dernière | Une date et une durée, déjà dans la semaine |
+| Widget Planning | Vide les trois quarts du temps — fusionné dans « Cette semaine » |
+
+### Ajouté
+
+- `components/strength/DayThread.tsx` — **le fil du jour** : une bande, **un** insight jamais trois,
+  et la seule chose de l'écran qui change tous les jours.
+- `components/strength/LoadProgressCard.tsx` — **Tes charges**, la carte dominante.
+- `components/strength/BodyBalanceCard.tsx` — **Ton corps** : la silhouette cesse de décorer.
+- `components/strength/RecordWall.tsx` — **Le mur** : les records *tombés*. Le hub n'affichait que
+  ceux à venir — la carotte, jamais le trophée.
+- `components/strength/LifetimeLine.tsx` — **Ton total**, en ligne et non en carte.
+- `packages/shared/src/load-progress.ts` (+ **24 tests**) — les trois visages de la carte dominante.
+- `data/repositories/strength-cards-repository.ts` — les trois lectures manquantes.
+- `components/stage/matter/silhouette-paths.ts` — chemins de la silhouette **extraits** pour être
+  partagés par la scène et « Ton corps » (`ImpactSilhouette` passe de 210 à 110 lignes).
+- `insight-adapters.ts` : `candidateFromNeglectedExercise` + l'id `exercise_neglected`.
+
+### La carte dominante, refaite après retour
+
+🔴 **Sa première version affichait le total SBD.** Retour de Florian : « ça parle à un powerlifter,
+mais un pratiquant de muscu ou un débutant qui ne fait pas les trois mouvements s'en fiche
+complètement. » Le défaut était de nature — **le total SBD est une métrique de pratique déguisée en
+métrique de progrès**. La carte mesure désormais les exercices réellement pratiqués, en **trois
+visages choisis par les données** :
+
+1. **< 8 semaines d'historique** → les gains bruts depuis la première séance, en kilos. Un débutant
+   n'a pas de tendance exploitable mais des gains énormes, et c'est le moment où l'app risque le
+   plus d'être désinstallée.
+2. **régime établi** (défaut) → médiane des écarts de 1RM estimé + détail par exercice.
+3. **force** → le total SBD, **mérité** : seulement si les trois mouvements sont *désignés*
+   (`sbdLifts`) **et** pratiqués. Un powerlifter les retrouve dans l'état ② **sans rien régler**.
+
+🔴 **Correction en cours de route** : ma première brique identifiait les trois mouvements par un
+`slug` canonique — **c'était une invention**. MUSCPWR-01 les fait **désigner par l'utilisateur**
+(un « squat » peut être barre haute, barre basse ou gobelet). L'API a été refaite autour de
+`sbdLifts` avant d'aller plus loin.
+
+**Deux règles anti-bruit**, toutes deux dans la brique pour qu'aucun appelant ne les oublie :
+médiane et **jamais** moyenne (un +300 % après blessure ne déplace pas le titre), et séries de
+**3 à 10 reps** seulement — Epley se dégrade vite au-delà, et un 1RM « estimé » sur une série de 15
+n'est pas une mesure.
+
+### Modifié — le bordeaux du pilier (amendement de 3.62)
+
+🎨 Retour de Florian : « pas très smooth, pas très sexy ». Le défaut était **mesurable** : les trois
+arrêts étaient à **100 % de saturation** (canal vert à zéro sur les trois) et tombaient de 21 % à
+9 % de clarté. Désaturés à 52-57 %, départ réchauffé de 337° à 351°, dérive de 22° vers la prune,
+plancher de clarté remonté à 13 % : `#6b0028 → #2d0011` devient **`#7c2734 → #330f22`**. Une
+variante plus chaude a été écartée — elle se rapprochait trop du terracotta de l'Accueil.
+
+⚠️ Le bordeaux était **codé en dur dans six fichiers** en plus du thème : couleur de pilier du
+planning et de son aperçu, bandeau de célébration des courses, échelle de chaleur du corps en mode
+immersif, fond des cartes de record. Tout est aligné ; `pillarStrength` (clair) suit.
+
+### Supprimé — la grille de widgets du hub muscu
+
+⚠️ **Écart assumé, et le seul point du lot qui RETIRE une capacité.** Le hub perd sa
+personnalisation : ses trois tuiles étaient de l'administration, et leur contenu reste dans
+`/progress`. `strength-widgets.tsx` et son fichier de tests sont supprimés, `STRENGTH_WIDGET_IDS` /
+`MAX_STRENGTH_WIDGETS` disparaissent, et `'strength'` sort de `WIDGET_SCREENS`. **Aucune
+migration** : une disposition enregistrée pour cet écran devient simplement illisible, la boucle de
+`widget-layout-repository` ne la parcourt plus. 🟠 À confirmer en recette (§78, encadré orange).
+
+### Technique — notes
+
+- **Le fil du jour ne réutilise PAS `useInsights()`.** L'accueil agrège huit hooks pour nourrir
+  `selectInsights`, et `insights-context.tsx` documente pourquoi il *diffuse* ce calcul au lieu de
+  le refaire. Or `selectInsights` ne calcule rien : il filtre, classe et plafonne des candidats que
+  l'appelant lui remet. Le hub muscu lui remet donc les siens, bâtis sur ce qu'il monte déjà —
+  même moteur de classement, sans le coût de l'agrégateur.
+- 🔴 **Un test a trouvé un vrai défaut d'accessibilité** : l'annuaire existant en pied d'écran *et*
+  sur l'icône de la scène, les deux portaient le même `accessibilityLabel` — TalkBack annonçait deux
+  fois la même chose sans pouvoir les distinguer. Le lien de pied n'en a plus : son texte visible
+  **est** son nom accessible.
+- **Chaque carte se tait quand elle n'a rien à dire** (`return null`) : c'est le défaut « la moitié
+  des blocs parlent de ce qui manque » traité à la racine, carte par carte, plutôt qu'à l'écran.
+- ⚠️ **Parité i18n** : `check-i18n-parity.mjs` échoue toujours sur les 4 mêmes valeurs vides
+  (`coach.*.verdict.warmup`), **antérieures à ce lot**. Les clés ajoutées sont symétriques FR/EN.
+- ✅ Aucune migration, aucune sync rule, aucune dépendance native → recettable sur un build de `dev`.
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0 **sans warning**, **3746 tests Jest + 159
+  fichiers Vitest verts** (codes de sortie lus sans pipe). Le compte Jest baisse de 3780 à 3746 :
+  les tests de la grille de widgets muscu disparaissent avec elle, 24 tests de `load-progress`
+  arrivent côté Vitest.
+
 ## 19/09/2026 (septies) — MUSCU-FIX01 + MUSCU-UX04 : les flux de la séance réparés, et l'identité d'un pilier tenue par toute la page
 
 Branche : `dev` (travail direct, décision Florian). Commit précédent : `7def6d1b`. **Lot issu de la

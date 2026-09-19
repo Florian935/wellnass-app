@@ -5,6 +5,12 @@
  * faire cette semaine** : il fallait ouvrir le planning pour savoir si la séance de jeudi était
  * passée. Sept jours, trois états (faite, prévue, rien), et un tap qui ouvre le planning au jour
  * choisi — le geste que tout le monde tentait déjà sur la barre de progression.
+ *
+ * ── La fusion du 19/09/2026 (US MUSCU-UX05) ─────────────────────────────────────────────────────
+ * Le hub portait EN PLUS un widget « Planning » qui, la plupart du temps, affichait « rien de prévu
+ * ces prochains jours » — un bloc entier pour une absence, alors que cette carte dessinait déjà les
+ * sept jours. La prochaine séance descend donc ici, en une ligne sous la semaine : même information,
+ * une surface de moins. C'est l'un des quatre blocs d'administration que l'audit a fait sortir.
  */
 
 import { StyleSheet, Text, View } from 'react-native';
@@ -58,6 +64,12 @@ export function StrengthWeekCard({ onOpenDay }: Props) {
     return planned.some((item) => item.scheduledDate === dayKey) ? 'done' : 'empty';
   };
 
+  // La prochaine séance à venir, strictement après aujourd'hui — c'est ce que disait le widget
+  // « Planning », en une ligne au lieu d'un bloc.
+  const next = planned
+    .filter((item) => item.scheduledDate > todayKey && item.status !== 'done')
+    .sort((a, b) => a.scheduledDate.localeCompare(b.scheduledDate))[0];
+
   const doneCount = days.filter((d) => stateOf(d) === 'done').length;
   const plannedCount = planned.length;
   if (plannedCount === 0 && doneCount === 0) return null;
@@ -106,6 +118,21 @@ export function StrengthWeekCard({ onOpenDay }: Props) {
           );
         })}
       </View>
+
+      {next ? (
+        <Text style={[styles.next, { color: colors.textMuted }]} numberOfLines={1}>
+          {t('stage.strength.weekCard.next', {
+            day: t(`common.weekday.${WEEKDAY_KEYS[(new Date(next.scheduledDate).getDay() + 6) % 7]}`),
+            name: next.sessionName?.trim() || t('stage.strength.session'),
+          })}
+        </Text>
+      ) : (
+        <Text style={[styles.next, { color: colors.textMuted }]} numberOfLines={1}>
+          {t('stage.strength.weekCard.remaining', {
+            count: Math.max(0, plannedCount - doneCount),
+          })}
+        </Text>
+      )}
     </DenseTile>
   );
 }
@@ -122,4 +149,5 @@ const styles = StyleSheet.create({
   },
   today: { borderWidth: 2 },
   dayLabel: { fontFamily: fontFamily.bodyBold, fontSize: 12 },
+  next: { fontFamily: fontFamily.body, fontSize: 11.5 },
 });
