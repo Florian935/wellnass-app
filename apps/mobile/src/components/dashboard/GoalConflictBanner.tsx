@@ -16,13 +16,14 @@
  * la condition pour qu'un bouton qui change un réglage de fond reste acceptable sur un accueil.
  */
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import {
   detectGoalConflicts,
   dispositionFor,
   effectiveRegime,
   firstVisibleConflict,
 } from '@wellness/shared';
+import { CouncilSheet } from '@/components/dashboard/CouncilSheet';
 import { GoalConflictCard } from '@/components/dashboard/GoalConflictCard';
 import { guidanceSourceOf } from '@/data/guidance';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
@@ -43,6 +44,8 @@ export function GoalConflictBanner() {
   const dismissed = useDismissedRules((s) => s.dismissed);
   const hydrated = useDismissedRules((s) => s.hydrated);
   const dismiss = useDismissedRules((s) => s.dismiss);
+  // US CONS-01 — le Conseil s'ouvre à la demande : c'est lui qui interroge la base, pas l'accueil.
+  const [councilOpen, setCouncilOpen] = useState(false);
 
   useEffect(() => {
     void useDismissedRules.getState().hydrate();
@@ -89,11 +92,26 @@ export function GoalConflictBanner() {
   };
 
   return (
-    <GoalConflictCard
-      conflict={conflict}
-      onKeepMainGoal={keepMainGoal}
-      onKeepPillarGoal={keepPillarGoal}
-      onDismissRule={() => dismiss(conflict.rule)}
-    />
+    <>
+      <GoalConflictCard
+        conflict={conflict}
+        onKeepMainGoal={keepMainGoal}
+        onKeepPillarGoal={keepPillarGoal}
+        onDismissRule={() => dismiss(conflict.rule)}
+        /*
+          US CONS-01 — seule `bulkVsCut` est chiffrable : les deux issues d'`enduranceVsMass`
+          changent des intentions dont la conséquence demanderait RN-17, non construite. Pas de
+          lien plutôt qu'un lien vers une page vide.
+        */
+        onOpenCouncil={conflict.rule === 'bulkVsCut' ? () => setCouncilOpen(true) : undefined}
+      />
+      <CouncilSheet
+        visible={councilOpen}
+        conflict={conflict}
+        onKeepMainGoal={keepMainGoal}
+        onKeepPillarGoal={keepPillarGoal}
+        onClose={() => setCouncilOpen(false)}
+      />
+    </>
   );
 }

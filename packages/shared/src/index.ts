@@ -20,6 +20,8 @@ export * from './password';
 export * from './guidance';
 export * from './goal-defaults';
 export * from './goal-conflicts';
+// US CONS-01 — les deux issues d'une contradiction, chiffrées.
+export * from './council';
 export * from './program-ranking';
 export * from './profile';
 export * from './settings';

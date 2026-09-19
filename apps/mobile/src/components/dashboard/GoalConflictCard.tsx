@@ -37,6 +37,11 @@ type Props = {
   /** Garder le réglage du pilier : c'est l'objectif principal qui s'aligne. */
   onKeepPillarGoal: () => void;
   onDismissRule: () => void;
+  /**
+   * US CONS-01 — ouvre le Conseil, qui chiffre les deux issues ci-dessous. Absent quand la règle
+   * n'est pas chiffrable (voir `buildCouncil`) : la carte reste alors celle de GUID-01.
+   */
+  onOpenCouncil?: () => void;
 };
 
 /** `goal.muscle` → `goalConflict.values.goal.muscle`. Le moteur rend des identifiants, pas du texte. */
@@ -49,6 +54,7 @@ export function GoalConflictCard({
   onKeepMainGoal,
   onKeepPillarGoal,
   onDismissRule,
+  onOpenCouncil,
 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -82,6 +88,22 @@ export function GoalConflictCard({
         </Text>
       ) : null}
 
+      {/*
+        US CONS-01 — le lien vers les chiffres se place AVANT les deux boutons : on lit ce que coûte
+        chaque issue, puis on choisit. L'ordre inverse aurait fait décorer un choix déjà fait.
+      */}
+      {onOpenCouncil !== undefined ? (
+        <Pressable
+          accessibilityRole="button"
+          testID="council-open"
+          onPress={onOpenCouncil}
+          hitSlop={6}
+          style={styles.councilRow}
+        >
+          <Text style={[styles.why, { color: colors.accent }]}>{t('council.open')}</Text>
+        </Pressable>
+      ) : null}
+
       <View style={styles.actions}>
         <View style={styles.action}>
           <Button label={t('goalConflict.keepMainGoal')} onPress={onKeepMainGoal} />
@@ -110,6 +132,7 @@ const styles = StyleSheet.create({
   title: { fontFamily: fontFamily.displayBold, fontSize: 16.5, letterSpacing: -0.3, lineHeight: 22 },
   body: { fontFamily: fontFamily.body, fontSize: 13.5, lineHeight: 19 },
   whyRow: { paddingVertical: 4 },
+  councilRow: { minHeight: 44, justifyContent: 'center' },
   why: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
   whyBody: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 18 },
   actions: { flexDirection: 'row', gap: 9, marginTop: 4 },

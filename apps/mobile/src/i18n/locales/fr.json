@@ -4658,6 +4658,28 @@
     "goalSection": "Ton objectif",
     "editGoal": "Modifier dans mon profil"
   },
+  "council": {
+    "open": "Voir les chiffres",
+    "title": "Le conseil des trois",
+    "subtitle": "Ce que chaque pilier a à dire, et ce que coûte chaque issue.",
+    "voices": "Les voix",
+    "options": "Les deux issues, chiffrées",
+    "horizon": "Projections sur {{weeks}} semaines.",
+    "kcal": "{{value}} kcal/jour",
+    "weight": "{{value}} kg de poids",
+    "protein": "{{value}} g de protéines/jour",
+    "strength": "Force : {{delta}} kg (de {{low}} à {{high}} kg au total)",
+    "noStrength": "Pas encore assez d'historique pour projeter la force.",
+    "tensions": "Ce que ça tend",
+    "noPace": "Aucun chrono projeté : aucun calcul validé ne relie une dose à un temps de course.",
+    "notEnough": "Pas encore de quoi chiffrer : il faut une pesée récente et une dépense de référence.",
+    "voice": {
+      "strengthSlope": "Total actuel {{totalKg}} kg, et tu progresses de {{perWeekKg}} kg par semaine à ce rythme.",
+      "strengthUnknown": "Pas encore assez de séances pour dire où va ta force.",
+      "nutritionTarget": "Ta cible est à {{kcal}} kcal/jour, pour une dépense estimée à {{tdee}} kcal.",
+      "runningVolume": "Tu cours {{perWeek}} fois par semaine : ça pèse sur les deux autres."
+    }
+  },
   "goalConflict": {
     "title": "Tes deux objectifs se contredisent.",
     "why": "Pourquoi je te dis ça",

@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **19/09/2026** — **74 sections**.
+> Dernière mise à jour : **19/09/2026** — **75 sections**.
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -4446,3 +4446,38 @@ plan : [narr01-narration-dossier.md](docs/plans/narr01-narration-dossier.md) · 
 
 **Ce qui n'est volontairement pas là** : le dialogue, la mémoire d'une fois sur l'autre, le résumé
 automatique à l'ouverture, et le Conseil des trois (CONS-01).
+
+## 75. CONS-01 — Le Conseil des trois : les deux issues, chiffrées (`dev`)
+
+Spec : [cons01-conseil-des-trois.md](docs/specs/functional/us/cons01-conseil-des-trois.md) ·
+plan : dans la spec (US courte, adossée à des moteurs existants) · implémentée le 19/09/2026.
+
+> ⚠️ **Pour déclencher la carte** : objectif principal « Prise de masse » (Réglages → profil) **et**
+> objectif nutritionnel « Sèche » ou « Perte de poids » (profil nutrition). La carte apparaît sur
+> l'accueil — sauf en régime **autonome**, qui la tait volontairement.
+
+> 🔎 **Ce que cette US n'est pas** : elle n'ajoute **aucune écriture**. Les deux boutons sont ceux de
+> GUID-01, avec les mêmes conséquences. Ce qui est neuf, c'est qu'on sait ce qu'ils coûtent.
+
+- [ ] **1. La carte affiche « Voir les chiffres »** (contradiction masse ↔ sèche).
+- [ ] **2. Le Conseil montre une voix par pilier actif**, chacune avec un chiffre réel.
+- [ ] **3. Les deux issues affichent** : calories/jour, poids à 8 semaines, protéines, et la force
+      **avec sa fourchette** quand l'historique le permet.
+- [ ] **4. Les calories des deux issues diffèrent** d'environ 700 kcal (surplus +300 contre déficit
+      −400) — c'est le repère qui dit que les deux projections ne sont pas la même.
+- [ ] **5. Aucun chrono, aucune allure** n'est projeté, et l'écran l'écrit noir sur blanc.
+- [ ] **6. Les tensions** (déficit sur semaine chargée, protéines basses, charge) apparaissent
+      **sous l'issue qui les crée**.
+- [ ] **7. Choisir une issue écrit exactement ce que la carte écrivait** : vérifier ensuite le
+      réglage modifié dans son écran d'origine (nutrition ou profil), puis **annuler à la main**.
+- [ ] **8. « Cette règle ne me correspond pas »** fait toujours disparaître la carte.
+- [ ] **9. Contradiction course ↔ masse** (semi/marathon + prise de masse) : carte **sans** lien.
+- [ ] **10. Compte sans pesée récente** : la feuille s'ouvre et dit qu'il n'y a pas de quoi chiffrer
+      — aucune colonne vide, aucun zéro trompeur.
+- [ ] **11. Avec consentement IA** : le bloc « Résumer » apparaît dans le Conseil et respecte le
+      garde-fou de NARR-01 (§74).
+- [ ] **12. Mode avion** : le Conseil s'affiche entier ; seul le résumé échoue.
+- [ ] **13. FR et EN** ; TalkBack lit chaque issue d'un tenant ; à 1,5× de police, rien n'est coupé.
+
+**Ce qui n'est volontairement pas là** : la règle course ↔ masse (il faudrait RN-17, non construite),
+une troisième voie intermédiaire, et toute projection de chrono.

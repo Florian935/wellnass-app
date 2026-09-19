@@ -10,6 +10,56 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 19/09/2026 (sexies) — CONS-01 : le Conseil des trois, ou les deux issues enfin chiffrées
+
+Branche : `dev` (travail direct, décision Florian). Commit précédent : `b24cedb4`. **Seconde et
+dernière US du lot IA** (idée 6). Le lot IA est clos.
+
+### Ce que l'inventaire a encore changé
+
+🔴 **Le « moteur de compromis qui n'existe pas » existait.** C'est
+[`goal-conflicts.ts`](packages/shared/src/goal-conflicts.ts) lui-même qui écrivait, en livrant la
+règle, que l'arbitrage supposerait « un moteur de compromis qui n'existe pas ». Or LABO-01 l'a
+construit trois jours plus tard sans le nommer ainsi :
+[`lab-composer.ts`](packages/shared/src/lab-composer.ts) projette une combinaison de doses en force
+(avec fourchette), calories, poids à 8 semaines, protéines, charge et tensions. L'US ne fait que
+tendre le fil entre les deux — **troisième fois de la journée qu'un inventaire réduit une US de
+moitié**, après l'idée 9 (DASH-01) et l'idée 5 (LABO-01).
+
+### Ajouté
+
+- `packages/shared/src/council.ts` (+ 13 tests) — traduit chaque issue en doses, appelle
+  `composeLab`, rend les deux projections et les voix des piliers actifs. **Aucun coefficient neuf.**
+- `apps/mobile/src/components/dashboard/CouncilSheet.tsx` (+ 5 tests) — les voix, les deux issues
+  chiffrées avec leurs tensions, et les **deux boutons de la carte**, inchangés.
+- Lien « Voir les chiffres » sur la carte de contradiction, **avant** les deux boutons : on lit ce
+  que coûte chaque issue, puis on choisit. L'ordre inverse aurait décoré un choix déjà fait.
+- i18n `council.*` FR + EN, `RECETTES.md` **§75** (13 critères).
+
+### Technique — notes
+
+- 🔴 **Les doses projetées sont exactement celles qu'écrit la carte.** `keepMainGoal` passe la
+  nutrition en surplus (`objective: 'bulk'`, ce que fait `upsertNutritionProfile`) ;
+  `keepPillarGoal` ne change **aucune** dose, parce qu'il aligne l'objectif principal, lequel
+  n'entre dans aucun calcul du composeur. Un test verrouille les deux : afficher sous un bouton les
+  conséquences d'une écriture différente serait le pire défaut possible pour un écran d'arbitrage.
+- ⚠️ **Une règle sur deux.** `enduranceVsMass` n'est pas chiffrée : ses deux issues changent des
+  intentions dont la conséquence demanderait RN-17 (volume de course × déficit), que le catalogue
+  donne « non construit ». La carte reste celle de GUID-01, sans lien.
+- ⚠️ **Aucune projection de chrono**, alors que la maquette du 13/09 affichait « 19:35–20:10 ».
+  Aucun calcul validé ne relie une dose à un temps de course, et LABO-01 avait déjà refusé ça le
+  15/09 (« coefficient inventé, non livré »). L'écran l'écrit à l'utilisateur plutôt que de le taire.
+- ⚠️ **Décision D6 révisée à l'implémentation** : le lien devait disparaître quand il n'y a pas de
+  quoi chiffrer. Le vérifier depuis l'accueil l'obligeait à charger **tout le contexte du Labo**
+  (poids, dépense, pente de force, charge) pour un panneau que personne n'a ouvert, sur l'écran le
+  plus sensible de l'app. La feuille le dit désormais elle-même, et ne s'interroge la base qu'à
+  l'ouverture.
+- ✅ **Le résumé IA de NARR-01 est réutilisé tel quel**, garde-fou compris : le Conseil est un
+  dossier de plus. C'est la première réutilisation du garde-fou, et elle n'a demandé aucune retouche.
+- ✅ Aucune migration, aucune sync rule, aucune écriture nouvelle.
+- Vérifié : `lint` 0 · `typecheck` 0 · `npm run test` **code de sortie 0**, **6 712 tests**
+  (3 481 Jest + 3 231 Vitest).
+
 ## 19/09/2026 (quinquies) — NARR-01 : l'IA raconte le dossier, et ne peut pas inventer un chiffre
 
 Branche : `dev` (travail direct, décision Florian). Commit précédent : `30b97601`. **Première US du

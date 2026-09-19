@@ -4658,6 +4658,28 @@
     "goalSection": "Your goal",
     "editGoal": "Change it in my profile"
   },
+  "council": {
+    "open": "See the numbers",
+    "title": "The council of three",
+    "subtitle": "What each pillar has to say, and what each path costs.",
+    "voices": "The voices",
+    "options": "Both paths, with numbers",
+    "horizon": "Projections over {{weeks}} weeks.",
+    "kcal": "{{value}} kcal/day",
+    "weight": "{{value}} kg of body weight",
+    "protein": "{{value}} g of protein/day",
+    "strength": "Strength: {{delta}} kg (from {{low}} to {{high}} kg total)",
+    "noStrength": "Not enough history yet to project strength.",
+    "tensions": "What it strains",
+    "noPace": "No race time projected: no validated calculation links a dose to a race time.",
+    "notEnough": "Nothing to compute yet: a recent weigh-in and a reference expenditure are needed.",
+    "voice": {
+      "strengthSlope": "Current total {{totalKg}} kg, gaining {{perWeekKg}} kg per week at this rate.",
+      "strengthUnknown": "Not enough sessions yet to say where your strength is going.",
+      "nutritionTarget": "Your target is {{kcal}} kcal/day, for an estimated {{tdee}} kcal burned.",
+      "runningVolume": "You run {{perWeek}} times a week: that weighs on the other two."
+    }
+  },
   "goalConflict": {
     "title": "Your two goals contradict each other.",
     "why": "Why I'm telling you this",
