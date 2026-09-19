@@ -396,6 +396,44 @@ describe('séance libre', () => {
 // Zone Suivre : aucune tuile vide
 // ---------------------------------------------------------------------------
 
+describe('annuaire', () => {
+  it('🔴 l’icône mène AUX TROIS destinations — templates compris, même à zéro template', async () => {
+    // Le libellé de l'icône promet « Exercices, programmes, templates » et n'ouvrait que les
+    // exercices. Combiné au choix « Depuis un template » qui ne paraît qu'à partir d'un template,
+    // et à `/templates` comme seul écran pour en créer un, la fonctionnalité était inatteignable
+    // sur un compte neuf.
+    mockTemplates.mockReturnValue({ templates: [], isLoading: false });
+    await afficher({ kind: 'onboarding' });
+
+    await taper(screen.getByLabelText('strengthHub.directory'));
+    await taper(screen.getByTestId('directory-templates'));
+
+    expect(push).toHaveBeenCalledWith('/templates');
+  });
+
+  it('les programmes sont à la même porte', async () => {
+    await afficher({ kind: 'onboarding' });
+
+    await taper(screen.getByLabelText('strengthHub.directory'));
+    await taper(screen.getByTestId('directory-programs'));
+
+    expect(push).toHaveBeenCalledWith('/programs');
+  });
+
+  it('les exercices s’ouvrent en consultation, pas en ajout', async () => {
+    await afficher({ kind: 'onboarding' });
+
+    await taper(screen.getByLabelText('strengthHub.directory'));
+    await taper(screen.getByTestId('directory-exercises'));
+
+    expect(push).toHaveBeenCalledWith({ pathname: '/exercises', params: { mode: 'browse' } });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Zone Suivre : aucune tuile vide
+// ---------------------------------------------------------------------------
+
 describe('zone Suivre', () => {
   it('ouvre Mon corps même sans historique de séances', async () => {
     await afficher({ kind: 'onboarding' });

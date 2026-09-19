@@ -9,8 +9,10 @@
  * Vit côté mobile (pas `packages/shared`) parce que la palette elle-même
  * (`apps/mobile/src/theme/colors.ts`) vit ici — voir le plan §Étape 1 pour l'arbitrage.
  */
-import { contrastRatio } from '@wellness/shared';
-import { palettes } from '../colors';
+import { contrastRatio, readableOn } from '@wellness/shared';
+import { palettes, type Palette } from '../colors';
+import { DEFAULT_MENU_COLORS, MENU_COLOR_SWATCHES } from '@/stores/menu-accent-store';
+import { PILLAR_KEYS, pillarPalette } from '../pillar';
 
 /**
  * `[thème, premier plan, fond, seuil, usage]`. Le seuil dépend de l'usage réel du token, pas de son
@@ -73,5 +75,115 @@ describe('Palette — contraste WCAG AA', () => {
     expect(palettes.light.chartGreen).toBe('#7c8a5b');
     // Seuil « donnée » (3,0), pas « texte » (4,5) : chartGreen ne peint que des courbes.
     expect(contrastRatio(palettes.light.chartGreen, palettes.light.background)).toBeGreaterThanOrEqual(3.0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US MUSCU-UX04 — les palettes par pilier
+// ---------------------------------------------------------------------------
+
+/**
+ * Les surfaces sont teintées **à luminance constante**, donc aucun rapport de contraste ne devrait
+ * bouger. Ce bloc le **mesure** au lieu de le supposer : c'est la seule chose qui empêche qu'un
+ * réglage de teinte fasse passer une paire sous le seuil sans que personne ne le voie.
+ *
+ * La règle est une **non-régression**, pas un seuil absolu : une paire que la palette neutre ne
+ * tient déjà pas (l'écart assumé `accentText`/`accent` de CONF-07 D2, par exemple) n'a pas à être
+ * réparée ici. On exige seulement que la teinte ne dégrade rien.
+ */
+const PILLAR_PAIRS: { fg: keyof Palette; bg: keyof Palette; threshold: number; usage: string }[] = [
+  { fg: 'text', bg: 'surface', threshold: 4.5, usage: 'texte de carte' },
+  { fg: 'text', bg: 'background', threshold: 4.5, usage: 'texte de page' },
+  { fg: 'textMuted', bg: 'surface', threshold: 4.5, usage: 'texte secondaire de carte' },
+  { fg: 'textMuted', bg: 'background', threshold: 4.5, usage: 'texte secondaire de page' },
+  { fg: 'accent', bg: 'surface', threshold: 4.5, usage: 'accent du pilier sur une carte' },
+  { fg: 'accent', bg: 'background', threshold: 4.5, usage: 'accent du pilier sur la page' },
+  { fg: 'accentText', bg: 'accent', threshold: 4.5, usage: 'libellé des boutons pleins' },
+  { fg: 'borderStrong', bg: 'surface', threshold: 3.0, usage: 'limite de champ sur une carte' },
+  { fg: 'borderStrong', bg: 'background', threshold: 3.0, usage: 'limite de champ sur la page' },
+  { fg: 'success', bg: 'surface', threshold: 4.5, usage: 'texte de succès' },
+  { fg: 'success', bg: 'background', threshold: 4.5, usage: 'texte de succès sur la page' },
+  { fg: 'amber', bg: 'background', threshold: 3.0, usage: 'donnée ambre' },
+  { fg: 'chartGreen', bg: 'background', threshold: 3.0, usage: 'donnée verte' },
+  { fg: 'panelText', bg: 'panel', threshold: 4.5, usage: 'texte du panneau inversé' },
+  { fg: 'panelMuted', bg: 'panel', threshold: 4.5, usage: 'texte secondaire du panneau' },
+  { fg: 'warnText', bg: 'warn', threshold: 4.5, usage: 'alerte — jamais teintée, doit le rester' },
+  { fg: 'pillarHome', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier sur une carte' },
+  { fg: 'pillarStrength', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier sur une carte' },
+  { fg: 'pillarRunning', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier sur une carte' },
+  { fg: 'pillarNutrition', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier sur une carte' },
+  { fg: 'pillarLab', bg: 'surface', threshold: 4.5, usage: 'couleur de pilier sur une carte' },
+];
+
+const CASES = (['light', 'dark'] as const).flatMap((theme) =>
+  PILLAR_KEYS.flatMap((pillar) =>
+    PILLAR_PAIRS.map((pair) => ({ theme, pillar, ...pair })),
+  ),
+);
+
+describe('Palettes par pilier — aucune régression de contraste', () => {
+  it.each(CASES)(
+    '$theme/$pillar : $fg / $bg ($usage)',
+    ({ theme, pillar, fg, bg, threshold }) => {
+      const neutre = contrastRatio(palettes[theme][fg], palettes[theme][bg]);
+      const teintee = pillarPalette(theme, pillar);
+      const obtenu = contrastRatio(teintee[fg], teintee[bg]);
+
+      expect(obtenu).not.toBeNull();
+      // Seuil absolu — mais seulement là où la palette neutre le tenait déjà.
+      if (neutre !== null && neutre >= threshold) {
+        expect(obtenu!).toBeGreaterThanOrEqual(threshold);
+      }
+    },
+  );
+
+  it('🔴 les surfaces changent VRAIMENT de teinte — sinon le test ci-dessus passe pour rien', () => {
+    for (const theme of ['light', 'dark'] as const) {
+      for (const pillar of PILLAR_KEYS) {
+        const teintee = pillarPalette(theme, pillar);
+        expect(teintee.surface).not.toBe(palettes[theme].surface);
+        expect(teintee.background).not.toBe(palettes[theme].background);
+      }
+      // Et deux piliers ne se ressemblent pas.
+      expect(pillarPalette(theme, 'strength').surface).not.toBe(pillarPalette(theme, 'running').surface);
+    }
+  });
+
+  it('🔴 le bandeau d’alerte n’est JAMAIS teinté — il doit rester reconnaissable partout', () => {
+    for (const theme of ['light', 'dark'] as const) {
+      for (const pillar of PILLAR_KEYS) {
+        expect(pillarPalette(theme, pillar).warn).toBe(palettes[theme].warn);
+        expect(pillarPalette(theme, pillar).warnBorder).toBe(palettes[theme].warnBorder);
+        expect(pillarPalette(theme, pillar).warnText).toBe(palettes[theme].warnText);
+      }
+    }
+  });
+
+  it('chaque pilier porte bien son propre accent', () => {
+    expect(pillarPalette('dark', 'strength').accent).toBe(palettes.dark.pillarStrength);
+    expect(pillarPalette('dark', 'running').accent).toBe(palettes.dark.pillarRunning);
+    expect(pillarPalette('light', 'nutrition').accent).toBe(palettes.light.pillarNutrition);
+  });
+});
+
+/**
+ * La préférence « Couleurs des menus » pose l'une de ces valeurs comme **accent**, sur les deux
+ * thèmes. Jusqu'au 19/09/2026 elle portait les teintes profondes des scènes : activer
+ * l'interrupteur mettait `#6b0028` (1,15:1 sur une carte sombre) en couleur d'icône et de libellé.
+ * Un réglage ne doit pas pouvoir rendre l'app illisible.
+ */
+describe('Couleurs des menus (préférence) — lisibles dans les deux thèmes', () => {
+  const VALEURS = [...new Set([...Object.values(DEFAULT_MENU_COLORS), ...MENU_COLOR_SWATCHES])];
+
+  it.each(
+    (['light', 'dark'] as const).flatMap((theme) =>
+      VALEURS.flatMap((couleur) => PILLAR_KEYS.map((pillar) => ({ theme, couleur, pillar }))),
+    ),
+  )('$theme/$pillar : $couleur est rendue lisible sur les cartes', ({ theme, couleur, pillar }) => {
+    // Le contrat n'est pas que la couleur STOCKÉE soit lisible partout — c'est impossible pour une
+    // valeur unique servie aux deux thèmes. C'est que `readableOn` la ramène au seuil avant de la
+    // poser comme accent, ce que fait `useTheme`.
+    const surface = pillarPalette(theme, pillar).surface;
+    expect(contrastRatio(readableOn(couleur, surface)!, surface)!).toBeGreaterThanOrEqual(4.5);
   });
 });

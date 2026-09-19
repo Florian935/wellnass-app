@@ -9,6 +9,105 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 19/09/2026 (septies) — MUSCU-FIX01 + MUSCU-UX04 : les flux de la séance réparés, et l'identité d'un pilier tenue par toute la page
+
+Branche : `dev` (travail direct, décision Florian). Commit précédent : `7def6d1b`. **Lot issu de la
+recette du jour** (Florian, sur device) : un rapport de bug, trois causes racines, plus la
+cohérence visuelle du pilier — traité en une seule vague sur sa décision.
+
+### Corrigé — MUSCU-FIX01 : trois défauts cumulés sur « Séance libre »
+
+🔴 **« Chargement » était confondu avec « absent ».** `useActiveWorkout()` renvoie
+`{ workout, isLoading }` ; quatre écrans ne lisaient que `workout`. Entre la création de la séance
+et la réponse de PowerSync, `workout` vaut `null` — exactement comme quand il n'y a pas de séance.
+
+- `app/workout.tsx` annonçait **« Aucune séance en cours »** avec un bouton de retour **sur la
+  séance qu'il venait de créer** : c'est l'« écran noir » remonté en recette.
+- `app/exercises.tsx` : la garde `if (active)` **avalait l'appui en silence** — ni ajout, ni retour,
+  ni message. Le tap était simplement perdu.
+- `app/planning/index.tsx` : le bouton affichait « Démarrer » puis basculait sur « Reprendre » sous
+  le doigt. L'**écriture**, elle, était déjà protégée (démarrages idempotents côté repository).
+
+Le patron correct existait déjà dans le dépôt (`strength-hub-repository.ts`,
+`dashboard-repository.ts`, `app/templates/index.tsx`), et le mock de `workout-screen.test.tsx`
+renvoyait **déjà** `isLoading: false` — la suite avait été écrite pour un écran qui lit ce champ.
+
+🔴 **La séance vide n'avait aucune barre d'action.** À zéro exercice, la barre rendait `null`
+(`current ? saisie : entries.length > 0 ? clôture : null`). Or **une séance libre démarre toujours
+à zéro exercice** : son écran d'arrivée était un cul-de-sac. Le seul « + Ajouter un exercice »
+vivait derrière les trois points.
+
+🔴 **Les templates étaient inatteignables sur un compte neuf.** `/templates` n'avait qu'un seul point
+d'entrée — le choix « Depuis un template » de la séance libre, qui ne s'affiche **qu'à partir d'un
+template** (arbitrage délibéré, verrouillé par un test). Or l'unique écran pour en créer un est
+`/templates` lui-même. MUSCU-UX01 (10/09) avait retiré le widget `strength-templates` en désignant
+« la ligne d'annuaire *Exercices, programmes, templates* » comme repli : cette ligne existe, porte ce
+libellé exact dans `fr.json`, et ouvrait `/exercises?mode=browse` — les exercices seuls. **La
+destination promise n'avait jamais été construite.** La règle « pas de choix à une seule issue »
+n'est **pas** touchée : le problème n'était pas là.
+
+### Ajouté
+
+- `components/strength/DirectorySheet.tsx` (+ 3 tests) — les trois destinations de l'annuaire, dont
+  « Mes templates », atteignable **même à zéro template**.
+- Barre d'action « + Ajouter un exercice » sur la séance vide, et indicateur d'attente sur
+  `/workout` tant que la requête n'a pas répondu.
+- i18n `strengthHub.directorySheet.*` FR + EN (8 clés de chaque côté, parité vérifiée).
+- `packages/shared/src/contrast.ts` : **`tintPreservingLuminance`** et **`readableOn`** (+ 12 tests).
+
+### Modifié — MUSCU-UX04 : une seule identité par écran
+
+Mesuré, l'onglet Musculation portait **trois identités** : la scène en bordeaux `#6b0028`, la barre
+d'onglets en rose `#e07a98` (`pillarStrength`), et les cartes en brun `#30271e` avec un accent
+terracotta `#dd6e40`. Les cartes étaient l'intruse.
+
+- `theme/pillar.ts` (**neuf**) — la palette d'un pilier : surfaces teintées, accent du pilier.
+  Mémoïsée (dix combinaisons possibles).
+- `theme/useTheme.ts` — deux couches : l'identité du pilier (fait du design system, **toujours**
+  appliquée), puis la préférence « Couleurs des menus » par-dessus si elle est active.
+- `components/stage/StageScrollView.tsx` — la teinte du bas de la scène **coule** sur ~200 px du
+  corps. Départ à 0,72 d'opacité et non à 1 : les coins arrondis de la scène laissent voir la page,
+  et une continuation opaque juste en dessous les aurait transformés en deux encoches.
+- `components/stage/matter/ImpactSilhouette.tsx` — corps redessiné. L'ancien mettait l'entrejambe à
+  **126 sur 190** (jambes trop courtes sous un buste trop large) et posait des segments
+  rectangulaires bout à bout, d'où les trous. Canon 7,5 têtes, formes qui se chevauchent sous un
+  même remplissage, **aucune arête droite**, zones musculaires détourées par le corps (`ClipPath`,
+  id unique par instance sur le patron de `BodyShapeFigure`).
+
+### Technique — notes
+
+- 🔴 **Les surfaces sont teintées à luminance CONSTANTE**, et ce n'est pas un raffinement. Un
+  mélange ordinaire vers une couleur sombre les assombrit ; or la palette claire est à **4,53-4,55**
+  pour un seuil WCAG AA de 4,5. Mesuré : un mélange à 10 % vers le bordeaux faisait tomber
+  `textMuted`/`surface` à **4,13** — six paires sous le seuil d'un coup, dans un thème que CONF-07
+  venait tout juste de rendre conforme. À luminance constante, **tout** rapport de contraste contre
+  une surface est conservé par construction.
+- 🔴 **Le réglage « Couleurs des menus » posait `#6b0028` comme accent en muscu — 1,15:1 sur une
+  carte sombre.** Un interrupteur de réglages rendait libellés et icônes illisibles, sans garde-fou.
+  Les défauts et la palette de choix sont alignés sur les accents mesurés, **et** toute couleur est
+  désormais ramenée au seuil par `readableOn` avant d'être posée : la préférence stocke **une**
+  couleur servie aux **deux** thèmes, et aucune valeur ne peut convenir aux deux
+  (`#e07a98` : 5,2:1 en sombre, 2,5:1 en clair).
+- **Intensités arrêtées à l'œil** sur planche comparative (0 · 0,12 · 0,2 · 0,3 · 0,45) : **0,30 en
+  sombre, 0,22 en clair**. En dessous de 0,2 le sombre ne bascule pas ; au-delà de 0,3 il vire au
+  bonbon. Le fond bouge à **0,6×** des cartes — sans ce facteur, fond et carte convergent et la
+  carte cesse de se détacher.
+- **Le bandeau d'alerte n'est jamais teinté** (`warn`/`warnBorder`/`warnText` hors du jeu) : il doit
+  se reconnaître d'un coup d'œil, la même couleur sur les cinq piliers. Verrouillé par un test.
+- **Garde-fou** : `theme/__tests__/contrast.test.ts` mesure **5 piliers × 2 thèmes × 21 paires** en
+  **non-régression** — une paire que la palette neutre ne tient pas déjà (l'écart assumé
+  `accentText`/`accent` de CONF-07 D2) n'a pas à être réparée ici. Plus « les surfaces changent
+  vraiment » et « l'alerte n'est jamais teintée », sans quoi le reste passerait pour rien.
+- ⚠️ **Le changement visuel touche les cinq onglets**, pas seulement la muscu — c'est le principe
+  même de l'US. Recette §77, critère 8 en priorité (texte secondaire en thème clair, le cas le plus
+  tendu de la palette).
+- ⚠️ **Parité i18n : `check-i18n-parity.mjs` échoue déjà sur `HEAD`** (4 valeurs vides,
+  `coach.*.verdict.warmup`) — **antérieur à ce lot**, vérifié par `git stash`. Les 8 clés ajoutées
+  sont symétriques FR/EN et aucune clé n'a été perdue (3969 → 3977 des deux côtés).
+- ✅ Aucune migration, aucune sync rule, aucune dépendance native → recettable sur un build de `dev`.
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0, **3780 tests Jest + 158 fichiers Vitest verts**
+  (3487 avant — 293 tests ajoutés, dont la matrice de contraste). Codes de sortie lus **sans pipe**.
+
 
 ## 19/09/2026 (sexies) — CONS-01 : le Conseil des trois, ou les deux issues enfin chiffrées
 

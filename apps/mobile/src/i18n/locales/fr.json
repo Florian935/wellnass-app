@@ -3747,6 +3747,16 @@
       "title": "Suggérés pour toi · {{level}}",
       "seeAll_one": "Voir le programme",
       "seeAll_other": "Voir les {{count}} programmes"
+    },
+    "directorySheet": {
+      "title": "Ta bibliothèque",
+      "subtitle": "Les exercices, les programmes qui les enchaînent, et tes routines à toi.",
+      "exercises": "Exercices",
+      "exercisesDesc": "Le catalogue, tes exercices perso et tes favoris.",
+      "programs": "Programmes",
+      "programsDesc": "Bibliothèque éditoriale et tes programmes.",
+      "templates": "Mes templates",
+      "templatesDesc": "Tes routines réutilisables pour les séances libres."
     }
   },
   "hydration": {

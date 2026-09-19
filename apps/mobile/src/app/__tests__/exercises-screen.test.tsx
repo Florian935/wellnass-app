@@ -206,10 +206,11 @@ const afficher = async ({
   isLoading = false,
   params = {} as Record<string, string>,
   active = null as Record<string, unknown> | null,
+  activeLoading = false,
 } = {}) => {
   mockExercises.mockReturnValue({ exercises, isLoading });
   mockParams.mockReturnValue(params);
-  mockActive.mockReturnValue({ workout: active });
+  mockActive.mockReturnValue({ workout: active, isLoading: activeLoading });
   await render(<ExercisesScreen />);
 };
 
@@ -380,6 +381,15 @@ describe('mode ajout à la séance', () => {
     // séance où ajouter, et inventer une cible créerait un enregistrement fantôme.
     expect(mockAddToWorkout).not.toHaveBeenCalled();
     expect(back).not.toHaveBeenCalled();
+  });
+
+  it('🔴 séance pas encore chargée : rien de tapable, donc aucun appui perdu', async () => {
+    // « Pas encore chargée » et « pas de séance » se présentaient pareil (`workout: null`), et la
+    // garde `if (active)` avalait alors l'appui EN SILENCE : ni ajout, ni retour, ni message.
+    // Tant qu'on ne sait pas, on ne propose pas de choisir.
+    await afficher({ active: null, activeLoading: true });
+
+    expect(screen.queryByText('Squat')).toBeNull();
   });
 });
 

@@ -101,7 +101,11 @@ export default function PlanningScreen() {
   const { items } = useWeekPlan(weekStart);
   const { items: missed } = useMissedSessions();
   const { runnerProfile } = useRunnerProfile();
-  const { workout: active } = useActiveWorkout();
+  // `isLoading` compte ici : tant que la requête n'a pas répondu, `active` vaut `null` comme
+  // quand il n'y a pas de séance. Le bouton affichait donc « Démarrer » puis basculait sur
+  // « Reprendre » sous le doigt. Même cause racine que l'« écran noir » de /workout (19/09/2026) ;
+  // l'écriture, elle, était déjà protégée — les fonctions de démarrage sont idempotentes.
+  const { workout: active, isLoading: activeLoading } = useActiveWorkout();
 
   const todayKey = localDayKey(new Date());
   const ref5kPaceSPerKm = runnerProfile?.ref5kPaceSPerKm ?? null;
@@ -552,6 +556,7 @@ export default function PlanningScreen() {
             {selected?.pillar === 'strength' && selected?.status === 'planned' ? (
               <Button
                 label={active ? t('workout.resume') : t('planning.start')}
+                loading={activeLoading}
                 onPress={() => void onStartSelected()}
               />
             ) : null}

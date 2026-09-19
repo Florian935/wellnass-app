@@ -15,25 +15,36 @@ import { secureStorage } from '@/lib/secure-storage';
 export type MenuKey = 'home' | 'strength' | 'running' | 'nutrition' | 'lab';
 export const MENU_KEYS: readonly MenuKey[] = ['home', 'strength', 'running', 'nutrition', 'lab'];
 
-/** Couleurs par défaut (une identité par menu). */
+/**
+ * Couleurs par défaut de la **préférence** — une par menu.
+ *
+ * ⚠️ Ce ne sont PAS les couleurs d'identité des piliers : celles-là vivent dans `theme/pillar.ts`
+ * et s'appliquent toujours. Ici on ne décrit que le point de départ de la surcharge volontaire.
+ *
+ * Alignées sur les accents lisibles le 19/09/2026 (US MUSCU-UX04). Avant, ce tableau portait les
+ * teintes **profondes** des scènes — pensées pour un fond clair. Activer le réglage posait donc
+ * `#6b0028` comme accent sur les cartes sombres, où il mesure **1,15:1** : libellés et icônes
+ * devenaient illisibles d'un simple appui sur un interrupteur de réglages, sans qu'aucun garde-fou
+ * ne le signale. Les valeurs ci-dessous sont mesurées par `theme/__tests__/contrast.test.ts`.
+ */
 export const DEFAULT_MENU_COLORS: Record<MenuKey, string> = {
-  home: '#c0562f', // terracotta (accent historique)
-  strength: '#6b0028', // bordeaux
-  running: '#2f6fc0', // bleu
-  nutrition: '#5c7a3f', // vert
-  lab: '#a8712a', // doré — US LABO-01
+  home: '#e07a4d', // = pillarHome (sombre)
+  strength: '#e07a98', // = pillarStrength (sombre) — l'ancien #6b0028 : 1,15:1 sur une carte
+  running: '#6fa8ef', // = pillarRunning (sombre)
+  nutrition: '#a9ba7e', // = pillarNutrition (sombre)
+  lab: '#e0b155', // = pillarLab (sombre)
 };
 
 /** Palette de choix proposée dans les réglages. */
 export const MENU_COLOR_SWATCHES: readonly string[] = [
-  '#c0562f',
-  '#6b0028',
-  '#2f6fc0',
-  '#5c7a3f',
-  '#6a4c93',
-  '#b5761f',
-  '#0f766e',
-  '#9d174d',
+  '#e07a4d',
+  '#e07a98',
+  '#6fa8ef',
+  '#a9ba7e',
+  '#e0b155',
+  '#b99be0',
+  '#5fc8bd',
+  '#e08aa8',
 ];
 
 const STORAGE_KEY = 'menu_accent_colors';

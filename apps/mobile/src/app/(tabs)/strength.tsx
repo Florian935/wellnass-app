@@ -32,6 +32,7 @@ import { localDayKey, type StrengthWidgetId, type WidgetId, type WidgetSize } fr
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { BodyExplorerLink } from '@/components/body/BodyExplorerLink';
+import { DirectorySheet } from '@/components/strength/DirectorySheet';
 import { NearRecordsCard } from '@/components/strength/NearRecordsCard';
 import { ProgramProgressBar } from '@/components/strength/ProgramProgressBar';
 import { StrengthStage, type StrengthScene } from '@/components/strength/StrengthStage';
@@ -91,6 +92,10 @@ export default function StrengthScreen() {
   // Une fois la question posée, elle ne se repose pas dans la même session d'écran — sinon
   // « ne pas retenir mon choix » bouclerait à l'infini sur la feuille.
   const modeAsked = useRef(false);
+  // L'annuaire : l'icône 📚 dit « Exercices, programmes, templates » et n'ouvrait que les
+  // exercices. Les templates n'avaient alors plus AUCUN point d'entrée à zéro template — voir
+  // `DirectorySheet`.
+  const [directoryOpen, setDirectoryOpen] = useState(false);
 
   // ── Widgets conditionnels ─────────────────────────────────────────────────────────────────
   // Le défaut corrigé : sans ce prédicat, une tuile sans donnée réserve quand même sa case et
@@ -322,7 +327,7 @@ export default function StrengthScreen() {
           onPrimary={onPrimary}
           onSecondary={onSecondary}
           onPlanning={() => router.push('/planning')}
-          onDirectory={() => router.push({ pathname: '/exercises', params: { mode: 'browse' } })}
+          onDirectory={() => setDirectoryOpen(true)}
         />
       }
     >
@@ -404,6 +409,20 @@ export default function StrengthScreen() {
           const target = pendingProgramId;
           setPendingProgramId(null);
           if (target) router.push(`/programs/${target}`);
+        }}
+        colors={colors}
+      />
+
+      <DirectorySheet
+        visible={directoryOpen}
+        onClose={() => setDirectoryOpen(false)}
+        onPick={(target) => {
+          setDirectoryOpen(false);
+          if (target === 'exercises') {
+            router.push({ pathname: '/exercises', params: { mode: 'browse' } });
+            return;
+          }
+          router.push(target === 'programs' ? '/programs' : '/templates');
         }}
         colors={colors}
       />

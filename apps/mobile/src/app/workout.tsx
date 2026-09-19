@@ -27,7 +27,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
@@ -275,7 +275,11 @@ export default function WorkoutScreen() {
   // `plan=1` : arrivée depuis « Modifier avant de commencer » (brief, US MUSCU-UX03).
   const { plan: openPlanParam } = useLocalSearchParams<{ plan?: string }>();
 
-  const { workout: active } = useActiveWorkout();
+  // `isLoading` n'est PAS décoratif : entre le `push('/workout')` et la résolution de la requête
+  // PowerSync, `workout` vaut `null` — exactement comme quand il n'y a pas de séance. Confondre
+  // les deux faisait annoncer « Aucune séance en cours » sur la séance qu'on venait de créer
+  // (recette du 19/09/2026 : l'« écran noir » de la séance libre).
+  const { workout: active, isLoading: activeLoading } = useActiveWorkout();
   const { profile } = useProfile();
   const displayLevel: WorkoutDisplayLevel = profile?.workoutDisplayLevel ?? 'normal';
 
@@ -434,6 +438,17 @@ export default function WorkoutScreen() {
   }, [appActive, restEndsAt, restReminderOn, nextLabelForReminder, i18n.language, t]);
 
   const currentSetId = current?.set.id;
+
+  // Tant que la requête n'a pas répondu, on ne sait RIEN — surtout pas qu'il n'y a pas de séance.
+  if (activeLoading && !active) {
+    return (
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+        <View style={styles.empty} testID="workout-loading">
+          <ActivityIndicator color={colors.accent} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   if (!active) {
     return (
@@ -1236,7 +1251,33 @@ export default function WorkoutScreen() {
             </Text>
           </Pressable>
         </View>
-      ) : null}
+      ) : (
+        /* Séance sans exercice — l'état d'arrivée de TOUTE séance libre. La barre n'avait que
+           deux branches et rendait `null` ici : l'écran n'offrait alors aucune action, et le seul
+           « + Ajouter un exercice » était caché derrière les trois points (recette du 19/09/2026).
+           La barre est le contrat de cet écran : elle porte toujours le geste suivant. */
+        <View
+          style={[
+            styles.finishBar,
+            { backgroundColor: colors.surface, borderTopColor: colors.borderStrong },
+          ]}
+        >
+          <Pressable
+            accessibilityRole="button"
+            testID="workout-add-exercise"
+            onPress={() => router.push('/exercises')}
+            style={({ pressed }) => [
+              styles.finishBtn,
+              { backgroundColor: colors.accent },
+              pressed && styles.pressed,
+            ]}
+          >
+            <Text style={[styles.finishLabel, { color: colors.accentText }]}>
+              {t('workout.addExercise')}
+            </Text>
+          </Pressable>
+        </View>
+      )}
 
       {restEndsAt !== null ? (
         <RestOverlay

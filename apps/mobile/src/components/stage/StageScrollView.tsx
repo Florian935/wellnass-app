@@ -12,7 +12,15 @@
  */
 
 import { useState, type ReactElement, type ReactNode } from 'react';
-import { StyleSheet, Text, View, type RefreshControlProps, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  StyleSheet,
+  Text,
+  View,
+  type RefreshControlProps,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -29,6 +37,8 @@ import { useStageTheme } from './PillarStage';
 
 const COMPACT_BAR_HEIGHT = 52;
 const FADE_SPAN = 36;
+/** Hauteur sur laquelle la teinte de la scène s'éteint dans le corps de la page. */
+const SPILL_HEIGHT = 200;
 
 type Props = {
   pillar: StageKey;
@@ -64,6 +74,9 @@ export function StageScrollView({
   // Seuil : la scène est presque entièrement sortie, sous la barre compacte.
   const threshold = Math.max(0, stageHeight - insets.top - COMPACT_BAR_HEIGHT - 12);
 
+  // La teinte du BAS de la scène : c'est elle qui coule, pas celle du haut.
+  const spillColor = theme.gradient[theme.gradient.length - 1] ?? theme.surfaces[0]!;
+
   const onScroll = useAnimatedScrollHandler((event) => {
     scrollY.value = event.contentOffset.y;
   });
@@ -82,14 +95,31 @@ export function StageScrollView({
       <Animated.ScrollView
         onScroll={onScroll}
         scrollEventThrottle={16}
-        onMomentumScrollEnd={(e) => setCompactVisible(e.nativeEvent.contentOffset.y >= threshold && threshold > 0)}
-        onScrollEndDrag={(e) => setCompactVisible(e.nativeEvent.contentOffset.y >= threshold && threshold > 0)}
+        onMomentumScrollEnd={(e) =>
+          setCompactVisible(e.nativeEvent.contentOffset.y >= threshold && threshold > 0)
+        }
+        onScrollEndDrag={(e) =>
+          setCompactVisible(e.nativeEvent.contentOffset.y >= threshold && threshold > 0)
+        }
         showsVerticalScrollIndicator={false}
         scrollEnabled={scrollEnabled}
         refreshControl={refreshControl}
       >
         <View onLayout={(e) => setStageHeight(e.nativeEvent.layout.height)}>{stage}</View>
-        <View style={[styles.body, bodyStyle]}>{children}</View>
+        <View style={[styles.body, bodyStyle]}>
+          {/* La scène ne s'arrête plus net : sa teinte du bas **coule** sur le haut du corps et
+              s'éteint en ~200 px. Sans ça, la bande colorée et les cartes restaient deux mondes
+              posés l'un sur l'autre — la moitié de l'effet « pas ISO » remonté en recette.
+              Le départ n'est PAS à pleine opacité : les coins arrondis de la scène laissent voir la
+              page, et une continuation opaque juste en dessous les aurait transformés en deux
+              encoches inexplicables. À 0,72 la coulée se lit comme une lueur, pas comme un bloc. */}
+          <LinearGradient
+            pointerEvents="none"
+            colors={[`${spillColor}b8`, `${spillColor}00`]}
+            style={styles.spill}
+          />
+          {children}
+        </View>
       </Animated.ScrollView>
 
       <Animated.View
@@ -100,7 +130,11 @@ export function StageScrollView({
         accessibilityElementsHidden={!compactVisible}
         style={[
           styles.compact,
-          { paddingTop: insets.top, height: insets.top + COMPACT_BAR_HEIGHT, backgroundColor: theme.surfaces[0] },
+          {
+            paddingTop: insets.top,
+            height: insets.top + COMPACT_BAR_HEIGHT,
+            backgroundColor: theme.surfaces[0],
+          },
           headerStyle,
         ]}
       >
@@ -120,6 +154,8 @@ export function StageScrollView({
 const styles = StyleSheet.create({
   root: { flex: 1 },
   body: { paddingHorizontal: 20, paddingTop: 16, paddingBottom: 28, gap: 12 },
+  // Décalée de la gouttière du corps pour couler sur toute la largeur, et derrière les cartes.
+  spill: { position: 'absolute', top: 0, left: -20, right: -20, height: SPILL_HEIGHT },
   compact: {
     position: 'absolute',
     top: 0,
@@ -133,6 +169,11 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 18,
     borderBottomRightRadius: 18,
   },
-  compactTitle: { fontFamily: fontFamily.displayBold, fontSize: 17, letterSpacing: -0.4, flexShrink: 1 },
+  compactTitle: {
+    fontFamily: fontFamily.displayBold,
+    fontSize: 17,
+    letterSpacing: -0.4,
+    flexShrink: 1,
+  },
   compactValue: { fontFamily: fontFamily.displayXBold, fontSize: 17, letterSpacing: -0.4 },
 });

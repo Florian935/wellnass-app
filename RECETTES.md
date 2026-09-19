@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **19/09/2026** — **75 sections**.
+> Dernière mise à jour : **19/09/2026** — **77 sections**.
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -4481,3 +4481,88 @@ plan : dans la spec (US courte, adossée à des moteurs existants) · implément
 
 **Ce qui n'est volontairement pas là** : la règle course ↔ masse (il faudrait RN-17, non construite),
 une troisième voie intermédiaire, et toute projection de chrono.
+
+## 76. MUSCU-FIX01 — Les flux de la séance de musculation (`dev`)
+
+Correctifs issus de la recette du **19/09/2026** (Florian, sur device) : trois défauts qui se
+cumulaient sur le même parcours — « Séance libre » depuis le hub muscu.
+
+> 🔎 **Ce que ces correctifs ne sont pas** : aucune nouvelle fonctionnalité, aucune écriture
+> nouvelle en base. Trois chemins qui existaient déjà et qui ne menaient nulle part.
+
+**Ce qui était cassé, et pourquoi** — utile pour savoir quoi regarder :
+
+1. **L'« écran noir ».** `/workout` ne lisait que `workout`, jamais `isLoading`. Entre la création
+   de la séance et la réponse de la requête PowerSync, `workout` vaut `null` — exactement comme
+   quand il n'y a pas de séance. L'écran annonçait donc « Aucune séance en cours » **sur la séance
+   qu'on venait de créer**, avec un bouton « Retour à l'accueil ».
+2. **La séance vide sans issue.** La barre d'action n'avait que deux branches (série en cours,
+   clôture) : à zéro exercice elle ne rendait rien. Or une séance libre démarre **toujours** à zéro
+   exercice. Le seul « + Ajouter un exercice » vivait derrière les trois points.
+3. **Les templates injoignables.** `/templates` n'avait qu'un seul point d'entrée : le choix
+   « Depuis un template » de la séance libre, qui ne s'affiche **qu'à partir d'un template**. Et
+   l'unique écran pour en créer un est `/templates` lui-même. À zéro template, impasse totale.
+   L'icône 📚 du hub, libellée « Exercices, programmes, templates », n'ouvrait que les exercices.
+
+- [ ] **1. Séance libre → l'écran de séance s'ouvre directement.** Plus jamais « Aucune séance en
+      cours » ni « Retour à l'accueil » sur une séance qu'on vient de démarrer. Au pire un bref
+      indicateur de chargement.
+- [ ] **2. Le refaire avec le réseau coupé** (mode avion) : même résultat — c'est du local, la
+      séance doit s'ouvrir aussi vite.
+- [ ] **3. Séance vide : « + Ajouter un exercice » est visible en bas**, sans ouvrir le menu ⋮.
+- [ ] **4. Il ajoute vraiment** : l'appui ouvre l'annuaire, un exercice choisi revient dans la
+      séance, la barre passe alors à la saisie de série.
+- [ ] **5. Depuis l'annuaire ouvert en ajout, taper un exercice tout de suite** (avant que l'écran
+      soit posé) : l'appui n'est jamais avalé en silence — soit la liste attend, soit l'ajout se
+      fait.
+- [ ] **6. L'icône 📚 du hub ouvre les trois destinations** : Exercices, Programmes, Mes templates.
+- [ ] **7. Sur un compte sans aucun template**, « Mes templates » s'ouvre quand même et permet d'en
+      créer un (bouton +).
+- [ ] **8. Une fois un template créé**, « Séance libre » repropose bien le choix « À blanc /
+      Depuis un template », et « Depuis un template » démarre la séance avec ses exercices.
+- [ ] **9. « Exercices » depuis cette feuille ouvre la consultation** (fiche d'exercice au tap),
+      pas l'ajout à une séance.
+- [ ] **10. La silhouette du hub muscu** ne ressemble plus à un mannequin segmenté : un corps d'un
+      seul tenant, en courbes, proportions tenues. Les muscles de la séance s'allument **dedans**,
+      jamais à côté.
+- [ ] **11. Vérifier la silhouette sur plusieurs séances** : haut du corps, bas du corps, full body
+      — chaque groupe allume une zone plausible.
+- [ ] **12. FR et EN** sur la feuille d'annuaire ; TalkBack annonce les trois lignes ; à 1,5× de
+      police, rien n'est coupé.
+
+## 77. MUSCU-UX04 — L'identité d'un pilier, tenue par toute la page (`dev`)
+
+Spec : [muscu-ux04-identite-pilier.md](docs/specs/functional/us/muscu-ux04-identite-pilier.md) ·
+implémentée le 19/09/2026, suite directe de la recette du même jour.
+
+> 🔎 **Ce que cette US change** : les surfaces (cartes, fond, pistes) prennent la teinte du pilier
+> affiché, l'accent devient celui du pilier, et la scène du haut « coule » sur le début de la page.
+> **Le changement est visible sur les cinq onglets**, pas seulement en muscu.
+
+> ⚠️ **Le point à regarder en priorité, c'est la lisibilité.** Les teintes sont posées à luminance
+> constante et 210 paires de contraste sont mesurées par un test — mais un test mesure des
+> rapports, pas le confort. Si un texte te paraît fatigant quelque part, c'est l'information utile.
+
+- [ ] **1. Onglet Muscu** : la carte du haut et les cartes en dessous sont **de la même famille**.
+      Plus de carte brune sous un héros bordeaux.
+- [ ] **2. Les accents suivent** : pastilles de jour, barres de record, icônes — en rose muscu, plus
+      en orange terracotta.
+- [ ] **3. La coulée** : sous la scène, la teinte s'éteint progressivement sur le haut de la page,
+      sans arête visible. Les coins arrondis de la scène restent lisibles comme des coins.
+- [ ] **4. Onglet Course** : même traitement, en bleu. **Onglet Alimentation** : en vert.
+      **Labo** : en doré. **Accueil** : en terracotta.
+- [ ] **5. Passer d'un onglet à l'autre** : la bascule de teinte est nette, sans clignotement ni
+      flash de couleur.
+- [ ] **6. Un écran poussé depuis un pilier garde sa couleur** (ex. : hub muscu → un exercice →
+      l'écran reste en muscu), et revient à la bonne couleur au retour.
+- [ ] **7. Thème clair** (Réglages → Thème) : refaire 1 à 6. Les surfaces claires sont teintées en
+      pastel, **jamais grisées**.
+- [ ] **8. 🔴 Lisibilité, thème clair** : lire un texte secondaire (gris) sur une carte de chaque
+      pilier. C'est le cas le plus tendu de toute la palette.
+- [ ] **9. Les bandeaux d'alerte restent ambrés** sur tous les piliers — ils ne prennent jamais la
+      couleur du pilier.
+- [ ] **10. Réglages → Couleurs des menus** : activer. Les couleurs proposées sont lisibles ; en
+      choisir une exotique sur un menu et vérifier que le libellé des boutons pleins reste lisible
+      **dans les deux thèmes**.
+- [ ] **11. Désactiver le réglage** : on retombe sur l'accent du pilier, pas sur l'orange.
+- [ ] **12. TalkBack + police 1,5×** sur le hub muscu et l'accueil : rien de coupé, rien d'illisible.

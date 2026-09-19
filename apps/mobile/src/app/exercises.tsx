@@ -32,7 +32,7 @@ export default function ExercisesScreen() {
   const browse = mode === 'browse';
   const pickVariant = mode === 'pickVariant';
 
-  const { workout: active } = useActiveWorkout();
+  const { workout: active, isLoading: activeLoading } = useActiveWorkout();
   const { ids: linkedIds } = useLinkedExerciseIds(pickVariant && forExerciseId ? forExerciseId : '');
 
   const [query, setQuery] = useState('');
@@ -41,7 +41,14 @@ export default function ExercisesScreen() {
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [createOpen, setCreateOpen] = useState(false);
 
-  const { exercises, isLoading } = useExercises(query, muscles, equipment);
+  const { exercises, isLoading: exercisesLoading } = useExercises(query, muscles, equipment);
+
+  // Ajouter / remplacer vise la séance active : tant qu'on ne sait pas encore si elle existe, la
+  // liste ne doit pas être tapable. La garde `if (active)` d'`onPick` avalait sinon l'appui en
+  // silence — ni ajout, ni retour, ni message (recette du 19/09/2026). La consultation et le choix
+  // d'une variante, eux, n'ont que faire de la séance : on ne les fait pas attendre.
+  const needsActive = !browse && !pickVariant;
+  const isLoading = exercisesLoading || (needsActive && activeLoading);
   const filterCount = muscles.length + equipment.length;
 
   // US MUSC-F14 — suggestions de substitution, uniquement en mode remplacement : ailleurs il n'y a

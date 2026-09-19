@@ -270,6 +270,36 @@ describe('états d’écran', () => {
     expect(screen.getByText('workout.none')).toBeTruthy();
   });
 
+  it('🔴 pendant le chargement, ne prétend PAS qu’il n’y a aucune séance', async () => {
+    // Le défaut du 19/09/2026 : l'écran ne lisait que `workout`, jamais `isLoading`. Entre le
+    // `push('/workout')` et la résolution de la requête PowerSync, `workout` vaut `null` — et
+    // l'écran annonçait « Aucune séance en cours » avec un bouton de retour, sur la séance qu'on
+    // venait tout juste de créer. C'est l'« écran noir » remonté en recette.
+    mockUseActiveWorkout.mockReturnValue({ workout: null, isLoading: true });
+
+    await render(<WorkoutScreen />);
+
+    expect(screen.queryByText('workout.none')).toBeNull();
+    expect(screen.getByTestId('workout-loading')).toBeTruthy();
+  });
+
+  it('🔴 séance vide : l’ajout d’un exercice est VISIBLE, pas seulement dans le menu', async () => {
+    // Une séance libre démarre TOUJOURS à zéro exercice. La barre d'action n'avait que deux
+    // branches (série en cours / clôture) : à zéro exercice elle rendait `null`, et le seul
+    // « + Ajouter un exercice » vivait derrière les trois points. L'écran d'arrivée de la séance
+    // libre était donc un cul-de-sac.
+    mockUseActiveWorkout.mockReturnValue({ workout: seance({ entries: [] }), isLoading: false });
+
+    await render(<WorkoutScreen />);
+
+    const ajout = screen.getByTestId('workout-add-exercise');
+    await act(async () => {
+      fireEvent.press(ajout);
+    });
+
+    expect(push).toHaveBeenCalledWith('/exercises');
+  });
+
   it('affiche la 1ʳᵉ série non validée dans la carte focus', async () => {
     await render(<WorkoutScreen />);
 

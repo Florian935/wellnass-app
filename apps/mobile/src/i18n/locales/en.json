@@ -3747,6 +3747,16 @@
       "title": "Suggested for you · {{level}}",
       "seeAll_one": "See the program",
       "seeAll_other": "See all {{count}} programs"
+    },
+    "directorySheet": {
+      "title": "Your library",
+      "subtitle": "Exercises, the programs that string them together, and your own routines.",
+      "exercises": "Exercises",
+      "exercisesDesc": "The catalog, your custom exercises and your favorites.",
+      "programs": "Programs",
+      "programsDesc": "Editorial library and your programs.",
+      "templates": "My templates",
+      "templatesDesc": "Your reusable routines for free workouts."
     }
   },
   "hydration": {
