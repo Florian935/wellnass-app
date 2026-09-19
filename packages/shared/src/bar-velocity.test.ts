@@ -4,6 +4,7 @@ import {
   estimateRir,
   metersPerPixel,
   MIN_USABLE_FPS,
+  rescaleToMilliseconds,
   PLATE_DIAMETER_M,
   sampleRate,
   type BarSample,
@@ -357,5 +358,46 @@ describe('bornes de répétition — le seuil relatif à la pointe', () => {
 
     expect(rep.rangeM).toBeGreaterThan(0.55);
     expect(Math.abs(rep.meanVelocity - 0.22)).toBeLessThanOrEqual(0.05);
+  });
+});
+
+describe('rescaleToMilliseconds — le piège qui ne se voit qu’au retour de la salle', () => {
+  /*
+   * Une caméra Android rend souvent des nanosecondes. Lue comme des millisecondes, la série
+   * paraît durer des heures et chaque vitesse est un million de fois trop lente — mais la FORME de
+   * la courbe reste juste, donc rien à l'écran ne trahit l'erreur. On la corrige à la source.
+   */
+  const enMs = buildTrace([0.5, 0.45]);
+
+  it('laisse une trace déjà en millisecondes intacte', () => {
+    expect(rescaleToMilliseconds(enMs)).toEqual(enMs);
+  });
+
+  it('🔴 ramène des nanosecondes, et retrouve alors la bonne vitesse', () => {
+    const enNs = enMs.map((s) => ({ t: s.t * 1e6, y: s.y }));
+    const { reps } = analyseSet(rescaleToMilliseconds(enNs), { metersPerPixel: MPP });
+
+    expect(reps).toHaveLength(2);
+    expect(Math.abs(reps[0]!.meanVelocity - 0.5)).toBeLessThanOrEqual(0.05);
+  });
+
+  it('ramène des secondes flottantes', () => {
+    const enS = enMs.map((s) => ({ t: s.t / 1000, y: s.y }));
+    const { reps } = analyseSet(rescaleToMilliseconds(enS), { metersPerPixel: MPP });
+
+    expect(reps).toHaveLength(2);
+    expect(Math.abs(reps[0]!.meanVelocity - 0.5)).toBeLessThanOrEqual(0.05);
+  });
+
+  it('🔴 rend la trace telle quelle quand aucune échelle ne tient : douteux vaut mieux qu’inventé', () => {
+    // Une image par seconde même en lisant les écarts comme des nanosecondes : aucune échelle
+    // ne rend ça plausible. (Mon premier exemple, 9 ms en nanosecondes, l'était parfaitement —
+    // le test disait donc le contraire de ce qu'il croyait dire.)
+    const absurde: BarSample[] = [
+      { t: 0, y: 100 },
+      { t: 1_000_000_000, y: 90 },
+      { t: 2_000_000_000, y: 80 },
+    ];
+    expect(rescaleToMilliseconds(absurde)).toEqual(absurde);
   });
 });

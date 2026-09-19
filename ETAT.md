@@ -9,7 +9,7 @@
 
 **MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 242 livré · 4 partiel · 2 à faire (sur 254)
 
-Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **2 candidats P0**
+Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
 
 ## 🔨 En cours
@@ -96,10 +96,11 @@ avant de pouvoir publier.
 
 ⏳ **73 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, COLLIS-01, CONF-07, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LAUNCHER-01, LETTRE-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX02, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, OBJ-01, PARTAGE-01, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
-## ➡️ Prochain — P0 bloquant (2)
+## ➡️ Prochain — P0 bloquant (3)
 
 - LANCE-00 — Compte développeur Google Play
 - LANCE-01 — Publication Play Store
+- LANCE-02 — Retirer le spike VBT-01 du build de soumission
 
 <details><summary>P1 finitions (8) · P2 confort (2)</summary>
 
@@ -116,7 +117,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1296 · `main` a **1293** commits de retard sur `dev` |
+| Commits | 1300 · `main` a **1294** commits de retard sur `dev` |
 | Specs d'US | 161 au total — 87 clôturées, 74 en cours |
 | Migrations | 107/107 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -127,11 +128,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `fef2b62`  Merge branch 'spike/vbt01-camera' into dev
+- `53d95bd`  feat(vbt01): le suivi du point en JS pur, et la chaîne éprouvée bout en bout
+- `e85e39f`  docs(vbt01): le lien vers l'écran d'essai ne résout que sur la branche
+- `1f3d490`  feat(vbt01): spike caméra — suivi du point en JS pur, aucun module natif
 - `72fc32e`  feat(vbt01): spike vitesse de barre — la moitié « calcul », prouvée sans caméra
-- `e4a861e`  feat(lettre01): la lettre à ton futur toi — un mot scellé avec l'objectif
-- `da30635`  feat(reserv01): le Réservoir — la journée vue en glucides disponibles
-- `65e3a19`  docs(innovation): recapitulatif PDF de la session — 38 idees, tri, lot 1
-- `421735c`  feat(fant01): le Fantôme — courir contre soi-même sur le même parcours
 
 ---
 

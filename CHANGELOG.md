@@ -10,6 +10,51 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 19/09/2026 (ter) — Spike VBT-01 : fusion dans `dev` et écran réglable en salle
+
+Branche : `dev` (fusion de `spike/vbt01-camera`). Commit précédent : `53d95bdc`.
+
+### Modifié
+
+- 🔴 **`spike/vbt01-camera` fusionnée dans `dev`**, à la demande de Florian, pour que l'essai en
+  salle tienne dans **un seul APK**. `dev` embarque donc `react-native-vision-camera` (+ nitro,
+  + worklets) et l'écran `spike-vbt.tsx`. **Les deux doivent être retirés avant le build de
+  soumission Play** → entrée **LANCE-02 en P0** du [BACKLOG](BACKLOG.md), pour que ça ne tienne pas
+  à la mémoire de quelqu'un.
+- **L'écran d'essai devient réglable sur place** : seuil de luminance et diamètre du disque ajustables
+  à l'écran, retour vivant du suivi (position, pixels retenus, taille d'image, « POINT PERDU » en
+  clair). Figés dans le code, ces deux réglages condamnaient le déplacement — on ne recompile pas une
+  app entre deux séries.
+- **Entrée dans les Réglages** (tout en bas) pour atteindre l'écran : même patron que le Labo IA en
+  son temps, une porte d'entrée unique. ⚠️ **Chaînes en dur assumées** : les traduire les ferait
+  entrer dans `fr.json` / `en.json`, d'où il faudrait ensuite les extraire une par une. Un bloc
+  temporaire doit se retirer d'un geste.
+- Résolution d'analyse abaissée à **VGA 4:3** (480 × 640) : le suivi lit les pixels **en
+  JavaScript**, et 720p en ferait quatre fois plus. C'est le premier réglage à remonter si la
+  cadence s'effondre.
+
+### Ajouté
+
+- `rescaleToMilliseconds` dans `bar-velocity.ts` (+ 4 tests) — **détection automatique de l'unité
+  des horodatages** de la caméra (ns / µs / ms / s selon l'appareil). 🔴 Sans ça, une série filmée en
+  nanosecondes donne des vitesses **un million de fois trop lentes**, et la forme de la courbe reste
+  juste : rien à l'écran ne trahit l'erreur, on ne la découvre qu'au retour de la salle. La fonction
+  rend la trace **telle quelle** si aucune échelle ne tient — mieux vaut une mesure douteuse qu'une
+  mesure inventée.
+- Rapport de spike : le **protocole en salle en six gestes**, et la commande de build correcte.
+  ⚠️ **`build:preview` et non `build:dev`** : le dev client exige un serveur Metro joignable, ce
+  qu'on n'a pas au milieu d'une salle de sport.
+
+### Technique — notes
+
+- **Le React Compiler refuse `sharedValue.value = x`** (« modifying a value previously passed as an
+  argument to a hook »). Reanimated 4 expose `.get()` / `.set()` précisément pour ça : c'est la
+  forme retenue, dans le worklet comme côté JS.
+- Un test-garde a de nouveau fait son travail : l'écran manquait sa déclaration dans le `Stack`
+  racine.
+- Vérifié : `lint` 0 · `typecheck` 0 · `npm run test` **code de sortie 0**, **6 658 tests**
+  (3 464 Jest + 3 194 Vitest).
+
 ## 19/09/2026 (bis) — Spike VBT-01 : le suivi du point, et la chaîne bout en bout
 
 Branche : `dev` pour ce qui n'a **aucune dépendance native** ; le reste (caméra, écran d'essai) vit

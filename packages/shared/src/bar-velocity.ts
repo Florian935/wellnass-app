@@ -173,6 +173,45 @@ export function sampleRate(samples: readonly BarSample[]): number | null {
   return 1000 / median;
 }
 
+/**
+ * Facteurs essayés pour ramener des horodatages en **millisecondes**, du plus fin au plus grossier.
+ * Une caméra Android peut rendre des nanosecondes, une iOS des secondes flottantes, un simulateur
+ * des millisecondes : rien ne le dit à l'avance.
+ */
+const TIME_SCALES = [1e-6, 1e-3, 1, 1000] as const;
+
+/**
+ * Ramène une trace à l'échelle des millisecondes, quelle que soit l'unité rendue par la caméra.
+ *
+ * 🔴 Sans ça, une série filmée en nanosecondes donne des vitesses **un million de fois trop
+ * lentes** — et personne ne s'en aperçoit sur le moment, parce que la forme de la courbe, elle,
+ * reste juste. C'est le genre d'erreur qui ne se voit qu'au retour de la salle, quand il est trop
+ * tard pour refilmer.
+ *
+ * La détection se fait sur l'**écart médian** entre deux images : on retient le facteur qui place
+ * cet écart dans une plage plausible (4 à 250 ms, soit 4 à 250 images/s). Si aucun ne convient, la
+ * trace est rendue telle quelle — mieux vaut une mesure douteuse qu'une mesure inventée.
+ */
+export function rescaleToMilliseconds(samples: readonly BarSample[]): BarSample[] {
+  if (samples.length < 3) return [...samples];
+
+  const gaps: number[] = [];
+  for (let i = 1; i < samples.length; i += 1) {
+    const dt = samples[i]!.t - samples[i - 1]!.t;
+    if (dt > 0) gaps.push(dt);
+  }
+  if (gaps.length === 0) return [...samples];
+
+  gaps.sort((a, b) => a - b);
+  const median = gaps[Math.floor(gaps.length / 2)]!;
+
+  const scale = TIME_SCALES.find((f) => median * f >= 4 && median * f <= 250);
+  if (scale === undefined || scale === 1) return [...samples];
+
+  const origin = samples[0]!.t;
+  return samples.map((sample) => ({ t: (sample.t - origin) * scale, y: sample.y }));
+}
+
 /** Un point de trajectoire converti : instant en secondes, hauteur en mètres, axe vers le haut. */
 type Point = { t: number; h: number; filled: boolean };
 

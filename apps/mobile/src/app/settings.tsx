@@ -1061,6 +1061,25 @@ export default function SettingsScreen() {
           </Text>
         ) : null}
       </View>
+
+      {/*
+        🔴 SPIKE VBT-01 — surface d'essai TEMPORAIRE, à retirer avec l'écran `spike-vbt.tsx` et la
+        dépendance `react-native-vision-camera` avant le build de soumission Play.
+        Chaînes **en dur assumées** : les traduire les ferait entrer dans fr.json / en.json, d'où il
+        faudrait ensuite les extraire une par une. Un bloc temporaire doit se retirer d'un geste.
+        Même emplacement que le Labo IA en son temps : une porte d'entrée unique depuis les réglages.
+      */}
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border, marginTop: 20 }]}>
+        <View style={styles.row}>
+          <View style={styles.rowGrow}>
+            <Text style={[styles.rowLabel, { color: colors.text }]}>Essai vitesse de barre</Text>
+            <Text style={[styles.rowDesc, { color: colors.textMuted }]}>
+              Spike VBT-01 — mesure à la caméra. Écran d’essai technique, retiré avant publication.
+            </Text>
+          </View>
+          <Button label="Ouvrir" variant="ghost" onPress={() => router.push('/spike-vbt')} />
+        </View>
+      </View>
     </ScrollView>
   );
 }

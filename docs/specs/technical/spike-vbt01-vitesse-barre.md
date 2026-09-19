@@ -5,8 +5,14 @@
 > règle posée par l'[analyse d'innovation §6.4](../../product/analyse-innovation-2026-09.md) le
 > 13/09/2026 et reprise au [BACKLOG](../../../BACKLOG.md) (candidate VBT-01, P2).
 >
-> Démarré le **19/09/2026** à la demande de Florian. Travail direct sur `dev` pour la moitié
-> « calcul » (aucune dépendance native), branche dédiée pour la moitié « caméra » — voir §5.
+> Démarré le **19/09/2026** à la demande de Florian.
+>
+> 🔴 **La branche `spike/vbt01-camera` a été fusionnée dans `dev` le 19/09/2026**, à la demande de
+> Florian, pour qu'un **seul APK** porte l'essai en salle. `dev` embarque donc désormais
+> `react-native-vision-camera` et l'écran d'essai. **Les deux doivent être retirés avant le build de
+> soumission Play** — entrée P0 au [BACKLOG](../../../BACKLOG.md), pour que ça ne tienne pas à la
+> mémoire de quelqu'un. Rien d'autre ne change : aucune permission nouvelle, aucun écran produit
+> touché, le spike reste un spike.
 
 ## 1. La question
 
@@ -129,8 +135,8 @@ Une cadence de 30 i/s suffit ; 60 i/s donne de la marge.
 
 ### 5.1 Le chemin technique, installé et compilé le 19/09/2026
 
-> Tout ce qui suit vit sur la branche **`spike/vbt01-camera`**. `dev` n'a **aucune dépendance
-> native nouvelle** : rien de ceci ne doit atterrir dans le build de soumission Play.
+> ⚠️ Tout ce qui suit est **dans `dev`** depuis la fusion du 19/09 (voir l'encadré en tête). La
+> branche `spike/vbt01-camera` reste poussée, comme point de retour si l'on veut isoler à nouveau.
 
 - ❌ **`expo-camera` ne peut pas faire ce travail.** Vérifié dans l'API installée (SDK 57) : les
   seuls rappels exposés sont `onBarcodeScanned`, `onCameraReady`, `onPictureSaved`… **aucun accès aux
@@ -153,10 +159,20 @@ Une cadence de 30 i/s suffit ; 60 i/s donne de la marge.
 
 ### 5.1 bis L'écran d'essai
 
-`apps/mobile/src/app/spike-vbt.tsx` — **sur la branche uniquement**, donc pas de lien : le fichier
-n'existe pas sur `dev`, et un lien relatif cassé y serait plus trompeur qu'utile. Caméra, suivi
+[`apps/mobile/src/app/spike-vbt.tsx`](../../../apps/mobile/src/app/spike-vbt.tsx) — caméra, suivi
 image par image dans un worklet, et l'analyse à l'arrêt de la série : cadence tenue, images perdues,
 vitesse de chaque rep, perte, verdict d'exploitabilité.
+
+**Tout se règle à l'écran** : seuil de luminance et diamètre du disque, avec un **retour vivant du
+suivi** (position, nombre de pixels retenus, taille de l'image, et un « POINT PERDU » bien visible).
+Figés dans le code, ces deux réglages condamneraient le déplacement — on ne recompile pas une app
+entre deux séries.
+
+⚠️ **L'unité des horodatages de la caméra est détectée automatiquement**
+(`rescaleToMilliseconds`) : selon l'appareil, elle peut être en nanosecondes, microsecondes,
+millisecondes ou secondes. Lue de travers, elle rend des vitesses fausses d'un facteur mille ou un
+million **sans que la forme de la courbe ne trahisse quoi que ce soit** — donc une séance perdue,
+constatée seulement au retour.
 
 🔴 **Écrit contre l'API réelle (lue dans le paquet installé) et compilé — mais jamais exécuté**,
 faute de device dans la boucle. Le raccord caméra → worklet est donc **la première chose à déboguer**,
@@ -165,17 +181,32 @@ pas la mesure : la chaîne logicielle, elle, est couverte par 47 tests.
 Pour le faire tourner :
 
 ```sh
-git checkout spike/vbt01-camera
-npm install
-cd apps/mobile && npm run build:dev     # dev build EAS — dépendance native, l'APK actuel ne suffit pas
+git pull                                   # dev contient tout depuis le 19/09
+npm install                                # dépendances natives neuves
+cd apps/mobile && npm run build:preview    # APK autonome — PAS build:dev, qui exige Metro en salle
 ```
 
-L'écran s'ouvre sur la route `/spike-vbt` (déclarée dans le layout racine, atteignable par un lien
-direct ; aucune entrée de menu — c'est voulu).
+⚠️ **`build:preview` et non `build:dev`** : le dev client a besoin d'un serveur Metro joignable,
+ce qu'on n'a pas au milieu d'une salle de sport. Si le quota EAS est épuisé, le build local Android
+est documenté dans [dev-build-android-local.md](./dev-build-android-local.md).
 
-Deux réglages en dur à ajuster avant la première série, en haut du fichier : `DEFAULT_PLATE_PX`
-(diamètre apparent du disque dans l'image analysée) et `LUMA_THRESHOLD` (seuil de luminance de la
-pastille).
+**Où le trouver dans l'app** : Réglages → tout en bas, « Essai vitesse de barre » → *Ouvrir*.
+
+### 5.1 ter Le protocole en salle, en six gestes
+
+1. **Poser** le téléphone de profil, perpendiculaire au plan du mouvement, à 1,5–2 m, vers la
+   mi-hauteur du trajet. Fixe : sol, banc, sac. Jamais tenu.
+2. **Coller la pastille** (fluo, quelques centimètres) sur l'extrémité de la barre ou au centre du
+   disque, bien visible de l'objectif.
+3. **Régler le seuil** avant de charger : monter jusqu'à ce que la ligne du haut passe au vert et
+   ne montre plus que la pastille (~40 à 400 px retenus). Si elle saute au plafond, baisser.
+4. **Relever le diamètre du disque en pixels** : bouger le réglage « disque » jusqu'à ce que
+   l'amplitude affichée après une rep corresponde à la réalité (un squat complet ≈ 0,5–0,7 m). Une
+   erreur ici fausse **toutes** les vitesses proportionnellement.
+5. **Une série par mouvement** : squat, développé couché, soulevé de terre. Noter à la main le
+   nombre de reps réellement faites, pour le comparer au nombre détecté.
+6. **Noter** après chaque série : cadence affichée, images perdues, verdict exploitable ou non, et
+   si le téléphone chauffe au bout de cinq séries.
 
 ### 5.2 Ce que l'essai device doit mesurer
 
