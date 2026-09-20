@@ -6,6 +6,7 @@ import {
   formatDayFull,
   pausedSeconds,
   WORKOUT_FEELINGS,
+  RECORD_DISTANCE_I18N_KEY,
   type RecordDistanceKey,
   type WorkoutFeeling,
   RUNNING_RECORD_DISTANCES,
@@ -53,15 +54,6 @@ import { useMenuFocus } from '@/hooks/useMenuFocus';
  * `theme/stage.ts`). La constante peut donc vivre au niveau module, comme avant.
  */
 const CELEBRATION_STAGE = stageTheme('running', 'dark');
-
-/** Clé i18n du libellé de distance pour chaque record canonique. */
-const RECORD_DISTANCE_KEY: Record<RecordDistanceKey, string> = {
-  '1k': 'running.records.distance1k',
-  '5k': 'running.records.distance5k',
-  '10k': 'running.records.distance10k',
-  semi: 'running.records.distanceSemi',
-  marathon: 'running.records.distanceMarathon',
-};
 
 const RECORD_ORDER: RecordDistanceKey[] = RUNNING_RECORD_DISTANCES.map((d) => d.key);
 
@@ -577,7 +569,7 @@ function Figure({ label, value }: { label: string; value: string }) {
 function CelebrationBanner({ distances }: { distances: RecordDistanceKey[] }) {
   const { t } = useTranslation();
   const ordered = RECORD_ORDER.filter((k) => distances.includes(k));
-  const labels = ordered.map((k) => t(RECORD_DISTANCE_KEY[k]));
+  const labels = ordered.map((k) => t(RECORD_DISTANCE_I18N_KEY[k]));
   const includes5k = ordered.includes('5k');
 
   return (

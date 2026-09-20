@@ -12,7 +12,7 @@
 import { useRouter } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { formatPaceMMSS, type RecordDistanceKey, type RecordType, type WidgetSize } from '@wellness/shared';
+import { formatPaceMMSS, RECORD_DISTANCE_I18N_KEY, type RecordType, type WidgetSize } from '@wellness/shared';
 import { Eyebrow, Metric, WidgetFrame } from '@/components/widgets/WidgetFrame';
 import {
   useMostRecentRecord,
@@ -23,14 +23,6 @@ import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { withAlpha } from '@/theme/color-utils';
-
-const RECORD_DISTANCE_KEY: Record<RecordDistanceKey, string> = {
-  '1k': 'running.records.distance1k',
-  '5k': 'running.records.distance5k',
-  '10k': 'running.records.distance10k',
-  semi: 'running.records.distanceSemi',
-  marathon: 'running.records.distanceMarathon',
-};
 
 /** Nombre de jours entiers écoulés depuis `iso` (borné à 0) ; `null` si date invalide. */
 function daysSince(iso: string): number | null {
@@ -80,7 +72,7 @@ export function RecordRecentCard({ size = 'wide' }: { size?: WidgetSize }) {
       value = strengthValue(record.type, record.value);
       route = '/progress';
     } else {
-      name = t(RECORD_DISTANCE_KEY[record.distanceKey]);
+      name = t(RECORD_DISTANCE_I18N_KEY[record.distanceKey]);
       value = formatPaceMMSS(record.bestTimeSeconds, '—');
       route = '/running-history';
     }

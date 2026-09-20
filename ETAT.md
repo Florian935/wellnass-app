@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 248 livré · 4 partiel · 2 à faire (sur 260)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 248 livré · 4 partiel · 4 à faire (sur 262)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -96,7 +96,9 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **EFFORT-01** — Les meilleurs efforts d'une sortie, et les médailles posées sur la carte | `code` | `dev` | [5.43] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
+| **PARTAGE-02** — La carte de partage transparente — à coller sur sa propre photo | `validation` | `dev` | [7.35] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
@@ -124,8 +126,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1309 · `main` a **1306** commits de retard sur `dev` |
-| Specs d'US | 168 au total — 87 clôturées, 81 en cours |
+| Commits | 1310 · `main` a **1307** commits de retard sur `dev` |
+| Specs d'US | 170 au total — 87 clôturées, 83 en cours |
 | Migrations | 107/107 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -135,11 +137,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `6aefd16`  fix(nutri): la passe critique — deux fenêtres, sept flux, quatre retraits
 - `9474590`  fix(nutri): le livré rejoint la maquette — carrés, héros, grammes, ordre
 - `218e5af`  feat(nutri): la bibliothèque qui n'arrivait pas, deux moments, et un vert qui existe
 - `76593fd`  feat(cardio): le bleu sur tout le pilier, et un hub qui dit où on en est
 - `78f27b9`  feat(muscu): le hub a enfin quelque chose à dire, et le bordeaux s'adoucit
-- `9202a1b`  fix(muscu): les flux de la séance réparés, et une seule identité par écran
 
 ---
 

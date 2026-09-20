@@ -18,7 +18,7 @@ import {
   formatDurationHms,
   resolveRacePredictions,
   type RacePrediction,
-  type RecordDistanceKey,
+  RECORD_DISTANCE_I18N_KEY,
 } from '@wellness/shared';
 import { ExplainButton } from '@/components/explain/ExplainButton';
 import { ExplainSheet } from '@/components/explain/ExplainSheet';
@@ -28,15 +28,6 @@ import { useRunningRecords } from '@/data/repositories/running-record-repository
 import { useTodayDate } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
-
-/** Les mêmes libellés que l'écran de stats — une distance ne change pas de nom selon l'écran. */
-const DISTANCE_LABEL: Record<RecordDistanceKey, string> = {
-  '1k': 'running.records.distance1k',
-  '5k': 'running.records.distance5k',
-  '10k': 'running.records.distance10k',
-  semi: 'running.records.distanceSemi',
-  marathon: 'running.records.distanceMarathon',
-};
 
 type Props = { onOpen: () => void };
 
@@ -66,13 +57,13 @@ export function RunPredictionsCard({ onOpen }: Props) {
             onPress={() => setExplained(prediction)}
             accessibilityRole="button"
             accessibilityLabel={t('stage.running.predictions.a11y', {
-              distance: t(DISTANCE_LABEL[prediction.distanceKey]),
+              distance: t(RECORD_DISTANCE_I18N_KEY[prediction.distanceKey]),
               time: formatDurationHms(prediction.predictedSeconds),
             })}
             style={[styles.cell, { borderColor: colors.border, backgroundColor: colors.surfaceAlt }]}
           >
             <Text style={[styles.distance, { color: colors.textMuted }]} numberOfLines={1}>
-              {t(DISTANCE_LABEL[prediction.distanceKey])}
+              {t(RECORD_DISTANCE_I18N_KEY[prediction.distanceKey])}
             </Text>
             <Text style={[styles.time, { color: colors.text }]} numberOfLines={1}>
               {formatDurationHms(prediction.predictedSeconds)}
@@ -92,7 +83,7 @@ export function RunPredictionsCard({ onOpen }: Props) {
         visible={explained !== null}
         title={
           explained
-            ? `${t(DISTANCE_LABEL[explained.distanceKey])} · ${formatDurationHms(explained.predictedSeconds)}`
+            ? `${t(RECORD_DISTANCE_I18N_KEY[explained.distanceKey])} · ${formatDurationHms(explained.predictedSeconds)}`
             : ''
         }
         explanation={explained ? explainRacePrediction(explained, today.toISOString()) : null}

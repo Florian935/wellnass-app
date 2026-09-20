@@ -15,6 +15,11 @@
  * pas de « +12 s depuis le précédent ». On affiche le chrono et sa date, et rien d'autre — la même
  * honnêteté que la scène d'arrivée, qui refuse de calculer un écart avec une estimation qu'elle n'a
  * pas gardée.
+ *
+ * 📌 **Mise à jour du 20/09/2026 (US EFFORT-01)** : cet avertissement est ce qui a fait naître
+ * l'US. L'historique existe désormais, dans `run_efforts` — mais il alimente la **fiche d'une
+ * sortie**, pas ce mur : ici on continue d'afficher le palmarès nu. Le rang et l'écart se lisent
+ * là où ils ont du sens, sur la sortie qui vient d'être courue.
  */
 
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -22,21 +27,13 @@ import { useTranslation } from 'react-i18next';
 import {
   formatDurationHms,
   localDayKey,
-  type RecordDistanceKey,
+  CANONICAL_RECORD_DISTANCES,
+  RECORD_DISTANCE_I18N_KEY,
 } from '@wellness/shared';
 import { PressableScale } from '@/components/motion/PressableScale';
 import { useRunningRecords } from '@/data/repositories/running-record-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
-
-/** Les mêmes libellés que l'écran de stats — une distance ne change pas de nom selon l'écran. */
-const DISTANCE_LABEL: Record<RecordDistanceKey, string> = {
-  '1k': 'running.records.distance1k',
-  '5k': 'running.records.distance5k',
-  '10k': 'running.records.distance10k',
-  semi: 'running.records.distanceSemi',
-  marathon: 'running.records.distanceMarathon',
-};
 
 type Props = { onOpen: () => void };
 
@@ -45,7 +42,13 @@ export function RunRecordWall({ onOpen }: Props) {
   const { colors } = useTheme();
   const { records, isLoading } = useRunningRecords();
 
-  if (isLoading || records.length === 0) return null;
+  // US EFFORT-01, spec R3 — le mur reste aux **cinq** distances historiques. Le palmarès en porte
+  // désormais huit (400 m, demi-mile et mile sont arrivés avec le journal des efforts) : sans ce
+  // filtre, la bande passerait de 5 à 8 cartes. CARDIO-UX02 vient de dégonfler ce hub et
+  // ADR-007 interdit de le regonfler — les trois nouvelles vivent dans la fiche d'une sortie.
+  const shown = records.filter((r) => CANONICAL_RECORD_DISTANCES.includes(r.distanceKey));
+
+  if (isLoading || shown.length === 0) return null;
 
   return (
     <View style={styles.wrap} testID="run-record-wall">
@@ -60,20 +63,20 @@ export function RunRecordWall({ onOpen }: Props) {
         // passer les cartes sous la coulée de la scène, qui est peinte en absolu sur la même zone.
         contentContainerStyle={styles.row}
       >
-        {records.map((record) => (
+        {shown.map((record) => (
           <PressableScale
             key={record.distanceKey}
             haptic="select"
             onPress={onOpen}
             accessibilityRole="button"
             accessibilityLabel={t('runningHub.records.a11y', {
-              distance: t(DISTANCE_LABEL[record.distanceKey]),
+              distance: t(RECORD_DISTANCE_I18N_KEY[record.distanceKey]),
               time: formatDurationHms(record.bestTimeSeconds),
             })}
             style={[styles.cell, { backgroundColor: colors.surface, borderColor: colors.border }]}
           >
             <Text style={[styles.distance, { color: colors.accent }]} numberOfLines={1}>
-              {t(DISTANCE_LABEL[record.distanceKey])}
+              {t(RECORD_DISTANCE_I18N_KEY[record.distanceKey])}
             </Text>
             <Text style={[styles.time, { color: colors.text }]} numberOfLines={1}>
               {formatDurationHms(record.bestTimeSeconds)}

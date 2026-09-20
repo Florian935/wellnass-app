@@ -108,6 +108,7 @@ export * from './run-interval-results';
 export * from './race-plan';
 export * from './session-adaptation';
 export * from './pace-records';
+export * from './run-efforts';
 export * from './geo';
 export * from './date';
 export * from './drop-target';

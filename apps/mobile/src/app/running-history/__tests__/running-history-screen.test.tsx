@@ -402,6 +402,10 @@ describe('records d’allure', () => {
 
     // Montrer les cases vides dit à l'utilisateur ce qu'il peut atteindre ; masquer les distances
     // sans record ne laisserait qu'une section vide et muette.
+    //
+    // ⚠️ Reste à **cinq** après l'arrivée des 8 distances du moteur (US EFFORT-01, spec D8) : cet
+    // écran lit le palmarès, qui garde les cinq canoniques. 400 m, demi-mile et mile vivent dans le
+    // journal des efforts ; les lister ici donnerait trois lignes « aucun record » indéboulonnables.
     expect(screen.getAllByText('running.records.none')).toHaveLength(5);
   });
 

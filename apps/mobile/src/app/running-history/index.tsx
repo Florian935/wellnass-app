@@ -31,10 +31,11 @@ import {
   percentChange,
   previousPeriodTodayKey,
   resolveRacePredictions,
+  CANONICAL_RECORD_DISTANCES,
   RUNNING_RECORD_DISTANCES,
   type AcwrZone,
   type PaceTrendKind,
-  type RecordDistanceKey,
+  RECORD_DISTANCE_I18N_KEY,
   type StatPeriod,
   POLARISATION_REFERENCE_LOW_PCT,
 } from '@wellness/shared';
@@ -84,15 +85,6 @@ const ACWR_ZONE_KEY: Record<AcwrZone, string> = {
   low: 'running.trainingLoad.zoneLow',
   safe: 'running.trainingLoad.zoneSafe',
   risk: 'running.trainingLoad.zoneRisk',
-};
-
-/** Clé i18n du libellé de distance pour chaque record canonique. */
-const RECORD_DISTANCE_KEY: Record<RecordDistanceKey, string> = {
-  '1k': 'running.records.distance1k',
-  '5k': 'running.records.distance5k',
-  '10k': 'running.records.distance10k',
-  semi: 'running.records.distanceSemi',
-  marathon: 'running.records.distanceMarathon',
 };
 
 // ---------------------------------------------------------------------------
@@ -463,9 +455,21 @@ function RunListSection() {
 // ---------------------------------------------------------------------------
 
 /**
+ * Les distances listées par cette section — **les cinq canoniques**, pas les huit.
+ *
+ * US EFFORT-01 : 400 m, demi-mile et mile existent désormais dans le moteur, mais ils vivent dans
+ * le **journal des efforts** (`run_efforts`), pas dans le palmarès (`running_pace_records`, dont la
+ * contrainte `check` n'accepte que cinq clés — spec D8). Les lister ici afficherait trois lignes
+ * « aucun record » qui ne se rempliraient jamais. Elles arriveront avec l'écran des efforts.
+ */
+const CANONICAL_RUN_RECORD_ROWS = RUNNING_RECORD_DISTANCES.filter((d) =>
+  CANONICAL_RECORD_DISTANCES.includes(d.key),
+);
+
+/**
  * Records d'allure par distance canonique (1 km → marathon).
  *
- * On itère `RUNNING_RECORD_DISTANCES` (ordre figé) et on cherche le record
+ * On itère les cinq distances canoniques (ordre figé) et on cherche le record
  * correspondant : présent → allure (dérivée du meilleur temps : s/km =
  * bestTimeSeconds / (meters / 1000)) + date + tap vers le détail de la course ;
  * absent → libellé + « — », non tappable.
@@ -493,9 +497,9 @@ function RecordsSection() {
 
   return (
     <View style={styles.list}>
-      {RUNNING_RECORD_DISTANCES.map(({ key, meters }) => {
+      {CANONICAL_RUN_RECORD_ROWS.map(({ key, meters }) => {
         const record = records.find((r) => r.distanceKey === key);
-        const label = t(RECORD_DISTANCE_KEY[key]);
+        const label = t(RECORD_DISTANCE_I18N_KEY[key]);
 
         if (!record) {
           return (
@@ -585,7 +589,7 @@ function PredictionsSection() {
           >
             <View style={styles.predTop}>
               <Text style={[styles.predDist, { color: colors.text }]}>
-                {t(RECORD_DISTANCE_KEY[p.distanceKey])}
+                {t(RECORD_DISTANCE_I18N_KEY[p.distanceKey])}
               </Text>
               <Text style={[styles.predTime, { color: colors.accent }]}>
                 {formatDurationHms(p.predictedSeconds)}

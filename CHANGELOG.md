@@ -9,6 +9,73 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+
+## 20/09/2026 (quater) — Le lot Strava : cadrage complet, puis EFFORT-01 étape 1 (le moteur)
+
+**Branche** : `dev` (exception assumée, cf. FANT-01 / CARDIO-UX02) · commit précédent : `6aefd161`
+
+### Ajouté
+
+**Cadrage — le lot Strava, de la demande aux specs**
+- `docs/product/analyse-strava-2026-09.md` (990 l.) — la carte des 9 couches de Strava, **25
+  observations (O1→O25)** tirées de **22 captures d'écran** fournies par Florian, **10 constats
+  vérifiés dans notre code (C1→C10)**, 13 candidats chiffrés, 16 sections. Deux découvertes
+  structurantes : le **streak de Strava se compte en semaines** (le nôtre est quotidien et rafistolé
+  deux fois — joker STREAK-01, jours en pause VIE-01), et **tout ce qu'ils font payer, on le donne**
+  (prédictions, objectifs, effort relatif, journal d'entraînement ; trois des quatre déjà livrées
+  chez nous). §7 compare le module Course **écran par écran** à ce que notre code affiche vraiment.
+- `docs/adr/ADR-009-couche-sociale.md` — publication **choisie** entre **amis réciproques**, via une
+  table de **projection figée** plutôt qu'en ouvrant les tables privées. Corrige une surestimation
+  de l'analyse (« 50 tables à rouvrir » → 4 tables neuves + 1 bucket). Statut **proposé**, relecture
+  Damien à faire, **aucun code**.
+- Specs + plans **EFFORT-01** (roadmap 5.43) et **PARTAGE-02** (roadmap 7.35), validés par Florian
+  le 20/09. `design/effort01-meilleurs-efforts-sortie/README.md` pointe la toile `/design`
+  (10 planches + prototype jouable).
+
+**EFFORT-01 — étape 1 : le moteur pur (TDD, aucun écran branché)**
+- `packages/shared/src/run-efforts.ts` + ses **20 tests** — `computeRunEfforts` (le journal d'une
+  course), `rankEfforts` (le classement, **dérivé et jamais stocké**), `pickMapMedals` (au plus 2,
+  jamais au-delà du rang 3).
+- `pace-records.ts` : **`bestSegmentWindowFromSamples`** rend désormais les **bornes** de la fenêtre
+  gagnante, pas seulement son temps — sans elles, impossible de poser une médaille sur la carte.
+  `bestSegmentTimeFromSamples` devient un appel mince dessus, **comportement inchangé**, vérifié par
+  ses tests d'origine laissés intacts.
+- Trois distances neuves dans `RUNNING_RECORD_DISTANCES` : **400 m, demi-mile, mile**. Une sortie de
+  2 km passe de **1** effort à **4**.
+- `RECORD_DISTANCE_I18N_KEY` : libellés FR + EN des trois distances.
+
+### Modifié
+
+- **Déduplication** : la table des libellés de distance était copiée **à l'identique dans six
+  fichiers** (`run/summary`, `running-history`, `RecordRecentCard`, `RunPredictionsCard`,
+  `RunRecordWall`, `run-cards-repository`) — l'un portait même le commentaire « les mêmes libellés
+  que l'écran de stats ». Le compilateur les a toutes refusées d'un coup à l'élargissement du type ;
+  elles deviennent **une seule source** dans `@wellness/shared`. Ajouter une distance ne compile
+  plus tant que son libellé manque.
+- `RunRecordWall` et la section records de `running-history` filtrent explicitement sur les **cinq
+  distances canoniques** (spec R3 / D8).
+
+### Technique / Notes
+
+- 🔴 **Bug attrapé avant le commit, pas après.** `computeRunRecords` alimente
+  `running_pace_records`, dont la colonne `distance_key` porte une contrainte `check` à **cinq**
+  valeurs. Le passer à huit aurait fait **échouer la remontée vers Postgres** dès la première
+  course — silencieusement côté SQLite local. Correctif : le **palmarès garde cinq distances**, le
+  **journal en couvre huit** (spec **R9 bis / D8**, amendée en cours d'implémentation). Effet de
+  bord heureux : **plus aucune table existante n'est modifiée**, et l'élargissement de contrainte
+  prévu au plan est **retiré**. Un **test-garde** interdit désormais à `computeRunRecords` de rendre
+  une clé hors des cinq.
+- **Garde de non-régression des prédictions** (spec R4) : un test fige `PREDICTION_SOURCE = '5k'` et
+  les cibles 10k/semi/marathon. Élargir une union de types est exactement ce qui déplace une valeur
+  par défaut sans qu'on le voie.
+- **Aucune migration, aucune sync rule à redéployer** dans ce commit : la table `run_efforts` et le
+  marqueur `runs.efforts_computed_at` arrivent à l'étape 2.
+- **Comportement utilisateur inchangé** par ce commit : le moteur n'est branché sur aucun écran.
+- Deux tests de `running-history-screen` ont été modifiés puis **remis à leur valeur d'origine**
+  quand la conception a été recentrée — trace laissée ici parce que le va-et-vient est instructif.
+- **Vérifié** : `typecheck` 0 · `lint` 0 sans warning · **3 799 tests Jest (226 suites)** +
+  **163 fichiers Vitest** verts, codes de sortie lus **sans pipe**.
+
 ## 20/09/2026 (ter) — NUTRI-UX02, passe critique : ce que l'écran racontait de travers
 
 Branche : `dev`. Commit précédent : `94745907`. Demande de Florian après recette : « je pense qu'il

@@ -22,6 +22,43 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [20/09/2026] 🔍 **Reprendre les bonnes idées de Strava** (demande de Florian, 20/09) : « comme font
+  un peu toutes les applications du marché ». **Analyse écrite le matin de mémoire, puis révisée le
+  jour même sur 12 captures d'écran** fournies par Florian (compte gratuit, 0 activité) : elles ont
+  confirmé l'essentiel et **corrigé 15 points** (observations O1→O15 du document), dont **deux qui
+  changent une recommandation**. _Ce que dit l'analyse :_ Strava
+  n'est pas une app de course avec du social, c'est **un réseau social qui enregistre des courses** —
+  ses deux moteurs (kudos, classements) exigent d'autres utilisateurs et **ne peuvent pas marcher
+  chez nous**. Mais sous ces deux boucles vit une **couche de mémoire personnelle** qui marche seule,
+  et c'est là qu'est tout ce qu'on peut prendre. **8 signatures sur 14 sont déjà livrées chez nous**
+  (splits, records toutes distances, carte, dénivelé, GPX, carte de partage, prédiction de chrono,
+  et le **Fantôme** qui est déjà la moitié d'un segment). 🔴 **Découverte n° 1 (captures) : le streak
+  de Strava se compte en SEMAINES, pas en jours** — le nôtre est quotidien et on a construit **deux
+  mécanismes correctifs** pour le rendre supportable (joker STREAK-01, jours en pause VIE-01) là où
+  Strava a simplement changé d'unité. Meilleur rapport impact/coût du document, et absent du premier
+  jet. 🔴 **Découverte n° 2 : tout ce que Strava fait payer, on le donne gratuitement** — derrière
+  leur paywall : prédictions de chronos, objectifs, effort relatif, journal d'entraînement ; chez
+  nous **trois des quatre sont déjà livrées et gratuites** (Riegel 5.34, OBJ-01, META-19). Après
+  15 ans de mesure, Strava conclut que **la valeur qui se vend est l'analyse de sa propre
+  progression**, pas l'enregistrement ni le social → à verser au dossier ADR-003. _Restent
+  **13 candidats**, dont 4 peu chers et sans dépendance sociale :_ **la série en semaines**,
+  **matériel/chaussures + kilométrage** (croisable avec DOUL-01), **journal d'entraînement**
+  (bulles en **temps**, pas en distance — c'est ce qui le rend **tri-piliers**, ce que Strava ne sait
+  pas faire), **objectifs récurrents** (en **nombre d'activités**, pas en km). _Le morceau noble :_ le **« parcours »**
+  (segment personnel, sans classement), à notre portée sans réseau parce que FANT-01 a déjà résolu
+  l'appariement de deux courses. _Deux points durs vérifiés :_ **(1)** `runs.gps_track` est un bloc
+  unique par course — tout calcul à l'affichage décoderait tout l'historique, il faut **matérialiser**
+  (même piège que `personal_records` découvert par IMPORT-01) ; **(2)** **chaque table** a une RLS
+  `user_id = auth.uid()` et PowerSync bucketise par utilisateur → la couche sociale n'est pas une US
+  mais un **second modèle de droits sur 50 tables**, qui mérite son propre ADR. ⚠️ **Collision de
+  vocabulaire à trancher d'abord** : « segment » désigne déjà chez nous une **phase de séance
+  structurée** (RUN-F4) → proposition « **parcours** ». ⚠️ **Les 12 captures ne sont pas versionnées** :
+  elles portent le nom, la photo, les communes et les horaires de sortie d'une **tierce personne** —
+  les observations datées les remplacent dans le dépôt (décision D10). **Analyse complète, 15
+  observations sur captures, carte des 9 couches, 13 candidats, 11 décisions et les 8 captures encore
+  manquantes : [docs/product/analyse-strava-2026-09.md](docs/product/analyse-strava-2026-09.md)**.
+  ❗ Pas P0 : après LANCE-01, et **après** le Labo et la dépense.
+
 - [15/09/2026] ✅ **La dépense d'une séance, et l'activité qu'on note à la main** — **promue en US et
   livrée le jour même** (DEPENSE-01 · AUTRE-01 · DEPENSE-00/02/03, roadmap 4.42-4.44, recette
   [RECETTES.md §65](RECETTES.md)). Demande de Florian, 15/09 — deux idées qui se rejoignent : **(1)** estimer la dépense calorique à la fin

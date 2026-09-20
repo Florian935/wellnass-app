@@ -2616,7 +2616,10 @@
     "records": {
       "sectionTitle": "Pace records",
       "none": "—",
+      "distance400m": "400 m",
+      "distanceHalfMile": "Half mile",
       "distance1k": "1 km",
+      "distanceMile": "1 mile",
       "distance5k": "5 km",
       "distance10k": "10 km",
       "distanceSemi": "Half",

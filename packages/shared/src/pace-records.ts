@@ -1,13 +1,66 @@
 import { haversineMeters, MAX_PLAUSIBLE_SPEED_MS, type GpsPoint } from './running';
 
-export type RecordDistanceKey = '1k' | '5k' | '10k' | 'semi' | 'marathon';
+export type RecordDistanceKey =
+  | '400m' | 'halfmile' | '1k' | 'mile' | '5k' | '10k' | 'semi' | 'marathon';
+
+/**
+ * Les distances sur lesquelles on cherche un meilleur segment glissant, **par ordre croissant**
+ * (c'est aussi l'ordre d'affichage).
+ *
+ * ── Pourquoi 400 m, le demi-mile et le mile (US EFFORT-01, spec R1) ─────────────────────────────
+ * Ajoutés le 20/09/2026. Avec les cinq distances d'origine, une sortie de 2 km ne pouvait produire
+ * qu'**un seul** effort (1 km) : les sorties courtes n'avaient rien à raconter. Ce sont par ailleurs
+ * des repères que les coureurs utilisent réellement.
+ *
+ * ⚠️ Élargir cette union ne doit **rien** déplacer des prédictions de Riegel (spec R4) :
+ * `PREDICTION_SOURCE` reste le 5 km et `PREDICTION_TARGETS` reste 10k/semi/marathon. Un test de
+ * garde le vérifie — c'est exactement le genre de changement qui déplace une valeur par défaut sans
+ * qu'on le voie.
+ */
 export const RUNNING_RECORD_DISTANCES: { key: RecordDistanceKey; meters: number }[] = [
+  { key: '400m', meters: 400 },
+  { key: 'halfmile', meters: 804.672 },
   { key: '1k', meters: 1000 },
+  { key: 'mile', meters: 1609.344 },
   { key: '5k', meters: 5000 },
   { key: '10k', meters: 10000 },
   { key: 'semi', meters: 21097.5 },
   { key: 'marathon', meters: 42195 },
 ];
+
+/**
+ * Les cinq distances **historiques**, seules affichées par le mur de records du hub Course.
+ *
+ * US EFFORT-01, spec R3 : CARDIO-UX02 vient de dégonfler cet écran et
+ * [ADR-007](../../../docs/adr/ADR-007-surfacage-analyses.md) interdit de le regonfler. Les trois
+ * distances neuves vivent dans la fiche d'une sortie, pas sur le hub.
+ */
+export const CANONICAL_RECORD_DISTANCES: readonly RecordDistanceKey[] = [
+  '1k', '5k', '10k', 'semi', 'marathon',
+];
+
+/**
+ * Clé i18n du libellé de chaque distance — **source unique**.
+ *
+ * Cette table vivait, à l'identique, dans **six** fichiers de l'app (`run/summary`,
+ * `running-history`, `RecordRecentCard`, `RunPredictionsCard`, `RunRecordWall`,
+ * `run-cards-repository`) : l'un d'eux portait même le commentaire « les mêmes libellés que l'écran
+ * de stats — une distance ne change pas de nom selon l'écran ». C'est l'ajout des trois distances
+ * d'EFFORT-01 qui l'a révélé, le compilateur refusant les six copies d'un coup.
+ *
+ * La garder ici a un effet utile : ajouter une distance **ne compile plus** tant que son libellé
+ * n'est pas fourni.
+ */
+export const RECORD_DISTANCE_I18N_KEY: Record<RecordDistanceKey, string> = {
+  '400m': 'running.records.distance400m',
+  halfmile: 'running.records.distanceHalfMile',
+  '1k': 'running.records.distance1k',
+  mile: 'running.records.distanceMile',
+  '5k': 'running.records.distance5k',
+  '10k': 'running.records.distance10k',
+  semi: 'running.records.distanceSemi',
+  marathon: 'running.records.distanceMarathon',
+};
 
 /** Distance cumulée le long de la trace (outlier de vitesse → 0 m ajouté, point conservé). */
 export function cumulativeDistances(points: ReadonlyArray<GpsPoint>): number[] {
@@ -40,9 +93,39 @@ export function cumulativeDistances(points: ReadonlyArray<GpsPoint>): number[] {
 export function bestSegmentTimeFromSamples(
   cum: ReadonlyArray<number>, t: ReadonlyArray<number>, targetDistanceM: number,
 ): number | null {
+  return bestSegmentWindowFromSamples(cum, t, targetDistanceM)?.seconds ?? null;
+}
+
+/**
+ * La fenêtre gagnante, et pas seulement son temps (US EFFORT-01, spec C2 et R5).
+ *
+ * ── Pourquoi cette fonction existe ──────────────────────────────────────────────────────────────
+ * Le balayage calculait déjà les bornes de la fenêtre la plus rapide, puis **les jetait** : on ne
+ * gardait qu'un nombre de secondes. Sans elles, impossible de poser quoi que ce soit sur la carte —
+ * on sait *qu'*on a bien couru, jamais *où*. `bestSegmentTimeFromSamples` est devenue un appel
+ * mince dessus : **aucun changement de comportement**, et ses tests d'origine le vérifient.
+ *
+ * `startIdx` / `startFrac` décrivent un départ **interpolé** : la fenêtre commence entre les points
+ * `startIdx` et `startIdx + 1`, à la fraction `startFrac`. `endIdx` est le point qui a franchi la
+ * distance cible.
+ */
+export type SegmentWindow = {
+  seconds: number;
+  startIdx: number;
+  /** Fraction dans `[0, 1[` entre `startIdx` et `startIdx + 1` où démarre la fenêtre. */
+  startFrac: number;
+  endIdx: number;
+};
+
+export function bestSegmentWindowFromSamples(
+  cum: ReadonlyArray<number>, t: ReadonlyArray<number>, targetDistanceM: number,
+): SegmentWindow | null {
   const n = cum.length;
   if (n < 2 || targetDistanceM <= 0 || cum[n - 1]! < targetDistanceM) return null;
   let best = Infinity;
+  let bestStartIdx = 0;
+  let bestStartFrac = 0;
+  let bestEndIdx = 0;
   let k = 0;
   for (let j = 1; j < n; j++) {
     if (cum[j]! < targetDistanceM) continue;
@@ -54,27 +137,55 @@ export function bestSegmentTimeFromSamples(
     const span = cum[k + 1]! - cum[k]!;
     const frac = (s0 - cum[k]!) / span;
     const tStart = t[k]! + frac * (t[k + 1]! - t[k]!);
-    best = Math.min(best, t[j]! - tStart);
+    const seconds = t[j]! - tStart;
+    // Comparaison **stricte** : à égalité de temps, la première fenêtre rencontrée gagne — c'est
+    // le comportement de l'ancien `Math.min`, et un test le fige.
+    if (seconds < best) {
+      best = seconds;
+      bestStartIdx = k;
+      bestStartFrac = frac;
+      bestEndIdx = j;
+    }
   }
   // `j = n-1` satisfait toujours `cum[j] >= targetDistanceM` (même garde d'entrée) : `best` a donc
   // forcément été assigné. Un `best === Infinity ? null` ici serait du code mort.
-  return best;
+  return { seconds: best, startIdx: bestStartIdx, startFrac: bestStartFrac, endIdx: bestEndIdx };
 }
 
 export function bestSegmentTime(points: ReadonlyArray<GpsPoint>, targetDistanceM: number): number | null {
+  return bestSegmentWindow(points, targetDistanceM)?.seconds ?? null;
+}
+
+/** `bestSegmentWindowFromSamples`, depuis des points GPS. */
+export function bestSegmentWindow(
+  points: ReadonlyArray<GpsPoint>, targetDistanceM: number,
+): SegmentWindow | null {
   if (points.length < 2) return null;
   const cum = cumulativeDistances(points);
   const t = points.map((p) => p.t);
-  return bestSegmentTimeFromSamples(cum, t, targetDistanceM);
+  return bestSegmentWindowFromSamples(cum, t, targetDistanceM);
 }
 
-/** Meilleurs temps par distance atteignable (clé absente si non atteignable). */
+/**
+ * Meilleurs temps par distance atteignable (clé absente si non atteignable) — **le palmarès**.
+ *
+ * ⚠️ **Ne balaie que les cinq distances canoniques**, pas les huit (US EFFORT-01, spec D8).
+ * Cette fonction alimente `running_pace_records`, dont la colonne `distance_key` porte une
+ * contrainte `check` à cinq valeurs : lui passer `'400m'` ferait **échouer la synchro** vers
+ * Postgres, silencieusement côté SQLite local et bruyamment à la remontée.
+ *
+ * Ce n'est pas un contournement, c'est la bonne séparation : le **palmarès** garde les cinq
+ * distances de référence ; le **journal** (`computeRunEfforts`, dans `run-efforts.ts`) couvre les
+ * huit. Le record d'une distance neuve se lit comme le minimum de son journal — là où vit déjà son
+ * classement. Aucune contrainte de base à élargir, aucun comportement existant déplacé.
+ */
 export function computeRunRecords(points: ReadonlyArray<GpsPoint>): Partial<Record<RecordDistanceKey, number>> {
   const out: Partial<Record<RecordDistanceKey, number>> = {};
   if (points.length < 2) return out;
   const cum = cumulativeDistances(points);
   const t = points.map((p) => p.t);
   for (const { key, meters } of RUNNING_RECORD_DISTANCES) {
+    if (!CANONICAL_RECORD_DISTANCES.includes(key)) continue;
     const time = bestSegmentTimeFromSamples(cum, t, meters);
     if (time != null) out[key] = time;
   }

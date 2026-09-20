@@ -32,7 +32,7 @@ import {
   selectInsights,
   type InsightCandidate,
   type PaceProgress,
-  type RecordDistanceKey,
+  RECORD_DISTANCE_I18N_KEY,
   type RunRecordCandidateInput,
   type SelectedInsight,
 } from '@wellness/shared';
@@ -135,15 +135,6 @@ export function useRunLifetime(): {
 // « Le fil du jour »
 // ---------------------------------------------------------------------------
 
-/** Clés i18n des distances de record — les mêmes que partout ailleurs dans le pilier. */
-const RECORD_DISTANCE_KEY: Record<RecordDistanceKey, string> = {
-  '1k': 'running.records.distance1k',
-  '5k': 'running.records.distance5k',
-  '10k': 'running.records.distance10k',
-  semi: 'running.records.distanceSemi',
-  marathon: 'running.records.distanceMarathon',
-};
-
 /**
  * Le fil retient **un** insight, pas trois : c'est une bande d'une ligne, pas une pile de cartes.
  * `selectInsights` en rend jusqu'à `MAX_INSIGHTS` ; on prend la tête de son classement.
@@ -162,7 +153,7 @@ export function useRunningThread(): { thread: SelectedInsight | null; isLoading:
 
     const recordInputs: RunRecordCandidateInput[] = records.map((r) => ({
       distanceKey: r.distanceKey,
-      label: t(RECORD_DISTANCE_KEY[r.distanceKey]),
+      label: t(RECORD_DISTANCE_I18N_KEY[r.distanceKey]),
       bestTimeSeconds: r.bestTimeSeconds,
       // `achieved_at` est un ISO complet ; le moteur compare des **clés de jour**. Sans cette
       // conversion, `daysBetween` recevrait « 2026-09-17T18:42:11.000Z » et la porte des 14 jours
