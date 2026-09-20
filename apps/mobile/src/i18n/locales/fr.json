@@ -731,7 +731,8 @@
         "title": "Ajoute ~{{grams}} g de glucides",
         "body": "Sans ça, ta séance de {{time}} descendrait vers {{percent}} %.",
         "hint": "Des idées de collation dans les suggestions d’aliments"
-      }
+      },
+      "ready": "Séance à {{time}} — tu as de quoi la tenir."
     }
   },
   "food": {
@@ -4459,7 +4460,12 @@
       "missingDay_one": "{{day}} n'a rien de saisi — le compléter affinerait tes repères",
       "missingDay_other": "{{day}} n'a rien de saisi ({{count}} jours à trous cette semaine)",
       "quickAddA11y": "Ajouter {{name}}, {{kcal}} kcal",
-      "search": "Chercher"
+      "search": "Chercher un aliment",
+      "stillAvailable": "encore disponibles aujourd'hui",
+      "detail": "{{consumed}} sur {{target}} kcal",
+      "detailWithBonus": "{{consumed}} sur {{target}} · +{{bonus}} jour de séance",
+      "remainingA11y": "{{kcal}} kcal encore disponibles aujourd'hui",
+      "macroGrams": "{{value}}g"
     }
   },
   "workoutMode": {
@@ -4950,7 +4956,8 @@
       "remaining": "Il te reste",
       "notFollowing": "Ta cible ne suit pas encore tes dépenses réelles. La régler.",
       "notFollowingNumbers": "Tu as dépensé {{spent}} kcal aujourd'hui ; ta cible en compte {{bonus}} au forfait. Faire suivre ta cible.",
-      "notFollowingCta": "Régler la cible calorique"
+      "notFollowingCta": "Régler la cible calorique",
+      "collapsed": "{{kcal}} kcal dépensées · {{first}}"
     },
     "settings": {
       "title": "Calories dépensées",

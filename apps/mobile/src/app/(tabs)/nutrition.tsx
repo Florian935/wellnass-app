@@ -405,16 +405,39 @@ export default function NutritionScreen() {
           </>
         ) : (
           <>
-        {/* R5.2 — hydratation : un tap, aucune saisie. */}
-        <HydrationCard day={day} />
-
         {/*
-          US DEPENSE-03 — « Ta journée en énergie » : ce que la journée a coûté et ce que la cible
-          en retient. Placée haut dans le journal parce qu'elle répond à la question qui amène ici
-          (« est-ce que je peux manger un peu plus ce soir ? »), et qu'elle porte l'entrée
-          « Ajouter une activité » — la seule porte de saisie pour qui n'a activé que la nutrition.
+          US NUTRI-UX02 — **l'ordre du journal suit celui des questions qu'on se pose.**
+
+          Il suivait jusqu'ici l'ordre d'arrivée des US : hydratation (R5.2), énergie (DEPENSE-03),
+          Réservoir (RESERV-01), repas. Chacune avait sa raison d'être « haut dans le journal », et
+          à la fin quatre blocs se disputaient le haut de l'écran — dont deux qui ne font que
+          rapporter. L'ordre est désormais celui-ci, et il se lit comme une suite de questions :
+
+            1. « qu'est-ce que je peux encore manger ? »   → la carte de décision
+            2. « est-ce que je tiens ma séance de ce soir ? » → le Réservoir
+            3. « qu'est-ce que j'ai mangé ? »               → Ta journée (hydratation comprise)
+            4. « qu'est-ce que ça m'a coûté ? »             → l'énergie, repliée
+
+          L'hydratation rejoint la carte « Ta journée » en une ligne, et l'énergie se replie : deux
+          blocs entiers rendus à ce qui demande une décision.
         */}
-        <DayEnergyCard dayKey={day} consumedKcal={totals.kcal} />
+
+        {/* US NUTR-F2 — la carte de décision, désormais EN TÊTE. Elle se rend `null` d'elle-même
+            s'il n'y a pas d'objectif, pas d'écart significatif, ou plus de budget calorique (D6) —
+            donc la remonter ne coûte rien les jours où elle n'a rien à dire. Jour courant seulement,
+            et jamais sur une journée vide, où « il te manque 160 g de protéines » n'est qu'une
+            paraphrase de l'objectif. */}
+        {isToday && entries.length > 0 ? (
+          <MacroSuggestionCard
+            day={day}
+            mealType={mealList[0]?.key ?? 'snack'}
+            consumed={consumedMacros}
+            targets={targetMacros}
+            kcalRemaining={remaining}
+            candidates={suggestionCandidates}
+            recentIds={recentIds}
+          />
+        ) : null}
 
         {/*
           US RESERV-01 — « Réservoir » : la même journée, vue en glucides disponibles. Placée juste
@@ -507,6 +530,12 @@ export default function NutritionScreen() {
                 onEditEntry={onEditEntry}
               />
             ) : null}
+            {/* R5.2 — l'hydratation : un tap, aucune saisie. En ligne dans la carte depuis
+                NUTRI-UX02 : elle occupait un bloc entier, au-dessus de tout ce qui demande une
+                décision, pour une donnée le plus souvent déjà atteinte. */}
+            <View style={[styles.dayCardHydration, { borderTopColor: colors.border }]}>
+              <HydrationCard day={day} compact />
+            </View>
             <Pressable
               onPress={() => setAddTarget({ mealKey: mealForHour(hour) })}
               accessibilityRole="button"
@@ -518,22 +547,11 @@ export default function NutritionScreen() {
           </View>
         ) : null}
 
-        {/* US NUTR-F2 — suggestion pour combler un macro. La carte se rend `null` d'elle-même s'il
-            n'y a pas d'objectif, pas d'écart significatif, ou plus de budget calorique (D6). Placée
-            sous les repas : le conseil doit apparaître là où le manque se voit. Jour courant
-            seulement — et jamais sur une journée vide, où « il te manque 160 g de protéines » n'est
-            qu'une paraphrase de l'objectif, pas un conseil. */}
-        {isToday && entries.length > 0 ? (
-          <MacroSuggestionCard
-            day={day}
-            mealType={mealList[0]?.key ?? 'snack'}
-            consumed={consumedMacros}
-            targets={targetMacros}
-            kcalRemaining={remaining}
-            candidates={suggestionCandidates}
-            recentIds={recentIds}
-          />
-        ) : null}
+        {/* US DEPENSE-03 — « Ta journée en énergie », désormais SOUS les repas et repliée par
+            défaut. Elle garde l'entrée « Ajouter une activité » — la seule porte de saisie pour qui
+            n'a activé que la nutrition — et se déplie d'elle-même le jour où l'écart entre le
+            bonus forfaitaire et la dépense réelle mérite une décision. */}
+        <DayEnergyCard dayKey={day} consumedKcal={totals.kcal} />
 
         {/* R3.4 — les micronutriments passent SOUS les repas. En tête d'écran, ils repoussaient
             le premier repas entièrement hors de vue : un journal alimentaire dont aucun repas
@@ -1414,6 +1432,7 @@ const styles = StyleSheet.create({
   },
   dayCardTitle: { flex: 1, fontFamily: fontFamily.displayBold, fontSize: 17 },
   dayCardMeta: { fontFamily: fontFamily.mono, fontSize: 11.5 },
+  dayCardHydration: { borderTopWidth: 1 },
   dayCardAdd: {
     minHeight: 48,
     borderTopWidth: 1,

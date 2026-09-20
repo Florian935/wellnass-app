@@ -30,7 +30,19 @@ function formatLitres(ml: number, language: string): string {
   }).format(millilitresToLitres(ml));
 }
 
-export function HydrationCard({ day }: { day: string }) {
+/**
+ * US NUTRI-UX02 — `compact` : une **ligne** dans la carte « Ta journée », au lieu d'une carte à part.
+ *
+ * L'hydratation occupait un bloc entier, en tête du journal, pour une donnée déjà atteinte la
+ * plupart du temps (« 2 / 2 L ») et un geste qui tient en un tap. Elle passait donc avant le
+ * Réservoir et avant les repas — au-dessus de tout ce qui demande une décision.
+ *
+ * 🔴 La grille de verres **disparaît** en compact, et c'est le seul vrai arbitrage : elle sert à
+ * voir combien il en reste. Le compte chiffré (« 3 / 2 L ») le dit aussi, en une ligne au lieu de
+ * trois. Le bouton d'annulation part avec elle — un verre ajouté par erreur se retire depuis la
+ * carte pleine, qui reste accessible dans les réglages d'hydratation.
+ */
+export function HydrationCard({ day, compact = false }: { day: string; compact?: boolean }) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const { totalMl } = useDayWater(day);
@@ -39,6 +51,36 @@ export function HydrationCard({ day }: { day: string }) {
   const glassMl = nutritionProfile?.glassSizeMl ?? DEFAULT_GLASS_ML;
   const targetMl = nutritionProfile?.waterTargetMl ?? DEFAULT_WATER_TARGET_ML;
   const progress = hydrationProgress(totalMl, targetMl, glassMl);
+
+  if (compact) {
+    return (
+      <View style={styles.compactRow} testID="hydration-compact">
+        <Ionicons name="water-outline" size={17} color={colors.accent} />
+        <Text style={[styles.compactLabel, { color: colors.text }]}>{t('hydration.title')}</Text>
+        <Text
+          style={[styles.total, { color: progress.reached ? colors.success : colors.textMuted }]}
+          accessibilityLabel={t('hydration.a11y', {
+            glasses: progress.glasses,
+            target: progress.targetGlasses,
+          })}
+        >
+          {t('hydration.amount', {
+            current: formatLitres(progress.totalMl, i18n.language),
+            target: formatLitres(progress.targetMl, i18n.language),
+          })}
+        </Text>
+        <Pressable
+          onPress={() => void addWater(day, glassMl)}
+          hitSlop={8}
+          accessibilityRole="button"
+          accessibilityLabel={t('hydration.add', { ml: glassMl })}
+          style={[styles.compactAdd, { borderColor: colors.border }]}
+        >
+          <Ionicons name="add" size={18} color={colors.accent} />
+        </Pressable>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
@@ -112,6 +154,23 @@ const styles = StyleSheet.create({
   title: { fontFamily: fontFamily.bodyBold, fontSize: 13.5 },
   total: { fontFamily: fontFamily.monoBold, fontSize: 12.5 },
   row: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  // US NUTRI-UX02 — la variante en ligne, dans la carte « Ta journée ».
+  compactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingHorizontal: 16,
+    minHeight: 48,
+  },
+  compactLabel: { flex: 1, fontFamily: fontFamily.bodyMedium, fontSize: 13 },
+  compactAdd: {
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   glasses: { flex: 1, flexDirection: 'row', flexWrap: 'wrap', gap: 5 },
   glass: { flexGrow: 1, flexBasis: 18, height: 26, borderRadius: 7 },
   undoBtn: {

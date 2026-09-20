@@ -298,8 +298,17 @@ const saisir = async (label: string, valeur: string) => {
  * Le grand chiffre de la scène (US DASH-01). Il se lit sur `defaultValue` : `AnimatedNumber`
  * n'écrit jamais `value`, qui figerait le texte côté JS et annulerait la piste d'animation.
  */
+/**
+ * Le grand chiffre de la scène, **espaces de groupement normalisés**.
+ *
+ * `AnimatedNumber` formate avec le séparateur de la locale — en français une espace fine
+ * insécable (U+202F), invisible à la lecture d'un diff mais différente d'une espace ordinaire.
+ * Comparer sans normaliser produit un `Expected: "1 500" / Received: "1 500"`, deux chaînes qui
+ * s'affichent à l'identique et ne sont pas égales : une demi-heure perdue pour rien.
+ */
 const kcalAffichees = () =>
-  screen.getByTestId('stage-kcal', { includeHiddenElements: true }).props.defaultValue as string;
+  (screen.getByTestId('stage-kcal', { includeHiddenElements: true }).props.defaultValue as string)
+    .replace(/[  \s]/g, ' ');
 
 /** Ouvre le détail d'une entrée par un appui simple sur sa ligne. */
 const ouvrirDetail = async (nom: string) => {
@@ -884,13 +893,33 @@ describe('objectif du jour', () => {
     expect(mockTarget).toHaveBeenLastCalledWith('2026-08-11');
   });
 
-  it('le bilan additionne les calories des entrées', async () => {
+  it('🔴 US NUTRI-UX02 — le grand chiffre dit ce qu’il RESTE, et la sous-ligne porte le détail', async () => {
     await afficher({
       entries: [entree({ id: 'a', kcal: 90 }), entree({ id: 'b', kcal: 410 })],
     });
 
-    expect(kcalAffichees()).toBe('500');
-    expect(screen.getByText('stage.nutrition.remaining:{"kcal":1500}')).toBeTruthy();
+    // Avant : le grand chiffre valait « 500 » (le consommé), déjà lisible deux fois — par le niveau
+    // qui monte derrière le texte et par « sur 2000 kcal visées ». On n'ouvre pas ce journal pour
+    // savoir ce qu'on a mangé, mais pour savoir ce qu'on peut encore manger.
+    expect(kcalAffichees()).toBe('1 500');
+    expect(screen.getByText('stage.nutrition.stillAvailable')).toBeTruthy();
+    // Rien n'est perdu : le consommé et la cible restent, en sous-ligne.
+    expect(screen.getByText('stage.nutrition.detail:{"consumed":500,"target":2000}')).toBeTruthy();
+  });
+
+  it('🔴 sur un JOUR PASSÉ, on revient au consommé — « il te reste » n’y a aucun sens', async () => {
+    await afficher({ entries: [entree({ kcal: 90 })] });
+    await taper(screen.getByLabelText('journal.prevDay'));
+
+    expect(kcalAffichees()).toBe('90');
+    expect(screen.queryByText('stage.nutrition.stillAvailable')).toBeNull();
+  });
+
+  it('🔴 cible dépassée : le chiffre repasse au consommé, jamais un restant négatif', async () => {
+    await afficher({ entries: [entree({ kcal: 2600 })] });
+
+    expect(kcalAffichees()).toBe('2 600');
+    expect(screen.getByText('stage.nutrition.over:{"kcal":600}')).toBeTruthy();
   });
 
   it('🔴 le badge « jour de séance » ne s’affiche pas pendant le CHARGEMENT', async () => {
@@ -905,8 +934,13 @@ describe('objectif du jour', () => {
 
     // Un badge transitoire qui apparaît puis disparaît est pire qu'un badge tardif : il fait
     // douter de la valeur affichée à côté.
-    expect(kcalAffichees()).toBe('90');
-    expect(screen.queryByText('stage.nutrition.trainingBonus:{"kcal":300}')).toBeNull();
+    //
+    // ⚠️ Depuis NUTRI-UX02 le bonus n'est plus une pastille mais la sous-ligne de détail : c'est
+    // elle qui ne doit pas annoncer un bonus pendant le chargement. Le grand chiffre, lui, affiche
+    // le restant (2300 − 90).
+    expect(kcalAffichees()).toBe('2 210');
+    expect(screen.queryByText(/detailWithBonus/)).toBeNull();
+    expect(screen.getByText('stage.nutrition.detail:{"consumed":90,"target":2300}')).toBeTruthy();
   });
 });
 

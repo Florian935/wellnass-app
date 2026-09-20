@@ -270,21 +270,88 @@ FR + EN pour : `journal.library.*`, `journal.dayCard.*`, `journal.mealShareA11y`
 Aucune écriture nouvelle, aucune table nouvelle, **aucune migration**. `useLibraryPresence` est une
 lecture locale (`COUNT` sur `foods`), et le verdict lit des hooks déjà offline-first.
 
-## 7 — Ce qui n'a pas été fait, et pourquoi
+## 7 — Deuxième passe : aligner le livré sur la maquette (20/09/2026)
+
+Recette device de Florian le jour même, captures du livré **et** de la maquette côte à côte : « il y
+a des grosses différences […] je comprends pas trop pourquoi il y a autant d'écart ». Constat juste,
+et la cause est nette : la première passe a traité **les constats écrits du compte rendu** et non la
+maquette écran par écran. Tout ce qui figurait dans le texte de l'analyse était livré ; tout ce qui
+n'existait que dans l'image ne l'était pas.
+
+Six écarts, tous corrigés dans la foulée :
+
+### R9 — La trame de la semaine n'est plus « tronquée »
+
+Les sept carrés étaient dessinés comme des **verres** : coins quasi droits en haut (rayon 3),
+arrondis en bas (rayon 9), pour que le remplissage se lise comme un liquide. À 40 px de haut et sept
+côte à côte, ce n'est pas ce qu'on voit — on voit des carrés **coupés net**. Florian l'a signalé
+**deux fois, en deux passes distinctes**, avec le même mot : « tronqué ». Les quatre coins prennent
+le même rayon.
+
+> 🔴 Deux signalements identiques sur un même détail visuel ne sont pas une préférence : c'est
+> qu'une intention de design n'arrive pas, et qu'elle coûte plus qu'elle ne rapporte.
+
+### R10 — Le grand chiffre dit ce qu'il RESTE
+
+Le consommé était lisible **trois fois** : le niveau qui monte derrière le texte, la ligne « sur
+3120 kcal visées », et le grand chiffre. Or on n'ouvre pas ce journal pour savoir ce qu'on a mangé.
+La preuve était déjà dans l'app : la feuille d'ajout affichait « Il te reste 1163 kcal · 59 g de
+protéines » — la meilleure phrase du pilier, visible seulement une fois la feuille ouverte.
+
+Le visuel et le texte se répartissent désormais le travail : le **niveau** montre le consommé, le
+**chiffre** dit le restant, la **sous-ligne** porte `1957 sur 3120 · +720 jour de séance`.
+
+Replis : jour passé (« il te reste » n'y a aucun sens) et cible dépassée → retour au consommé.
+La pastille « +720 kcal » disparaît : elle isolait le bonus d'un calcul qu'elle ne montrait pas.
+
+### R11 — Les macros portent leurs grammes
+
+Les trois tiges P/G/L ne portaient **aucun chiffre** : elles disaient « à peu près aux deux tiers »
+sans jamais dire de quoi. L'information existait — dans le libellé d'accessibilité, donc lue par
+TalkBack et par personne d'autre. Demande explicite de Florian : « je les trouve super
+intéressantes ».
+
+### R12 — L'ordre du journal suit celui des questions
+
+Il suivait l'ordre d'arrivée des US : hydratation (R5.2), énergie (DEPENSE-03), Réservoir
+(RESERV-01), repas. Chacune avait sa raison d'être « haut dans le journal », et quatre blocs se
+disputaient le haut de l'écran — dont deux qui ne font que rapporter. Désormais :
+
+1. « qu'est-ce que je peux encore manger ? » → la carte de décision (NUTR-F2, remontée)
+2. « est-ce que je tiens ma séance ? » → le Réservoir
+3. « qu'est-ce que j'ai mangé ? » → Ta journée
+4. « qu'est-ce que ça m'a coûté ? » → l'énergie, repliée
+
+### R13 — L'hydratation en une ligne, dans « Ta journée »
+
+Elle occupait un bloc entier pour une donnée le plus souvent déjà atteinte et un geste qui tient en
+un tap. ⚠️ La grille de verres disparaît en compact — seul vrai arbitrage : elle servait à voir
+combien il en reste, ce que le compte chiffré dit aussi, en une ligne au lieu de trois.
+
+### R14 — La carte énergie se replie
+
+Repliée en une ligne quand elle n'a qu'à rapporter, **dépliée d'elle-même** quand il y a un écart à
+arbitrer (`!followsEnergy && items.length > 0`). État local et non persisté : mémoriser « replié »
+ferait taire l'alerte pour de bon.
+
+### R15 — Le Réservoir confirme, au lieu de seulement alerter
+
+La carte ne parlait que pour alerter (« prends 40 g avant ta séance »). Quand le réservoir
+suffisait, elle se taisait — or l'absence d'alerte et une confirmation ne se valent pas. « Séance à
+18h30 — tu as de quoi la tenir » est le pendant strict de la carte d'action : `snackG === null`
+signifie « aucune collation nécessaire », les deux ne peuvent jamais coexister.
+
+## 8 — Ce qui n'a toujours pas été fait, et pourquoi
 
 1. **Vérifier et redéployer les sync rules PowerSync** — hors-code, accès dashboard requis. C'est le
    point n° 1 de la recette, et tout le constat 0 en dépend.
 2. **Le bordeaux en thème clair** (chroma 9) — hors périmètre validé, porté au BACKLOG en P1.
-3. **Le repli de la carte énergie en une ligne** — la maquette la montrait repliée ; le livré traite
-   la cause (le bandeau devient utile et conditionnel) plutôt que le symptôme. Replier la carte
-   entière aurait ajouté un état et un risque sur DEPENSE-03 pour un gain de place déjà obtenu par
-   la fusion des cartes de repas.
 
-## 8 — Recette
+## 9 — Recette
 
-Voir [RECETTES.md](../../../../RECETTES.md), section NUTRI-UX02.
+Voir [RECETTES.md](../../../../RECETTES.md), section NUTRI-UX02 (sections A à K).
 
-## 9 — Maquettes
+## 10 — Maquettes
 
 Canvas Design du 20/09/2026 — six planches : l'écran actuel reconstitué, le dashboard refondu
 (jouable, deux onglets), le bug de recherche (jouable, deux états), la fusion des repas, la planche

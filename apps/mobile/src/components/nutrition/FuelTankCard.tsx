@@ -156,6 +156,29 @@ export function FuelTankCard({ dayKey, atHour }: { dayKey: string; atHour: numbe
           </View>
         </View>
       ) : null}
+      {/*
+        US NUTRI-UX02 — le pendant **rassurant** de la carte d'action ci-dessus.
+
+        La carte ne parlait que pour alerter : quand une séance approchait et que le réservoir
+        suffisait, elle se taisait. Or l'absence d'alerte et une confirmation ne se valent pas —
+        l'une laisse la question ouverte (« est-ce que j'ai de quoi tenir ce soir ? »), l'autre y
+        répond. C'est la question qui amène sur cette carte, et c'était la seule à laquelle elle ne
+        répondait pas.
+
+        🔴 Strictement complémentaire de la carte d'action : `snackG === null` signifie « aucune
+        collation nécessaire ». Les deux ne peuvent donc jamais s'afficher ensemble.
+      */}
+      {tank.nextSessionHour !== null && tank.snackG === null ? (
+        <View style={[styles.ready, { borderColor: colors.border }]} testID="fuel-tank-ready">
+          <Ionicons name="flash-outline" size={16} color={colors.accent} />
+          <Text style={[styles.readyText, { color: colors.text }]}>
+            {t('nutrition.fuelTank.ready', {
+              time: formatHour(tank.nextSessionHour, i18n.language),
+            })}
+          </Text>
+        </View>
+      ) : null}
+
       <ExplainSheet
         visible={explaining}
         title={t('nutrition.fuelTank.level', { percent: String(percent) })}
@@ -193,6 +216,18 @@ const styles = StyleSheet.create({
   chipText: { fontFamily: fontFamily.bodyBold, fontSize: 10.5, letterSpacing: 0.6 },
   chart: { marginTop: 12, alignSelf: 'center' },
   note: { fontFamily: fontFamily.body, fontSize: 13, marginTop: 8 },
+  // US NUTRI-UX02 — la confirmation « tu as de quoi tenir », pendant de la carte d'action.
+  ready: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 13,
+    minHeight: 48,
+    marginTop: 12,
+  },
+  readyText: { flex: 1, fontFamily: fontFamily.bodyMedium, fontSize: 13, lineHeight: 19 },
   action: { borderRadius: 18, padding: 14, marginTop: 12, gap: 4 },
   actionTitle: { fontFamily: fontFamily.displaySemi, fontSize: 16, letterSpacing: -0.3 },
   actionBody: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },

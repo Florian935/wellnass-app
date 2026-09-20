@@ -108,9 +108,32 @@ describe('le niveau', () => {
   });
 
   it('le bonus de séance est nommé quand il existe', async () => {
-    await afficher({ trainingBonusKcal: 300 });
+    await afficher({ consumedKcal: 500, trainingBonusKcal: 300 });
 
-    expect(screen.getByText('stage.nutrition.trainingBonus:{"kcal":300}')).toBeTruthy();
+    // ⚠️ Depuis NUTRI-UX02, le bonus n'est plus une pastille isolée mais la **sous-ligne de
+    // détail** : il n'avait de sens qu'à côté de la cible qu'il augmente, et la pastille
+    // l'affichait seul, au-dessus d'un calcul qu'elle ne montrait pas.
+    expect(
+      screen.getByText('stage.nutrition.detailWithBonus:{"consumed":500,"target":2000,"bonus":300}'),
+    ).toBeTruthy();
+  });
+
+  it('🔴 US NUTRI-UX02 — le grand chiffre dit ce qu’il RESTE sur la journée en cours', async () => {
+    await afficher({ consumedKcal: 500, targetKcal: 2000 });
+
+    // Le consommé reste lisible deux fois — par le niveau derrière le texte et par la sous-ligne.
+    // Le grand chiffre, lui, répond à la question qui amène sur l'écran.
+    expect(screen.getByTestId('stage-kcal', { includeHiddenElements: true }).props.defaultValue.replace(/[  \s]/g, ' ')).toBe('1 500');
+    expect(screen.getByText('stage.nutrition.stillAvailable')).toBeTruthy();
+    expect(screen.getByText('stage.nutrition.detail:{"consumed":500,"target":2000}')).toBeTruthy();
+  });
+
+  it('🔴 les macros portent enfin leurs GRAMMES — ils n’étaient lus que par TalkBack', async () => {
+    await afficher({ consumedMacros: { protein: 59, carbs: 112, fat: 31 } });
+
+    expect(screen.getByText('stage.nutrition.macroGrams:{"value":59}')).toBeTruthy();
+    expect(screen.getByText('stage.nutrition.macroGrams:{"value":112}')).toBeTruthy();
+    expect(screen.getByText('stage.nutrition.macroGrams:{"value":31}')).toBeTruthy();
   });
 });
 

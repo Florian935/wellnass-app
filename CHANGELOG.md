@@ -9,6 +9,74 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 20/09/2026 (bis) — NUTRI-UX02, deuxième passe : le livré rejoint la maquette
+
+Branche : `dev`. Commit précédent : `218e5af6`. **Suite directe de la livraison du matin**, après
+recette device de Florian, captures du livré et de la maquette côte à côte : « il y a des grosses
+différences […] je comprends pas trop pourquoi il y a autant d'écart ».
+
+Le constat est juste, et la cause est nette : la première passe a traité **les constats écrits du
+compte rendu** et non la maquette écran par écran. Tout ce qui figurait dans le texte de l'analyse
+était livré ; tout ce qui n'existait que dans l'image ne l'était pas.
+
+### Corrigé
+
+- **La trame de la semaine paraissait tronquée.** Les sept carrés étaient dessinés comme des verres
+  — coins quasi droits en haut (rayon 3), arrondis en bas (rayon 9) — pour que le remplissage se
+  lise comme un liquide. À 40 px de haut et sept côte à côte, ce n'est pas ce qu'on voit : on voit
+  des carrés coupés net. 🔴 Florian l'a signalé **deux fois, en deux passes distinctes**, avec le
+  même mot. Deux signalements identiques sur un même détail visuel ne sont pas une préférence :
+  c'est qu'une intention de design n'arrive pas, et qu'elle coûte plus qu'elle ne rapporte. Les
+  quatre coins prennent le même rayon.
+
+### Modifié
+
+- **Le grand chiffre dit ce qu'il RESTE.** Le consommé était lisible trois fois : le niveau qui
+  monte derrière le texte, la ligne « sur 3120 kcal visées », et le chiffre lui-même. On n'ouvre pas
+  ce journal pour savoir ce qu'on a mangé. La preuve était déjà dans l'app : la feuille d'ajout
+  affichait « Il te reste 1163 kcal · 59 g de protéines » — la meilleure phrase du pilier, visible
+  seulement une fois la feuille ouverte. Le visuel et le texte se répartissent désormais le travail :
+  le niveau montre le consommé, le chiffre dit le restant, la sous-ligne porte
+  `1957 sur 3120 · +720 jour de séance`. Replis sur le consommé pour un **jour passé** et pour une
+  **cible dépassée**. La pastille « +720 kcal » disparaît : elle isolait le bonus d'un calcul qu'elle
+  ne montrait pas.
+- **Les tiges P / G / L portent enfin leurs grammes.** Elles disaient « à peu près aux deux tiers »
+  sans jamais dire de quoi. L'information existait — dans le libellé d'accessibilité, donc lue par
+  TalkBack et par personne d'autre. Demande explicite de Florian : « je les trouve super
+  intéressantes ».
+- **L'ordre du journal suit celui des questions**, et non plus l'ordre d'arrivée des US. Hydratation
+  (R5.2), énergie (DEPENSE-03) et Réservoir (RESERV-01) revendiquaient chacune le haut de l'écran,
+  et quatre blocs s'y disputaient la place — dont deux qui ne font que rapporter. Désormais :
+  décision → Réservoir → Ta journée → énergie.
+- **L'hydratation devient une ligne** dans la carte « Ta journée ». ⚠️ La grille de verres disparaît
+  en compact : seul vrai arbitrage, elle servait à voir combien il en reste, ce que le compte
+  chiffré dit aussi, en une ligne au lieu de trois.
+- **La carte énergie se replie** en une ligne, et se **déplie d'elle-même** quand il y a un écart à
+  arbitrer. État local, non persisté : mémoriser « replié » ferait taire l'alerte pour de bon.
+  (Ce point était annoncé comme écart assumé le matin — il est levé.)
+
+### Ajouté
+
+- **Le Réservoir confirme, au lieu de seulement alerter.** Il ne parlait que pour signaler un manque
+  (« prends 40 g avant ta séance ») ; quand le carburant suffisait, il se taisait. Or l'absence
+  d'alerte et une confirmation ne se valent pas : l'une laisse la question ouverte, l'autre y
+  répond — et c'est la question qui amène sur cette carte. « Séance à 18h30 — tu as de quoi la
+  tenir » est le pendant strict de la carte d'action (`snackG === null` = aucune collation
+  nécessaire), les deux ne peuvent jamais coexister.
+
+### Technique / Notes
+
+- **Trois tests existants tombaient, tous pour la bonne raison** : ils verrouillaient le grand
+  chiffre sur le consommé et le bonus sur sa pastille. Adaptés, et quatre cas neufs ajoutés (jour
+  passé, cible dépassée, grammes des macros, sous-ligne de détail).
+- ⚠️ **Piège de test rencontré, noté pour la suite** : `AnimatedNumber` formate avec le séparateur
+  de la locale — en français une **espace fine insécable** (U+202F). Comparer sans normaliser produit
+  un `Expected: "1 500" / Received: "1 500"`, deux chaînes qui s'affichent à l'identique et ne sont
+  pas égales. Le helper `kcalAffichees()` normalise désormais, avec le commentaire qui dit pourquoi.
+- ✅ Aucune migration, aucune sync rule, aucune dépendance native.
+- **Vérifié** : `typecheck` 3 workspaces à 0, `lint` à 0, **3 795 tests Jest (226 suites) + 185
+  fichiers Vitest**, tous verts — code de sortie lu **sans pipe**.
+
 ## 20/09/2026 — NUTRI-UX02 : la bibliothèque qui n'arrivait pas, deux moments, et un vert qui existe
 
 Branche : `dev` (travail direct, décision Florian). Commit précédent : `76593fdd`. **Lot complet

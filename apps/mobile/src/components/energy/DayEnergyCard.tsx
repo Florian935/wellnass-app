@@ -14,6 +14,7 @@
  */
 
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -37,6 +38,7 @@ export function DayEnergyCard({ dayKey, consumedKcal }: { dayKey: string; consum
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const [expanded, setExpanded] = useState(false);
   const { items, totalKcal, targetKcal, isLoading } = useDayEnergy(dayKey);
   const { target, effectiveTarget, trainingBonus } = useDayCalorieTarget(dayKey);
   const { nutritionProfile } = useNutritionProfile();
@@ -49,6 +51,19 @@ export function DayEnergyCard({ dayKey, consumedKcal }: { dayKey: string; consum
   // Journée vide **et** cible qui ne suit pas les dépenses : la carte n'aurait rien à dire.
   if (isLoading || (items.length === 0 && !followsEnergy)) return null;
 
+  /**
+   * US NUTRI-UX02 — **repliée quand elle n'a qu'à rapporter, dépliée quand elle a une décision.**
+   *
+   * La carte occupait un bloc entier, haut dans le journal, pour redire un total que la scène
+   * affichait déjà. Elle n'a pourtant rien d'inutile : le jour où le bonus forfaitaire et la
+   * dépense réelle divergent, c'est elle qui porte la décision. D'où le critère — elle s'ouvre
+   * d'elle-même **quand il y a un écart à arbitrer**, et se range en une ligne le reste du temps.
+   *
+   * 🔴 L'état est local et non persisté : la carte doit pouvoir se rouvrir seule le lendemain si la
+   * situation change. Mémoriser « replié » ferait taire l'alerte pour de bon.
+   */
+  const needsAttention = !followsEnergy && items.length > 0;
+
   const label = (item: DayEnergyItem): string => {
     if (item.kind === 'strength') return item.title ?? t('energy.kinds.strength');
     if (item.kind === 'run') return t('energy.kinds.run');
@@ -57,6 +72,27 @@ export function DayEnergyCard({ dayKey, consumedKcal }: { dayKey: string; consum
       ? t(`activity.types.${def.id}`)
       : t('activity.types.other');
   };
+
+  if (!expanded && !needsAttention) {
+    return (
+      <Pressable
+        onPress={() => setExpanded(true)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: false }}
+        accessibilityLabel={t('energy.day.title')}
+        testID="energy-collapsed"
+        style={[styles.collapsed, { borderColor: colors.border }]}
+      >
+        <Ionicons name="time-outline" size={17} color={colors.textMuted} />
+        <Text style={[styles.collapsedText, { color: colors.textMuted }]} numberOfLines={1}>
+          {showNumbers && items.length > 0
+            ? t('energy.day.collapsed', { kcal: totalKcal, first: label(items[0]!) })
+            : t('energy.day.title')}
+        </Text>
+        <Ionicons name="chevron-forward" size={18} color={colors.textMuted} />
+      </Pressable>
+    );
+  }
 
   return (
     <Card>
@@ -204,6 +240,17 @@ const styles = StyleSheet.create({
   mathLabel: { fontSize: 13.5, flexShrink: 1 },
   mathValue: { fontFamily: fontFamily.monoBold, fontSize: 14 },
   sep: { height: 1, marginVertical: 2 },
+  // US NUTRI-UX02 — la forme repliée : une ligne, pas une carte.
+  collapsed: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderRadius: 14,
+    paddingHorizontal: 15,
+    minHeight: 52,
+  },
+  collapsedText: { flex: 1, fontFamily: fontFamily.bodyMedium, fontSize: 13.5 },
   hintRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 12, minHeight: 44 },
   hint: { fontFamily: fontFamily.bodyMedium, fontSize: 13, flex: 1, lineHeight: 18 },
   addBtn: {

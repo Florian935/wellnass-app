@@ -731,7 +731,8 @@
         "title": "Add ~{{grams}} g of carbs",
         "body": "Without it, your {{time}} session would drop to about {{percent}}%.",
         "hint": "Snack ideas in the food suggestions"
-      }
+      },
+      "ready": "Session at {{time}} — you have enough to hold it."
     }
   },
   "food": {
@@ -4459,7 +4460,12 @@
       "missingDay_one": "Nothing logged on {{day}} — filling it in would sharpen your cues",
       "missingDay_other": "Nothing logged on {{day}} ({{count}} gaps this week)",
       "quickAddA11y": "Add {{name}}, {{kcal}} kcal",
-      "search": "Search"
+      "search": "Search for a food",
+      "stillAvailable": "still available today",
+      "detail": "{{consumed}} of {{target}} kcal",
+      "detailWithBonus": "{{consumed}} of {{target}} · +{{bonus}} training day",
+      "remainingA11y": "{{kcal}} kcal still available today",
+      "macroGrams": "{{value}}g"
     }
   },
   "workoutMode": {
@@ -4950,7 +4956,8 @@
       "remaining": "Left today",
       "notFollowing": "Your target doesn't follow your real energy use yet. Set it up.",
       "notFollowingNumbers": "You spent {{spent}} kcal today; your target allows {{bonus}} as a flat bonus. Make your target follow.",
-      "notFollowingCta": "Set up the calorie target"
+      "notFollowingCta": "Set up the calorie target",
+      "collapsed": "{{kcal}} kcal burned · {{first}}"
     },
     "settings": {
       "title": "Calories burned",

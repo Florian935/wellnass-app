@@ -93,13 +93,46 @@ export function NutritionStage(props: Props) {
   const missing = new Set(confidence.missingDayKeys);
 
   const ratio = targetKcal && targetKcal > 0 ? consumedKcal / targetKcal : 0;
+
+  /**
+   * US NUTRI-UX02 — **le grand chiffre dit ce qu'il RESTE, plus ce qui a été mangé.**
+   *
+   * Le consommé était déjà lisible deux fois : par le niveau qui monte derrière le texte, et par la
+   * ligne « sur 3120 kcal visées ». Le grand chiffre le répétait une troisième fois, et personne
+   * n'ouvre ce journal pour savoir ce qu'il a déjà mangé — on l'ouvre pour savoir **ce qu'on peut
+   * encore manger**. La preuve était dans l'app : la feuille d'ajout affichait déjà « Il te reste
+   * 1163 kcal · 59 g de protéines », la meilleure phrase du pilier, visible seulement une fois la
+   * feuille ouverte.
+   *
+   * 🔴 Le visuel et le texte se répartissent désormais le travail au lieu de se répéter : le niveau
+   * montre le **consommé**, le chiffre dit le **restant**, et la sous-ligne porte le détail complet
+   * (`1957 sur 3120 · +720 jour de séance`) pour que rien ne soit perdu.
+   *
+   * Replis : sans cible, ou sur un **jour passé** (où « il te reste » n'a aucun sens), on revient au
+   * consommé et à l'ancien libellé.
+   */
+  const remaining = targetKcal !== null ? targetKcal - consumedKcal : null;
+  const showRemaining = isToday && remaining !== null && remaining > 0;
+  const heroValue = showRemaining ? remaining! : consumedKcal;
+
   const status = (() => {
     if (targetKcal === null) return t('stage.nutrition.noTarget');
     if (!isToday) return t('stage.nutrition.ofTarget', { kcal: targetKcal });
-    const remaining = targetKcal - consumedKcal;
-    if (remaining > 0) return t('stage.nutrition.remaining', { kcal: remaining });
-    return remaining < 0 ? t('stage.nutrition.over', { kcal: -remaining }) : t('stage.nutrition.reached');
+    if (showRemaining) return t('stage.nutrition.stillAvailable');
+    return remaining! < 0 ? t('stage.nutrition.over', { kcal: -remaining! }) : t('stage.nutrition.reached');
   })();
+
+  /** La sous-ligne de détail : consommé, cible, et le bonus du jour s'il y en a un. */
+  const detail =
+    targetKcal === null
+      ? null
+      : props.trainingBonusKcal > 0
+        ? t('stage.nutrition.detailWithBonus', {
+            consumed: consumedKcal,
+            target: targetKcal,
+            bonus: props.trainingBonusKcal,
+          })
+        : t('stage.nutrition.detail', { consumed: consumedKcal, target: targetKcal });
 
   const stems: { key: keyof Macros; label: string; color: string }[] = [
     { key: 'protein', label: t('stage.nutrition.macroP'), color: '#e8f0d6' },
@@ -224,11 +257,15 @@ export function NutritionStage(props: Props) {
           <View style={styles.bigRow}>
             <AnimatedNumber
               testID="stage-kcal"
-              value={consumedKcal}
+              value={heroValue}
               groupSeparator={groupSeparator}
               decimalSeparator={decimalSeparator}
               style={[styles.big, { color: stage.ink }]}
-              accessibilityLabel={t('stage.nutrition.consumedA11y', { kcal: consumedKcal })}
+              accessibilityLabel={
+                showRemaining
+                  ? t('stage.nutrition.remainingA11y', { kcal: heroValue })
+                  : t('stage.nutrition.consumedA11y', { kcal: heroValue })
+              }
             />
             <Text style={[styles.unit, { color: stage.inkMuted }]}>{t('nutrition.kcal')}</Text>
           </View>
@@ -242,17 +279,17 @@ export function NutritionStage(props: Props) {
               />
             ) : null}
           </View>
+          {/* Le détail chiffré remplace la pastille « +720 kcal » : elle isolait le bonus d'un
+              calcul qu'elle ne montrait pas, alors qu'il n'a de sens qu'à côté de la cible. */}
+          {detail ? (
+            <Text style={[styles.detail, { color: stage.inkMuted }]} numberOfLines={1}>
+              {detail}
+            </Text>
+          ) : null}
           {targetKcal === null ? (
             <Pressable onPress={props.onSetTarget} accessibilityRole="button" hitSlop={8}>
               <Text style={[styles.link, { color: stage.accent }]}>{t('journal.setTarget')}</Text>
             </Pressable>
-          ) : null}
-          {props.trainingBonusKcal > 0 ? (
-            <View style={[styles.chip, { backgroundColor: stage.glass, borderColor: stage.glassBorder }]}>
-              <Text style={[styles.chipText, { color: stage.ink }]}>
-                {t('stage.nutrition.trainingBonus', { kcal: props.trainingBonusKcal })}
-              </Text>
-            </View>
           ) : null}
         </View>
         {props.targetMacros ? (
@@ -275,7 +312,19 @@ export function NutritionStage(props: Props) {
                   <View style={styles.stemTrack}>
                     <View style={[styles.stemFill, { height: `${pct * 100}%`, backgroundColor: m.color }]} />
                   </View>
-                  <Text style={[styles.stemLabel, { color: stage.ink }]}>{m.label}</Text>
+                  {/*
+                    US NUTRI-UX02 — les grammes, enfin lisibles.
+
+                    Les trois tiges ne portaient **aucun chiffre** : elles disaient « à peu près aux
+                    deux tiers » sans jamais dire de quoi. L'information existait déjà — elle était
+                    dans le libellé d'accessibilité juste au-dessus, donc lue par TalkBack et par
+                    personne d'autre. Le gramme consommé est la donnée qu'on vient chercher : c'est
+                    lui qu'on compare à ce qu'on s'apprête à manger.
+                  */}
+                  <Text style={[styles.stemValue, { color: stage.ink }]}>
+                    {t('stage.nutrition.macroGrams', { value })}
+                  </Text>
+                  <Text style={[styles.stemLabel, { color: stage.inkMuted }]}>{m.label}</Text>
                 </View>
               );
             })}
@@ -338,12 +387,20 @@ const styles = StyleSheet.create({
   icons: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   glasses: { flexDirection: 'row', gap: 8 },
   glassCol: { flex: 1, alignItems: 'center', gap: 5 },
+  /**
+   * US NUTRI-UX02 — **les quatre coins sont arrondis pareil**.
+   *
+   * L'idée d'origine était un verre : coins presque droits en haut (3), arrondis en bas (9), pour
+   * que le remplissage se lise comme un liquide. À l'écran, à 40 px de haut et sept exemplaires
+   * côte à côte, ce n'est pas ce qu'on voit — on voit des carrés **coupés net en haut**, comme si
+   * la trame débordait de la scène. Florian l'a signalé deux fois, en deux passes distinctes, en
+   * employant le mot « tronqué » : c'est le signe qu'une intention de design n'est pas arrivée, et
+   * qu'elle coûte plus qu'elle ne rapporte.
+   */
   glass: {
     width: '100%',
     height: 40,
-    borderRadius: 3,
-    borderBottomLeftRadius: 9,
-    borderBottomRightRadius: 9,
+    borderRadius: 9,
     overflow: 'hidden',
     backgroundColor: 'rgba(255,255,255,0.06)',
   },
@@ -358,13 +415,17 @@ const styles = StyleSheet.create({
   unit: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
   statusRow: { flexDirection: 'row', alignItems: 'center', gap: 10, flexWrap: 'wrap' },
   status: { fontFamily: fontFamily.displayBold, fontSize: 17, letterSpacing: -0.4 },
+  // US NUTRI-UX02 — la sous-ligne de détail : consommé, cible, bonus du jour.
+  detail: { fontFamily: fontFamily.mono, fontSize: 11, marginTop: 3 },
   link: { fontFamily: fontFamily.bodyBold, fontSize: 14, textDecorationLine: 'underline' },
   chip: { alignSelf: 'flex-start', borderRadius: 999, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 4 },
   chipText: { fontFamily: fontFamily.bodySemi, fontSize: 11.5 },
   stems: { flexDirection: 'row', gap: 10, paddingBottom: 4 },
-  stemCol: { alignItems: 'center', gap: 5 },
+  stemCol: { alignItems: 'center', gap: 4 },
   stemTrack: { width: 14, height: 84, borderRadius: 7, backgroundColor: 'rgba(255,255,255,0.16)', overflow: 'hidden' },
   stemFill: { position: 'absolute', left: 0, right: 0, bottom: 0, borderRadius: 7 },
+  // US NUTRI-UX02 — les grammes consommés, sous chaque tige.
+  stemValue: { fontFamily: fontFamily.monoBold, fontSize: 10 },
   stemLabel: { fontFamily: fontFamily.mono, fontSize: 10 },
   quickRow: { flexDirection: 'row', gap: 7 },
   quick: {

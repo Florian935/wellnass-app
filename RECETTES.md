@@ -4801,11 +4801,32 @@ Vérifié le 20/09 par comptage REST : le cloud porte **3 246 aliments** et **3 
 - [ ] La barre, elle, apparaît toujours **d'un coup** (règle R1 de DASH-01, non modifiée).
 - [ ] Les coins arrondis du bas de la barre sont intacts.
 
-### J — Ce qu'il faut savoir
+### J — La deuxième passe (alignement sur la maquette, 20/09 après-midi)
+
+> Ajoutée après ta recette : la première livraison traitait les constats écrits du compte rendu,
+> pas la maquette écran par écran. Ces points-là sont ceux qui manquaient.
+
+- [ ] Les **carrés de la semaine** ne paraissent plus tronqués : les quatre coins sont arrondis
+      pareil (ils étaient presque droits en haut, arrondis en bas).
+- [ ] Le **grand chiffre** affiche ce qu'il **reste** (« 1163 · encore disponibles aujourd'hui »),
+      avec `1957 sur 3120 · +720 jour de séance` juste en dessous.
+- [ ] Sur un **jour passé**, il repasse au consommé (« il te reste » n'y a aucun sens).
+- [ ] **Cible dépassée** : il repasse au consommé et dit l'excédent — jamais un restant négatif.
+- [ ] Les trois tiges **P / G / L portent leurs grammes** consommés.
+- [ ] L'**ordre** de l'onglet Aujourd'hui : décision → Réservoir → Ta journée → énergie → micros.
+- [ ] L'**hydratation** est une ligne dans la carte « Ta journée », plus une carte à part.
+      ⚠️ La grille de verres n'y est plus — vérifier que le compte « 3 / 2 L » et le « + » suffisent.
+- [ ] La carte **énergie est repliée** en une ligne (« 750 kcal dépensées · Course »), et s'ouvre au
+      tap.
+- [ ] Elle est **dépliée d'office** le jour où la cible ne suit pas les dépenses et qu'il y a une
+      dépense — c'est là qu'elle a une décision à proposer.
+- [ ] Le **Réservoir confirme** quand tout va bien : « Séance à 18h30 — tu as de quoi la tenir »
+      (à vérifier avec une séance planifiée et un réservoir suffisant).
+
+### K — Ce qu'il faut savoir
 
 - **Le bordeaux en thème clair est à chroma 9, sous le neutre (13)** — le même défaut que celui
   corrigé ici, sur un troisième pilier. Trouvé par le test-garde neuf, **non corrigé** : hors du
   lot validé, et retoucher le bordeaux défairait l'arbitrage du 19/09. Porté au BACKLOG en P1.
-- **La carte énergie n'a pas été repliée en une ligne** comme sur la maquette. Le livré traite la
-  cause (le bandeau devient conditionnel et chiffré) plutôt que le symptôme ; le gain de place est
-  déjà obtenu par la fusion des cartes de repas.
+- **La carte énergie est repliée** depuis la deuxième passe (voir §J) — ce point de la première
+  livraison est levé.
