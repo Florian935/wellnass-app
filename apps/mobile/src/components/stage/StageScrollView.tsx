@@ -36,6 +36,8 @@ import { useTheme } from '@/theme/useTheme';
 import { useStageTheme } from './PillarStage';
 
 const COMPACT_BAR_HEIGHT = 52;
+/** Hauteur du dégradé posé SOUS la barre compacte, pour que le contenu n'y soit pas tranché net. */
+const COMPACT_FADE_HEIGHT = 20;
 const FADE_SPAN = 36;
 /** Hauteur sur laquelle la teinte de la scène s'éteint dans le corps de la page. */
 const SPILL_HEIGHT = 200;
@@ -147,6 +149,37 @@ export function StageScrollView({
           </Text>
         ) : null}
       </Animated.View>
+
+      {/*
+        US NUTRI-UX02 — le bord du contenu qui passe SOUS la barre.
+
+        La barre compacte est opaque, et le corps défile dessous : le contenu était donc tranché
+        net, à la règle. Sur une carte qui porte une courbe (le Réservoir), on lit un fragment
+        coupé au cutter, sans comprendre qu'il continue derrière.
+
+        🔴 Ce n'est **pas** un fondu sur la barre : R1 de DASH-01 impose qu'elle apparaisse d'un
+        coup, et elle le fait toujours (`headerStyle`, partagé). C'est une **bordure** dégradée
+        posée sous elle, qui suit sa visibilité. La distinction compte : ce qui est interdit, c'est
+        que l'en-tête se fonde en arrivant, pas que son bord inférieur soit adouci.
+
+        L'opacité de départ est de 85 %, et pas 100, pour la raison déjà rencontrée sur `spill` :
+        la barre a des coins arrondis en bas, et un rectangle opaque juste en dessous les
+        remplirait — transformant l'arrondi en deux encoches inexplicables.
+      */}
+      <Animated.View
+        pointerEvents="none"
+        importantForAccessibility="no-hide-descendants"
+        style={[
+          styles.compactFade,
+          { top: insets.top + COMPACT_BAR_HEIGHT, height: COMPACT_FADE_HEIGHT },
+          headerStyle,
+        ]}
+      >
+        <LinearGradient
+          colors={[`${theme.surfaces[0]}d9`, `${theme.surfaces[0]}00`]}
+          style={StyleSheet.absoluteFill}
+        />
+      </Animated.View>
     </View>
   );
 }
@@ -176,4 +209,5 @@ const styles = StyleSheet.create({
     flexShrink: 1,
   },
   compactValue: { fontFamily: fontFamily.displayXBold, fontSize: 17, letterSpacing: -0.4 },
+  compactFade: { position: 'absolute', left: 0, right: 0 },
 });

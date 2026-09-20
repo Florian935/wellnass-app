@@ -9,6 +9,116 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 20/09/2026 — NUTRI-UX02 : la bibliothèque qui n'arrivait pas, deux moments, et un vert qui existe
+
+Branche : `dev` (travail direct, décision Florian). Commit précédent : `76593fdd`. **Lot complet
+livré d'une seule vague**, troisième passe de la série après MUSCU-UX05 (18/09) et CARDIO-UX02
+(19/09). Demande de Florian, captures d'écran à l'appui : « avoir un dashboard de nutrition qui
+donne envie de rester et de se poser quelques minutes ».
+
+Spec : [nutri-ux02-refonte-pilier-nutrition.md](docs/specs/functional/us/nutri-ux02-refonte-pilier-nutrition.md) ·
+[plan](docs/plans/nutri-ux02-refonte-pilier-nutrition.md) · recette : [RECETTES.md](RECETTES.md) §80.
+
+### Le constat qui commande tous les autres, et qui n'est pas ergonomique
+
+**La bibliothèque d'aliments n'arrive pas sur le téléphone.** Florian signalait qu'aucune recherche
+ne donnait de résultat — « saumon » compris. Vérifié par comptage REST sur le cloud le 20/09 :
+
+- `foods` où `owner_id is null and deleted_at is null` → **3 246**
+- `food_translations` où `lang = 'fr'` → **3 246**, « Saumon » présent
+
+Et côté dépôt, tout est correct : `foods` est dans la publication logique depuis juillet, les deux
+tables sont dans le bucket `shared_content` du YAML, `powersync/schema.ts` les déclare. **Ce qui
+manque est entre les deux** — l'étape manuelle de déploiement des sync rules, que CLAUDE.md signale
+lui-même comme « déjà oubliée une fois ».
+
+🔴 **La conséquence est ce qui rend ce constat prioritaire** : sans base, la saisie se fait en texte
+libre ; une entrée libre ne porte aucun micronutriment ; d'où les six pastilles à « 0,0 mg » de la
+capture, le Réservoir réduit à une estimation, la qualité alimentaire muette. **La moitié de l'écran
+était vide à cause d'un bug de synchro, pas d'un défaut de conception.**
+
+⚠️ **Le déblocage est hors-code** (accès dashboard PowerSync) : point n° 1 de la recette.
+
+### Ajouté
+
+- **Un état « la bibliothèque n'est pas arrivée sur cet appareil »**
+  (`components/nutrition/LibraryNotice.tsx`, `useLibraryPresence`), sur **les deux** portes d'entrée
+  de la recherche. Il ne dit pas qu'il y a un problème, il dit **lequel** : synchro en cours, hors
+  ligne, ou — le cas qui compte — « la synchro est finie, tu es en ligne, **ce n'est pas ta
+  recherche** : la bibliothèque n'est pas publiée vers cet appareil ». L'app affichait jusqu'ici
+  « Aucun aliment trouvé » dans les trois cas, et c'est ce silence qui a laissé passer la panne.
+  🔴 **Aucun bouton de relance** : `disconnectAndClear` jetterait la file d'écritures en attente.
+- **Deux onglets sur l'écran du pilier** : *Aujourd'hui* (saisir — vingt fois par jour, cinq
+  secondes) et *La semaine* (comprendre — deux fois par semaine, trois minutes). Les deux usages
+  étaient empilés, et le second relégué derrière une icône que personne n'ouvrait : **onze analyses
+  livrées et testées y dormaient** (NUTR-10/16/17/18, NUTR-05/06/11, MN-03/06/10/15/16/20, RN-05).
+  Les cartes sont **remontées telles quelles**, aucune réécrite ni dupliquée.
+- **Un verdict de semaine** (`week-verdict.ts`, brique pure, 14 tests) : une phrase avant les
+  graphiques, dont les cartes deviennent la justification. 🔴 Il **ne conclut pas sous 4 jours
+  loggés** — un « 100 % dans la cible » calculé sur un jour est faux au point d'être nuisible.
+- **`chroma()`** dans `packages/shared/src/contrast.ts`, et le **test-garde** qui va avec. Le dépôt
+  avait diagnostiqué ce défaut **deux fois à la main**, dans deux commentaires.
+- **`countReportedMicros()`** : compter les micros réellement renseignés, pour distinguer un zéro
+  mesuré d'une absence de mesure.
+- **`selectFoodSearch` / `useFoodSearch` / `COUNT_LIBRARY_FOODS`** : la recherche bornée et classée.
+
+### Modifié
+
+- **Le vert du pilier, mesuré.** Chroma des teintes source : accueil 134, labo 113, course 105,
+  muscu 85, **nutrition 43**. La course partait d'un bleu franc et le perdait dans la mécanique de
+  luminance ; la nutrition partait d'un **olive** — et `#2e4419` plafonnait à **chroma 22 même à
+  gain 2**. D'où une teinte neuve (`#2f6b12`) **et** le gain de 1,5 : surface sombre à chroma **29**,
+  la bande des autres piliers. Les deux accents gagnent de la couleur **et** du contraste
+  (`#a9ba7e` 6,98 → `#9ed16a` **8,21** en sombre ; `#52703a` 5,22 → `#3f6b1c` **5,86** en clair).
+  Les cinq valeurs de la scène suivent, sinon les cartes seraient devenues plus vertes que la scène
+  qui les annonce. ⚠️ `success` et `chartGreen` gardent `#a9ba7e` : rôles sémantiques distincts.
+- **La recherche de l'écran plein** (`food-picker.tsx`) passe de `useFoods()` — toute la table en
+  mémoire à chaque frappe, puis un tri alphabétique — à `useFoodSearch()`. NUTRI-UX01 avait borné la
+  requête et branché le classement par pertinence **sur la seule feuille d'ajout** ; les deux portes
+  d'entrée ne se comportaient donc pas pareil, et c'est la plus visible qui avait l'ancienne.
+- **Cinq cartes de repas deviennent une carte « Ta journée »** : un cadre, un filet entre les repas,
+  un bouton d'ajout principal au pied. Chaque repas porte la **part du jour** qu'il pèse — NUTR-16
+  rendue là où la décision se prend, sans ouvrir d'écran. 🔴 Le `+` par repas **survit** en icône :
+  le supprimer aurait forcé à passer par la feuille, qui déduit le repas de l'heure (R2.6), et noter
+  son petit-déjeuner à 20 h serait redevenu un parcours à corriger.
+- **Le bandeau « ta cible ne suit pas tes dépenses »** se tait les jours sans dépense, et porte
+  désormais **les deux nombres**. Florian l'avait relevé : la scène annonçait « +720 kcal — jour de
+  séance » et la carte « ≈ 750 kcal dépensées », à quatre centimètres l'un de l'autre, sans jamais
+  les relier.
+- **Un dégradé de 20 px sous la barre compacte** : le contenu n'y est plus tranché net. 🔴 Ce n'est
+  pas un fondu **sur** la barre — R1 de DASH-01 impose qu'elle apparaisse d'un coup, et elle le fait
+  toujours.
+
+### Corrigé
+
+- **Six pastilles de micronutriments à « 0,0 mg »** sur une journée saisie en texte libre.
+  `sumMicronutrients` respectait pourtant la règle de NUTR-07 (« jamais forcée à 0 ») : c'est la
+  lecture `dayMicros[key] ?? 0` côté écran qui fabriquait les zéros. 🔴 Le seuil est **aucun**, pas
+  « peu » : si trois micros sur six sont connus, les trois autres à zéro sont une information juste.
+
+### Technique / Notes
+
+- 🔴 **Le test-garde de chroma a trouvé un troisième pilier fautif dès sa première exécution** : en
+  thème clair, la **musculation** sort à chroma **9**, sous la surface neutre (13). Même défaut que
+  la course et la nutrition, jamais repéré — parce que `tintPreservingLuminance` conserve la
+  luminance et fait donc passer tous les tests de contraste. **Non corrigé** : hors du lot validé, et
+  retoucher le bordeaux défairait l'arbitrage du 19/09. Porté au [backlog](BACKLOG.md) sous
+  **TEINTE-01**, avec une exception nommée et datée dans le test — la situation est visible et ne
+  peut plus empirer en silence.
+- 🔴 **Un test existant validait le défaut.** `nutrition-screen.test.tsx` vérifiait la grille de
+  micronutriments avec un fixture à `micronutrients: {}` : il verrouillait donc, sans le dire,
+  l'affichage des six zéros. Corrigé, et deux cas neufs ajoutés.
+- **`MIN_LOGGED_DAYS` réutilisé, pas redéfini.** `bodyweight.ts` portait déjà ce seuil (MN-02) et le
+  Labo en a une troisième copie. Une quatrième aurait garanti que deux écrans finissent par répondre
+  différemment à « ai-je assez de données ? ».
+- ⚠️ **Écart assumé** : la carte énergie n'est pas repliée en une ligne comme sur la maquette. Le
+  livré traite la cause (le bandeau devient conditionnel et chiffré) plutôt que le symptôme, et le
+  gain de place est déjà obtenu par la fusion des cartes de repas.
+- ✅ **Aucune migration, aucune sync rule à déployer, aucune dépendance native.** `useLibraryPresence`
+  est une lecture locale (`COUNT` sur `foods`).
+- **Vérifié** : `typecheck` 3 workspaces à 0, `lint` à 0, **3 791 tests Jest (226 suites) + 185
+  fichiers Vitest**, tous verts — code de sortie lu **sans pipe** (le piège documenté dans CLAUDE.md).
+
 ## 19/09/2026 (nonies) — CARDIO-UX02 : le bleu sur tout le pilier, et un hub Course qui dit où on en est
 
 Branche : `dev` (travail direct, décision Florian). Commit précédent : `78f27b9e`. **Lot complet

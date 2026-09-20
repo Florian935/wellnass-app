@@ -585,6 +585,8 @@
       "subtitle": "Micronutriments",
       "optional": "Facultatif · micronutriments / 100 g",
       "optionalHint": "Tous ces champs sont facultatifs — laisse vide ce que tu ne connais pas.",
+      "unknownFreeText": "Aucun micronutriment sur cette journée : tes entrées viennent de la saisie rapide ou d'un texte libre, qui n'en portent pas. Cherche l'aliment dans la base pour les suivre.",
+      "unknownEmptyDay": "Rien à afficher tant que la journée est vide.",
       "derived": "dérivé",
       "per100": "100 g : {{value}} {{unit}}",
       "units": {
@@ -693,6 +695,29 @@
         "needsWeight": "Ajoute une pesée pour voir tes protéines par prise"
       }
     },
+    "week": {
+      "eyebrow": "LE VERDICT DE LA SEMAINE",
+      "tabToday": "Aujourd'hui",
+      "tabWeek": "La semaine",
+      "allStats": "Voir toutes les statistiques",
+      "headline": {
+        "onTrack": "Tu tiens ton cap.",
+        "offTrack": "Ta semaine s'écarte de ta cible.",
+        "notEnoughData": "Pas encore de quoi conclure."
+      },
+      "detail": {
+        "adherence": "{{inTarget}} jours sur {{logged}} dans ta cible calorique.",
+        "notEnoughData": "{{logged}} jour(s) renseigné(s) sur les 7 derniers — il en faut au moins {{needed}} pour qu'une moyenne veuille dire quelque chose."
+      },
+      "remarks": {
+        "protein": {
+          "low": "Protéines à {{value}} g/kg, sous ta fourchette de {{min}} à {{max}}.",
+          "in": "Protéines à {{value}} g/kg, dans ta fourchette de {{min}} à {{max}}.",
+          "high": "Protéines à {{value}} g/kg, au-dessus de ta fourchette de {{min}} à {{max}}."
+        },
+        "heavyMeal": "{{meal}} pèse {{pct}} % de tes calories."
+      }
+    },
     "fuelTank": {
       "title": "Réservoir",
       "subtitle": "Glucides disponibles, estimés",
@@ -760,6 +785,14 @@
     "searchPlaceholder": "Nom d'un aliment…",
     "noFood": "Aucun aliment trouvé.",
     "noRecent": "Aucun aliment récent. Ajoute des aliments pour les retrouver ici.",
+    "library": {
+      "title": "La bibliothèque n'est pas encore arrivée sur cet appareil",
+      "syncing": "La première synchronisation est en cours. Les aliments apparaîtront dès qu'elle sera terminée — en attendant, tu peux créer un aliment ou scanner un code-barres.",
+      "offline": "Tu es hors ligne et les aliments ne sont jamais descendus sur ce téléphone. Reconnecte-toi une fois pour les recevoir — en attendant, tu peux créer un aliment ou scanner un code-barres.",
+      "notPublished": "La synchronisation s'est terminée, mais aucun aliment n'a été reçu. Ce n'est pas ta recherche : la bibliothèque n'est pas publiée vers cet appareil. Signale-le — en attendant, tu peux créer un aliment ou scanner un code-barres.",
+      "localCount_one": "{{count}} aliment de bibliothèque en local",
+      "localCount_other": "{{count}} aliments de bibliothèque en local"
+    },
     "addedCount_one": "{{count}} aliment ajouté à ce repas",
     "addedCount_other": "{{count}} aliments ajoutés à ce repas",
     "done": "Terminé",
@@ -893,7 +926,13 @@
       "effect": "CE QUE ÇA CHANGE",
       "willRemain": "Il te restera {{kcal}} kcal aujourd'hui",
       "willExceed": "Tu dépasseras de {{kcal}} kcal"
-    }
+    },
+    "dayCard": {
+      "title": "Ta journée",
+      "meta_one": "{{count}} entrée · {{kcal}} kcal",
+      "meta_other": "{{count}} entrées · {{kcal}} kcal"
+    },
+    "mealShareA11y": "{{meal}} : {{pct}} % des calories du jour."
   },
   "meals": {
     "manage": "Gérer les repas",
@@ -4910,6 +4949,7 @@
       "target": "Cible du jour",
       "remaining": "Il te reste",
       "notFollowing": "Ta cible ne suit pas encore tes dépenses réelles. La régler.",
+      "notFollowingNumbers": "Tu as dépensé {{spent}} kcal aujourd'hui ; ta cible en compte {{bonus}} au forfait. Faire suivre ta cible.",
       "notFollowingCta": "Régler la cible calorique"
     },
     "settings": {

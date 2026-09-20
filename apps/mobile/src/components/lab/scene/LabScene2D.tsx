@@ -14,7 +14,7 @@ import type { LabSceneState, SceneCrossing, ScenePillar } from './scene-state';
 const PILLAR_COLOR: Record<ScenePillar, string> = {
   muscu: '#e07a98',
   course: '#6fa8ef',
-  nutrition: '#a9ba7e',
+  nutrition: '#9ed16a', // = pillarNutrition (sombre), US NUTRI-UX02
   socle: '#e0b155',
 };
 

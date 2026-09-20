@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **19/09/2026** — **79 sections**.
+> Dernière mise à jour : **20/09/2026** — **80 sections**.
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -4703,3 +4703,109 @@ Spec : [cardio-ux02-refonte-hub-course.md](docs/specs/functional/us/cardio-ux02-
 - ⚠️ **« Ton allure » mélange les types de séance.** `runs` ne porte pas de `session_type` (le mur
   qui laisse RUN-07 en attente) : l'allure médiane mêle fractionnés, sorties longues et récups. La
   médiane sur 30 jours absorbe ce mélange tant que la composition des semaines ne change pas.
+
+---
+
+## 80. NUTRI-UX02 — Refonte du pilier Nutrition (`dev`)
+
+> [Spec](docs/specs/functional/us/nutri-ux02-refonte-pilier-nutrition.md) ·
+> [Plan](docs/plans/nutri-ux02-refonte-pilier-nutrition.md) · livré le **20/09/2026**.
+>
+> 🔴 **Commence par le point A.** Tant qu'il n'est pas fait, la moitié de la recette est
+> intestable : sans bibliothèque d'aliments, les micronutriments restent vides, le Réservoir n'a
+> qu'une estimation et le verdict de la semaine n'a rien à juger. Ce n'est pas un défaut de l'app,
+> c'est le bug que cette US rend enfin visible.
+
+### A — Débloquer la bibliothèque (HORS-CODE, à faire en premier)
+
+Vérifié le 20/09 par comptage REST : le cloud porte **3 246 aliments** et **3 246 traductions FR**,
+« Saumon » compris. Le code, les sync rules du dépôt et le schéma PowerSync local sont corrects.
+
+- [ ] Dashboard PowerSync → **Sync Rules** : les deux lignes `foods` et `food_translations` du
+      bucket `shared_content` y sont-elles ? (Le YAML du dépôt **n'est pas** ce qui tourne.)
+- [ ] Si elles manquent : coller `docs/specs/technical/powersync-sync-rules.yaml` et **Deploy**.
+- [ ] Si elles y sont : regarder le nombre d'opérations du bucket `shared_content` pour ce compte.
+      S'il est de l'ordre de 170, la réplication n'a pas capté le seed du 13/09 → redéployer force
+      un re-sync.
+- [ ] Sur le téléphone, après redéploiement : chercher « saumon » → des résultats apparaissent.
+
+### B — L'état « la bibliothèque n'est pas arrivée »
+
+- [ ] **Avant** le point A (ou avec un compte neuf), chercher un aliment : l'écran ne dit plus
+      « Aucun aliment trouvé » mais nomme la cause, et affiche « 0 aliment de bibliothèque en local ».
+- [ ] Le message varie selon l'état : synchro en cours / hors ligne / **« ce n'est pas ta
+      recherche »** quand la synchro est finie et l'appareil en ligne.
+- [ ] Il apparaît **aussi** dans la feuille d'ajout rapide, pas seulement sur l'écran plein.
+- [ ] Aucun bouton « relancer » (volontaire : il jetterait la file d'écritures en attente).
+
+### C — La recherche
+
+- [ ] Taper « saumon » sur l'écran plein « Ajouter un aliment » → résultats immédiats.
+- [ ] Taper « pain » → **« Pain complet » avant « Chapelure de pain »** (pertinence, pas alphabet).
+- [ ] Taper « po » puis « pom » → la liste ne perd pas un résultat qu'elle montrait avant.
+- [ ] Taper « creme » (sans accent) → « Crème fraîche » remonte quand même.
+- [ ] La frappe reste fluide : plus de chargement des 3 244 aliments à chaque lettre.
+
+### D — Les deux onglets
+
+- [ ] L'écran ouvre sur **« Aujourd'hui »**, jamais sur « La semaine ».
+- [ ] Basculer sur « La semaine » : le verdict en une phrase, puis les cartes d'analyses.
+- [ ] Quitter l'app et revenir → on est **de nouveau sur « Aujourd'hui »** (non persisté, voulu).
+- [ ] Avec moins de 4 jours renseignés sur les 7 derniers : le verdict dit qu'il ne peut pas
+      conclure, et **n'affiche aucune remarque** (ni protéines, ni répartition).
+- [ ] Avec au moins 4 jours : la phrase annonce le cap, puis les protéines g/kg et, le cas échéant,
+      le repas qui pèse le plus.
+- [ ] « Voir toutes les statistiques » en pied ouvre bien `Nutrition › Stats`.
+
+### E — La carte « Ta journée »
+
+- [ ] Les repas sont dans **une seule carte**, séparés par un filet — plus cinq cartes empilées.
+- [ ] Un **seul** « + Ajouter un aliment » en texte, au pied de la carte.
+- [ ] Le **+ en icône** dans l'en-tête de chaque repas fonctionne toujours et ouvre la feuille
+      **sur ce repas** (vérifier avec le petit-déjeuner en fin de journée).
+- [ ] Chaque repas affiche sa **part du jour** en barre fine + pourcentage.
+- [ ] Le **swipe** sur une ligne propose toujours Modifier / Supprimer.
+- [ ] Le menu « ⋯ » d'un repas (copier d'hier / enregistrer comme modèle) fonctionne toujours.
+- [ ] Une entrée orpheline apparaît dans « Autres », **dans la carte**, et cette section ne propose
+      pas d'ajout.
+- [ ] Mesurer à vue le gain de défilement par rapport à la version d'avant.
+
+### F — Les micronutriments
+
+- [ ] Journée saisie **en texte libre / ajout rapide** : plus de six pastilles à « 0,0 mg », mais
+      une explication.
+- [ ] Journée avec **au moins un** aliment de la base : la grille revient, y compris avec des zéros
+      pour les micros réellement absents.
+
+### G — Le bandeau d'énergie
+
+- [ ] Jour **sans** activité ni séance : le bandeau orange n'apparaît pas.
+- [ ] Jour **avec** une dépense et cible en mode forfait : il apparaît et porte **les deux
+      nombres** (« tu as dépensé X kcal ; ta cible en compte Y au forfait »).
+- [ ] Il ouvre toujours les réglages nutrition.
+
+### H — La couleur
+
+- [ ] Le vert du pilier est **plus franc** qu'avant, sur la scène **et** sur les cartes du corps.
+- [ ] 🔴 Le point qui compte : la teinte est **reprise sur tout le pilier**, pas seulement sur le
+      héros — c'est exactement le retour fait sur le cardio le 19/09.
+- [ ] Vérifier en thème **clair** aussi.
+- [ ] L'onglet « Alim » de la barre du bas prend le nouveau vert.
+- [ ] Rien n'est devenu moins lisible (libellés sur la scène, texte secondaire sur le niveau).
+- [ ] Le Labo affiche la nutrition dans le nouveau vert.
+
+### I — Le bord sous la barre
+
+- [ ] Faire défiler jusqu'à ce que la barre compacte apparaisse : le contenu qui passe dessous
+      n'est plus **tranché net**, il s'estompe sur ~20 px.
+- [ ] La barre, elle, apparaît toujours **d'un coup** (règle R1 de DASH-01, non modifiée).
+- [ ] Les coins arrondis du bas de la barre sont intacts.
+
+### J — Ce qu'il faut savoir
+
+- **Le bordeaux en thème clair est à chroma 9, sous le neutre (13)** — le même défaut que celui
+  corrigé ici, sur un troisième pilier. Trouvé par le test-garde neuf, **non corrigé** : hors du
+  lot validé, et retoucher le bordeaux défairait l'arbitrage du 19/09. Porté au BACKLOG en P1.
+- **La carte énergie n'a pas été repliée en une ligne** comme sur la maquette. Le livré traite la
+  cause (le bandeau devient conditionnel et chiffré) plutôt que le symptôme ; le gain de place est
+  déjà obtenu par la fusion des cartes de repas.

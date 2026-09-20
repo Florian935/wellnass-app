@@ -1,4 +1,4 @@
-# État du projet — 19/09/2026
+# État du projet — 20/09/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 247 livré · 4 partiel · 2 à faire (sur 259)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 248 livré · 4 partiel · 2 à faire (sur 260)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -76,6 +76,7 @@ avant de pouvoir publier.
 | **NUTR-F1** — Rappels programmés nutrition — repas et pesée, à l'échéance apprise | `recette` | `feature/nutrf1-rappels-nutrition` | [1.14, 2.5] |
 | **NUTR-F2** — Suggestion d'aliments pour combler un macro | `recette` | `feature/nutrf2-substitution-aliments` | [4.37] |
 | **NUTRI-UX01** — Refonte UX du pilier Nutrition — objectif juste, geste de saisie, journal, suivi, planning | `recette` | `feature/nutri-refonte-ux` | [4.41] |
+| **NUTRI-UX02** — Refonte du pilier Nutrition — la bibliothèque qui arrive, deux moments, le vert qui existe | `recette` | `dev` | [4.46] |
 | **OBJ-01** — Objectifs personnels à échéance | `recette` | `feature/obj01-objectifs` | [7.15] |
 | **PARTAGE-01** — Carte de séance / course partageable | `recette` | `feature/partage01-carte-partageable` | [7.17] |
 | **REPAS-01** — Planning repas à la semaine, liste de courses générée et partage | `recette` | `feature/repas01-planning-repas-liste-courses` | [4.27, 4.28, 4.29] |
@@ -100,7 +101,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **79 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, CARDIO-UX02, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LAUNCHER-01, LETTRE-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, OBJ-01, PARTAGE-01, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **80 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, CARDIO-UX02, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LAUNCHER-01, LETTRE-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, OBJ-01, PARTAGE-01, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -108,9 +109,9 @@ avant de pouvoir publier.
 - LANCE-01 — Publication Play Store
 - LANCE-02 — Retirer le spike VBT-01 du build de soumission
 
-<details><summary>P1 finitions (9) · P2 confort (2)</summary>
+<details><summary>P1 finitions (10) · P2 confort (2)</summary>
 
-**P1** — RUN-F3b — Météo de course · CLAV-01 — Le clavier recouvre les formulaires (edge-to-edge) · CARDIO-02 — Les quatre portes vers l'allure de référence · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect · IDENT-01 — L'identité de pilier appartient à l'écran, pas à l'onglet
+**P1** — RUN-F3b — Météo de course · CLAV-01 — Le clavier recouvre les formulaires (edge-to-edge) · CARDIO-02 — Les quatre portes vers l'allure de référence · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect · TEINTE-01 — Le bordeaux perd sa couleur en thème clair · IDENT-01 — L'identité de pilier appartient à l'écran, pas à l'onglet
 
 **P2** — SOCLE-01 — RevenueCat câblé inactif · VBT-01 — Vitesse de barre à la caméra
 
@@ -123,8 +124,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1306 · `main` a **1303** commits de retard sur `dev` |
-| Specs d'US | 167 au total — 87 clôturées, 80 en cours |
+| Commits | 1307 · `main` a **1304** commits de retard sur `dev` |
+| Specs d'US | 168 au total — 87 clôturées, 81 en cours |
 | Migrations | 107/107 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -134,11 +135,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `76593fd`  feat(cardio): le bleu sur tout le pilier, et un hub qui dit où on en est
 - `78f27b9`  feat(muscu): le hub a enfin quelque chose à dire, et le bordeaux s'adoucit
 - `9202a1b`  fix(muscu): les flux de la séance réparés, et une seule identité par écran
 - `7def6d1`  feat(cons01): le Conseil des trois — les deux issues d'une contradiction, chiffrées
 - `b24cedb`  feat(narr01): l'IA raconte le dossier d'enquête, et ne peut pas inventer un chiffre
-- `30b9760`  feat(vbt01): marque sombre, et le garde-fou qui manquait au suivi sans pastille
 
 ---
 

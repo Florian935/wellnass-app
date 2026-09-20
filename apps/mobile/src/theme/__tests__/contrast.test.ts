@@ -9,7 +9,7 @@
  * Vit côté mobile (pas `packages/shared`) parce que la palette elle-même
  * (`apps/mobile/src/theme/colors.ts`) vit ici — voir le plan §Étape 1 pour l'arbitrage.
  */
-import { contrastRatio, readableOn } from '@wellness/shared';
+import { chroma, contrastRatio, readableOn } from '@wellness/shared';
 import { palettes, type Palette } from '../colors';
 import { DEFAULT_MENU_COLORS, MENU_COLOR_SWATCHES } from '@/stores/menu-accent-store';
 import { PILLAR_KEYS, pillarPalette } from '../pillar';
@@ -164,6 +164,93 @@ describe('Palettes par pilier — aucune régression de contraste', () => {
     expect(pillarPalette('dark', 'running').accent).toBe(palettes.dark.pillarRunning);
     expect(pillarPalette('light', 'nutrition').accent).toBe(palettes.light.pillarNutrition);
   });
+});
+
+/**
+ * 🔴 US NUTRI-UX02 — le garde-fou qui manquait, et qui a coûté deux recettes.
+ *
+ * Le test de contraste ci-dessus ne pouvait **pas** attraper le défaut : `tintPreservingLuminance`
+ * conserve la luminance, donc les ratios passent quoi qu'il arrive — y compris quand la teinte a
+ * complètement disparu. Deux fois, un pilier a ainsi produit une surface **moins colorée que la
+ * surface neutre qu'elle remplace**, sans qu'aucun test ne bronche : la course en septembre
+ * (chroma 16 contre 18), la nutrition aujourd'hui (17 contre 18). Les deux fois, la seule alerte a
+ * été l'œil de Florian sur une recette device.
+ *
+ * Ce test mesure ce que le contraste ne voit pas. Il n'a **aucun seuil arbitraire** : il compare
+ * chaque pilier à la palette neutre, donc il reste juste si la palette de base change.
+ */
+describe('Palettes par pilier — teinter doit AJOUTER de la couleur, jamais en enlever', () => {
+  const THEMES = ['light', 'dark'] as const;
+
+  /**
+   * L'écart minimal, en thème **sombre**. Relevé sur les cinq piliers une fois la nutrition
+   * corrigée : accueil +18, labo +14, musculation +11, course +11, nutrition +11 — contre **−1 et
+   * −2** pour les deux défauts constatés. Le seuil est posé à 8, sous le plus faible écart sain et
+   * très au-dessus des valeurs fautives : il attrape la panne sans se déclencher au moindre
+   * ajustement de teinte.
+   */
+  const ECART_MIN_SOMBRE = 8;
+
+  it.each(PILLAR_KEYS.map((pillar) => ({ pillar })))(
+    'dark/$pillar : la teinte se VOIT — au moins 8 points de chroma au-dessus du neutre',
+    ({ pillar }) => {
+      const neutre = chroma(palettes.dark.surface)!;
+      const teintee = chroma(pillarPalette('dark', pillar).surface)!;
+      expect(teintee - neutre).toBeGreaterThanOrEqual(ECART_MIN_SOMBRE);
+    },
+  );
+
+  /**
+   * ⚠️ Le thème **clair** n'a pas le même contrat, et c'est voulu.
+   *
+   * En clair, la surface de départ est presque blanche : `tintPreservingLuminance` ne peut pas
+   * atteindre sa luminance en gardant la saturation, et finit donc le chemin **vers le blanc** —
+   * sa phase 2, documentée comme « la teinte se désature en pastel au lieu de s'assombrir, ce qui
+   * est précisément ce qu'on veut d'un thème clair ». Exiger ici « plus coloré que le neutre »
+   * reviendrait à exiger l'inverse de ce que la fonction promet, d'autant que la surface neutre
+   * claire (`#fffaf2`) porte déjà une chroma de 13 par son propre réchauffement.
+   *
+   * 🔴 **Ce que ce test a trouvé en clair, le 20/09/2026** : la musculation sort à **9**, soit
+   * SOUS le neutre — le même défaut que la course et la nutrition, sur un troisième pilier, jamais
+   * repéré jusqu'ici. Le bordeaux `#7c2734` est sombre, donc massivement blanchi. La course est
+   * juste au-dessus (15). **Ni l'un ni l'autre n'est corrigé ici** : le lot validé porte sur la
+   * nutrition, et retoucher le bordeaux en douce reviendrait à défaire l'arbitrage du 19/09. Le
+   * constat est porté au BACKLOG (P1) ; l'exception ci-dessous le rend visible au lieu de le taire,
+   * et le test échouera si la situation **empire**.
+   */
+  const CLAIR_CONNU_FAIBLE: Partial<Record<(typeof PILLAR_KEYS)[number], number>> = {
+    // Plancher = la valeur constatée. Descendre encore fera échouer le test.
+    strength: 9,
+  };
+
+  it.each(PILLAR_KEYS.map((pillar) => ({ pillar })))(
+    'light/$pillar : la surface teintée reste au moins aussi colorée que le neutre',
+    ({ pillar }) => {
+      const neutre = chroma(palettes.light.surface)!;
+      const teintee = chroma(pillarPalette('light', pillar).surface)!;
+      const plancher = CLAIR_CONNU_FAIBLE[pillar];
+      expect(teintee).toBeGreaterThanOrEqual(plancher ?? neutre);
+    },
+  );
+
+  /**
+   * Aucun pilier n'est le parent pauvre des autres. Formulé en **relatif** — la moitié du plus
+   * coloré des cinq — pour qu'il reste juste si toute la palette bouge. C'est exactement le défaut
+   * que Florian a vu : la nutrition sortait à 60 en sombre quand les autres étaient entre 102 et
+   * 147, et à 54 en clair contre 85 à 134.
+   */
+  it.each(THEMES.map((theme) => ({ theme })))(
+    '$theme : aucun accent de pilier ne descend sous la moitié du plus coloré',
+    ({ theme }) => {
+      const chromas = PILLAR_KEYS.map((p) => chroma(pillarPalette(theme, p).accent)!);
+      const plafond = Math.max(...chromas);
+      for (const [i, valeur] of chromas.entries()) {
+        expect(`${PILLAR_KEYS[i]}: ${valeur}`).toBe(
+          valeur >= plafond / 2 ? `${PILLAR_KEYS[i]}: ${valeur}` : `${PILLAR_KEYS[i]}: ≥ ${Math.ceil(plafond / 2)}`,
+        );
+      }
+    },
+  );
 });
 
 /**

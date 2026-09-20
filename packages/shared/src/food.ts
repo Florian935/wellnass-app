@@ -299,6 +299,29 @@ export function sumMicronutrients(list: ReadonlyArray<Micronutrients>): Micronut
 }
 
 /**
+ * Combien, parmi les micronutriments `keys` que l'utilisateur suit, sont **réellement renseignés**
+ * dans l'agrégat `totals` (US NUTRI-UX02).
+ *
+ * ── Pourquoi compter, plutôt que tester « l'agrégat est vide » ───────────────────────────────────
+ * `sumMicronutrients` respecte déjà la règle de NUTR-07 : une clé n'apparaît que si une entrée la
+ * renseigne, jamais forcée à zéro. Mais l'écran, lui, lisait `totals[key] ?? 0` — et fabriquait
+ * donc six pastilles à « 0,0 mg » sur une journée entièrement saisie en texte libre. Un zéro faux
+ * coûte la confiance dans tous les autres chiffres de l'écran : celui-là disait « tu n'as mangé
+ * aucun fer aujourd'hui » là où la vérité était « je n'en sais rien ».
+ *
+ * 🔴 Le compte, et non un booléen : **un zéro n'est trompeur que lorsqu'il l'est partout**. Si
+ * trois micros sur six sont connus, les trois autres à zéro sont une information juste — « tu n'as
+ * pas eu de vitamine D » — et la grille doit rester. C'est seulement le cas « aucun n'est connu »
+ * qui ment, et c'est le seul que l'appelant doit remplacer par une explication.
+ */
+export function countReportedMicros(
+  totals: Micronutrients,
+  keys: ReadonlyArray<keyof Micronutrients>,
+): number {
+  return keys.reduce((n, key) => (totals[key] != null ? n + 1 : n), 0);
+}
+
+/**
  * Sel (g) dérivé du sodium (mg) : `sodium × 2,5 / 1000`, arrondi à 2 décimales (les valeurs
  * de sel sont petites : ex. 142 mg → 0,36 g). Affichage seulement (non stocké).
  */

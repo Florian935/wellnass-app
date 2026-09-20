@@ -29,7 +29,7 @@ import {
   importOpenFoodFactsFood,
   toggleFoodFavorite,
   useFavoriteFoods,
-  useFoods,
+  useFoodSearch,
   useRecentFoods,
 } from '@/data/repositories/food-repository';
 import { addFoodEntry } from '@/data/repositories/journal-repository';
@@ -44,7 +44,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 // ---------------------------------------------------------------------------
 
 jest.mock('@/data/repositories/food-repository', () => ({
-  useFoods: jest.fn(() => ({ foods: [] })),
+  // US NUTRI-UX02 — `useFoods` (toute la table en mémoire) remplacé ici par `useFoodSearch`
+  // (bornée en SQL, classée par pertinence). Voir `food-search-sql.test.ts` pour la requête.
+  useFoodSearch: jest.fn(() => ({ foods: [], isLoading: false })),
+  // Bibliothèque présente par défaut : ces tests portent sur le sélecteur, pas sur la panne de
+  // synchro, qui a ses propres tests dans `LibraryNotice.test.tsx`.
+  useLibraryPresence: jest.fn(() => ({ count: 3244, isLoading: false, isEmpty: false })),
   useFavoriteFoods: jest.fn(() => ({ foods: [] })),
   useRecentFoods: jest.fn(() => ({ foods: [] })),
   findFoodByBarcode: jest.fn(),
@@ -198,7 +203,7 @@ jest.mock('@/theme/useTheme', () => ({
 // Utilitaires
 // ---------------------------------------------------------------------------
 
-const mockFoods = useFoods as jest.Mock;
+const mockFoods = useFoodSearch as jest.Mock;
 const mockFavorites = useFavoriteFoods as jest.Mock;
 const mockRecent = useRecentFoods as jest.Mock;
 const mockFindByBarcode = findFoodByBarcode as jest.Mock;
@@ -241,7 +246,7 @@ const afficher = async ({
   foods = [aliment()] as unknown[],
 } = {}) => {
   mockParams.mockReturnValue(params);
-  mockFoods.mockReturnValue({ foods });
+  mockFoods.mockReturnValue({ foods, isLoading: false });
   await render(<FoodPickerScreen />);
 };
 
@@ -441,12 +446,14 @@ describe('onglets', () => {
     await afficher();
 
     await saisir('journal.searchFood', 'banane');
-    expect(mockFoods).toHaveBeenLastCalledWith('banane');
+    // US NUTRI-UX02 — second argument : les identifiants récents, qui servent de bonus au
+    // classement par pertinence. La chaîne vide (et non `undefined`) désactive la recherche.
+    expect(mockFoods).toHaveBeenLastCalledWith('banane', []);
 
     await taper(screen.getByLabelText('onglet-favorites'));
 
     // Sinon les favoris seraient silencieusement filtrés par un terme saisi dans un autre onglet.
-    expect(mockFoods).toHaveBeenLastCalledWith(undefined);
+    expect(mockFoods).toHaveBeenLastCalledWith('', []);
   });
 });
 

@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import {
   DEFAULT_MEAL_KEYS,
   computeAge,
+  countReportedMicros,
   explainCalorieTarget,
   effectiveActivityLevel,
   mealForHour,
@@ -48,6 +49,13 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { MacroSuggestionCard } from '@/components/nutrition/MacroSuggestionCard';
+// US NUTRI-UX02 — l'onglet « La semaine » : le verdict, puis les cartes d'analyses REMONTÉES de
+// `Nutrition › Stats`. Aucune n'est réécrite : elles lisent déjà leurs propres données.
+import { WeekVerdictCard } from '@/components/nutrition/WeekVerdictCard';
+import { RegularityCard } from '@/components/nutrition/RegularityCard';
+import { ProteinPerKgCard } from '@/components/ProteinPerKgCard';
+import { TrainingNutritionCrossCard } from '@/components/TrainingNutritionCrossCard';
+import { WeightGoalCard } from '@/components/WeightGoalCard';
 import { ExplainSheet } from '@/components/explain/ExplainSheet';
 import { FuelTankCard } from '@/components/nutrition/FuelTankCard';
 import { NutritionStage, type QuickFood } from '@/components/nutrition/NutritionStage';
@@ -102,6 +110,12 @@ export default function NutritionScreen() {
   const { entries } = useDayEntries(day);
 
   const hour = useCurrentHour();
+  /**
+   * US NUTRI-UX02 — l'onglet courant. **Pas persisté, délibérément** : l'app s'ouvre sur « saisir »,
+   * qui est le geste de vingt fois par jour. Quelqu'un qui consulte sa semaine le dimanche soir ne
+   * doit pas retrouver un écran d'analyses le lundi matin devant son petit-déjeuner.
+   */
+  const [tab, setTab] = useState<'today' | 'week'>('today');
   // R2.1 / R3.1 — les deux feuilles du journal. `addTarget` porte le repas visé : `null` ferme.
   const [addTarget, setAddTarget] = useState<{ mealKey: string } | null>(null);
   const [calendarOpen, setCalendarOpen] = useState(false);
@@ -325,6 +339,72 @@ export default function NutritionScreen() {
         />
       }
     >
+        {/*
+          US NUTRI-UX02 — les deux moments du journal alimentaire, enfin séparés.
+
+          L'écran servait deux usages empilés l'un sur l'autre : **saisir** (vingt fois par jour,
+          cinq secondes — ce qu'il reste à manger et le bouton d'ajout) et **comprendre** (deux fois
+          par semaine, trois minutes — est-ce que ça marche). Le second était relégué derrière une
+          icône de la scène, sur un écran que personne n'ouvrait : onze analyses livrées y dormaient.
+
+          🔴 Un onglet, pas un écran de plus. ADR-007 plafonne le **Tier 0** (l'accueil) à 4-6
+          widgets ; l'écran d'un pilier est du Tier 1, « à la demande » — et un onglet est
+          précisément à la demande. Chaque carte garde en plus la règle du Tier 2 : elle ne
+          s'affiche que lorsqu'elle a quelque chose à dire.
+        */}
+        <View style={styles.tabs}>
+          {(['today', 'week'] as const).map((key) => {
+            const active = tab === key;
+            return (
+              <Pressable
+                key={key}
+                onPress={() => setTab(key)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+                testID={`nutrition-tab-${key}`}
+                style={[
+                  styles.tab,
+                  {
+                    backgroundColor: active ? colors.accent : 'transparent',
+                    borderColor: active ? colors.accent : colors.border,
+                  },
+                ]}
+              >
+                <Text
+                  style={[styles.tabLabel, { color: active ? colors.accentText : colors.textMuted }]}
+                >
+                  {t(key === 'today' ? 'nutrition.week.tabToday' : 'nutrition.week.tabWeek')}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+
+        {tab === 'week' ? (
+          <>
+            <WeekVerdictCard />
+            {/*
+              Les cartes remontées telles quelles de `Nutrition › Stats` — aucune n'est réécrite ni
+              dupliquée : elles lisent déjà leurs propres données et se taisent quand elles n'en ont
+              pas. L'ordre suit celui du verdict : ce qu'il affirme, puis ce qui le prouve.
+            */}
+            <ProteinPerKgCard />
+            <TrainingNutritionCrossCard />
+            <WeightGoalCard />
+            <RegularityCard targetKcal={effectiveTarget} windowDays={7} />
+            <Pressable
+              onPress={() => router.push('/nutrition-stats')}
+              style={styles.manageMeals}
+              accessibilityRole="button"
+            >
+              <Ionicons name="stats-chart-outline" size={16} color={colors.textMuted} />
+              <Text style={[styles.manageMealsLabel, { color: colors.textMuted }]}>
+                {t('nutrition.week.allStats')}
+              </Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
         {/* R5.2 — hydratation : un tap, aucune saisie. */}
         <HydrationCard day={day} />
 
@@ -378,19 +458,65 @@ export default function NutritionScreen() {
         {/* Repas configurables (4.14 / 4.15). Masqués sur une journée vide : l'état vide ci-dessus
             porte déjà les deux actions utiles, et empiler 5 cartes pointillées identiques par-dessus
             ne donnait aucun repère de plus — juste du bruit. */}
-        {entries.length > 0 ? mealList.map((m) => (
-          <MealSection
-            key={m.key}
-            mealKey={m.key}
-            mealLabel={m.label}
-            day={day}
-            entries={entries.filter((e) => e.mealType === m.key)}
-            onAdd={() => setAddTarget({ mealKey: m.key })}
-            onDeleteEntry={onDeleteEntry}
-            onSelectEntry={onSelectEntry}
-            onEditEntry={onEditEntry}
-          />
-        )) : null}
+        {/*
+          US NUTRI-UX02 — « Ta journée » : une carte, des sections, au lieu de cinq cartes.
+
+          Cinq cartes de ~150 px portaient quatre lignes d'aliments : l'essentiel du défilement
+          était du contenant. Elles répétaient aussi cinq fois le même bouton et le même « ⋯ ».
+          Ici, un seul cadre, un filet entre les repas, un seul bouton d'ajout au pied — et chaque
+          repas gagne la **part du jour** qu'il représente (NUTR-16, rendue sur le journal).
+        */}
+        {entries.length > 0 ? (
+          <View style={[styles.dayCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+            <View style={styles.dayCardHead}>
+              <Text style={[styles.dayCardTitle, { color: colors.text }]}>{t('journal.dayCard.title')}</Text>
+              <Text style={[styles.dayCardMeta, { color: colors.textMuted }]}>
+                {t('journal.dayCard.meta', { count: entries.length, kcal: totals.kcal })}
+              </Text>
+            </View>
+            {mealList.map((m) => (
+              <MealSection
+                key={m.key}
+                mealKey={m.key}
+                mealLabel={m.label}
+                day={day}
+                dense
+                dayKcal={totals.kcal}
+                entries={entries.filter((e) => e.mealType === m.key)}
+                onAdd={() => setAddTarget({ mealKey: m.key })}
+                onDeleteEntry={onDeleteEntry}
+                onSelectEntry={onSelectEntry}
+                onEditEntry={onEditEntry}
+              />
+            ))}
+            {/* Section « Autres » : entrées dont le repas n'existe plus (récupération). Dans la
+                carte depuis NUTRI-UX02 — une carte orpheline posée à côté de « Ta journée » aurait
+                laissé croire à un contenu d'une autre nature. 🔴 Toujours **sans `onAdd`** : on ne
+                crée rien dans un repas qui n'existe plus, on en sort par réaffectation. */}
+            {orphanEntries.length > 0 ? (
+              <MealSection
+                key="__orphan__"
+                mealKey="__orphan__"
+                mealLabel={t('journal.meals.other')}
+                day={day}
+                dense
+                dayKcal={totals.kcal}
+                entries={orphanEntries}
+                onDeleteEntry={onDeleteEntry}
+                onSelectEntry={onSelectEntry}
+                onEditEntry={onEditEntry}
+              />
+            ) : null}
+            <Pressable
+              onPress={() => setAddTarget({ mealKey: mealForHour(hour) })}
+              accessibilityRole="button"
+              style={[styles.dayCardAdd, { borderTopColor: colors.border }]}
+            >
+              <Ionicons name="add" size={17} color={colors.accent} />
+              <Text style={[styles.addLabel, { color: colors.accent }]}>{t('journal.addFood')}</Text>
+            </Pressable>
+          </View>
+        ) : null}
 
         {/* US NUTR-F2 — suggestion pour combler un macro. La carte se rend `null` d'elle-même s'il
             n'y a pas d'objectif, pas d'écart significatif, ou plus de budget calorique (D6). Placée
@@ -406,21 +532,6 @@ export default function NutritionScreen() {
             kcalRemaining={remaining}
             candidates={suggestionCandidates}
             recentIds={recentIds}
-          />
-        ) : null}
-
-        {/* Section « Autres » : entrées dont le repas n'existe plus (récupération). Pas
-            d'ajout direct — on les déplace vers un vrai repas depuis leur détail. */}
-        {orphanEntries.length > 0 ? (
-          <MealSection
-            key="__orphan__"
-            mealKey="__orphan__"
-            mealLabel={t('journal.meals.other')}
-            day={day}
-            entries={orphanEntries}
-            onDeleteEntry={onDeleteEntry}
-            onSelectEntry={onSelectEntry}
-            onEditEntry={onEditEntry}
           />
         ) : null}
 
@@ -457,6 +568,8 @@ export default function NutritionScreen() {
           <Ionicons name="create-outline" size={16} color={colors.textMuted} />
           <Text style={[styles.manageMealsLabel, { color: colors.textMuted }]}>{t('meals.manage')}</Text>
         </Pressable>
+          </>
+        )}
     </StageScrollView>
 
       {/* R2.1 — la feuille d'ajout à 3 modes remplace l'écran plein à 9 entrées.
@@ -564,6 +677,7 @@ function DayQualitySection({ day, targetKcal }: { day: string; targetKcal: numbe
 /** Micronutriments suivis du jour, en grille de couverture (4.35). */
 function TrackedMicrosRecap({ entries }: { entries: JournalEntry[] }) {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   const tracked = useTrackedMicros((s) => s.tracked);
   const dayMicros = useMemo(
     () => sumMicronutrients(entries.map((e) => e.micronutrients)),
@@ -592,7 +706,35 @@ function TrackedMicrosRecap({ entries }: { entries: JournalEntry[] }) {
     return list;
   }, [tracked, dayMicros, lang, t]);
 
+  /**
+   * US NUTRI-UX02 — six pastilles à « 0,0 mg » valent moins que rien.
+   *
+   * `sumMicronutrients` respecte la règle de NUTR-07 (« une clé n'apparaît que si renseignée,
+   * jamais forcée à 0 ») ; c'est la lecture `dayMicros[key] ?? 0` juste au-dessus qui fabriquait
+   * les zéros. Sur une journée saisie en texte libre ou en ajout rapide — c'est-à-dire toute
+   * journée d'un appareil où la bibliothèque n'est pas descendue — l'écran affirmait « 0,0 mg de
+   * fer » là où la vérité est « je n'en sais rien ». Un zéro faux coûte la confiance dans tous
+   * les autres chiffres de l'écran.
+   *
+   * 🔴 Le seuil est **aucun**, pas « peu » : si trois micros sur six sont connus, les trois autres
+   * à zéro sont une information juste (« tu n'as pas eu de vitamine D aujourd'hui ») et la grille
+   * reste. Seul le cas « rien n'est connu » ment, et lui seul est remplacé par son explication.
+   */
+  const reported = countReportedMicros(dayMicros, tracked);
+
   if (tracked.length === 0) return null;
+  if (reported === 0) {
+    return (
+      <View style={[styles.microsUnknown, { borderColor: colors.border }]} testID="micros-unknown">
+        <Ionicons name="help-circle-outline" size={17} color={colors.textMuted} />
+        <Text style={[styles.microsUnknownText, { color: colors.textMuted }]}>
+          {entries.length === 0
+            ? t('nutrition.micros.unknownEmptyDay')
+            : t('nutrition.micros.unknownFreeText')}
+        </Text>
+      </View>
+    );
+  }
   return <MicroCoverageGrid cells={cells} />;
 }
 
@@ -896,11 +1038,31 @@ function EntryDetailContent({
   );
 }
 
+/**
+ * US NUTRI-UX02 — `dense` : le repas devient une **section** d'une carte unique, au lieu d'être une
+ * carte à lui seul.
+ *
+ * ── Ce que coûtait une carte par repas ───────────────────────────────────────────────────────────
+ * Cinq cartes de ~150 px pour quatre lignes d'aliments — soit ~750 px de défilement, deux écrans de
+ * pouce, dont l'essentiel est du contenant. Et la même phrase « + Ajouter un aliment » répétée cinq
+ * fois, qui n'apprend rien la cinquième fois.
+ *
+ * En `dense`, la section perd son fond, sa bordure et son bouton texte ; elle garde son en-tête, son
+ * menu, et **tout** le comportement des lignes (swipe éditer/supprimer, tap détail). Le parent porte
+ * la carte, le bouton d'ajout principal et le total.
+ *
+ * 🔴 Le `+` par repas est **conservé**, en icône dans l'en-tête. Le supprimer aurait forcé à passer
+ * par la feuille, qui déduit le repas de l'heure courante (R2.6 de NUTRI-UX01) : noter son
+ * petit-déjeuner à 20 h serait redevenu un parcours à corriger, exactement le défaut que R2.6 avait
+ * réglé. On supprime la répétition, pas le raccourci.
+ */
 function MealSection({
   mealKey,
   mealLabel,
   day,
   entries,
+  dense = false,
+  dayKcal = 0,
   onAdd,
   onDeleteEntry,
   onSelectEntry,
@@ -910,6 +1072,10 @@ function MealSection({
   mealLabel: string;
   day: string;
   entries: JournalEntry[];
+  /** Section d'une carte unique (US NUTRI-UX02) plutôt que carte autonome. */
+  dense?: boolean;
+  /** Total calorique du jour, pour la part que ce repas représente. 0 = pas de barre. */
+  dayKcal?: number;
   /** Ajout d'un aliment. Absent pour la section « Autres » (récupération seule). */
   onAdd?: () => void;
   onDeleteEntry: (e: JournalEntry) => void;
@@ -969,15 +1135,42 @@ function MealSection({
     );
   }
 
+  // US NUTRI-UX02 — la part du jour que pèse ce repas. C'est NUTR-16 (« répartition par repas »,
+  // livrée mais rangée dans l'écran Stats) rendue là où la décision se prend, sans nouvel écran :
+  // « mon dîner pèse un tiers de ma journée » se lit d'un coup d'œil, pas dans un rapport hebdo.
+  const mealShare = dayKcal > 0 ? Math.round((mealKcal / dayKcal) * 100) : null;
+
   return (
-    <View style={[styles.mealCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-      <View style={[styles.mealHead, { borderBottomColor: colors.border }]}>
+    <View
+      style={
+        dense
+          ? [styles.mealSection, { borderTopColor: colors.border }]
+          : [styles.mealCard, { backgroundColor: colors.surface, borderColor: colors.border }]
+      }
+    >
+      <View
+        style={[
+          dense ? styles.mealHeadDense : styles.mealHead,
+          dense ? null : { borderBottomColor: colors.border },
+        ]}
+      >
         <MealGlyph mealKey={mealKey} />
         <Text style={[styles.mealName, { color: colors.text }]} numberOfLines={1}>{mealLabel}</Text>
         <Text style={[styles.mealKcal, { color: colors.textMuted }]}>
           {mealKcal}
           <Text style={styles.mealKcalUnit}> {t('nutrition.kcal')}</Text>
         </Text>
+        {dense && onAdd ? (
+          <Pressable
+            onPress={onAdd}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel={`${mealLabel} · ${t('journal.addFood')}`}
+            style={[styles.mealMenuBtn, { backgroundColor: colors.track }]}
+          >
+            <Ionicons name="add" size={16} color={colors.accent} />
+          </Pressable>
+        ) : null}
         {entries.length > 0 ? (
           <Pressable
             onPress={() => setMenuOpen((v) => !v)}
@@ -991,6 +1184,24 @@ function MealSection({
           </Pressable>
         ) : null}
       </View>
+
+      {dense && mealShare != null && entries.length > 0 ? (
+        <View
+          style={styles.mealShareRow}
+          accessible
+          accessibilityLabel={t('journal.mealShareA11y', { meal: mealLabel, pct: mealShare })}
+        >
+          <View style={[styles.mealShareTrack, { backgroundColor: colors.track }]}>
+            <View
+              style={[
+                styles.mealShareFill,
+                { backgroundColor: colors.accent, width: `${Math.min(100, mealShare)}%` },
+              ]}
+            />
+          </View>
+          <Text style={[styles.mealSharePct, { color: colors.textMuted }]}>{mealShare} %</Text>
+        </View>
+      ) : null}
 
       {menuOpen ? (
         <View style={[styles.mealMenu, { backgroundColor: colors.track, borderBottomColor: colors.border }]}>
@@ -1061,7 +1272,9 @@ function MealSection({
             </Pressable>
           </ReanimatedSwipeable>
         ))}
-        {onAdd ? (
+        {/* En `dense`, le `+` vit dans l'en-tête et le bouton principal au pied de la carte : la
+            même phrase répétée cinq fois n'apprenait rien la cinquième fois. */}
+        {onAdd && !dense ? (
           <Pressable onPress={onAdd} style={styles.addRow} accessibilityRole="button">
             <View style={[styles.addGlyph, { backgroundColor: colors.track }]}>
               <Ionicons name="add" size={15} color={colors.accent} />
@@ -1188,6 +1401,56 @@ const styles = StyleSheet.create({
   addGlyph: { width: 20, height: 20, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
   addLabel: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
   manageMeals: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 8 },
+  tabs: { flexDirection: 'row', gap: 8 },
+  // US NUTRI-UX02 — la carte unique « Ta journée » qui remplace les cartes par repas.
+  dayCard: { borderRadius: 20, borderWidth: 1, overflow: 'hidden' },
+  dayCardHead: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    gap: 10,
+    paddingHorizontal: 16,
+    paddingTop: 15,
+    paddingBottom: 11,
+  },
+  dayCardTitle: { flex: 1, fontFamily: fontFamily.displayBold, fontSize: 17 },
+  dayCardMeta: { fontFamily: fontFamily.mono, fontSize: 11.5 },
+  dayCardAdd: {
+    minHeight: 48,
+    borderTopWidth: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  mealSection: { borderTopWidth: 1 },
+  mealHeadDense: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 11 },
+  mealShareRow: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 16, paddingBottom: 9 },
+  mealShareTrack: { flex: 1, height: 4, borderRadius: 3, overflow: 'hidden' },
+  mealShareFill: { height: '100%', borderRadius: 3 },
+  mealSharePct: { fontFamily: fontFamily.mono, fontSize: 10.5, width: 34, textAlign: 'right' },
+  // 44 px de haut : la cible tactile minimale de CONF-07, qu'un onglet de 36 px manquait.
+  tab: {
+    flex: 1,
+    minHeight: 44,
+    borderRadius: 12,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tabLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
+  // US NUTRI-UX02 — l'explication qui remplace les pastilles à zéro. Contour pointillé et non
+  // carte pleine : ce n'est pas une donnée de plus, c'est l'absence de donnée, dite.
+  microsUnknown: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    borderWidth: 1,
+    borderStyle: 'dashed',
+    borderRadius: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 15,
+  },
+  microsUnknownText: { flex: 1, fontFamily: fontFamily.body, fontSize: 13, lineHeight: 19 },
   manageMealsLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   // US REPAS-01 — carte d'accès au planning repas (P1).
   mealPlanCard: {

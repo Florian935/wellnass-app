@@ -100,7 +100,10 @@ export const palettes: Record<ColorScheme, Palette> = {
     // marque du pilier ne peuvent pas diverger. 9,2 / surface teintée — largement au-dessus de 4,5.
     pillarStrength: '#7c2734',
     pillarRunning: '#2a64ad', // 5,18 / fond — #2f6fc0 de maquette : 4,39
-    pillarNutrition: '#52703a', // 4,88 / fond — #5c7a3f de maquette : 4,23
+    // US NUTRI-UX02 — `#52703a` (5,22 / fond, chroma 54) remplacé le 20/09/2026 : il était, comme
+    // la teinte du pilier, le moins coloré des cinq accents. `#3f6b1c` monte la chroma à 79 **et**
+    // le contraste à 5,86 — la couleur gagnée ne coûte rien à la lisibilité.
+    pillarNutrition: '#3f6b1c', // 5,86 / fond — #52703a d'avant : 5,22 · #5c7a3f de maquette : 4,23
     pillarLab: '#7a5714', // 5,0 / fond — le doré #8a6419 tombait à 4,33
   },
   dark: {
@@ -138,7 +141,11 @@ export const palettes: Record<ColorScheme, Palette> = {
     pillarHome: '#e07a4d', // 4,94 / surface — l'accent sombre #dd6e40 n'y fait que 4,45 (D2)
     pillarStrength: '#e07a98', // 5,16 / surface — #6b0028 : 1,15
     pillarRunning: '#6fa8ef', // 5,94 / surface
-    pillarNutrition: '#a9ba7e', // 6,98 / surface
+    // US NUTRI-UX02 — `#a9ba7e` (6,98 / surface, chroma 60) remplacé le 20/09/2026. Il restait le
+    // plus terne des quatre accents de pilier (course 128, labo 104, muscu 102). `#9ed16a` : chroma
+    // 103 et 8,21 / surface. ⚠️ `success` et `chartGreen` gardent `#a9ba7e` — ce sont des rôles
+    // sémantiques distincts, qui ne suivent pas l'identité d'un pilier.
+    pillarNutrition: '#9ed16a', // 8,21 / surface — #a9ba7e d'avant : 6,98
     pillarLab: '#e0b155', // doré du socle — 8,4 / fond
   },
 };

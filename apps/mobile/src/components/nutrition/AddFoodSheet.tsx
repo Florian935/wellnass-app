@@ -35,7 +35,8 @@ import {
   useRecentFoodIds,
   type CatalogEntry,
 } from '@/data/repositories/food-catalog-repository';
-import { getFood } from '@/data/repositories/food-repository';
+import { getFood, useLibraryPresence } from '@/data/repositories/food-repository';
+import { LibraryNotice } from './LibraryNotice';
 import { addFoodEntry } from '@/data/repositories/journal-repository';
 import { applyTemplate } from '@/data/repositories/meal-template-repository';
 import { useRecipes } from '@/data/repositories/recipe-repository';
@@ -89,6 +90,8 @@ export function AddFoodSheet({
   const searching = debounced.trim().length > 0;
   const list = searching ? results : habits;
   const loading = searching ? searchLoading : habitsLoading;
+  /** US NUTRI-UX02 — une base absente n'est pas une recherche infructueuse. */
+  const library = useLibraryPresence();
 
   /** Quitte le sheet vers un écran plein, en réinitialisant la recherche. */
   const goTo = (pathname: string, params?: Record<string, string>) => {
@@ -265,6 +268,14 @@ export function AddFoodSheet({
         >
           {loading && list.length === 0 ? (
             <ActivityIndicator color={colors.accent} style={styles.loader} />
+          ) : list.length === 0 && library.isEmpty ? (
+            /*
+             * US NUTRI-UX02 — la feuille est la porte d'entrée la plus fréquente de la recherche :
+             * c'est donc ici, avant l'écran plein, qu'une bibliothèque absente doit se dire. Vaut
+             * pour les deux listes : sans base, « tes habitudes » est vide pour la même raison que
+             * « tes résultats ».
+             */
+            <LibraryNotice count={library.count} />
           ) : list.length === 0 ? (
             <Text style={[styles.empty, { color: colors.textMuted }]}>
               {searching ? t('journal.addSheet.noResult') : t('journal.addSheet.noHabit')}

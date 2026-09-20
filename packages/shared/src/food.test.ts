@@ -3,6 +3,7 @@ import {
   FOOD_CATEGORIES,
   FOOD_SOURCES,
   MEAL_TYPES,
+  countReportedMicros,
   MICRONUTRIENT_KEYS,
   foodEntryRowSchema,
   foodRowSchema,
@@ -165,6 +166,32 @@ describe('micronutriments (4.33)', () => {
     it('met à l’échelle et somme les nouvelles clés (oméga-3 en g, zinc en mg)', () => {
       expect(scaleMicronutrients({ omega_3_g: 2, zinc_mg: 5 }, 50)).toEqual({ omega_3_g: 1, zinc_mg: 2.5 });
       expect(sumMicronutrients([{ omega_3_g: 1 }, { omega_3_g: 0.5, zinc_mg: 2 }])).toEqual({ omega_3_g: 1.5, zinc_mg: 2 });
+    });
+  });
+
+  describe('countReportedMicros — le zéro qui ment', () => {
+    it('🔴 vaut 0 quand rien n’est renseigné — le cas de la journée saisie en texte libre', () => {
+      // La capture du 17/09/2026 : quatre repas, 1957 kcal, et six pastilles à « 0,0 mg ».
+      expect(countReportedMicros({}, ['iron_mg', 'calcium_mg', 'magnesium_mg'])).toBe(0);
+    });
+
+    it('🔴 un zéro RÉEL compte comme renseigné — c’est une mesure, pas une absence', () => {
+      // Un aliment qui déclare 0 mg de fer dit quelque chose ; une entrée sans micros ne dit rien.
+      expect(countReportedMicros({ iron_mg: 0 }, ['iron_mg'])).toBe(1);
+    });
+
+    it('compte partiellement, pour que la grille reste quand les zéros sont justes', () => {
+      expect(
+        countReportedMicros({ iron_mg: 8.2, calcium_mg: 300 }, ['iron_mg', 'calcium_mg', 'vitamin_d_ug']),
+      ).toBe(2);
+    });
+
+    it('ignore les clés renseignées que l’utilisateur ne suit pas', () => {
+      expect(countReportedMicros({ zinc_mg: 4 }, ['iron_mg'])).toBe(0);
+    });
+
+    it('sans clé suivie, il n’y a rien à compter', () => {
+      expect(countReportedMicros({ iron_mg: 8.2 }, [])).toBe(0);
     });
   });
 

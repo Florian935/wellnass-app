@@ -44,7 +44,9 @@ const TINT: Record<PillarKey, string> = {
   home: '#b14f2b',
   strength: '#7c2734',
   running: '#1d4586',
-  nutrition: '#2e4419',
+  // US NUTRI-UX02 — `#2e4419` remplacé le 20/09/2026. Voir l'encadré sur `TINT_GAIN` : l'ancienne
+  // valeur était un olive (chroma 43), deux fois moins colorée que la plus terne des quatre autres.
+  nutrition: '#2f6b12',
   lab: '#8a6419',
 };
 
@@ -97,12 +99,41 @@ const AMOUNT: Record<ColorScheme, number> = { light: 0.22, dark: 0.3 };
  * ⚠️ Le contrat de lisibilité est **intact par construction** : le gain ne change que `amount`, et
  * `tintPreservingLuminance` conserve la luminance quel que soit `amount`. `__tests__/contrast.test.ts`
  * le re-vérifie pilier par pilier.
+ *
+ * ── US NUTRI-UX02, 20/09/2026 — la nutrition avait le **même symptôme, une autre cause** ───────────
+ *
+ * Retour de Florian sur les captures du pilier : « peut-être qu'on peut améliorer un tout petit peu
+ * le vert ». Mesuré, la nutrition sortait à **chroma 17** dans la table ci-dessus — c'est-à-dire
+ * *sous* la surface neutre `#30271e` qu'elle remplace (18), exactement comme la course avant son
+ * gain. Mais le remède de la course n'y suffisait pas, parce que la cause est ailleurs.
+ *
+ * Chroma des **teintes source** elles-mêmes (la couleur avant tout mélange) :
+ *
+ * | pilier      | teinte    | chroma |
+ * |-------------|-----------|--------|
+ * | accueil     | `#b14f2b` | 134    |
+ * | labo        | `#8a6419` | 113    |
+ * | course      | `#1d4586` | 105    |
+ * | musculation | `#7c2734` | 85     |
+ * | **nutrition (avant)** | `#2e4419` | **43** |
+ *
+ * La course partait d'un bleu franc et le perdait dans la mécanique de luminance ; la nutrition
+ * partait d'un **olive**, deux fois moins coloré que la plus terne des quatre autres teintes. Un
+ * gain seul ne pouvait donc pas la rattraper : mesuré, `#2e4419` plafonne à **chroma 22 même à
+ * gain 2**, loin de la bande 29-32. Le correctif est en deux temps — une teinte qui est vraiment un
+ * vert (`#2f6b12`, chroma 89), **puis** le gain de 1,5 du patron course, qui amène la surface sombre
+ * à `#1f2d10` (chroma **29**) : la bande de la musculation et de la course, pas au-delà.
+ *
+ * ⚠️ Contrat de lisibilité **intact par construction**, comme pour la course : `tintPreservingLuminance`
+ * conserve la luminance quels que soient la teinte et le gain, et `__tests__/contrast.test.ts` le
+ * re-vérifie pilier par pilier. Le test-garde de chroma ajouté par cette US empêche, lui, qu'un
+ * pilier retombe sous la surface neutre sans que personne ne le voie.
  */
 const TINT_GAIN: Record<PillarKey, number> = {
   home: 1,
   strength: 1,
   running: 1.5,
-  nutrition: 1,
+  nutrition: 1.5,
   lab: 1,
 };
 

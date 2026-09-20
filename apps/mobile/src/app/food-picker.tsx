@@ -1,6 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Alert, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -22,10 +22,12 @@ import {
   isEditableFood,
   toggleFoodFavorite,
   useFavoriteFoods,
-  useFoods,
+  useFoodSearch,
+  useLibraryPresence,
   useRecentFoods,
   type FoodListItem,
 } from '@/data/repositories/food-repository';
+import { LibraryNotice } from '@/components/nutrition/LibraryNotice';
 import { addFoodEntry } from '@/data/repositories/journal-repository';
 import { addRecipeIngredient, useRecipes, type RecipeListItem } from '@/data/repositories/recipe-repository';
 import { applyTemplate, useMealTemplates } from '@/data/repositories/meal-template-repository';
@@ -69,9 +71,24 @@ const meal = params.meal ?? mealForHour(hour);
     : (['all', 'favorites', 'recent', 'recipes', 'templates'] as const);
   const [tab, setTab] = useState<string>('all');
   const [search, setSearch] = useState('');
-  const { foods } = useFoods(tab === 'all' ? search : undefined);
   const { foods: favoriteFoods } = useFavoriteFoods();
   const { foods: recentFoods } = useRecentFoods();
+  /**
+   * US NUTRI-UX02 — cet écran est passé de `useFoods()` à `useFoodSearch()`.
+   *
+   * `useFoods()` chargeait **toute** la table (3 244 aliments, trois `LEFT JOIN`) à chaque frappe,
+   * puis filtrait en JavaScript et rendait par ordre alphabétique. C'était le comportement d'avant
+   * l'import CIQUAL, resté en place ici alors que la feuille d'ajout, elle, avait reçu le bornage
+   * SQL et le classement par pertinence. Les deux portes d'entrée de la recherche ne se
+   * comportaient donc pas pareil — et c'est la plus visible qui avait l'ancienne.
+   *
+   * Les récents servent de bonus de classement : 80 % des ajouts portent sur une vingtaine
+   * d'aliments, c'est ce qui fait tomber juste une recherche de trois lettres.
+   */
+  const recentIds = useMemo(() => recentFoods.map((f) => f.id), [recentFoods]);
+  const { foods } = useFoodSearch(tab === 'all' ? search : '', recentIds);
+  /** Sert à distinguer « la base n'est pas là » de « ta recherche ne donne rien ». */
+  const library = useLibraryPresence();
   const { recipes } = useRecipes();
   const { templates } = useMealTemplates();
 
@@ -253,9 +270,19 @@ const meal = params.meal ?? mealForHour(hour);
             />
           )}
           ListEmptyComponent={
-            <Text style={[styles.empty, { color: colors.textMuted }]}>
-              {tab === 'recent' ? t('journal.noRecent') : t('journal.noFood')}
-            </Text>
+            /*
+             * US NUTRI-UX02 — une base absente n'est pas une recherche infructueuse.
+             *
+             * L'onglet « Récents » garde son propre message : il est vide par construction sur un
+             * compte neuf, et ça n'a rien à voir avec l'état de la bibliothèque.
+             */
+            tab === 'recent' ? (
+              <Text style={[styles.empty, { color: colors.textMuted }]}>{t('journal.noRecent')}</Text>
+            ) : library.isEmpty ? (
+              <LibraryNotice count={library.count} />
+            ) : (
+              <Text style={[styles.empty, { color: colors.textMuted }]}>{t('journal.noFood')}</Text>
+            )
           }
           ListFooterComponent={
             tab === 'all' && search.trim().length >= 2 ? (

@@ -36,7 +36,12 @@ jest.mock('@/data/repositories/food-catalog-repository', () => ({
   useRecentFoodIds: jest.fn(() => []),
   SEARCH_RESULT_LIMIT: 40,
 }));
-jest.mock('@/data/repositories/food-repository', () => ({ getFood: jest.fn() }));
+jest.mock('@/data/repositories/food-repository', () => ({
+  getFood: jest.fn(),
+  // Par défaut la bibliothèque est là : ces tests portent sur le geste d'ajout, pas sur la panne.
+  // Le cas « base absente » a ses propres tests dans `LibraryNotice.test.tsx`.
+  useLibraryPresence: jest.fn(() => ({ count: 3244, isLoading: false, isEmpty: false })),
+}));
 jest.mock('@/data/repositories/journal-repository', () => ({ addFoodEntry: jest.fn() }));
 jest.mock('@/data/repositories/meal-template-repository', () => ({ applyTemplate: jest.fn() }));
 jest.mock('@/data/repositories/recipe-repository', () => ({ useRecipes: jest.fn(() => ({ recipes: [] })) }));

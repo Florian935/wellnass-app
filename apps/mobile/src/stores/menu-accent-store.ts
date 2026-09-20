@@ -31,7 +31,7 @@ export const DEFAULT_MENU_COLORS: Record<MenuKey, string> = {
   home: '#e07a4d', // = pillarHome (sombre)
   strength: '#e07a98', // = pillarStrength (sombre) — l'ancien #6b0028 : 1,15:1 sur une carte
   running: '#6fa8ef', // = pillarRunning (sombre)
-  nutrition: '#a9ba7e', // = pillarNutrition (sombre)
+  nutrition: '#9ed16a', // = pillarNutrition (sombre) — US NUTRI-UX02, l'ancien #a9ba7e : chroma 60
   lab: '#e0b155', // = pillarLab (sombre)
 };
 
@@ -40,6 +40,9 @@ export const MENU_COLOR_SWATCHES: readonly string[] = [
   '#e07a4d',
   '#e07a98',
   '#6fa8ef',
+  '#9ed16a',
+  // `#a9ba7e` reste proposé : c'est l'ancien vert du pilier, et quelqu'un qui l'avait choisi doit
+  // pouvoir le retrouver. Seul le **défaut** change (US NUTRI-UX02).
   '#a9ba7e',
   '#e0b155',
   '#b99be0',

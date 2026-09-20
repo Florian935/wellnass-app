@@ -87,19 +87,40 @@ const RUNNING: StageTheme = {
   accent: '#b7d6ff',
 };
 
+/**
+ * ── US NUTRI-UX02, 20/09/2026 — la scène suit le pilier ──────────────────────────────────────────
+ * Cinq valeurs reteintées en même temps que `TINT.nutrition`. Sans ça, le défaut que Florian avait
+ * signalé sur la course se serait produit **à l'envers** : les cartes du corps seraient devenues
+ * plus vertes que la scène qui les annonce.
+ *
+ * Toutes gagnent de la chroma à luminance quasi constante, donc le contrat de `stage.test.ts` tient,
+ * et il le vérifie encre par encre :
+ *
+ * | rôle        | avant     | chroma | après     | chroma | `inkMuted` après |
+ * |-------------|-----------|--------|-----------|--------|------------------|
+ * | fond        | `#22301a` | 22     | `#1f3110` | 33     | 11,29            |
+ * | niveau haut | `#4a6c2e` | 62     | `#456f22` | 77     | 4,78             |
+ * | niveau bas  | `#3a5622` | 52     | `#365f19` | 70     | 6,05             |
+ * | onde        | `#a9ba7e` | 60     | `#9ed16a` | 103    | — (sans texte)   |
+ * | `onSolid`   | `#2e4419` | 43     | `#2f6b12` | 89     | 6,50 sur blanc   |
+ *
+ * ⚠️ Écarté : `#4a7c22` (chroma 90) pour le haut du niveau. Il passait le seuil pour `ink` mais
+ * faisait tomber `inkMuted` à **4,05** — sous les 4,5. C'est la borne réelle de ce dégradé : le
+ * texte secondaire est posé *sur* le niveau qui monte, et c'est lui qui plafonne la saturation.
+ */
 const NUTRITION: StageTheme = {
-  gradient: ['#22301a', '#22301a'],
+  gradient: ['#1f3110', '#1f3110'],
   // Le niveau monte sous le texte : ses deux teintes font partie des surfaces.
-  surfaces: ['#22301a', '#4a6c2e', '#3a5622'],
+  surfaces: ['#1f3110', '#456f22', '#365f19'],
   ink: '#ffffff',
   inkMuted: '#e1ebcf',
   glass: 'rgba(255,255,255,0.14)',
   glassBorder: 'rgba(255,255,255,0.24)',
   solid: '#ffffff',
-  onSolid: '#2e4419',
+  onSolid: '#2f6b12',
   accent: '#e8f0d6',
-  fill: ['#4a6c2e', '#3a5622'],
-  wave: '#a9ba7e',
+  fill: ['#456f22', '#365f19'],
+  wave: '#9ed16a',
 };
 
 const HOME_LIGHT: StageTheme = {

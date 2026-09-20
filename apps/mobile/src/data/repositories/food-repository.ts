@@ -10,11 +10,13 @@ import {
   parseJsonColumn,
   parseMicronutrients,
   FoodCategory,
+  foldDiacritics,
   FoodPortion,
   FoodSource,
   matchesSearch,
   Micronutrients,
   type PreparationState,
+  rankFoodMatches,
   SuggestibleMacro,
 } from '@wellness/shared';
 
@@ -120,6 +122,123 @@ export function useFoods(search?: string): { foods: FoodListItem[]; isLoading: b
     return term ? all.filter((f) => matchesSearch(f.name, term)) : all;
   }, [data, term]);
   return { foods, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// US NUTRI-UX02 — recherche bornée et classée de l'écran plein
+// ---------------------------------------------------------------------------
+
+/**
+ * Nombre maximal de lignes remontées de SQLite avant classement, sur l'**écran plein**.
+ *
+ * Même valeur et même raison que `SQL_SCAN_LIMIT` dans `food-catalog-repository.ts` : à deux
+ * lettres, le `LIKE` dépasse largement les quelques centaines (« bo » rend 453 candidats sur la
+ * base CIQUAL, « po » 582), et tout ce qui dépasse serait coupé **avant** le classement.
+ *
+ * ⚠️ Les deux constantes sont **volontairement séparées** plutôt que partagées : elles bornent deux
+ * écrans qui n'affichent pas le même nombre de lignes, et les faire diverger un jour ne doit pas
+ * demander de démêler un import croisé entre deux repositories.
+ */
+export const FOOD_SEARCH_SCAN_LIMIT = 800;
+
+/** Nombre maximal d'aliments rendus à l'écran après classement. */
+export const FOOD_SEARCH_RESULT_LIMIT = 60;
+
+/**
+ * La requête de recherche de l'écran plein.
+ *
+ * ── Pourquoi elle ne ressemble pas à un simple `WHERE name LIKE ?` ──────────────────────────────
+ * L'`ORDER BY` place les **débuts de nom** en premier *dans le SQL*, donc **avant** la coupe à
+ * `LIMIT`. Sans cette clause, la limite tranche dans l'ordre alphabétique : sur 3 244 aliments,
+ * « pomme » peut disparaître à « po » puis réapparaître à « pom ». Une liste qui rétrécit quand on
+ * précise sa recherche se lit comme un moteur cassé — c'est le même raisonnement que celui déjà
+ * posé sur la feuille d'ajout, et c'est la raison d'être de la clause `CASE WHEN`.
+ *
+ * Le filtre `LIKE` reste **grossier et assumé** : SQLite ignore la casse mais pas les accents, et
+ * la base est francophone. Affiner ici coûterait une colonne dénormalisée ; on préfère ramener
+ * large et laisser `rankFoodMatches` (qui replie les diacritiques) faire le tri fin en mémoire, sur
+ * un ensemble déjà borné.
+ *
+ * @param active `false` = pas de terme saisi : on rend la base triée par nom, toujours bornée.
+ */
+export const selectFoodSearch = (active: boolean): string =>
+  active
+    ? // ⚠️ `COALESCE(tl.name, tfr.name)` et non l'alias `name` : les deux jointures de traduction
+      // portent une colonne `name`, donc l'alias est **ambigu** dans un `WHERE` (SQLite le refuse
+      // net : « ambiguous column name: name »). L'`ORDER BY` l'accepterait, mais mélanger les deux
+      // formes dans la même requête ne se relit pas.
+      `${SELECT_FOODS}
+    AND COALESCE(tl.name, tfr.name) LIKE ? COLLATE NOCASE
+  ORDER BY (CASE WHEN COALESCE(tl.name, tfr.name) LIKE ? COLLATE NOCASE THEN 0 ELSE 1 END),
+           COALESCE(tl.name, tfr.name) COLLATE NOCASE
+  LIMIT ?
+`
+    : `${SELECT_FOODS} ${ORDER_BY_NAME} LIMIT ?`;
+
+/**
+ * Nombre d'aliments de **bibliothèque** présents localement.
+ *
+ * 🔴 `owner_id IS NULL` est le cœur du compte, pas un détail : un aliment perso ne prouve pas que
+ * la bibliothèque est arrivée. Quelqu'un qui a créé deux aliments à la main sur une base non
+ * synchronisée verrait sinon un écran « tout va bien » au-dessus d'un néant.
+ */
+export const COUNT_LIBRARY_FOODS = `
+  SELECT COUNT(*) AS n FROM foods WHERE owner_id IS NULL AND deleted_at IS NULL
+`;
+
+/**
+ * Recherche d'aliments **bornée en SQL puis classée par pertinence** — le contrat que la feuille
+ * d'ajout avait déjà et que l'écran plein n'avait pas (US NUTRI-UX02).
+ *
+ * Même valeur de retour que `useFoods`, pour que l'écran appelant n'ait qu'une ligne à changer :
+ * il garde ses favoris, ses badges et son menu d'édition.
+ */
+export function useFoodSearch(
+  search: string,
+  recentIds: readonly string[] = [],
+): { foods: FoodListItem[]; isLoading: boolean } {
+  const { i18n } = useTranslation();
+  const lang = i18n.language === 'en' ? 'en' : 'fr';
+  const term = search.trim();
+  const active = term.length > 0;
+
+  const { data, isLoading } = useQuery<FoodListDbRow>(
+    selectFoodSearch(active),
+    active
+      ? [lang, `%${term}%`, `${term}%`, FOOD_SEARCH_SCAN_LIMIT]
+      : [lang, FOOD_SEARCH_SCAN_LIMIT],
+  );
+
+  const foods = useMemo(() => {
+    const items = data.map(rowToItem);
+    if (!active) return items.slice(0, FOOD_SEARCH_RESULT_LIMIT);
+    // `kind: 'food'` : cet écran ne mélange pas recettes et repas types dans la même liste — ils ont
+    // leurs propres onglets. Le départage par famille de `rankFoodMatches` est donc sans effet ici.
+    const pool = items.map((f) => ({ ...f, kind: 'food' as const }));
+    return rankFoodMatches(pool, foldDiacritics(term), {
+      recentIds,
+      limit: FOOD_SEARCH_RESULT_LIMIT,
+    }).map((m) => m.item);
+  }, [data, active, term, recentIds]);
+
+  return { foods, isLoading };
+}
+
+/**
+ * Présence de la bibliothèque sur cet appareil (US NUTRI-UX02).
+ *
+ * ── Pourquoi ce hook existe ─────────────────────────────────────────────────────────────────────
+ * L'app ne savait pas distinguer « la base n'est pas là » de « ta recherche ne donne rien » : les
+ * deux affichaient « Aucun aliment trouvé ». C'est ce silence qui a laissé passer une panne de
+ * synchro pendant des jours — 3 246 aliments côté cloud, zéro sur le téléphone, et un écran qui
+ * disait simplement que le saumon n'existait pas.
+ */
+export function useLibraryPresence(): { count: number; isLoading: boolean; isEmpty: boolean } {
+  const { data, isLoading } = useQuery<{ n: number }>(COUNT_LIBRARY_FOODS);
+  const count = data[0]?.n ?? 0;
+  // ⚠️ `isEmpty` est faux tant que la requête tourne : un écran ne doit pas annoncer une panne de
+  // synchro pendant le temps d'une lecture locale.
+  return { count, isLoading, isEmpty: !isLoading && count === 0 };
 }
 
 /** Lecture ponctuelle d'un aliment par id (édition), nom résolu dans `lang` (fallback fr). */

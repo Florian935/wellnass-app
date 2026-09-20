@@ -38,7 +38,7 @@ export function DayEnergyCard({ dayKey, consumedKcal }: { dayKey: string; consum
   const { colors } = useTheme();
   const router = useRouter();
   const { items, totalKcal, targetKcal, isLoading } = useDayEnergy(dayKey);
-  const { target, effectiveTarget } = useDayCalorieTarget(dayKey);
+  const { target, effectiveTarget, trainingBonus } = useDayCalorieTarget(dayKey);
   const { nutritionProfile } = useNutritionProfile();
   const { settings } = useSettings();
 
@@ -113,15 +113,38 @@ export function DayEnergyCard({ dayKey, consumedKcal }: { dayKey: string; consum
         </View>
       ) : null}
 
-      {!followsEnergy ? (
+      {/*
+        US NUTRI-UX02 — le bandeau cesse d'être un nag pour devenir la réponse.
+
+        Il s'affichait **tous les jours, sur toutes les journées**, tant que le réglage n'était pas
+        basculé : « Ta cible ne suit pas encore tes dépenses réelles. » Un message permanent n'est
+        pas un conseil, c'est du bruit qu'on apprend à ne plus voir.
+
+        Deux corrections, et la seconde est la vraie :
+
+        1. **Il se tait les jours sans dépense** (`items.length > 0`). Dire que la cible ne suit pas
+           les dépenses réelles un jour sans aucune dépense n'apporte rien : il n'y a rien à suivre.
+
+        2. 🔴 **Il porte les deux nombres.** Florian l'a relevé sur la capture du 17/09 : la scène
+           annonçait « +720 kcal — jour de séance » et cette carte « ≈ 750 kcal dépensées », à
+           quatre centimètres l'un de l'autre, sans jamais les relier. Le forfait de MN-01 et la
+           dépense réelle de DEPENSE-01 cohabitaient sans se parler. Les mettre côte à côte rend
+           l'écart visible — et la décision de basculer évidente, ou inutile, selon le chiffre.
+      */}
+      {!followsEnergy && items.length > 0 ? (
         <Pressable
           onPress={() => router.push('/nutrition-profile')}
           accessibilityRole="button"
           accessibilityLabel={t('energy.day.notFollowingCta')}
           style={styles.hintRow}
+          testID="energy-not-following"
         >
           <Ionicons name="information-circle-outline" size={16} color={colors.warnText} />
-          <Text style={[styles.hint, { color: colors.warnText }]}>{t('energy.day.notFollowing')}</Text>
+          <Text style={[styles.hint, { color: colors.warnText }]}>
+            {showNumbers && trainingBonus > 0
+              ? t('energy.day.notFollowingNumbers', { spent: totalKcal, bonus: trainingBonus })
+              : t('energy.day.notFollowing')}
+          </Text>
         </Pressable>
       ) : null}
 

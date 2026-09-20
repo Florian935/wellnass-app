@@ -27,6 +27,37 @@ export function relativeLuminance(hex: string): number | null {
 }
 
 /**
+ * **Chroma** d'une couleur : l'écart entre son canal le plus fort et son canal le plus faible,
+ * de 0 (un gris) à 255 (une primaire pure). C'est un proxy de saturation, volontairement grossier.
+ *
+ * ── Pourquoi cette fonction existe (US NUTRI-UX02, 20/09/2026) ───────────────────────────────────
+ * Le dépôt a diagnostiqué **deux fois** le même défaut à la main, dans deux commentaires de
+ * `theme/pillar.ts` : une teinte de pilier qui produit une surface **moins colorée que la surface
+ * neutre qu'elle remplace**. La course en septembre (chroma 16 contre 18), la nutrition aujourd'hui
+ * (17 contre 18). Les deux fois, rien n'avait échoué : les tests de contraste passaient — c'est
+ * même la propriété de `tintPreservingLuminance` que de les faire passer —, et la seule alerte a
+ * été l'œil de Florian sur une recette.
+ *
+ * Nommer la mesure permet au test-garde de `theme/__tests__/contrast.test.ts` de la vérifier, au
+ * lieu de la redécouvrir au prochain pilier.
+ *
+ * ⚠️ Ce n'est **pas** une mesure perceptuelle (ni HSL, ni LCh) : à luminance égale elle suffit à
+ * comparer des surfaces entre elles, ce qui est tout ce qu'on lui demande. Ne pas l'utiliser pour
+ * décider qu'une couleur est « belle » ou pour trier des teintes de clartés différentes.
+ *
+ * Renvoie `null` si la chaîne n'est pas un hex à 6 chiffres exploitable.
+ */
+export function chroma(hex: string): number | null {
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim());
+  if (!match) return null;
+  const value = match[1]!;
+  const r = parseInt(value.slice(0, 2), 16);
+  const g = parseInt(value.slice(2, 4), 16);
+  const b = parseInt(value.slice(4, 6), 16);
+  return Math.max(r, g, b) - Math.min(r, g, b);
+}
+
+/**
  * Ratio de contraste WCAG 2.1 entre deux couleurs hexadécimales — toujours ≥ 1 (ordre des
  * arguments sans importance). Renvoie `null` si l'une des deux couleurs est illisible.
  */

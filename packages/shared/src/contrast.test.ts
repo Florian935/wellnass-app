@@ -1,5 +1,35 @@
 import { describe, expect, it } from 'vitest';
-import { contrastRatio, readableOn, relativeLuminance, tintPreservingLuminance } from './contrast';
+import { chroma, contrastRatio, readableOn, relativeLuminance, tintPreservingLuminance } from './contrast';
+
+describe('chroma', () => {
+  it('un gris n’a aucune chroma, une primaire pure est au maximum', () => {
+    expect(chroma('#000000')).toBe(0);
+    expect(chroma('#ffffff')).toBe(0);
+    expect(chroma('#808080')).toBe(0);
+    expect(chroma('#ff0000')).toBe(255);
+    expect(chroma('#00ff00')).toBe(255);
+  });
+
+  it('accepte la forme sans # et renvoie null sur une valeur illisible', () => {
+    expect(chroma('2e4419')).toBe(43);
+    expect(chroma('pas-un-hex')).toBeNull();
+    expect(chroma('#fff')).toBeNull();
+  });
+
+  it('🔴 mesure bien le défaut qui a motivé la fonction : deux teintes de pilier, deux époques', () => {
+    // Les valeurs relevées à la main dans `theme/pillar.ts` avant correction. Si l'une d'elles
+    // change ici, c'est que la formule a bougé — et les seuils du test-garde côté mobile avec.
+    expect(chroma('#2e4419')).toBe(43); // nutrition, avant NUTRI-UX02 : un olive
+    expect(chroma('#1d4586')).toBe(105); // course : un bleu franc, le défaut était ailleurs
+    expect(chroma('#2f6b12')).toBe(89); // nutrition, après : dans la bande des autres piliers
+  });
+
+  it('est indépendante de la clarté — c’est sa limite, et elle est assumée', () => {
+    // Deux verts de clartés très différentes, même écart de canaux : la fonction ne les départage
+    // pas. C'est pour ça qu'on ne l'utilise qu'à luminance comparable.
+    expect(chroma('#102010')).toBe(chroma('#a0b0a0'));
+  });
+});
 
 describe('relativeLuminance', () => {
   it('noir = 0, blanc = 1', () => {

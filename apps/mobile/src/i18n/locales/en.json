@@ -585,6 +585,8 @@
       "subtitle": "Micronutrients",
       "optional": "Optional · micronutrients / 100 g",
       "optionalHint": "All these fields are optional — leave blank whatever you don't know.",
+      "unknownFreeText": "No micronutrients for this day: your entries come from quick add or free text, which don't carry them. Search the food in the library to track them.",
+      "unknownEmptyDay": "Nothing to show while the day is empty.",
       "derived": "derived",
       "per100": "100 g: {{value}} {{unit}}",
       "units": {
@@ -693,6 +695,29 @@
         "needsWeight": "Add a weigh-in to see protein per serving"
       }
     },
+    "week": {
+      "eyebrow": "THIS WEEK'S VERDICT",
+      "tabToday": "Today",
+      "tabWeek": "This week",
+      "allStats": "See all statistics",
+      "headline": {
+        "onTrack": "You're holding your course.",
+        "offTrack": "Your week is drifting from your target.",
+        "notEnoughData": "Not enough to conclude yet."
+      },
+      "detail": {
+        "adherence": "{{inTarget}} of {{logged}} days within your calorie target.",
+        "notEnoughData": "{{logged}} day(s) logged over the last 7 — at least {{needed}} are needed for an average to mean anything."
+      },
+      "remarks": {
+        "protein": {
+          "low": "Protein at {{value}} g/kg, below your {{min}}–{{max}} range.",
+          "in": "Protein at {{value}} g/kg, within your {{min}}–{{max}} range.",
+          "high": "Protein at {{value}} g/kg, above your {{min}}–{{max}} range."
+        },
+        "heavyMeal": "{{meal}} accounts for {{pct}} % of your calories."
+      }
+    },
     "fuelTank": {
       "title": "Fuel tank",
       "subtitle": "Estimated carbs available",
@@ -760,6 +785,14 @@
     "searchPlaceholder": "Food name…",
     "noFood": "No food found.",
     "noRecent": "No recent foods yet. Log foods to find them here.",
+    "library": {
+      "title": "The food library hasn't reached this device yet",
+      "syncing": "The first sync is still running. Foods will show up as soon as it finishes — in the meantime you can create a food or scan a barcode.",
+      "offline": "You're offline and the foods never reached this phone. Reconnect once to receive them — in the meantime you can create a food or scan a barcode.",
+      "notPublished": "Syncing finished, but no food was received. This isn't your search: the library isn't published to this device. Please report it — in the meantime you can create a food or scan a barcode.",
+      "localCount_one": "{{count}} library food stored locally",
+      "localCount_other": "{{count}} library foods stored locally"
+    },
     "addedCount_one": "{{count}} food added to this meal",
     "addedCount_other": "{{count}} foods added to this meal",
     "done": "Done",
@@ -893,7 +926,13 @@
       "effect": "WHAT THIS CHANGES",
       "willRemain": "You'll have {{kcal}} kcal left today",
       "willExceed": "You'll go {{kcal}} kcal over"
-    }
+    },
+    "dayCard": {
+      "title": "Your day",
+      "meta_one": "{{count}} entry · {{kcal}} kcal",
+      "meta_other": "{{count}} entries · {{kcal}} kcal"
+    },
+    "mealShareA11y": "{{meal}}: {{pct}} % of the day's calories."
   },
   "meals": {
     "manage": "Manage meals",
@@ -4910,6 +4949,7 @@
       "target": "Today's target",
       "remaining": "Left today",
       "notFollowing": "Your target doesn't follow your real energy use yet. Set it up.",
+      "notFollowingNumbers": "You spent {{spent}} kcal today; your target allows {{bonus}} as a flat bonus. Make your target follow.",
       "notFollowingCta": "Set up the calorie target"
     },
     "settings": {

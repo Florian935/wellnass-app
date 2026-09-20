@@ -92,6 +92,9 @@ jest.mock('@/data/repositories/real-life-repository', () => ({
 }));
 jest.mock('@/data/repositories/food-repository', () => ({
   useRecentFoods: jest.fn(() => ({ foods: [] })),
+  // US NUTRI-UX02 — la feuille d'ajout sait désormais dire « la bibliothèque n'est pas arrivée ».
+  // Ici elle l'est : ces tests portent sur le journal, pas sur la panne de synchro.
+  useLibraryPresence: jest.fn(() => ({ count: 3244, isLoading: false, isEmpty: false })),
   // US NUTR-F2 — vivier de repli ouvert le 12/08/2026. Vide par défaut : ces tests portent sur la
   // navigation et les repas, pas sur la carte de suggestion.
   useDenseFoodCandidates: jest.fn(() => ({ foods: [], isLoading: false })),
@@ -186,6 +189,20 @@ jest.mock('@/components/energy/DayEnergyCard', () => ({ DayEnergyCard: () => nul
 // US RESERV-01 : la carte Réservoir tire la chaîne des repositories, donc l'initialisation i18n de
 // l'app. Elle a son propre test ; ici on la neutralise, comme DayEnergyCard juste au-dessus.
 jest.mock('@/components/nutrition/FuelTankCard', () => ({ FuelTankCard: () => null }));
+// US NUTRI-UX02 : les cartes de l'onglet « La semaine », remontées de `Nutrition › Stats`. Même
+// raison que les deux ci-dessus — elles tirent la chaîne complète des repositories et
+// l'initialisation i18n réelle. Chacune a ses propres tests ; l'onglet, lui, est vérifié plus bas
+// par la présence de ses deux boutons et par le basculement du contenu.
+jest.mock('@/components/nutrition/WeekVerdictCard', () => ({
+  WeekVerdictCard: () => {
+    const { Text } = require('react-native');
+    return <Text>verdict-semaine</Text>;
+  },
+}));
+jest.mock('@/components/nutrition/RegularityCard', () => ({ RegularityCard: () => null }));
+jest.mock('@/components/ProteinPerKgCard', () => ({ ProteinPerKgCard: () => null }));
+jest.mock('@/components/TrainingNutritionCrossCard', () => ({ TrainingNutritionCrossCard: () => null }));
+jest.mock('@/components/WeightGoalCard', () => ({ WeightGoalCard: () => null }));
 
 jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 
@@ -510,8 +527,14 @@ describe('repas', () => {
     await afficher({ entries: [entree({ mealType: 'custom-supprime' })] });
 
     // On ne crée rien dans un repas qui n'existe plus : on en sort, par réaffectation.
-    const ajouts = screen.queryAllByText('journal.addFood');
-    expect(ajouts).toHaveLength(0);
+    //
+    // ⚠️ L'assertion porte sur le bouton DE CETTE SECTION, et non sur l'absence de tout bouton
+    // d'ajout à l'écran. Depuis NUTRI-UX02, la carte « Ta journée » porte un bouton d'ajout unique
+    // à son pied — qui vise le repas de l'heure courante, jamais le repas disparu. Compter les
+    // libellés de l'écran entier faisait échouer ce test sur un comportement pourtant correct.
+    expect(
+      screen.queryByLabelText('journal.meals.other · journal.addFood'),
+    ).toBeNull();
   });
 
   it('le menu du repas est replié par défaut', async () => {
@@ -893,7 +916,11 @@ describe('objectif du jour', () => {
 
 describe('micronutriments suivis', () => {
   it('🔴 R3.3 — six micros sont suivis PAR DÉFAUT', async () => {
-    await afficher({ entries: [entree()] });
+    // ⚠️ L'entrée porte de VRAIES valeurs depuis NUTRI-UX02. Le fixture d'origine avait
+    // `micronutrients: {}`, et ce test validait donc, sans le dire, l'affichage de six pastilles à
+    // « 0,0 mg » — le défaut que cette US corrige. Il faut au moins un micro renseigné pour que la
+    // grille ait quelque chose à montrer.
+    await afficher({ entries: [entree({ micronutrients: { iron_mg: 2.7 } })] });
 
     // Le défaut était `[]`, et c'est ce qui rendait invisible le seul vrai différenciateur du
     // pilier : 33 micros CIQUAL avec leurs VNR, que personne ne voyait faute de savoir qu'il
@@ -902,6 +929,25 @@ describe('micronutriments suivis', () => {
     expect(grille).toContain('iron_mg');
     expect(grille).toContain('calcium_mg');
     expect(grille).toContain('vitamin_d_ug');
+  });
+
+  it('🔴 US NUTRI-UX02 — aucun micro renseigné : on explique, on n’affiche PAS six zéros', async () => {
+    // Le cas de la capture du 17/09/2026 : quatre repas saisis en texte libre, 1957 kcal, et six
+    // pastilles à « 0,0 mg ». Ce zéro n'est pas une mesure, c'est l'absence de mesure — et il coûte
+    // la confiance dans tous les autres chiffres de l'écran.
+    await afficher({ entries: [entree({ micronutrients: {} })] });
+
+    expect(screen.getByTestId('micros-unknown')).toBeTruthy();
+    expect(screen.queryByText(/^micros:/)).toBeNull();
+  });
+
+  it('un seul micro connu suffit à garder la grille — les autres zéros sont alors VRAIS', async () => {
+    // « Tu n'as pas eu de vitamine D aujourd'hui » est une information juste. Le seuil est
+    // « aucun », pas « peu » : seul le cas où rien n'est connu ment.
+    await afficher({ entries: [entree({ micronutrients: { calcium_mg: 120 } })] });
+
+    expect(screen.getByText(/^micros:/)).toBeTruthy();
+    expect(screen.queryByTestId('micros-unknown')).toBeNull();
   });
 
   it('tout décocher masque la grille — le suivi reste refusable', async () => {
@@ -938,5 +984,85 @@ describe('accès depuis l’en-tête', () => {
 
     // Arbitrage du 04/08/2026 : rangé dans un sous-menu, il ne serait jamais adopté.
     expect(push).toHaveBeenCalledWith('/meal-plan');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US NUTRI-UX02 — les deux moments du journal, et la carte unique
+// ---------------------------------------------------------------------------
+
+describe('onglets « Aujourd’hui » / « La semaine »', () => {
+  it('🔴 ouvre sur « Aujourd’hui » — le geste de vingt fois par jour, pas les analyses', async () => {
+    await afficher({ entries: [entree()] });
+
+    expect(screen.getByTestId('nutrition-tab-today').props.accessibilityState.selected).toBe(true);
+    expect(screen.queryByText('verdict-semaine')).toBeNull();
+  });
+
+  it('bascule sur la semaine, et le journal cède la place aux analyses', async () => {
+    await afficher({ entries: [entree()] });
+
+    await taper(screen.getByTestId('nutrition-tab-week'));
+
+    // Le verdict arrive…
+    expect(screen.getByText('verdict-semaine')).toBeTruthy();
+    // …et la saisie s'efface : les onze analyses étaient invisibles parce qu'elles partageaient
+    // l'écran avec le journal, chacune poussant l'autre hors de vue.
+    expect(screen.queryByText('journal.dayCard.title')).toBeNull();
+  });
+
+  it('revient sur la journée sans rien perdre', async () => {
+    await afficher({ entries: [entree()] });
+
+    await taper(screen.getByTestId('nutrition-tab-week'));
+    await taper(screen.getByTestId('nutrition-tab-today'));
+
+    expect(screen.getByText('Banane')).toBeTruthy();
+    expect(screen.queryByText('verdict-semaine')).toBeNull();
+  });
+});
+
+describe('carte « Ta journée »', () => {
+  it('🔴 UNE carte porte tous les repas, au lieu d’une carte par repas', async () => {
+    await afficher({
+      entries: [
+        entree({ id: 'a', mealType: 'breakfast', name: 'Flocons', kcal: 430 }),
+        entree({ id: 'b', mealType: 'dinner', name: 'Saumon', kcal: 646 }),
+      ],
+    });
+
+    // Cinq cartes de ~150 px pour quatre lignes d'aliments : l'essentiel du défilement était du
+    // contenant, et le même bouton s'y répétait cinq fois.
+    expect(screen.getByText('journal.dayCard.title')).toBeTruthy();
+    expect(screen.getByText('Flocons')).toBeTruthy();
+    expect(screen.getByText('Saumon')).toBeTruthy();
+  });
+
+  it('🔴 un SEUL bouton d’ajout principal, au pied de la carte', async () => {
+    await afficher({
+      entries: [
+        entree({ id: 'a', mealType: 'breakfast' }),
+        entree({ id: 'b', mealType: 'lunch' }),
+        entree({ id: 'c', mealType: 'dinner' }),
+      ],
+    });
+
+    // La même phrase répétée une fois par repas n'apprenait rien la cinquième fois. Le raccourci
+    // par repas, lui, survit en icône dans chaque en-tête — déjà verrouillé par « ajouter depuis un
+    // repas ouvre la feuille SUR ce repas », qui presse ce `+` par son libellé d'accessibilité.
+    expect(screen.queryAllByText('journal.addFood')).toHaveLength(1);
+  });
+
+  it('chaque repas affiche la PART du jour qu’il pèse', async () => {
+    await afficher({
+      entries: [
+        entree({ id: 'a', mealType: 'breakfast', kcal: 300 }),
+        entree({ id: 'b', mealType: 'dinner', kcal: 700 }),
+      ],
+    });
+
+    // NUTR-16 (« répartition par repas ») était livrée mais rangée dans l'écran Stats. Ici elle se
+    // lit là où la décision se prend, sans ouvrir quoi que ce soit.
+    expect(screen.getByLabelText('journal.mealShareA11y:{"meal":"journal.meals.dinner","pct":70}')).toBeTruthy();
   });
 });
