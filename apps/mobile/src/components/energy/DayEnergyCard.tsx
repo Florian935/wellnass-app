@@ -28,6 +28,9 @@ import { useSettings } from '@/data/repositories/settings-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
+/** Écart relatif entre dépense réelle et bonus forfaitaire à partir duquel le bandeau parle. */
+const ENERGY_GAP_THRESHOLD = 0.15;
+
 const ICONS: Record<DayEnergyItem['kind'], keyof typeof Ionicons.glyphMap> = {
   strength: 'barbell-outline',
   run: 'walk-outline',
@@ -62,7 +65,19 @@ export function DayEnergyCard({ dayKey, consumedKcal }: { dayKey: string; consum
    * 🔴 L'état est local et non persisté : la carte doit pouvoir se rouvrir seule le lendemain si la
    * situation change. Mémoriser « replié » ferait taire l'alerte pour de bon.
    */
-  const needsAttention = !followsEnergy && items.length > 0;
+  /**
+   * 🔴 Passe 2 — l'écart doit être **significatif**, sinon la carte ne se replie jamais.
+   *
+   * Le critère était « la cible ne suit pas les dépenses ET il y a une dépense » — c'est-à-dire le
+   * cas par défaut, pour tout le monde, tous les jours où l'on bouge. La carte restait donc ouverte
+   * en permanence et le repli livré le matin même ne se voyait jamais.
+   *
+   * Un bandeau n'a de valeur que s'il peut se taire. 15 % : en dessous, le forfait est une
+   * approximation acceptable de la dépense réelle et il n'y a rien à arbitrer ; au-dessus, la
+   * différence pèse sur la cible du jour et mérite qu'on la regarde.
+   */
+  const gap = trainingBonus > 0 ? Math.abs(totalKcal - trainingBonus) / trainingBonus : 1;
+  const needsAttention = !followsEnergy && items.length > 0 && gap >= ENERGY_GAP_THRESHOLD;
 
   const label = (item: DayEnergyItem): string => {
     if (item.kind === 'strength') return item.title ?? t('energy.kinds.strength');
@@ -167,7 +182,7 @@ export function DayEnergyCard({ dayKey, consumedKcal }: { dayKey: string; consum
            dépense réelle de DEPENSE-01 cohabitaient sans se parler. Les mettre côte à côte rend
            l'écart visible — et la décision de basculer évidente, ou inutile, selon le chiffre.
       */}
-      {!followsEnergy && items.length > 0 ? (
+      {needsAttention ? (
         <Pressable
           onPress={() => router.push('/nutrition-profile')}
           accessibilityRole="button"

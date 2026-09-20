@@ -55,9 +55,16 @@ export type WeekSignal =
   | { kind: 'onTrack'; daysInTarget: number; loggedDays: number }
   | { kind: 'offTrack'; daysInTarget: number; loggedDays: number };
 
-/** Les faits secondaires, dans l'ordre où ils méritent d'être lus. */
+/**
+ * Les faits secondaires, dans l'ordre où ils méritent d'être lus.
+ *
+ * 🔴 La remarque sur les protéines **ne porte plus les chiffres** (passe 2, 20/09/2026). Elle les
+ * portait, et la carte `ProteinPerKgCard` les redisait trois centimètres plus bas, en plus gros,
+ * avec sa fourchette et son badge « insuffisant ». Un verdict qui recopie la carte qu'il annonce
+ * n'ajoute rien : il nomme désormais **le poste**, la carte porte **la mesure**.
+ */
 export type WeekRemark =
-  | { kind: 'protein'; status: ProteinPerKg['status']; gPerKg: number; min: number; max: number }
+  | { kind: 'protein'; status: ProteinPerKg['status'] }
   | { kind: 'heavyMeal'; mealKey: string; pct: number };
 
 export type WeekVerdict = { signal: WeekSignal; remarks: WeekRemark[] };
@@ -95,14 +102,11 @@ export function composeWeekVerdict(input: WeekVerdictInput): WeekVerdict {
       : { kind: 'offTrack', daysInTarget, loggedDays };
 
   const remarks: WeekRemark[] = [];
-  if (protein) {
-    remarks.push({
-      kind: 'protein',
-      status: protein.status,
-      gPerKg: protein.gPerKg,
-      min: protein.target.min,
-      max: protein.target.max,
-    });
+  // 🔴 Seul un statut **hors fourchette** mérite une remarque. Dire « tes protéines sont dans ta
+  // fourchette » dans un verdict revient à occuper la place avec une non-information : le verdict
+  // est l'endroit où l'on dit ce qui cloche, la carte celui où l'on vérifie que tout va bien.
+  if (protein && protein.status !== 'in') {
+    remarks.push({ kind: 'protein', status: protein.status });
   }
 
   // Le repas le plus lourd, et lui seul : signaler deux repas dominants sur une journée à trois

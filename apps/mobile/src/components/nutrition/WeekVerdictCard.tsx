@@ -19,7 +19,7 @@
  */
 
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -29,8 +29,9 @@ import {
   resolveMealSplit,
   type WeekRemark,
 } from '@wellness/shared';
+import { useRouter } from 'expo-router';
 import { useGoalAdherence } from '@/data/repositories/dashboard-repository';
-import { useJournalCompletion, useMealTotals } from '@/data/repositories/journal-repository';
+import { useMealTotals } from '@/data/repositories/journal-repository';
 import { useNutritionProfile, useProteinPerKg } from '@/data/repositories/nutrition-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -49,8 +50,20 @@ export function WeekVerdictCard() {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
+  const router = useRouter();
   const adherence = useGoalAdherence(WINDOW_DAYS);
-  const completion = useJournalCompletion(WINDOW_DAYS);
+  /**
+   * 🔴 `loggedDays` vient de **l'adhérence**, et plus de `useJournalCompletion` (passe 2, 20/09).
+   *
+   * Les deux comptent des « jours renseignés », mais **pas sur la même fenêtre** : NUTR-17 borne à
+   * *hier* (aujourd'hui, encore incomplet, fausserait un taux d'assiduité), NUTR-10 inclut
+   * aujourd'hui. La phrase mélangeait donc un numérateur sur 7 jours et un dénominateur sur 8, et
+   * l'écran affichait deux comptes contradictoires : « 0 jours sur 5 » dans le verdict, « 4 jours
+   * sur 7 » dans la carte de régularité juste en dessous.
+   *
+   * C'est **exactement** le défaut corrigé sur le hub Course le 19/09 — un repli qui vivait dans le
+   * composant et ne pouvait donc valoir que pour lui. Le remède est le même : une seule source.
+   */
   const { result: protein } = useProteinPerKg('7d');
   const { nutritionProfile } = useNutritionProfile();
   const { mealTotals } = useMealTotals(daysAgoKey(WINDOW_DAYS));
@@ -60,24 +73,24 @@ export function WeekVerdictCard() {
     [nutritionProfile?.meals],
   );
   const mealSplit = useMemo(
-    () => resolveMealSplit(mealTotals, configuredMeals, completion.loggedDays),
-    [mealTotals, configuredMeals, completion.loggedDays],
+    () => resolveMealSplit(mealTotals, configuredMeals, adherence.loggedDays),
+    [mealTotals, configuredMeals, adherence.loggedDays],
   );
 
   const verdict = useMemo(
     () =>
       composeWeekVerdict({
-        loggedDays: completion.loggedDays,
+        loggedDays: adherence.loggedDays,
         daysInTarget: adherence.hasTarget ? adherence.daysInTarget : null,
         protein,
         mealSplit,
       }),
-    [completion.loggedDays, adherence.hasTarget, adherence.daysInTarget, protein, mealSplit],
+    [adherence.loggedDays, adherence.hasTarget, adherence.daysInTarget, protein, mealSplit],
   );
 
   // On ne montre pas un verdict en cours de calcul : une phrase qui change sous les yeux inspire
   // moins confiance que rien du tout.
-  if (adherence.isLoading || completion.isLoading) return null;
+  if (adherence.isLoading) return null;
 
   const { signal } = verdict;
   const good = signal.kind === 'onTrack';
@@ -91,15 +104,27 @@ export function WeekVerdictCard() {
 
   const remarkText = (remark: WeekRemark): string =>
     remark.kind === 'protein'
-      ? t(`nutrition.week.remarks.protein.${remark.status}`, {
-          value: remark.gPerKg,
-          min: remark.min,
-          max: remark.max,
-        })
+      ? t(`nutrition.week.remarks.protein.${remark.status}`)
       : t('nutrition.week.remarks.heavyMeal', {
           meal: mealLabel(remark.mealKey),
           pct: remark.pct,
         });
+
+  /**
+   * L'action que le verdict pointe (passe 2). L'onglet était un **cul-de-sac** : il annonçait que
+   * la semaine s'écartait de la cible, les cartes le confirmaient, et il n'y avait rien à faire
+   * ensuite. Un diagnostic sans porte de sortie se lit une fois et ne se relit plus.
+   *
+   * Le choix suit le fait le plus actionnable : pas assez de données → remplir le journal ;
+   * protéines hors fourchette → les réglages de macros ; sinon → la cible calorique.
+   */
+  const action = unknown
+    ? { label: t('nutrition.week.action.log'), go: () => router.push('/food-picker') }
+    : verdict.remarks.some((r) => r.kind === 'protein')
+      ? { label: t('nutrition.week.action.macros'), go: () => router.push('/nutrition-profile') }
+      : good
+        ? null
+        : { label: t('nutrition.week.action.target'), go: () => router.push('/nutrition-profile') };
 
   return (
     <View
@@ -141,6 +166,18 @@ export function WeekVerdictCard() {
           {remarkText(remark)}
         </Text>
       ))}
+
+      {action ? (
+        <Pressable
+          onPress={action.go}
+          accessibilityRole="button"
+          testID="week-verdict-action"
+          style={[styles.action, { borderColor: tint }]}
+        >
+          <Text style={[styles.actionLabel, { color: tint }]}>{action.label}</Text>
+          <Ionicons name="chevron-forward" size={16} color={tint} />
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -151,4 +188,16 @@ const styles = StyleSheet.create({
   eyebrow: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 1.4 },
   headline: { fontFamily: fontFamily.displayBold, fontSize: 20, lineHeight: 26 },
   detail: { fontFamily: fontFamily.body, fontSize: 13.5, lineHeight: 20 },
+  // Passe 2 — la porte de sortie : l'onglet annonçait un écart sans rien proposer.
+  action: {
+    marginTop: 4,
+    minHeight: 44,
+    borderWidth: 1,
+    borderRadius: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+  },
+  actionLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
 });

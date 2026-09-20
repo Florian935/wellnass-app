@@ -27,7 +27,7 @@ describe('composeWeekVerdict — le garde-fou du peu de données', () => {
       ...base,
       loggedDays: 1,
       daysInTarget: 1,
-      protein: { gPerKg: 1.9, target: { min: 1.6, max: 2.2 }, status: 'in' },
+      protein: { gPerKg: 1.3, target: { min: 1.6, max: 2.2 }, status: 'low' },
       mealSplit: [{ mealKey: 'dinner', pct: 60 }],
     });
 
@@ -74,13 +74,27 @@ describe('composeWeekVerdict — le cap', () => {
 });
 
 describe('composeWeekVerdict — les remarques', () => {
-  it('rapporte les protéines avec leur fourchette, pour que le chiffre soit lisible seul', () => {
+  it('🔴 nomme le poste en retard SANS le chiffrer — la carte suivante porte la mesure', () => {
     const v = composeWeekVerdict({
       ...base,
       protein: { gPerKg: 1.3, target: { min: 1.6, max: 2.2 }, status: 'low' },
     });
 
-    expect(v.remarks).toEqual([{ kind: 'protein', status: 'low', gPerKg: 1.3, min: 1.6, max: 2.2 }]);
+    // Recette du 20/09 : le verdict recopiait « 1.5 g/kg, sous ta fourchette de 1.8 à 2.2 », et
+    // `ProteinPerKgCard` redisait la même chose juste en dessous, en plus gros. Un verdict qui
+    // répète la carte qu'il annonce n'ajoute rien.
+    expect(v.remarks).toEqual([{ kind: 'protein', status: 'low' }]);
+  });
+
+  it('🔴 se tait quand les protéines sont DANS la fourchette', () => {
+    const v = composeWeekVerdict({
+      ...base,
+      protein: { gPerKg: 1.9, target: { min: 1.6, max: 2.2 }, status: 'in' },
+    });
+
+    // « Tes protéines sont dans ta fourchette » occupe la place d'un verdict avec une
+    // non-information. La carte, elle, le confirme — c'est son rôle.
+    expect(v.remarks).toEqual([]);
   });
 
   it('se tait sur les protéines sans pesée — « 0 g/kg » serait un mensonge, pas une absence', () => {
@@ -123,7 +137,7 @@ describe('composeWeekVerdict — les remarques', () => {
   it('ordonne les remarques : les protéines avant la répartition', () => {
     const v = composeWeekVerdict({
       ...base,
-      protein: { gPerKg: 1.9, target: { min: 1.6, max: 2.2 }, status: 'in' },
+      protein: { gPerKg: 1.3, target: { min: 1.6, max: 2.2 }, status: 'low' },
       mealSplit: [{ mealKey: 'dinner', pct: 44 }],
     });
 

@@ -4823,6 +4823,80 @@ Vérifié le 20/09 par comptage REST : le cloud porte **3 246 aliments** et **3 
 - [ ] Le **Réservoir confirme** quand tout va bien : « Séance à 18h30 — tu as de quoi la tenir »
       (à vérifier avec une séance planifiée et un réservoir suffisant).
 
+### L — La troisième passe (analyse critique du 20/09, fin de journée)
+
+> Ajoutée après ta demande d'une passe critique sur le rendu. Quatre défauts venaient de moi, trois
+> ont été révélés par la remontée des cartes, et sept flux s'arrêtaient avant leur conclusion.
+
+#### L.1 — Le verdict de la semaine
+
+- [ ] Le verdict et la carte « Journal rempli » annoncent **le même nombre de jours renseignés**
+      (avant : « 0 jours sur 5 » en haut, « 4 jours sur 7 » plus bas — deux fenêtres différentes).
+- [ ] Les décimales sont en **virgule** partout : plus de « 1.5 g/kg » au-dessus d'un « 1,5 g/kg ».
+- [ ] Le verdict **ne recopie plus** la carte Protéines : il dit « tes protéines sont le poste le
+      plus en retard », la carte porte le chiffre et la fourchette.
+- [ ] Il **se tait** sur les protéines quand elles sont dans la fourchette.
+- [ ] Avec **un seul** jour dans la cible, la phrase dit « 1 jour sur N », pas « 1 jours ».
+- [ ] Un **bouton d'action** apparaît sous le verdict et mène au bon endroit :
+      pas assez de données → le journal · protéines hors fourchette → les macros · sinon → la cible.
+- [ ] Quand tout va bien, **aucun bouton** (rien à corriger).
+
+#### L.2 — La scène
+
+- [ ] Les **carrés de la semaine** sont dans le nouveau vert, comme le reste de la scène
+      (ils étaient restés dans l'ancien olive).
+- [ ] Les macros affichent **consommé / cible** (« 106/180 »), plus seulement « 106g ».
+- [ ] Sur un **jour passé**, un bouton « Revenir à aujourd'hui » apparaît sous la trame.
+- [ ] Sur un jour passé, la sous-ligne de détail **disparaît** (le statut dit déjà « sur X visées »).
+
+#### L.3 — La carte « Ta journée »
+
+- [ ] Le **« Snack » vide** n'est plus un cadre pointillé au milieu des repas : c'est une ligne de
+      section, avec son « + Ajouter » à droite.
+- [ ] Il n'y a **plus** de « + Ajouter un aliment » au pied de la carte — le bouton blanc de la
+      scène et le « + » de chaque repas suffisent.
+- [ ] Le « + » de chaque repas ouvre toujours la feuille **sur ce repas**.
+
+#### L.4 — L'onglet « La semaine »
+
+- [ ] Le **tableau 8 semaines a disparu** de l'onglet (il reste sur `Nutrition › Stats`).
+- [ ] La carte « Macros par kg » n'a **plus de sélecteur 7 j / 30 j** ici : l'onglet impose la
+      semaine. ⚠️ Vérifier qu'il est **toujours là** sur l'écran Stats.
+- [ ] « Voir toutes les statistiques » en pied mène bien au tableau complet.
+
+#### L.5 — Le tableau croisé (sur `Nutrition › Stats`)
+
+- [ ] Les **dates tiennent sur une ligne** : « 07–13/09 » et non « 07/09–13/0 » coupé en deux.
+- [ ] Une semaine à cheval sur deux mois garde ses deux mois (« 28/09–04/10 »).
+- [ ] La ligne **« Cette semaine » n'a plus de badge** de variation (elle est incomplète : le
+      « ↓ −49 % » d'un jeudi comparait une semaine partielle à des semaines pleines).
+- [ ] Les autres lignes gardent leurs badges.
+
+#### L.6 — Les messages
+
+- [ ] Sur un appareil **sans bibliothèque**, le message micronutriments dit que la bibliothèque n'est
+      pas arrivée — il ne conseille plus « cherche l'aliment dans la base », conseil impossible à
+      suivre quand la base est vide.
+- [ ] Avec la bibliothèque présente et une saisie libre, il redit bien « cherche l'aliment ».
+
+#### L.7 — La carte énergie
+
+- [ ] Elle est **repliée** quand la dépense réelle et le bonus forfaitaire sont proches (moins de
+      15 % d'écart) — avant, elle restait ouverte en permanence et le repli ne se voyait jamais.
+- [ ] Elle se **déplie** et montre le bandeau quand l'écart dépasse 15 %.
+- [ ] Le bandeau porte toujours les deux nombres.
+
+#### L.8 — Ce qui n'est pas fait, et pourquoi
+
+- **Les explications (F4)** : seules les cartes verdict / cible / Réservoir portent un « Pourquoi ? ».
+  Les tiges P/G/L, les % par repas, « insuffisant » et « Journal rempli » restent sans explication.
+  Le chantier vaut une passe à lui seul (sept feuilles à écrire, en deux langues) — non fait ici
+  pour ne pas noyer les corrections dans du contenu rédactionnel.
+- **Une action par carte (F3, partiel)** : le verdict pointe la première action, les autres cartes
+  n'en ont pas. À juger en recette : si le verdict suffit, on en reste là.
+- **Les deux « 57 % »** côte à côte (progression de poids / journal rempli) : coïncidence de
+  données, pas un défaut de code. Rien changé.
+
 ### K — Ce qu'il faut savoir
 
 - **Le bordeaux en thème clair est à chroma 9, sous le neutre (13)** — le même défaut que celui

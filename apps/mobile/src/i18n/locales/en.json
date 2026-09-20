@@ -640,7 +640,8 @@
       "tracked": {
         "title": "Tracked micronutrients",
         "hint": "Pick the micronutrients to show in the daily recap, on top of macros."
-      }
+      },
+      "unknownNoLibrary": "No micronutrients: the food library hasn't reached this device yet, so your entries can't carry any."
     },
     "restrictions": {
       "title": "Restrictions & preferences",
@@ -706,16 +707,23 @@
         "notEnoughData": "Not enough to conclude yet."
       },
       "detail": {
-        "adherence": "{{inTarget}} of {{logged}} days within your calorie target.",
-        "notEnoughData": "{{logged}} day(s) logged over the last 7 — at least {{needed}} are needed for an average to mean anything."
+        "adherence_one": "{{inTarget}} day out of {{logged}} within your calorie target.",
+        "adherence_other": "{{inTarget}} days out of {{logged}} within your calorie target.",
+        "notEnoughData_one": "{{logged}} day logged over the last 7 — at least {{needed}} are needed for an average to mean anything.",
+        "notEnoughData_other": "{{logged}} days logged over the last 7 — at least {{needed}} are needed for an average to mean anything."
       },
       "remarks": {
         "protein": {
-          "low": "Protein at {{value}} g/kg, below your {{min}}–{{max}} range.",
-          "in": "Protein at {{value}} g/kg, within your {{min}}–{{max}} range.",
-          "high": "Protein at {{value}} g/kg, above your {{min}}–{{max}} range."
+          "low": "Protein is your furthest-behind target.",
+          "in": "Protein is holding its range.",
+          "high": "Protein is above your range."
         },
         "heavyMeal": "{{meal}} accounts for {{pct}} % of your calories."
+      },
+      "action": {
+        "log": "Fill in my journal",
+        "macros": "Adjust my macros",
+        "target": "Review my target"
       }
     },
     "fuelTank": {
@@ -4465,7 +4473,8 @@
       "detail": "{{consumed}} of {{target}} kcal",
       "detailWithBonus": "{{consumed}} of {{target}} · +{{bonus}} training day",
       "remainingA11y": "{{kcal}} kcal still available today",
-      "macroGrams": "{{value}}g"
+      "macroGrams": "{{value}}/{{goal}}",
+      "backToToday": "Back to today"
     }
   },
   "workoutMode": {

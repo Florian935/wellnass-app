@@ -640,7 +640,8 @@
       "tracked": {
         "title": "Micronutriments suivis",
         "hint": "Choisis les micronutriments à afficher dans le récap du jour, en plus des macros."
-      }
+      },
+      "unknownNoLibrary": "Aucun micronutriment : la bibliothèque d'aliments n'est pas encore arrivée sur cet appareil, tes saisies ne peuvent donc pas en porter."
     },
     "restrictions": {
       "title": "Restrictions & préférences",
@@ -706,16 +707,23 @@
         "notEnoughData": "Pas encore de quoi conclure."
       },
       "detail": {
-        "adherence": "{{inTarget}} jours sur {{logged}} dans ta cible calorique.",
-        "notEnoughData": "{{logged}} jour(s) renseigné(s) sur les 7 derniers — il en faut au moins {{needed}} pour qu'une moyenne veuille dire quelque chose."
+        "adherence_one": "{{inTarget}} jour sur {{logged}} dans ta cible calorique.",
+        "adherence_other": "{{inTarget}} jours sur {{logged}} dans ta cible calorique.",
+        "notEnoughData_one": "{{logged}} jour renseigné sur les 7 derniers — il en faut au moins {{needed}} pour qu'une moyenne veuille dire quelque chose.",
+        "notEnoughData_other": "{{logged}} jours renseignés sur les 7 derniers — il en faut au moins {{needed}} pour qu'une moyenne veuille dire quelque chose."
       },
       "remarks": {
         "protein": {
-          "low": "Protéines à {{value}} g/kg, sous ta fourchette de {{min}} à {{max}}.",
-          "in": "Protéines à {{value}} g/kg, dans ta fourchette de {{min}} à {{max}}.",
-          "high": "Protéines à {{value}} g/kg, au-dessus de ta fourchette de {{min}} à {{max}}."
+          "low": "Tes protéines sont le poste le plus en retard.",
+          "in": "Tes protéines tiennent leur fourchette.",
+          "high": "Tes protéines dépassent ta fourchette."
         },
         "heavyMeal": "{{meal}} pèse {{pct}} % de tes calories."
+      },
+      "action": {
+        "log": "Remplir mon journal",
+        "macros": "Ajuster mes macros",
+        "target": "Revoir ma cible"
       }
     },
     "fuelTank": {
@@ -4465,7 +4473,8 @@
       "detail": "{{consumed}} sur {{target}} kcal",
       "detailWithBonus": "{{consumed}} sur {{target}} · +{{bonus}} jour de séance",
       "remainingA11y": "{{kcal}} kcal encore disponibles aujourd'hui",
-      "macroGrams": "{{value}}g"
+      "macroGrams": "{{value}}/{{goal}}",
+      "backToToday": "Revenir à aujourd'hui"
     }
   },
   "workoutMode": {

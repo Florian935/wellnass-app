@@ -79,10 +79,19 @@ function MacroRow(props: {
   );
 }
 
-export function ProteinPerKgCard() {
+/**
+ * `window` **imposée** : la carte perd son sélecteur et suit la fenêtre de l'écran qui l'accueille.
+ *
+ * Passe 2 de NUTRI-UX02 — sur l'onglet « La semaine », le sélecteur 7 j / 30 j était une
+ * contradiction : passer à 30 jours mettait deux périodes différentes sur le même écran, sous un
+ * titre qui en annonce une seule, et le verdict au-dessus restait sur 7. Sur l'écran Stats, où
+ * plusieurs fenêtres cohabitent volontairement, le sélecteur reste.
+ */
+export function ProteinPerKgCard({ window: forced }: { window?: ProteinWindow } = {}) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const [window, setWindow] = useState<ProteinWindow>('7d');
+  const [selected, setWindow] = useState<ProteinWindow>('7d');
+  const window = forced ?? selected;
   const { result, objective, hasWeight, isLoading } = useProteinPerKg(window);
   const carbs = useCarbsPerKg(window);
 
@@ -154,12 +163,14 @@ export function ProteinPerKgCard() {
     <>
       <Text style={[styles.section, { color: colors.textMuted }]}>{t('stats.macrosPerKg.title')}</Text>
       <Card>
-        <Segment
-          options={WINDOW_OPTIONS}
-          value={window}
-          onChange={setWindow}
-          label={(o) => t(`stats.ranges.${o}`)}
-        />
+        {forced === undefined ? (
+          <Segment
+            options={WINDOW_OPTIONS}
+            value={window}
+            onChange={setWindow}
+            label={(o) => t(`stats.ranges.${o}`)}
+          />
+        ) : null}
         {renderBody()}
       </Card>
     </>

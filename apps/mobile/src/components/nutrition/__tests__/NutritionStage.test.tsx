@@ -131,9 +131,36 @@ describe('le niveau', () => {
   it('🔴 les macros portent enfin leurs GRAMMES — ils n’étaient lus que par TalkBack', async () => {
     await afficher({ consumedMacros: { protein: 59, carbs: 112, fat: 31 } });
 
-    expect(screen.getByText('stage.nutrition.macroGrams:{"value":59}')).toBeTruthy();
-    expect(screen.getByText('stage.nutrition.macroGrams:{"value":112}')).toBeTruthy();
-    expect(screen.getByText('stage.nutrition.macroGrams:{"value":31}')).toBeTruthy();
+    // Passe 2 : le gramme porte sa CIBLE. « 59g » seul ne disait pas si c'était bien — la cible
+    // dessinait déjà la hauteur de la tige et restait non écrite.
+    expect(screen.getByText('stage.nutrition.macroGrams:{"value":59,"goal":130}')).toBeTruthy();
+    expect(screen.getByText('stage.nutrition.macroGrams:{"value":112,"goal":220}')).toBeTruthy();
+    expect(screen.getByText('stage.nutrition.macroGrams:{"value":31,"goal":70}')).toBeTruthy();
+  });
+});
+
+describe('le jour affiché', () => {
+  it('🔴 passe 2 — un jour passé propose de REVENIR à aujourd’hui', async () => {
+    await afficher({ day: '2026-08-05' });
+
+    // Sur un jour passé, trois choses disparaissent d'un coup : le restant, la carte de décision et
+    // l'ajout rapide. Ce sont les bonnes règles — mais rien ne les annonçait, et on se retrouvait
+    // devant un écran qui ne propose plus rien sans comprendre pourquoi.
+    expect(screen.getByTestId('back-to-today')).toBeTruthy();
+  });
+
+  it('et il ne s’affiche pas quand on y est déjà', async () => {
+    await afficher();
+
+    expect(screen.queryByTestId('back-to-today')).toBeNull();
+  });
+
+  it('🔴 la sous-ligne de détail se TAIT sur un jour passé — le statut dit déjà la cible', async () => {
+    await afficher({ day: '2026-08-05', consumedKcal: 1200 });
+
+    // Sinon on lit « sur 2000 kcal visées » puis « 1200 sur 2000 » deux lignes plus bas.
+    expect(screen.getByText('stage.nutrition.ofTarget:{"kcal":2000}')).toBeTruthy();
+    expect(screen.queryByText(/stage\.nutrition\.detail/)).toBeNull();
   });
 });
 

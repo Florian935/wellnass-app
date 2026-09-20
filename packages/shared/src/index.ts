@@ -116,6 +116,7 @@ export * from './planning';
 export * from './run-stats';
 export * from './comparison';
 export * from './contrast';
+export * from './decimal';
 export * from './load-progress';
 // US CARDIO-UX02 — « Ton allure », la carte dominante du hub Course.
 export * from './pace-progress';

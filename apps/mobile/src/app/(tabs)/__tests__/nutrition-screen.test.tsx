@@ -1045,6 +1045,15 @@ describe('onglets « Aujourd’hui » / « La semaine »', () => {
     expect(screen.queryByText('journal.dayCard.title')).toBeNull();
   });
 
+  it('🔴 passe 2 — le tableau 8 semaines n’est PLUS dans l’onglet', async () => {
+    await afficher({ entries: [entree()] });
+    await taper(screen.getByTestId('nutrition-tab-week'));
+
+    // Cinq colonnes de chiffres sur 390 px : les dates s'y cassaient en deux. C'est un outil
+    // d'analyse — il reste sur `Nutrition › Stats`, et l'onglet garde le lien qui y mène.
+    expect(screen.getByText('nutrition.week.allStats')).toBeTruthy();
+  });
+
   it('revient sur la journée sans rien perdre', async () => {
     await afficher({ entries: [entree()] });
 
@@ -1072,7 +1081,7 @@ describe('carte « Ta journée »', () => {
     expect(screen.getByText('Saumon')).toBeTruthy();
   });
 
-  it('🔴 un SEUL bouton d’ajout principal, au pied de la carte', async () => {
+  it('🔴 passe 2 — AUCUN bouton d’ajout en toutes lettres : quatre portes pour le même écran', async () => {
     await afficher({
       entries: [
         entree({ id: 'a', mealType: 'breakfast' }),
@@ -1081,10 +1090,12 @@ describe('carte « Ta journée »', () => {
       ],
     });
 
-    // La même phrase répétée une fois par repas n'apprenait rien la cinquième fois. Le raccourci
-    // par repas, lui, survit en icône dans chaque en-tête — déjà verrouillé par « ajouter depuis un
-    // repas ouvre la feuille SUR ce repas », qui presse ce `+` par son libellé d'accessibilité.
-    expect(screen.queryAllByText('journal.addFood')).toHaveLength(1);
+    // Il en restait un au pied de la carte, à moins de 200 px du « + » de chaque repas, alors que
+    // le bouton blanc de la scène est toujours visible et fait exactement la même chose.
+    // Le raccourci par repas, lui, survit en icône — verrouillé par « ajouter depuis un repas
+    // ouvre la feuille SUR ce repas », qui presse ce `+` par son libellé d'accessibilité.
+    expect(screen.queryAllByText('journal.addFood')).toHaveLength(0);
+    expect(screen.getByLabelText('journal.meals.breakfast · journal.addFood')).toBeTruthy();
   });
 
   it('chaque repas affiche la PART du jour qu’il pèse', async () => {

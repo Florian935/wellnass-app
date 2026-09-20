@@ -54,7 +54,6 @@ import { MacroSuggestionCard } from '@/components/nutrition/MacroSuggestionCard'
 import { WeekVerdictCard } from '@/components/nutrition/WeekVerdictCard';
 import { RegularityCard } from '@/components/nutrition/RegularityCard';
 import { ProteinPerKgCard } from '@/components/ProteinPerKgCard';
-import { TrainingNutritionCrossCard } from '@/components/TrainingNutritionCrossCard';
 import { WeightGoalCard } from '@/components/WeightGoalCard';
 import { ExplainSheet } from '@/components/explain/ExplainSheet';
 import { FuelTankCard } from '@/components/nutrition/FuelTankCard';
@@ -62,7 +61,11 @@ import { NutritionStage, type QuickFood } from '@/components/nutrition/Nutrition
 import { StageScrollView } from '@/components/stage/StageScrollView';
 import type { MacroKey } from '@/components/nutrition/MacroTriple';
 import { MicroCoverageGrid, type MicroCell } from '@/components/nutrition/MicroCoverageGrid';
-import { useDenseFoodCandidates, useRecentFoods } from '@/data/repositories/food-repository';
+import {
+  useDenseFoodCandidates,
+  useLibraryPresence,
+  useRecentFoods,
+} from '@/data/repositories/food-repository';
 import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 import { AddFoodSheet } from '@/components/nutrition/AddFoodSheet';
 import { DayCalendarSheet } from '@/components/nutrition/DayCalendarSheet';
@@ -388,8 +391,15 @@ export default function NutritionScreen() {
               dupliquée : elles lisent déjà leurs propres données et se taisent quand elles n'en ont
               pas. L'ordre suit celui du verdict : ce qu'il affirme, puis ce qui le prouve.
             */}
-            <ProteinPerKgCard />
-            <TrainingNutritionCrossCard />
+            {/*
+              🔴 Passe 2 — `TrainingNutritionCrossCard` (le tableau 8 semaines) est RETIRÉ d'ici.
+
+              Cinq colonnes de chiffres sur 390 px : les dates s'y cassent en deux (« 07/09–13/0 »
+              puis « 9 »), et le badge de variation compare une semaine en cours à des semaines
+              complètes. Ce tableau est un outil d'analyse — il reste sur `Nutrition › Stats`, où on
+              vient pour ça, et l'onglet garde le lien qui y mène.
+            */}
+            <ProteinPerKgCard window="7d" />
             <WeightGoalCard />
             <RegularityCard targetKcal={effectiveTarget} windowDays={7} />
             <Pressable
@@ -536,14 +546,14 @@ export default function NutritionScreen() {
             <View style={[styles.dayCardHydration, { borderTopColor: colors.border }]}>
               <HydrationCard day={day} compact />
             </View>
-            <Pressable
-              onPress={() => setAddTarget({ mealKey: mealForHour(hour) })}
-              accessibilityRole="button"
-              style={[styles.dayCardAdd, { borderTopColor: colors.border }]}
-            >
-              <Ionicons name="add" size={17} color={colors.accent} />
-              <Text style={[styles.addLabel, { color: colors.accent }]}>{t('journal.addFood')}</Text>
-            </Pressable>
+            {/*
+              Passe 2 — le bouton d'ajout du pied de carte est RETIRÉ.
+
+              Il faisait la quatrième porte vers le même écran, à moins de 200 px du « + » de chaque
+              repas, alors que le bouton blanc de la scène est toujours visible et fait exactement la
+              même chose. Le « + » par repas, lui, se garde : il porte un contexte que les autres
+              n'ont pas.
+            */}
           </View>
         ) : null}
 
@@ -696,6 +706,8 @@ function DayQualitySection({ day, targetKcal }: { day: string; targetKcal: numbe
 function TrackedMicrosRecap({ entries }: { entries: JournalEntry[] }) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
+  // F6 — la cause réelle de l'absence de micros : une base vide n'est pas une saisie imparfaite.
+  const library = useLibraryPresence();
   const tracked = useTrackedMicros((s) => s.tracked);
   const dayMicros = useMemo(
     () => sumMicronutrients(entries.map((e) => e.micronutrients)),
@@ -742,13 +754,24 @@ function TrackedMicrosRecap({ entries }: { entries: JournalEntry[] }) {
 
   if (tracked.length === 0) return null;
   if (reported === 0) {
+    /*
+     * Passe 2 — F6 : ne pas donner un conseil impossible à suivre.
+     *
+     * Le message disait « cherche l'aliment dans la base pour les suivre ». Juste dans l'absolu —
+     * et faux sur un appareil où la bibliothèque n'est pas descendue, c'est-à-dire précisément
+     * celui où le cas se produit le plus souvent. On envoyait l'utilisateur dans un mur, en lui
+     * laissant croire que le problème venait de sa saisie.
+     */
+    const cause = library.isEmpty
+      ? 'unknownNoLibrary'
+      : entries.length === 0
+        ? 'unknownEmptyDay'
+        : 'unknownFreeText';
     return (
       <View style={[styles.microsUnknown, { borderColor: colors.border }]} testID="micros-unknown">
         <Ionicons name="help-circle-outline" size={17} color={colors.textMuted} />
         <Text style={[styles.microsUnknownText, { color: colors.textMuted }]}>
-          {entries.length === 0
-            ? t('nutrition.micros.unknownEmptyDay')
-            : t('nutrition.micros.unknownFreeText')}
+          {t(`nutrition.micros.${cause}`)}
         </Text>
       </View>
     );
@@ -1131,6 +1154,30 @@ function MealSection({
       // annoncer « modèle enregistré » alors que l'écriture a échoué serait pire que se taire.
       .catch(() => undefined);
   };
+
+  /*
+   * Passe 2 — en `dense`, un repas vide est une **section discrète**, pas un cadre pointillé.
+   *
+   * Le cadre pointillé a été conçu pour une liste de cartes, où il se lit comme « une carte encore
+   * vide ». Posé au milieu d'une carte unique, entre des repas pleins, il coupe la lecture et se lit
+   * comme un bouton d'action — c'est le « Snack » relevé en recette du 20/09.
+   */
+  if (entries.length === 0 && onAdd && dense) {
+    return (
+      <Pressable
+        onPress={onAdd}
+        accessibilityRole="button"
+        accessibilityLabel={`${mealLabel} · ${t('journal.addFood')}`}
+        style={[styles.mealHeadDense, styles.mealSection, { borderTopColor: colors.border }]}
+      >
+        <MealGlyph mealKey={mealKey} />
+        <Text style={[styles.mealName, { color: colors.textMuted }]} numberOfLines={1}>
+          {mealLabel}
+        </Text>
+        <Text style={[styles.mealEmptyAdd, { color: colors.accent }]}>+ {t('journal.add')}</Text>
+      </Pressable>
+    );
+  }
 
   // Repas vide et ajoutable → carte pointillée, sans en-tête ni total : il n'y a rien à totaliser,
   // et l'écran reste lisible quand 3 repas sur 5 sont vides en début de journée.

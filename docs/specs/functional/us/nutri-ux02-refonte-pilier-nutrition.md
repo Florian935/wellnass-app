@@ -341,17 +341,90 @@ suffisait, elle se taisait — or l'absence d'alerte et une confirmation ne se v
 18h30 — tu as de quoi la tenir » est le pendant strict de la carte d'action : `snackG === null`
 signifie « aucune collation nécessaire », les deux ne peuvent jamais coexister.
 
-## 8 — Ce qui n'a toujours pas été fait, et pourquoi
+## 8 — Troisième passe : la critique demandée (20/09/2026, fin de journée)
+
+Florian demande une passe critique sur le rendu : « des choses à retirer, à revoir, les flux qui
+sont peut-être pas forcément intuitifs ou pas assez documentés ». Analyse rendue sur le canvas
+(planche « Passe 2 »), puis livrée d'un lot.
+
+### R16 — Le verdict ne peut pas mélanger deux fenêtres
+
+`useJournalCompletion` borne à **hier** (NUTR-17 : une journée en cours fausserait un taux
+d'assiduité), `useGoalAdherence` inclut **aujourd'hui** (NUTR-10). Le verdict lisait le premier pour
+son dénominateur et le second pour son numérateur : « 0 jours sur 5 » comparait deux périodes
+différentes, et la carte de régularité affichait « 4 jours sur 7 » trois blocs plus bas.
+
+🔴 Une seule source : `adherence.loggedDays`. C'est le remède déjà appliqué au hub Course le 19/09
+sur un défaut identique.
+
+### R17 — Un seul format de nombre dans toute l'app
+
+Le verdict passait ses décimales brutes à i18next (« 1.5 g/kg ») au-dessus d'une carte qui écrivait
+« 1,5 g/kg ». `formatDecimal` (brique partagée, 10 tests) remplace les **sept** réimplémentations de
+`.replace('.', ',')` du dépôt.
+
+### R18 — Un verdict conclut, il ne recopie pas
+
+Il nomme le **poste** en retard ; la carte porte la **mesure**. Et il se tait quand les protéines
+sont dans la fourchette : le verdict est l'endroit où l'on dit ce qui cloche.
+
+### R19 — Le verdict porte une action
+
+L'onglet était un cul-de-sac : il annonçait l'écart, les cartes le confirmaient, rien ne suivait.
+L'action est choisie selon le fait le plus actionnable — données manquantes → le journal ; protéines
+hors fourchette → les macros ; sinon → la cible. Aucune action quand tout va bien.
+
+### R20 — Le retour à aujourd'hui
+
+Sur un jour passé, trois comportements changent d'un coup (le restant, la carte de décision, l'ajout
+rapide). Les règles sont justes ; rien ne les annonçait.
+
+### R21 — La fenêtre de l'onglet est imposée
+
+`ProteinPerKgCard` accepte une `window` forcée et perd son sélecteur dans l'onglet. Il **reste** sur
+l'écran Stats, où plusieurs fenêtres cohabitent volontairement.
+
+### R22 — Ne jamais donner un conseil impossible à suivre
+
+« Cherche l'aliment dans la base » sur un appareil où la base est vide. Le message nomme la vraie
+cause quand `useLibraryPresence` dit que la bibliothèque est absente.
+
+### R23 — Un bandeau n'a de valeur que s'il peut se taire
+
+Le critère de dépliage de la carte énergie était le cas par défaut : elle restait ouverte en
+permanence. Seuil posé à **15 %** d'écart entre dépense réelle et forfait ; en deçà, le forfait est
+une approximation acceptable et il n'y a rien à arbitrer.
+
+### R24 — Retraits
+
+Le tableau 8 semaines quitte l'onglet (il reste sur Stats) ; le bouton d'ajout du pied de carte
+disparaît (quatrième porte vers le même écran) ; la sous-ligne de détail se tait sur un jour passé ;
+le cadre pointillé d'un repas vide devient une ligne de section dans la carte unique.
+
+### R25 — Corrections révélées par la remontée
+
+Le libellé de semaine du tableau croisé passe à `JJ–JJ/MM` (il se cassait en deux lignes) ; la ligne
+« cette semaine » perd son badge de variation (semaine partielle contre semaines complètes) ; les
+carrés de la trame lisent la teinte du pilier au lieu d'une couleur en dur ; les macros affichent
+consommé **et** cible.
+
+## 9 — Ce qui n'a toujours pas été fait, et pourquoi
 
 1. **Vérifier et redéployer les sync rules PowerSync** — hors-code, accès dashboard requis. C'est le
    point n° 1 de la recette, et tout le constat 0 en dépend.
 2. **Le bordeaux en thème clair** (chroma 9) — hors périmètre validé, porté au BACKLOG en P1.
+3. **Les explications** (`ExplainSheet`) ne sont branchées que sur trois blocs. Les tiges P/G/L, les
+   pourcentages par repas, le badge « insuffisant » et « Journal rempli » restent sans « Pourquoi ? ».
+   Sept feuilles à écrire en deux langues : c'est une passe à soi seule, et la mélanger aux
+   corrections aurait noyé les unes dans les autres. Porté à la recette (§L.8).
+4. **Une action par carte** : seul le verdict en porte une. À juger en recette — si elle suffit à
+   ouvrir la suite, les autres cartes n'en ont pas besoin.
 
-## 9 — Recette
+## 10 — Recette
 
-Voir [RECETTES.md](../../../../RECETTES.md), section NUTRI-UX02 (sections A à K).
+Voir [RECETTES.md](../../../../RECETTES.md), section NUTRI-UX02 (sections A à L).
 
-## 10 — Maquettes
+## 11 — Maquettes
 
 Canvas Design du 20/09/2026 — six planches : l'écran actuel reconstitué, le dashboard refondu
 (jouable, deux onglets), le bug de recherche (jouable, deux états), la fusion des repas, la planche

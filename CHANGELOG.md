@@ -9,6 +9,109 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+## 20/09/2026 (ter) — NUTRI-UX02, passe critique : ce que l'écran racontait de travers
+
+Branche : `dev`. Commit précédent : `94745907`. Demande de Florian après recette : « je pense qu'il
+faut être critique […] des choses à retirer, à revoir, les flux qui sont peut-être pas forcément
+intuitifs ou pas assez documentés ». Analyse rendue sur le canvas (planche « Passe 2 »), puis
+livrée d'un lot.
+
+**Quatre défauts venaient de cette US et ont été vérifiés dans le code**, trois ont été révélés par
+la remontée des cartes, et sept flux s'arrêtaient avant leur conclusion.
+
+### Corrigé — les quatre défauts du verdict
+
+- 🔴 **Il mélangeait deux fenêtres de calcul.** Le dénominateur venait de NUTR-17, qui **exclut
+  aujourd'hui** (une journée en cours fausserait un taux d'assiduité) ; le numérateur de NUTR-10,
+  qui l'**inclut**. La phrase comparait donc un compte sur 7 jours à un compte sur 8, et l'écran
+  affichait deux nombres contradictoires : « 0 jours sur 5 » en haut, « 4 jours sur 7 » dans la
+  carte de régularité juste en dessous. C'est **exactement** le défaut corrigé sur le hub Course la
+  veille — un repli qui vivait dans le composant et ne pouvait donc valoir que pour lui. Même
+  remède : une seule source, `adherence.loggedDays`.
+- 🔴 **Deux formats de nombre à trois centimètres d'écart.** Le verdict écrivait « 1.5 g/kg, de 1.8
+  à 2.2 » (point décimal), la carte juste en dessous « 1,5 g/kg ». Elle avait son helper depuis
+  MN-06 ; le verdict passait ses nombres bruts à i18next, qui n'a aucune raison de les localiser.
+  Le dépôt réimplémentait ce `.replace('.', ',')` à **sept endroits** — d'où une brique partagée.
+- 🔴 **Il recopiait la carte suivante, mot pour mot.** Un verdict conclut ; celui-ci répétait la
+  phrase que `ProteinPerKgCard` allait redire en plus gros, avec sa fourchette et son badge. Il
+  nomme désormais **le poste** (« tes protéines sont le poste le plus en retard »), la carte porte
+  **la mesure**. Et il se tait quand les protéines sont dans la fourchette : le verdict est
+  l'endroit où l'on dit ce qui cloche.
+- **« 0 jours »** — la clé d'adhérence n'avait pas de pluriel, que le dépôt gère pourtant partout
+  ailleurs.
+
+### Corrigé — ce que la remontée avait révélé
+
+- **Le tableau croisé cassait ses dates** : « 07/09–13/0 » puis « 9 ». Onze caractères en `mono`
+  13 px dans une colonne sur cinq, à 390 px. Le libellé devient `JJ–JJ/MM` — le mois de début est
+  redondant neuf fois sur dix, et il est conservé quand la semaine chevauche deux mois.
+- **Un « −49 % » qui n'en était pas un** : la ligne « cette semaine » portait un badge de variation
+  comparant une semaine en cours (jeudi, 2 séances) à des semaines complètes. À volume identique, il
+  annonçait une chute le lundi et une hausse le dimanche. Retiré sur la ligne courante seulement.
+- **Les carrés de la semaine étaient restés olive** alors que toute la scène avait viré au vert
+  franc : ils portaient `rgba(169,186,126,0.75)` écrit en dur — l'**ancien** accent nutrition. Seul
+  élément de la scène qui ne lisait pas le thème.
+
+### Modifié — les flux
+
+- **Le jour affiché n'est pas toujours aujourd'hui**, et l'écran change alors de comportement : le
+  grand chiffre repasse au consommé, la carte de décision s'efface, l'ajout rapide aussi. Trois
+  règles justes, et rien ne les annonçait. Un bouton **« Revenir à aujourd'hui »** apparaît sous la
+  trame dès qu'on n'y est plus.
+- **« La semaine » était un cul-de-sac** : il annonçait que la semaine s'écartait de la cible, les
+  cartes le confirmaient, et il n'y avait rien à faire ensuite. Le verdict porte désormais **une
+  action**, choisie selon le fait le plus actionnable : pas assez de données → le journal ;
+  protéines hors fourchette → les macros ; sinon → la cible. Aucune action quand tout va bien.
+- **Un onglet « La semaine » qui contenait un sélecteur 30 jours.** Passer à 30 jours mettait deux
+  périodes sur le même écran, sous un titre qui en annonce une seule, pendant que le verdict restait
+  sur 7. La carte accepte une fenêtre imposée ; le sélecteur **reste** sur l'écran Stats, où
+  plusieurs fenêtres cohabitent volontairement.
+- 🔴 **Un conseil impossible à suivre** : « cherche l'aliment dans la base pour les suivre », sur un
+  appareil où la base est vide — c'est-à-dire précisément celui où le cas se produit. On envoyait
+  l'utilisateur dans un mur en lui laissant croire que le problème venait de sa saisie. Le message
+  nomme maintenant la vraie cause quand la bibliothèque est absente.
+- 🔴 **Le repli de la carte énergie ne se voyait jamais.** Son critère était « la cible ne suit pas
+  les dépenses et il y a une dépense » : le cas par défaut, pour tout le monde, tous les jours où
+  l'on bouge. Le travail livré le matin même était donc invisible. Un bandeau n'a de valeur que s'il
+  peut se taire — il parle à partir de **15 %** d'écart entre dépense réelle et forfait ; en deçà,
+  le forfait est une approximation acceptable et il n'y a rien à arbitrer.
+- **Les macros portent leur repère** : « 106/180 » et non plus « 106g ». Le gramme seul ne disait
+  pas si c'était bien, alors que la cible dessinait déjà la hauteur de la tige.
+
+### Supprimé
+
+- **Le tableau 8 semaines, de l'onglet.** Cinq colonnes de chiffres sur un téléphone : c'est un
+  outil d'analyse, il reste sur `Nutrition › Stats` et l'onglet garde le lien qui y mène.
+- **Le « + Ajouter un aliment » au pied de la carte** — quatrième porte vers le même écran, à moins
+  de 200 px du « + » de chaque repas, alors que le bouton blanc de la scène est toujours visible. Le
+  « + » par repas se garde : il porte un contexte que les autres n'ont pas.
+- **La sous-ligne de détail sur un jour passé** : elle redisait la cible que le statut venait
+  d'annoncer (« sur 3120 kcal visées » puis « 1957 sur 3120 »).
+- **Le cadre pointillé d'un repas vide, dans la carte unique.** Conçu pour une liste de cartes, posé
+  entre des repas pleins il coupait la lecture et se lisait comme un bouton — c'est le « Snack »
+  relevé en recette. Il devient une ligne de section.
+
+### Ajouté
+
+- **`formatDecimal` / `isFrenchLocale`** (`packages/shared/src/decimal.ts`, 10 tests) — la brique
+  que sept appelants réimplémentaient chacun de leur côté. Volontairement sans `Intl.NumberFormat` :
+  il ajoute un séparateur de milliers dont aucun de ces appelants ne veut, et son comportement varie
+  selon le moteur Hermes embarqué.
+
+### Technique / Notes
+
+- **Cinq tests existants ont été adaptés**, tous parce que le comportement a changé volontairement
+  (le verdict, les grammes des macros, le bouton d'ajout). Cinq cas neufs ajoutés : le retour à
+  aujourd'hui, la sous-ligne muette sur un jour passé, le verdict qui se tait dans la fourchette, le
+  tableau retiré de l'onglet.
+- ⚠️ **Non fait, et assumé** : les explications (`ExplainSheet`) ne sont branchées que sur trois
+  blocs ; les tiges P/G/L, les % par repas, « insuffisant » et « Journal rempli » restent sans
+  « Pourquoi ? ». Sept feuilles à écrire en deux langues, c'est une passe à soi seule — la mélanger
+  aux corrections aurait noyé les unes dans les autres. Porté à la recette (§L.8).
+- ✅ Aucune migration, aucune sync rule, aucune dépendance native.
+- **Vérifié** : `typecheck` 3 workspaces à 0, `lint` à 0, **3 799 tests Jest (226 suites) + 186
+  fichiers Vitest**, tous verts — code de sortie lu **sans pipe**.
+
 ## 20/09/2026 (bis) — NUTRI-UX02, deuxième passe : le livré rejoint la maquette
 
 Branche : `dev`. Commit précédent : `218e5af6`. **Suite directe de la livraison du matin**, après

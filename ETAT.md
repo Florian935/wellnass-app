@@ -124,7 +124,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1308 · `main` a **1305** commits de retard sur `dev` |
+| Commits | 1309 · `main` a **1306** commits de retard sur `dev` |
 | Specs d'US | 168 au total — 87 clôturées, 81 en cours |
 | Migrations | 107/107 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -135,11 +135,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `9474590`  fix(nutri): le livré rejoint la maquette — carrés, héros, grammes, ordre
 - `218e5af`  feat(nutri): la bibliothèque qui n'arrivait pas, deux moments, et un vert qui existe
 - `76593fd`  feat(cardio): le bleu sur tout le pilier, et un hub qui dit où on en est
 - `78f27b9`  feat(muscu): le hub a enfin quelque chose à dire, et le bordeaux s'adoucit
 - `9202a1b`  fix(muscu): les flux de la séance réparés, et une seule identité par écran
-- `7def6d1`  feat(cons01): le Conseil des trois — les deux issues d'une contradiction, chiffrées
 
 ---
 

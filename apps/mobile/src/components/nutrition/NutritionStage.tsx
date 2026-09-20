@@ -39,6 +39,14 @@ import { useLoopActive } from '@/hooks/useLoopActive';
 import { fontFamily } from '@/theme/fonts';
 
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
+/**
+ * Remplissage d'un verre non sélectionné : l'onde du pilier, adoucie.
+ *
+ * ⚠️ Écrit ici et non lu depuis `stage.wave` : la valeur a besoin d'une **opacité**, et les teintes
+ * du thème sont des hex opaques. Le lien est donc à maintenir à la main si `wave` change — d'où le
+ * commentaire, plutôt qu'un `rgba` anonyme au milieu d'un style.
+ */
+const WEEK_FILL = 'rgba(158,209,106,0.75)'; // = #9ed16a (stage.wave) à 75 %
 /** Part de la scène couverte par la jauge : le filet de cible est posé à 38 % du haut. */
 const GAUGE_SPAN = 0.62;
 
@@ -122,9 +130,15 @@ export function NutritionStage(props: Props) {
     return remaining! < 0 ? t('stage.nutrition.over', { kcal: -remaining! }) : t('stage.nutrition.reached');
   })();
 
-  /** La sous-ligne de détail : consommé, cible, et le bonus du jour s'il y en a un. */
+  /**
+   * La sous-ligne de détail : consommé, cible, et le bonus du jour s'il y en a un.
+   *
+   * 🔴 Elle ne s'affiche **que** quand le grand chiffre montre le restant. Sinon le statut dit déjà
+   * « sur 3120 kcal visées » et la sous-ligne répétait « 1957 sur 3120 » deux lignes plus bas — la
+   * même information deux fois, relevée en recette le 20/09.
+   */
   const detail =
-    targetKcal === null
+    targetKcal === null || !showRemaining
       ? null
       : props.trainingBonusKcal > 0
         ? t('stage.nutrition.detailWithBonus', {
@@ -224,7 +238,11 @@ export function NutritionStage(props: Props) {
                 <View
                   style={[
                     styles.glassFill,
-                    { height: `${pct}%`, backgroundColor: selected ? stage.accent : 'rgba(169,186,126,0.75)' },
+                    // Passe 2 — la teinte du pilier, et non plus `rgba(169,186,126,0.75)` écrit en
+                    // dur : c'était l'ANCIEN accent nutrition (`#a9ba7e`), et la trame est restée
+                    // olive quand toute la scène a viré au vert franc. Le seul élément qui n'avait
+                    // pas suivi, parce qu'il ne lisait pas le thème.
+                    { height: `${pct}%`, backgroundColor: selected ? stage.accent : WEEK_FILL },
                   ]}
                 />
               </View>
@@ -235,6 +253,28 @@ export function NutritionStage(props: Props) {
           );
         })}
       </View>
+
+      {/*
+        Passe 2 — F1 : le retour à aujourd'hui.
+
+        L'écran peut s'ouvrir sur un autre jour (navigation, reprise d'app), et il **change alors de
+        comportement** : le grand chiffre repasse au consommé, la carte de décision disparaît,
+        l'ajout rapide aussi. Trois règles justes — mais rien ne les annonçait, et on se retrouvait
+        devant un écran qui ne propose plus rien sans comprendre pourquoi.
+      */}
+      {!isToday ? (
+        <Pressable
+          onPress={() => props.onSelectDay(todayKey)}
+          accessibilityRole="button"
+          testID="back-to-today"
+          style={[styles.backToday, { backgroundColor: stage.glass, borderColor: stage.glassBorder }]}
+        >
+          <Ionicons name="arrow-back" size={14} color={stage.ink} />
+          <Text style={[styles.backTodayText, { color: stage.ink }]}>
+            {t('stage.nutrition.backToToday')}
+          </Text>
+        </Pressable>
+      ) : null}
 
       {latestMissing ? (
         <Pressable
@@ -321,8 +361,14 @@ export function NutritionStage(props: Props) {
                     personne d'autre. Le gramme consommé est la donnée qu'on vient chercher : c'est
                     lui qu'on compare à ce qu'on s'apprête à manger.
                   */}
+                  {/*
+                    Passe 2 — le gramme porte sa CIBLE. « 106g » seul ne dit pas si c'est bien :
+                    la tige montre le ratio, le chiffre montrait la quantité, et il manquait le
+                    repère qui relie les deux. La cible est connue — c'est elle qui dessine la
+                    hauteur de la tige — et elle restait non écrite.
+                  */}
                   <Text style={[styles.stemValue, { color: stage.ink }]}>
-                    {t('stage.nutrition.macroGrams', { value })}
+                    {t('stage.nutrition.macroGrams', { value, goal: Math.round(goal) })}
                   </Text>
                   <Text style={[styles.stemLabel, { color: stage.inkMuted }]}>{m.label}</Text>
                 </View>
@@ -417,6 +463,18 @@ const styles = StyleSheet.create({
   status: { fontFamily: fontFamily.displayBold, fontSize: 17, letterSpacing: -0.4 },
   // US NUTRI-UX02 — la sous-ligne de détail : consommé, cible, bonus du jour.
   detail: { fontFamily: fontFamily.mono, fontSize: 11, marginTop: 3 },
+  // Passe 2 — le retour à aujourd'hui, visible dès qu'on consulte un autre jour.
+  backToday: {
+    alignSelf: 'flex-start',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 7,
+    minHeight: 36,
+    paddingHorizontal: 12,
+    borderRadius: 999,
+    borderWidth: 1,
+  },
+  backTodayText: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
   link: { fontFamily: fontFamily.bodyBold, fontSize: 14, textDecorationLine: 'underline' },
   chip: { alignSelf: 'flex-start', borderRadius: 999, borderWidth: 1, paddingHorizontal: 10, paddingVertical: 4 },
   chipText: { fontFamily: fontFamily.bodySemi, fontSize: 11.5 },
