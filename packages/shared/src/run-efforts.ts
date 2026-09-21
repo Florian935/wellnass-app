@@ -161,12 +161,111 @@ export type MedalCandidate = { rank: number; distanceMeters: number };
  * 3**. Rang croissant d'abord, puis distance décroissante à égalité — un record sur 5 km parle plus
  * fort qu'un record sur 400 m.
  *
- * La règle de proximité à l'écran (spec R13) n'est **pas** ici : elle dépend du zoom de la carte,
- * donc elle appartient au composant, pas au moteur.
+ * La règle de proximité (spec R13) est appliquée **après**, par `dropOverlappingMedals` : elle a
+ * besoin du cadrage et de la taille de la carte, que seul le composant connaît.
  */
 export function pickMapMedals<T extends MedalCandidate>(efforts: ReadonlyArray<T>): T[] {
   return [...efforts]
     .filter((e) => e.rank <= MAX_MEDAL_RANK)
     .sort((a, b) => a.rank - b.rank || b.distanceMeters - a.distanceMeters)
     .slice(0, MAX_MAP_MEDALS);
+}
+
+// ---------------------------------------------------------------------------
+// Chevauchement des médailles à l'écran (spec R13)
+// ---------------------------------------------------------------------------
+
+/** Bornes d'une carte, dans l'ordre de MapLibre : `[ouest, sud, est, nord]`. */
+export type MapBounds = readonly [number, number, number, number];
+
+/**
+ * Écart minimal entre deux pastilles, en pixels (spec R13).
+ *
+ * 44 px n'est pas un nombre choisi au hasard : c'est la taille minimale d'une cible tactile. Deux
+ * médailles plus proches que ça ne sont pas seulement laides — elles sont **impossibles à toucher
+ * séparément**.
+ */
+export const MEDAL_MIN_PIXEL_GAP = 44;
+
+/**
+ * Écart approximatif **en pixels** entre deux positions, sur une carte cadrée sur `bounds` et
+ * rendue dans `widthPx × heightPx`.
+ *
+ * Approximation assumée : on projette linéairement, sans tenir compte de la projection Mercator ni
+ * de la rotation. À l'échelle d'une sortie de course (quelques kilomètres, loin des pôles), l'écart
+ * avec la vraie projection est très inférieur au seuil qu'on teste — et la seule alternative, une
+ * projection demandée à la carte native, serait asynchrone et intestable.
+ *
+ * Contrat : `widthPx` et `heightPx` doivent être mesurés (> 0). Un cadrage dégénéré (bornes d'un
+ * seul point) rend **0** — tout y est au même endroit, ce qui est la vérité.
+ */
+export function approxPixelGap(
+  a: { lat: number; lng: number },
+  b: { lat: number; lng: number },
+  bounds: MapBounds,
+  widthPx: number,
+  heightPx: number,
+): number {
+  const [west, south, east, north] = bounds;
+  const lngSpan = east - west;
+  const latSpan = north - south;
+  if (lngSpan <= 0 || latSpan <= 0) return 0;
+  const dx = ((a.lng - b.lng) / lngSpan) * widthPx;
+  const dy = ((a.lat - b.lat) / latSpan) * heightPx;
+  return Math.hypot(dx, dy);
+}
+
+/**
+ * Retire les médailles qui se chevaucheraient à l'écran (spec R13).
+ *
+ * L'ordre reçu fait foi — il vient de `pickMapMedals`, donc la mieux classée est en tête et c'est
+ * elle qui reste. **Pas de désempilement automatique** : deux pastilles décalées pour ne plus se
+ * toucher ne désignent plus l'endroit où l'effort a eu lieu, ce qui est tout l'intérêt de les
+ * poser sur la carte.
+ */
+export function dropOverlappingMedals<T extends { midLat: number | null; midLng: number | null }>(
+  medals: ReadonlyArray<T>,
+  bounds: MapBounds,
+  widthPx: number,
+  heightPx: number,
+  minGapPx: number = MEDAL_MIN_PIXEL_GAP,
+): T[] {
+  const kept: T[] = [];
+  for (const medal of medals) {
+    if (medal.midLat == null || medal.midLng == null) continue;
+    const here = { lat: medal.midLat, lng: medal.midLng };
+    const collides = kept.some((k) => {
+      const there = { lat: k.midLat as number, lng: k.midLng as number };
+      return approxPixelGap(here, there, bounds, widthPx, heightPx) < minGapPx;
+    });
+    if (!collides) kept.push(medal);
+  }
+  return kept;
+}
+
+// ---------------------------------------------------------------------------
+// Ordinaux (spec §6)
+// ---------------------------------------------------------------------------
+
+/** Les catégories ordinales qu'on expose à i18n — une clé de traduction par catégorie. */
+export type OrdinalCategory = 'one' | 'two' | 'few' | 'other';
+
+/**
+ * Catégorie ordinale d'un rang, dans la langue donnée.
+ *
+ * ⚠️ **Un ordinal ne s'interpole pas.** « 2ᵉ » en français, « 2nd » en anglais — et l'anglais change
+ * de suffixe selon le chiffre : 1st, 2nd, 3rd, 4th, puis 11th, 21st. Concaténer un suffixe fixe
+ * produit « 21th », faux dans toutes les langues qui déclinent. On passe donc par `Intl.PluralRules`
+ * et une clé i18n par catégorie.
+ *
+ * Le français ne distingue que `one` (1ᵉʳ) du reste ; l'anglais utilise les quatre.
+ * Repli `other` si la locale est inconnue du moteur — la forme la plus courante, jamais une erreur.
+ */
+export function ordinalCategory(n: number, locale: string): OrdinalCategory {
+  try {
+    const selected = new Intl.PluralRules(locale, { type: 'ordinal' }).select(n);
+    return selected === 'one' || selected === 'two' || selected === 'few' ? selected : 'other';
+  } catch {
+    return 'other';
+  }
 }

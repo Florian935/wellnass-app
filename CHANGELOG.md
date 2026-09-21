@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 21/09/2026 (bis) — EFFORT-01 étape 5 : les écrans. L'US est livrée.
+
+**Branche** : `dev` · commit précédent : `14f7ac75`
+
+### Ajouté
+
+- **`RunEffortsCard`** — le bloc « Tes meilleurs efforts » sur la fiche d'une sortie : le bandeau
+  « aucun record aujourd'hui, **et pourtant** ton 1 km est le 2ᵉ de toute ton histoire », les deux
+  compteurs, la liste avec rang et écart. **Se tait** quand il n'y a rien à dire.
+- **La carte n'est plus un tracé nu** : départ vert, arrivée sombre, chevrons de sens, et **les
+  médailles posées à l'endroit exact de l'effort**. Trois calques MapLibre plutôt que des images —
+  le style ne fournit pas de sprite, et un cercle plus une flèche textuelle survivent à un
+  changement de fond de carte.
+- `dropOverlappingMedals` + `approxPixelGap` (**7 tests**) — la règle des 44 px, en brique pure.
+- `ordinalCategory` (**4 tests**) — « 2ᵉ » en FR, « 2nd » en EN, **11th** et **21st** compris.
+- **Le rattrapage est branché**, déclenché à l'ouverture de la première fiche de sortie.
+- **11 clés i18n** FR + EN, dont les quatre formes ordinales.
+- **10 tests de plus sur `RouteMap`** : départ/arrivée, mode suivi, chevauchement des pastilles.
+
+### Corrigé
+
+- Une pastille **sans handler n'est plus rendue comme un bouton** : elle s'annonçait actionnable au
+  lecteur d'écran alors que rien ne se passait au tap.
+
+### Technique / Notes
+
+- 🔴 **`ordinal` est un nom d'option RÉSERVÉ par i18next** (un booléen, pour les pluriels ordinaux) :
+  l'utiliser comme variable d'interpolation ne compile pas. Renommé en `rank`. Trouvé par le
+  compilateur, pas en recette.
+- 🔴 **La règle des 44 px n'utilise pas `onLayout`.** Première version : mesurer le conteneur, donc
+  un état, un premier rendu sans médaille puis un second avec — un clignotement à chaque ouverture —
+  et un test impossible (`fireEvent(…, 'layout')` ne déclenche rien dans ce harnais). La largeur se
+  **déduit** de la fenêtre moins les deux gouttières : sans état, exacte, et testable en mockant
+  `useWindowDimensions`. On **sous-estime** volontairement la largeur : on retire une pastille de
+  trop plutôt que d'en laisser deux se chevaucher.
+- ⚠️ **Aucun écran de détail au tap d'une médaille** — choix assumé (spec §9 de RECETTES §81) : la
+  liste juste en dessous porte déjà toute l'information.
+- Le mock `react-i18next` de `run-analysis-screen` ne rendait pas `i18n` ; complété.
+- **Vérifié** : `typecheck` 0 · `lint` 0 **sans warning** · **3 818 tests Jest (227 suites)** +
+  **163 fichiers Vitest** verts, codes de sortie lus **sans pipe**.
+
+
 ## 21/09/2026 — EFFORT-01 étapes 2 à 4 : la table, l'écriture, le rattrapage
 
 **Branche** : `dev` · commit précédent : `97894d1c`

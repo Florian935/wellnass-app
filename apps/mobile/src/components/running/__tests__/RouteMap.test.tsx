@@ -59,10 +59,22 @@ jest.mock('@maplibre/maplibre-react-native', () => {
     Layer: ({ id, type }: { id: string; type: string }) => (
       <View testID={`layer-${id}`} accessibilityValue={{ text: type }} />
     ),
+    Marker: ({ children, lngLat }: { children: React.ReactNode; lngLat: [number, number] }) => (
+      <View testID="marqueur" accessibilityValue={{ text: JSON.stringify(lngLat) }}>
+        {children}
+      </View>
+    ),
   };
 });
 
 jest.mock('react-i18next', () => ({ useTranslation: () => ({ t: (k: string) => k }) }));
+
+// La largeur rendue de la carte se déduit de la fenêtre (voir `visibleMedals`) : on la fixe à la
+// largeur de la maquette pour que les écarts entre pastilles soient des pixels vérifiables.
+jest.mock('react-native/Libraries/Utilities/useWindowDimensions', () => ({
+  __esModule: true,
+  default: () => ({ width: 390, height: 844, scale: 2, fontScale: 1 }),
+}));
 
 // Le halo de position (MOTION-01 · C1) est purement décoratif et s'abonne au focus de l'écran
 // (`useFocusEffect`), donc à un conteneur de navigation que ce test n'a pas — il teste la caméra
@@ -71,7 +83,10 @@ jest.mock('@/components/running/PulseDot', () => ({ PulseDot: () => null }));
 
 jest.mock('@/theme/useTheme', () => ({
   useTheme: () => ({
-    colors: { text: '#33291f', surfaceAlt: '#f3ddd0', border: '#ece0cd', accent: '#c0562f' },
+    colors: {
+      text: '#33291f', surfaceAlt: '#f3ddd0', border: '#ece0cd', accent: '#c0562f',
+      surface: '#fffaf2', success: '#66714b', amber: '#b47f31', borderStrong: '#90897d',
+    },
   }),
 }));
 
@@ -85,8 +100,14 @@ const point = (lng: number, lat: number): GpsPoint => ({ lng, lat, t: 0 });
 const propsDe = <T,>(testID: string): T =>
   JSON.parse(String(screen.getByTestId(testID).props.accessibilityValue.text)) as T;
 
-const afficher = async (points: GpsPoint[], props: { follow?: boolean; height?: number } = {}) =>
-  render(<RouteMap points={points} emptyLabel="aucun-point" {...props} />);
+const afficher = async (
+  points: GpsPoint[],
+  props: Partial<React.ComponentProps<typeof RouteMap>> = {},
+) => render(<RouteMap points={points} emptyLabel="aucun-point" {...props} />);
+
+const medaille = (id: string, lat: number, lng: number, rank = 2) => ({
+  id, lat, lng, rank, label: `${rank}e`, accessibilityLabel: `medaille-${id}`,
+});
 
 const sansCle = () => {
   (globalThis as { __cleCarte?: boolean }).__cleCarte = false;
@@ -230,5 +251,80 @@ describe('caméra', () => {
       bottom: 40,
       left: 40,
     });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US EFFORT-01 — départ, arrivée, sens, médailles
+// ---------------------------------------------------------------------------
+
+describe('départ, arrivée et sens (R14)', () => {
+  const boucle = [point(3, 45), point(3.01, 45.01), point(3.02, 45), point(3, 45.001)];
+
+  it('🔴 le départ est le PREMIER point et l’arrivée le DERNIER', async () => {
+    await afficher(boucle, { startEnd: true });
+    const ends = propsDe<GeoJSON.FeatureCollection>('source-ends-source');
+    expect(ends.features.map((f) => f.properties?.kind)).toEqual(['start', 'finish']);
+    expect((ends.features[0]!.geometry as GeoJSON.Point).coordinates).toEqual([3, 45]);
+    expect((ends.features[1]!.geometry as GeoJSON.Point).coordinates).toEqual([3, 45.001]);
+  });
+
+  it('sans `startEnd`, la carte reste nue — le comportement d’avant l’US', async () => {
+    await afficher(boucle);
+    expect(propsDe<GeoJSON.FeatureCollection>('source-ends-source').features).toEqual([]);
+    expect(screen.queryByTestId('layer-direction-layer')).toBeNull();
+  });
+
+  it('🔴 en mode SUIVI, ni départ ni arrivée : le dernier point est la position courante', async () => {
+    await afficher(boucle, { startEnd: true, follow: true });
+    expect(propsDe<GeoJSON.FeatureCollection>('source-ends-source').features).toEqual([]);
+    expect(screen.queryByTestId('layer-direction-layer')).toBeNull();
+  });
+
+  it('un seul point ne produit ni départ ni arrivée', async () => {
+    await afficher([point(3, 45)], { startEnd: true });
+    expect(propsDe<GeoJSON.FeatureCollection>('source-ends-source').features).toEqual([]);
+  });
+
+  it('le calque de sens est monté avec le tracé', async () => {
+    await afficher(boucle, { startEnd: true });
+    expect(screen.getByTestId('layer-direction-layer')).toBeTruthy();
+  });
+});
+
+describe('médailles sur la carte (R10-R13)', () => {
+  const trace = [point(3, 45), point(3.01, 45.005), point(3.02, 45.01)];
+
+  it('aucune médaille quand l’appelant n’en passe pas', async () => {
+    await afficher(trace);
+    expect(screen.queryAllByTestId('marqueur')).toHaveLength(0);
+  });
+
+  it('une fois mesurée, la pastille se pose à sa position, en [lng, lat]', async () => {
+    await afficher(trace, { medals: [medaille('a', 45.002, 3.004)] });
+    const marqueur = screen.getByTestId('marqueur');
+    expect(JSON.parse(String(marqueur.props.accessibilityValue.text))).toEqual([3.004, 45.002]);
+    expect(screen.getByLabelText('medaille-a')).toBeTruthy();
+  });
+
+  it('garde les deux quand elles sont assez écartées', async () => {
+    await afficher(trace, {
+      medals: [medaille('a', 45.001, 3.002), medaille('b', 45.009, 3.018)],
+    });
+    expect(screen.queryAllByTestId('marqueur')).toHaveLength(2);
+  });
+
+  it('🔴 n’en garde qu’une quand elles se chevaucheraient (R13)', async () => {
+    await afficher(trace, {
+      medals: [medaille('a', 45.005, 3.010), medaille('b', 45.0051, 3.0101)],
+    });
+    expect(screen.queryAllByTestId('marqueur')).toHaveLength(1);
+    // La première reste : elle vient de `pickMapMedals`, donc c'est la mieux classée.
+    expect(screen.getByLabelText('medaille-a')).toBeTruthy();
+  });
+
+  it('aucune médaille en mode suivi : il n’y a pas de bornes à projeter', async () => {
+    await afficher(trace, { follow: true, medals: [medaille('a', 45.002, 3.004)] });
+    expect(screen.queryAllByTestId('marqueur')).toHaveLength(0);
   });
 });

@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import {
   computeRunEfforts, rankEfforts, pickMapMedals,
-  EFFORT_MIN_PACE_S_PER_KM, MAX_MAP_MEDALS, MAX_MEDAL_RANK,
+  approxPixelGap, dropOverlappingMedals, ordinalCategory,
+  EFFORT_MIN_PACE_S_PER_KM, MAX_MAP_MEDALS, MAX_MEDAL_RANK, MEDAL_MIN_PIXEL_GAP,
+  type MapBounds,
 } from './run-efforts';
 import type { GpsPoint } from './running';
 
@@ -151,5 +153,80 @@ describe('pickMapMedals (spec R11/R12)', () => {
 
   it('un seul candidat classé → une seule médaille', () => {
     expect(pickMapMedals([m(3, 1000), m(8, 5000)])).toEqual([m(3, 1000)]);
+  });
+});
+
+describe('approxPixelGap / dropOverlappingMedals (spec R13)', () => {
+  // Un carré d'1/100e de degré rendu dans 300 × 300 px : 1 px = 1/30 000e de degré.
+  const bounds: MapBounds = [3, 45, 3.01, 45.01];
+  const at = (lat: number, lng: number) => ({ midLat: lat, midLng: lng, id: `${lat},${lng}` });
+
+  it('mesure un écart cohérent avec le cadrage', () => {
+    // Un dixième de la largeur = 30 px.
+    expect(
+      approxPixelGap({ lat: 45, lng: 3 }, { lat: 45, lng: 3.001 }, bounds, 300, 300),
+    ).toBeCloseTo(30, 6);
+  });
+
+  it('deux positions identiques sont à zéro pixel', () => {
+    expect(approxPixelGap({ lat: 45, lng: 3 }, { lat: 45, lng: 3 }, bounds, 300, 300)).toBe(0);
+  });
+
+  it('un cadrage dégénéré met tout au même endroit plutôt que de mentir', () => {
+    // Des bornes réduites à un point : prétendre que deux médailles sont loin serait faux.
+    expect(approxPixelGap({ lat: 45, lng: 3 }, { lat: 46, lng: 4 }, [3, 45, 3, 45], 300, 300)).toBe(0);
+  });
+
+  it('le seuil est la taille minimale d’une cible tactile', () => expect(MEDAL_MIN_PIXEL_GAP).toBe(44));
+
+  it('garde les deux médailles quand elles sont assez écartées', () => {
+    const kept = dropOverlappingMedals([at(45.002, 3.002), at(45.008, 3.008)], bounds, 300, 300);
+    expect(kept).toHaveLength(2);
+  });
+
+  it('🔴 n’en garde qu’UNE quand elles se chevaucheraient — la première, donc la mieux classée', () => {
+    const first = at(45.005, 3.005);
+    const second = at(45.0051, 3.0051); // ~4 px plus loin
+    const kept = dropOverlappingMedals([first, second], bounds, 300, 300);
+    expect(kept).toEqual([first]);
+  });
+
+  it('ignore une médaille sans position — elle ne peut pas se poser', () => {
+    const placed = at(45.005, 3.005);
+    const kept = dropOverlappingMedals(
+      [{ midLat: null, midLng: null, id: 'nulle' }, placed],
+      bounds,
+      300,
+      300,
+    );
+    expect(kept).toEqual([placed]);
+  });
+
+  it('liste vide → rien', () => expect(dropOverlappingMedals([], bounds, 300, 300)).toEqual([]));
+});
+
+describe('ordinalCategory (spec §6)', () => {
+  it('l’anglais distingue 1st / 2nd / 3rd / 4th', () => {
+    expect([1, 2, 3, 4].map((n) => ordinalCategory(n, 'en'))).toEqual(['one', 'two', 'few', 'other']);
+  });
+
+  it('🔴 l’anglais retombe sur « th » à partir de 11 — le piège de la concaténation', () => {
+    // `n + 'th'` donnerait « 21th » ; `n + 'st'` donnerait « 11st ». Les deux sont faux.
+    expect(ordinalCategory(11, 'en')).toBe('other');
+    expect(ordinalCategory(12, 'en')).toBe('other');
+    expect(ordinalCategory(13, 'en')).toBe('other');
+    expect(ordinalCategory(21, 'en')).toBe('one');
+    expect(ordinalCategory(22, 'en')).toBe('two');
+  });
+
+  it('le français ne distingue que le premier', () => {
+    expect(ordinalCategory(1, 'fr')).toBe('one');
+    expect([2, 3, 4, 11, 21].map((n) => ordinalCategory(n, 'fr'))).toEqual(
+      ['other', 'other', 'other', 'other', 'other'],
+    );
+  });
+
+  it('une locale inconnue retombe sur la forme la plus courante, sans lever', () => {
+    expect(ordinalCategory(2, 'zz-ZZ-invalide!!')).toBe('other');
   });
 });

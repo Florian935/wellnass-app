@@ -3775,6 +3775,25 @@
           "recuperation": "Récupération"
         }
       }
+    },
+    "efforts": {
+      "title": "Tes meilleurs efforts",
+      "noTrack": "Sans tracé GPS, pas de meilleurs efforts.",
+      "noRecordToday": "Aucun record aujourd'hui",
+      "recordToday": "Record personnel",
+      "recordLine": "Ton {{distance}} est ton meilleur temps de tous les temps.",
+      "stillSomething": "Et pourtant, ton {{distance}} est le {{rank}} de toute ton histoire.",
+      "gap": "à {{gap}} de ton record",
+      "isRecord": "Ton record",
+      "countDistances": "distances atteintes",
+      "countTopThree": "dans ton top 3",
+      "a11yRow": "{{rank}} meilleur temps sur {{distance}}, {{time}}",
+      "ordinal": {
+        "one": "{{n}}ᵉʳ",
+        "two": "{{n}}ᵉ",
+        "few": "{{n}}ᵉ",
+        "other": "{{n}}ᵉ"
+      }
     }
   },
   "strengthHub": {

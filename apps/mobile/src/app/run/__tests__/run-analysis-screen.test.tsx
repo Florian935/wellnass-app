@@ -49,6 +49,9 @@ jest.mock('expo-router', () => ({ useRouter: jest.fn(), useLocalSearchParams: ()
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k: string, opts?: Record<string, unknown>) => (opts ? `${k}:${JSON.stringify(opts)}` : k),
+    // `i18n` fait partie de ce que rend le vrai hook, et US EFFORT-01 le lit (`i18n.language`)
+    // pour choisir la forme ordinale : « 2ᵉ » en français, « 2nd » en anglais.
+    i18n: { language: 'fr' },
   }),
 }));
 

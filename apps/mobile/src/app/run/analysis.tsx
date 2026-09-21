@@ -1,5 +1,8 @@
 import {
   computeKmSplits,
+  formatDurationHms,
+  ordinalCategory,
+  RECORD_DISTANCE_I18N_KEY,
   decodeTrack,
   formatDayFull,
   formatPaceMMSS,
@@ -18,6 +21,7 @@ import { PaceCurveCards } from '@/components/run/PaceCurveCards';
 import { Card } from '@/components/Card';
 import { FormScreen } from '@/components/FormScreen';
 import { RouteMap } from '@/components/running/RouteMap';
+import { RunEffortsCard } from '@/components/running/RunEffortsCard';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ShareCardSheet } from '@/components/share/ShareCardSheet';
 import {
@@ -27,6 +31,7 @@ import {
   useRun,
   useRunIntervals,
 } from '@/data/repositories/run-repository';
+import { useRunEfforts } from '@/data/repositories/run-effort-repository';
 import { exportRunAsGpx } from '@/lib/gpx-export';
 import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
@@ -67,7 +72,7 @@ export default function RunAnalysisScreen() {
   // que soit le chemin — un test de garde vérifie qu'aucun écran course ne l'oublie.
   useMenuFocus('running');
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
   const units = useUnits();
@@ -96,6 +101,29 @@ export default function RunAnalysisScreen() {
     [points],
   );
   const splits = useMemo(() => computeKmSplits(points), [points]);
+
+  // US EFFORT-01 — les pastilles posées sur la carte. Second appel au même hook que
+  // `RunEffortsCard` : la requête locale est identique, donc PowerSync la partage, et garder la
+  // carte des efforts autonome vaut mieux que de lui faire descendre ses données en props.
+  const { medals } = useRunEfforts(id);
+  const mapMedals = useMemo(
+    () =>
+      medals
+        .filter((m) => m.midLat != null && m.midLng != null)
+        .map((m) => ({
+          id: m.id,
+          lat: m.midLat as number,
+          lng: m.midLng as number,
+          rank: m.rank,
+          label: `${m.rank} · ${t(RECORD_DISTANCE_I18N_KEY[m.distanceKey])}`,
+          accessibilityLabel: t('run.efforts.a11yRow', {
+            rank: t(`run.efforts.ordinal.${ordinalCategory(m.rank, i18n.language)}`, { n: m.rank }),
+            distance: t(RECORD_DISTANCE_I18N_KEY[m.distanceKey]),
+            time: formatDurationHms(m.timeSeconds),
+          }),
+        })),
+    [medals, t, i18n.language],
+  );
 
   const { intervals: intervalRows } = useRunIntervals(id);
   const intervalSummary = useMemo(() => summarizeIntervalSeries(intervalRows), [intervalRows]);
@@ -323,8 +351,16 @@ export default function RunAnalysisScreen() {
 
       {/* ── Carte du parcours ───────────────────────────────────────────────────────────── */}
       <Card>
-        <RouteMap points={simplified} emptyLabel={t('running.map.noTrack')} />
+        <RouteMap
+          points={simplified}
+          emptyLabel={t('running.map.noTrack')}
+          startEnd
+          medals={mapMedals}
+        />
       </Card>
+
+      {/* ── Tes meilleurs efforts (US EFFORT-01) ────────────────────────────────────────── */}
+      <RunEffortsCard runId={id} hasTrack={points.length > 0} />
 
       {/* ── Terrain ─────────────────────────────────────────────────────────────────────── */}
       <Card>

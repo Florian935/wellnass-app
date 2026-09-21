@@ -3775,6 +3775,25 @@
           "recuperation": "Recovery"
         }
       }
+    },
+    "efforts": {
+      "title": "Your best efforts",
+      "noTrack": "No GPS track, no best efforts.",
+      "noRecordToday": "No record today",
+      "recordToday": "Personal record",
+      "recordLine": "Your {{distance}} is the fastest you have ever run.",
+      "stillSomething": "And yet your {{distance}} is the {{rank}} best you have ever run.",
+      "gap": "{{gap}} off your record",
+      "isRecord": "Your record",
+      "countDistances": "distances reached",
+      "countTopThree": "in your top 3",
+      "a11yRow": "{{rank}} best time over {{distance}}, {{time}}",
+      "ordinal": {
+        "one": "{{n}}st",
+        "two": "{{n}}nd",
+        "few": "{{n}}rd",
+        "other": "{{n}}th"
+      }
     }
   },
   "strengthHub": {

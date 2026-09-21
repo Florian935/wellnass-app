@@ -4904,3 +4904,74 @@ Vérifié le 20/09 par comptage REST : le cloud porte **3 246 aliments** et **3 
   lot validé, et retoucher le bordeaux défairait l'arbitrage du 19/09. Porté au BACKLOG en P1.
 - **La carte énergie est repliée** depuis la deuxième passe (voir §J) — ce point de la première
   livraison est levé.
+
+---
+
+## 81. EFFORT-01 — Les meilleurs efforts d'une sortie (`dev`)
+
+Spec : [effort01-meilleurs-efforts-sortie.md](docs/specs/functional/us/effort01-meilleurs-efforts-sortie.md) ·
+Analyse : [analyse-strava-2026-09.md](docs/product/analyse-strava-2026-09.md) §7.4 ·
+Maquettes : <https://claude.ai/artifact/Fp7sCrnKZ3YbVink6RBt5U> (planches 1, 3, 10).
+
+> **Ce que ça répare** : une sortie qui ne battait aucun record **ne racontait rien** — la
+> célébration ne sortait que sur un record. Et la carte dessinait un tracé nu, sans dire où l'effort
+> avait eu lieu.
+>
+> 🔴 **Le premier lancement déclenche un rattrapage** de tout l'historique, par lots de 20, à
+> l'ouverture de la première fiche de sortie. **Les rangs peuvent donc être faux pendant quelques
+> secondes**, puis se corriger tout seuls. C'est attendu : le vérifier, ne pas le signaler comme un
+> défaut. En revanche, des rangs **encore faux après une minute** sont un vrai défaut.
+>
+> ✅ Migration poussée le 21/09 et **sync rule déployée par Florian le même jour**.
+
+### A — La liste des efforts
+
+- [ ] Une sortie GPS d'au moins 400 m affiche le bloc **« Tes meilleurs efforts »**.
+- [ ] Chaque ligne porte la **distance**, le **temps**, et soit « Ton record », soit **l'écart** (« à 9 s de ton record »).
+- [ ] Une sortie **sans aucun record** affiche quand même le bandeau, avec « Aucun record aujourd'hui » **et** la phrase qui dit à quel rang se place son meilleur effort. 🔴 C'est tout le sens de l'US.
+- [ ] Une sortie **qui bat un record** affiche « Record personnel », et la célébration existante fonctionne **toujours**.
+- [ ] Les deux compteurs (distances atteintes / dans ton top 3) sont cohérents avec la liste.
+
+### B — Les trois distances neuves
+
+- [ ] Une sortie d'environ **2 km** produit **quatre** efforts : 400 m, demi-mile, 1 km, mile. Avant cette US, elle n'en produisait qu'un.
+- [ ] Les libellés sont corrects en **FR** et en **EN**.
+- [ ] 🔴 Le **mur de records du hub Course** affiche toujours **cinq** distances, pas huit.
+- [ ] L'écran **Historique & progression** affiche lui aussi **cinq** distances.
+
+### C — La carte
+
+- [ ] Le **départ** est un point **vert**, l'**arrivée** un point **sombre**, tous deux cerclés de blanc.
+- [ ] Des **chevrons** indiquent le sens de parcours le long du tracé.
+- [ ] **Au plus deux** pastilles de médaille, jamais trois.
+- [ ] Une sortie dont aucun effort n'est dans le **top 3** n'affiche **aucune** pastille.
+- [ ] Deux efforts très proches sur le tracé (1 km et 1 mile sur une sortie courte) n'affichent **qu'une** pastille, pas deux superposées.
+- [ ] La pastille du **record** est dorée, les autres neutres.
+- [ ] En **course** (écran de suivi), ni départ, ni arrivée, ni pastille — la carte est inchangée.
+
+### D — Les cas qui ne produisent rien
+
+- [ ] Une course **sur tapis / sans GPS** affiche « Sans tracé GPS, pas de meilleurs efforts. », sans carte ni pastille.
+- [ ] Une course **très courte** (moins de 400 m) n'affiche aucun effort, sans message d'erreur.
+- [ ] Une course **en cours** n'écrit rien.
+
+### E — Le rattrapage et la suppression
+
+- [ ] 🔴 Après la mise à jour, ouvrir une **ancienne** sortie : ses rangs sont justes (vérifier sur une distance déjà courue plusieurs fois).
+- [ ] Le rattrapage ne **fige pas** l'interface, même avec beaucoup de courses.
+- [ ] **Supprimer une course** : ses efforts disparaissent, **et** les rangs des autres sorties se recalculent (une sortie qui était 3ᵉ derrière elle devient 2ᵉ).
+- [ ] Rouvrir l'app ne **duplique** aucun effort.
+
+### F — Offline et accessibilité
+
+- [ ] **Mode avion** : tout fonctionne, rangs compris.
+- [ ] Les efforts écrits hors-ligne **remontent** au retour du réseau, et se retrouvent **sur un second appareil**. 🔴 C'est ce que la sync rule conditionne.
+- [ ] **Lecteur d'écran** : chaque ligne d'effort s'annonce « 2ᵉ meilleur temps sur 1 km, 4:21 ».
+- [ ] Les pastilles de la carte **ne s'annoncent pas comme des boutons** (rien ne se passe au tap — c'est voulu, le détail est dans la liste).
+- [ ] **EN** : les ordinaux sont corrects — 1st, 2nd, 3rd, 4th, et surtout **11th** et **21st**.
+
+### G — Ce qu'il faut savoir
+
+- ⚠️ **Aucun écran de détail au tap d'une médaille** : c'est un choix, pas un oubli. La liste juste en dessous porte déjà toute l'information ; un écran de plus l'aurait dupliquée.
+- ⚠️ **Ni cadence ni pas** : ils viennent d'un capteur de montre, donc de Health Connect, donc d'une permission de plus à porter dans la déclaration Play — qui ne se dépose qu'une fois.
+- ⚠️ Le **rejeu animé du parcours** (planche 2 de la toile) et le **parcours / segment personnel** (planche 6) ne sont **pas** dans ce lot.
