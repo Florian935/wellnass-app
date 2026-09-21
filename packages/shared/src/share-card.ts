@@ -152,10 +152,30 @@ export function isDrawableTrack(points: ReadonlyArray<TrackPoint>): boolean {
   return points.some((p) => p.lat !== first.lat || p.lng !== first.lng);
 }
 
-/** Nom de fichier de l'image partagée, horodaté. Sans espace ni accent (compatibilité OS). */
-export function shareCardFileName(kind: 'run' | 'workout', startedAtMs: number): string {
+/**
+ * Les deux mises en page de la carte partageable (US PARTAGE-02).
+ *
+ * `full` est celle de PARTAGE-01, **inchangée**. `transparent` retire le fond pour qu'on colle les
+ * chiffres et le tracé **par-dessus sa propre photo** dans une story — ce qui laisse l'utilisateur
+ * auteur de son image au lieu de lui imposer la nôtre.
+ */
+export type ShareCardVariant = 'full' | 'transparent';
+
+/**
+ * Nom de fichier de l'image partagée, horodaté. Sans espace ni accent (compatibilité OS).
+ *
+ * ⚠️ La variante entre dans le nom (US PARTAGE-02) : sans elle, exporter les deux versions d'une
+ * même sortie écraserait la première dans le cache, et l'utilisateur partagerait la mauvaise sans
+ * comprendre pourquoi. `full` garde le nom d'origine — le fichier de PARTAGE-01 ne change pas.
+ */
+export function shareCardFileName(
+  kind: 'run' | 'workout',
+  startedAtMs: number,
+  variant: ShareCardVariant = 'full',
+): string {
   const d = new Date(startedAtMs);
   const pad = (n: number): string => String(n).padStart(2, '0');
   const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
-  return `${kind === 'run' ? 'course' : 'seance'}-${stamp}.png`;
+  const suffix = variant === 'transparent' ? '-transparent' : '';
+  return `${kind === 'run' ? 'course' : 'seance'}-${stamp}${suffix}.png`;
 }

@@ -10,6 +10,46 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 21/09/2026 (ter) — PARTAGE-02 : la carte de partage transparente. Le lot Strava est livré.
+
+**Branche** : `dev` · commit précédent : `ab5a12f5`
+
+### Ajouté
+
+- **Une seconde variante de la carte partageable, à fond transparent** — chiffres et tracé sans
+  fond, à coller par-dessus **sa propre photo** dans une story. On cesse d'imposer notre visuel :
+  l'utilisateur reste auteur de son image.
+- **Le sélecteur** dans la feuille de partage : deux boutons radio, 44 px, état annoncé et pas
+  seulement coloré. Défaut « Pleine », **non persisté** (spec R4).
+- **Le damier de transparence** sous l'aperçu, en SVG — la convention universelle. En `<Pattern>` et
+  non en grille de `View` : couvrir 340 px de carrés de 16 px demanderait plus de 400 vues.
+- Pastille **TRANSPARENT** sur l'aperçu, volontairement **non traduite** (marqueur de convention).
+- `ShareCardVariant` et le suffixe de nom de fichier dans `@wellness/shared` (**3 tests**) : sans
+  lui, exporter les deux variantes d'une même sortie écraserait la première dans le cache.
+- **5 tests** sur `ShareCard`, dont le **garde de non-régression** de la variante `full`.
+
+### Technique / Notes
+
+- 🔴 **Le halo est tout le travail de cette US.** Sur fond opaque, le contraste est connu et vérifié
+  (15,58 · 9,34 · 5,56). Sur fond transparent il devient **inconnaissable** — l'arrière-plan est la
+  photo de l'utilisateur. Chaque texte porte donc son propre halo sombre, de rayon proportionnel à
+  sa taille, et le **tracé aussi** (le même chemin redessiné dessous, plus épais). **Pas une plaque
+  de fond** : elle annulerait l'intérêt de la transparence.
+- Le halo passe par un **contexte React** local plutôt que par des props : `RunBody`, `WorkoutBody`
+  et `Stat` n'ont aucune raison de connaître la variante.
+- ⚠️ **Écart au plan validé, assumé.** Le plan faisait de l'essai d'alpha une étape 1 sur un spike
+  jetable. La vraie variante a été construite à la place, et l'essai est devenu le **critère A1 de
+  RECETTES §82, bloquant** : si `captureRef` aplatit l'alpha sur Android, on retire la variante
+  (spec D5) — le revert est petit, et on teste la fonctionnalité plutôt qu'une maquette technique.
+- 🔴 Le lint a refusé un `setState` **synchrone dans un effet** (cascade de rendus) : la remise à
+  zéro de la variante se fait donc à la **fermeture**, pas à l'ouverture.
+- `render()` de ce dépôt n'expose ni `UNSAFE_getAllByType` ni `screen` — seulement `toJSON` et
+  `root`. Les nouveaux tests parcourent donc l'arbre JSON : ce qu'ils vérifient est un **style**
+  (présence d'un fond, d'un halo), pas un texte ni un rôle.
+- **Vérifié** : `typecheck` 0 · `lint` 0 **sans warning** · **3 823 tests Jest (227 suites)** +
+  **163 fichiers Vitest** verts, codes de sortie lus **sans pipe**.
+
+
 ## 21/09/2026 (bis) — EFFORT-01 étape 5 : les écrans. L'US est livrée.
 
 **Branche** : `dev` · commit précédent : `14f7ac75`

@@ -16,8 +16,8 @@
  * partie sur un réseau public ne se rattrape pas. Uniquement de l'activité.
  */
 
-import { forwardRef } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { createContext, forwardRef, useContext } from 'react';
+import { StyleSheet, Text, View, type TextProps } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Svg, { Circle, Path } from 'react-native-svg';
 import {
@@ -28,6 +28,7 @@ import {
   SHARE_CARD_SIZE,
   trackPath,
   type SessionHeat,
+  type ShareCardVariant,
   type TrackPoint,
 } from '@wellness/shared';
 
@@ -98,12 +99,57 @@ type Props = {
   data: ShareCardData;
   /** Côté de la carte en points logiques. La capture demande 1080 px indépendamment. */
   size: number;
+  /**
+   * US PARTAGE-02 — `full` (défaut) est **strictement** la carte de PARTAGE-01 ; `transparent`
+   * retire le fond et pose un halo sous chaque texte. PARTAGE-01 est en recette : aucun de ses
+   * critères ne doit bouger, et un test de garde le vérifie.
+   */
+  variant?: ShareCardVariant;
 };
 
 /**
  * `forwardRef` : `captureRef` a besoin d'une référence sur la **vue racine** de la carte.
  */
-export const ShareCard = forwardRef<View, Props>(function ShareCard({ data, size }, ref) {
+/**
+ * US PARTAGE-02 — la variante courante, partagée par tous les sous-composants de la carte.
+ *
+ * Un contexte plutôt que des props : `RunBody`, `WorkoutBody` et `Stat` n'ont aucune raison de
+ * connaître la variante, ils ont seulement besoin que **leur texte** soit lisible. Faire descendre
+ * un drapeau à travers quatre composants pour ça aurait pollué quatre signatures.
+ */
+const VariantContext = createContext<ShareCardVariant>('full');
+
+/**
+ * 🔴 **Le seul vrai point dur de cette US** (spec R5/R6).
+ *
+ * Sur fond opaque, le contraste est **vérifié et connu** : texte 15,58 · secondaire 9,34 · accent
+ * 5,56 contre `CARD_BG`. Sur fond **transparent**, il devient **inconnaissable** — l'arrière-plan
+ * est la photo de l'utilisateur, elle peut être blanche, claire, chargée.
+ *
+ * Chaque texte porte donc **sa propre lisibilité** : un halo sombre diffus, dont le rayon suit la
+ * taille du texte. C'est la solution de tous les incrustateurs de story, et la seule qui tienne
+ * sans connaître le fond. **Pas une plaque de fond** (spec D2) : elle annulerait l'intérêt même de
+ * la transparence.
+ */
+const HALO_COLOR = 'rgba(12,8,4,0.55)';
+
+function CardText({ style, ...rest }: TextProps) {
+  const variant = useContext(VariantContext);
+  if (variant !== 'transparent') return <Text style={style} {...rest} />;
+  const flat = StyleSheet.flatten(style) as { fontSize?: number } | undefined;
+  const radius = Math.max(4, Math.round((flat?.fontSize ?? 16) * 0.22));
+  return (
+    <Text
+      style={[
+        style,
+        { textShadowColor: HALO_COLOR, textShadowOffset: { width: 0, height: 1 }, textShadowRadius: radius },
+      ]}
+      {...rest}
+    />
+  );
+}
+
+export const ShareCard = forwardRef<View, Props>(function ShareCard({ data, size, variant = 'full' }, ref) {
   const { t } = useTranslation();
 
   // Toutes les dimensions dérivent de `size` : une seule mise en page pour l'aperçu et la capture.
@@ -111,25 +157,36 @@ export const ShareCard = forwardRef<View, Props>(function ShareCard({ data, size
   const s = (ratio: number): number => Math.round(size * ratio);
 
   return (
+    <VariantContext.Provider value={variant}>
     <View
       ref={ref}
       collapsable={false}
-      style={[styles.card, { width: size, height: size, padding: pad, backgroundColor: CARD_BG }]}
+      style={[
+        styles.card,
+        {
+          width: size,
+          height: size,
+          padding: pad,
+          // `transparent` et non une couleur à alpha nul : c'est ce que `captureRef` sait traduire
+          // en canal alpha dans le PNG.
+          backgroundColor: variant === 'transparent' ? 'transparent' : CARD_BG,
+        },
+      ]}
     >
       <View style={styles.header}>
-        <Text
+        <CardText
           style={[styles.title, { color: CARD_ACCENT, fontSize: s(0.042) }]}
           maxFontSizeMultiplier={1}
           numberOfLines={1}
         >
           {t(`share.${data.kind}.title`).toUpperCase()}
-        </Text>
-        <Text
+        </CardText>
+        <CardText
           style={[styles.date, { color: CARD_MUTED, fontSize: s(0.032) }]}
           maxFontSizeMultiplier={1}
         >
           {formatDayFull(new Date(data.startedAtMs).toISOString())}
-        </Text>
+        </CardText>
       </View>
 
       <View style={styles.body}>
@@ -167,18 +224,20 @@ export const ShareCard = forwardRef<View, Props>(function ShareCard({ data, size
         libellé de la dernière statistique (« DURÉE ») et les deux se lisent comme une seule
         ligne — constaté en recette device du 31/07/2026, à l'aperçu comme à l'export.
       */}
-      <Text
+      <CardText
         style={[styles.brand, { color: CARD_MUTED, fontSize: s(0.026), marginTop: s(0.028) }]}
         maxFontSizeMultiplier={1}
       >
         {BRAND}
-      </Text>
+      </CardText>
     </View>
+    </VariantContext.Provider>
   );
 });
 
 /** Tracé de la course, ou rien du tout si le tracé n'est pas dessinable. */
 function RunBody({ points, size }: { points: TrackPoint[]; size: number }) {
+  const variant = useContext(VariantContext);
   // Pas de tracé exploitable (course manuelle, GPS bloqué) → on n'affiche RIEN plutôt qu'un artefact
   // d'un pixel. Les chiffres portent alors seuls la carte.
   if (!isDrawableTrack(points)) return null;
@@ -196,6 +255,21 @@ function RunBody({ points, size }: { points: TrackPoint[]; size: number }) {
 
   return (
     <Svg width="100%" height="100%" viewBox={`0 0 ${box} ${box * 0.62}`}>
+      {/*
+        Halo du tracé (US PARTAGE-02, R6) : le MÊME chemin dessiné dessous, plus épais et sombre.
+        Sans lui, une polyligne terracotta posée sur une photo claire disparaît — et un tracé
+        invisible vide la carte de ce qu'elle raconte.
+      */}
+      {variant === 'transparent' ? (
+        <Path
+          d={d}
+          stroke={HALO_COLOR}
+          strokeWidth={box * 0.024}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          fill="none"
+        />
+      ) : null}
       <Path
         d={d}
         stroke={CARD_ACCENT}
@@ -258,22 +332,22 @@ function WorkoutBody({
         },
       ]}
     >
-      <Text
+      <CardText
         style={[styles.recordsTitle, { color: CARD_ACCENT, fontSize: s(0.034) }]}
         maxFontSizeMultiplier={1}
       >
         {t('share.workout.records')}
-      </Text>
+      </CardText>
       {/* Trois au maximum : au-delà, la carte devient une liste illisible. */}
       {records.slice(0, 3).map((record) => (
-        <Text
+        <CardText
           key={record}
           style={[styles.recordLine, { color: CARD_TEXT, fontSize: s(0.038) }]}
           numberOfLines={1}
           maxFontSizeMultiplier={1}
         >
           {record}
-        </Text>
+        </CardText>
       ))}
     </View>
       ) : null}
@@ -295,20 +369,20 @@ function Stat({
   const s = (ratio: number): number => Math.round(size * ratio);
   return (
     <View style={styles.stat}>
-      <Text
+      <CardText
         style={[styles.statValue, { color: CARD_TEXT, fontSize: s(big ? 0.082 : 0.05) }]}
         numberOfLines={1}
         maxFontSizeMultiplier={1}
       >
         {value}
-      </Text>
-      <Text
+      </CardText>
+      <CardText
         style={[styles.statLabel, { color: CARD_MUTED, fontSize: s(0.024) }]}
         numberOfLines={1}
         maxFontSizeMultiplier={1}
       >
         {label.toUpperCase()}
-      </Text>
+      </CardText>
     </View>
   );
 }

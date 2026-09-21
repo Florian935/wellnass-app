@@ -3367,6 +3367,11 @@
       "records": "Records battus",
       "a11y": "Séance du {{date}}, {{exercises}} exercices, {{sets}} séries, {{volume}}",
       "bodyA11y": "Schéma des muscles travaillés pendant la séance"
+    },
+    "variant": {
+      "full": "Pleine",
+      "transparent": "Transparente",
+      "transparentHint": "À coller par-dessus ta photo, dans une story."
     }
   },
   "suggestion": {

@@ -4975,3 +4975,68 @@ Maquettes : <https://claude.ai/artifact/Fp7sCrnKZ3YbVink6RBt5U> (planches 1, 3, 
 - ⚠️ **Aucun écran de détail au tap d'une médaille** : c'est un choix, pas un oubli. La liste juste en dessous porte déjà toute l'information ; un écran de plus l'aurait dupliquée.
 - ⚠️ **Ni cadence ni pas** : ils viennent d'un capteur de montre, donc de Health Connect, donc d'une permission de plus à porter dans la déclaration Play — qui ne se dépose qu'une fois.
 - ⚠️ Le **rejeu animé du parcours** (planche 2 de la toile) et le **parcours / segment personnel** (planche 6) ne sont **pas** dans ce lot.
+
+---
+
+## 82. PARTAGE-02 — La carte de partage transparente (`dev`)
+
+Spec : [partage02-carte-transparente.md](docs/specs/functional/us/partage02-carte-transparente.md) ·
+Analyse : [analyse-strava-2026-09.md](docs/product/analyse-strava-2026-09.md) §7.6 ·
+Maquettes : <https://claude.ai/artifact/Fp7sCrnKZ3YbVink6RBt5U> (planche 5).
+
+> **Ce que ça ajoute** : une seconde variante de la carte partageable, **à fond transparent**, pour
+> la coller par-dessus **sa propre photo** dans une story — au lieu d'imposer notre visuel.
+>
+> ⚠️ **Écart au plan validé, assumé** : le plan faisait de l'essai d'alpha une étape 1 sur un spike
+> jetable. La variante réelle a été construite à la place, et cet essai est devenu le **critère A1
+> ci-dessous**. Tu testes donc la fonctionnalité, pas une maquette technique.
+
+### A — 🔴 L'essai qui peut annuler l'US
+
+- [ ] 🔴 **Exporter la variante transparente et la coller sur une photo CLAIRE** : le fond de la carte ne s'ajoute pas. **Si le fond ressort noir, tout le reste de cette recette est sans objet** — on retire la variante (spec D5), on ne la livre pas cassée.
+- [ ] 🔴 La même image collée sur une photo **sombre** : idem, aucun fond ajouté.
+
+> `react-native-view-shot` n'est pas garanti de conserver le canal alpha sur Android : c'est le
+> compositeur de fenêtre qui décide, et il ne se comporte pas pareil en émulateur. **Faire cet
+> essai sur un vrai téléphone.**
+
+### B — Le sélecteur et l'aperçu
+
+- [ ] La feuille de partage propose **deux formats** : « Pleine » et « Transparente ».
+- [ ] **« Pleine » est sélectionnée par défaut** à chaque ouverture.
+- [ ] Choisir « Transparente », fermer, rouvrir → on **repart sur « Pleine »** (le choix ne persiste pas).
+- [ ] L'aperçu transparent s'affiche sur un **damier** gris, et porte la pastille **TRANSPARENT** en haut à gauche.
+- [ ] Une phrase explique l'usage (« À coller par-dessus ta photo, dans une story »).
+
+### C — La lisibilité, le vrai travail
+
+- [ ] Sur une photo **blanche** ou très claire, **tous** les textes restent lisibles (le halo fait son travail).
+- [ ] Sur une photo **chargée** (feuillage, foule), idem.
+- [ ] Le **tracé** reste visible sur fond clair — il porte son propre halo.
+- [ ] Aucun texte n'est « posé » sur une plaque de fond : c'est un halo, pas un rectangle.
+
+### D — La non-régression de PARTAGE-01
+
+- [ ] 🔴 La variante **« Pleine » est identique à avant** : comparer à une capture de ta recette PARTAGE-01 (§ correspondante).
+- [ ] Le nom du fichier exporté en « Pleine » est **inchangé** (`course-AAAAMMJJ-HHMM.png`).
+- [ ] Le fichier transparent porte le suffixe `-transparent`, donc les deux **coexistent** sans s'écraser.
+
+### E — Les deux piliers et les cas limites
+
+- [ ] Depuis une **course**, et depuis une **séance de musculation** (même feuille, même variante).
+- [ ] Une course **sur tapis** (sans tracé) produit une transparente correcte : les chiffres, sans trou.
+- [ ] **Mode avion** : les deux variantes s'exportent.
+- [ ] Un échec de partage affiche toujours son message (rien de muet).
+
+### F — i18n et accessibilité
+
+- [ ] **EN** : « Full » / « Transparent », et la phrase d'explication traduite.
+- [ ] La pastille reste **« TRANSPARENT »** en anglais comme en français (marqueur de convention, non traduit).
+- [ ] **Lecteur d'écran** : les deux formats s'annoncent comme des boutons radio, avec l'état sélectionné.
+- [ ] Les deux boutons font au moins **44 px** de haut.
+
+### G — Ce qu'il faut savoir
+
+- ⚠️ **Une seule variante transparente**, texte clair (spec D3). Pas de version « texte foncé » : elle doublerait le sélecteur pour un gain marginal, le halo suffisant dans les deux cas.
+- ⚠️ **Les cinq autres formats de Strava ne sont pas repris** : ce sont des déclinaisons de mise en page, la transparente est la seule qui change l'**usage**.
+- ⚠️ **Aucune destination nommée** (Stories, WhatsApp…) : la feuille de partage de l'OS les propose déjà, et les recréer afficherait des marques tierces.

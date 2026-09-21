@@ -11,6 +11,7 @@
  */
 import React from 'react';
 import { render } from '@testing-library/react-native';
+import { StyleSheet } from 'react-native';
 
 import { ShareCard, type ShareCardData } from '../ShareCard';
 
@@ -102,5 +103,83 @@ describe('ShareCard', () => {
     for (const forbidden of ['weight.', 'bodyWeight', 'measurements.', 'wellbeing.']) {
       expect(rendered).not.toContain(forbidden);
     }
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US PARTAGE-02 — la variante transparente
+// ---------------------------------------------------------------------------
+
+/**
+ * Parcourt l'arbre rendu et collecte les nœuds d'un type donné.
+ *
+ * On passe par `toJSON()` plutôt que par les requêtes de RNTL : ce qu'on vérifie ici n'est ni un
+ * texte ni un rôle, c'est un **style** — la présence d'un fond, celle d'un halo.
+ */
+type Noeud = { type?: string; props?: { style?: unknown }; children?: unknown };
+
+function noeuds(racineJson: unknown, type: string): Noeud[] {
+  const out: Noeud[] = [];
+  const visiter = (n: unknown): void => {
+    if (n === null || typeof n !== 'object') return;
+    if (Array.isArray(n)) {
+      n.forEach(visiter);
+      return;
+    }
+    const node = n as Noeud;
+    if (node.type === type) out.push(node);
+    visiter(node.children);
+  };
+  visiter(racineJson);
+  return out;
+}
+
+const aplati = (n: Noeud) => StyleSheet.flatten(n.props?.style) as Record<string, unknown>;
+
+/** Style de la vue racine — la seule vue carrée de `size` × `size` que le composant produise. */
+const racine = async (variant?: 'full' | 'transparent', data: ShareCardData = runData) => {
+  const { toJSON } = await render(
+    <ShareCard data={data} size={300} {...(variant ? { variant } : {})} />,
+  );
+  const root = noeuds(toJSON(), 'View').find((v) => aplati(v).width === 300)!;
+  return aplati(root);
+};
+
+/** Styles de tous les textes de la carte. */
+const stylesDeTexte = async (variant: 'full' | 'transparent', data: ShareCardData = runData) => {
+  const { toJSON } = await render(<ShareCard data={data} size={300} variant={variant} />);
+  return noeuds(toJSON(), 'Text').map(aplati);
+};
+
+describe('variante transparente (US PARTAGE-02)', () => {
+  it('🔴 `full` garde son fond opaque — PARTAGE-01 est en recette, rien ne doit bouger (R2)', async () => {
+    const sansVariante = await racine();
+    const avecFull = await racine('full');
+    expect(sansVariante.backgroundColor).toBe('#1c130c');
+    // Ne pas passer la prop et passer `full` doivent produire exactement le même fond.
+    expect(avecFull.backgroundColor).toBe(sansVariante.backgroundColor);
+  });
+
+  it('🔴 `transparent` retire le fond — c’est LUI que `captureRef` traduit en canal alpha', async () => {
+    expect((await racine('transparent')).backgroundColor).toBe('transparent');
+  });
+
+  it('🔴 chaque texte porte son halo en transparent (R6)', async () => {
+    // Sur fond transparent, le contraste est INCONNAISSABLE : l'arrière-plan est la photo de
+    // l'utilisateur. Un seul texte sans halo devient illisible sur une photo claire.
+    const styles = await stylesDeTexte('transparent');
+    expect(styles.length).toBeGreaterThan(0);
+    expect(styles.every((s) => typeof s.textShadowColor === 'string')).toBe(true);
+    expect(styles.every((s) => typeof s.textShadowRadius === 'number' && (s.textShadowRadius as number) > 0)).toBe(true);
+  });
+
+  it('aucun halo en `full` : il n’a rien à compenser sur un fond connu', async () => {
+    const styles = await stylesDeTexte('full');
+    expect(styles.every((s) => s.textShadowColor === undefined)).toBe(true);
+  });
+
+  it('une séance transparente porte aussi ses halos', async () => {
+    const styles = await stylesDeTexte('transparent', workoutData);
+    expect(styles.every((s) => typeof s.textShadowColor === 'string')).toBe(true);
   });
 });

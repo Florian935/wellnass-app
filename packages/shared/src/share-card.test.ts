@@ -183,6 +183,16 @@ describe('nom de fichier', () => {
     expect(shareCardFileName('workout', ms)).toBe('seance-20260729-1805.png');
   });
 
+  // US PARTAGE-02 — sans suffixe, exporter les deux variantes d'une même sortie écraserait la
+  // première dans le cache : l'utilisateur partagerait la mauvaise image sans comprendre pourquoi.
+  it('distingue la variante transparente, et laisse `full` intacte', () => {
+    const ms = new Date(2026, 6, 29, 18, 5).getTime();
+    expect(shareCardFileName('run', ms, 'transparent')).toBe('course-20260729-1805-transparent.png');
+    expect(shareCardFileName('run', ms, 'full')).toBe('course-20260729-1805.png');
+    // Le défaut reste `full` : l'appel de PARTAGE-01, sans troisième argument, ne change pas.
+    expect(shareCardFileName('run', ms)).toBe(shareCardFileName('run', ms, 'full'));
+  });
+
   it('ne contient ni espace ni accent (compatibilité OS)', () => {
     const name = shareCardFileName('workout', new Date(2026, 0, 1, 9, 0).getTime());
     expect(name).toMatch(/^[a-z0-9-]+\.png$/);

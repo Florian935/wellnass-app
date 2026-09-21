@@ -13,7 +13,7 @@ import * as FileSystem from 'expo-file-system/legacy';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import type { TFunction } from 'i18next';
-import { shareCardFileName, SHARE_CARD_SIZE } from '@wellness/shared';
+import { shareCardFileName, SHARE_CARD_SIZE, type ShareCardVariant } from '@wellness/shared';
 
 /** Résultat typé, pour que l'écran affiche le bon message plutôt qu'un échec muet. */
 export type ShareCardResult = { ok: true } | { error: 'unavailable' | 'failed' };
@@ -51,6 +51,7 @@ export async function shareCardImage(
   kind: 'run' | 'workout',
   startedAtMs: number,
   t: TFunction,
+  variant: ShareCardVariant = 'full',
 ): Promise<ShareCardResult> {
   if (ref.current === null) return { error: 'failed' };
   if (Number.isNaN(startedAtMs)) return { error: 'failed' };
@@ -65,13 +66,19 @@ export async function shareCardImage(
       result: 'tmpfile',
     });
 
+    // ⚠️ US PARTAGE-02 — rien de plus n'est demandé ici pour la transparence : `format: 'png'`
+    // porte déjà un canal alpha, et c'est la vue capturée qui doit être réellement transparente
+    // (`ShareCard`, variante `transparent`). 🔴 Reste à **vérifier sur un vrai téléphone** que le
+    // compositeur Android ne l'aplatit pas en noir : si c'est le cas, la variante est retirée
+    // plutôt que livrée cassée (spec D5).
+
     if (!(await Sharing.isAvailableAsync())) {
       return { error: 'unavailable' };
     }
 
     // Le fichier temporaire de `captureRef` porte un nom aléatoire. On le recopie sous un nom
     // lisible et daté : c'est celui que verra l'app réceptrice et la galerie de l'utilisateur.
-    const uri = FileSystem.cacheDirectory + shareCardFileName(kind, startedAtMs);
+    const uri = FileSystem.cacheDirectory + shareCardFileName(kind, startedAtMs, variant);
     try {
       await FileSystem.copyAsync({ from: captured, to: uri });
     } catch {

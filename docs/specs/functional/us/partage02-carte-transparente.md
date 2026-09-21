@@ -3,9 +3,9 @@ id: PARTAGE-02
 titre: "La carte de partage transparente — à coller sur sa propre photo"
 roadmap: [7.35]
 catalogue: []
-etape: validation
+etape: recette
 branche: dev
-maj: 20/09/2026
+maj: 21/09/2026
 ---
 
 # US PARTAGE-02 — La carte de partage transparente

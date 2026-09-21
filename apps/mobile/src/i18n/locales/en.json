@@ -3367,6 +3367,11 @@
       "records": "Records broken",
       "a11y": "Workout on {{date}}, {{exercises}} exercises, {{sets}} sets, {{volume}}",
       "bodyA11y": "Diagram of the muscles worked during the session"
+    },
+    "variant": {
+      "full": "Full",
+      "transparent": "Transparent",
+      "transparentHint": "To place over your own photo, in a story."
     }
   },
   "suggestion": {
