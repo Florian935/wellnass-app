@@ -84,6 +84,14 @@ jest.mock('@/components/HealthConnectSection', () => {
     HealthConnectSection: ({ enabled }: { enabled: boolean }) => <Text>hc:{String(enabled)}</Text>,
   };
 });
+// US SERIE-01 — la section de régularité lit `useStreakData`, qui ouvre toute la chaîne PowerSync
+// (séances, sorties, totaux sur 53 semaines…). Stubée comme les deux autres sections lourdes : ce
+// fichier teste l'écran de réglages, pas l'agrégat de la série. Ses propres règles sont couvertes
+// par `streak-unit-section.test.tsx`.
+jest.mock('@/components/settings/StreakUnitSection', () => {
+  const { Text } = require('react-native');
+  return { StreakUnitSection: () => <Text>streak-unit-section</Text> };
+});
 jest.mock('@/components/CycleTrackingSection', () => {
   const { Text } = require('react-native');
   return {

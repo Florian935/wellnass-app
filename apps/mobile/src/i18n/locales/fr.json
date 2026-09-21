@@ -1232,7 +1232,20 @@
       "jokerUse": "Utiliser mon joker",
       "jokerRule": "1 joker par mois. Il gèle un jour manqué isolé — pas deux d'affilée.",
       "jokerError": "Le joker n'a pas pu être utilisé. Réessaie.",
-      "jokerA11y": "Utiliser mon joker pour sauver une série de {{count}} jours"
+      "jokerA11y": "Utiliser mon joker pour sauver une série de {{count}} jours",
+      "suffixWeek_one": "semaine d'affilée",
+      "suffixWeek_other": "semaines d'affilée",
+      "emptyWeek": "Une activité cette semaine, et la première est validée.",
+      "weekCount_one": "{{count}} activité cette semaine",
+      "weekCount_other": "{{count}} activités cette semaine",
+      "weekGoal": "{{done}} activités sur {{goal}} cette semaine",
+      "weekGoalMet_one": "Objectif de la semaine atteint : {{count}} activité",
+      "weekGoalMet_other": "Objectif de la semaine atteint : {{count}} activités",
+      "switchTitle": "Et si on comptait en semaines ?",
+      "switchBody": "{{days}} jours d'affilée aujourd'hui — soit {{weeks}} semaines, relues autrement. Les deux chiffres décrivent le même historique.",
+      "switchRule": "Une semaine laisse sept occasions de la tenir. Tu peux revenir aux jours quand tu veux.",
+      "switchToWeek": "Compter en semaines",
+      "switchKeepDay": "Garder les jours"
     },
     "nutrition": {
       "title": "Nutrition",
@@ -2239,6 +2252,30 @@
       "review": "Bilan de la semaine",
       "hint": "Vos journaux personnels, accessibles quand vous en avez besoin — sans encombrer l’accueil.",
       "activities": "Mes autres activités"
+    },
+    "streak": {
+      "title": "Régularité",
+      "unitLabel": "Compter la série en",
+      "unit": {
+        "day": "Jours",
+        "week": "Semaines"
+      },
+      "unitHint": "Les deux comptes existent toujours — tu choisis celui qui s'affiche. Une semaine laisse sept occasions de la tenir.",
+      "goalLabel": "Objectif hebdomadaire",
+      "goalNone": "Aucun objectif réglé",
+      "goalNoneHint_one": "L'app affiche le compte nu : {{count}} activité cette semaine.",
+      "goalNoneHint_other": "L'app affiche le compte nu : {{count}} activités cette semaine.",
+      "goalSet": "M'en fixer un",
+      "goalValue_one": "{{count}} activité par semaine",
+      "goalValue_other": "{{count}} activités par semaine",
+      "goalBounds": "De {{min}} à {{max}}, toutes disciplines confondues.",
+      "goalDecrease": "Diminuer l'objectif",
+      "goalIncrease": "Augmenter l'objectif",
+      "goalRemove": "Retirer l'objectif",
+      "conflictTitle": "Deux cibles, deux échelles",
+      "conflictBody": "Ton objectif transverse est de {{goal}} activités, mais tu vises {{runs}} sorties par semaine : il serait atteint avant tes sorties.",
+      "conflictFix_one": "Passer l'objectif à {{count}} activité",
+      "conflictFix_other": "Passer l'objectif à {{count}} activités"
     },
     "conflicts": {
       "title": "Séquençage des séances",

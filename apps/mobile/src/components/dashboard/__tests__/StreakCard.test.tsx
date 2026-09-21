@@ -20,7 +20,7 @@
  * const/let — on utilise `var` pour les variables mutables dans les factories.
  */
 import React from 'react';
-import { render } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import { StreakCard } from '../StreakCard';
 import { useStreakData } from '@/data/repositories/dashboard-repository';
 
@@ -35,10 +35,30 @@ jest.mock('@/data/repositories/dashboard-repository', () => ({
     last7: [],
     // US STREAK-01 : pas de trou rattrapable par défaut — le cas courant.
     restorableGap: null,
+    // US SERIE-01 : lecture en jours par défaut, aucune bascule proposée.
+    weekly: {
+      unit: 'day',
+      offerSwitch: false,
+      current: 0,
+      activeThisWeek: false,
+      doneThisWeek: 0,
+      goal: null,
+      goalMet: false,
+      goalConflict: false,
+      runningFrequency: null,
+      weeks: [],
+    },
     isLoading: false,
   })),
   useTodaySession: jest.fn(),
   useNutritionSummary: jest.fn(),
+}));
+
+// US SERIE-01 — la carte écrit le réglage d'unité quand on répond à la bascule. Mocké pour deux
+// raisons : isoler l'écriture (inspectable), et couper l'import d'`@/i18n` que ce repository
+// entraîne — il initialise i18next, ce que ce fichier ne veut surtout pas faire.
+jest.mock('@/data/repositories/settings-repository', () => ({
+  updateSettings: jest.fn(() => Promise.resolve()),
 }));
 
 // ---------------------------------------------------------------------------
@@ -97,6 +117,10 @@ jest.mock('@/theme/useTheme', () => ({
       accentText: '#ffffff',
       success: '#7c8a5b',
       danger: '#b23b2e',
+      // US STREAK-01 : la proposition de joker s'en sert. Absent, `withAlpha` levait une erreur
+      // que React retentait en silence — le test voyait un arbre vide sans jamais dire pourquoi.
+      warnText: '#8a6b2f',
+      track: '#eadcc6',
     },
   })),
 }));
@@ -125,6 +149,48 @@ const LAST7_FIXTURE = [
 ];
 
 // ---------------------------------------------------------------------------
+// Fixture hebdomadaire (US SERIE-01)
+//
+// Toujours présente dans le retour de `useStreakData`, même en lecture quotidienne : les deux
+// séries sont calculées côte à côte, c'est **l'affichage** qui en choisit une (spec D2).
+// ---------------------------------------------------------------------------
+
+const WEEKS_FIXTURE = [
+  { key: '2026-05-18', active: true, transparent: false, isCurrent: false },
+  { key: '2026-05-25', active: true, transparent: false, isCurrent: false },
+  { key: '2026-06-01', active: false, transparent: false, isCurrent: false },
+  { key: '2026-06-08', active: false, transparent: true, isCurrent: false },
+  { key: '2026-06-15', active: true, transparent: false, isCurrent: false },
+  { key: '2026-06-22', active: true, transparent: false, isCurrent: false },
+  { key: '2026-06-29', active: true, transparent: false, isCurrent: false },
+  { key: '2026-07-06', active: true, transparent: false, isCurrent: true },
+];
+
+const WEEKLY_FIXTURE = {
+  unit: 'day' as const,
+  offerSwitch: false,
+  current: 4,
+  activeThisWeek: true,
+  doneThisWeek: 3,
+  goal: null,
+  goalMet: false,
+  goalConflict: false,
+  runningFrequency: null,
+  weeks: WEEKS_FIXTURE,
+};
+
+/** Un retour de `useStreakData` complet, dont seul ce qui compte pour le test est précisé. */
+const streakData = (over: Record<string, unknown> = {}) => ({
+  current: 5,
+  activeToday: true,
+  last7: LAST7_FIXTURE,
+  restorableGap: null,
+  isLoading: false,
+  ...over,
+  weekly: { ...WEEKLY_FIXTURE, ...((over['weekly'] as object) ?? {}) },
+});
+
+// ---------------------------------------------------------------------------
 // Tests
 // ---------------------------------------------------------------------------
 
@@ -132,6 +198,13 @@ describe('StreakCard — smoke test', () => {
   beforeEach(() => {
     // Réinitialiser le spy entre les tests pour des assertions propres
     if (tSpy) tSpy.mockClear();
+    // Et reposer une valeur **stable** pour le hook. Sans elle, un composant qui rend deux fois
+    // (ce qui arrive dès qu'une offre est affichée) verrait la valeur `…Once` du premier rendu
+    // puis la valeur d'usine au second — un test vert ou rouge selon le nombre de rendus. Les
+    // tests qui suivent utilisent donc `mockReturnValue`, pas `mockReturnValueOnce`.
+    (useStreakData as jest.Mock).mockReturnValue(
+      streakData({ current: 0, activeToday: false, last7: [], weekly: { current: 0, weeks: [] } }),
+    );
   });
 
   // -------------------------------------------------------------------------
@@ -139,13 +212,7 @@ describe('StreakCard — smoke test', () => {
   // -------------------------------------------------------------------------
 
   it('garde-fou double-nombre : le chiffre streak apparaît une seule fois', async () => {
-    (useStreakData as jest.Mock).mockReturnValueOnce({
-      current: 5,
-      activeToday: true,
-      last7: LAST7_FIXTURE,
-      restorableGap: null,
-      isLoading: false,
-    });
+    (useStreakData as jest.Mock).mockReturnValue(streakData({ current: 5 }));
 
     const { getAllByText, queryAllByText } = await render(<StreakCard />);
 
@@ -176,13 +243,9 @@ describe('StreakCard — smoke test', () => {
   // -------------------------------------------------------------------------
 
   it('état vide : affiche la sentinelle home.streak.empty et le chiffre 0', async () => {
-    (useStreakData as jest.Mock).mockReturnValueOnce({
-      current: 0,
-      activeToday: false,
-      last7: LAST7_FIXTURE,
-      restorableGap: null,
-      isLoading: false,
-    });
+    (useStreakData as jest.Mock).mockReturnValue(
+      streakData({ current: 0, activeToday: false }),
+    );
 
     const { getAllByText, queryAllByText } = await render(<StreakCard />);
 
@@ -204,12 +267,9 @@ describe('StreakCard — smoke test', () => {
   // -------------------------------------------------------------------------
 
   it('isLoading=true : un squelette, sans jamais afficher une série de 0', async () => {
-    (useStreakData as jest.Mock).mockReturnValueOnce({
-      current: 0,
-      activeToday: false,
-      last7: [],
-      isLoading: true,
-    });
+    (useStreakData as jest.Mock).mockReturnValue(
+      streakData({ current: 0, activeToday: false, last7: [], isLoading: true }),
+    );
 
     const { toJSON, queryByText } = await render(<StreakCard />);
 
@@ -222,5 +282,102 @@ describe('StreakCard — smoke test', () => {
     // d'affilée » une fraction de seconde à quelqu'un qui tient une série de 40 jours serait le
     // pire message possible de l'écran.
     expect(queryByText('0')).toBeNull();
+  });
+
+  // -------------------------------------------------------------------------
+  // 4. US SERIE-01 — la lecture hebdomadaire
+  // -------------------------------------------------------------------------
+
+  it('🔴 en semaines, c’est le compteur HEBDO qui s’affiche — et lui seul (D2)', async () => {
+    // La série quotidienne vaut 5, l'hebdomadaire 4. Afficher les deux serait demander à
+    // l'utilisateur laquelle est la vraie : il ne doit y avoir qu'un chiffre sur la carte.
+    (useStreakData as jest.Mock).mockReturnValue(
+      streakData({ current: 5, weekly: { unit: 'week', current: 4 } }),
+    );
+
+    const { queryAllByText } = await render(<StreakCard />);
+
+    expect(queryAllByText('4')).toHaveLength(1);
+    expect(queryAllByText('5')).toHaveLength(0);
+    expect(queryAllByText('home.streak.suffixWeek')).toHaveLength(1);
+    // Le suffixe des jours ne doit même pas avoir été demandé.
+    expect(tSpy.mock.calls.filter((a: string[]) => a[0] === 'home.streak.suffix')).toHaveLength(0);
+  });
+
+  it('la bande passe à HUIT semaines, étiquetées par le quantième de leur lundi', async () => {
+    (useStreakData as jest.Mock).mockReturnValue(
+      streakData({ weekly: { unit: 'week', current: 4 } }),
+    );
+
+    const { queryByText, queryAllByText } = await render(<StreakCard />);
+
+    // Le lundi 2026-06-15 → « 15 ». Les abréviations de jours, elles, disparaissent.
+    expect(queryByText('15')).not.toBeNull();
+    expect(queryByText('06')).not.toBeNull();
+    expect(queryAllByText('L')).toHaveLength(0);
+  });
+
+  it('sans objectif réglé, le bandeau affiche le COMPTE NU (R9)', async () => {
+    (useStreakData as jest.Mock).mockReturnValue(
+      streakData({ weekly: { unit: 'week', goal: null, doneThisWeek: 3 } }),
+    );
+
+    await render(<StreakCard />);
+
+    const calls = tSpy.mock.calls.filter((a: string[]) => a[0] === 'home.streak.weekCount');
+    expect(calls).toHaveLength(1);
+    expect(calls[0]?.[1]).toEqual({ count: 3 });
+    // Aucune cible inventée : la clé d'objectif n'est pas appelée.
+    expect(tSpy.mock.calls.filter((a: string[]) => a[0] === 'home.streak.weekGoal')).toHaveLength(0);
+  });
+
+  // -------------------------------------------------------------------------
+  // 5. US SERIE-01 — la bascule, proposée une fois (D1)
+  // -------------------------------------------------------------------------
+
+  it('la bascule ne s’affiche PAS quand la question a déjà été tranchée', async () => {
+    (useStreakData as jest.Mock).mockReturnValue(streakData({ weekly: { offerSwitch: false } }));
+
+    const { queryByText } = await render(<StreakCard />);
+
+    expect(queryByText('home.streak.switchTitle')).toBeNull();
+  });
+
+  it('🔴 « garder les jours » écrit le réglage lui AUSSI — sinon la carte reviendrait', async () => {
+    // Le piège serait de n'écrire la colonne que sur « oui ». Qui répond « non » reverrait alors la
+    // proposition à chaque ouverture : `null` continuerait de vouloir dire « jamais demandé ».
+    const { updateSettings } = require('@/data/repositories/settings-repository');
+    (updateSettings as jest.Mock).mockClear();
+    (useStreakData as jest.Mock).mockReturnValue(streakData({ weekly: { offerSwitch: true } }));
+
+    const { getByText } = await render(<StreakCard />);
+    fireEvent.press(getByText('home.streak.switchKeepDay'));
+
+    expect(updateSettings).toHaveBeenCalledWith({ streakUnit: 'day' });
+  });
+
+  it('« compter en semaines » écrit l’unité hebdomadaire', async () => {
+    const { updateSettings } = require('@/data/repositories/settings-repository');
+    (updateSettings as jest.Mock).mockClear();
+    (useStreakData as jest.Mock).mockReturnValue(streakData({ weekly: { offerSwitch: true } }));
+
+    const { getByText } = await render(<StreakCard />);
+    fireEvent.press(getByText('home.streak.switchToWeek'));
+
+    expect(updateSettings).toHaveBeenCalledWith({ streakUnit: 'week' });
+  });
+
+  it('🔴 un joker à proposer efface la bascule — une seule offre à la fois', async () => {
+    (useStreakData as jest.Mock).mockReturnValue(
+      streakData({
+        weekly: { offerSwitch: true },
+        restorableGap: { day: '2026-07-07', streakIfUsed: 6 },
+      }),
+    );
+
+    const { queryByText } = await render(<StreakCard />);
+
+    expect(queryByText('home.streak.jokerTitle')).not.toBeNull();
+    expect(queryByText('home.streak.switchTitle')).toBeNull();
   });
 });

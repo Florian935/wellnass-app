@@ -97,6 +97,9 @@ import {
   computeWeeklyStreak,
   weeklyGoalProgress,
   weeklyGoalConflict,
+  prevWeekKey,
+  resolveStreakUnit,
+  type StreakUnit,
 } from '@wellness/shared';
 import { useNutritionProfile } from './nutrition-repository';
 import { useProfile } from './profile-repository';
@@ -605,7 +608,42 @@ export type WeekDay = {
  * Elle est toujours calculée, quelle que soit l'unité affichée : c'est ce qui permet de basculer
  * sans rien perdre, et de montrer les deux compteurs côte à côte au moment du choix.
  */
+/**
+ * Nombre de semaines montrées par la bande de la carte (maquette SERIE-01, planche 1).
+ *
+ * Huit : deux mois, soit assez pour qu'une régularité se voie et qu'un trou se remarque, et assez
+ * peu pour que les pastilles restent tapables à la largeur d'une carte.
+ */
+export const WEEK_BAND_LENGTH = 8;
+
+/** Une semaine de la bande, telle que la carte l'affiche. */
+export type StreakWeekCell = {
+  /** Le lundi qui ouvre la semaine (`AAAA-MM-JJ`). */
+  key: string;
+  /** Au moins une activité — la semaine est tenue. */
+  active: boolean;
+  /** Entièrement en période « vie réelle » : traversée, ni comptée ni cassante (VIE-01). */
+  transparent: boolean;
+  /** La semaine en cours, celle qui court encore. */
+  isCurrent: boolean;
+};
+
 export type WeeklyStreakData = {
+  /**
+   * L'unité dans laquelle la série s'affiche — `'day'` ou `'week'` (spec D1).
+   *
+   * Résolue ici et **pas dans la carte** : c'est la seule couche qui connaît à la fois le réglage
+   * stocké et la série quotidienne en cours, dont dépend le repli. Une carte qui referait ce
+   * calcul de son côté finirait par diverger de l'écran de réglage.
+   */
+  unit: StreakUnit;
+  /**
+   * Vrai quand la question de l'unité **n'a jamais été posée** (`streak_unit is null`) alors que le
+   * compte a une série en jours à perdre. C'est très exactement le cas où la carte de bascule a
+   * quelque chose à proposer — et choisir, quelle que soit la réponse, écrit la colonne et la fait
+   * disparaître pour de bon. Aucun drapeau « déjà vue » à stocker (spec D1).
+   */
+  offerSwitch: boolean;
   /** Semaines actives consécutives. */
   current: number;
   /** La semaine en cours porte-t-elle déjà une activité ? */
@@ -618,6 +656,10 @@ export type WeeklyStreakData = {
   goalMet: boolean;
   /** L'objectif transverse est sous la fréquence de course visée (spec R10). */
   goalConflict: boolean;
+  /** La fréquence de course visée, à citer dans le message d'incohérence. */
+  runningFrequency: number | null;
+  /** Les {@link WEEK_BAND_LENGTH} dernières semaines, de la plus ancienne à la semaine en cours. */
+  weeks: StreakWeekCell[];
 };
 
 /** Données de streak retournées par `useStreakData`. */
@@ -663,6 +705,13 @@ export type StreakData = {
  * `last7` représente la semaine ISO courante (lundi → dimanche). Les jours futurs
  * de la semaine en cours sont inclus mais seront inévitablement inactifs.
  */
+/**
+ * Profondeur d'historique de la lecture hebdomadaire, en jours — 53 semaines.
+ *
+ * Une de plus que l'année, pour qu'une série d'un an pile ne bute pas sur la borne.
+ */
+const WEEKLY_WINDOW_DAYS = 371;
+
 export function useStreakData(windowDays = 30): StreakData {
   const { workouts, isLoading: workoutsLoading } = useWorkoutHistory();
   const { runs, isLoading: runsLoading } = useRunHistory();
@@ -672,7 +721,23 @@ export function useStreakData(windowDays = 30): StreakData {
   // jours d'historique + le jour courant — c'est ce que faisait le `setDate(- windowDays)` précédent.
   const sinceKey = useWindowStartKey(windowDays + 1);
 
-  const { totals, isLoading: totalsLoading } = useDailyTotals(sinceKey);
+  /**
+   * US SERIE-01 — la **nutrition** se lit sur 53 semaines, pas sur 30 jours.
+   *
+   * 🔴 Sans ça, la série hebdomadaire plafonnerait à quatre : la fenêtre de 30 jours ne contient
+   * que quatre lundis, et une série de 12 semaines — tout l'intérêt de compter en semaines —
+   * n'aurait jamais pu s'afficher. Seuls les totaux nutritionnels sont concernés : les séances, les
+   * sorties et les autres activités sont déjà lues sans borne, et les **pas** ne comptent pas pour
+   * la semaine (spec D3), donc leur fenêtre ne bouge pas.
+   *
+   * Effet de bord sur la série **quotidienne**, assumé et dans le bon sens : un jour actif par la
+   * seule nutrition, au-delà de 30 jours, était jusqu'ici invisible alors qu'une séance au même
+   * jour comptait. La correction ne peut qu'allonger une série tronquée, jamais la raccourcir —
+   * `computeStreakWithJokers` ne fait qu'ajouter des jours actifs à un ensemble.
+   */
+  const weeklySinceKey = useWindowStartKey(WEEKLY_WINDOW_DAYS + 1);
+
+  const { totals, isLoading: totalsLoading } = useDailyTotals(weeklySinceKey);
   const { rows: stepRows, isLoading: stepsLoading } = useDailySteps(sinceKey);
   const { goal: stepGoal, isLoading: goalLoading } = useStepGoal();
   // US STREAK-01 — les jours couverts par un joker comptent dans la série, et **seulement** là.
@@ -684,6 +749,8 @@ export function useStreakData(windowDays = 30): StreakData {
   const { settings } = useSettings();
   const { runnerProfile } = useRunnerProfile();
   const weeklyGoal = settings?.weeklyActivityGoal ?? null;
+  // `null` veut dire « la question n'a jamais été posée » — jamais « la valeur par défaut ».
+  const storedUnit = (settings?.streakUnit ?? null) as StreakUnit | null;
 
   const isLoading =
     workoutsLoading ||
@@ -776,19 +843,38 @@ export function useStreakData(windowDays = 30): StreakData {
     const { active: activeWeeks, transparent: transparentWeeks } = weekActivity(activities, pausedDays);
     const weeklyStreak = computeWeeklyStreak(activeWeeks, transparentWeeks, currentWeekKey);
     const goalProgress = weeklyGoalProgress(activities, currentWeekKey, weeklyGoal);
+    // La bande de la carte : les 8 dernières semaines, la plus ancienne en tête.
+    const weeks: StreakWeekCell[] = [];
+    let cell = currentWeekKey;
+    for (let i = 0; i < WEEK_BAND_LENGTH; i += 1) {
+      weeks.unshift({
+        key: cell,
+        active: activeWeeks.has(cell),
+        transparent: transparentWeeks.has(cell),
+        isCurrent: i === 0,
+      });
+      cell = prevWeekKey(cell);
+    }
+
     const weekly: WeeklyStreakData = {
+      // `streak.current > 0` et non « le compte a de l'historique » : ce qu'on protège est une
+      // série **en cours**, pas une ancienneté (spec D1).
+      unit: resolveStreakUnit(storedUnit, streak.current > 0),
+      offerSwitch: storedUnit == null && streak.current > 0,
       current: weeklyStreak.current,
       activeThisWeek: weeklyStreak.activeThisWeek,
       doneThisWeek: goalProgress.done,
       goal: goalProgress.total,
       goalMet: goalProgress.met,
       goalConflict: weeklyGoalConflict(weeklyGoal, runnerProfile?.weeklyFrequency ?? null),
+      runningFrequency: runnerProfile?.weeklyFrequency ?? null,
+      weeks,
     };
 
     return { streak, last7, restorableGap, weekly };
   }, [
     workouts, runs, otherActivities, totals, stepRows, stepGoal, jokerDayList, todayKey, pausedDays,
-    weeklyGoal, runnerProfile?.weeklyFrequency,
+    weeklyGoal, runnerProfile?.weeklyFrequency, storedUnit,
   ]);
 
   return {

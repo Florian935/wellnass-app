@@ -238,3 +238,33 @@ export function weeklyGoalConflict(
   if (goal === null || runningFrequency === null || runningFrequency === undefined) return false;
   return goal < runningFrequency;
 }
+
+// ---------------------------------------------------------------------------
+// L'unité affichée (spec D1)
+// ---------------------------------------------------------------------------
+
+/** L'unité dans laquelle la série s'affiche. */
+export type StreakUnit = 'day' | 'week';
+
+/**
+ * Quelle unité afficher, quand personne n'a encore choisi.
+ *
+ * 🔴 **Le jour pour qui a une série en cours, la semaine pour les autres** (spec D1).
+ *
+ * Ce que la règle protège n'est pas « l'ancienneté du compte », c'est **une série qui court**.
+ * Basculer l'unité de quelqu'un qui tient 40 jours, sans le prévenir, serait le pire accueil
+ * possible pour cette US : son compteur changerait de valeur **et** de sens du jour au lendemain.
+ * À l'inverse, un compte dont la série est déjà à zéro — neuf, ou revenu après une pause — n'a
+ * rien à perdre et démarre directement sur l'unité qui ne se casse pas au premier jour de repos.
+ *
+ * `stored` non nul veut dire « la question a été posée et tranchée » : on respecte, sans condition.
+ * Et `null` reste lisible comme « jamais posée » — c'est ce qui permet à la carte de bascule de
+ * n'apparaître **qu'une fois**, sans stocker un drapeau « déjà vue » quelque part.
+ */
+export function resolveStreakUnit(
+  stored: StreakUnit | null | undefined,
+  hasDailyStreakInProgress: boolean,
+): StreakUnit {
+  if (stored === 'day' || stored === 'week') return stored;
+  return hasDailyStreakInProgress ? 'day' : 'week';
+}

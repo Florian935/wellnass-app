@@ -8,6 +8,7 @@ import {
   weeklyGoalConflict,
   WEEKLY_GOAL_MIN,
   WEEKLY_GOAL_MAX,
+  resolveStreakUnit,
 } from './streak-week';
 import type { DayActivity } from './streak';
 
@@ -218,5 +219,25 @@ describe('bornes de l’objectif', () => {
   it('de 1 à 14 — deux séances par jour est déjà une semaine hors norme', () => {
     expect(WEEKLY_GOAL_MIN).toBe(1);
     expect(WEEKLY_GOAL_MAX).toBe(14);
+  });
+});
+
+describe('resolveStreakUnit (D1)', () => {
+  it('un choix explicite est respecté, sans condition', () => {
+    expect(resolveStreakUnit('day', false)).toBe('day');
+    expect(resolveStreakUnit('week', true)).toBe('week');
+  });
+
+  it('🔴 une série EN COURS reste comptée en jours tant qu’on n’a pas choisi', () => {
+    // Basculer quelqu'un qui tient une série de 40 jours, sans le prévenir, changerait son
+    // compteur de valeur ET de sens du jour au lendemain.
+    expect(resolveStreakUnit(null, true)).toBe('day');
+    expect(resolveStreakUnit(undefined, true)).toBe('day');
+  });
+
+  it('série à zéro → semaines : il n’y a rien à perdre', () => {
+    // Compte neuf, ou retour après une coupure : dans les deux cas le compteur affiche déjà 0,
+    // donc personne ne voit un chiffre changer sous ses yeux.
+    expect(resolveStreakUnit(null, false)).toBe('week');
   });
 });

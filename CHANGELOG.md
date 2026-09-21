@@ -10,6 +10,67 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 21/09/2026 — SERIE-01 : la série en semaines, jusqu'aux écrans (`dev`)
+
+> US SERIE-01 (roadmap 7.36), étape 4 du plan — **les écrans**. La migration et le moteur étaient
+> déjà poussés (commits `b9a75286` et `d2f1ab03`) ; cette passe branche l'unité sur la carte
+> d'accueil et ajoute le réglage. L'US passe à `etape: recette`.
+
+### Ajouté
+- **`apps/mobile/src/components/settings/StreakUnitSection.tsx`** — la section « Régularité » des
+  réglages : sélecteur d'unité (jours / semaines), pas d'objectif hebdomadaire **borné** de 1 à 14,
+  retrait de l'objectif, et le message d'incohérence quand l'objectif transverse passe sous la
+  fréquence de course visée. Extrait dans son fichier : `settings.tsx` dépasse déjà 1 100 lignes.
+- **`StreakCard`** — la bascule d'unité proposée **une fois** (spec D1), avec les deux compteurs
+  côte à côte. 🔴 **Aucun drapeau « déjà vue » n'est stocké** : `streak_unit is null` veut dire
+  « la question n'a jamais été posée », et répondre — *y compris « garder les jours »* — écrit la
+  colonne et fait disparaître la proposition pour de bon. Une seconde colonne aurait pu se
+  désynchroniser du réglage qu'elle accompagnait.
+- **`StreakCard`** — la bande de **huit semaines** en lecture hebdomadaire, étiquetée par le
+  quantième du lundi de chaque semaine. Même primitive `WeekDots` que les sept jours : une semaine
+  traversée par une période « vie réelle » reprend l'état `rest`, la semaine en cours l'état
+  `today` (contour, pas remplissage — elle court, on ne la juge pas).
+- **`resolveStreakUnit`** (`packages/shared/src/streak-week.ts`) + 3 tests.
+- **13 clés i18n** sous `home.streak.*` et **19** sous `settings.streak.*`, FR **et** EN.
+- **`StreakUnitSection.test.tsx`** — 12 tests (rien n'est écrit sans réponse, bornes non
+  enroulantes, incohérence signalée et non corrigée, unité effective affichée).
+- **`StreakCard.test.tsx`** — 7 tests neufs (un seul compteur affiché, bande de 8, compte nu,
+  bascule et ses deux réponses, joker prioritaire sur la bascule).
+
+### Modifié
+- **`dashboard-repository.ts`** — `WeeklyStreakData` porte désormais `unit`, `offerSwitch`,
+  `runningFrequency` et `weeks`. L'unité est résolue **ici** et pas dans la carte : c'est la seule
+  couche qui connaît à la fois le réglage stocké et la série quotidienne en cours.
+- 🔴 **La nutrition est lue sur 53 semaines** (371 jours) au lieu de 30 jours. Sans ça la série
+  hebdomadaire **plafonnait à quatre** — la fenêtre ne contient que quatre lundis — et une série de
+  12 semaines, tout l'intérêt de l'US, n'aurait jamais pu s'afficher. Les séances, sorties et
+  autres activités étaient déjà lues sans borne ; les **pas** ne comptent pas pour la semaine
+  (spec D3), leur fenêtre ne bouge pas.
+- **`resolveStreakUnit`** — le paramètre passe de `hasExistingHistory` à
+  `hasDailyStreakInProgress`. Ce que la règle protège n'est pas l'ancienneté d'un compte mais
+  **une série qui court** : un compte revenu après une coupure affiche déjà 0, il n'a rien à perdre
+  à démarrer en semaines.
+- **`settings.tsx`** — la section « Régularité » s'insère sous « Suivi » (même sujet que le bilan
+  de la semaine, pas un réglage d'affichage).
+- **`settings-screen.test.tsx`** — `StreakUnitSection` stubée comme `HealthConnectSection` et
+  `CycleTrackingSection` : elle lit `useStreakData`, qui ouvre toute la chaîne PowerSync.
+
+### Technique — notes
+- ⚠️ **Effet de bord assumé sur la série quotidienne**, dans le bon sens : un jour rendu actif par
+  la **seule** nutrition au-delà de 30 jours était jusqu'ici invisible, alors qu'une séance le même
+  jour comptait. La correction ne peut qu'**allonger** une série tronquée, jamais la raccourcir —
+  `computeStreakWithJokers` ne fait qu'ajouter des jours à un ensemble. Signalé en recette : un
+  testeur peut voir son compteur de jours monter sans rien avoir fait.
+- ⚠️ **Deux pièges de test rencontrés, tous deux consignés dans les fichiers concernés.**
+  (1) Le thème mocké de `StreakCard.test.tsx` n'avait pas `warnText` : `withAlpha` levait une
+  erreur que React **retentait en silence**, et le test voyait un arbre vide sans jamais dire
+  pourquoi. (2) Dans un test RNTL, empiler deux `render()` ou deux `fireEvent.press` laisse le
+  nettoyage dans un état bancal et ce sont les tests **suivants** qui échouent — on a cherché un
+  moment un bug dans « retirer l'objectif », qui n'y était pour rien. Un rendu, une interaction.
+- ✅ **Aucune sync rule à redéployer** : ce sont deux colonnes sur `user_settings`, table déjà
+  publiée et lue en `select *`.
+- `npm run lint`, `npm run typecheck`, `npm run test` : verts (3 845 Jest + 3 400 Vitest).
+
 ## 21/09/2026 (sexies) — SERIE-01 étapes 2 et 3 : la migration, et la série hebdo dans les données
 
 **Branche** : `dev` · commit précédent : `b9a75286`

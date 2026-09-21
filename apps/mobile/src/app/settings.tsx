@@ -23,6 +23,7 @@ import { HealthConnectSection } from '@/components/HealthConnectSection';
 import { CycleTrackingSection } from '@/components/CycleTrackingSection';
 import { AiLabSection } from '@/components/AiLabSection';
 import { Segment } from '@/components/Segment';
+import { StreakUnitSection } from '@/components/settings/StreakUnitSection';
 import { WorkoutLevelPreview } from '@/components/workout/WorkoutLevelPreview';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
@@ -378,6 +379,11 @@ export default function SettingsScreen() {
         />
       </View>
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.tracking.hint')}</Text>
+
+      {/* US SERIE-01 — l'unité de la série et l'objectif hebdomadaire transverse. Sa place est ici,
+          juste sous « Suivi » : c'est le même sujet que le bilan de la semaine, et non un réglage
+          d'affichage. Extrait dans son composant — cet écran fait déjà 1 100 lignes. */}
+      <StreakUnitSection />
 
       {/* Piliers actifs (décision H) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>

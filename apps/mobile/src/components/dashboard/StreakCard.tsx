@@ -7,6 +7,17 @@
  *
  * Pastille : jour actif → accent ; aujourd'hui inactif → contour accent ; futur → piste ;
  * passé inactif → surface. Données : `useStreakData` (current + last7, semaine lun→dim).
+ *
+ * ── US SERIE-01 : la même carte, deux unités ────────────────────────────────────────────────────
+ * Depuis SERIE-01 la carte sait se lire **en semaines** (`weekly.unit === 'week'`) : même nombre,
+ * même flamme, mêmes trois formes — seules changent la bande (huit semaines au lieu de sept jours)
+ * et le bandeau du bas (l'objectif de la semaine au lieu du décompte de jours actifs).
+ *
+ * 🔴 **Un seul composant, une prop d'unité.** La tentation était d'écrire une `WeeklyStreakCard` à
+ * côté ; on aurait alors maintenu deux cartes — donc deux accessibilités, deux squelettes de
+ * chargement, deux offres de joker — qui auraient divergé au premier correctif appliqué d'un seul
+ * côté. Et **jamais les deux compteurs en même temps** (spec D2) : deux séries affichées côte à
+ * côte, ce serait demander à l'utilisateur laquelle est la vraie.
  */
 
 import { Pressable, StyleSheet, Text, View } from 'react-native';
@@ -19,8 +30,13 @@ import { WeekDots, type DayState } from '@/components/widgets/primitives';
 import { Eyebrow, WidgetFrame } from '@/components/widgets/WidgetFrame';
 import { RowLine } from '@/components/widgets/RowLine';
 import { WidgetSkeleton } from '@/components/widgets/WidgetSkeleton';
-import { useStreakData, type WeekDay } from '@/data/repositories/dashboard-repository';
+import {
+  useStreakData,
+  type StreakWeekCell,
+  type WeekDay,
+} from '@/data/repositories/dashboard-repository';
 import { consumeJoker } from '@/data/repositories/streak-joker-repository';
+import { updateSettings } from '@/data/repositories/settings-repository';
 import { localDayKey } from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -33,14 +49,37 @@ function dayState(day: WeekDay, todayKey: string): DayState {
   return day.key > todayKey ? 'future' : 'empty';
 }
 
+/**
+ * Traduit une semaine en état de pastille — la même grammaire visuelle que les jours.
+ *
+ * `rest` pour une semaine **transparente** : le glyphe « R » de la primitive dit déjà « en pause »
+ * partout ailleurs dans l'app, et une semaine traversée par une période « vie réelle » est
+ * exactement ça. La semaine en cours encore à valider prend `today` (contour, pas remplissage) :
+ * elle court, on ne la juge pas — c'est la règle R3 rendue visible.
+ */
+function weekState(w: StreakWeekCell): DayState {
+  if (w.active) return 'done';
+  if (w.transparent) return 'rest';
+  if (w.isCurrent) return 'today';
+  return 'empty';
+}
+
 export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const { current, activeToday, last7, restorableGap, isLoading } = useStreakData();
+  const {
+    current: dailyCurrent,
+    activeToday,
+    last7,
+    restorableGap,
+    weekly,
+    isLoading,
+  } = useStreakData();
   const separators = useLocaleSeparators();
   const [jokerBusy, setJokerBusy] = useState(false);
   const [jokerError, setJokerError] = useState(false);
+  const [switchBusy, setSwitchBusy] = useState(false);
 
   if (isLoading) return <WidgetSkeleton size={size} label={t('home.streak.eyebrow')} />;
 
@@ -54,12 +93,18 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
    */
   const openReview = () => router.push('/review');
 
+  // US SERIE-01 — l'unité pilote tout ce qui suit. Elle vient du repository et non d'un calcul
+  // local : c'est la seule couche qui connaît à la fois le réglage et la série en cours.
+  const isWeek = weekly.unit === 'week';
+  const current = isWeek ? weekly.current : dailyCurrent;
   const isEmpty = current === 0;
   const labels = t('home.streak.days', { returnObjects: true }) as string[];
   const todayKey = localDayKey(new Date());
   const activeCount = last7.filter((d) => d.active).length;
 
-  const suffix = isEmpty ? t('home.streak.empty') : t('home.streak.suffix', { count: current });
+  const suffix = isEmpty
+    ? t(isWeek ? 'home.streak.emptyWeek' : 'home.streak.empty')
+    : t(isWeek ? 'home.streak.suffixWeek' : 'home.streak.suffix', { count: current });
 
   // ── Bande ──────────────────────────────────────────────────────────────────
   if (size === 'row') {
@@ -161,19 +206,40 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
       </Pressable>
     );
 
-  const dots = (tile: number, withCheck: boolean) => (
-    <WeekDots
-      tile={tile}
-      days={last7.map((d, i) => {
-        const state = dayState(d, todayKey);
-        return {
-          label: labels[i] ?? '',
-          state,
-          glyph: withCheck && state === 'done' ? '✓' : undefined,
-        };
-      })}
-    />
-  );
+  /**
+   * La bande : sept jours, ou huit semaines. **Même primitive**, donc mêmes couleurs, mêmes
+   * contours et même comportement d'accessibilité dans les deux lectures.
+   *
+   * L'étiquette d'une semaine est le **quantième de son lundi** (« 04 », « 11 »…) : deux caractères
+   * comme les abréviations de jours, donc aucune colonne ne se déforme, et ça reste rattachable au
+   * calendrier — ce qu'un simple « S-3 » ne permet pas.
+   */
+  const dots = (tile: number, withCheck: boolean) =>
+    isWeek ? (
+      <WeekDots
+        tile={tile}
+        days={weekly.weeks.map((w) => {
+          const state = weekState(w);
+          return {
+            label: w.key.slice(8, 10),
+            state,
+            glyph: withCheck && state === 'done' ? '✓' : undefined,
+          };
+        })}
+      />
+    ) : (
+      <WeekDots
+        tile={tile}
+        days={last7.map((d, i) => {
+          const state = dayState(d, todayKey);
+          return {
+            label: labels[i] ?? '',
+            state,
+            glyph: withCheck && state === 'done' ? '✓' : undefined,
+          };
+        })}
+      />
+    );
 
   /**
    * Bandeau de récapitulatif de la semaine.
@@ -186,8 +252,96 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
    * Effacé quand une proposition de joker est affichée : deux bandeaux superposés dans une même
    * cellule, dont un porte une action, se disputeraient l'attention.
    */
+  /**
+   * US SERIE-01 (D1) — **la bascule, proposée une fois et une seule**.
+   *
+   * On ne bascule personne d'office : quelqu'un qui tient 12 jours verrait son compteur passer à 2
+   * du jour au lendemain, sans comprendre. Alors on demande — mais une seule fois, et en montrant
+   * **les deux chiffres**, parce que le choix n'a de sens qu'en voyant ce qu'il change.
+   *
+   * 🔴 **Aucun drapeau « déjà vue » n'est stocké.** `streak_unit is null` veut dire « la question
+   * n'a jamais été posée » ; répondre — *quelle que soit la réponse*, y compris « garder les
+   * jours » — écrit la colonne, et `offerSwitch` retombe à faux pour toujours. Une seconde colonne
+   * `switch_card_seen` aurait pu se désynchroniser du réglage qu'elle était censée accompagner.
+   *
+   * Effacée quand un joker est proposé : deux offres empilées dans une même carte se disputeraient
+   * l'attention, et le joker est la plus urgente des deux (elle expire).
+   */
+  // Formes `row` et `small` exclues par construction : elles sont retournées plus haut, avant ce
+  // point. Une proposition à deux boutons n'a de toute façon pas sa place dans une ligne de liste.
+  const switchOfferVisible = weekly.offerSwitch && restorableGap == null;
+
+  const chooseUnit = (unit: 'day' | 'week') => {
+    setSwitchBusy(true);
+    // Pas de `catch` qui laisse l'utilisateur dans le noir : en cas d'échec d'écriture la carte
+    // reste telle quelle et la proposition reviendra au prochain rendu — c'est le comportement
+    // voulu, la question n'a alors effectivement pas été tranchée.
+    void updateSettings({ streakUnit: unit }).finally(() => setSwitchBusy(false));
+  };
+
+  const switchOffer = !switchOfferVisible ? null : (
+    <View
+      style={[
+        styles.joker,
+        {
+          backgroundColor: withAlpha(colors.accent, 0.09),
+          borderColor: withAlpha(colors.accent, 0.3),
+        },
+      ]}
+    >
+      <Text style={[styles.jokerTitle, { color: colors.accent }]} maxFontSizeMultiplier={1.3}>
+        {t('home.streak.switchTitle')}
+      </Text>
+      <Text style={[styles.jokerBody, { color: colors.text }]} maxFontSizeMultiplier={1.3}>
+        {t('home.streak.switchBody', { days: dailyCurrent, weeks: weekly.current })}
+      </Text>
+      <Text style={[styles.jokerRule, { color: colors.textMuted }]} maxFontSizeMultiplier={1.3}>
+        {t('home.streak.switchRule')}
+      </Text>
+      <View style={styles.switchRow}>
+        <Pressable
+          onPress={() => chooseUnit('week')}
+          disabled={switchBusy}
+          accessibilityRole="button"
+          style={[styles.switchBtn, { backgroundColor: colors.accent }]}
+        >
+          <Text style={[styles.switchBtnLabel, { color: colors.accentText }]} maxFontSizeMultiplier={1.3}>
+            {t('home.streak.switchToWeek')}
+          </Text>
+        </Pressable>
+        <Pressable
+          onPress={() => chooseUnit('day')}
+          disabled={switchBusy}
+          accessibilityRole="button"
+          style={[styles.switchBtn, { borderWidth: 1, borderColor: colors.border }]}
+        >
+          <Text style={[styles.switchBtnLabel, { color: colors.text }]} maxFontSizeMultiplier={1.3}>
+            {t('home.streak.switchKeepDay')}
+          </Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+
+  /**
+   * En lecture hebdomadaire, le bandeau porte **l'objectif de la semaine** (spec R8/R9).
+   *
+   * 🔴 Sans objectif réglé, il affiche le **compte nu** — « 3 activités cette semaine » — et jamais
+   * une cible inventée. C'est la leçon d'`activity_level` (NUTRI-UX01), où un repli affiché comme
+   * un choix a fini par surestimer une cible calorique de ~614 kcal/jour en silence.
+   */
+  const weekBannerText = isWeek
+    ? weekly.goal == null
+      ? t('home.streak.weekCount', { count: weekly.doneThisWeek })
+      : weekly.goalMet
+        ? t('home.streak.weekGoalMet', { count: weekly.goal })
+        : t('home.streak.weekGoal', { done: weekly.doneThisWeek, goal: weekly.goal })
+    : activeToday
+      ? t('home.streak.bannerActive', { count: activeCount })
+      : t('home.streak.bannerIdle', { count: activeCount });
+
   const weekBanner =
-    restorableGap != null ? null : (
+    restorableGap != null || switchOfferVisible ? null : (
       <View
         style={[
           styles.banner,
@@ -195,9 +349,7 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
         ]}
       >
         <Text style={[styles.bannerTitle, { color: colors.accent }]} numberOfLines={1}>
-          {activeToday
-            ? t('home.streak.bannerActive', { count: activeCount })
-            : t('home.streak.bannerIdle', { count: activeCount })}
+          {weekBannerText}
         </Text>
       </View>
     );
@@ -221,6 +373,7 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
         </View>
         {dots(30, false)}
         {jokerOffer}
+        {switchOffer}
         {weekBanner}
       </WidgetFrame>
     );
@@ -239,8 +392,9 @@ export function StreakCard({ size = 'wide' }: { size?: WidgetSize }) {
         <Text style={[styles.largeNum, { color: colors.accent }]}>{current}</Text>
         <Text style={[styles.largeSuffix, { color: colors.textMuted }]}>{suffix} 🔥</Text>
       </View>
-      {dots(38, true)}
+      {dots(isWeek ? 32 : 38, true)}
       {jokerOffer}
+      {switchOffer}
       {/* Même bandeau que la forme `wide` — il n'existe qu'en un seul endroit depuis ACCUEIL-04,
           au lieu d'être recopié dans les deux formes. */}
       {weekBanner}
@@ -276,4 +430,8 @@ const styles = StyleSheet.create({
   jokerCta: { fontFamily: fontFamily.bodySemi, fontSize: 13, marginTop: 2 },
   jokerRule: { fontFamily: fontFamily.body, fontSize: 11.5, lineHeight: 16, marginTop: 2 },
   bannerTitle: { fontFamily: fontFamily.bodyBold, fontSize: 14 },
+  // Bascule d'unité : deux cibles côte à côte, chacune >= 44 dp de haut.
+  switchRow: { flexDirection: 'row', gap: 8, marginTop: 6 },
+  switchBtn: { flex: 1, minHeight: 44, borderRadius: 12, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 8 },
+  switchBtnLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13, textAlign: 'center' },
 });

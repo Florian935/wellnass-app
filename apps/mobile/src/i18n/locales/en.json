@@ -1232,7 +1232,20 @@
       "jokerUse": "Use my joker",
       "jokerRule": "1 joker per month. It freezes a single missed day — never two in a row.",
       "jokerError": "The joker could not be used. Please try again.",
-      "jokerA11y": "Use my joker to save a {{count}}-day streak"
+      "jokerA11y": "Use my joker to save a {{count}}-day streak",
+      "suffixWeek_one": "week in a row",
+      "suffixWeek_other": "weeks in a row",
+      "emptyWeek": "One activity this week, and the first one counts.",
+      "weekCount_one": "{{count}} activity this week",
+      "weekCount_other": "{{count}} activities this week",
+      "weekGoal": "{{done}} of {{goal}} activities this week",
+      "weekGoalMet_one": "Weekly goal reached: {{count}} activity",
+      "weekGoalMet_other": "Weekly goal reached: {{count}} activities",
+      "switchTitle": "How about counting in weeks?",
+      "switchBody": "{{days}} days in a row today — that's {{weeks}} weeks, read differently. Both numbers describe the same history.",
+      "switchRule": "A week gives you seven chances to keep it. You can switch back to days whenever you like.",
+      "switchToWeek": "Count in weeks",
+      "switchKeepDay": "Keep days"
     },
     "nutrition": {
       "title": "Nutrition",
@@ -2239,6 +2252,30 @@
       "review": "Weekly review",
       "hint": "Your personal journals, available when you need them — without cluttering the home screen.",
       "activities": "My other activities"
+    },
+    "streak": {
+      "title": "Consistency",
+      "unitLabel": "Count the streak in",
+      "unit": {
+        "day": "Days",
+        "week": "Weeks"
+      },
+      "unitHint": "Both counts always exist — you pick the one you see. A week gives you seven chances to keep it.",
+      "goalLabel": "Weekly goal",
+      "goalNone": "No goal set",
+      "goalNoneHint_one": "The app shows the plain count: {{count}} activity this week.",
+      "goalNoneHint_other": "The app shows the plain count: {{count}} activities this week.",
+      "goalSet": "Set one",
+      "goalValue_one": "{{count}} activity per week",
+      "goalValue_other": "{{count}} activities per week",
+      "goalBounds": "From {{min}} to {{max}}, across all disciplines.",
+      "goalDecrease": "Decrease the goal",
+      "goalIncrease": "Increase the goal",
+      "goalRemove": "Remove the goal",
+      "conflictTitle": "Two targets, two scales",
+      "conflictBody": "Your cross-pillar goal is {{goal}} activities, but you aim for {{runs}} runs a week: it would be reached before your runs.",
+      "conflictFix_one": "Set the goal to {{count}} activity",
+      "conflictFix_other": "Set the goal to {{count}} activities"
     },
     "conflicts": {
       "title": "Session sequencing",

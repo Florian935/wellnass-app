@@ -5040,3 +5040,66 @@ Maquettes : <https://claude.ai/artifact/Fp7sCrnKZ3YbVink6RBt5U> (planche 5).
 - ⚠️ **Une seule variante transparente**, texte clair (spec D3). Pas de version « texte foncé » : elle doublerait le sélecteur pour un gain marginal, le halo suffisant dans les deux cas.
 - ⚠️ **Les cinq autres formats de Strava ne sont pas repris** : ce sont des déclinaisons de mise en page, la transparente est la seule qui change l'**usage**.
 - ⚠️ **Aucune destination nommée** (Stories, WhatsApp…) : la feuille de partage de l'OS les propose déjà, et les recréer afficherait des marques tierces.
+
+---
+
+## 83. SERIE-01 — La régularité dite en semaines (`dev`)
+
+Spec : [serie01-serie-hebdomadaire.md](docs/specs/functional/us/serie01-serie-hebdomadaire.md) ·
+Plan : [serie01-serie-hebdomadaire.md](docs/plans/serie01-serie-hebdomadaire.md) ·
+Analyse : [analyse-strava-2026-09.md](docs/product/analyse-strava-2026-09.md) (candidats S13 et S7).
+
+> **Ce que ça ajoute** : la série peut se compter **en semaines** au lieu de jours, et un
+> **objectif hebdomadaire transverse** (en nombre d'activités, toutes disciplines) s'affiche sous
+> la carte. Rien n'est retiré : la série quotidienne, le joker et les jours en pause fonctionnent
+> exactement comme avant, et les deux séries sont calculées en permanence — c'est **l'affichage**
+> qui en choisit une.
+
+### A — 🔴 La règle qui décide de tout
+
+- [ ] 🔴 **Un lundi matin, la série ne tombe pas à zéro.** En lecture hebdomadaire, avec une semaine précédente tenue et **aucune** activité cette semaine, le compteur garde sa valeur. Sans cette règle, la série de tout le monde se casserait chaque lundi — c'est le seul point qui peut invalider l'US.
+- [ ] La semaine en cours encore vide apparaît **en contour** dans la bande, pas remplie : elle court, elle n'est pas jugée.
+- [ ] Une activité ce jour-là remplit la pastille de la semaine et incrémente le compteur.
+
+### B — La bascule, une seule fois
+
+- [ ] Sur un compte qui **a une série de jours en cours** et n'a jamais choisi : la carte propose « Et si on comptait en semaines ? », avec **les deux chiffres**.
+- [ ] 🔴 Choisir **« Garder les jours »** fait disparaître la proposition **définitivement** — ferme l'app, rouvre-la, change d'écran : elle ne doit plus jamais revenir.
+- [ ] Choisir « Compter en semaines » bascule la carte immédiatement (nombre, suffixe, bande).
+- [ ] Un compte **sans série en cours** ne voit pas la proposition : il est déjà en semaines.
+- [ ] Quand un **joker** est proposé le même jour, c'est lui qui s'affiche — jamais les deux offres à la fois.
+
+### C — La bande de huit semaines
+
+- [ ] En lecture hebdomadaire, la bande montre **huit semaines** étiquetées par le quantième de leur lundi (04, 11, 18…), la plus ancienne à gauche.
+- [ ] Une semaine entièrement couverte par une période « vie réelle » et sans activité apparaît **en R** (traversée) : elle ne compte pas et ne casse pas.
+- [ ] En lecture quotidienne, la bande reste celle des **sept jours** — rien n'a bougé.
+
+### D — L'objectif de la semaine
+
+- [ ] Réglages › **Régularité** : sans objectif, l'écran dit « Aucun objectif réglé » et la carte affiche le **compte nu** (« 3 activités cette semaine »).
+- [ ] 🔴 **Rien ne s'écrit tant qu'on n'a pas répondu** : ouvrir l'écran, en sortir, y revenir — toujours « aucun objectif réglé », jamais une valeur apparue toute seule.
+- [ ] « M'en fixer un » propose **ta fréquence de course visée** si tu en as une, sinon 3.
+- [ ] Le pas **borne** : à 14, « + » ne fait rien ; à 1, « − » ne fait rien. (Il n'enroule pas comme le sélecteur d'heure.)
+- [ ] « Retirer l'objectif » ramène au compte nu.
+- [ ] L'objectif se **réarme seul le lundi** : rien n'est stocké, tout se recalcule.
+- [ ] Une activité **antidatée** dans la semaine corrige l'avancement rétroactivement.
+
+### E — L'incohérence, signalée
+
+- [ ] Objectif transverse **sous** la fréquence de course visée (ex. objectif 2, fréquence 3) : un message l'explique dans le réglage.
+- [ ] 🔴 **Rien n'est corrigé tout seul** : l'objectif garde sa valeur tant qu'on n'appuie pas sur la proposition d'alignement.
+- [ ] Objectif égal ou supérieur à la fréquence : aucun message.
+
+### F — Offline et synchro
+
+- [ ] **En mode avion** : changer l'unité, régler l'objectif, l'augmenter, le retirer — tout répond immédiatement et survit à un redémarrage de l'app.
+- [ ] De retour en ligne, le réglage remonte : vérifier sur un **second appareil** connecté au même compte que l'unité et l'objectif sont les mêmes.
+- [ ] ⚠️ **Aucune sync rule à déployer** pour cette US : ce sont deux **colonnes** sur `user_settings`, déjà publiée et lue en `select *`.
+
+### G — Ce qu'il faut savoir
+
+- ⚠️ **Les pas ne rendent pas une semaine active** (spec D3), alors qu'ils comptent pour le jour. « J'ai marché » et « je me suis entraîné » ne sont pas la même promesse ; à l'échelle de la semaine, les confondre rendrait la série presque inbrisable.
+- ⚠️ **La nutrition, elle, compte** — la série quotidienne la comptait déjà, et l'exclure priverait de série quelqu'un qui n'utilise que ce pilier (décision de cadrage H).
+- ⚠️ **La lecture hebdomadaire fait lire la nutrition sur 53 semaines** au lieu de 30 jours (sans quoi la série plafonnerait à quatre). Effet de bord assumé sur la série **quotidienne** : un jour actif par la seule nutrition au-delà de 30 jours était invisible alors qu'une séance au même jour comptait. La correction ne peut qu'**allonger** une série tronquée. Si un testeur voit son compteur de jours **augmenter** sans rien avoir fait, c'est ça — et c'est le bon sens.
+- ⚠️ **Le joker et les jours en pause ne sont pas touchés** (spec D5) : ils restent des mécanismes de la série **quotidienne**.
