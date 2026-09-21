@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 21/09/2026 (quater) — SERIE-01 entre au pipeline : la régularité, dite en semaines
+
+**Branche** : `dev` · commit précédent : `8d54b2f6` · **aucune ligne de code applicatif**
+
+### Ajouté
+
+- **Spec et plan de SERIE-01** (roadmap **7.36**, en attente de validation) — la **série
+  hebdomadaire** et un **objectif récurrent transverse** en nombre d'activités. Candidats **S13** et
+  **S7** de l'analyse Strava, cadrés ensemble parce qu'ils parlent de la même chose.
+
+### Technique / Notes
+
+- 🔴 **Le constat qui motive l'US** : notre série est quotidienne, donc fragile, et on l'a **déjà
+  reconnu deux fois** — le **joker** (STREAK-01, 7.14) et les **jours en pause** (VIE-01, 1.28) sont
+  deux mécanismes correctifs empilés sur le même défaut. Deux US, un troisième état de jour dans le
+  calcul, et un jour de repos reste un jour perdu — alors que nos propres programmes le
+  recommandent. Strava répond plus simplement : il compte en **semaines**.
+- 🔴 **La règle qui décide de tout (R3)** : la semaine courante ne casse **jamais** la série tant
+  qu'elle n'est pas finie. Ratée, elle ferait tomber la série de tout le monde à zéro **le lundi
+  matin**. Elle se prouve par un test, pas par un écran — d'où le moteur pur en étape 1 du plan.
+- 🔴 **Asymétrie trouvée en lisant le code** : la série agrège **les trois piliers**, mais la seule
+  cible hebdomadaire de l'app vit sur `running_profiles.weekly_frequency`. Musculation et nutrition
+  n'en ont aucune. C'est précisément le trou que l'objectif transverse comble.
+- ⚠️ **Rectification d'une affirmation de l'analyse**, faite en lisant `guidance.ts` : elle annonçait
+  « quatre systèmes qui se contrediraient ». Il n'y en a que **deux** (la série et la fréquence
+  coureur). GUID-01 est une **couche de politique** qui ne produit aucune recommandation — elle
+  décide *comment* ça parle, pas *ce que* ça vaut.
+- ⚠️ **5 décisions demandées**, dont l'unité par défaut : **semaine** pour les comptes neufs, **jour**
+  pour les comptes existants. Basculer sans prévenir quelqu'un qui tient une série de 40 jours
+  serait le pire accueil possible pour cette US.
+- ✅ **Deux colonnes additives** sur `user_settings` (déjà publiée, lue en `select *`) : aucune table
+  neuve, **aucune sync rule à redéployer**. 🔴 Mais les **trois gestes** d'une colonne restent dus —
+  migration, schéma PowerSync local, repository — sous peine de la panne silencieuse de
+  `cycle_tracking_enabled`.
+- ⚠️ **Étape design non franchie** : `/design` n'est pas invocable par l'agent. Le brief à coller est
+  en §10 de la spec ; **rien n'a été produit à la place**.
+
+
 ## 21/09/2026 (ter) — PARTAGE-02 : la carte de partage transparente. Le lot Strava est livré.
 
 **Branche** : `dev` · commit précédent : `ab5a12f5`

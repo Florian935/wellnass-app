@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 250 livré · 4 partiel · 2 à faire (sur 262)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 250 livré · 4 partiel · 3 à faire (sur 263)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -99,6 +99,7 @@ avant de pouvoir publier.
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
+| **SERIE-01** — La régularité dite en semaines — série hebdomadaire et objectif récurrent transverse | `validation` | `dev` | [7.36] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
@@ -126,8 +127,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1313 · `main` a **1310** commits de retard sur `dev` |
-| Specs d'US | 170 au total — 87 clôturées, 83 en cours |
+| Commits | 1314 · `main` a **1311** commits de retard sur `dev` |
+| Specs d'US | 171 au total — 87 clôturées, 84 en cours |
 | Migrations | 109/109 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -137,11 +138,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `8d54b2f`  feat(partage): la carte transparente, à coller sur sa propre photo
 - `ab5a12f`  feat(course): une sortie sans record a enfin quelque chose à dire
 - `14f7ac7`  feat(course): le journal des efforts existe, s'écrit et se rattrape
 - `97894d1`  feat(course): le moteur des meilleurs efforts, et le lot Strava cadré
 - `6aefd16`  fix(nutri): la passe critique — deux fenêtres, sept flux, quatre retraits
-- `9474590`  fix(nutri): le livré rejoint la maquette — carrés, héros, grammes, ordre
 
 ---
 
