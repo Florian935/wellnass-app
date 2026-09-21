@@ -107,6 +107,16 @@ bucket_definitions:
       - select * from runs                  where user_id = bucket.user_id and deleted_at is null
       - select * from planned_sessions      where owner_id = bucket.user_id and deleted_at is null
       - select * from running_pace_records  where user_id = bucket.user_id and deleted_at is null
+      # US EFFORT-01 (5.43) : le JOURNAL des efforts — une ligne par (course, distance).
+      # 🔴 SYNC RULE NEUVE À DÉPLOYER À LA MAIN (migration 20260921051142, poussée le 21/09/2026).
+      # ⚠️ À ne pas confondre avec `running_pace_records` juste au-dessus, qui est le PALMARÈS :
+      # une ligne par distance, le meilleur temps, cinq distances. Ce journal en porte huit et garde
+      # TOUS les passages — c'est lui qui permet de dire « 2ᵉ meilleur temps », ce dont le palmarès
+      # est structurellement incapable (index unique par distance).
+      # 🔴 L'oubli serait silencieux ET durable : les efforts seraient calculés et écrits en local
+      # seulement. Tout marcherait sur le téléphone qui a couru, et les rangs seraient FAUX sur tout
+      # autre appareil — un classement calculé sur un journal partiel reste un classement plausible.
+      - select * from run_efforts           where user_id = bucket.user_id and deleted_at is null
       # ── Analytics (US 9.10) ─────────────────────────────────────────────────
       # append-only : PAS de deleted_at (ne pas ajouter `and deleted_at is null`).
       - select * from analytics_events      where user_id = bucket.user_id

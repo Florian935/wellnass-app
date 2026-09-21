@@ -52,6 +52,11 @@ export const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   // qui font la séance. Exactement l'oubli que RUN-F2c avait commis sur `session_intervals`.
   { table: 'run_intervals', col: 'user_id' },
   { table: 'running_pace_records', col: 'user_id' },
+  // US EFFORT-01 — le **journal** des efforts. Même raisonnement que `run_intervals` juste
+  // au-dessus : c'est de la donnée d'entraînement personnelle, et l'omettre exporterait le
+  // **palmarès** (cinq meilleurs temps) en laissant derrière **tout l'historique** des passages
+  // sur huit distances — soit l'essentiel de ce que l'app sait de la progression du coureur.
+  { table: 'run_efforts', col: 'user_id' },
   { table: 'food_entries', col: 'user_id' }, { table: 'recipes', col: 'user_id' },
   { table: 'recipe_ingredients', col: 'user_id' }, { table: 'meal_templates', col: 'user_id' },
   { table: 'meal_template_items', col: 'user_id' },

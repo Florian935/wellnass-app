@@ -96,7 +96,7 @@ import { useRunningRecords } from '@/data/repositories/running-record-repository
 import { formatIntervalBlockSummary } from '@/running/interval-summary';
 import { sessionPaceLabelText } from '@/running/session-pace-label';
 import { useAuthStore } from '@/stores/auth-store';
-import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayDate, useTodayKey } from '@/hooks/useTodayKey';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -119,7 +119,14 @@ export default function RunningScreen() {
   const [directoryOpen, setDirectoryOpen] = useState(false);
 
   // ── Ma semaine (F37) ──────────────────────────────────────────────────────────────────────
-  const weekStartKey = useMemo(() => localDayKey(startOfWeek(new Date())), []);
+  // ⚠️ `useTodayDate()` et **jamais** `new Date()` : cet écran lit partout ailleurs l'horloge du
+  // hook (`todayKey` juste en dessous). Mélanger les deux sources fait diverger le début de semaine
+  // du reste de la page — et le `useMemo(…, [])` figeait en plus la valeur au montage, donc l'écran
+  // ne changeait pas de semaine au passage de minuit. Défaut latent trouvé le 21/09/2026 : la suite
+  // `running-screen` est passée au rouge **toute seule** au changement de jour, le dimanche 20
+  // étant la fin d'une semaine et le lundi 21 le début de la suivante.
+  const today = useTodayDate();
+  const weekStartKey = useMemo(() => localDayKey(startOfWeek(today)), [today]);
   const { items: weekItems } = useWeekPlan(weekStartKey);
   const { runs } = useRunHistory();
 

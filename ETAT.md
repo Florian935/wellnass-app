@@ -1,4 +1,4 @@
-# État du projet — 20/09/2026
+# État du projet — 21/09/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -126,9 +126,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1310 · `main` a **1307** commits de retard sur `dev` |
+| Commits | 1311 · `main` a **1308** commits de retard sur `dev` |
 | Specs d'US | 170 au total — 87 clôturées, 83 en cours |
-| Migrations | 107/107 poussées sur le cloud |
+| Migrations | 109/109 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -137,11 +137,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `97894d1`  feat(course): le moteur des meilleurs efforts, et le lot Strava cadré
 - `6aefd16`  fix(nutri): la passe critique — deux fenêtres, sept flux, quatre retraits
 - `9474590`  fix(nutri): le livré rejoint la maquette — carrés, héros, grammes, ordre
 - `218e5af`  feat(nutri): la bibliothèque qui n'arrivait pas, deux moments, et un vert qui existe
 - `76593fd`  feat(cardio): le bleu sur tout le pilier, et un hub qui dit où on en est
-- `78f27b9`  feat(muscu): le hub a enfin quelque chose à dire, et le bordeaux s'adoucit
 
 ---
 

@@ -86,9 +86,24 @@ Puis `npm run db:push:dry`, `npm run db:push`, `npm run db:types`, et **cocher**
 🔴 **Deux étapes manuelles qui ne doivent pas tenir à la mémoire de quelqu'un :**
 1. **Coller [powersync-sync-rules.yaml](../specs/technical/powersync-sync-rules.yaml) dans le
    dashboard PowerSync et redéployer** — `run_efforts` est synchronisée. Déjà oublié une fois.
-2. Ajouter la table au **schéma PowerSync local** (`apps/mobile/src/powersync/schema.ts`). C'est
-   l'oubli qu'a rattrapé le test-garde `sql-prepare-sweep` sur FANT-01, et la panne silencieuse de
-   CYCLE-01 avant lui. **Vérifier que ce test-garde couvre bien la nouvelle table.**
+2. Ajouter la table au **schéma PowerSync local** (`apps/mobile/src/powersync/schema.ts`) : un bloc
+   `new Table({…})` **et** son enregistrement dans le `new Schema({…})` final — oublier le second
+   est l'erreur classique. Plus `efforts_computed_at: column.text` sur la table `runs` existante.
+   C'est la panne silencieuse de CYCLE-01 (31/07) et de `daily_step_goal` (03/08) : la colonne
+   existe en base, reste invisible côté client, et l'écriture est avalée sans un message.
+
+> **Ce qui rattrape l'oubli** : [`sql-prepare-sweep.test.ts`](../../apps/mobile/src/data/repositories/__tests__/sql-prepare-sweep.test.ts).
+> Il lit le source de **chaque** repository, en extrait toute chaîne littérale commençant par un
+> verbe SQL, et demande à SQLite de la **préparer** contre le schéma PowerSync local — préparer
+> suffit, c'est là que tables, colonnes et alias sont résolus. Une table fantôme ne passe pas. Né de
+> la recette MUSCU-UX01 (11/09), où deux des sept défauts étaient cette même panne (`e.name` sur
+> `exercises`, `w2.owner_id` sur `workouts`).
+>
+> ⚠️ **Sa limite, et elle nous concerne** : les requêtes **interpolées** (`${...}`) sont hors de
+> portée — leur texte final n'existe qu'à l'exécution. Le SQL du rattrapage (étape 4) risque d'être
+> construit ainsi : dans ce cas il faut **en plus** un test de repository sur
+> [`sqlite-harness`](../../apps/mobile/src/test-utils/sqlite-harness.ts), qui exécute le SQL pour de
+> bon. Écrire les requêtes en **littéral** partout où c'est possible les fait couvrir gratuitement.
 
 ---
 

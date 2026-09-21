@@ -10,6 +10,61 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 21/09/2026 — EFFORT-01 étapes 2 à 4 : la table, l'écriture, le rattrapage
+
+**Branche** : `dev` · commit précédent : `97894d1c`
+
+### Ajouté
+
+- **Deux migrations, poussées le jour même** : `20260921051142_effort01_run_efforts` (table `run_efforts`,
+  index unique partiel `(run_id, distance_key)`, index de classement `(user_id, distance_key,
+  time_seconds)`, RLS utilisateur, + `runs.efforts_computed_at`) et `…_publication`
+  (`alter publication powersync add table`, gardé par `pg_publication_tables`).
+  ✅ **Sync rule déployée le 21/09 (confirmé Florian)** — sans elle, les efforts seraient calculés
+  **en local seulement** et les rangs seraient **faux sur tout autre appareil**, sans erreur.
+- `run-effort-repository.ts` — lecture réactive avec **rang et écart dérivés** (`useRunEfforts`),
+  écriture à la clôture (`storeRunEffortsFromPoints`), rattrapage par lots de 20
+  (`backfillRunEfforts`), suppression logique (`softDeleteRunEfforts`).
+- `run-efforts-sql.test.ts` — **9 cas sur le harnais SQLite**, donc contre le **vrai schéma local** :
+  c'est ce qui ferme la panne silencieuse de CYCLE-01 (table absente du schéma → écriture avalée).
+- `run_efforts` déclarée dans `powersync/schema.ts` **et** enregistrée dans le `Schema` final.
+
+### Modifié
+
+- `detectAndStoreRunRecords` écrit le journal **depuis la trace qu'elle vient de décoder** : palmarès
+  et journal sortent du **même** décodage, donc ne peuvent pas diverger — et on ne paie pas deux fois
+  le calcul le plus cher du pilier (~3 000 points pour une heure).
+- `deleteRun` emporte les efforts de la course. Ce n'est pas du ménage : le journal porte les
+  **rangs**, et laisser les efforts d'une course supprimée classerait le coureur contre une sortie
+  qui n'existe plus.
+
+### Corrigé — deux défauts sans rapport avec l'US, trouvés en chemin
+
+- 🔴 **L'écran du hub Course lisait l'horloge réelle** (`localDayKey(startOfWeek(new Date()))`) alors
+  que tout le reste de la page passe par `useTodayKey`. Deux conséquences : le début de semaine
+  pouvait diverger du reste de l'écran, et le `useMemo(…, [])` **figeait la valeur au montage**, donc
+  l'app ne changeait pas de semaine au passage de minuit. Découvert parce que la suite
+  `running-screen` est passée au rouge **toute seule** pendant la session, le dimanche 20 étant une
+  fin de semaine et le lundi 21 un début. Corrigé par `useTodayDate()`.
+- 🔴 **`run_efforts` manquait à l'export de données** — attrapé par le garde-fou de complétude
+  (`data-export.test.ts`), qui exige que toute table du schéma soit exportée **ou explicitement
+  exclue avec sa raison**. L'omettre aurait exporté le palmarès (cinq meilleurs temps) en laissant
+  derrière **tout l'historique** des passages sur huit distances.
+
+### Technique / Notes
+
+- ⚠️ **`backfillRunEfforts` n'est encore appelé nulle part** : il est écrit et testé, mais son
+  branchement appartient à l'étape 5 (les écrans), avec l'affichage qu'il alimente. Dit ici pour
+  que ça ne passe pas pour un oubli.
+- Warning CLI `pg-delta` (Docker absent) au push, comme à tous les précédents : il ne porte pas sur
+  l'application du SQL — **vérifié par `npm run db:types`**, qui fait apparaître `run_efforts` et ses
+  13 colonnes sur les 3 vues, plus `efforts_computed_at` sur les 3 vues de `runs`.
+- **Aucun écran ne montre encore les efforts** : le comportement utilisateur est inchangé, hors la
+  correction d'horloge ci-dessus.
+- **Vérifié** : `typecheck` 0 · `lint` 0 **sans warning** · **3 808 tests Jest (227 suites)** +
+  **163 fichiers Vitest** verts, codes de sortie lus **sans pipe**.
+
+
 ## 20/09/2026 (quater) — Le lot Strava : cadrage complet, puis EFFORT-01 étape 1 (le moteur)
 
 **Branche** : `dev` (exception assumée, cf. FANT-01 / CARDIO-UX02) · commit précédent : `6aefd161`

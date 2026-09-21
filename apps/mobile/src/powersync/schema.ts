@@ -524,6 +524,10 @@ const runs = new Table({
   interval_phase_index: column.integer,
   interval_phase_start_distance_m: column.integer,
   interval_phase_start_duration_s: column.integer,
+  // US EFFORT-01 (5.43) : marqueur d'idempotence du rattrapage des efforts. `null` = course jamais
+  // traitée. Une course traitée SANS aucun effort (tapis, trace trop courte) est quand même
+  // marquée — sinon le rattrapage la reprendrait à chaque démarrage, pour rien.
+  efforts_computed_at: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -593,6 +597,35 @@ const running_pace_records = new Table({
   distance_key: column.text,
   best_time_seconds: column.integer,
   run_id: column.text,
+  achieved_at: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+/**
+ * US EFFORT-01 (5.43) — le **journal** des efforts : une ligne par (course, distance).
+ * Migration : supabase/migrations/20260921051142_effort01_run_efforts.sql
+ *
+ * ⚠️ À ne pas confondre avec `running_pace_records` juste au-dessus, qui est le **palmarès** :
+ * une ligne par distance, le meilleur temps, cinq distances. Ce journal en porte **huit** et garde
+ * **tous** les passages — c'est lui qui permet de dire « 2ᵉ meilleur temps », ce dont le palmarès
+ * est structurellement incapable (index unique par distance).
+ *
+ * 🔴 Le **rang n'est pas une colonne** : il est dérivé à la lecture (spec R7). Un effort classé 2ᵉ
+ * devient 3ᵉ à la course suivante sans que sa propre ligne ait bougé.
+ */
+const run_efforts = new Table({
+  user_id: column.text,
+  run_id: column.text,
+  distance_key: column.text,
+  // `numeric` côté Postgres → `real` ici : le temps porte des décimales (départ de fenêtre
+  // interpolé), un `integer` les tronquerait et deux efforts proches deviendraient ex aequo.
+  time_seconds: column.real,
+  start_index: column.integer,
+  end_index: column.integer,
+  mid_lat: column.real,
+  mid_lng: column.real,
   achieved_at: column.text,
   created_at: column.text,
   updated_at: column.text,
@@ -1014,6 +1047,7 @@ export const AppSchema = new Schema({
   run_intervals,
   planned_sessions,
   running_pace_records,
+  run_efforts,
   workout_templates,
   workout_template_exercises,
   lab_experiments,

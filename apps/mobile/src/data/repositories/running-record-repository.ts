@@ -33,6 +33,7 @@ import {
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, nowUtc, patch } from './_sql';
+import { storeRunEffortsFromPoints } from './run-effort-repository';
 import { upsertRunnerProfile } from './running-profile-repository';
 
 // ---------------------------------------------------------------------------
@@ -158,8 +159,9 @@ export async function detectAndStoreRunRecords(
     status: string;
     gps_track: string | null;
     finished_at: string | null;
+    efforts_computed_at: string | null;
   }>(
-    `SELECT source, status, gps_track, finished_at FROM runs WHERE id = ? AND deleted_at IS NULL`,
+    `SELECT source, status, gps_track, finished_at, efforts_computed_at FROM runs WHERE id = ? AND deleted_at IS NULL`,
     [runId],
   );
 
@@ -178,6 +180,23 @@ export async function detectAndStoreRunRecords(
 
   const userId = currentUserId();
   const achievedAt = run.finished_at ?? nowUtc();
+
+  // US EFFORT-01 — le **journal** des efforts, écrit ici et pas ailleurs : c'est le seul endroit où
+  // la trace vient d'être décodée. Un second `decodeTrack` pour écrire une seconde table paierait
+  // deux fois le calcul le plus cher du pilier (~3 000 points pour une heure de course).
+  //
+  // Le palmarès (ci-dessous) et le journal sortent donc du **même** décodage : ils ne peuvent pas
+  // diverger. ⚠️ Pas de transaction, comme pour les records — choix assumé du repo (offline-first,
+  // base locale mono-utilisateur), et le rattrapage idempotent reprend ce qui aurait échoué.
+  if (!run.efforts_computed_at) {
+    try {
+      await storeRunEffortsFromPoints(runId, points, achievedAt);
+    } catch (err) {
+      // Le journal ne doit jamais empêcher un record d'être enregistré : la course reste non
+      // marquée, et le rattrapage la reprendra au prochain lancement.
+      console.warn('[runningRecords] écriture du journal des efforts échouée:', err);
+    }
+  }
 
   const beaten: RecordDistanceKey[] = [];
   // Temps 5 km RETENU (arrondi, tel que stocké) si le 5 km est battu — sert à

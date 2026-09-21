@@ -66,6 +66,7 @@ import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { refreshHomeWidget } from '@/widgets/refresh-home-widget';
 import { pushRun } from '@/lib/health-connect';
 import { markPlannedSessionDone, reopenPlannedSession } from './planned-session-repository';
+import { softDeleteRunEfforts } from './run-effort-repository';
 import { backfillRunningRecords } from './running-record-repository';
 import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
 import {
@@ -1242,6 +1243,15 @@ export async function deleteRun(runId: string): Promise<void> {
   for (const record of held) {
     await softDelete('running_pace_records', record.id);
   }
+
+  // 1 bis. Le journal des efforts de cette course (US EFFORT-01, spec R18).
+  //
+  // ⚠️ Ce n'est pas seulement du ménage : le journal est ce qui porte les **rangs**. Laisser les
+  // efforts d'une course supprimée, c'est continuer à classer un coureur contre une sortie qui
+  // n'existe plus — son « 2ᵉ meilleur kilomètre » resterait deuxième derrière un effort effacé.
+  // La suppression logique suffit : les rangs des autres courses se recalculent tout seuls, parce
+  // qu'ils sont dérivés et non stockés.
+  await softDeleteRunEfforts(runId);
 
   // 2. La course.
   await softDelete('runs', runId);

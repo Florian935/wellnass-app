@@ -1977,6 +1977,69 @@ export type Database = {
           },
         ]
       }
+      run_efforts: {
+        Row: {
+          achieved_at: string
+          created_at: string
+          deleted_at: string | null
+          distance_key: string
+          end_index: number
+          id: string
+          mid_lat: number | null
+          mid_lng: number | null
+          run_id: string
+          start_index: number
+          time_seconds: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          achieved_at: string
+          created_at?: string
+          deleted_at?: string | null
+          distance_key: string
+          end_index: number
+          id: string
+          mid_lat?: number | null
+          mid_lng?: number | null
+          run_id: string
+          start_index: number
+          time_seconds: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          achieved_at?: string
+          created_at?: string
+          deleted_at?: string | null
+          distance_key?: string
+          end_index?: number
+          id?: string
+          mid_lat?: number | null
+          mid_lng?: number | null
+          run_id?: string
+          start_index?: number
+          time_seconds?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "run_efforts_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "run_efforts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       run_intervals: {
         Row: {
           actual_distance_m: number | null
@@ -2175,6 +2238,7 @@ export type Database = {
           deleted_at: string | null
           distance_m: number | null
           duration_seconds: number | null
+          efforts_computed_at: string | null
           elevation_gain_m: number | null
           elevation_loss_m: number | null
           finished_at: string | null
@@ -2200,6 +2264,7 @@ export type Database = {
           deleted_at?: string | null
           distance_m?: number | null
           duration_seconds?: number | null
+          efforts_computed_at?: string | null
           elevation_gain_m?: number | null
           elevation_loss_m?: number | null
           finished_at?: string | null
@@ -2225,6 +2290,7 @@ export type Database = {
           deleted_at?: string | null
           distance_m?: number | null
           duration_seconds?: number | null
+          efforts_computed_at?: string | null
           elevation_gain_m?: number | null
           elevation_loss_m?: number | null
           finished_at?: string | null
