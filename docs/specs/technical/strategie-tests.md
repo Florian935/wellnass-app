@@ -719,6 +719,37 @@ version antérieure, la suite mobile échoue à l'import du harness — l'erreur
 ⚠️ **En touchant à la couverture** : les seuils sont appliqués par la CI (§5 bis). Un seuil rouge
 signifie qu'on a retiré de la couverture — ajouter des tests, ne pas baisser le chiffre.
 
+   ### Lot 8 — rattraper ce que `dev` a livré sans filet
+
+   **Point de reprise au 22/09/2026.** Entre le 14/08 et le 21/09, `dev` a reçu **136 commits** —
+   AUTRE-01, DEPENSE-01, RESERV-01, MUSCU-UX02, LABO-01, NARR-01, les refontes UX des trois piliers,
+   DASH-01, les spikes VBT et corps 3D. Presque rien n'est arrivé avec des tests, et **trois
+   cliquets sont repassés au rouge** : `src/data/repositories` (43,76 / 32,7 / 37,93 % contre
+   44 / 33 / 39), les fonctions de `src/lib`, et le « reste » mobile, tombé de 74 à 66 %.
+
+   **C'est le scénario que §5 bis décrivait en théorie, arrivé pour de vrai.** Le cliquet a joué son
+   rôle — il a rougi — mais personne ne l'a lu pendant cinq semaines. Un cliquet ne protège que si
+   sa sortie est regardée : la leçon n'est pas « resserrer les seuils », c'est **mesurer la
+   couverture au moment où le code arrive**, pas cinq semaines après.
+
+   La règle de tri du lot 7 (les branches manquantes, pas les fichiers) **ne s'applique plus en
+   l'état** : quand du code neuf débarque en masse, le gisement redevient les **fichiers à 0 %**.
+   Les deux critères alternent, ils ne se remplacent pas — trier par branches manquantes n'a de sens
+   que sur une base dont tous les fichiers sont déjà atteints.
+
+   Premiers traités le 22/09 : `activity-repository` (27), `fuel-repository` (39),
+   `workout-report-repository` (34, huit requêtes exportées pour le harness) et
+   `widget-layout-repository` (17). Le cliquet des repositories repasse au vert.
+
+   ⚠️ **Un mock au type approximatif fabrique un faux vert, et c'est la septième famille.**
+   `useRestingMetabolismAt` rend un `RestingMetabolism` (`{ kcalPerHour, personalised }`) ; le mock
+   posait `resting: 1600`, un nombre. `estimateMetEnergy` lisait donc `undefined.kcalPerHour` →
+   dépense `NaN` → **toutes** les séances planifiées silencieusement écartées de la courbe. Six
+   tests « la séance est bien écartée » passaient **pour la mauvaise raison**, et seuls les trois
+   tests qui attendaient un chiffre ont rougi. Les mocks de hooks ne sont pas typés par le
+   compilateur : construire la valeur de retour à partir du **type réel**, comme pour les objets de
+   test du back-office (§5 bis). Un mock trop simple est un test qui ne teste rien.
+
 ### Ce qui n'est volontairement pas fait
 
 - **`weekly-review-repository` n'a pas de test d'écriture** : il n'en expose aucune, le bilan est

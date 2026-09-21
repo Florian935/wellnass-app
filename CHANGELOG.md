@@ -10,6 +10,62 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/09/2026 — Socle de tests, lot 8 : les repositories livrés sans filet (`chore/tests-lot8`)
+
+> Commit précédent : `1334a37`. **La CI de `dev` était rouge** : les 136 commits livrés depuis le
+> 14/08 (AUTRE-01, DEPENSE-01, RESERV-01, MUSCU-UX02, LABO-01, refontes UX…) ont apporté du code
+> sans tests, et trois cliquets de couverture étaient repassés sous leur seuil —
+> `src/data/repositories` à 43,76 / 32,7 / 37,93 % contre 44 / 33 / 39 exigés. Ce lot rétablit ce
+> cliquet-là. **117 tests**, mobile 3 845 → **3 962**.
+
+### Ajouté
+- **`__tests__/activity-sql.test.ts`** (27 tests) — écritures des **autres activités** (US AUTRE-01)
+  sur le harness SQLite. Verrouille les deux pannes silencieuses du fichier : le **ressenti
+  prérempli** depuis l'intensité (sans lui, `rpe` reste nul, la charge sRPE de l'activité vaut zéro,
+  et l'app annonce « repos » à quelqu'un qui vient de rouler 90 km), et le filtrage du jour sur la
+  **clé locale** et non sur `started_at` tronqué — une sortie de 23 h 30 bascule sinon au lendemain.
+  Couvre aussi le refus d'écrire sans session, les arrondis de colonnes entières, le soft delete, et
+  l'absence assumée de colonne `kcal` (décision D3).
+- **`__tests__/fuel-tank-assembly.test.tsx`** (39 tests) — assemblage du **Réservoir** (US
+  RESERV-01). Le moteur pur n'est pas mocké : ce qui est testé est le **tri en amont** — séance
+  planifiée déjà passée, d'un autre jour, annulée, sans heure ou à heure illisible, toutes écartées
+  de la projection ; repas de type inconnu non rangé à 0 h ; carte masquée sans poids (R9).
+- **`__tests__/workout-report-sql.test.ts`** (34 tests) — les **huit requêtes du bilan de séance**
+  (US MUSCU-UX02) sur du vrai SQLite, dont les trois pièges que le fichier signalait en 🔴 sans
+  qu'aucun test ne les tienne : le `GROUP BY s.id` qui referme le **doublon de plan**, la **borne
+  haute** du tonnage hebdo (sans elle, le bilan d'une séance de mars affiche « 3ᵉ séance de la
+  semaine » à côté du tonnage cumulé jusqu'à aujourd'hui), et le **record qu'on vient de poser**
+  exclu de sa propre référence. Plus le repli de langue — le défaut qui avait vidé le hub muscu.
+- **`__tests__/widget-layout.test.tsx`** (17 tests) — grilles de widgets. Vérifie ce que ce
+  repository fait de plus important et de moins visible : **ne rien perdre en écrivant**. Marqueur
+  de version `v` écrit (sinon la migration de formes se rejoue à chaque lecture), hub non muté
+  préservé tel que stocké, mutateurs opérant sur le layout **non filtré** (sinon les widgets masqués
+  disparaissent du JSON), et suivi du cycle masqué tant que les réglages ne sont pas chargés.
+
+### Modifié
+- **`workout-report-repository.ts`** — les huit constantes `SELECT_*` et `localWeekBounds` passent en
+  `export`, avec l'en-tête de convention (§3.3 de `strategie-tests.md`) : ces symboles ne sont
+  consommés que par le hook du fichier, l'`export` n'existe que pour les tests. **Aucun changement
+  de logique** : c'est le seul choix qui teste le SQL réellement embarqué plutôt qu'une copie.
+
+### Technique / Notes
+- **Un faux vert attrapé en cours de route**, à consigner : le mock de `useRestingMetabolismAt`
+  passait `resting: 1600` (un nombre) là où `estimateMetEnergy` lit `resting.kcalPerHour`. La
+  dépense sortait en `NaN`, toutes les séances planifiées étaient écartées, et **six tests
+  « la séance est bien écartée » passaient pour la mauvaise raison**. Corrigé en passant un
+  `RestingMetabolism` complet. Rappel : un mock au type approximatif produit exactement le genre de
+  vert qui ressemble à une couverture.
+- **Contre-épreuves faites**, chaque garde retirée à la main pour vérifier que le test rougit :
+  la garde `startHour < atHour` du Réservoir (1 test rouge), le `GROUP BY s.id` et la borne haute
+  de `SELECT_WEIGHT` (6 tests rouges). Un test de non-régression jamais vu échouer n'en est pas un.
+- **Cliquets** : `src/data/repositories` repasse au-dessus de son seuil sans qu'on l'ait touché.
+  **Deux restent rouges sur `dev`** et relèvent des lots suivants — `src/lib` fonctions (63,15 %
+  contre 64) et le « reste » mobile (66,02 / 59,45 / 59,07 contre 74 / 70 / 67), creusé par les
+  écrans et composants neufs (immersif, VBT, Labo, activités) livrés à 0 %.
+- Couverture mobile : 59,69 → **60,61 %** d'instructions, 53,36 → **54,12 %** de branches.
+- `npm run lint` (0 avertissement), `npm run typecheck` et `npm run test` verts sur les trois
+  workspaces : **3 400 (shared) + 3 962 (mobile) + 587 (admin) = 7 949 tests**.
+
 ## 21/09/2026 — SERIE-01 : la série en semaines, jusqu'aux écrans (`dev`)
 
 > US SERIE-01 (roadmap 7.36), étape 4 du plan — **les écrans**. La migration et le moteur étaient

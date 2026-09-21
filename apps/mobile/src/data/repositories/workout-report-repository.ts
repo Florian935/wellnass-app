@@ -37,7 +37,10 @@ import { useAuthStore } from '@/stores/auth-store';
 import { SELECT_PREVIOUS_SETS } from './records-repository';
 
 // ---------------------------------------------------------------------------
-// Requêtes
+// Requêtes — exportées pour être testables contre le harness SQLite (§3.3)
+//
+// Ces constantes ne sont consommées que par le hook de ce fichier : l'`export` n'existe que pour
+// les tests, qui les exécutent sur du vrai SQLite. Ne pas les importer depuis du code applicatif.
 // ---------------------------------------------------------------------------
 
 /**
@@ -47,7 +50,7 @@ import { SELECT_PREVIOUS_SETS } from './records-repository';
  *
  * `?` = id de la séance.
  */
-const SELECT_HEADER = `
+export const SELECT_HEADER = `
   SELECT w.id, w.started_at, w.finished_at, w.duration_seconds, w.rpe, w.notes,
          w.session_id, se.name AS session_name
   FROM workouts w
@@ -67,7 +70,7 @@ const SELECT_HEADER = `
  *
  * Paramètres : `[lang, workoutId]`.
  */
-const SELECT_SETS = `
+export const SELECT_SETS = `
   SELECT s.id, s.exercise_id, s.order_index, s.set_type, s.reps, s.weight_kg,
          s.duration_seconds, s.done, s.rpe, s.planned_weight_kg,
          COALESCE(tl.name, tfr.name) AS exercise_name,
@@ -87,7 +90,7 @@ const SELECT_SETS = `
 `;
 
 /** Records battus pendant cette séance. Paramètres : `[lang, workoutId]`. */
-const SELECT_RECORDS = `
+export const SELECT_RECORDS = `
   SELECT r.exercise_id, r.type, r.value,
          COALESCE(tl.name, tfr.name) AS exercise_name
   FROM personal_records r
@@ -106,7 +109,7 @@ const SELECT_RECORDS = `
  *
  * `?` = id de la séance.
  */
-const SELECT_PREVIOUS_BESTS = `
+export const SELECT_PREVIOUS_BESTS = `
   SELECT r.exercise_id, r.type, MAX(r.value) AS value
   FROM personal_records r
   WHERE r.deleted_at IS NULL
@@ -120,7 +123,7 @@ const SELECT_PREVIOUS_BESTS = `
  * **Le plus élevé, pas le plus récent** : c'est la règle R1 de `strength-intensity.ts`. Prendre le
  * plus récent ferait bondir les pourcentages après une séance légère.
  */
-const SELECT_ONE_RM = `
+export const SELECT_ONE_RM = `
   SELECT r.exercise_id, 'estimated_1rm' AS type, MAX(r.value) AS value
   FROM personal_records r
   WHERE r.deleted_at IS NULL AND r.type = 'estimated_1rm'
@@ -137,7 +140,7 @@ const SELECT_ONE_RM = `
  *
  * Paramètres : `[workoutId, title]`.
  */
-const SELECT_REFERENCES = `
+export const SELECT_REFERENCES = `
   SELECT w.duration_seconds, w.rpe,
          (SELECT COALESCE(SUM(s.reps * s.weight_kg), 0)
           FROM workout_sets s
@@ -159,7 +162,7 @@ const SELECT_REFERENCES = `
  *
  * Paramètres : `[workoutId, title]`.
  */
-const SELECT_BEST_PREVIOUS_VOLUME = `
+export const SELECT_BEST_PREVIOUS_VOLUME = `
   SELECT MAX(volume) AS best FROM (
     SELECT (SELECT COALESCE(SUM(s.reps * s.weight_kg), 0)
             FROM workout_sets s
@@ -184,7 +187,7 @@ const SELECT_BEST_PREVIOUS_VOLUME = `
  *
  * Paramètres : `[weekStart, weekEnd, weekStart, weekEnd]`.
  */
-const SELECT_WEIGHT = `
+export const SELECT_WEIGHT = `
   SELECT
     (SELECT COUNT(*) FROM workouts w
      WHERE w.status = 'completed' AND w.deleted_at IS NULL
@@ -258,7 +261,7 @@ type WeightRow = {
  * Bornes locales et non UTC : « cette semaine » est une notion du calendrier de l'utilisateur, et
  * une séance du dimanche soir bascule de semaine si on raisonne en UTC depuis un fuseau à l'est.
  */
-function localWeekBounds(iso: string): { start: string; end: string } {
+export function localWeekBounds(iso: string): { start: string; end: string } {
   const date = new Date(iso);
   const day = date.getDay(); // 0 = dimanche
   const offsetToMonday = day === 0 ? 6 : day - 1;

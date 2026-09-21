@@ -1,4 +1,4 @@
-# État du projet — 21/09/2026
+# État du projet — 22/09/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -126,8 +126,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `dev` (modifications non commitées) |
-| Commits | 1317 · `main` a **1314** commits de retard sur `dev` |
+| Branche courante | `chore/tests-lot8` (modifications non commitées) |
+| Commits | 1318 · `main` a **1315** commits de retard sur `dev` |
 | Specs d'US | 171 au total — 87 clôturées, 84 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -138,11 +138,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
-- `d2f1ab0`  feat(serie): la migration, et la série hebdo dans les données
-- `b9a7528`  feat(serie): le moteur de la série hebdomadaire
-- `0d05f3d`  docs(serie): cadrage de SERIE-01, la régularité dite en semaines
-- `8d54b2f`  feat(partage): la carte transparente, à coller sur sa propre photo
-- `ab5a12f`  feat(course): une sortie sans record a enfin quelque chose à dire
+- `1334a37` feat(serie): la série en semaines, de la carte d'accueil au réglage
+- `d2f1ab0` feat(serie): la migration, et la série hebdo dans les données
+- `b9a7528` feat(serie): le moteur de la série hebdomadaire
+- `0d05f3d` docs(serie): cadrage de SERIE-01, la régularité dite en semaines
+- `8d54b2f` feat(partage): la carte transparente, à coller sur sa propre photo
 
 ---
 
