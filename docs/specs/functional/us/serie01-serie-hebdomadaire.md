@@ -3,7 +3,7 @@ id: SERIE-01
 titre: "La régularité dite en semaines — série hebdomadaire et objectif récurrent transverse"
 roadmap: [7.36]
 catalogue: []
-etape: validation
+etape: code
 branche: dev
 maj: 21/09/2026
 ---
@@ -89,8 +89,17 @@ autres — O1 ; c'est **écarté** par l'analyse §9), les défis, les trophées
 
 ### 4.1 La série hebdomadaire
 
-**R1** — Une **semaine est active** si elle porte **au moins une** activité (musculation, course, ou
-autre activité saisie). Semaine **lundi → dimanche**, convention déjà en vigueur (C4).
+**R1** — Une **semaine est active** si elle porte **au moins une** activité : musculation, course,
+**nutrition**, ou autre activité saisie. Semaine **lundi → dimanche**, convention déjà en vigueur (C4).
+
+⚠️ **Correction du 21/09/2026, trouvée en écrivant le moteur.** La première version de cette règle
+omettait la **nutrition**. C'était une erreur : la série **quotidienne** la compte déjà, et l'exclure
+aurait privé de **toute** série hebdomadaire quelqu'un qui n'utilise que ce pilier — contraire à la
+décision de cadrage **H** (chaque pilier est utile seul).
+
+La ligne juste n'est pas « entraînement contre le reste », c'est **le geste délibéré contre la mesure
+passive** : noter un repas est un acte, le téléphone qui compte des pas n'en est pas un. C'est ce qui
+justifie d'inclure la nutrition **et** d'exclure les pas (D3), sans contradiction.
 
 **R2** — La série hebdomadaire est le nombre de **semaines actives consécutives**, en remontant.
 
@@ -192,7 +201,7 @@ de s'écraser.
 |---|---|---|
 | **D1** | **Quelle unité par défaut ?** | 🔴 **La semaine pour les comptes neufs, le jour pour les comptes existants** — la migration pose `'day'` explicitement. Basculer la série de quelqu'un qui en tient une de 40 jours, sans le prévenir, serait le pire accueil possible pour cette US. Une carte unique, une fois, propose la bascule. |
 | **D2** | **Affiche-t-on les deux séries en même temps ?** | **Non.** Deux compteurs de régularité côte à côte, c'est deux fois moins lisible et ça contredit [ADR-007](../../../adr/ADR-007-surfacage-analyses.md). L'autre unité se lit au détail. |
-| **D3** | **Les pas font-ils une semaine active ? (R15)** | **Non.** La série quotidienne les compte déjà ; à l'échelle de la semaine, « j'ai marché » et « je me suis entraîné » ne sont pas la même promesse, et la confusion viderait la série de son sens. |
+| **D3** | **Les pas font-ils une semaine active ? (R15)** | **Non.** La série quotidienne les compte déjà ; à l'échelle de la semaine, « j'ai marché » et « je me suis entraîné » ne sont pas la même promesse, et la confusion viderait la série de son sens. ⚠️ *Le critère retenu est le **geste délibéré** : la nutrition compte (on note son repas), les pas non (le téléphone les compte tout seul). Voir la correction de R1.* |
 | **D4** | **Propose-t-on une valeur d'objectif à l'onboarding ?** | **Oui, mais jamais écrite sans accord** (R9, R11) : la proposition vient de `weekly_frequency` si le pilier Course est actif, sinon de rien. |
 | **D5** | **Le joker devient-il inutile ?** | **Non, et on n'y touche pas.** Il reste attaché à la série quotidienne, qui continue d'exister. Si la semaine devient l'unité de tout le monde un jour, ce sera une autre US — pas un effet de bord de celle-ci. |
 

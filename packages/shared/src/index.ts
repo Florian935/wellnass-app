@@ -33,6 +33,7 @@ export * from './editorial-usage';
 export * from './measurements';
 export * from './macro-suggestion';
 export * from './streak-joker';
+export * from './streak-week';
 export * from './goals';
 export * from './weekly-review';
 export * from './share-card';

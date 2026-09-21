@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 21/09/2026 (quinquies) — SERIE-01 étape 1 : le moteur de la série hebdomadaire
+
+**Branche** : `dev` · commit précédent : `0d05f3d4`
+
+### Ajouté
+
+- `packages/shared/src/streak-week.ts` + ses **30 tests** — `weekKeyOf`, `prevWeekKey`,
+  `weekActivity`, `computeWeeklyStreak`, `weeklyGoalProgress`, `weeklyGoalConflict`.
+- Maquettes : <https://claude.ai/artifact/XPLzXifgCdC4UDsS2A7Utz> — 6 planches dont un prototype
+  jouable (la bascule jour ↔ semaine, l'objectif, l'avertissement d'incohérence).
+
+### Technique / Notes
+
+- 🔴 **La règle R3 est prouvée par un test, pas par un écran** : la semaine courante ne casse jamais
+  la série tant qu'elle n'est pas finie. Ratée, elle ferait tomber la série de tout le monde à zéro
+  **le lundi matin**. C'est pour ça que le moteur passe en premier.
+- 🔴 **Correction de la spec, trouvée en écrivant le moteur** : R1 omettait la **nutrition**. La
+  série quotidienne la compte déjà, et l'exclure aurait privé de toute série hebdomadaire quelqu'un
+  qui n'utilise que ce pilier — contraire à la décision de cadrage **H**. La ligne juste n'est pas
+  « entraînement contre le reste » mais **le geste délibéré contre la mesure passive** : noter un
+  repas est un acte, le téléphone qui compte des pas n'en est pas un. Ce critère justifie d'inclure
+  la nutrition **et** d'exclure les pas, sans contradiction.
+- **La clé de semaine est le lundi**, pas un numéro ISO : pas de semaine 53, pas de bascule d'année
+  où le 1ᵉʳ janvier appartient à l'année précédente. Elle se trie et se compare comme une date.
+  Arithmétique en UTC, comme `prevKey` de `streak.ts` — un calcul en heure locale sauterait un jour
+  au changement d'heure.
+- **Une semaine entièrement en pause est traversée** (R5) : ni comptée, ni cassante. C'est la règle
+  D4 de VIE-01 transposée. ⚠️ **L'activité prime sur la pause** : une semaine déclarée en pause où
+  l'on s'est entraîné est **active**.
+- La boucle de remontée porte un **garde-fou à 520 semaines** : elle traverse les semaines
+  transparentes, et un historique entièrement couvert de pauses la ferait tourner sans fin.
+- **Fichier neuf, à côté de `streak.ts` et non dedans** : la série quotidienne et ses deux
+  correctifs sont **en recette**, on n'ouvre pas un module que quelqu'un vérifie.
+- ⚠️ **Rien n'est branché** : aucune migration, aucun écran, comportement utilisateur inchangé.
+- **Vérifié** : `typecheck` 0 · `lint` 0 **sans warning** · **3 823 tests Jest** + **164 fichiers
+  Vitest** verts, codes de sortie lus **sans pipe**.
+
+
 ## 21/09/2026 (quater) — SERIE-01 entre au pipeline : la régularité, dite en semaines
 
 **Branche** : `dev` · commit précédent : `8d54b2f6` · **aucune ligne de code applicatif**
