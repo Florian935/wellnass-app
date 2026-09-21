@@ -127,9 +127,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1315 · `main` a **1312** commits de retard sur `dev` |
+| Commits | 1316 · `main` a **1313** commits de retard sur `dev` |
 | Specs d'US | 171 au total — 87 clôturées, 84 en cours |
-| Migrations | 109/109 poussées sur le cloud |
+| Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -138,11 +138,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `b9a7528`  feat(serie): le moteur de la série hebdomadaire
 - `0d05f3d`  docs(serie): cadrage de SERIE-01, la régularité dite en semaines
 - `8d54b2f`  feat(partage): la carte transparente, à coller sur sa propre photo
 - `ab5a12f`  feat(course): une sortie sans record a enfin quelque chose à dire
 - `14f7ac7`  feat(course): le journal des efforts existe, s'écrit et se rattrape
-- `97894d1`  feat(course): le moteur des meilleurs efforts, et le lot Strava cadré
 
 ---
 

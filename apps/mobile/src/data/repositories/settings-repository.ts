@@ -58,6 +58,8 @@ export type SettingsInput = Pick<
   | 'sbdLifts'
   | 'aiConsentAt'
   | 'showEnergyEstimates'
+  | 'streakUnit'
+  | 'weeklyActivityGoal'
 >;
 
 /** Ligne brute renvoyée par SQLite (colonnes snake_case). */
@@ -92,6 +94,9 @@ type SettingsDbRow = {
   ai_consent_at: string | null;
   /** US DEPENSE-02 — 0/1 ; `null` sur une ligne antérieure à la migration → lu « affiché ». */
   show_energy_estimates: number | null;
+  /** US SERIE-01 — `null` = jamais choisi, ce qui n'est PAS la même chose qu'une valeur par défaut. */
+  streak_unit: string | null;
+  weekly_activity_goal: number | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
@@ -172,6 +177,12 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     // colonne est `null`, ce qui doit se lire **affiché** (le défaut). L'inverse ferait disparaître
     // les dépenses de tous les comptes existants à la mise à jour, sans que personne l'ait demandé.
     showEnergyEstimates: row.show_energy_estimates !== 0,
+    // US SERIE-01 — on laisse passer `null` tel quel : c'est le code applicatif qui décide de
+    // l'unité par défaut (semaine pour un compte neuf, jour pour un compte qui a un historique),
+    // pas cette couche. Une valeur inconnue retombe sur `null` plutôt que d'être affichée comme
+    // un choix.
+    streakUnit: row.streak_unit === 'day' || row.streak_unit === 'week' ? row.streak_unit : null,
+    weeklyActivityGoal: row.weekly_activity_goal ?? null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -217,6 +228,12 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
   }
   if ('cycleHealthConnectEnabled' in input) {
     columns['cycle_health_connect_enabled'] = input.cycleHealthConnectEnabled ? 1 : 0;
+  }
+  if ('streakUnit' in input) {
+    columns['streak_unit'] = input.streakUnit ?? null;
+  }
+  if ('weeklyActivityGoal' in input) {
+    columns['weekly_activity_goal'] = input.weeklyActivityGoal ?? null;
   }
   if ('showEnergyEstimates' in input) {
     columns['show_energy_estimates'] = input.showEnergyEstimates ? 1 : 0;

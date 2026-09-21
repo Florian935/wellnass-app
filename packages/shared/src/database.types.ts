@@ -2843,10 +2843,12 @@ export type Database = {
           sbd_lifts: Json | null
           session_conflicts_enabled: boolean
           show_energy_estimates: boolean
+          streak_unit: string | null
           theme: string
           units: string
           updated_at: string
           user_id: string
+          weekly_activity_goal: number | null
         }
         Insert: {
           active_pillars?: Json
@@ -2868,10 +2870,12 @@ export type Database = {
           sbd_lifts?: Json | null
           session_conflicts_enabled?: boolean
           show_energy_estimates?: boolean
+          streak_unit?: string | null
           theme?: string
           units?: string
           updated_at?: string
           user_id: string
+          weekly_activity_goal?: number | null
         }
         Update: {
           active_pillars?: Json
@@ -2893,10 +2897,12 @@ export type Database = {
           sbd_lifts?: Json | null
           session_conflicts_enabled?: boolean
           show_energy_estimates?: boolean
+          streak_unit?: string | null
           theme?: string
           units?: string
           updated_at?: string
           user_id?: string
+          weekly_activity_goal?: number | null
         }
         Relationships: [
           {

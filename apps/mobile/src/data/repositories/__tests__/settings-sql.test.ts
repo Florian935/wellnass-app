@@ -43,6 +43,8 @@ jest.mock('@/stores/auth-store', () => ({
 }));
 
 type SettingsRow = {
+  streak_unit: string | null;
+  weekly_activity_goal: number | null;
   id: string;
   user_id: string;
   theme: string | null;
@@ -154,6 +156,31 @@ describe('updateSettings', () => {
     // erreur avalée par le `void`, interrupteur éteint sans message.
     expect(row()?.cycle_tracking_enabled).toBe(1);
     expect(await getCycleTrackingEnabled()).toBe(true);
+  });
+
+  // US SERIE-01 — mêmes colonnes, même piège. Ces trois cas sont ce qui empêche la panne du
+  // 31/07/2026 de se rejouer sur `streak_unit` et `weekly_activity_goal`.
+  it('écrit l’unité de série et l’objectif hebdomadaire (US SERIE-01)', async () => {
+    await updateSettings({ streakUnit: 'week', weeklyActivityGoal: 4 });
+
+    expect(row()).toMatchObject({ streak_unit: 'week', weekly_activity_goal: 4 });
+  });
+
+  it('🔴 écrit `null` pour un objectif retiré — et non 0', async () => {
+    await updateSettings({ weeklyActivityGoal: 4 });
+    await updateSettings({ weeklyActivityGoal: null });
+
+    // `0` voudrait dire « objectif de zéro activité », une cible absurde qui s'afficherait comme
+    // un choix. `null` veut dire « la question n'a jamais été posée » — c'est ce qui fait afficher
+    // le compte nu plutôt qu'une cible inventée.
+    expect(row()?.weekly_activity_goal).toBeNull();
+  });
+
+  it('🔴 `null` sur l’unité n’est PAS « jour » — c’est le code qui tranche', async () => {
+    await updateSettings({ theme: 'dark' });
+
+    // Poser 'day' ici priverait les comptes neufs de leur défaut (la semaine, décision D1).
+    expect(row()?.streak_unit).toBeNull();
   });
 });
 

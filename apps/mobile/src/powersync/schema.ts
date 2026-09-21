@@ -71,6 +71,12 @@ const profiles = new Table({
 
 const user_settings = new Table({
   user_id: column.text,
+  // US SERIE-01 — unité d'affichage de la série ('day' | 'week') et objectif hebdomadaire en
+  // nombre d'activités. ⚠️ Même leçon que `cycle_tracking_enabled` juste plus bas : absentes d'ici,
+  // ces colonnes existent côté serveur et restent invisibles du client — l'écriture part dans le
+  // vide, sans erreur.
+  streak_unit: column.text,
+  weekly_activity_goal: column.integer,
   theme: column.text,
   units: column.text,
   // US UX-05 — échelle d'intensité AFFICHÉE ('rpe' | 'rir'). La donnée reste `workout_sets.rpe` :

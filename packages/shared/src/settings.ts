@@ -202,6 +202,32 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
    * changerait en silence ce que l'utilisateur peut manger.
    */
   showEnergyEstimates: z.boolean().default(true),
+
+  /**
+   * US SERIE-01 — l'unité dans laquelle la série s'affiche.
+   *
+   * 🔴 **Nullable, et sans défaut Zod** : `null` veut dire « **la question n'a jamais été posée** ».
+   * C'est ce qui permet à l'app d'appliquer la **semaine** à un compte neuf et le **jour** à un
+   * compte qui a déjà un historique (spec D1) — basculer sans prévenir quelqu'un qui tient une
+   * série de 40 jours serait le pire accueil possible. Et c'est ce marqueur qui fait disparaître la
+   * carte de bascule une fois le choix fait.
+   *
+   * ⚠️ Les deux séries sont **toujours calculées** : ce champ ne décide que de l'affichage.
+   */
+  streakUnit: z.enum(['day', 'week']).nullable().default(null),
+
+  /**
+   * US SERIE-01 — l'objectif hebdomadaire, en **nombre d'activités** (1 à 14).
+   *
+   * En activités et non en kilomètres : c'est ce qui le rend **transverse** aux trois piliers. La
+   * seule cible hebdomadaire de l'app vivait jusqu'ici sur le profil coureur
+   * (`running_profiles.weekly_frequency`), et musculation comme nutrition n'en avaient aucune.
+   *
+   * 🔴 **`null` = jamais réglé**, et surtout pas « 3 » : l'écran affiche alors le **compte nu** de
+   * la semaine au lieu d'inventer une cible. Leçon d'`activity_level`, dont le repli s'affichait
+   * comme un choix et surestimait la cible calorique de ~614 kcal/jour, en silence.
+   */
+  weeklyActivityGoal: z.number().int().min(1).max(14).nullable().default(null),
 });
 
 export type UserSettingsRow = z.infer<typeof userSettingsRowSchema>;

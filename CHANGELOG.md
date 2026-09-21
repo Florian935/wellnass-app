@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 21/09/2026 (sexies) — SERIE-01 étapes 2 et 3 : la migration, et la série hebdo dans les données
+
+**Branche** : `dev` · commit précédent : `b9a75286`
+
+### Ajouté
+
+- **Migration `20260921132311_serie01_streak_unit_and_weekly_goal`**, poussée le jour même : deux
+  colonnes **additives et nullables** sur `user_settings` — `streak_unit` (`'day'`/`'week'`) et
+  `weekly_activity_goal` (1 à 14). ✅ **Aucune sync rule à déployer** (`user_settings` est publiée et
+  lue en `select *`).
+- Les deux colonnes déclarées **aux quatre endroits** : `powersync/schema.ts`, le schéma Zod
+  partagé, et les trois points de `settings-repository.ts` (type d'entrée, lecture, écriture).
+- `useStreakData` expose désormais un bloc **`weekly`** : série hebdomadaire, progression de
+  l'objectif, et le signalement d'incohérence avec la fréquence de course visée.
+- **3 tests de garde** sur le harnais SQLite, donc contre le vrai schéma local.
+
+### Technique / Notes
+
+- 🔴 **Aucune valeur `default` en SQL, et c'est une décision.** `null` doit vouloir dire « la
+  question n'a jamais été posée ». Leçon d'`activity_level`, qui était `not null default 'moderate'`
+  et dont le repli s'affichait comme un choix — un sédentaire recevait une cible **surestimée de
+  ~614 kcal/jour**, en silence. Ici `weekly_activity_goal is null` fait afficher le **compte nu**, et
+  `streak_unit is null` laisse **le code** trancher : semaine pour un compte neuf, jour pour un
+  compte qui a un historique (décision D1).
+- 🔴 **Un objectif retiré s'écrit `null`, jamais `0`** — un test le fige. `0` voudrait dire
+  « objectif de zéro activité », une cible absurde qui s'afficherait comme un choix.
+- Contraintes `check` **nommées et posées à part** : `add column … check (…)` produit un nom généré
+  impossible à reprendre proprement ensuite (patron de DEPENSE-00).
+- **Les deux séries sortent des mêmes activités**, dans le même `useMemo` : elles décrivent le même
+  historique et ne peuvent donc pas se contredire.
+- ⚠️ **Identifié, non fait** : il n'existe pas de garde-fou générique sur `SettingsInput`
+  (l'équivalent de `profile-columns-guard.test.ts` pour les réglages). Les trois tests posés
+  couvrent **ces** colonnes, pas la classe entière. À porter au backlog.
+- ⚠️ **Aucun écran ne montre encore la semaine** : comportement utilisateur inchangé.
+- **Vérifié** : `typecheck` 0 · `lint` 0 **sans warning** · **3 826 tests Jest** + 164 fichiers
+  Vitest verts, codes de sortie lus **sans pipe**.
+
+
 ## 21/09/2026 (quinquies) — SERIE-01 étape 1 : le moteur de la série hebdomadaire
 
 **Branche** : `dev` · commit précédent : `0d05f3d4`

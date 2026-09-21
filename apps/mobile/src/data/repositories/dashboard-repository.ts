@@ -92,6 +92,11 @@ import {
   type AdherenceByDayType,
   type LowFuelDay,
   type ProteinDistribution,
+  weekKeyOf,
+  weekActivity,
+  computeWeeklyStreak,
+  weeklyGoalProgress,
+  weeklyGoalConflict,
 } from '@wellness/shared';
 import { useNutritionProfile } from './nutrition-repository';
 import { useProfile } from './profile-repository';
@@ -108,6 +113,7 @@ import {
 import { useActiveWorkout, useWorkoutHistory } from './workout-repository';
 import { useRunHistory, useRunStats } from './run-repository';
 import { useRunningRecords } from './running-record-repository';
+import { useRunnerProfile } from './running-profile-repository';
 import { useSettings } from './settings-repository';
 import { useActivities, useActivitiesOnDay } from './activity-repository';
 import { useDayEnergy, useEnergyTargetByDay } from './energy-repository';
@@ -593,6 +599,27 @@ export type WeekDay = {
   isToday: boolean;
 };
 
+/**
+ * US SERIE-01 — la lecture **hebdomadaire** de la même activité.
+ *
+ * Elle est toujours calculée, quelle que soit l'unité affichée : c'est ce qui permet de basculer
+ * sans rien perdre, et de montrer les deux compteurs côte à côte au moment du choix.
+ */
+export type WeeklyStreakData = {
+  /** Semaines actives consécutives. */
+  current: number;
+  /** La semaine en cours porte-t-elle déjà une activité ? */
+  activeThisWeek: boolean;
+  /** Jours actifs de la semaine courante — le « done » de l'objectif. */
+  doneThisWeek: number;
+  /** L'objectif réglé, ou `null` : « la question n'a jamais été posée ». */
+  goal: number | null;
+  /** Objectif atteint. Toujours faux sans objectif. */
+  goalMet: boolean;
+  /** L'objectif transverse est sous la fréquence de course visée (spec R10). */
+  goalConflict: boolean;
+};
+
 /** Données de streak retournées par `useStreakData`. */
 export type StreakData = {
   /** Nombre de jours actifs consécutifs (0 si aucune activité récente). */
@@ -612,6 +639,8 @@ export type StreakData = {
    * proposition n'a pas de sens.
    */
   restorableGap: RestorableGap | null;
+  /** US SERIE-01 — la même activité, lue en semaines. Toujours calculée. */
+  weekly: WeeklyStreakData;
   isLoading: boolean;
 };
 
@@ -650,6 +679,11 @@ export function useStreakData(windowDays = 30): StreakData {
   const { days: jokerDayList, isLoading: jokersLoading } = useJokerDays();
   // US VIE-01 — les jours en période « vie réelle » sont *traversés* par la série, pas comptés.
   const { pausedDays, isLoading: realLifeLoading } = useRealLifeState();
+  // US SERIE-01 — l'objectif hebdomadaire réglé (ou `null`), et la fréquence de course visée dont
+  // il peut diverger. Les deux sont facultatifs : sans eux, la carte affiche le compte nu.
+  const { settings } = useSettings();
+  const { runnerProfile } = useRunnerProfile();
+  const weeklyGoal = settings?.weeklyActivityGoal ?? null;
 
   const isLoading =
     workoutsLoading ||
@@ -663,7 +697,7 @@ export function useStreakData(windowDays = 30): StreakData {
 
   const todayKey = useTodayKey();
 
-  const { streak, last7, restorableGap } = useMemo(() => {
+  const { streak, last7, restorableGap, weekly } = useMemo(() => {
     // Construire la map des activités par jour
     const map = new Map<string, DayActivity>();
 
@@ -736,14 +770,33 @@ export function useStreakData(windowDays = 30): StreakData {
       };
     });
 
-    return { streak, last7, restorableGap };
-  }, [workouts, runs, otherActivities, totals, stepRows, stepGoal, jokerDayList, todayKey, pausedDays]);
+    // US SERIE-01 — la lecture hebdomadaire, depuis **exactement** les mêmes activités : les deux
+    // séries décrivent le même historique, elles ne peuvent donc pas se contredire.
+    const currentWeekKey = weekKeyOf(todayKey);
+    const { active: activeWeeks, transparent: transparentWeeks } = weekActivity(activities, pausedDays);
+    const weeklyStreak = computeWeeklyStreak(activeWeeks, transparentWeeks, currentWeekKey);
+    const goalProgress = weeklyGoalProgress(activities, currentWeekKey, weeklyGoal);
+    const weekly: WeeklyStreakData = {
+      current: weeklyStreak.current,
+      activeThisWeek: weeklyStreak.activeThisWeek,
+      doneThisWeek: goalProgress.done,
+      goal: goalProgress.total,
+      goalMet: goalProgress.met,
+      goalConflict: weeklyGoalConflict(weeklyGoal, runnerProfile?.weeklyFrequency ?? null),
+    };
+
+    return { streak, last7, restorableGap, weekly };
+  }, [
+    workouts, runs, otherActivities, totals, stepRows, stepGoal, jokerDayList, todayKey, pausedDays,
+    weeklyGoal, runnerProfile?.weeklyFrequency,
+  ]);
 
   return {
     current: streak.current,
     activeToday: streak.activeToday,
     last7,
     restorableGap,
+    weekly,
     isLoading,
   };
 }
