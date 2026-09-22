@@ -1017,7 +1017,12 @@ export async function openSettings(): Promise<void> {
   if (Platform.OS !== 'android') return;
   try {
     const { openHealthConnectSettings } = await nativeModule();
-    openHealthConnectSettings();
+    // 🔴 `await` indispensable (22/09/2026). Sans lui, le `catch` ci-dessous ne voit **rien** : la
+    // promesse rejetée part seule et remonte en rejet non capturé, que React Native affiche en
+    // avertissement global. Le `try/catch` existait pourtant pour ce cas précis — l'activité des
+    // réglages peut être absente. Même famille que le `void p.finally(…)` du 11/08/2026 : un appel
+    // asynchrone non attendu n'est pas couvert par le bloc qui l'entoure.
+    await openHealthConnectSettings();
   } catch (error) {
     console.warn('[health-connect] ouverture des réglages impossible :', error);
   }

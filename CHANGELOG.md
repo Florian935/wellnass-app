@@ -10,6 +10,61 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/09/2026 — Socle de tests, lot 10 : la couche logique, et un rejet non capturé (`chore/tests-lot8`)
+
+> Commit précédent : `78d12e3`. **106 tests**, mobile 4 120 → **4 226**, couverture 62,08 →
+> **63,2 %**. **Le cliquet `src/lib` repasse au vert** (fonctions 63,15 → au-dessus de 64).
+> Il ne reste qu'un cliquet rouge, celui du « reste » mobile — les écrans et composants, lot 11.
+
+### Corrigé
+- 🔴 **`health-connect.ts` — `openSettings()` avait un `catch` qui n'attrapait rien.**
+  `openHealthConnectSettings()` était appelé **sans `await`** à l'intérieur du `try` : la promesse
+  rejetée partait seule et remontait en **rejet non capturé**, que React Native affiche en
+  avertissement global. Le `try/catch` existait pourtant pour ce cas précis — l'activité des
+  réglages peut être absente sur un appareil sans Health Connect installé. Découvert en écrivant le
+  test : le rejet **tuait le worker Jest**, ce qui est la démonstration la plus directe qu'il
+  n'était capturé nulle part. Même famille que le `void p.finally(…)` du 11/08/2026 : *un appel
+  asynchrone non attendu n'est pas couvert par le bloc qui l'entoure*. `grep` passé sur tout
+  `src/lib` — **occurrence unique**, conformément à la règle « dès qu'un défaut apparaît, le
+  chercher ailleurs ». Correctif + test de non-régression posés ensemble.
+
+### Ajouté
+- **`src/lib/__tests__/health-connect-push.test.ts`** (50 tests) — les cinq chemins d'écriture et
+  les deux imports, qui formaient le gros du fichier non couvert. Verrouille surtout la **reprise
+  unitaire** : `insertRecords` refuse un lot **entier** dès qu'un seul record est en cause, et sans
+  reprise record par record un rattrapage de 30 jours serait tout-ou-rien — l'utilisateur lirait
+  « 0 activité synchronisée » sans distinguer « rien à envoyer » de « tout a échoué ». Également :
+  le compte rendu porte sur les **sessions** et non les records (3 courses ≠ 6 activités), l'opt-in
+  éteint ne produit **aucun** rapport d'erreur (c'est un choix, pas une panne), l'import de poids
+  n'écrase jamais une saisie locale et relit les jours **supprimés** (sans quoi une pesée effacée
+  ressusciterait à chaque passage), et les deux messages qui distinguent « rien de neuf » de
+  « rien lu du tout » — la leçon de recette de CONF-06.
+- **`src/running/__tests__/interval-guidance.test.tsx`** (29 tests) — le guidage de fractionné, à
+  **0 %** alors qu'il porte un défaut déjà corrigé une fois : le suivi de phase était gaté par le
+  réglage de **guidage vocal**, éteint par défaut. Pour la majorité des utilisateurs,
+  `interval_phase_index` restait `null`, le bandeau de segment ne bougeait jamais et
+  `run_intervals` restait vide — donc le tableau « fraction par fraction » du résumé n'avait rien à
+  afficher. Sans la moindre erreur à l'écran. Couvre aussi le rattrapage **silencieux** au
+  remontage (R8 bis), l'enregistrement de **toutes** les phases franchies d'un coup, le `null`
+  assumé quand une mesure n'est pas attribuable, et les six formes d'annonce.
+- **`src/hooks/__tests__/useNowAction.test.tsx`** (27 tests) — la carte « maintenant » de l'accueil.
+  La décision est pure et testée ailleurs ; ce qui est testé ici est la **collecte**, là où les
+  défauts de cet écran ont été trouvés en recette : le pilier course ignoré, le nombre d'exercices
+  jamais transmis (10/09/2026), et le « dû » qui exige les **deux** conditions — sans la seconde, la
+  carte réclame un repas déjà enregistré.
+
+### Technique / Notes
+- ⚠️ **Deux assertions trop grossières corrigées avant commit**, à retenir : `expect(json).not.
+  toContain('meal')` passait au vert pour la mauvaise raison, le décompte du jour portant un champ
+  `mealLogged`. Assertion resserrée sur `action.kind`. De même, une assertion sur un JSON sérialisé
+  cherchait `8000` là où la valeur est exprimée en kilomètres. **Chercher une sous-chaîne dans un
+  objet sérialisé est un test faible** : il passe sur des voisinages qui n'ont rien à voir.
+- ℹ️ **Le flake `health-connect-state` signalé au lot 9 est une dette déjà documentée**
+  (07/08/2026), avec sa garde d'isolation en tête du fichier et son entrée au BACKLOG : le module
+  natif résolu par l'`import()` dynamique n'est pas toujours le mock local. La note du lot 9 est
+  donc à lire comme une reproduction de plus, pas comme une découverte.
+- `npm run lint` (0 avertissement), `npm run typecheck` et `npm run test` verts.
+
 ## 22/09/2026 — Socle de tests, lot 9 : les quatre derniers repositories à 0 % (`chore/tests-lot8`)
 
 > Commit précédent : `4d8cedc`. Suite du rattrapage. **158 tests**, mobile 3 962 → **4 120**,
