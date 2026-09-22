@@ -750,6 +750,66 @@ signifie qu'on a retiré de la couverture — ajouter des tests, ne pas baisser 
    compilateur : construire la valeur de retour à partir du **type réel**, comme pour les objets de
    test du back-office (§5 bis). Un mock trop simple est un test qui ne teste rien.
 
+   ### Capturer une requête écrite en ligne, plutôt que la recopier
+
+   §3.3 dit d'**exporter** la constante SQL pour l'exécuter contre le harness. Quatre fichiers du
+   lot 9 écrivent leurs requêtes **en ligne dans le hook** (`ai-context`, `food-catalog`,
+   `strength-cards`, et douze requêtes pour le seul `useAiSnapshot`) : les exporter une par une
+   aurait demandé de découper des hooks de 500 lignes pour un bénéfice de test.
+
+   La parade : **capturer** le SQL au passage, avec un espion sur `useQuery`, puis le rejouer.
+
+   ```ts
+   const calls: { sql: string; params: unknown[] }[] = [];
+   (useQuery as jest.Mock).mockImplementation((sql, params = []) => {
+     calls.push({ sql, params });
+     return { data: [], isLoading: false, error: undefined };
+   });
+   await renderHook(() => useAiSnapshot());
+   // puis, sur du vrai SQLite :
+   for (const { sql, params } of calls) await testPowerSync.getAll(sql, params);
+   ```
+
+   On obtient le bénéfice de §3.3 — **tester le SQL réellement embarqué, jamais une copie** — sans
+   toucher au fichier testé. Le test le plus rentable du lot tient en une ligne : *chaque requête
+   s'exécute sur le schéma PowerSync réel*. Une colonne absente fait lever la requête, `useQuery`
+   avale l'erreur, et le champ disparaît de l'écran **sans un mot** ; ici, le test rougit. C'est ce
+   qui a attrapé la contre-épreuve du lot 9 (une colonne `notes` inexistante sur `profiles`) avant
+   même la garde de confidentialité.
+
+   ### Un commentaire qui confie une règle au relecteur est un test qui manque
+
+   `ai-context-repository.ts` — le seul endroit du dépôt d'où des données **quittent l'appareil** —
+   posait sa règle en en-tête : « si vous ajoutez une requête ici, la question à se poser est :
+   est-ce que ça a le droit de quitter l'appareil ? ». C'est une consigne adressée à quelqu'un qui,
+   par définition, ne la lira que s'il pense à ouvrir le haut du fichier.
+
+   Elle est devenue une **liste noire vérifiée par lecture statique** du source : douze colonnes de
+   texte libre ou identifiantes (`notes`, `first_name`, `email`, `avatar`, `track`, `polyline`,
+   `latitude`, `longitude`, `pain`, `description`…) refusées dans les lignes SQL du fichier. Même
+   patron que `route-declarations.test.ts` au lot 7, et même leçon : **la lecture statique est plus
+   fiable que le rendu** quand ce qu'on vérifie est une propriété du texte, pas du comportement.
+
+   ⚠️ Filtrer les **lignes SQL** et non le fichier entier : la prose cite légitimement « notes » ou
+   « prénom » pour expliquer pourquoi elle ne les lit pas.
+
+   ### Encore la septième famille — deux fois dans le même lot
+
+   `useMuscleBalance` mocké à `null` là où `candidateFromMuscleBalance` lit `hasEnoughData` sans
+   garde ; `useRestingMetabolismAt` mocké à un nombre là où le moteur lit `.kcalPerHour`. **Les
+   mocks de hooks ne sont pas typés par le compilateur** : rien n'attrape la forme approximative, et
+   le symptôme est soit un plantage à trois pas de la cause, soit — bien pire — un chemin d'erreur
+   silencieux qui rend les tests verts. Construire la valeur de retour à partir du **type réel**,
+   toujours, y compris pour un cas « vide ».
+
+   ### ⚠️ Un échec qui ressemble à une régression et n'en est pas
+
+   `health-connect-state.test.ts` a échoué une fois sur trois exécutions complètes (16 tests sur 32),
+   avec cette signature : « Number of calls: 0 » sur le module natif. C'est le piège §3.5 —
+   l'import dynamique non transpilé, retombé dans son `catch`, donc la fonction rend sa valeur de
+   repli. **Cause : cache Jest/Babel périmé**, pas le code. `npx jest --clearCache` puis
+   réexécution : tout vert. À reconnaître avant de chercher une régression qui n'existe pas.
+
 ### Ce qui n'est volontairement pas fait
 
 - **`weekly-review-repository` n'a pas de test d'écriture** : il n'en expose aucune, le bilan est

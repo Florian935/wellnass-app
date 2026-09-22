@@ -10,6 +10,66 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/09/2026 — Socle de tests, lot 9 : les quatre derniers repositories à 0 % (`chore/tests-lot8`)
+
+> Commit précédent : `4d8cedc`. Suite du rattrapage. **158 tests**, mobile 3 962 → **4 120**,
+> couverture 60,61 → **62,08 %** d'instructions et 54,12 → **55,71 %** de branches.
+> **Plus aucun fichier de `src/data/repositories` n'est à 0 %.**
+
+### Ajouté
+- **`__tests__/ai-context-sql.test.tsx`** (37 tests) — l'instantané envoyé au modèle (US IA-LAB-01),
+  **le fichier le plus sensible du dépôt** : c'est le seul endroit où des données quittent
+  l'appareil. Deux filets de nature différente.
+  **(a) Une garde de confidentialité par lecture statique** : l'en-tête posait la règle (« rien de
+  ce qui est lu ici n'est du texte libre ») et la confiait à la vigilance du relecteur. Le test lit
+  le source et refuse douze colonnes — `notes`, `first_name`, `email`, `avatar`, `track`,
+  `polyline`, `latitude`, `longitude`, `pain`, `description`… Il vérifie aussi que la date de
+  naissance, lue en base, **ne ressort pas** dans l'instantané (seul l'âge est dérivé), et que le
+  seul libellé qui sort vient bien de `exercise_translations`.
+  **(b) Les douze requêtes rejouées sur le harness.** Elles sont écrites en ligne : elles sont
+  **capturées** au passage de `useQuery` puis exécutées sur du vrai SQLite — on teste le SQL
+  embarqué, pas une copie. Couvre les quatre 🔴 du fichier : les deux bornes de fenêtre (date locale
+  pour les journaux, instant UTC pour les événements), la progression triée par **ce qui ne
+  progresse pas**, la meilleure série **par exercice**, et les moyennes qui ignorent les jours vides.
+- **`__tests__/lab-sql.test.tsx`** (62 tests) — l'assembleur du Labo (US LABO-01), 471 lignes
+  branchant vingt hooks sur quatre moteurs purs. Les deux requêtes neuves sur le harness
+  (meilleures charges par semaine, séries par groupe musculaire pour rejouer « jambes lourdes » sur
+  ce qui a **réellement** été fait), puis l'assemblage : bornes de la semaine, courses converties en
+  jour local, séances sautées non comptées, alerte de charge remontée en proposition, dérivation des
+  protéines par kilo, inversion cible → TDEE, et les deux fonctions pures.
+- **`__tests__/food-catalog-sql.test.tsx`** (39 tests) — le sélecteur d'aliments, passé de 80 à
+  **3 244 aliments** (import CIQUAL). Verrouille la clause 🔴 de **préfixe** : sans elle, le plafond
+  de balayage coupait dans un ordre indifférent à la pertinence et « pomme » disparaissait à « po »
+  pour réapparaître à « pom ». Plus l'ordre de la quantité proposée (dernière saisie → portion
+  usuelle → 100 g), sept formes de JSON de portions abîmé qui doivent toutes retomber sur 100 g
+  sans faire tomber la liste, et la recette affichée **à la portion** et non à son rendement total.
+- **`__tests__/strength-cards-sql.test.tsx`** (20 tests) — les cartes du hub Musculation
+  (US MUSCU-UX05). Le mur ne retient que `max_weight` — mélanger les trois types le remplirait de
+  doublons célébrant une seule performance —, la valeur précédente exclut le record lui-même, et la
+  fenêtre de lecture des charges reste plus large que la fenêtre de comparaison.
+
+### Technique / Notes
+- **Une technique nouvelle, à réutiliser** : quand les requêtes sont écrites **en ligne** dans un
+  hook (ai-context, food-catalog, strength-cards, workout-report), on les **capture** via un espion
+  sur `useQuery` puis on les rejoue sur le harness. Ça donne le bénéfice de §3.3 — tester le SQL
+  réellement embarqué — **sans refactorer le fichier testé**. Consigné dans `strategie-tests.md`.
+- **Contre-épreuves faites.** Garde de confidentialité : `notes` ajouté à la requête de profil → le
+  test rougit, **et** celui qui rejoue les requêtes sur le schéma réel aussi, la colonne n'existant
+  pas sur `profiles`. Tri de la progression remplacé par `recent_max DESC` → 2 tests rouges. Clause
+  de préfixe du catalogue retirée → 3 tests rouges.
+- **La septième famille de faux vert a re-frappé deux fois**, toujours par un mock trop simple :
+  `useMuscleBalance` rendait `null` là où `candidateFromMuscleBalance` lit `hasEnoughData` sans
+  garde. Les mocks de hooks ne sont pas typés par le compilateur — les construire depuis le type réel.
+- ⚠️ **Un flake identifié, à connaître** : `health-connect-state.test.ts` a échoué une fois sur
+  trois exécutions complètes, avec la signature du piège §3.5 — le module natif jamais appelé
+  (« Number of calls: 0 »), c'est-à-dire l'import dynamique retombé dans son `catch`. Cause : un
+  **cache Jest/Babel périmé**, pas une régression. `npx jest --clearCache` puis réexécution : 236
+  suites vertes. **Sans rapport avec ce lot** (aucun de ces fichiers ne touche Health Connect), mais
+  la confusion est facile puisque l'échec ressemble à une rupture de code.
+- Cliquets restants, pour le lot 10 : fonctions de `src/lib` (63,15 % contre 64) et le « reste »
+  mobile (66,02 / 59,45 / 59,07 contre 74 / 70 / 67) — écrans et composants neufs livrés à 0 %.
+- `npm run lint` (0 avertissement), `npm run typecheck` et `npm run test` verts.
+
 ## 22/09/2026 — Socle de tests, lot 8 : les repositories livrés sans filet (`chore/tests-lot8`)
 
 > Commit précédent : `1334a37`. **La CI de `dev` était rouge** : les 136 commits livrés depuis le
