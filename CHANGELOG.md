@@ -10,6 +10,51 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/09/2026 — Socle de tests, lot 11 : les écrans commencent (`chore/tests-lot8`)
+
+> Commit précédent : `ea65e3c`. **112 tests**, mobile 4 226 → **4 338**, couverture 63,2 →
+> **64,32 %** d'instructions et 56,66 → **58,12 %** de branches. Le cliquet du « reste » mobile
+> remonte de 66,83 à **68,44 %** — il reste rouge (seuil 74), les lots suivants le finissent.
+
+### Ajouté
+- **`src/test-utils/immersive-runtime.ts`** — fixture du `ImmersiveRuntime`, le contrat entre
+  `workout.tsx` et le rendu immersif. Construite **champ par champ à partir du type réel** : un
+  runtime partiel ferait planter le rendu à trois pas de sa cause, ou le ferait passer dans un
+  chemin de repli silencieux. ⚠️ Rangée dans `test-utils/` et **non** dans un `__tests__/`, où Jest
+  y verrait une suite et échouerait sur « Your test suite must contain at least one test » — piège
+  rencontré, et qui ne se voit qu'à l'exécution de la suite **complète**.
+- **`ImmersiveWorkout.test.tsx`** (39 tests) — l'écran immersif était à **1 % pour 905 lignes**.
+  Ce composant ne lit ni n'écrit aucune donnée : tout passe par le runtime, ce qui le rend
+  testable sans base ni navigation. Verrouille sa machine à moments — 🔴 **le repos qui démarre
+  reprend la main sur l'effort en cours** (les laisser superposés ferait taper des répétitions dans
+  le vide), 🔴 **une séance sans série validée ne se fête pas** —, les trois conditions du fantôme
+  (sans la troisième, la pastille annonce « +0 kg » au premier écran), l'enjeu de record muet en
+  mode simplifié, et le pont au même endroit qu'en classique (R4-1).
+- **`interval-summary.test.ts`** (33 tests) — la ligne de résumé d'un segment, à **0 %**. C'est un
+  **assembleur de fragments**, sans garde-fou naturel, dont le mode de panne est toujours le même :
+  une information saisie qui disparaît de la ligne. Fige l'ordre de priorité de l'intensité (allure
+  absolue > chrono > %VMA, **sans repli calculé**), le chrono qui n'a de sens qu'avec une distance,
+  et `groupReps` sans `groupKey` ignoré comme le fait le moteur.
+- **`useHomeScene.test.tsx`** (41 tests) — les quatre hooks de l'accueil (scène, brief du matin,
+  trois questions, anneaux de la semaine), tous à **0 %**. Vérifie surtout R7, « aucun chiffre qui
+  n'a pas de quoi être calculé » : anneau vide sans plan, réponse « pas de cible » plutôt qu'un
+  reste calculé sur zéro, et les écarts bornés à zéro — « il te reste −40 g de protéines » est un
+  chiffre faux affiché avec le même aplomb qu'un vrai.
+
+### Technique / Notes
+- ℹ️ **Observation d'accessibilité, versée à la recette CONF-07 plutôt que corrigée au jugé** : le
+  ruban de progression porte `accessibilityRole="progressbar"` sur une `View` **sans `accessible`**,
+  et RNTL ne le résout donc pas par `getByRole` — il ne résout les rôles que sur les éléments
+  réellement exposés. **Le même motif existe sur quatre composants** (`workout.tsx`,
+  `StrengthNowCard`, `ReportPrimitives`, `ImmersiveWorkout`) : c'est une convention du dépôt, pas
+  un oubli local, et trancher ce que TalkBack en fait demande un device. Le test lit donc l'arbre
+  rendu, ce qui vérifie bien ce que le composant **écrit**.
+- **La septième famille de faux vert, quatrième occurrence** : `ReadinessResult` mocké à trois
+  champs alors qu'`explainReadiness` lit `load.state`, `nutrition.state` et `wellbeing.state` sans
+  garde. Le plantage arrivait trois fichiers plus loin. C'est maintenant un réflexe à avoir :
+  **construire tout mock de hook depuis le type réel**, y compris pour un cas « vide ».
+- `npm run lint` (0 avertissement), `npm run typecheck` et `npm run test` verts.
+
 ## 22/09/2026 — Socle de tests, lot 10 : la couche logique, et un rejet non capturé (`chore/tests-lot8`)
 
 > Commit précédent : `78d12e3`. **106 tests**, mobile 4 120 → **4 226**, couverture 62,08 →
