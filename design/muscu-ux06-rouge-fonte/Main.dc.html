@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Recommandation couleurs muscu</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 2080px; height: 1140px; box-sizing: border-box; padding: 64px; background: #ebe6dd; color: #211b15; font-family: 'Hanken Grotesk', sans-serif; display: flex; gap: 64px;">
+  <div style="width: 1060px; display: flex; flex-direction: column; gap: 22px;">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 14px; letter-spacing: 2px; color: #5e5246;">RECOMMANDATION · PILIER MUSCULATION</span>
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 68px; letter-spacing: -2.4px; line-height: 70px;">B · Graphite + rouge</span>
+      <span style="font-size: 19px; color: #4a4037;">avec le palier de séparation L4 (fond plus sombre, carte un cran plus claire, filet), pour toute l'app</span>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -0.4px;">Pilier Musculation — valeurs à reporter</span>
+      <div style="display: grid; grid-template-columns: 220px 290px 140px 24px 140px minmax(0, 1fr); column-gap: 12px; padding: 6px 0; border-bottom: 1px solid #cfc6b8;">
+        <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #5e5246;">RÔLE</span>
+        <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #5e5246;">OÙ</span>
+        <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #5e5246;">AVANT</span>
+        <span></span>
+        <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #5e5246;">APRÈS</span>
+        <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #5e5246;">MESURE</span>
+      </div>
+      <sc-for list="{{pillar}}" as="row" hint-placeholder-count="10">
+        <div style="display: grid; grid-template-columns: 220px 290px 140px 24px 140px minmax(0, 1fr); column-gap: 12px; align-items: center; min-height: 40px; border-bottom: 1px solid #ddd5c8;">
+          <span style="font-size: 15px; font-weight: 600;">{{row.role}}</span>
+          <span style="font-family: 'Space Mono', monospace; font-size: 12.5px; color: #4a4037;">{{row.where}}</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 24px; height: 24px; border-radius: 6px; background: {{row.before}}; border: 1px solid rgba(0,0,0,0.16);"></div>
+            <span style="font-family: 'Space Mono', monospace; font-size: 13px; color: #5e5246;">{{row.before}}</span>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5e5246" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 24px; height: 24px; border-radius: 6px; background: {{row.after}}; border: 1px solid rgba(0,0,0,0.16);"></div>
+            <span style="font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700;">{{row.after}}</span>
+          </div>
+          <span style="font-size: 13.5px; color: #4a4037;">{{row.note}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 24px; letter-spacing: -0.4px;">Palette de base — tous les piliers</span>
+      <sc-for list="{{base}}" as="row" hint-placeholder-count="5">
+        <div style="display: grid; grid-template-columns: 220px 290px 140px 24px 140px minmax(0, 1fr); column-gap: 12px; align-items: center; min-height: 40px; border-bottom: 1px solid #ddd5c8;">
+          <span style="font-size: 15px; font-weight: 600;">{{row.role}}</span>
+          <span style="font-family: 'Space Mono', monospace; font-size: 12.5px; color: #4a4037;">{{row.where}}</span>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 24px; height: 24px; border-radius: 6px; background: {{row.before}}; border: 1px solid rgba(0,0,0,0.16);"></div>
+            <span style="font-family: 'Space Mono', monospace; font-size: 13px; color: #5e5246;">{{row.before}}</span>
+          </div>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5e5246" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <div style="width: 24px; height: 24px; border-radius: 6px; background: {{row.after}}; border: 1px solid rgba(0,0,0,0.16);"></div>
+            <span style="font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700;">{{row.after}}</span>
+          </div>
+          <span style="font-size: 13.5px; color: #4a4037;">{{row.note}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 40px; align-items: flex-start; padding-top: 60px;">
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 1.4px; color: #5e5246;">HUB · SOMBRE</span>
+      <div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.22);">
+        <dc-import name="Hub" p="{{dark}}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 1.4px; color: #5e5246;">SÉANCE IMMERSIVE</span>
+      <div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.22);">
+        <dc-import name="Immersif" p="{{dark}}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2080,"height":1140}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      dark: {
+        bg: '#0e0e0e', surface: '#2c2c2c', alt: '#363534', border: '#423f3e', track: '#363534',
+        text: '#f4ecdd', muted: '#c9b79a', accent: '#ff645c', onAccent: '#1c150e', success: '#a9ba7e',
+        g0: '#3d434b', g1: '#272b31', g2: '#141619', stageMuted: '#d3d7dd', halo: '#ff8a7a', solid: '#ff645c', onSolid: '#1c150e',
+      },
+      pillar: [
+        { role: 'Teinte du pilier', where: 'pillar.ts · TINT.strength', before: '#7c2734', after: '#3b4450', note: 'gain de teinte 1,6' },
+        { role: 'Accent sombre', where: 'colors.ts · pillarStrength', before: '#e07a98', after: '#ff645c', note: '4,81:1 sur carte · 6,65:1 sur fond' },
+        { role: 'Accent clair', where: 'colors.ts · pillarStrength', before: '#7c2734', after: '#b3261e', note: '6,31:1 sur carte · 5,66:1 sur fond' },
+        { role: 'Scène · haut', where: 'stage.ts · gradient[0]', before: '#7c2734', after: '#3d434b', note: 'texte blanc 9,99:1' },
+        { role: 'Scène · milieu', where: 'stage.ts · gradient[1]', before: '#58182b', after: '#272b31', note: '' },
+        { role: 'Scène · bas', where: 'stage.ts · gradient[2]', before: '#330f22', after: '#141619', note: '' },
+        { role: 'Texte atténué de scène', where: 'stage.ts · inkMuted', before: '#f2c0cb', after: '#d3d7dd', note: '6,91:1 au pire (haut de scène)' },
+        { role: 'Matière (halo)', where: 'stage.ts · accent', before: '#f2a6c2', after: '#ff8a7a', note: 'jamais porteuse de texte' },
+        { role: 'Bouton plein de scène', where: 'stage.ts · solid', before: '#ffffff', after: '#ff645c', note: 'onSolid #1c150e · 6,22:1' },
+        { role: 'Onglet Muscu', where: 'menu-accent-store · strength', before: '#e07a98', after: '#ff645c', note: 'teinte 3° · accueil 18°' },
+      ],
+      base: [
+        { role: 'Fond sombre', where: 'colors.ts · background', before: '#1c150e', after: '#120d08', note: 'texte atténué 9,87:1' },
+        { role: 'Carte sombre', where: 'colors.ts · surface', before: '#30271e', after: '#342a20', note: 'carte / fond 1,23 → 1,38:1' },
+        { role: 'Carte secondaire', where: 'colors.ts · surfaceAlt', before: '#3a2e22', after: '#3f3326', note: 'champs, pastilles' },
+        { role: 'Filet sombre', where: 'colors.ts · border', before: '#3a2e22', after: '#4b3d30', note: '1,85:1 sur fond · 1 px sur chaque carte' },
+        { role: 'Filet clair', where: 'colors.ts · border (clair)', before: '#ece0cd', after: '#e3d3ba', note: '1,28:1 sur fond' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

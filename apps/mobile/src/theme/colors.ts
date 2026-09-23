@@ -65,7 +65,9 @@ export const palettes: Record<ColorScheme, Palette> = {
     background: '#f7eede',
     surface: '#fffaf2',
     surfaceAlt: '#f3ddd0',
-    border: '#ece0cd',
+    // US MUSCU-UX06 (23/09/2026) — `#ece0cd` (1,13 / fond) relevé : en clair, la carte presque
+    // blanche ne se détache du fond qu'à 1,11:1, c'est donc le filet qui fait la séparation.
+    border: '#e3d3ba', // 1,28 / fond
     borderStrong: '#90897d', // 3,01 / fond · 3,33 / surface
     text: '#33291f',
     // Assombris le 30/07/2026 : les valeurs d'origine (#96856f, #c0562f) donnaient 3,10 et 3,95
@@ -96,9 +98,10 @@ export const palettes: Record<ColorScheme, Palette> = {
     panelMuted: '#c9b79a',
     panelAccent: '#d9a888',
     pillarHome: '#b14f2b', // 4,53 / fond · 5,0 / surface (= accent)
-    // Suit le bordeaux adouci de la scène (19/09/2026) : le token de texte et la couleur de
-    // marque du pilier ne peuvent pas diverger. 9,2 / surface teintée — largement au-dessus de 4,5.
-    pillarStrength: '#7c2734',
+    // US MUSCU-UX06 (23/09/2026) — « rouge fonte », choisi par Florian sur planche comparative :
+    // le bordeaux `#7c2734` « trop rose, pas adapté » est remplacé. 6,83 / surface · 6,18 / fond
+    // teinté · blanc dessus 7,09. Teinte 4°, contre 16° pour l'accueil (`#b14f2b`).
+    pillarStrength: '#a8261d',
     pillarRunning: '#2a64ad', // 5,18 / fond — #2f6fc0 de maquette : 4,39
     // US NUTRI-UX02 — `#52703a` (5,22 / fond, chroma 54) remplacé le 20/09/2026 : il était, comme
     // la teinte du pilier, le moins coloré des cinq accents. `#3f6b1c` monte la chroma à 79 **et**
@@ -107,14 +110,21 @@ export const palettes: Record<ColorScheme, Palette> = {
     pillarLab: '#7a5714', // 5,0 / fond — le doré #8a6419 tombait à 4,33
   },
   dark: {
-    background: '#1c150e',
+    // US MUSCU-UX06 (23/09/2026) — « les cartes ne se détachent pas » (Florian). Mesuré : carte /
+    // fond = 1,23:1, et **dans tous les piliers**, puisque la teinte d'un pilier conserve la
+    // luminance. La séparation se règle donc ici, pas pilier par pilier. Deux leviers :
+    //  - le **fond** descend (`#1c150e` → `#0f0a06`) : 1,23 → 1,35:1, sans toucher aux cartes ;
+    //  - le **filet** des cartes monte (`#3a2e22` → `#4b3d30`) : 1,40 / carte, 1,88 / fond.
+    // ⚠️ Écarté : éclaircir franchement la carte (~1,6:1). Mesuré, les accents y passent sous
+    // 4,5:1 (muscu 3,9, accueil 3,8) et `borderStrong` sous 3:1 — la carte reste donc `#30271e`.
+    background: '#0f0a06',
     surface: '#30271e',
     surfaceAlt: '#3a2e22',
-    border: '#3a2e22',
+    border: '#4b3d30',
     // Même défaut de limite de champ qu'en clair (`border` n'était qu'à 1,37 du fond) : la bordure
     // de composant est donc relevée ici aussi. Les couleurs de texte du thème sombre, elles, sont
     // inchangées — elles passaient déjà largement.
-    borderStrong: '#797169', // 3,77 / fond · 3,05 / surface
+    borderStrong: '#797169', // 4,11 / fond (3,77 avant MUSCU-UX06) · 3,05 / surface
     text: '#f4ecdd',
     textMuted: '#c9b79a',
     // `accent` / `surface` = 4,45, à 0,05 du seuil 4,5 (WCAG 1.4.3) — écart ASSUMÉ (CONF-07, D2,
@@ -125,7 +135,7 @@ export const palettes: Record<ColorScheme, Palette> = {
     // Assombri le 01/08/2026 (CONF-07, D1) : le libellé blanc des boutons pleins n'était qu'à
     // 3,29 / accent, sous les 4,5 exigés. C'est le changement le plus visible de CONF-07 — validé
     // sur maquette avant d'être posé ici.
-    accentText: '#1c150e', // 5,48 / accent (= le fond sombre)
+    accentText: '#0f0a06', // 5,98 / accent (= le fond sombre — 5,48 avec l'ancien `#1c150e`)
     success: '#a9ba7e',
     danger: '#e0524a',
     track: '#362c22',
@@ -139,7 +149,9 @@ export const palettes: Record<ColorScheme, Palette> = {
     panelMuted: '#c9b79a',
     panelAccent: '#e0a97f',
     pillarHome: '#e07a4d', // 4,94 / surface — l'accent sombre #dd6e40 n'y fait que 4,45 (D2)
-    pillarStrength: '#e07a98', // 5,16 / surface — #6b0028 : 1,15
+    // US MUSCU-UX06 — rouge fonte : 5,21 / surface teintée · 7,06 / fond teinté. Le rose `#e07a98`
+    // d'avant (teinte 342°) est écarté : « trop rose » (Florian, 23/09/2026).
+    pillarStrength: '#ff6b5e', // 5,24 / surface neutre — #e07a98 : 5,16 · #6b0028 : 1,15
     pillarRunning: '#6fa8ef', // 5,94 / surface
     // US NUTRI-UX02 — `#a9ba7e` (6,98 / surface, chroma 60) remplacé le 20/09/2026. Il restait le
     // plus terne des quatre accents de pilier (course 128, labo 104, muscu 102). `#9ed16a` : chroma

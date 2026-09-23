@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>État actuel — bordeaux et rose</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 2660px; height: 1220px; box-sizing: border-box; padding: 56px; background: #ebe6dd; color: #211b15; font-family: 'Hanken Grotesk', sans-serif; display: flex; flex-direction: column; gap: 36px;">
+  <div style="display: flex; justify-content: space-between; align-items: flex-end; gap: 48px;">
+    <div style="display: flex; flex-direction: column; gap: 10px; max-width: 980px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 14px; letter-spacing: 2px; color: #5e5246;">ÉTAT ACTUEL · RÉFÉRENCE</span>
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 64px; letter-spacing: -2px; line-height: 66px;">Bordeaux + rose</span>
+      <span style="font-size: 19px; color: #4a4037;">Surfaces teintées bordeaux · accent rose #e07a98 · scène bordeaux → prune</span>
+      <span style="font-size: 15px; color: #5e5246;">Séparation des cartes : actuelle (L0), sans filet visible</span>
+    </div>
+    <div style="display: flex; gap: 40px; align-items: flex-end;">
+      <div style="display: flex; gap: 14px;">
+        <sc-for list="{{swatches}}" as="s" hint-placeholder-count="7">
+          <div style="display: flex; flex-direction: column; gap: 6px; width: 92px;">
+            <div style="width: 92px; height: 64px; border-radius: 14px; background: {{s.hex}}; border: 1px solid rgba(0,0,0,0.14);"></div>
+            <span style="font-size: 13px; font-weight: 600;">{{s.label}}</span>
+            <span style="font-family: 'Space Mono', monospace; font-size: 12.5px; color: #4a4037;">{{s.hex}}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <sc-for list="{{ratios}}" as="r" hint-placeholder-count="4">
+          <div style="display: flex; justify-content: space-between; gap: 18px; padding: 6px 12px; border-radius: 10px; background: #f7f3ec; border: 1px solid #d8d0c3; min-width: 300px;">
+            <span style="font-size: 14px; color: #4a4037;">{{r.label}}</span>
+            <span style="font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: {{r.color}};">{{r.value}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+  <div style="display: flex; gap: 40px;">
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 1.4px; color: #5e5246;">HUB · SOMBRE</span>
+      <div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.22);">
+        <dc-import name="Hub" p="{{dark}}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 1.4px; color: #5e5246;">SÉANCE CLASSIQUE · SOMBRE</span>
+      <div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.22);">
+        <dc-import name="Classique" p="{{dark}}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 1.4px; color: #5e5246;">SÉANCE IMMERSIVE</span>
+      <div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.22);">
+        <dc-import name="Immersif" p="{{dark}}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 1.4px; color: #5e5246;">REPOS IMMERSIF</span>
+      <div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.22);">
+        <dc-import name="Repos" p="{{dark}}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 1.4px; color: #5e5246;">HUB · CLAIR</span>
+      <div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.14); outline: 1px solid #d3ccc0;">
+        <dc-import name="Hub" p="{{light}}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 13px; letter-spacing: 1.4px; color: #5e5246;">SÉANCE CLASSIQUE · CLAIR</span>
+      <div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.14); outline: 1px solid #d3ccc0;">
+        <dc-import name="Classique" p="{{light}}" hint-size="390px,844px"></dc-import>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2660,"height":1220}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const stage = { g0: '#7c2734', g1: '#58182b', g2: '#330f22', stageMuted: '#f2c0cb', halo: '#f2a6c2', solid: '#ffffff', onSolid: '#7c2734' };
+    const dark = {
+      ...stage,
+      bg: '#221210', surface: '#3c211f', alt: '#472824', border: '#472824', track: '#472824',
+      text: '#f4ecdd', muted: '#c9b79a', accent: '#e07a98', onAccent: '#1c150e', success: '#a9ba7e',
+    };
+    const light = {
+      ...stage,
+      bg: '#ffebde', surface: '#fffaf6', alt: '#ffd9d0', border: '#fcdbcc', track: '#fad7c6',
+      text: '#33291f', muted: '#786a59', accent: '#7c2734', onAccent: '#ffffff', success: '#4f6b2a',
+    };
+    const ok = '#211b15';
+    const warn = '#9c2a1c';
+    return {
+      dark,
+      light,
+      swatches: [
+        { label: 'Fond', hex: '#221210' },
+        { label: 'Carte', hex: '#3c211f' },
+        { label: 'Filet', hex: '#472824' },
+        { label: 'Accent sombre', hex: '#e07a98' },
+        { label: 'Accent clair', hex: '#7c2734' },
+        { label: 'Scène haut', hex: '#7c2734' },
+        { label: 'Scène bas', hex: '#330f22' },
+      ],
+      ratios: [
+        { label: 'Accent / carte', value: '5,18:1', color: ok },
+        { label: 'Carte / fond', value: '1,23:1', color: warn },
+        { label: 'Carte / fond (clair)', value: '1,11:1', color: warn },
+        { label: 'Teinte accent', value: '342° (rose)', color: warn },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

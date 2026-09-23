@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 251 livré · 4 partiel · 2 à faire (sur 263)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 252 livré · 4 partiel · 2 à faire (sur 264)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -70,6 +70,7 @@ avant de pouvoir publier.
 | **MUSCU-UX03** — Mode immersif de la séance de musculation — la séance vivante, en plus du mode classique | `recette` | `feature/muscu-ux03-mode-immersif` | [3.61] |
 | **MUSCU-UX04** — L'identité d'un pilier tenue par toute la page — accent, surfaces, et la scène qui coule | `recette` | `dev` | [3.59] |
 | **MUSCU-UX05** — Refonte du hub Musculation — un écran qui a quelque chose à dire | `recette` | `dev` | [3.63] |
+| **MUSCU-UX06** — Rouge fonte — la couleur du pilier Musculation, et des cartes qui se détachent du fond | `recette` | `dev` | [3.64] |
 | **MUSCU-UX02** — Bilan de séance — 3 niveaux de lecture, écran unique récap/historique | `recette` | `feature/muscu-ux02-bilan-seance` | [3.35] |
 | **NARR-01** — L'IA raconte le dossier d'enquête — et ne peut pas inventer un chiffre | `recette` | `dev` | [7.33] |
 | **NUTR-16** — Répartition calorique par repas | `recette` | `feature/nutr16-repartition-repas` | [4.38] |
@@ -104,7 +105,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **83 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, CARDIO-UX02, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LAUNCHER-01, LETTRE-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, OBJ-01, PARTAGE-01, PARTAGE-02, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **84 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, CARDIO-UX02, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LAUNCHER-01, LETTRE-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX06, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, OBJ-01, PARTAGE-01, PARTAGE-02, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -112,9 +113,9 @@ avant de pouvoir publier.
 - LANCE-01 — Publication Play Store
 - LANCE-02 — Retirer le spike VBT-01 du build de soumission
 
-<details><summary>P1 finitions (10) · P2 confort (2)</summary>
+<details><summary>P1 finitions (9) · P2 confort (2)</summary>
 
-**P1** — RUN-F3b — Météo de course · CLAV-01 — Le clavier recouvre les formulaires (edge-to-edge) · CARDIO-02 — Les quatre portes vers l'allure de référence · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect · TEINTE-01 — Le bordeaux perd sa couleur en thème clair · IDENT-01 — L'identité de pilier appartient à l'écran, pas à l'onglet
+**P1** — RUN-F3b — Météo de course · CLAV-01 — Le clavier recouvre les formulaires (edge-to-edge) · CARDIO-02 — Les quatre portes vers l'allure de référence · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect · IDENT-01 — L'identité de pilier appartient à l'écran, pas à l'onglet
 
 **P2** — SOCLE-01 — RevenueCat câblé inactif · VBT-01 — Vitesse de barre à la caméra
 
@@ -127,8 +128,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1326 · `main` a **1323** commits de retard sur `dev` |
-| Specs d'US | 172 au total — 88 clôturées, 84 en cours |
+| Commits | 1327 · `main` a **1324** commits de retard sur `dev` |
+| Specs d'US | 173 au total — 88 clôturées, 85 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -138,11 +139,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `4076a96`  docs(muscu): MUSCU-FIX02 clôturée — recette validée par Florian
 - `3f7c606`  fix(muscu): l'écran qui respire disparaît, la barre dit quoi toucher
 - `12aa708`  fix(muscu): la charge se tape, la série se regarde, la barre se charge
 - `b4e1b8f`  fix(muscu): l'immersif aux couleurs du pilier, et la séance libre repensée
 - `18a5131`  fix(muscu): la séance en direct déroule — index, requêtes, clôture, bascule de mode
-- `ff61617`  test(ecrans): lot 11 — l'écran immersif, le résumé de segment, l'accueil (112 tests)
 
 ---
 

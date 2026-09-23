@@ -20,10 +20,11 @@ const PREVIEW_DAYS = 7;
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
 
 /**
- * Couleur de pilier « muscu » (bordeaux de la charte, fixe hors thème) — miroir de
- * `planning/index.tsx`, la palette d'app ne portant pas ce rôle.
+ * Couleur de pilier « muscu » (teinte profonde de la charte, fixe hors thème) — miroir de
+ * `planning/index.tsx`. Rouge fonte depuis MUSCU-UX06 (23/09/2026), bordeaux `#7c2734` avant.
+ * N'y peint que des pastilles, jamais du texte.
  */
-const STRENGTH_COLOR = '#7c2734';
+const STRENGTH_COLOR = '#8e1b1b';
 
 /** Clé i18n du jour de semaine (0 = lundi) pour une `Date` locale. */
 function weekdayKey(date: Date): (typeof WEEKDAY_KEYS)[number] {

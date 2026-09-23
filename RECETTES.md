@@ -11,8 +11,8 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **23/09/2026** — **83 sections** (§84 MUSCU-FIX02 recettée et clôturée le
-> 23/09/2026, section purgée).
+> Dernière mise à jour : **23/09/2026** — **84 sections** (§84 MUSCU-FIX02 recettée et clôturée le
+> 23/09/2026, section purgée ; §85 MUSCU-UX06 ajoutée).
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -5114,3 +5114,71 @@ Analyse : [analyse-strava-2026-09.md](docs/product/analyse-strava-2026-09.md) (c
 - ⚠️ **La nutrition, elle, compte** — la série quotidienne la comptait déjà, et l'exclure priverait de série quelqu'un qui n'utilise que ce pilier (décision de cadrage H).
 - ⚠️ **La lecture hebdomadaire fait lire la nutrition sur 53 semaines** au lieu de 30 jours (sans quoi la série plafonnerait à quatre). Effet de bord assumé sur la série **quotidienne** : un jour actif par la seule nutrition au-delà de 30 jours était invisible alors qu'une séance au même jour comptait. La correction ne peut qu'**allonger** une série tronquée. Si un testeur voit son compteur de jours **augmenter** sans rien avoir fait, c'est ça — et c'est le bon sens.
 - ⚠️ **Le joker et les jours en pause ne sont pas touchés** (spec D5) : ils restent des mécanismes de la série **quotidienne**.
+
+## 85. MUSCU-UX06 — Rouge fonte, et des cartes qui se détachent (`dev`)
+
+Spec : [muscu-ux06-rouge-fonte.md](docs/specs/functional/us/muscu-ux06-rouge-fonte.md) ·
+maquette : [design/muscu-ux06-rouge-fonte/](design/muscu-ux06-rouge-fonte/) (direction **A**)
+
+Retour de **Florian le 23/09/2026** : muscu « trop rose », « le bordeaux n'est pas adapté », cartes qui
+ne se détachent pas (hub muscu **et** accueil). Direction retenue : **rouge fonte**. Couleurs seulement :
+aucune donnée, aucune migration — un build de `dev` suffit.
+
+### A — Le pilier Musculation, thème sombre
+
+- [ ] 1. **Hub muscu** : la scène est **rouge profond → presque noir**, plus aucun rose ni prune. Le
+      halo de la scène est rouge clair ; « Démarrer » est blanc à texte rouge.
+- [ ] 2. **Onglet Muscu actif** en rouge (`#ff6b5e`). Passer de l'onglet Accueil (terracotta) à Muscu :
+      les deux couleurs ne se confondent pas.
+- [ ] 3. **Cartes du hub** : brun-rouge, elles se détachent nettement du fond (plus sombre qu'avant),
+      avec un filet visible autour de chacune.
+- [ ] 4. **Séance classique** : barre de progression, série en cours et bouton « Valider la série » en
+      rouge ; le libellé du bouton (sombre) se lit bien.
+- [ ] 5. **Bascule classique ↔ immersif** : mêmes couleurs des deux côtés, aucun changement d'identité.
+- [ ] 6. **Repos immersif** : l'anneau est rouge.
+- [ ] 7. **Record en séance immersive** : l'écran de record est sur fond rouge fonte, texte blanc lisible.
+- [ ] 8. **Corps qui chauffe** (immersif) : les muscles travaillés passent par un rouge, plus par un
+      bordeaux.
+
+### B — Le pilier Musculation, thème clair
+
+- [ ] 9. **Hub muscu clair** : fond pêche très clair, cartes blanches cerclées d'un filet bien visible,
+      accent rouge brique (`#a8261d`). La scène reste la même qu'en sombre (voulu).
+- [ ] 10. **Séance classique claire** : accent rouge brique, bouton plein à texte blanc lisible.
+
+### C — Toute l'app (palette de base)
+
+- [ ] 11. **Accueil sombre** : les cartes se détachent nettement mieux qu'avant (fond plus sombre +
+      filet). En faisant défiler, la scène de l'accueil **coule dans la page sans bande plus claire** en
+      bas.
+- [ ] 12. **Course, Nutrition, Labo en sombre** : même gain de séparation ; leurs couleurs (bleu, vert,
+      doré) n'ont pas changé.
+- [ ] 13. **Champs de saisie** (réglages, formulaires) : le contour d'un champ reste visible, en sombre
+      comme en clair.
+- [ ] 14. **Boutons pleins terracotta** (hors piliers : onboarding, réglages) : libellé sombre lisible.
+- [ ] 15. **Listes à séparateurs** (réglages, historique) : les lignes de séparation sont plus visibles
+      qu'avant, sans être lourdes. Si elles gênent quelque part, le noter avec l'écran.
+
+### D — Planning et Labo
+
+- [ ] 16. **Planning** : pastilles et étiquettes « Muscu » en rouge fonte (texte blanc). L'**heure**
+      d'une séance muscu est **lisible en sombre** — elle était presque invisible avant.
+- [ ] 17. **Aperçu du planning** (widget de l'accueil) : points muscu en rouge fonte.
+- [ ] 18. **Labo** (3D, et repli 2D si la 3D ne démarre pas) : le disque muscu est **rouge**, plus rose ;
+      le ruban muscu d'un croisement aussi. Le haut de la scène du Labo est rouge sombre, plus prune.
+
+### E — Préférence « Couleurs des menus »
+
+- [ ] 19. Réglage **désactivé** (par défaut) : rien de particulier, tout ce qui précède s'applique.
+- [ ] 20. Réglage **activé sans personnalisation** : Muscu en rouge. Si la couleur Muscu avait été
+      personnalisée avant, elle reste (choix respecté) : « Réinitialiser » la repasse au rouge. Le rose
+      reste proposé dans la palette.
+
+### F — Ce qu'il faut savoir
+
+- ⚠️ **En clair, la carte muscu est blanche neutre** (`#fffaf2`), comme sur la planche : le rouge fonte
+  est trop sombre pour teinter une carte presque blanche sans la salir. La couleur passe par le fond et
+  le filet.
+- ⚠️ **La carte sombre n'a pas été éclaircie** (`#30271e`, comme avant) alors que la planche montrait un
+  cran plus clair : ça aurait fait passer le contour des champs sous le seuil d'accessibilité. Écart de
+  séparation imperceptible (1,35:1 contre 1,38:1).

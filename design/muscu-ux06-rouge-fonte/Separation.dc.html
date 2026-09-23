@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Séparation des cartes</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 2260px; height: 2170px; box-sizing: border-box; padding: 56px; background: #ebe6dd; color: #211b15; font-family: 'Hanken Grotesk', sans-serif; display: flex; flex-direction: column; gap: 36px;">
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <span style="font-family: 'Space Mono', monospace; font-size: 14px; letter-spacing: 2px; color: #5e5246;">PALETTE DE BASE SOMBRE · TOUTE L'APP</span>
+    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 64px; letter-spacing: -2px; line-height: 66px;">Séparation des cartes</span>
+    <span style="font-size: 19px; color: #4a4037;">Cinq paliers, sur le hub Musculation (direction B) et sur l'accueil. Hex = palette de base, avant la teinte du pilier.</span>
+  </div>
+  <div style="display: flex; gap: 48px;">
+    <sc-for list="{{levels}}" as="lvl" hint-placeholder-count="5">
+      <div style="width: 390px; display: flex; flex-direction: column; gap: 16px;">
+        <div style="height: 158px; box-sizing: border-box; padding: 14px 16px; border-radius: 18px; background: #f7f3ec; border: 2px solid {{lvl.frame}}; display: flex; flex-direction: column; gap: 6px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline;">
+            <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.5px;">{{lvl.name}}</span>
+            <span style="font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: {{lvl.tagColor}};">{{lvl.tag}}</span>
+          </div>
+          <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #4a4037;">{{lvl.recipe}}</span>
+          <sc-for list="{{lvl.metrics}}" as="m" hint-placeholder-count="3">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="font-size: 14px; color: #4a4037;">{{m.label}}</span>
+              <span style="font-family: 'Space Mono', monospace; font-size: 14px; font-weight: 700; color: {{m.color}};">{{m.value}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="width: 390px; height: 844px; border-radius: 36px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.22);">
+          <dc-import name="Hub" p="{{lvl.hub}}" hint-size="390px,844px"></dc-import>
+        </div>
+        <div style="width: 390px; height: 844px; margin-top: 16px; border-radius: 36px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.22);">
+          <dc-import name="Accueil" p="{{lvl.home}}" hint-size="390px,844px"></dc-import>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":2260,"height":2170}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const common = { text: '#f4ecdd', muted: '#c9b79a', onAccent: '#1c150e', success: '#a9ba7e' };
+    const hubBase = { ...common, accent: '#ff645c', g0: '#3d434b', g1: '#272b31', g2: '#141619', stageMuted: '#d3d7dd', halo: '#ff8a7a', solid: '#ff645c', onSolid: '#1c150e' };
+    const homeBase = { ...common, accent: '#e07a4d', g0: '#45331f', solid: '#dd6e40', onSolid: '#1c150e', muscu: '#ff645c' };
+    const ok = '#211b15';
+    const warn = '#9c2a1c';
+    const metrics = (sep, muscu, home, bad) => [
+      { label: 'Carte / fond', value: sep, color: ok },
+      { label: 'Accent muscu / carte', value: muscu, color: bad ? warn : ok },
+      { label: 'Accent accueil / carte', value: home, color: bad ? warn : ok },
+    ];
+    return {
+      levels: [
+        {
+          name: 'L0 · actuel', tag: 'AUJOURD’HUI', tagColor: '#5e5246', frame: '#d8d0c3',
+          recipe: 'fond #1c150e · carte #30271e',
+          metrics: metrics('1,23:1', '5,06:1', '4,91:1', false),
+          hub: { ...hubBase, bg: '#171615', surface: '#292829', alt: '#31302f', border: '#31302f', track: '#31302f' },
+          home: { ...homeBase, bg: '#21130c', surface: '#3b2317', alt: '#45291b', border: '#45291b', track: '#45291b' },
+        },
+        {
+          name: 'L1 · ~1,4', tag: 'FOND PLUS SOMBRE', tagColor: '#5e5246', frame: '#d8d0c3',
+          recipe: 'fond #120d08 · carte #342a20',
+          metrics: metrics('1,38:1', '4,81:1', '4,70:1', false),
+          hub: { ...hubBase, bg: '#0e0e0e', surface: '#2c2c2c', alt: '#363534', border: '#363534', track: '#363534' },
+          home: { ...homeBase, bg: '#160c07', surface: '#3f2619', alt: '#4b2e1f', border: '#4b2e1f', track: '#4b2e1f' },
+        },
+        {
+          name: 'L2 · ~1,6', tag: 'ACCENTS < 4,5:1', tagColor: warn, frame: '#d8d0c3',
+          recipe: 'fond #1c150e · carte #43382d',
+          metrics: metrics('1,59:1', '3,90:1', '3,82:1', true),
+          hub: { ...hubBase, bg: '#171615', surface: '#3b3a3a', alt: '#444241', border: '#444241', track: '#444241' },
+          home: { ...homeBase, bg: '#21130c', surface: '#513324', alt: '#5b3b2a', border: '#5b3b2a', track: '#5b3b2a' },
+        },
+        {
+          name: 'L3 · filet seul', tag: 'FILET 2,33:1', tagColor: '#5e5246', frame: '#d8d0c3',
+          recipe: 'L0 + filet 1 px #5e5043',
+          metrics: metrics('1,23:1', '5,06:1', '4,91:1', false),
+          hub: { ...hubBase, bg: '#171615', surface: '#292829', alt: '#31302f', border: '#555251', track: '#31302f' },
+          home: { ...homeBase, bg: '#21130c', surface: '#3b2317', alt: '#45291b', border: '#6e4a38', track: '#45291b' },
+        },
+        {
+          name: 'L4 · L1 + filet', tag: 'RECOMMANDÉ', tagColor: '#1f5f3a', frame: '#1f5f3a',
+          recipe: 'fond #120d08 · carte #342a20 · filet #4b3d30',
+          metrics: metrics('1,38:1', '4,81:1', '4,70:1', false),
+          hub: { ...hubBase, bg: '#0e0e0e', surface: '#2c2c2c', alt: '#363534', border: '#423f3e', track: '#363534' },
+          home: { ...homeBase, bg: '#160c07', surface: '#3f2619', alt: '#4b2e1f', border: '#593827', track: '#4b2e1f' },
+        },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

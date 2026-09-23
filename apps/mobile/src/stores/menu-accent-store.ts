@@ -29,7 +29,9 @@ export const MENU_KEYS: readonly MenuKey[] = ['home', 'strength', 'running', 'nu
  */
 export const DEFAULT_MENU_COLORS: Record<MenuKey, string> = {
   home: '#e07a4d', // = pillarHome (sombre)
-  strength: '#e07a98', // = pillarStrength (sombre) — l'ancien #6b0028 : 1,15:1 sur une carte
+  // = pillarStrength (sombre) — rouge fonte depuis MUSCU-UX06 (23/09/2026). Avant : le rose
+  // #e07a98, et encore avant #6b0028 (1,15:1 sur une carte).
+  strength: '#ff6b5e',
   running: '#6fa8ef', // = pillarRunning (sombre)
   nutrition: '#9ed16a', // = pillarNutrition (sombre) — US NUTRI-UX02, l'ancien #a9ba7e : chroma 60
   lab: '#e0b155', // = pillarLab (sombre)
@@ -38,6 +40,9 @@ export const DEFAULT_MENU_COLORS: Record<MenuKey, string> = {
 /** Palette de choix proposée dans les réglages. */
 export const MENU_COLOR_SWATCHES: readonly string[] = [
   '#e07a4d',
+  '#ff6b5e',
+  // `#e07a98` reste proposé, comme `#a9ba7e` plus bas : c'est l'ancien rose du pilier muscu, et
+  // quelqu'un qui l'avait choisi doit pouvoir le retrouver. Seul le **défaut** change (MUSCU-UX06).
   '#e07a98',
   '#6fa8ef',
   '#9ed16a',

@@ -10,6 +10,62 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/09/2026 — MUSCU-UX06 : rouge fonte pour la muscu, des cartes qui se détachent partout (`dev`)
+
+> Retour de Florian le 23/09/2026 : le pilier muscu « trop rose », « le bordeaux n'est pas adapté », et
+> des cartes qui ne se détachent pas (hub muscu **et** accueil). Toile Claude Design à quatre directions
+> + planche de séparation ; **Florian a retenu A « rouge fonte »**. Spec, plan et maquette versés.
+> Commit précédent : `4076a96b`.
+
+### Modifié
+- 🔴 **Identité du pilier Musculation** — `theme/pillar.ts` : `TINT.strength` `#7c2734` → `#8e1b1b` ;
+  `theme/colors.ts` : `pillarStrength` sombre `#e07a98` → `#ff6b5e` (5,21:1 sur carte teintée),
+  clair `#7c2734` → `#a8261d` (6,83:1) ; `theme/stage.ts` : scène `STRENGTH` `#8e1b1b → #5f1512 →
+  #2b0d0b`, `inkMuted` `#f6c5bf` (5,88:1 au pire), `onSolid` `#8e1b1b`, matière `#ff9a8f`.
+- 🔴 **Séparation des cartes, toute l'app** (`theme/colors.ts`) — sombre : `background` `#1c150e` →
+  `#0f0a06` (carte / fond 1,23 → 1,35:1, dans tous les piliers), `border` `#3a2e22` → `#4b3d30`
+  (1,88:1 sur fond) ; `accentText` suit le fond (5,48 → 5,98:1 sur l'accent) ; clair : `border`
+  `#ece0cd` → `#e3d3ba` (1,28:1). `Card` dessinait déjà son filet en `colors.border` : aucun composant
+  touché. `stage.ts` : le bas de `HOME_DARK` et le milieu de `LAB` suivent le nouveau fond (sinon une
+  bande plus claire sous la scène de l'accueil) ; le haut de `LAB` passe du prune `#3a0f22` à `#3b0f0c`.
+- **Copies en dur de la couleur muscu** : `STRENGTH_COLOR` `#8e1b1b` (`app/planning/index.tsx`,
+  `components/PlanningPreview.tsx`) ; `HEAT_SCALE[1]` et `RECORD_BG` (`immersive/theme.ts`) ; disque
+  muscu du Labo 2D (`LabScene2D.tsx`) et 3D (`engine.js`, `PILLAR_HEX.muscu`, ruban initial lu dans
+  `PILLAR_HEX` au lieu d'un littéral) ; défaut `strength` de `DEFAULT_MENU_COLORS` (`#e07a98` reste
+  proposé dans `MENU_COLOR_SWATCHES`).
+
+### Corrigé
+- **Planning** : l'heure d'une séance muscu était peinte avec la teinte profonde, illisible en sombre
+  (1,9:1) — elle prend `colors.pillarStrength` (`pillarInk`).
+- **TEINTE-01** (BACKLOG) levé : la carte claire muscu sortait à chroma 9, sous le neutre ; elle est à
+  13 (= neutre). Ligne retirée du BACKLOG.
+
+### Ajouté
+- **Tests-gardes** (`theme/__tests__/contrast.test.ts`, +16 tests) : « Séparation des cartes » (carte
+  / fond ≥ 1,33 et filet / fond ≥ 1,8 en sombre, ≥ 1,1 et ≥ 1,25 en clair, neutre + 5 piliers ; filet
+  / carte ≥ 1,35) et « Identité muscu — les copies en dur suivent le token » (menus = accents sombres
+  des piliers, disques muscu du Labo 2D et 3D = `pillarStrength`, fichiers lus par `require('fs')`
+  comme `pillar-identity.test.ts`, faute de types Node dans le tsconfig mobile).
+- Docs : [spec](docs/specs/functional/us/muscu-ux06-rouge-fonte.md) (`etape: recette`),
+  [plan](docs/plans/muscu-ux06-rouge-fonte.md), maquette [design/muscu-ux06-rouge-fonte/](design/muscu-ux06-rouge-fonte/)
+  (canvas + 12 planches `.dc.html` + README), RECETTES §85 (20 critères, en-tête à 84 sections),
+  roadmap **3.64** (hors cadrage, ✅ ; 251 → 252 livré, total 263 → 264), ETAT régénéré.
+
+### Technique / Notes
+- ⚠️ **Écart assumé avec la planche** : la carte sombre reste `#30271e` (la planche montrait `#342a20`).
+  L'éclaircir faisait tomber `borderStrong` à 2,92:1 sur carte (seuil 3:1) et l'accent terracotta D2 à
+  4,26:1 ; séparation 1,35 au lieu de 1,38, imperceptible.
+- ⚠️ **En clair, la carte muscu reste `#fffaf2`** : la phase 2 de `tintPreservingLuminance` y ramène
+  le rouge fonte quel que soit le gain (1 à 2). Exception nommée `CARTE_CLAIRE_NEUTRE` dans le garde
+  « les surfaces changent vraiment » (qui exige alors que le filet change) ; `CLAIR_CONNU_FAIBLE`
+  supprimée.
+- Préférence « Couleurs des menus » : une couleur déjà personnalisée n'est pas migrée (choix respecté,
+  aucune migration) — « Réinitialiser » repasse au rouge.
+- Hors périmètre, noté dans la spec : le vert nutrition du Labo 3D (`engine.js`) est resté `#a9ba7e`
+  alors que le 2D a pris `#9ed16a` (NUTRI-UX02).
+- Aucune migration, aucune sync rule, aucune dépendance native, aucune chaîne i18n.
+- Qualité : lint 0, typecheck 0, tests verts (Jest 248 suites / 4 456 tests, Vitest 24 + 164 fichiers).
+
 ## 23/09/2026 — MUSCU-FIX02 clôturée : recette validée par Florian (`dev`)
 
 > Florian a validé les trois passes sur device (« j'ai reseté, c'est validé ») et demandé la clôture.

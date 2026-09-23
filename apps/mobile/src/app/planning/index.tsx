@@ -70,10 +70,14 @@ const LONG_PRESS_MS = 200;
 const TOAST_MS = 2500;
 
 /**
- * Couleur de pilier « muscu » : bordeaux de la charte (fixe, hors thème clair/sombre —
- * la palette d'app ne porte pas ce rôle ; mirroir de la maquette `--strength`).
+ * Couleur de **fond** du pilier « muscu » (pastille, étiquette à texte blanc) : la teinte profonde
+ * de la charte, fixe hors thème clair/sombre. Rouge fonte depuis MUSCU-UX06 (23/09/2026, bordeaux
+ * `#7c2734` avant) — blanc dessus : 9,04:1.
+ *
+ * ⚠️ Jamais en **texte** : cette teinte profonde tombe à 2,2:1 sur le fond sombre. Le texte du
+ * pilier prend `colors.pillarStrength`, lisible dans les deux thèmes (voir `pillarInk`).
  */
-const STRENGTH_COLOR = '#7c2734';
+const STRENGTH_COLOR = '#8e1b1b';
 
 /** Construit une `Date` locale depuis une clé AAAA-MM-JJ (jamais `new Date('AAAA-MM-JJ')`). */
 function dateFromKey(key: string): Date {
@@ -746,6 +750,9 @@ function PlannedSessionRow({
   }
 
   const pillarColor = isRunning ? colors.accent : STRENGTH_COLOR;
+  // L'heure est du texte : la teinte profonde y était illisible en sombre (`#7c2734` sur la page
+  // sombre : 1,9:1). MUSCU-UX06 lui donne l'accent lisible du pilier.
+  const pillarInk = isRunning ? colors.accent : colors.pillarStrength;
   const pillarLabel = t(isRunning ? 'planning.pillarRunning' : 'planning.pillarStrength');
 
   // Statut affiché : manqué (calculé), fait, sauté.
@@ -799,7 +806,7 @@ function PlannedSessionRow({
                 le `.slice` levait alors sur 43 tests d'écran. Une valeur absente est absente, quelle
                 que soit la forme qu'elle prend. */}
             {item.scheduledTime ? (
-              <Text style={[styles.rowTime, { color: pillarColor }]}>
+              <Text style={[styles.rowTime, { color: pillarInk }]}>
                 {item.scheduledTime.slice(0, 5)}
               </Text>
             ) : null}

@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Séance classique</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: {{p.bg}}; color: {{p.text}}; font-family: 'Hanken Grotesk', sans-serif; display: flex; flex-direction: column;">
+  <div style="padding: 46px 12px 0; display: flex; align-items: center; gap: 4px;">
+    <button aria-label="Quitter la séance" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="{{p.text}}" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+    </button>
+    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center;">
+      <span style="font-weight: 700; font-size: 16px;">Haut du corps</span>
+      <span style="font-family: 'Space Mono', monospace; font-size: 13px; color: {{p.muted}};">24:12</span>
+    </div>
+    <button aria-label="Menu de la séance" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="{{p.text}}"><circle cx="12" cy="5" r="1.8"></circle><circle cx="12" cy="12" r="1.8"></circle><circle cx="12" cy="19" r="1.8"></circle></svg>
+    </button>
+  </div>
+  <div style="padding: 10px 20px 14px; display: flex; flex-direction: column; gap: 8px;">
+    <div style="height: 6px; border-radius: 3px; background: {{p.track}}; overflow: hidden;">
+      <div style="width: 39%; height: 6px; border-radius: 3px; background: {{p.accent}};"></div>
+    </div>
+    <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: {{p.muted}};">7/18 séries</span>
+  </div>
+
+  <div style="padding: 0 16px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="padding: 16px; border-radius: 22px; background: {{p.surface}}; border: 1px solid {{p.border}}; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 21px; letter-spacing: -0.4px;">Développé couché</span>
+        <span style="font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; color: {{p.accent}};">Série 3/4</span>
+      </div>
+      <span style="font-size: 13px; color: {{p.muted}};">Dernière fois : 8 × 77,5 kg · Prévu : 8 × 80 kg</span>
+      <sc-for list="{{sets}}" as="set" hint-placeholder-count="4">
+        <div style="height: 46px; box-sizing: border-box; padding: 0 12px; display: flex; align-items: center; gap: 12px; border-radius: 14px; background: {{set.bg}}; border: 1.5px solid {{set.ring}};">
+          <span style="width: 22px; font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: {{set.indexColor}};">{{set.index}}</span>
+          <span style="flex-grow: 1; font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700; color: {{set.valueColor}};">{{set.value}}</span>
+          <span style="font-size: 13px; font-weight: 600; color: {{set.stateColor}};">{{set.state}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <sc-for list="{{others}}" as="ex" hint-placeholder-count="2">
+      <div style="padding: 16px; border-radius: 22px; background: {{p.surface}}; border: 1px solid {{p.border}}; display: flex; justify-content: space-between; align-items: center;">
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 18px;">{{ex.name}}</span>
+          <span style="font-size: 13px; color: {{p.muted}};">{{ex.detail}}</span>
+        </div>
+        <span style="font-family: 'Space Mono', monospace; font-size: 12.5px; color: {{p.muted}};">{{ex.count}}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 16px 24px; background: {{p.surface}}; border-top: 1px solid {{p.border}}; border-top-left-radius: 24px; border-top-right-radius: 24px; display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: flex; gap: 10px;">
+      <sc-for list="{{fields}}" as="field" hint-placeholder-count="2">
+        <div style="flex-grow: 1; flex-basis: 0; display: flex; flex-direction: column; gap: 6px;">
+          <span style="font-size: 12px; font-weight: 600; color: {{p.muted}};">{{field.label}}</span>
+          <div style="height: 50px; border-radius: 14px; background: {{p.alt}}; display: flex; align-items: center; justify-content: space-between; padding: 0 4px;">
+            <button aria-label="{{field.down}}" style="width: 44px; height: 44px; border: none; background: transparent; color: {{p.text}}; font-size: 22px; font-family: 'Hanken Grotesk', sans-serif;">−</button>
+            <span style="font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700;">{{field.value}}</span>
+            <button aria-label="{{field.up}}" style="width: 44px; height: 44px; border: none; background: transparent; color: {{p.text}}; font-size: 22px; font-family: 'Hanken Grotesk', sans-serif;">+</button>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <button style="height: 56px; border: none; border-radius: 16px; background: {{p.accent}}; color: {{p.onAccent}}; font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 17px;">Valider la série</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"p":{"editor":null},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props.p ?? {
+      bg: '#221210', surface: '#3c211f', alt: '#472824', border: '#472824', track: '#472824',
+      text: '#f4ecdd', muted: '#c9b79a', accent: '#e07a98', onAccent: '#1c150e', success: '#a9ba7e',
+    };
+    const raw = [
+      { index: '1', value: '8 × 77,5 kg', kind: 'done' },
+      { index: '2', value: '8 × 80 kg', kind: 'done' },
+      { index: '3', value: '8 × 80 kg', kind: 'current' },
+      { index: '4', value: '— × 80 kg', kind: 'todo' },
+    ];
+    return {
+      p,
+      sets: raw.map((s) => ({
+        ...s,
+        bg: s.kind === 'current' ? p.alt : 'transparent',
+        ring: s.kind === 'current' ? p.accent : 'transparent',
+        indexColor: s.kind === 'done' ? p.success : s.kind === 'current' ? p.accent : p.muted,
+        valueColor: s.kind === 'todo' ? p.muted : p.text,
+        state: s.kind === 'done' ? 'Faite' : s.kind === 'current' ? 'En cours' : '',
+        stateColor: s.kind === 'done' ? p.success : p.accent,
+      })),
+      others: [
+        { name: 'Rowing barre', detail: '3 × 10 · 70 kg', count: '0/3' },
+        { name: 'Tractions', detail: '3 × 8 · poids du corps', count: '0/3' },
+      ],
+      fields: [
+        { label: 'Reps', value: '8', down: 'Une rep de moins', up: 'Une rep de plus' },
+        { label: 'Charge', value: '80 kg', down: 'Retirer 2,5 kg', up: 'Ajouter 2,5 kg' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

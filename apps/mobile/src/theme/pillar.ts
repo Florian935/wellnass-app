@@ -6,8 +6,10 @@
  * pas du tout ISO ». Mesuré, l'onglet Musculation portait **trois identités** sur un seul écran :
  *
  *  - la **scène** en bordeaux `#6b0028 → #2d0011`, accent rose `#ff9ec0`  (`theme/stage.ts`,
- *    adouci en `#7c2734 → #330f22` le 19/09 — voir l'en-tête de `stage.ts`) ;
- *  - la **barre d'onglets** en rose `#e07a98`                              (`colors.pillarStrength`) ;
+ *    adouci en `#7c2734 → #330f22` le 19/09, puis passé au **rouge fonte** `#8e1b1b → #2b0d0b`
+ *    le 23/09 par MUSCU-UX06 — voir l'en-tête de `stage.ts`) ;
+ *  - la **barre d'onglets** en rose `#e07a98`                              (`colors.pillarStrength`,
+ *    rouge `#ff6b5e` depuis MUSCU-UX06) ;
  *  - les **cartes** en brun `#30271e`, accent terracotta `#dd6e40`        (palette neutre).
  *
  * Les cartes étaient l'intruse : le rose était déjà la couleur de la muscu partout ailleurs.
@@ -42,7 +44,14 @@ export type PillarKey = (typeof PILLAR_KEYS)[number];
  */
 const TINT: Record<PillarKey, string> = {
   home: '#b14f2b',
-  strength: '#7c2734',
+  // US MUSCU-UX06 (23/09/2026) — « rouge fonte », retenu par Florian sur une planche de quatre
+  // directions (rouge fonte, graphite + rouge, prune, acier + corail). Le bordeaux `#7c2734` était
+  // « trop rose, pas adapté » : teinte 351° glissant vers la prune, accent rose 342°. `#8e1b1b` est
+  // un rouge franc (0°, chroma 115) : surface sombre `#421f19`, chroma 41 contre 29 pour le bordeaux.
+  // ⚠️ En clair, la phase 2 de `tintPreservingLuminance` ramène la carte **exactement** sur la
+  // surface neutre `#fffaf2` : la teinte y passe par le fond (`#ffecdc`) et le filet (`#f9ccb4`).
+  // C'est le rendu validé sur la planche ; le test-garde le nomme au lieu de le taire.
+  strength: '#8e1b1b',
   running: '#1d4586',
   // US NUTRI-UX02 — `#2e4419` remplacé le 20/09/2026. Voir l'encadré sur `TINT_GAIN` : l'ancienne
   // valeur était un olive (chroma 43), deux fois moins colorée que la plus terne des quatre autres.

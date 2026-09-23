@@ -28,7 +28,8 @@
 import * as THREE from 'three';
 
 
-  var PILLAR_HEX = { muscu: '#e07a98', course: '#6fa8ef', nutrition: '#a9ba7e', socle: '#e0b155' };
+  // muscu : rouge fonte (= pillarStrength sombre) depuis MUSCU-UX06, le rose #e07a98 avant.
+  var PILLAR_HEX = { muscu: '#ff6b5e', course: '#6fa8ef', nutrition: '#a9ba7e', socle: '#e0b155' };
   var CENTER = { muscu: [-0.8, -0.36], course: [0.8, -0.36], nutrition: [0, 0.8] };
   var LIFT = { nutrition: 0.34, course: 0.76, muscu: 1.08 };
   var TAU = Math.PI * 2;
@@ -582,7 +583,7 @@ export function createLabScene(canvas, opts) {
       var faceF = new THREE.Mesh(faceGeo, faceMat(1, 'syn')); faceF.position.z = 0.0195; spin.add(faceF);
       var faceB = new THREE.Mesh(faceGeo, faceMat(1, 'syn')); faceB.position.z = -0.0195; faceB.rotation.y = Math.PI; spin.add(faceB);
       var loop = new THREE.Mesh(loopGeo, medalMats.syn); loop.position.y = 0.215; spin.add(loop);
-      var ribA = new THREE.Mesh(ribbonGeo, ribbonMat('#e07a98')); ribA.position.set(-0.045, 0.35, -0.006); ribA.rotation.z = 0.24; spin.add(ribA);
+      var ribA = new THREE.Mesh(ribbonGeo, ribbonMat(PILLAR_HEX.muscu)); ribA.position.set(-0.045, 0.35, -0.006); ribA.rotation.z = 0.24; spin.add(ribA);
       var ribB = new THREE.Mesh(ribbonGeo, ribbonMat('#6fa8ef')); ribB.position.set(0.045, 0.35, 0.006); ribB.rotation.z = -0.24; spin.add(ribB);
       var halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: 0xf2d28a, blending: THREE.AdditiveBlending, depthWrite: false, transparent: true, opacity: 0.2 }));
       halo.scale.setScalar(0.6); holder.add(halo);

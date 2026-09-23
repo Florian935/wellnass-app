@@ -1,0 +1,40 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-09-23T15:47:19Z" },
+  "title": "Couleurs du pilier Musculation",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 2080, "h": 1140, "title": "Recommandation — valeurs à reporter" },
+    "Separation.dc.html": { "x": 2160, "y": 0, "w": 2260, "h": 2170, "title": "Séparation des cartes (toute l'app)" },
+    "DirActuel.dc.html": { "x": 0, "y": 2550, "w": 2660, "h": 1220, "title": "État actuel — bordeaux + rose" },
+    "DirA.dc.html": { "x": 0, "y": 3890, "w": 2660, "h": 1220, "title": "A · Rouge fonte" },
+    "DirB.dc.html": { "x": 0, "y": 5230, "w": 2660, "h": 1220, "title": "B · Graphite + rouge (recommandée)" },
+    "DirC.dc.html": { "x": 0, "y": 6570, "w": 2660, "h": 1220, "title": "C · Prune profonde" },
+    "DirD.dc.html": { "x": 0, "y": 7910, "w": 2660, "h": 1220, "title": "D · Acier bleuté + corail" },
+    "Hub.dc.html": { "x": 2820, "y": 2550, "w": 390, "h": 844, "title": "Gabarit · Hub" },
+    "Classique.dc.html": { "x": 3290, "y": 2550, "w": 390, "h": 844, "title": "Gabarit · Séance classique" },
+    "Immersif.dc.html": { "x": 3760, "y": 2550, "w": 390, "h": 844, "title": "Gabarit · Séance immersive" },
+    "Repos.dc.html": { "x": 4230, "y": 2550, "w": 390, "h": 844, "title": "Gabarit · Repos immersif" },
+    "Accueil.dc.html": { "x": 4700, "y": 2550, "w": 390, "h": 844, "title": "Gabarit · Accueil sombre" }
+  },
+  "order": [
+    "Main.dc.html",
+    "Separation.dc.html",
+    "DirActuel.dc.html",
+    "DirA.dc.html",
+    "DirB.dc.html",
+    "DirC.dc.html",
+    "DirD.dc.html",
+    "Hub.dc.html",
+    "Classique.dc.html",
+    "Immersif.dc.html",
+    "Repos.dc.html",
+    "Accueil.dc.html"
+  ],
+  "notes": {
+    "directions": { "x": 0, "y": 2290, "text": "Directions de couleur — pilier Musculation", "kind": "title1", "maxW": 2660 },
+    "gabarits": { "x": 2820, "y": 2290, "text": "Gabarits des écrans", "kind": "title1", "maxW": 2270 }
+  },
+  "designSystems": []
+}

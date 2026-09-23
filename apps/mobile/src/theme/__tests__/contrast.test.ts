@@ -137,11 +137,26 @@ describe('Palettes par pilier — aucune régression de contraste', () => {
     },
   );
 
+  /**
+   * ⚠️ US MUSCU-UX06 (23/09/2026) — **une exception nommée**, pas un seuil relâché.
+   *
+   * Le rouge fonte `#8e1b1b` est une teinte sombre : en clair, `tintPreservingLuminance` finit le
+   * chemin vers le blanc (sa phase 2) et retombe **exactement** sur la carte neutre `#fffaf2`, quel
+   * que soit le gain (mesuré de 1 à 2). La carte claire de la musculation reste donc neutre ; la
+   * teinte y passe par le **fond** (`#ffecdc`) et le **filet** (`#f9ccb4`), que ce test continue
+   * d'exiger. C'est le rendu validé par Florian sur la planche comparative.
+   */
+  const CARTE_CLAIRE_NEUTRE: readonly (typeof PILLAR_KEYS)[number][] = ['strength'];
+
   it('🔴 les surfaces changent VRAIMENT de teinte — sinon le test ci-dessus passe pour rien', () => {
     for (const theme of ['light', 'dark'] as const) {
       for (const pillar of PILLAR_KEYS) {
         const teintee = pillarPalette(theme, pillar);
-        expect(teintee.surface).not.toBe(palettes[theme].surface);
+        if (theme === 'light' && CARTE_CLAIRE_NEUTRE.includes(pillar)) {
+          expect(teintee.border).not.toBe(palettes[theme].border);
+        } else {
+          expect(teintee.surface).not.toBe(palettes[theme].surface);
+        }
         expect(teintee.background).not.toBe(palettes[theme].background);
       }
       // Et deux piliers ne se ressemblent pas.
@@ -210,26 +225,20 @@ describe('Palettes par pilier — teinter doit AJOUTER de la couleur, jamais en 
    * reviendrait à exiger l'inverse de ce que la fonction promet, d'autant que la surface neutre
    * claire (`#fffaf2`) porte déjà une chroma de 13 par son propre réchauffement.
    *
-   * 🔴 **Ce que ce test a trouvé en clair, le 20/09/2026** : la musculation sort à **9**, soit
-   * SOUS le neutre — le même défaut que la course et la nutrition, sur un troisième pilier, jamais
-   * repéré jusqu'ici. Le bordeaux `#7c2734` est sombre, donc massivement blanchi. La course est
-   * juste au-dessus (15). **Ni l'un ni l'autre n'est corrigé ici** : le lot validé porte sur la
-   * nutrition, et retoucher le bordeaux en douce reviendrait à défaire l'arbitrage du 19/09. Le
-   * constat est porté au BACKLOG (P1) ; l'exception ci-dessous le rend visible au lieu de le taire,
-   * et le test échouera si la situation **empire**.
+   * 🔴 **Ce que ce test a trouvé en clair, le 20/09/2026** : la musculation sortait à **9**, soit
+   * SOUS le neutre — le bordeaux `#7c2734`, sombre, était massivement blanchi vers un rose pâle. Le
+   * test portait alors une exception datée (plancher à 9), et le constat était au BACKLOG (TEINTE-01).
+   *
+   * ✅ **Levée le 23/09/2026 par MUSCU-UX06** : le rouge fonte retombe exactement sur la carte neutre
+   * (chroma 13 = neutre). Plus aucune exception ici — un pilier qui retirerait de la couleur à la
+   * carte claire fera de nouveau échouer le test.
    */
-  const CLAIR_CONNU_FAIBLE: Partial<Record<(typeof PILLAR_KEYS)[number], number>> = {
-    // Plancher = la valeur constatée. Descendre encore fera échouer le test.
-    strength: 9,
-  };
-
   it.each(PILLAR_KEYS.map((pillar) => ({ pillar })))(
     'light/$pillar : la surface teintée reste au moins aussi colorée que le neutre',
     ({ pillar }) => {
       const neutre = chroma(palettes.light.surface)!;
       const teintee = chroma(pillarPalette('light', pillar).surface)!;
-      const plancher = CLAIR_CONNU_FAIBLE[pillar];
-      expect(teintee).toBeGreaterThanOrEqual(plancher ?? neutre);
+      expect(teintee).toBeGreaterThanOrEqual(neutre);
     },
   );
 
@@ -273,4 +282,72 @@ describe('Couleurs des menus (préférence) — lisibles dans les deux thèmes',
     const surface = pillarPalette(theme, pillar).surface;
     expect(contrastRatio(readableOn(couleur, surface)!, surface)!).toBeGreaterThanOrEqual(4.5);
   });
+});
+
+/**
+ * 🔴 US MUSCU-UX06 — « on ne voit pas assez les cartes » (Florian, 23/09/2026).
+ *
+ * Mesuré : carte / fond = **1,23:1 dans tous les piliers**. Le défaut n'était pas une teinte mal
+ * choisie mais la palette de base, puisque `tintPreservingLuminance` recopie son écart de luminance
+ * dans chaque pilier. Aucun test ne le voyait : les contrastes de texte, eux, passaient tous.
+ *
+ * Ce bloc fixe les deux leviers retenus — fond sombre abaissé, filet relevé — pour la palette
+ * neutre **et** pour chaque pilier. Seuils posés juste sous les valeurs livrées (sombre : carte
+ * 1,35 · filet 1,88 ; clair : carte 1,11 · filet 1,28) : ils attrapent un retour en arrière sans se
+ * déclencher au moindre ajustement.
+ */
+describe('Séparation des cartes — la carte et son filet se détachent du fond', () => {
+  const SEUILS = {
+    dark: { carte: 1.33, filet: 1.8 },
+    // En clair, la carte presque blanche ne peut guère s'écarter du fond : c'est le filet qui sépare.
+    light: { carte: 1.1, filet: 1.25 },
+  } as const;
+
+  const CAS = (['light', 'dark'] as const).flatMap((theme) => [
+    { theme, pillar: 'neutre' as const, palette: palettes[theme] },
+    ...PILLAR_KEYS.map((pillar) => ({ theme, pillar, palette: pillarPalette(theme, pillar) })),
+  ]);
+
+  it.each(CAS)('$theme/$pillar : carte / fond et filet / fond', ({ theme, palette }) => {
+    expect(contrastRatio(palette.surface, palette.background)!).toBeGreaterThanOrEqual(SEUILS[theme].carte);
+    expect(contrastRatio(palette.border, palette.background)!).toBeGreaterThanOrEqual(SEUILS[theme].filet);
+  });
+
+  it('le filet se voit aussi SUR la carte — sinon il ne dessine pas le bord', () => {
+    for (const theme of ['light', 'dark'] as const) {
+      expect(contrastRatio(palettes[theme].border, palettes[theme].surface)!).toBeGreaterThanOrEqual(1.35);
+    }
+  });
+});
+
+/**
+ * 🔴 US MUSCU-UX06 — la couleur muscu vit en **copie** à trois endroits hors de la palette : la
+ * préférence « Couleurs des menus » et les disques du Labo (2D et 3D, ce dernier en JS pur pour la
+ * WebView). Au passage du rose au rouge fonte, rien ne les aurait signalés : ils auraient gardé le
+ * rose sur le Labo pendant que tout le pilier passait au rouge.
+ */
+// `require` plutôt qu'un `import` : le tsconfig mobile ne charge pas les types Node (cible React
+// Native). Même convention que `app/__tests__/pillar-identity.test.ts`.
+const { readFileSync } = require('fs') as { readFileSync: (p: string, e: 'utf8') => string };
+const { join } = require('path') as { join: (...parts: string[]) => string };
+declare const __dirname: string;
+
+describe('Identité muscu — les copies en dur suivent le token', () => {
+  it('les couleurs par défaut des menus sont les accents sombres des piliers', () => {
+    expect(DEFAULT_MENU_COLORS).toEqual({
+      home: palettes.dark.pillarHome,
+      strength: palettes.dark.pillarStrength,
+      running: palettes.dark.pillarRunning,
+      nutrition: palettes.dark.pillarNutrition,
+      lab: palettes.dark.pillarLab,
+    });
+  });
+
+  it.each(['components/lab/scene/LabScene2D.tsx', 'components/lab/scene/engine.js'])(
+    '%s : le disque muscu porte pillarStrength (sombre)',
+    (fichier) => {
+      const source = readFileSync(join(__dirname, '..', '..', fichier), 'utf8');
+      expect(source).toContain(`muscu: '${palettes.dark.pillarStrength}'`);
+    },
+  );
 });

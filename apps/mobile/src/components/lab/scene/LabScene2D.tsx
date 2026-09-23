@@ -12,7 +12,7 @@ import Svg, { Circle, Defs, G, Path, RadialGradient, Stop, Text as SvgText } fro
 import type { LabSceneState, SceneCrossing, ScenePillar } from './scene-state';
 
 const PILLAR_COLOR: Record<ScenePillar, string> = {
-  muscu: '#e07a98',
+  muscu: '#ff6b5e', // = pillarStrength (sombre), US MUSCU-UX06 — le rose #e07a98 avant
   course: '#6fa8ef',
   nutrition: '#9ed16a', // = pillarNutrition (sombre), US NUTRI-UX02
   socle: '#e0b155',

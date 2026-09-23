@@ -58,20 +58,29 @@ const GLASS_BORDER_ON_DARK = 'rgba(255,255,255,0.22)';
  * Écarté : une variante plus chaude encore (352°, 52 %) se rapprochait trop du terracotta de
  * l'Accueil — deux piliers ne doivent pas se confondre d'un coup d'œil.
  */
+/**
+ * ── Le rouge fonte, 23/09/2026 (US MUSCU-UX06) ───────────────────────────────────────────────────
+ * Le bordeaux adouci ci-dessus n'a pas tenu : « trop rose », « le bordeaux n'est pas adapté »
+ * (Florian). Quatre directions ont été posées côte à côte sur les vrais écrans (hub, séance
+ * classique, immersif, repos, en sombre et en clair) : rouge fonte, graphite + rouge, prune,
+ * acier + corail. **Florian a retenu le rouge fonte.**
+ *
+ * Même grammaire que le bordeaux — un dégradé qui descend vers le presque-noir — mais sur un rouge
+ * franc (0-5°) au lieu d'un rouge qui dérive vers la prune (351° → 329°) : c'est la dérive vers le
+ * magenta qui faisait lire « rose ». Encres mesurées par `__tests__/stage.test.ts` sur les trois
+ * arrêts : `inkMuted` 5,88:1 au pire (haut de scène), blanc 9,04:1.
+ */
 const STRENGTH: StageTheme = {
-  gradient: ['#7c2734', '#58182b', '#330f22'],
-  surfaces: ['#7c2734', '#58182b', '#330f22'],
+  gradient: ['#8e1b1b', '#5f1512', '#2b0d0b'],
+  surfaces: ['#8e1b1b', '#5f1512', '#2b0d0b'],
   ink: '#ffffff',
-  // Remonté avec le fond : l'ancien #e2a8bd restait lisible, mais paraissait sale sur une surface
-  // moins saturée.
-  inkMuted: '#f2c0cb',
+  inkMuted: '#f6c5bf',
   glass: GLASS_ON_DARK,
   glassBorder: GLASS_BORDER_ON_DARK,
   solid: '#ffffff',
-  onSolid: '#7c2734',
-  // La matière (halo de la silhouette) suit la même désaturation — #ff9ec0 était le rose le plus
-  // saturé de toute l'app.
-  accent: '#f2a6c2',
+  onSolid: '#8e1b1b',
+  // La matière (halo de la silhouette) : un rouge clair, jamais porteur de texte.
+  accent: '#ff9a8f',
 };
 
 const RUNNING: StageTheme = {
@@ -136,9 +145,11 @@ const HOME_LIGHT: StageTheme = {
   accent: 'rgba(192,86,47,0.26)',
 };
 
+// Le bas du dégradé est le fond sombre de la palette : c'est lui qui coule sous la page. Suit le
+// fond abaissé par MUSCU-UX06 (`#1c150e` → `#0f0a06`), sans quoi une bande plus claire apparaît.
 const HOME_DARK: StageTheme = {
-  gradient: ['#45331f', '#1c150e'],
-  surfaces: ['#45331f', '#1c150e'],
+  gradient: ['#45331f', '#0f0a06'],
+  surfaces: ['#45331f', '#0f0a06'],
   ink: '#f4ecdd',
   inkMuted: '#c9b79a',
   glass: 'rgba(48,39,30,0.72)',
@@ -152,9 +163,11 @@ const HOME_DARK: StageTheme = {
  * US LABO-01 — la scène du Labo : les trois piliers dans la même image, sur le fond nocturne de
  * l'app. Sombre dans les deux thèmes, comme les scènes de pilier : la 3D y est posée dessus.
  */
+// Haut = la musculation, bas = la course. Le haut suit le rouge fonte (MUSCU-UX06 : `#3a0f22`,
+// un prune, → `#3b0f0c`) et le milieu le fond abaissé (`#1c150e` → `#0f0a06`).
 const LAB: StageTheme = {
-  gradient: ['#3a0f22', '#1c150e', '#10233f'],
-  surfaces: ['#3a0f22', '#1c150e', '#10233f'],
+  gradient: ['#3b0f0c', '#0f0a06', '#10233f'],
+  surfaces: ['#3b0f0c', '#0f0a06', '#10233f'],
   ink: '#ffffff',
   inkMuted: '#e6d8c4',
   glass: GLASS_ON_DARK,

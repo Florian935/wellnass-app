@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Accueil sombre</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: 844px; position: relative; overflow: hidden; background: {{p.bg}}; color: {{p.text}}; font-family: 'Hanken Grotesk', sans-serif; display: flex; flex-direction: column;">
+  <div style="padding: 54px 20px 22px; display: flex; flex-direction: column; gap: 10px; background: linear-gradient(180deg, {{p.g0}} 0%, {{p.bg}} 100%);">
+    <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1.6px; color: {{p.muted}};">MERCREDI 23 SEPTEMBRE</span>
+    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -1.3px; line-height: 40px;">Bonsoir</span>
+    <div style="display: flex; gap: 8px;">
+      <span style="padding: 6px 12px; border-radius: 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); font-size: 13px; font-weight: 600;">12 jours d'affilée</span>
+      <span style="padding: 6px 12px; border-radius: 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.16); font-size: 13px; font-weight: 600;">3 records ce mois</span>
+    </div>
+  </div>
+
+  <div style="padding: 4px 16px 0; display: flex; flex-direction: column; gap: 12px;">
+    <div style="padding: 16px 18px; border-radius: 22px; background: {{p.surface}}; border: 1px solid {{p.border}}; display: flex; flex-direction: column; gap: 12px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 11px; letter-spacing: 1.4px; color: {{p.muted}};">MAINTENANT</span>
+      <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 21px;">Haut du corps</span>
+          <span style="font-size: 13.5px; color: {{p.muted}};">5 exercices · ~55 min</span>
+        </div>
+        <button style="height: 46px; padding: 0 18px; border: none; border-radius: 14px; background: {{p.solid}}; color: {{p.onSolid}}; font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 15px;">Y aller</button>
+      </div>
+    </div>
+
+    <div style="padding: 16px 18px; border-radius: 22px; background: {{p.surface}}; border: 1px solid {{p.border}}; display: flex; flex-direction: column; gap: 10px;">
+      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 18px;">Depuis ta dernière visite</span>
+      <sc-for list="{{since}}" as="row" hint-placeholder-count="3">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <div style="width: 10px; height: 10px; border-radius: 5px; background: {{row.dot}};"></div>
+          <span style="flex-grow: 1; font-size: 15px; font-weight: 500;">{{row.label}}</span>
+          <span style="font-family: 'Space Mono', monospace; font-size: 12.5px; font-weight: 700; color: {{p.success}};">{{row.value}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="padding: 16px 18px; border-radius: 22px; background: {{p.surface}}; border: 1px solid {{p.border}}; display: flex; flex-direction: column; gap: 12px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 18px;">Ta semaine</span>
+        <span style="font-size: 13px; font-weight: 600; color: {{p.accent}};">Lire le récit</span>
+      </div>
+      <div style="display: flex; justify-content: space-between;">
+        <sc-for list="{{week}}" as="day" hint-placeholder-count="7">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 6px;">
+            <div style="width: 30px; height: 30px; box-sizing: border-box; border-radius: 15px; background: {{day.fill}}; border: 2px solid {{day.ring}};"></div>
+            <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: {{p.muted}};">{{day.label}}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="padding: 16px 18px; border-radius: 22px; background: {{p.surface}}; border: 1px solid {{p.border}}; display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 18px;">Objectif · 10 km sous 50 min</span>
+      </div>
+      <div style="height: 8px; border-radius: 4px; background: {{p.track}}; overflow: hidden;">
+        <div style="width: 68%; height: 8px; border-radius: 4px; background: {{p.accent}};"></div>
+      </div>
+      <span style="font-size: 13px; color: {{p.muted}};">52:10 → 50:00 · il reste 2:10</span>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 74px; background: {{p.surface}}; border-top: 1px solid {{p.border}}; display: flex; justify-content: space-around; align-items: center; padding-bottom: 6px;">
+    <sc-for list="{{tabs}}" as="tab" hint-placeholder-count="5">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 5px; width: 64px;">
+        <div style="width: 24px; height: 5px; border-radius: 3px; background: {{tab.bar}};"></div>
+        <span style="font-size: 13px; font-weight: 600; color: {{tab.color}};">{{tab.label}}</span>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"p":{"editor":null},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props.p ?? {
+      bg: '#21130c', surface: '#3b2317', alt: '#45291b', border: '#45291b', track: '#45291b',
+      text: '#f4ecdd', muted: '#c9b79a', accent: '#e07a4d', onAccent: '#1c150e', success: '#a9ba7e',
+      g0: '#45331f', solid: '#dd6e40', onSolid: '#1c150e', muscu: '#e07a98',
+    };
+    const muscu = p.muscu ?? '#e07a98';
+    const run = '#6fa8ef';
+    const food = '#9ed16a';
+    const plan = [muscu, run, muscu, null, run, null, null];
+    const labels = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    return {
+      p,
+      since: [
+        { dot: muscu, label: 'Squat, charge médiane', value: '+6,3 %' },
+        { dot: run, label: 'Allure sur 10 km', value: '−0:12/km' },
+        { dot: food, label: 'Protéines atteintes', value: '6 j / 7' },
+      ],
+      week: labels.map((label, i) => ({
+        label,
+        fill: i < 3 && plan[i] ? plan[i] : 'transparent',
+        ring: plan[i] ?? p.track,
+      })),
+      tabs: ['Accueil', 'Muscu', 'Course', 'Alim', 'Labo'].map((label) => ({
+        label,
+        color: label === 'Accueil' ? p.accent : p.muted,
+        bar: label === 'Accueil' ? p.accent : 'transparent',
+      })),
+    };
+  }
+}
+</script>
+</body>
+</html>
