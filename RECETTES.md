@@ -11,7 +11,8 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **23/09/2026** — **84 sections**.
+> Dernière mise à jour : **23/09/2026** — **83 sections** (§84 MUSCU-FIX02 recettée et clôturée le
+> 23/09/2026, section purgée).
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -3515,8 +3516,9 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
   charge chargeable : le reste ne se voit plus que sur une charge **tapée** (ex. 101 kg).
 - [ ] **21.** « Lancer la série » : l'écran passe en plein cadre et **bat au tempo**. Toucher le
   cercle compte une rép et vibre ; la **8ᵉ** rép sur un objectif de 7 passe en **or**.
-  ⚠️ **Remplacé le 23/09/2026** (MUSCU-FIX02, passe 2) : plus de comptage au toucher — voir §84
-  bloc J. Seul le battement au tempo reste à vérifier ici.
+  ⚠️ **Remplacé le 23/09/2026** (MUSCU-FIX02, passe 2, recettée et clôturée) : plus de comptage au
+  toucher, et depuis la passe 3 plus d'écran d'effort pour une série en reps — il ne reste qu'aux
+  séries **chronométrées**. Seul le battement au tempo reste à vérifier ici, sur une série chronométrée.
 - [ ] **22.** Réglages › « Guide de tempo » coupé : l'écran d'effort ne bat plus, tout le reste est
   identique.
 - [ ] **23.** « Terminé » : le cadran s'ouvre sur les **reps comptées** ; **sans aucun comptage**,
@@ -4512,7 +4514,8 @@ cumulaient sur le même parcours — « Séance libre » depuis le hub muscu.
       cours » ni « Retour à l'accueil » sur une séance qu'on vient de démarrer. Au pire un bref
       indicateur de chargement. ⚠️ **Parcours changé le 23/09/2026** (MUSCU-FIX02, passe 1) :
       « Séance libre » ouvre d'abord une feuille de choix — recetter l'ouverture de la séance
-      **après** « Composer → Commencer » ou « Refaire », voir §84 bloc I.
+      **après** « Composer → Commencer » ou « Refaire » (parcours recetté avec MUSCU-FIX02, clôturée
+      le 23/09/2026).
 - [ ] **2. Le refaire avec le réseau coupé** (mode avion) : même résultat — c'est du local, la
       séance doit s'ouvrir aussi vite.
 - [ ] **3. Séance vide : « + Ajouter un exercice » est visible en bas**, sans ouvrir le menu ⋮.
@@ -4527,7 +4530,7 @@ cumulaient sur le même parcours — « Séance libre » depuis le hub muscu.
 - [ ] **8. Une fois un template créé**, « Séance libre » repropose bien le choix « À blanc /
       Depuis un template », et « Depuis un template » démarre la séance avec ses exercices.
       ⚠️ **Remplacé le 23/09/2026** : le choix « À blanc / Depuis un template » n'existe plus, la
-      feuille « Séance libre » liste les modèles directement — voir §84 bloc I.
+      feuille « Séance libre » liste les modèles directement (MUSCU-FIX02, clôturée le 23/09/2026).
 - [ ] **9. « Exercices » depuis cette feuille ouvre la consultation** (fiche d'exercice au tap),
       pas l'ajout à une séance.
 - [ ] **10. La silhouette du hub muscu** ne ressemble plus à un mannequin segmenté : un corps d'un
@@ -5111,208 +5114,3 @@ Analyse : [analyse-strava-2026-09.md](docs/product/analyse-strava-2026-09.md) (c
 - ⚠️ **La nutrition, elle, compte** — la série quotidienne la comptait déjà, et l'exclure priverait de série quelqu'un qui n'utilise que ce pilier (décision de cadrage H).
 - ⚠️ **La lecture hebdomadaire fait lire la nutrition sur 53 semaines** au lieu de 30 jours (sans quoi la série plafonnerait à quatre). Effet de bord assumé sur la série **quotidienne** : un jour actif par la seule nutrition au-delà de 30 jours était invisible alors qu'une séance au même jour comptait. La correction ne peut qu'**allonger** une série tronquée. Si un testeur voit son compteur de jours **augmenter** sans rien avoir fait, c'est ça — et c'est le bon sens.
 - ⚠️ **Le joker et les jours en pause ne sont pas touchés** (spec D5) : ils restent des mécanismes de la série **quotidienne**.
-
-## 84. MUSCU-FIX02 — La séance en direct doit dérouler (`dev`)
-
-Spec : [muscu-fix02-seance-en-direct.md](docs/specs/functional/us/muscu-fix02-seance-en-direct.md)
-
-Correctifs issus du retour de **Florian le 23/09/2026** : écrans noirs, bascule immersif →
-classique qui plante ou n'affiche rien, lenteurs, incohérences en pleine séance.
-
-> 🔎 **Ce que ces correctifs ne sont pas** : aucune fonctionnalité nouvelle, **aucune migration,
-> aucune sync rule**. PowerSync crée ses nouveaux index locaux au premier démarrage du build, sans
-> resynchroniser les données — le tout premier lancement peut prendre une seconde de plus, une fois.
->
-> ⚠️ **Il faut un historique** pour recetter la lenteur : c'est lui qui la rendait visible (le coût
-> grandissait avec le nombre de séances passées). Un compte neuf était déjà rapide.
-
-**Ce qui était cassé, et pourquoi** — utile pour savoir quoi regarder :
-
-1. **La lenteur et les écrans noirs.** Une requête du mode immersif — *montée aussi en classique* —
-   relisait tout l'historique **pour chaque série passée**, et se relançait **à chaque série
-   validée** : 3 s sur PC avec 200 séances, soit bien plus sur téléphone. Et la base locale n'avait
-   **aucun index**. Mesuré après correctif : ~6 ms au lieu de ~3 000 ms (PC).
-2. **La bascule de mode.** Le menu ⋮ vivait *dans* chaque mode : le changement de mode détruisait
-   le menu ouvert et en recréait un autre dans le même instant, resté ouvert par-dessus.
-3. **La clôture.** Dès la séance terminée en base, l'écran affichait « Aucune séance en cours » —
-   en immersif **par-dessus la cérémonie de fin**. Et « Terminer » depuis le **menu ⋮** en immersif
-   ne lançait jamais la cérémonie.
-4. **La barre chargée de l'immersif ne s'affichait jamais** : sa requête lisait une colonne qui
-   n'existe pas, et échouait en silence.
-
-### A — 🔴 Le lancement
-
-- [ ] 🔴 **Démarrer la séance du jour** (hub muscu), en **classique** : l'écran de séance s'ouvre
-      sans écran noir durable — au pire un indicateur une fraction de seconde. Idem en **immersif**
-      (brief → « C'est parti »).
-- [ ] Au lancement d'une séance de **programme**, on ne voit **jamais** passer un écran « séance
-      vide » avec « + Ajouter un exercice » avant que les exercices n'apparaissent.
-- [ ] Depuis le brief immersif (sombre), aucun **flash clair** avant la séance.
-- [ ] **Reprendre** une séance en cours (carte du hub ou de l'accueil) : même rapidité.
-- [ ] Le refaire **en mode avion** : identique (tout est local).
-
-### B — 🔴 La validation, 30 à 40 fois par séance
-
-- [ ] 🔴 Valider une série : le repos démarre **et** annonce **la série suivante** tout de suite —
-      jamais « Série 2/4 » qui devient « 3/4 » un instant après.
-- [ ] 🔴 **Double appui rapide** sur « Valider la série » : **une seule** série validée (la liste le
-      montre), un seul repos.
-- [ ] Enchaîner 6 à 8 validations : aucun ralentissement ne s'installe au fil de la séance.
-- [ ] Dé-valider une série depuis la liste des exercices, puis la revalider depuis la barre : ça
-      marche, et le compteur « 7/18 séries » suit.
-- [ ] Passer d'un exercice à l'autre dans une **séance libre** (charges vides) : la charge
-      pré-remplie est celle de **cet** exercice la dernière fois — jamais, même un instant, celle de
-      l'exercice précédent.
-- [ ] Même chose pour la **note d'exercice** : ouvrir/fermer le champ au changement d'exercice ne
-      recopie jamais la note du précédent.
-
-### C — 🔴 La bascule de mode en pleine séance
-
-- [ ] 🔴 En **immersif**, ⋮ → « Classique » : le menu **se referme**, l'écran classique s'affiche
-      **complet** (barre haute, carte, liste, barre de saisie), sans plantage ni écran vide.
-- [ ] En **classique**, ⋮ → « Immersif » : même chose dans l'autre sens.
-- [ ] Faire la bascule **pendant un repos** : le repos continue dans l'autre mode, même temps restant.
-- [ ] Aller-retour classique → immersif → classique après avoir validé 2 séries : **rien n'est
-      perdu** (séries validées, série courante, repos).
-- [ ] Arrivée par « Modifier avant de commencer » (brief) : le plan s'ouvre **une fois** ; après une
-      bascule vers classique puis retour en immersif, il ne se rouvre **pas** tout seul.
-
-### D — 🔴 La fin de séance
-
-- [ ] 🔴 **Immersif, toutes les séries faites** → « Terminer » : la cérémonie de fin s'affiche et
-      **reste** jusqu'à « Voir le bilan » — jamais « Aucune séance en cours ».
-- [ ] 🔴 **Immersif, séance écourtée** (séries restantes) → ⋮ → « Terminer la séance » : la
-      **cérémonie** s'affiche aussi (elle n'apparaissait jamais par ce chemin), puis le bilan.
-- [ ] Pendant la cérémonie, la **durée** affichée est figée sur l'instant de la fin (elle ne
-      continue pas de courir).
-- [ ] **Classique** → « Terminer » : on arrive au bilan **sans** voir passer « Aucune séance en
-      cours ».
-- [ ] ⋮ → « Terminer » **sans aucune série validée**, confirmé : **pas** de cérémonie, direct au bilan.
-- [ ] ⋮ → « Abandonner », confirmé : retour à l'accueil rapide, **sans** « Aucune séance en cours »
-      entre les deux ; la séance a bien disparu (hub, historique).
-
-### E — L'immersif, enfin complet
-
-- [ ] 🔴 Sur un exercice **à la barre** (squat, développé couché…), la **barre chargée** s'affiche
-      avec les disques de chaque côté. Elle n'était **jamais** affichée jusqu'ici.
-- [ ] Coach non muet : au lancement d'une série d'un exercice qui a des instructions, le coach dit
-      la **consigne** (première phrase).
-- [ ] Le **cadran** de reps (après « Lancer la série » → fin d'effort) : le **glissé vertical** du
-      doigt change la valeur. Seuls − / + répondaient jusqu'ici.
-
-### F — Le reste du parcours, plus vite
-
-- [ ] Pendant une séance, « + Ajouter un exercice » : la bibliothèque s'ouvre **sans attente**, la
-      recherche répond à chaque lettre.
-- [ ] Le hub muscu, au retour d'une séance : pas de gel en revenant dessus.
-
-### G — La suggestion de progression (effet de bord voulu)
-
-- [ ] Une **seule** séance difficile (RPE ≥ 8 ou « Limite ») sur un exercice, la précédente
-      correcte : la séance suivante ne propose **pas** d'alléger. (Elle le proposait à tort : la
-      requête « avant-dernière séance » renvoyait la dernière dès qu'elle comptait plusieurs séries —
-      voir §16 MUSC-F7, critères 1 et 2.)
-
-### H — Ce qu'il faut savoir
-
-- ⚠️ La **veille** du repos immersif (écran noir volontaire après 20 s sans toucher, compte à rebours
-  en ambre) **n'a pas été touchée** : c'est un choix de conception, désactivable dans les réglages
-  de séance (« Veille pendant le repos »). Si des « écrans noirs » persistent **pendant les repos
-  immersifs**, c'est probablement elle — à signaler, pour décider s'il faut la garder.
-- ⚠️ Les mesures (~3 s → ~6 ms) viennent d'un banc sur PC : le gain sur téléphone est attendu du même
-  ordre, mais c'est cette recette qui le confirme.
-- ⚠️ Le **même défaut de requête** existe dans ~30 requêtes hors séance (bilan, records, tableaux de
-  bord) : elles ne ralentissent plus la séance, mais le **bilan** peut rester un peu lent à
-  s'afficher sur un gros historique. Noté au BACKLOG.
-
-### I — 1ʳᵉ passe de recette (23/09/2026) : couleurs de l'immersif et séance libre
-
-Deux retours de Florian sur ce lot : l'immersif revenait au **noir et orange** au lieu du bordeaux
-rosé du pilier, et « Séance libre » lançait **une séance vide** (chrono parti, écran noir,
-« ajoute un premier exercice ») — « pas intuitif, pas fluide ».
-
-- [ ] 🔴 **Classique → Immersif** en pleine séance : l'immersif garde les couleurs du **pilier
-      muscu** (fond bordeaux sombre, accent **rose**), plus de noir/orange. Idem pour le **brief**,
-      le **repos** et la **cérémonie de fin**.
-- [ ] L'immersif reste **sombre** même si l'app est en thème clair (c'est ce qui fait « mode »).
-- [ ] 🔴 Hub muscu → **« Séance libre »** : une **feuille s'ouvre**, aucun chrono ne part, aucune
-      séance n'apparaît dans « Reprendre » si on la ferme.
-- [ ] **« Composer ma séance »** : la bibliothèque s'ouvre en **choix multiple** — chaque appui
-      numérote l'exercice (1, 2, 3…), un second appui le retire, le bas indique « N exercices
-      choisis ».
-- [ ] **« Commencer la séance »** : la séance s'ouvre **déjà remplie**, dans l'ordre choisi. Un
-      exercice déjà fait a **autant de séries que la dernière fois**, pré-remplies avec les charges
-      d'alors ; un exercice jamais fait en a **3**.
-- [ ] Revenir en arrière depuis la composition : **rien n'a été créé** (le hub ne propose pas de
-      reprendre une séance).
-- [ ] **« Refaire une séance »** : les **3 dernières** séances terminées sont proposées (nom ou
-      « Séance libre », date, nombre d'exercices). En choisir une ouvre une séance **identique** —
-      mêmes exercices, même ordre, échauffements compris, charges reprises, rien de validé.
-- [ ] Une séance refaite depuis un **programme** ne coche **pas** le planning et ne compte pas dans
-      l'exécution du programme (c'est une séance libre).
-- [ ] **« Depuis un modèle »** : sans modèle, « Créer un modèle » ouvre la liste des modèles ; avec
-      des modèles, en choisir un démarre sa séance (en **immersif**, le brief s'affiche d'abord).
-- [ ] 🔴 **Séance vide en immersif** (tout supprimer d'une séance, par exemple) : un bouton
-      **« + Ajouter un exercice »** est visible en bas — plus de cul-de-sac.
-- [ ] FR et EN sur la feuille et la barre de composition.
-- ⚠️ **Arbitrage remplacé** : MUSCU-FIX01 (R6) démarrait directement une séance vide faute de
-  modèle (« pas de choix à une seule issue »). Il n'y a plus d'issue unique — « Composer » existe
-  toujours — donc la feuille s'affiche toujours. Les critères 1 et 8 de §76 sont annotés.
-
-### J — 2ᵉ passe de recette (23/09/2026) : saisie, série en cours, charges chargeables
-
-Trois retours de Florian : le pont immersif ne laissait pas **taper** la charge ; l'écran « touche
-à chaque répétition » est **inutilisable** en soulevant ; la barre proposait « 136,5 kg — dont
-0,75 kg non chargeable ».
-
-- [ ] 🔴 **Immersif** : toucher la **charge** du pont ouvre le clavier ; taper **102,5** donne
-      102,5 kg (virgule comprise). Idem pour les **répétitions**.
-- [ ] 🔴 **Classique aussi** : taper **82,5** dans la barre du bas donne 82,5 kg. (Avant, la virgule
-      **vidait** le champ, et « 82,5 » pouvait finir en « 825 ».)
-- [ ] Après une saisie, − / + reprennent la main normalement.
-- [ ] 🔴 **« Lancer la série »** : plus de « touche à chaque répétition ». L'écran montre, lisible posé
-      sur le banc : la **charge × les reps** en très grand, les **disques par côté** (exercice à la
-      barre), le **chrono de la série**, « **La dernière fois : …** » et la consigne.
-- [ ] Un seul bouton en bas, **« Série terminée »** : il ouvre le cadran **réglé sur l'objectif** ; un
-      glissé ou − / + corrige si on en a fait plus ou moins.
-- [ ] Série à la **durée** : compte à rebours, et le cadran s'ouvre tout seul à zéro.
-- [ ] 🔴 **Exercice à la barre** dont la charge prévue n'est pas chargeable (ex. programme à 136,5) :
-      la charge **proposée** est la chargeable la plus proche (137,5), et la barre dessinée n'annonce
-      **aucun** reste non chargeable.
-- [ ] − / + sur un exercice à la barre : pas de **2,5 kg**, et depuis une charge tapée non chargeable
-      (136,5), on va à la voisine (137,5 ou 135) — pas un pas plus loin.
-- [ ] Une charge **tapée** n'est jamais retouchée (101 reste 101 ; la barre dessinée dit alors le reste).
-- [ ] Haltères ou machine : aucun arrondi, − / + gardent un pas de 2,5 kg.
-- [ ] La suggestion (« Essaie X kg ») et la proposition d'ajustement après « Limite » / « Facile »
-      tombent aussi sur une charge chargeable à la barre.
-- [ ] Même charge proposée en **classique** et en **immersif** : basculer de mode ne la change pas.
-- ⚠️ Les critères 20 et 21 de §63 (MUSCU-UX03) sont annotés : le comptage au toucher a disparu, et le
-  reste non chargeable ne se voit plus que sur une charge tapée.
-- ⚠️ Barre de **15 kg** (réglages de séance) : l'arrondi suit la barre réglée (40,5 → 40 sur une 15 kg).
-- ⚠️ **Les critères « Lancer la série » et « Série terminée » de ce bloc sont remplacés** par le
-  bloc K pour les séries en reps : l'écran d'effort n'existe plus que pour les séries chronométrées.
-
-### K — 3ᵉ passe de recette (23/09/2026) : l'écran qui respire disparaît
-
-Retour de Florian sur la passe 2 : l'écran « à regarder » pendant la série « sert vraiment à rien ».
-Décision (Florian) : le **supprimer** pour les séries en reps, et mettre ce qui sert vraiment là où
-on a le temps de le lire.
-
-- [ ] 🔴 **Série en reps**, en immersif : le bouton principal du pont s'appelle **« Série faite »**
-      (coche) et ouvre **directement** le cadran (reps + ressenti). Plus d'écran intermédiaire.
-- [ ] « Valider directement » reste là pour valider sans passer par le cadran.
-- [ ] **Série chronométrée** (gainage…) : le bouton reste **« Lancer la série »** et ouvre l'écran de
-      compte à rebours ; le cadran s'ouvre tout seul à zéro.
-- [ ] 🔴 **Exercice à la barre, 2ᵉ série et suivantes** : sous la barre dessinée, une ligne dit
-      **ce qu'il faut toucher** depuis la série d'avant — « Ajoute 1,25 kg de chaque côté »,
-      « Retire 5 kg de chaque côté » ou « Même charge que la série d'avant ». Elle suit la charge
-      quand on la change (− / + ou saisie).
-- [ ] 🔴 **Pendant le repos**, sous « Ensuite » : la même ligne pour la série qui vient. Si la
-      prochaine série est un **nouvel exercice** à la barre : le chargement complet par côté.
-- [ ] 1ʳᵉ série d'un exercice à la barre : pas de ligne « ajoute / retire » (rien à comparer), le
-      détail par côté sous la barre suffit.
-- [ ] Haltères, machine : aucune ligne de barre.
-- [ ] La **consigne** technique de l'exercice (quand la fiche en a une) s'affiche sur la scène,
-      ligne « Consigne », avant de se placer. Elle n'est plus dite à voix haute pour une série en
-      reps (il n'y a plus de « lancement »), toujours pour une série chronométrée.
-- [ ] FR et EN : « Série faite / Set done », « Ajoute … de chaque côté / Add … per side ».

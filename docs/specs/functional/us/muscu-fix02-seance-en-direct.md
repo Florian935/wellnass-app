@@ -3,7 +3,7 @@ id: MUSCU-FIX02
 titre: "La séance en direct doit dérouler — lenteurs, écrans noirs, bascule de mode, clôture"
 roadmap: [3.59, 3.61]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
 maj: 23/09/2026
 ---

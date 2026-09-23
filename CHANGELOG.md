@@ -10,6 +10,31 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/09/2026 — MUSCU-FIX02 clôturée : recette validée par Florian (`dev`)
+
+> Florian a validé les trois passes sur device (« j'ai reseté, c'est validé ») et demandé la clôture.
+> Aucun code touché. Commit précédent : `3f7c606c`.
+
+### Modifié
+- **Spec** [muscu-fix02-seance-en-direct.md](docs/specs/functional/us/muscu-fix02-seance-en-direct.md) :
+  `etape: recette` → **`close`**.
+- **Roadmap** 3.59 et 3.61 : le renvoi « RECETTES.md §84 » devient « recettée et clôturée le
+  23/09/2026 » ; statuts inchangés (✅), entrée « (quinquies) » au journal des réconciliations.
+- **ETAT.md** régénéré : **83** US en recette (84 avant), 88 specs clôturées.
+
+### Supprimé
+- **RECETTES.md §84** (blocs A à K) purgée, conformément à la règle de purge ; en-tête passé à
+  **83 sections**. Les trois renvois vers §84 dans les sections encore ouvertes sont réécrits pour
+  ne plus pointer dans le vide : §63 critère 21 (le comptage au toucher remplacé ; l'écran d'effort ne
+  sert plus qu'aux séries chronométrées, où reste à recetter le battement au tempo) et §76
+  critères 1 et 8 (feuille « Séance libre »).
+
+### Notes
+- Dans la même session, **toile de couleurs du pilier Musculation** produite avec Claude Design
+  (4 directions + planche de séparation des cartes + recommandation « B · Graphite + rouge », palier
+  L4) : **en attente d'arbitrage de Florian**, rien n'est encore versé dans `design/` ni dans le code.
+- Qualité : lint 0, typecheck 0, tests verts (Jest 248 suites / 4 430 tests, Vitest 24 + 164 fichiers).
+
 ## 23/09/2026 — MUSCU-FIX02, passe 3 : l'écran qui respire disparaît, la barre dit quoi toucher (`dev`)
 
 > 3ᵉ passe de recette de MUSCU-FIX02 (Florian, sur device) : même devenu « à regarder », l'écran
