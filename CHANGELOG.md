@@ -10,6 +10,106 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/09/2026 — MUSCU-FIX02 : la séance en direct doit dérouler (`dev`)
+
+> Retour de Florian le 23/09/2026 : écrans noirs, bascule immersif → classique qui plante ou
+> n'affiche rien, lenteurs, « une séance en direct juste impossible ». Analyse et correctifs en une
+> passe, **directement sur `dev`** (décision de Florian). Nouvelle spec
+> [muscu-fix02-seance-en-direct.md](docs/specs/functional/us/muscu-fix02-seance-en-direct.md), à
+> `etape: recette` → [RECETTES.md](RECETTES.md) §84. Lignes de roadmap **3.59** et **3.61**.
+> Commit précédent : `ff616170`.
+
+### Corrigé — base de données (la lenteur)
+- 🔴 **`SELECT_SESSION_REFERENCES`** (`immersive-repository.ts`) — sous-requête **corrélée** rejouée
+  pour chaque série de l'historique, montée dans **les deux modes** et relancée à **chaque** série
+  validée : 277 ms à 60 séances, **2 760 ms à 200** (banc PC, ×5 à ×10 sur téléphone). Réécrite en
+  fonction de fenêtre (`ROW_NUMBER() OVER (PARTITION BY exercise_id …)`) : **4,8 ms**, mêmes lignes
+  (les 5 tests de référence passent sur l'ancien SQL comme sur le nouveau).
+- 🔴 **Aucun index dans le schéma PowerSync** (`schema.ts`) — toute recherche relisait la table en
+  extrayant le JSON ligne à ligne. **9 index locaux sur 7 tables** : `workout_sets` (`workout_id`,
+  `exercise_id`), `exercise_translations` (`exercise_id, lang`), `exercise_plans`,
+  `personal_records` (×2), `exercise_notes`, `exercise_favorites`, `workout_superset_pairs`.
+  L'historique du hub, relancé lui aussi à chaque série : 1,26 s → 15 ms.
+- 🔴 **`SELECT_SESSION_CARDS`** lisait `exercises.instructions`, **colonne inexistante** en local :
+  la requête échouait à chaque appel, `useQuery` rendait `[]` sans rien dire. En immersif, **la barre
+  chargée ne s'affichait jamais** et le coach ne disait jamais la consigne. La consigne se lit
+  désormais dans `exercise_translations` ; `useSessionCards` prend la langue.
+- **`SELECT_SECOND_LAST_PERFORMANCE`** — `OFFSET 1` sautait une **série**, pas une séance : avec
+  plusieurs séries du même exercice, « l'avant-dernière séance » était la dernière, et le deload de
+  MUSC-F7 partait après **une** séance difficile au lieu de deux. `GROUP BY` séance, partagé avec
+  `SELECT_LAST_PERFORMANCE` (`NTH_LAST_WORKOUT_WITH`).
+- **`useActiveWorkout`** — les séries étaient lues avec l'id rendu par la requête de séance
+  (cascade) : un rendu « séance vide » au lancement d'une séance de programme. `SELECT_ACTIVE_SETS`
+  lit la séance active par sous-requête ; les deux requêtes partent ensemble, et les lignes d'une
+  autre séance sont écartées. `ACTIVE_WORKOUT_FILTER` partagé (ordre explicite `started_at DESC`).
+- **Réponses périmées de `useQuery`** au changement d'exercice : `useLastPerformance`,
+  `usePreviousStruggled` et `useExerciseNote` écartent les lignes d'un autre exercice (la charge du
+  squat pré-remplie un instant sur un curl ; une note recopiée d'un exercice à l'autre).
+- **`cancelWorkout`** — une écriture par série (26 pour 24 séries), chacune relançant toutes les
+  requêtes montées. Une transaction, sur le modèle de `deleteWorkout`.
+
+### Corrigé — écran de séance
+- 🔴 **Clôture** (`workout.tsx`) — dès la séance close en base, la requête rend `null` et l'écran
+  affichait « Aucune séance en cours » : en immersif **par-dessus la cérémonie de fin**, en
+  classique pendant le calcul des records. État `closing` : l'image de la séance reste jusqu'au
+  départ, chrono figé, repos arrêté, saisie refusée. Idem à l'abandon.
+- 🔴 **« Terminer » depuis le menu ⋮ en immersif** ne lançait jamais la cérémonie (seul le bouton du
+  pont le faisait) ni la navigation. La cérémonie devient un état de l'écran de séance
+  (`runtime.closing`, `types.ts`) ; la phase interne `'closing'` d'`ImmersiveWorkout` disparaît.
+- 🔴 **Bascule de mode** — le menu et le sélecteur de superset vivaient **dans** chaque rendu :
+  changer de mode depuis le menu remplaçait tout l'arbre, **modale ouverte comprise**, et le menu
+  restait ouvert par-dessus le nouveau mode. Les deux modales sont rendues **hors** des deux modes
+  (même position, React les conserve) ; le menu se ferme au changement de mode.
+- **Validation optimiste** — `doneOverrides` (`applyDoneOverrides` / `pruneDoneOverrides`,
+  exportées et testées) : la série suivante s'affiche sans attendre la base, qui redevient seule
+  juge dès qu'elle a rattrapé. + garde par `ref` contre deux appuis dans le même cycle de rendu.
+- Plan du brief consommé une fois (il se rouvrait à chaque bascule vers l'immersif) ; écran de
+  chargement aux couleurs du mode (flash clair après le brief sombre).
+- **`RepDial`** — `GestureHandlerRootView` dans la modale : le glissé du cadran ne répondait pas sur
+  Android (modale = fenêtre à part, hors de la racine de gestes).
+
+### Modifié
+- **`_sql.ts`** — `exerciseTranslationSql` / `exerciseNameSql` : le nom (ou la consigne) d'un
+  exercice en **sous-requêtes scalaires**. SQLite n'utilise **jamais** d'index pour la table de
+  droite d'un `LEFT JOIN` sur une vue PowerSync (vérifié : plan `SCAN` même index posé). 185 ms →
+  0,6 ms sur 350 exercices ; ne duplique plus une ligne quand deux traductions existent dans la même
+  langue, et préfère la traduction vivante à l'archivée (ADMIN-01 conservé).
+- Appliqué aux séries de séance, au brief (`SELECT_SESSION_BRIEF`), au calcul des records de
+  clôture (`records-repository.ts`) et à la bibliothèque (`exercise-repository.ts` : `exercisesQuery`
+  et `SELECT_FAVORITE_EXERCISES` exportés, favori en `EXISTS`).
+- `SELECT_LAST_PERFORMANCE`, `SELECT_SECOND_LAST_PERFORMANCE`, `SELECT_SESSION_REFERENCES`,
+  `SELECT_SESSION_CARDS`, `SELECT_SESSION_BRIEF` exportés pour le harnais SQLite.
+
+### Ajouté
+- **`session-live-sql.test.ts`** — 20 tests sur le harnais SQLite (références, cartes, brief,
+  séries actives, noms, bibliothèque, avant-dernière séance, exercice porté par chaque ligne).
+- **`workout-screen.test.tsx`** — 11 tests (clôture, cérémonie depuis le menu, bascule de mode sans
+  remontage du menu, validation optimiste, double appui…) ; **9 échouent sur l'ancien écran**
+  (vérifié en le restaurant). Sondes enrichies (compteur de montages du menu, `currentIndex`).
+- **`workout-focus.test.ts`** — 6 tests `applyDoneOverrides` / `pruneDoneOverrides`.
+- Spec MUSCU-FIX02, RECETTES §84 (7 blocs de critères), ligne BACKLOG « ~30 `LEFT JOIN` hors séance ».
+
+### Technique — notes
+- 📏 **Mesures faites sur un banc** qui reproduit la structure PowerSync (`ps_data__*` + vues
+  `CAST(json_extract(data, …))`, format vérifié dans le binaire `libpowersync.so`) : ~3 000 ms →
+  ~6,5 ms à 200 séances pour les requêtes de l'écran. **Pas de mesure sur téléphone** : la recette
+  confirmera.
+- ⚠️ Revue : `cancelWorkout` écrit désormais les séries **avant** la séance (même transaction) —
+  ordre déjà en usage dans `deleteWorkout`, sans contrainte serveur connue sur cet ordre.
+- ⚠️ **Première ouverture du build** : PowerSync crée les index (`updateSchema`), une fois, sans
+  resynchroniser. **Aucune migration, aucune sync rule.**
+- ⚠️ **Non traité** : ~30 autres requêtes en `LEFT JOIN exercise_translations` hors séance (bilan,
+  records, tableaux de bord, hub) → BACKLOG. La **veille** du repos immersif (écran noir volontaire)
+  n'est pas touchée : si les « écrans noirs » persistent pendant les repos, c'est elle.
+- `workout.tsx` et `RepDial.tsx` : une partie du diff est de la **ré-indentation** (fragment racine,
+  racine de gestes) — `git diff -w` pour lire le fond. Prettier n'est pas passé : les fichiers
+  d'origine n'y étaient pas conformes.
+- 🔁 **Rebasé sur les lots de tests 8 à 11** (`chore/tests-lot8`, poussés sur `dev` entre-temps) :
+  `ImmersiveWorkout.test.tsx` (lot 11) testait l'ancien contrat — la cérémonie déclenchée par le
+  bouton du pont. Deux tests réécrits sur `runtime.closing`, un ajouté (la cérémonie prime sur le
+  repos), et le bouton seul ne fête plus rien ; `makeRuntime` (`test-utils/immersive-runtime.ts`)
+  porte `closing: false`.
+
 ## 22/09/2026 — Socle de tests, lot 11 : les écrans commencent (`chore/tests-lot8`)
 
 > Commit précédent : `ea65e3c`. **112 tests**, mobile 4 226 → **4 338**, couverture 63,2 →

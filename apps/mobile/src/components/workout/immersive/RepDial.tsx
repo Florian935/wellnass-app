@@ -21,7 +21,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 import { runOnJS } from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { SET_FEELS, feelToRpe, type SetFeel } from '@wellness/shared';
@@ -116,140 +116,146 @@ export function RepDial({ runtime, taps, startedAt, onCancel, onValidate }: Prop
 
   return (
     <Modal visible transparent animationType="fade" onRequestClose={onCancel} statusBarTranslucent>
-      <View style={[styles.backdrop, { backgroundColor: `${colors.background}f2` }]}>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('common.cancel')}
-          onPress={onCancel}
-          hitSlop={12}
-          style={styles.close}
-        >
-          <Ionicons name="chevron-down" size={26} color={colors.textMuted} />
-        </Pressable>
+      {/* Une modale Android vit dans sa propre fenêtre, hors de la racine de gestes posée par
+          `_layout.tsx` : sans cette racine-ci, le glissé du cadran n'était jamais reçu — seuls les
+          boutons − / + répondaient (MUSCU-FIX02). */}
+      <GestureHandlerRootView style={styles.gestureRoot}>
+        <View style={[styles.backdrop, { backgroundColor: `${colors.background}f2` }]}>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('common.cancel')}
+            onPress={onCancel}
+            hitSlop={12}
+            style={styles.close}
+          >
+            <Ionicons name="chevron-down" size={26} color={colors.textMuted} />
+          </Pressable>
 
-        <Text style={[styles.title, { color: colors.textMuted }]}>
-          {isDuration ? t('immersive.dial.titleDuration') : t('immersive.dial.title')}
-        </Text>
+          <Text style={[styles.title, { color: colors.textMuted }]}>
+            {isDuration ? t('immersive.dial.titleDuration') : t('immersive.dial.title')}
+          </Text>
 
-        <GestureDetector gesture={pan}>
-          <View style={styles.dialZone}>
-            <View
-              accessible
-              accessibilityRole="adjustable"
-              accessibilityLabel={label}
-              accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
-              onAccessibilityAction={(event) =>
-                bump(event.nativeEvent.actionName === 'increment' ? 1 : -1)
-              }
-              style={styles.dialRow}
-            >
-              <PressableScale
-                accessibilityRole="button"
-                accessibilityLabel={t('workout.stepDown', { field: label })}
-                haptic="none"
-                onPress={() => bump(-1)}
-                style={[styles.bump, { backgroundColor: colors.surfaceAlt }]}
+          <GestureDetector gesture={pan}>
+            <View style={styles.dialZone}>
+              <View
+                accessible
+                accessibilityRole="adjustable"
+                accessibilityLabel={label}
+                accessibilityActions={[{ name: 'increment' }, { name: 'decrement' }]}
+                onAccessibilityAction={(event) =>
+                  bump(event.nativeEvent.actionName === 'increment' ? 1 : -1)
+                }
+                style={styles.dialRow}
               >
-                <Ionicons name="remove" size={24} color={colors.text} />
-              </PressableScale>
+                <PressableScale
+                  accessibilityRole="button"
+                  accessibilityLabel={t('workout.stepDown', { field: label })}
+                  haptic="none"
+                  onPress={() => bump(-1)}
+                  style={[styles.bump, { backgroundColor: colors.surfaceAlt }]}
+                >
+                  <Ionicons name="remove" size={24} color={colors.text} />
+                </PressableScale>
 
-              <View style={styles.dialCore}>
-                <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
-                <Text style={[styles.unit, { color: colors.textMuted }]}>
-                  {isDuration ? t('workout.durationLabel') : t('workout.reps')}
-                </Text>
+                <View style={styles.dialCore}>
+                  <Text style={[styles.value, { color: colors.text }]}>{value}</Text>
+                  <Text style={[styles.unit, { color: colors.textMuted }]}>
+                    {isDuration ? t('workout.durationLabel') : t('workout.reps')}
+                  </Text>
+                </View>
+
+                <PressableScale
+                  accessibilityRole="button"
+                  accessibilityLabel={t('workout.stepUp', { field: label })}
+                  haptic="none"
+                  onPress={() => bump(1)}
+                  style={[styles.bump, { backgroundColor: colors.surfaceAlt }]}
+                >
+                  <Ionicons name="add" size={24} color={colors.text} />
+                </PressableScale>
               </View>
 
-              <PressableScale
-                accessibilityRole="button"
-                accessibilityLabel={t('workout.stepUp', { field: label })}
-                haptic="none"
-                onPress={() => bump(1)}
-                style={[styles.bump, { backgroundColor: colors.surfaceAlt }]}
-              >
-                <Ionicons name="add" size={24} color={colors.text} />
-              </PressableScale>
+              <Text style={[styles.hint, { color: colors.textMuted }]}>
+                {t('immersive.dial.hint')}
+              </Text>
             </View>
+          </GestureDetector>
 
-            <Text style={[styles.hint, { color: colors.textMuted }]}>
-              {t('immersive.dial.hint')}
+          {/* Rappel de la charge : on la voit, on ne la change pas ici — le pont s'en occupe avant
+              de lancer la série (spec §5.7). */}
+          {!isDuration && runtime.displayWeightKg !== null ? (
+            <Text style={[styles.load, { color: colors.textMuted }]}>
+              {units.formatWeight(runtime.displayWeightKg)}
             </Text>
-          </View>
-        </GestureDetector>
+          ) : null}
 
-        {/* Rappel de la charge : on la voit, on ne la change pas ici — le pont s'en occupe avant
-            de lancer la série (spec §5.7). */}
-        {!isDuration && runtime.displayWeightKg !== null ? (
-          <Text style={[styles.load, { color: colors.textMuted }]}>
-            {units.formatWeight(runtime.displayWeightKg)}
-          </Text>
-        ) : null}
-
-        {/* Le ressenti, facultatif : quatre mots plutôt qu'une échelle que personne ne calibre. */}
-        {level !== 'simplified' ? (
-          <View style={styles.feels}>
-            <Text style={[styles.feelsLabel, { color: colors.textMuted }]}>
-              {t('immersive.dial.feelLabel')}
-            </Text>
-            <View style={styles.feelRow}>
-              {SET_FEELS.map((candidate) => {
-                const selected = feel === candidate;
-                return (
-                  <PressableScale
-                    key={candidate}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected }}
-                    accessibilityHint={t('immersive.dial.feelHint', { rpe: feelToRpe(candidate) })}
-                    haptic="select"
-                    // Retaper le mot choisi l'efface : c'est la seule façon de revenir en arrière
-                    // sans ajouter un bouton « aucun » que personne ne chercherait.
-                    onPress={() => setFeel(selected ? null : candidate)}
-                    style={[
-                      styles.feel,
-                      {
-                        backgroundColor: selected ? colors.accent : colors.surfaceAlt,
-                        borderColor: selected ? colors.accent : colors.border,
-                      },
-                    ]}
-                  >
-                    <Text
+          {/* Le ressenti, facultatif : quatre mots plutôt qu'une échelle que personne ne calibre. */}
+          {level !== 'simplified' ? (
+            <View style={styles.feels}>
+              <Text style={[styles.feelsLabel, { color: colors.textMuted }]}>
+                {t('immersive.dial.feelLabel')}
+              </Text>
+              <View style={styles.feelRow}>
+                {SET_FEELS.map((candidate) => {
+                  const selected = feel === candidate;
+                  return (
+                    <PressableScale
+                      key={candidate}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected }}
+                      accessibilityHint={t('immersive.dial.feelHint', { rpe: feelToRpe(candidate) })}
+                      haptic="select"
+                      // Retaper le mot choisi l'efface : c'est la seule façon de revenir en arrière
+                      // sans ajouter un bouton « aucun » que personne ne chercherait.
+                      onPress={() => setFeel(selected ? null : candidate)}
                       style={[
-                        styles.feelText,
-                        { color: selected ? colors.accentText : colors.textMuted },
+                        styles.feel,
+                        {
+                          backgroundColor: selected ? colors.accent : colors.surfaceAlt,
+                          borderColor: selected ? colors.accent : colors.border,
+                        },
                       ]}
                     >
-                      {t(`immersive.feel.${candidate}`)}
-                    </Text>
-                  </PressableScale>
-                );
-              })}
+                      <Text
+                        style={[
+                          styles.feelText,
+                          { color: selected ? colors.accentText : colors.textMuted },
+                        ]}
+                      >
+                        {t(`immersive.feel.${candidate}`)}
+                      </Text>
+                    </PressableScale>
+                  );
+                })}
+              </View>
             </View>
-          </View>
-        ) : null}
+          ) : null}
 
-        <View style={styles.footer}>
-          <PressableScale
-            accessibilityRole="button"
-            haptic="confirm"
-            onPress={validate}
-            style={[styles.primary, { backgroundColor: colors.accent }]}
-          >
-            <Text style={[styles.primaryLabel, { color: colors.accentText }]}>
-              {runtime.chainsToSuperset ? t('workout.validateAndChain') : t('workout.validateSet')}
-            </Text>
-          </PressableScale>
-          <Pressable accessibilityRole="button" onPress={onCancel} style={styles.secondary}>
-            <Text style={[styles.secondaryLabel, { color: colors.textMuted }]}>
-              {t('immersive.dial.back')}
-            </Text>
-          </Pressable>
+          <View style={styles.footer}>
+            <PressableScale
+              accessibilityRole="button"
+              haptic="confirm"
+              onPress={validate}
+              style={[styles.primary, { backgroundColor: colors.accent }]}
+            >
+              <Text style={[styles.primaryLabel, { color: colors.accentText }]}>
+                {runtime.chainsToSuperset ? t('workout.validateAndChain') : t('workout.validateSet')}
+              </Text>
+            </PressableScale>
+            <Pressable accessibilityRole="button" onPress={onCancel} style={styles.secondary}>
+              <Text style={[styles.secondaryLabel, { color: colors.textMuted }]}>
+                {t('immersive.dial.back')}
+              </Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
+      </GestureHandlerRootView>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  gestureRoot: { flex: 1 },
   backdrop: { flex: 1, justifyContent: 'center', gap: 18, paddingHorizontal: 24 },
   close: { position: 'absolute', top: 46, alignSelf: 'center', padding: 8 },
   title: {

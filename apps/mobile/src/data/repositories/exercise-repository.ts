@@ -33,7 +33,7 @@ import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { resolveDeviceLocale } from '@/i18n';
-import { insertWithSyncFields, nowUtc, softDelete } from './_sql';
+import { exerciseNameSql, insertWithSyncFields, nowUtc, softDelete } from './_sql';
 
 /** Élément d'exercice tel qu'affiché dans les listes (biblio, favoris, recherche). */
 export type ExerciseListItem = {
@@ -72,17 +72,29 @@ type ExerciseListDbRow = {
 // ---------------------------------------------------------------------------
 
 /**
+ * Nom résolu (langue courante → fr) d'un exercice de liste : les traductions archivées n'y nomment
+ * plus rien. Consomme un `?` (la langue).
+ *
+ * Sous-requêtes et non `LEFT JOIN` (MUSCU-FIX02, voir `exerciseNameSql`) : cette liste s'ouvre en
+ * pleine séance (« Ajouter un exercice », « Remplacer »), et le `LEFT JOIN` relisait toute la table
+ * des traductions pour chaque exercice du catalogue — 185 ms sur PC pour 350 exercices.
+ */
+const LIST_NAME_SQL = exerciseNameSql('e.id', true);
+
+/** Drapeau favori, en `EXISTS` pour la même raison. SQLite rend 0/1. */
+const IS_FAVORITE_SQL = `EXISTS (
+  SELECT 1 FROM exercise_favorites f WHERE f.exercise_id = e.id AND f.deleted_at IS NULL
+)`;
+
+/**
  * Sélection de base des exercices avec nom résolu (langue courante → fr) et
  * drapeau favori. Premier `?` = langue courante.
  */
 const SELECT_EXERCISES = `
   SELECT e.id, e.source, e.muscle_primary, e.equipment, e.media_url,
-         COALESCE(tl.name, tfr.name) AS name,
-         (f.id IS NOT NULL) AS is_favorite
+         ${LIST_NAME_SQL} AS name,
+         ${IS_FAVORITE_SQL} AS is_favorite
   FROM exercises e
-  LEFT JOIN exercise_translations tl  ON tl.exercise_id = e.id AND tl.lang = ?      AND tl.deleted_at IS NULL
-  LEFT JOIN exercise_translations tfr ON tfr.exercise_id = e.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
-  LEFT JOIN exercise_favorites f      ON f.exercise_id = e.id AND f.deleted_at IS NULL
   WHERE e.deleted_at IS NULL
 `;
 
@@ -113,8 +125,38 @@ const SELECT_EXERCISE_DETAIL = `
 
 const ORDER_BY_NAME = 'ORDER BY name COLLATE NOCASE';
 
-/** Clause de recherche insensible à la casse sur le nom résolu (param = `%term%`). */
-const SEARCH_CLAUSE = 'AND COALESCE(tl.name, tfr.name) LIKE ?';
+/**
+ * Clause de recherche insensible à la casse sur le nom résolu. Paramètres : la langue (pour le
+ * nom), puis `%term%`.
+ */
+const SEARCH_CLAUSE = `AND ${LIST_NAME_SQL} LIKE ?`;
+
+/**
+ * La requête de la bibliothèque et ses paramètres, dans l'ordre des `?` — extraite du hook pour
+ * être exécutée telle quelle sur le harnais SQLite.
+ */
+export function exercisesQuery(
+  lang: 'fr' | 'en',
+  search?: string,
+  muscles?: MuscleGroup[],
+  equipment?: Equipment[],
+): { sql: string; params: string[] } {
+  const term = search?.trim() ?? '';
+  const { clause: filterClause, params: filterParams } = buildExerciseFilterClause(muscles, equipment);
+
+  return term.length > 0
+    ? {
+        sql: `${SELECT_EXERCISES} ${SEARCH_CLAUSE} ${filterClause} ${ORDER_BY_NAME}`,
+        params: [lang, lang, `%${term}%`, ...filterParams],
+      }
+    : {
+        sql: `${SELECT_EXERCISES} ${filterClause} ${ORDER_BY_NAME}`,
+        params: [lang, ...filterParams],
+      };
+}
+
+/** La requête des seuls favoris. Paramètres : `[lang]`. */
+export const SELECT_FAVORITE_EXERCISES = `${SELECT_EXERCISES} AND ${IS_FAVORITE_SQL} ${ORDER_BY_NAME}`;
 
 // ---------------------------------------------------------------------------
 // Mapping snake_case ↔ camelCase
@@ -161,17 +203,7 @@ export function useExercises(
   const { i18n } = useTranslation();
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 
-  const term = search?.trim() ?? '';
-  const hasSearch = term.length > 0;
-  const { clause: filterClause, params: filterParams } = buildExerciseFilterClause(muscles, equipment);
-
-  const sql = hasSearch
-    ? `${SELECT_EXERCISES} ${SEARCH_CLAUSE} ${filterClause} ${ORDER_BY_NAME}`
-    : `${SELECT_EXERCISES} ${filterClause} ${ORDER_BY_NAME}`;
-  const params = hasSearch
-    ? [lang, `%${term}%`, ...filterParams]
-    : [lang, ...filterParams];
-
+  const { sql, params } = exercisesQuery(lang, search, muscles, equipment);
   const { data, isLoading: queryLoading } = useQuery<ExerciseListDbRow>(sql, params);
 
   const isLoading = queryLoading;
@@ -189,9 +221,9 @@ export function useFavorites(): { exercises: ExerciseListItem[]; isLoading: bool
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 
   // Réutilise la sélection de base et ne garde que les lignes favorisées.
-  const sql = `${SELECT_EXERCISES} AND f.id IS NOT NULL ${ORDER_BY_NAME}`;
-
-  const { data, isLoading: queryLoading } = useQuery<ExerciseListDbRow>(sql, [lang]);
+  const { data, isLoading: queryLoading } = useQuery<ExerciseListDbRow>(SELECT_FAVORITE_EXERCISES, [
+    lang,
+  ]);
 
   const isLoading = queryLoading;
   const exercises = data.map(rowToListItem);

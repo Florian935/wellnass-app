@@ -12,8 +12,11 @@
  *   vient d'être validée : les laisser à l'écran par-dessus un repos qui a démarré ferait taper
  *   des répétitions dans le vide. La remise à zéro se fait **pendant le rendu**, pas dans un effet
  *   — un effet provoquerait un rendu de plus, pendant lequel l'écran d'effort resterait visible.
- * - 🔴 **Une séance sans série validée ne se fête pas.** `onFinish` ouvre alors sa confirmation, et
- *   la cérémonie de clôture ne doit pas se jouer : il n'y a rien à célébrer.
+ * - 🔴 **La cérémonie de clôture suit `runtime.closing`, jamais le bouton.** Depuis MUSCU-FIX02
+ *   (23/09/2026), c'est l'écran de séance qui la décide : « Terminer » vit aussi dans le menu ⋮, et
+ *   seule l'ancienne phase interne de ce rendu la déclenchait — depuis le menu, la séance se
+ *   fermait sans cérémonie. Une séance sans série validée ne se fête toujours pas : c'est
+ *   `workout.tsx` qui ne pose alors pas `closing` (verrouillé dans `workout-screen.test.tsx`).
  * - **Le fantôme ne s'affiche qu'à trois conditions réunies** — réglage actif, référence existante,
  *   et au moins une série faite. Sans la troisième, la pastille annonce « +0 kg » au premier écran.
  * - **L'enjeu du record est muet en mode simplifié** : c'est tout l'objet du niveau d'affichage.
@@ -194,24 +197,34 @@ describe('la clôture', () => {
     expect(screen.getByText('workout.finishSession')).toBeTruthy();
   });
 
-  it('joue la cérémonie quand on termine une séance qui a des séries validées', async () => {
-    await mount(tout_fait);
-
-    await act(async () => fireEvent.press(screen.getByText('workout.finishSession')));
+  it('joue la cérémonie dès que l’écran de séance clôt la séance', async () => {
+    await mount({ ...tout_fait, closing: true });
 
     expect(screen.getByText('SONDE_CLOTURE')).toBeTruthy();
   });
 
-  it('🔴 ne fête rien quand aucune série n’a été validée', async () => {
+  it('🔴 la cérémonie prime sur tout moment en cours — le repos compris', async () => {
+    // Clôture depuis le menu ⋮ pendant un repos : la cérémonie doit prendre l'écran.
+    await mount({ ...tout_fait, closing: true, rest: { active: true, collapsed: false } });
+
+    expect(screen.getByText('SONDE_CLOTURE')).toBeTruthy();
+  });
+
+  it('🔴 le bouton seul ne joue pas la cérémonie : il demande la clôture, l’écran de séance décide', async () => {
+    // Sans série validée, `workout.tsx` ouvre une confirmation puis part au bilan sans poser
+    // `closing` : il n'y a rien à fêter. Ce rendu ne doit donc jamais se fêter tout seul.
+    const onFinish = jest.fn();
     await mount({
       entries: [seedEntry('ex-1', 'Développé couché', [{ done: false }])],
       current: null,
       doneSets: 0,
       totalSets: 1,
+      onFinish,
     });
 
     await act(async () => fireEvent.press(screen.getByText('workout.finishSession')));
 
+    expect(onFinish).toHaveBeenCalledTimes(1);
     expect(screen.queryByText('SONDE_CLOTURE')).toBeNull();
   });
 

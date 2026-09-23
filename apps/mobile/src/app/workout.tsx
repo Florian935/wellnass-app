@@ -21,12 +21,25 @@
  *
  * Le **réglage du repos** a quitté la carte de série, où il occupait une ligne à chaque série alors
  * que c'est un réglage d'exercice : il se pose depuis le menu ou depuis l'écran de repos.
+ *
+ * ── MUSCU-FIX02 (23/09/2026) : la séance doit dérouler ───────────────────────────────────────────
+ * Recette de Florian : écrans noirs, bascule immersif → classique qui plante, décalages. Quatre
+ * causes dans cet écran (les autres étaient dans le SQL, voir la spec) :
+ *  1. **La clôture effaçait l'écran** : dès que `finishWorkout` écrit, la séance n'est plus
+ *     « active », la requête rend `null`, et l'écran affichait « Aucune séance en cours » — en
+ *     immersif, par-dessus la cérémonie de fin. D'où `closing`, l'image gardée jusqu'au départ.
+ *  2. **La validation attendait la base** : tant que la requête n'avait pas relu la série, l'écran
+ *     montrait encore la série qu'on venait de valider. D'où `doneOverrides`.
+ *  3. **Changer de mode reconstruisait tout l'arbre**, menu ouvert compris : la modale visible
+ *     était démontée et remontée dans le même rendu. Le menu et le sélecteur de superset vivent
+ *     maintenant **hors** des deux rendus, et le menu se ferme sur le changement.
+ *  4. **Deux appuis dans le même cycle** validaient deux fois la même série.
  */
 
 import { Ionicons } from '@expo/vector-icons';
 import { useKeepAwake } from 'expo-keep-awake';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -64,6 +77,7 @@ import {
   usePreviousStruggled,
   useSessionRest,
   useSupersetPairs,
+  type ActiveWorkout,
   type WorkoutEntry,
   type WorkoutSetPatch,
 } from '@/data/repositories/workout-repository';
@@ -104,6 +118,7 @@ import {
   type LiveRecord,
   type SetFeel,
   type WorkoutDisplayLevel,
+  type WorkoutDisplayMode,
 } from '@wellness/shared';
 
 /** Repos par défaut (s) quand l'exercice n'a ni override de session ni valeur planifiée. */
@@ -169,6 +184,49 @@ export function resolveCurrentSet(
     if (found) return found;
   }
   return null;
+}
+
+/**
+ * Validations faites à l'écran mais pas encore relues depuis la base : id de série → `done` voulu.
+ *
+ * La base locale répond vite, mais **pas dans le même rendu** : entre l'appui et le retour de la
+ * requête réactive, l'écran montrait encore la série qu'on venait de valider (« Série 2/4 » sur
+ * le repos, puis « 3/4 » un instant plus tard), et un second appui la validait une deuxième fois.
+ * Sous charge (synchro en cours, hub monté derrière), l'écart durait des secondes.
+ */
+export type DoneOverrides = Record<string, boolean>;
+
+/**
+ * Applique les validations en attente aux séries lues en base. Rend **le même tableau** quand il
+ * n'y a rien à appliquer, pour ne pas invalider ce qui en dépend.
+ */
+export function applyDoneOverrides(entries: WorkoutEntry[], overrides: DoneOverrides): WorkoutEntry[] {
+  if (Object.keys(overrides).length === 0) return entries;
+  return entries.map((entry) =>
+    entry.sets.some((set) => set.id in overrides && overrides[set.id] !== set.done)
+      ? {
+          ...entry,
+          sets: entry.sets.map((set) =>
+            set.id in overrides ? { ...set, done: overrides[set.id] ?? set.done } : set,
+          ),
+        }
+      : entry,
+  );
+}
+
+/**
+ * Retire les validations que la base a rattrapées — dès lors, **la base redevient seule juge**.
+ * Rend le **même objet** s'il n'y a rien à retirer (l'écran s'en sert pour ne pas boucler).
+ * Une série disparue (supprimée) est retirée aussi.
+ */
+export function pruneDoneOverrides(entries: WorkoutEntry[], overrides: DoneOverrides): DoneOverrides {
+  const ids = Object.keys(overrides);
+  if (ids.length === 0) return overrides;
+  const stored = new Map<string, boolean>();
+  for (const entry of entries) for (const set of entry.sets) stored.set(set.id, set.done);
+  const pending = ids.filter((id) => stored.has(id) && stored.get(id) !== overrides[id]);
+  if (pending.length === ids.length) return overrides;
+  return Object.fromEntries(pending.map((id) => [id, overrides[id] as boolean]));
 }
 
 /** Résultat de la recherche d'un partenaire superset : l'exercice et sa série au même rang. */
@@ -248,14 +306,20 @@ export function formatLastPerf(
     .join(', ');
 }
 
-function useElapsed(startedAt: string | undefined): string {
+/**
+ * Chrono de séance. `stoppedAt` le fige à la clôture : la cérémonie de fin affiche la durée de la
+ * séance, pas une durée qui continue de courir pendant qu'on la lit.
+ */
+function useElapsed(startedAt: string | undefined, stoppedAt: number | null): string {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
+    if (stoppedAt !== null) return;
     const id = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(id);
-  }, []);
+  }, [stoppedAt]);
   if (!startedAt) return '00:00';
-  const s = Math.max(0, Math.floor((now - new Date(startedAt).getTime()) / 1000));
+  const end = stoppedAt ?? now;
+  const s = Math.max(0, Math.floor((end - new Date(startedAt).getTime()) / 1000));
   const mm = String(Math.floor(s / 60)).padStart(2, '0');
   const ss = String(s % 60).padStart(2, '0');
   return `${mm}:${ss}`;
@@ -279,13 +343,28 @@ export default function WorkoutScreen() {
   // PowerSync, `workout` vaut `null` — exactement comme quand il n'y a pas de séance. Confondre
   // les deux faisait annoncer « Aucune séance en cours » sur la séance qu'on venait de créer
   // (recette du 19/09/2026 : l'« écran noir » de la séance libre).
-  const { workout: active, isLoading: activeLoading } = useActiveWorkout();
+  const { workout: storedWorkout, isLoading: activeLoading } = useActiveWorkout();
+  /**
+   * La séance **en train d'être close** (terminée ou abandonnée), gardée à l'écran jusqu'au départ.
+   *
+   * Dès que `finishWorkout` écrit, la séance n'est plus « active » : la requête réactive rend
+   * `null`, et l'écran basculait sur « Aucune séance en cours ». En immersif, cela coupait la
+   * cérémonie de fin avant son « Voir le bilan » ; en classique, l'annonce clignotait pendant tout
+   * le calcul des records. `at` fige aussi le chrono sur l'instant de la clôture ; `ceremony`
+   * dit si la cérémonie de fin immersive doit occuper l'écran pendant ce temps.
+   */
+  const [closing, setClosing] = useState<{
+    workout: ActiveWorkout;
+    at: number;
+    ceremony: boolean;
+  } | null>(null);
+  const active = storedWorkout ?? closing?.workout ?? null;
   const { profile } = useProfile();
   const displayLevel: WorkoutDisplayLevel = profile?.workoutDisplayLevel ?? 'normal';
 
   // Tous les hooks sont appelés avant tout retour anticipé (règle des hooks) : `active` peut être
   // null, les dérivés retombent alors sur des valeurs neutres.
-  const elapsed = useElapsed(active?.startedAt);
+  const elapsed = useElapsed(active?.startedAt, closing?.at ?? null);
   const sessionRest = useSessionRest(active?.sessionId ?? null);
 
   const [focusOverride, setFocusOverride] = useState<FocusOverride>(null);
@@ -303,9 +382,26 @@ export default function WorkoutScreen() {
   const [noteEdit, setNoteEdit] = useState<{ exerciseId: string; value: string } | null>(null);
   const [supersetPickerOpen, setSupersetPickerOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  // Le plan demandé par le brief s'ouvre une fois, au montage du rendu immersif — pas à chaque
+  // bascule de mode, qui remonte ce rendu.
+  const [openPlanOnMount, setOpenPlanOnMount] = useState(openPlanParam === '1');
   const lockFinish = useActionLock();
 
-  const entries = active?.entries ?? [];
+  // ── Les séries, avec les validations que la base n'a pas encore relues ────────────────────────
+  const [doneOverrides, setDoneOverrides] = useState<DoneOverrides>({});
+  const storedEntries = active?.entries ?? [];
+  // Dès que la base a rattrapé une validation, elle redevient seule juge (ajusté pendant le rendu,
+  // patron React pour « suivre une donnée qui change » ; ne boucle pas : même objet si rien à ôter).
+  const settledOverrides = pruneDoneOverrides(storedEntries, doneOverrides);
+  if (settledOverrides !== doneOverrides) setDoneOverrides(settledOverrides);
+  const entries = applyDoneOverrides(storedEntries, settledOverrides);
+  /**
+   * La série validée par le dernier appui. Deux appuis dans le **même** cycle de rendu voient la
+   * même `current` : sans ce garde, la même série était validée deux fois — records comptés deux
+   * fois, repos relancé. Une ref, et non un état, précisément parce qu'aucun rendu ne les sépare.
+   */
+  const lastValidatedRef = useRef<string | null>(null);
+
   const current = resolveCurrentSet(entries, focusOverride);
   const currentExerciseId = current?.entry.exerciseId ?? '';
 
@@ -342,7 +438,7 @@ export default function WorkoutScreen() {
   const references = useSessionReferences(exerciseIds);
   const storedBests = useExerciseBests(exerciseIds);
   const sessionMuscles = useSessionMuscles(exerciseIds);
-  const sessionCards = useSessionCards(exerciseIds);
+  const sessionCards = useSessionCards(exerciseIds, i18n.language);
   const speak = useCoachVoice(immersive && immersivePrefs.coach !== 'muet');
 
   const [feedback, setFeedback] = useState<SessionFeedback | null>(null);
@@ -440,11 +536,14 @@ export default function WorkoutScreen() {
   const currentSetId = current?.set.id;
 
   // Tant que la requête n'a pas répondu, on ne sait RIEN — surtout pas qu'il n'y a pas de séance.
+  // Aux couleurs du mode qui va s'afficher : depuis le brief immersif (sombre), un fond clair
+  // intercalé faisait un flash avant la séance.
   if (activeLoading && !active) {
+    const loadingColors = immersive ? immersivePalette : colors;
     return (
-      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: loadingColors.background }]}>
         <View style={styles.empty} testID="workout-loading">
-          <ActivityIndicator color={colors.accent} />
+          <ActivityIndicator color={loadingColors.accent} />
         </View>
       </SafeAreaView>
     );
@@ -600,7 +699,12 @@ export default function WorkoutScreen() {
    * celui d'avant : les valeurs des champs, telles quelles.
    */
   const onValidate = (override?: ValidateOverride) => {
-    if (!current) return;
+    // Une séance en train d'être close n'accepte plus de série (la barre reste visible pendant le
+    // calcul des records, en classique).
+    if (!current || closing) return;
+    // Second appui du même cycle de rendu : il voit encore la série qu'on vient de valider.
+    if (lastValidatedRef.current === current.set.id) return;
+    lastValidatedRef.current = current.set.id;
     const parsed = Number(displayReps);
     const typedReps = displayReps.trim() === '' || Number.isNaN(parsed) ? null : parsed;
     const reps = override?.reps !== undefined ? override.reps : typedReps;
@@ -623,6 +727,8 @@ export default function WorkoutScreen() {
     // ⚠️ « Solide » vaut 7, jamais 8 : voir `packages/shared/src/set-feel.ts`.
     if (feel) patch.rpe = feelToRpe(feel);
     void updateSet(current.set.id, patch);
+    // L'écran passe à la suite **maintenant**, sans attendre que la base relise la série.
+    setDoneOverrides((previous) => ({ ...previous, [current.set.id]: true }));
 
     // Le retour que la spec navigation-ux §4.2 demandait sans qu'il existe : discret, parce qu'il
     // se répète 30 à 40 fois dans l'heure.
@@ -837,7 +943,16 @@ export default function WorkoutScreen() {
         text: t('workout.leave.abandonConfirm'),
         style: 'destructive',
         onPress: async () => {
-          await cancelWorkout(workoutId);
+          // La séance reste affichée jusqu'au départ : l'annulation la fait disparaître de la
+          // requête avant que la navigation ait eu lieu (voir `closing`).
+          setClosing({ workout: active, at: Date.now(), ceremony: false });
+          try {
+            await cancelWorkout(workoutId);
+          } catch (error) {
+            setClosing(null);
+            console.warn('Abandon de la séance impossible (la séance continue) :', error);
+            return;
+          }
           router.replace('/(tabs)');
         },
       },
@@ -862,8 +977,23 @@ export default function WorkoutScreen() {
     void lockFinish(async () => {
       void cancelRestReminder();
       void dismissRestOngoing();
+      // 0. L'image de la séance reste à l'écran pendant tout ce qui suit : sans elle, la clôture
+      //    la fait disparaître de la requête et l'écran annonçait « Aucune séance en cours » —
+      //    par-dessus la cérémonie de fin en immersif (MUSCU-FIX02).
+      //    En immersif, c'est aussi ce qui lance la cérémonie — d'où qu'on ait appuyé (pont ou menu).
+      setClosing({ workout: active, at: Date.now(), ceremony: !navigate });
+      // Le repos en cours s'arrête avec la séance : il vibrerait à zéro en pleine cérémonie.
+      setRestEndsAt(null);
       // 1. Clôture de la séance : doit réussir (statut 'completed').
-      await finishWorkout(workoutId);
+      try {
+        await finishWorkout(workoutId);
+      } catch (error) {
+        // Rien n'est clos : la séance continue, chrono compris. Pas de `throw` — l'appel est un
+        // `void`, l'erreur finirait en promesse rejetée que personne n'attend.
+        setClosing(null);
+        console.warn('Clôture de la séance impossible (la séance continue) :', error);
+        return;
+      }
       // 2. Records : enrichissement best-effort. Un échec ne doit jamais bloquer la navigation.
       try {
         const beaten = await evaluateWorkoutRecords(workoutId);
@@ -894,6 +1024,9 @@ export default function WorkoutScreen() {
   // d'action déclenche le repos).
   const onToggleSetDone = (setId: string, currentDone: boolean) => {
     void updateSet(setId, { done: !currentDone });
+    setDoneOverrides((previous) => ({ ...previous, [setId]: !currentDone }));
+    // Dé-valider la série qu'on vient de valider doit permettre de la revalider.
+    if (currentDone && lastValidatedRef.current === setId) lastValidatedRef.current = null;
   };
 
   /** Frise des séries de l'exercice courant, pour la carte de contexte. */
@@ -930,6 +1063,47 @@ export default function WorkoutScreen() {
           ?.set.done === false,
       )
     : false;
+
+  // ── Menu et sélecteur de superset : HORS des deux rendus ─────────────────────────────────────
+  // Ils étaient rendus à l'intérieur de chaque mode. Changer de mode depuis le menu remplaçait
+  // alors tout l'arbre, **modale ouverte comprise** : la modale visible était démontée et une autre
+  // remontée dans le même rendu, et le menu restait ouvert par-dessus le nouveau mode — la bascule
+  // immersif → classique qui « plante » ou n'affiche rien (recette du 23/09/2026). Placés au même
+  // endroit dans les deux branches, React les conserve ; seule leur palette change.
+  const palette = immersive ? immersivePalette : colors;
+  const onChangeMode = (next: WorkoutDisplayMode) => {
+    // On vient de demander à VOIR l'autre mode : le menu se retire au lieu de le masquer.
+    setMenuOpen(false);
+    // Le plan demandé par le brief a déjà été montré ; une bascule ne doit pas le rouvrir.
+    setOpenPlanOnMount(false);
+    useSessionMode.getState().setMode(next);
+  };
+  const sheets = (
+    <>
+      <SupersetPickerModal
+        visible={supersetPickerOpen}
+        onClose={() => setSupersetPickerOpen(false)}
+        candidates={supersetCandidates}
+        onPick={onPickSupersetPartner}
+        colors={palette}
+      />
+      <SessionMenuSheet
+        visible={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        level={displayLevel}
+        onChangeLevel={(lvl) => void upsertProfile({ workoutDisplayLevel: lvl })}
+        mode={sessionMode}
+        onChangeMode={onChangeMode}
+        restSeconds={currentRest}
+        onOpenRest={openRestPicker}
+        onAddExercise={() => router.push('/exercises')}
+        onFinish={onFinish}
+        onLeave={onLeave}
+        onAbandon={confirmAbandon}
+        colors={palette}
+      />
+    </>
+  );
 
   // ── Le rendu immersif ────────────────────────────────────────────────────────────────────────
   // Il ne lit ni n'écrit rien : il reçoit **l'état de cet écran** et le met en scène. C'est ce qui
@@ -1031,7 +1205,8 @@ export default function WorkoutScreen() {
         setFeedback((previous) => (previous ? { ...previous, takeover: false } : previous)),
       showBarbell: Boolean(current && showBarbellFor(current.entry.exerciseId)),
       cue: current ? (sessionCards[current.entry.exerciseId]?.cue ?? null) : null,
-      openPlanOnMount: openPlanParam === '1',
+      openPlanOnMount,
+      closing: closing?.ceremony === true,
       goToSummary: () =>
         router.replace({ pathname: '/workout-summary', params: { id: workoutId } }),
     };
@@ -1039,309 +1214,267 @@ export default function WorkoutScreen() {
     return (
       <>
         <ImmersiveWorkout runtime={runtime} />
-        <SupersetPickerModal
-          visible={supersetPickerOpen}
-          onClose={() => setSupersetPickerOpen(false)}
-          candidates={supersetCandidates}
-          onPick={onPickSupersetPartner}
-          colors={immersivePalette}
-        />
-        <SessionMenuSheet
-          visible={menuOpen}
-          onClose={() => setMenuOpen(false)}
-          level={displayLevel}
-          onChangeLevel={(lvl) => void upsertProfile({ workoutDisplayLevel: lvl })}
-          mode={sessionMode}
-          onChangeMode={(next) => void useSessionMode.getState().setMode(next)}
-          restSeconds={currentRest}
-          onOpenRest={openRestPicker}
-          onAddExercise={() => router.push('/exercises')}
-          onFinish={onFinish}
-          onLeave={onLeave}
-          onAbandon={confirmAbandon}
-          colors={immersivePalette}
-        />
+        {sheets}
       </>
     );
   }
 
   return (
-    <SafeAreaView
-      style={[
-        styles.safe,
-        { backgroundColor: colors.background },
-        // `additive` : l'inset de safe-area s'AJOUTE au padding du style. On coupe donc l'arête
-        // basse quand le clavier est là, sinon la barre flotterait à `inset + clavier` du bord.
-        keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : null,
-      ]}
-      edges={keyboardHeight > 0 ? ['top'] : ['top', 'bottom']}
-    >
-      {/* ── Barre haute : sortie, chrono, avancement, menu ─────────────────────────────────── */}
-      <View style={styles.header}>
-        <View style={styles.headerRow}>
-          <Pressable onPress={onLeave} hitSlop={10} accessibilityLabel={t('workout.leave.later')}>
-            <Ionicons name="close" size={26} color={colors.text} />
-          </Pressable>
-          <Text style={[styles.timer, { color: colors.text }]}>{elapsed}</Text>
-          <Pressable
-            onPress={() => setMenuOpen(true)}
-            hitSlop={10}
-            accessibilityLabel={t('workout.menu.title')}
-          >
-            <Ionicons name="ellipsis-vertical" size={22} color={colors.text} />
-          </Pressable>
-        </View>
-        {/* L'avancement réel : l'écran disait le rang dans l'exercice, jamais où on en était
-            dans la séance. */}
-        {totalSets > 0 ? (
-          <View style={styles.progressRow}>
-            <View
-              style={[styles.progressTrack, { backgroundColor: colors.track }]}
-              accessibilityRole="progressbar"
-              accessibilityValue={{ min: 0, max: totalSets, now: doneSets }}
+    <>
+      <SafeAreaView
+        style={[
+          styles.safe,
+          { backgroundColor: colors.background },
+          // `additive` : l'inset de safe-area s'AJOUTE au padding du style. On coupe donc l'arête
+          // basse quand le clavier est là, sinon la barre flotterait à `inset + clavier` du bord.
+          keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : null,
+        ]}
+        edges={keyboardHeight > 0 ? ['top'] : ['top', 'bottom']}
+      >
+        {/* ── Barre haute : sortie, chrono, avancement, menu ─────────────────────────────────── */}
+        <View style={styles.header}>
+          <View style={styles.headerRow}>
+            <Pressable onPress={onLeave} hitSlop={10} accessibilityLabel={t('workout.leave.later')}>
+              <Ionicons name="close" size={26} color={colors.text} />
+            </Pressable>
+            <Text style={[styles.timer, { color: colors.text }]}>{elapsed}</Text>
+            <Pressable
+              onPress={() => setMenuOpen(true)}
+              hitSlop={10}
+              accessibilityLabel={t('workout.menu.title')}
             >
-              <View
-                style={[
-                  styles.progressFill,
-                  {
-                    width: `${Math.round(progressRatio * 100)}%`,
-                    backgroundColor: doneSets === totalSets ? colors.success : colors.accent,
-                  },
-                ]}
-              />
-            </View>
-            <Text
-              style={[
-                styles.progressLabel,
-                { color: doneSets === totalSets ? colors.success : colors.textMuted },
-              ]}
-            >
-              {t('workout.setsProgress', { done: doneSets, total: totalSets })}
-            </Text>
+              <Ionicons name="ellipsis-vertical" size={22} color={colors.text} />
+            </Pressable>
           </View>
-        ) : null}
-      </View>
+          {/* L'avancement réel : l'écran disait le rang dans l'exercice, jamais où on en était
+              dans la séance. */}
+          {totalSets > 0 ? (
+            <View style={styles.progressRow}>
+              <View
+                style={[styles.progressTrack, { backgroundColor: colors.track }]}
+                accessibilityRole="progressbar"
+                accessibilityValue={{ min: 0, max: totalSets, now: doneSets }}
+              >
+                <View
+                  style={[
+                    styles.progressFill,
+                    {
+                      width: `${Math.round(progressRatio * 100)}%`,
+                      backgroundColor: doneSets === totalSets ? colors.success : colors.accent,
+                    },
+                  ]}
+                />
+              </View>
+              <Text
+                style={[
+                  styles.progressLabel,
+                  { color: doneSets === totalSets ? colors.success : colors.textMuted },
+                ]}
+              >
+                {t('workout.setsProgress', { done: doneSets, total: totalSets })}
+              </Text>
+            </View>
+          ) : null}
+        </View>
 
-      {/* ── Zone scrollable : le contexte, jamais l'action ─────────────────────────────────── */}
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-        {entries.length === 0 ? (
-          <Text style={[styles.hint, { color: colors.textMuted }]}>{t('workout.empty')}</Text>
-        ) : current ? (
-          <CurrentSetCard
-            key={current.entry.exerciseId}
-            level={displayLevel}
+        {/* ── Zone scrollable : le contexte, jamais l'action ─────────────────────────────────── */}
+        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+          {entries.length === 0 ? (
+            <Text style={[styles.hint, { color: colors.textMuted }]}>{t('workout.empty')}</Text>
+          ) : current ? (
+            <CurrentSetCard
+              key={current.entry.exerciseId}
+              level={displayLevel}
+              exerciseName={current.entry.exerciseName}
+              sets={currentSetChips}
+              currentRang={current.rang}
+              restSeconds={currentRest}
+              lastPerfLabel={formatLastPerf(lastPerf, units)}
+              suggestionLabel={suggestionLabel}
+              plannedLabel={plannedLabel}
+              deltaLabel={deltaLabel}
+              deltaPositive={(deltaRounded ?? 0) >= 0}
+              setType={current.set.setType}
+              onSetType={(tp) => void updateSet(current.set.id, { setType: tp })}
+              rpe={current.set.rpe}
+              onSetRpe={(v) => void updateSet(current.set.id, { rpe: v })}
+              note={displayNote}
+              onChangeNote={onChangeNote}
+              onBlurNote={onBlurNote}
+              supersetLink={supersetLink}
+              onRequestLinkSuperset={() => setSupersetPickerOpen(true)}
+              onUnlinkSuperset={() => {
+                if (current) void unlinkSupersetPair(workoutId, current.entry.exerciseId);
+              }}
+              onAddSet={() => void addSet(workoutId, current.entry.exerciseId)}
+              colors={colors}
+            />
+          ) : (
+            <View
+              style={[styles.doneCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            >
+              <View style={[styles.doneIcon, { backgroundColor: `${colors.success}29` }]}>
+                <Ionicons name="checkmark" size={26} color={colors.success} />
+              </View>
+              <Text style={[styles.doneTitle, { color: colors.text }]}>
+                {t('workout.sessionDone')}
+              </Text>
+              <Text style={[styles.doneHint, { color: colors.textMuted }]}>
+                {t('workout.sessionDoneHint')}
+              </Text>
+            </View>
+          )}
+
+          {entries.length > 0 ? (
+            <ExerciseList
+              entries={entries}
+              currentExerciseId={currentExerciseId}
+              onSelect={(exerciseId) => setFocusOverride({ exerciseId })}
+              onToggleSetDone={onToggleSetDone}
+              onRemoveSet={(setId) => void removeSet(setId)}
+              onAddSet={(exerciseId) => void addSet(workoutId, exerciseId)}
+              onReorder={(exerciseId, direction) =>
+                void reorderExercise(workoutId, exerciseId, direction)
+              }
+              onSendLater={(exerciseId) => void sendExerciseToEnd(workoutId, exerciseId)}
+              onReplace={(exerciseId) =>
+                router.push({ pathname: '/exercises', params: { replaceExerciseId: exerciseId } })
+              }
+              exerciseNotes={allExerciseNotes}
+              supersetPairs={supersetPairs}
+              colors={colors}
+            />
+          ) : null}
+        </ScrollView>
+
+        {/* ── Barre d'action, fixe. Devient la clôture quand tout est validé. ────────────────── */}
+        {current ? (
+          <SetActionBar
             exerciseName={current.entry.exerciseName}
-            sets={currentSetChips}
-            currentRang={current.rang}
-            restSeconds={currentRest}
-            lastPerfLabel={formatLastPerf(lastPerf, units)}
-            suggestionLabel={suggestionLabel}
-            plannedLabel={plannedLabel}
-            deltaLabel={deltaLabel}
-            deltaPositive={(deltaRounded ?? 0) >= 0}
+            currentIndex={current.rang + 1}
+            totalSets={current.entry.sets.length}
             setType={current.set.setType}
-            onSetType={(tp) => void updateSet(current.set.id, { setType: tp })}
-            rpe={current.set.rpe}
-            onSetRpe={(v) => void updateSet(current.set.id, { rpe: v })}
-            note={displayNote}
-            onChangeNote={onChangeNote}
-            onBlurNote={onBlurNote}
-            supersetLink={supersetLink}
-            onRequestLinkSuperset={() => setSupersetPickerOpen(true)}
-            onUnlinkSuperset={() => {
-              if (current) void unlinkSupersetPair(workoutId, current.entry.exerciseId);
+            repsValue={displayReps}
+            onChangeReps={(v) => applyEdit({ reps: v })}
+            onStepReps={(delta) => {
+              const base = Number(displayReps);
+              const next = Math.max(0, (Number.isNaN(base) ? 0 : base) + delta);
+              applyEdit({ reps: String(next) });
             }}
-            onAddSet={() => void addSet(workoutId, current.entry.exerciseId)}
+            weightValue={units.weightInputValue(displayWeightKg)}
+            weightSymbol={units.weightSymbol}
+            onChangeWeight={(v) => applyEdit({ weightKg: units.parseWeightToKg(v) })}
+            onStepWeight={(deltaKg) =>
+              applyEdit({ weightKg: Math.max(0, (displayWeightKg ?? 0) + deltaKg) })
+            }
+            durationValue={durationValue}
+            onChangeDuration={(v) => applyEdit({ durationSeconds: parseMmSs(v) })}
+            onStepDuration={(d) =>
+              applyEdit({ durationSeconds: Math.max(0, (displayDurationSeconds ?? 0) + d) })
+            }
+            onValidate={onValidate}
+            chainsToSuperset={chainsToSuperset}
             colors={colors}
           />
-        ) : (
+        ) : entries.length > 0 ? (
           <View
-            style={[styles.doneCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+            style={[
+              styles.finishBar,
+              { backgroundColor: colors.surface, borderTopColor: colors.borderStrong },
+            ]}
           >
-            <View style={[styles.doneIcon, { backgroundColor: `${colors.success}29` }]}>
-              <Ionicons name="checkmark" size={26} color={colors.success} />
+            <View style={styles.finishStats}>
+              <FinishStat value={elapsed} label={t('workout.summary.duration')} colors={colors} />
+              <View style={[styles.finishSep, { backgroundColor: colors.border }]} />
+              <FinishStat
+                value={String(doneSets)}
+                label={t('workout.summary.sets')}
+                colors={colors}
+              />
             </View>
-            <Text style={[styles.doneTitle, { color: colors.text }]}>
-              {t('workout.sessionDone')}
-            </Text>
-            <Text style={[styles.doneHint, { color: colors.textMuted }]}>
-              {t('workout.sessionDoneHint')}
-            </Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onFinish}
+              style={({ pressed }) => [
+                styles.finishBtn,
+                { backgroundColor: colors.accent },
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={[styles.finishLabel, { color: colors.accentText }]}>
+                {t('workout.finishSession')}
+              </Text>
+            </Pressable>
+          </View>
+        ) : (
+          /* Séance sans exercice — l'état d'arrivée de TOUTE séance libre. La barre n'avait que
+             deux branches et rendait `null` ici : l'écran n'offrait alors aucune action, et le seul
+             « + Ajouter un exercice » était caché derrière les trois points (recette du 19/09/2026).
+             La barre est le contrat de cet écran : elle porte toujours le geste suivant. */
+          <View
+            style={[
+              styles.finishBar,
+              { backgroundColor: colors.surface, borderTopColor: colors.borderStrong },
+            ]}
+          >
+            <Pressable
+              accessibilityRole="button"
+              testID="workout-add-exercise"
+              onPress={() => router.push('/exercises')}
+              style={({ pressed }) => [
+                styles.finishBtn,
+                { backgroundColor: colors.accent },
+                pressed && styles.pressed,
+              ]}
+            >
+              <Text style={[styles.finishLabel, { color: colors.accentText }]}>
+                {t('workout.addExercise')}
+              </Text>
+            </Pressable>
           </View>
         )}
 
-        {entries.length > 0 ? (
-          <ExerciseList
-            entries={entries}
-            currentExerciseId={currentExerciseId}
-            onSelect={(exerciseId) => setFocusOverride({ exerciseId })}
-            onToggleSetDone={onToggleSetDone}
-            onRemoveSet={(setId) => void removeSet(setId)}
-            onAddSet={(exerciseId) => void addSet(workoutId, exerciseId)}
-            onReorder={(exerciseId, direction) =>
-              void reorderExercise(workoutId, exerciseId, direction)
+        {restEndsAt !== null ? (
+          <RestOverlay
+            secondsLeft={restLeft}
+            collapsed={restCollapsed}
+            restSeconds={currentRest}
+            totalSeconds={restTotal}
+            nextLabel={current ? current.entry.exerciseName : null}
+            nextDetail={
+              current
+                ? t('workout.setProgress', {
+                    current: current.rang + 1,
+                    total: current.entry.sets.length,
+                  })
+                : null
             }
-            onSendLater={(exerciseId) => void sendExerciseToEnd(workoutId, exerciseId)}
-            onReplace={(exerciseId) =>
-              router.push({ pathname: '/exercises', params: { replaceExerciseId: exerciseId } })
+            onSkip={() => setRestEndsAt(null)}
+            onExtend={() => {
+              setRestEndsAt((e) => (e ?? Date.now()) + 15000);
+              setRestTotal((total) => total + 15);
+            }}
+            onToggleCollapse={() => setRestCollapsed((c) => !c)}
+            onChangeRest={onSetRest}
+            recordLabel={
+              classicRecord
+                ? t(
+                    classicRecord.type === 'max_weight'
+                      ? 'immersive.record.pillWeight'
+                      : 'immersive.record.pill1rm',
+                    {
+                      value: units.formatWeight(classicRecord.value),
+                      previous: units.formatWeight(classicRecord.previous),
+                    },
+                  )
+                : null
             }
-            exerciseNotes={allExerciseNotes}
-            supersetPairs={supersetPairs}
             colors={colors}
           />
         ) : null}
-      </ScrollView>
-
-      {/* ── Barre d'action, fixe. Devient la clôture quand tout est validé. ────────────────── */}
-      {current ? (
-        <SetActionBar
-          exerciseName={current.entry.exerciseName}
-          currentIndex={current.rang + 1}
-          totalSets={current.entry.sets.length}
-          setType={current.set.setType}
-          repsValue={displayReps}
-          onChangeReps={(v) => applyEdit({ reps: v })}
-          onStepReps={(delta) => {
-            const base = Number(displayReps);
-            const next = Math.max(0, (Number.isNaN(base) ? 0 : base) + delta);
-            applyEdit({ reps: String(next) });
-          }}
-          weightValue={units.weightInputValue(displayWeightKg)}
-          weightSymbol={units.weightSymbol}
-          onChangeWeight={(v) => applyEdit({ weightKg: units.parseWeightToKg(v) })}
-          onStepWeight={(deltaKg) =>
-            applyEdit({ weightKg: Math.max(0, (displayWeightKg ?? 0) + deltaKg) })
-          }
-          durationValue={durationValue}
-          onChangeDuration={(v) => applyEdit({ durationSeconds: parseMmSs(v) })}
-          onStepDuration={(d) =>
-            applyEdit({ durationSeconds: Math.max(0, (displayDurationSeconds ?? 0) + d) })
-          }
-          onValidate={onValidate}
-          chainsToSuperset={chainsToSuperset}
-          colors={colors}
-        />
-      ) : entries.length > 0 ? (
-        <View
-          style={[
-            styles.finishBar,
-            { backgroundColor: colors.surface, borderTopColor: colors.borderStrong },
-          ]}
-        >
-          <View style={styles.finishStats}>
-            <FinishStat value={elapsed} label={t('workout.summary.duration')} colors={colors} />
-            <View style={[styles.finishSep, { backgroundColor: colors.border }]} />
-            <FinishStat
-              value={String(doneSets)}
-              label={t('workout.summary.sets')}
-              colors={colors}
-            />
-          </View>
-          <Pressable
-            accessibilityRole="button"
-            onPress={onFinish}
-            style={({ pressed }) => [
-              styles.finishBtn,
-              { backgroundColor: colors.accent },
-              pressed && styles.pressed,
-            ]}
-          >
-            <Text style={[styles.finishLabel, { color: colors.accentText }]}>
-              {t('workout.finishSession')}
-            </Text>
-          </Pressable>
-        </View>
-      ) : (
-        /* Séance sans exercice — l'état d'arrivée de TOUTE séance libre. La barre n'avait que
-           deux branches et rendait `null` ici : l'écran n'offrait alors aucune action, et le seul
-           « + Ajouter un exercice » était caché derrière les trois points (recette du 19/09/2026).
-           La barre est le contrat de cet écran : elle porte toujours le geste suivant. */
-        <View
-          style={[
-            styles.finishBar,
-            { backgroundColor: colors.surface, borderTopColor: colors.borderStrong },
-          ]}
-        >
-          <Pressable
-            accessibilityRole="button"
-            testID="workout-add-exercise"
-            onPress={() => router.push('/exercises')}
-            style={({ pressed }) => [
-              styles.finishBtn,
-              { backgroundColor: colors.accent },
-              pressed && styles.pressed,
-            ]}
-          >
-            <Text style={[styles.finishLabel, { color: colors.accentText }]}>
-              {t('workout.addExercise')}
-            </Text>
-          </Pressable>
-        </View>
-      )}
-
-      {restEndsAt !== null ? (
-        <RestOverlay
-          secondsLeft={restLeft}
-          collapsed={restCollapsed}
-          restSeconds={currentRest}
-          totalSeconds={restTotal}
-          nextLabel={current ? current.entry.exerciseName : null}
-          nextDetail={
-            current
-              ? t('workout.setProgress', {
-                  current: current.rang + 1,
-                  total: current.entry.sets.length,
-                })
-              : null
-          }
-          onSkip={() => setRestEndsAt(null)}
-          onExtend={() => {
-            setRestEndsAt((e) => (e ?? Date.now()) + 15000);
-            setRestTotal((total) => total + 15);
-          }}
-          onToggleCollapse={() => setRestCollapsed((c) => !c)}
-          onChangeRest={onSetRest}
-          recordLabel={
-            classicRecord
-              ? t(
-                  classicRecord.type === 'max_weight'
-                    ? 'immersive.record.pillWeight'
-                    : 'immersive.record.pill1rm',
-                  {
-                    value: units.formatWeight(classicRecord.value),
-                    previous: units.formatWeight(classicRecord.previous),
-                  },
-                )
-              : null
-          }
-          colors={colors}
-        />
-      ) : null}
-
-      <SupersetPickerModal
-        visible={supersetPickerOpen}
-        onClose={() => setSupersetPickerOpen(false)}
-        candidates={supersetCandidates}
-        onPick={onPickSupersetPartner}
-        colors={colors}
-      />
-
-      <SessionMenuSheet
-        visible={menuOpen}
-        onClose={() => setMenuOpen(false)}
-        level={displayLevel}
-        onChangeLevel={(lvl) => void upsertProfile({ workoutDisplayLevel: lvl })}
-        mode={sessionMode}
-        onChangeMode={(next) => void useSessionMode.getState().setMode(next)}
-        restSeconds={currentRest}
-        onOpenRest={openRestPicker}
-        onAddExercise={() => router.push('/exercises')}
-        onFinish={onFinish}
-        onLeave={onLeave}
-        onAbandon={confirmAbandon}
-        colors={colors}
-      />
-    </SafeAreaView>
+      </SafeAreaView>
+    {sheets}
+    </>
   );
 }
 

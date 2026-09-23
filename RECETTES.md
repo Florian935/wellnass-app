@@ -11,7 +11,7 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **20/09/2026** — **80 sections**.
+> Dernière mise à jour : **23/09/2026** — **84 sections**.
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -5103,3 +5103,116 @@ Analyse : [analyse-strava-2026-09.md](docs/product/analyse-strava-2026-09.md) (c
 - ⚠️ **La nutrition, elle, compte** — la série quotidienne la comptait déjà, et l'exclure priverait de série quelqu'un qui n'utilise que ce pilier (décision de cadrage H).
 - ⚠️ **La lecture hebdomadaire fait lire la nutrition sur 53 semaines** au lieu de 30 jours (sans quoi la série plafonnerait à quatre). Effet de bord assumé sur la série **quotidienne** : un jour actif par la seule nutrition au-delà de 30 jours était invisible alors qu'une séance au même jour comptait. La correction ne peut qu'**allonger** une série tronquée. Si un testeur voit son compteur de jours **augmenter** sans rien avoir fait, c'est ça — et c'est le bon sens.
 - ⚠️ **Le joker et les jours en pause ne sont pas touchés** (spec D5) : ils restent des mécanismes de la série **quotidienne**.
+
+## 84. MUSCU-FIX02 — La séance en direct doit dérouler (`dev`)
+
+Spec : [muscu-fix02-seance-en-direct.md](docs/specs/functional/us/muscu-fix02-seance-en-direct.md)
+
+Correctifs issus du retour de **Florian le 23/09/2026** : écrans noirs, bascule immersif →
+classique qui plante ou n'affiche rien, lenteurs, incohérences en pleine séance.
+
+> 🔎 **Ce que ces correctifs ne sont pas** : aucune fonctionnalité nouvelle, **aucune migration,
+> aucune sync rule**. PowerSync crée ses nouveaux index locaux au premier démarrage du build, sans
+> resynchroniser les données — le tout premier lancement peut prendre une seconde de plus, une fois.
+>
+> ⚠️ **Il faut un historique** pour recetter la lenteur : c'est lui qui la rendait visible (le coût
+> grandissait avec le nombre de séances passées). Un compte neuf était déjà rapide.
+
+**Ce qui était cassé, et pourquoi** — utile pour savoir quoi regarder :
+
+1. **La lenteur et les écrans noirs.** Une requête du mode immersif — *montée aussi en classique* —
+   relisait tout l'historique **pour chaque série passée**, et se relançait **à chaque série
+   validée** : 3 s sur PC avec 200 séances, soit bien plus sur téléphone. Et la base locale n'avait
+   **aucun index**. Mesuré après correctif : ~6 ms au lieu de ~3 000 ms (PC).
+2. **La bascule de mode.** Le menu ⋮ vivait *dans* chaque mode : le changement de mode détruisait
+   le menu ouvert et en recréait un autre dans le même instant, resté ouvert par-dessus.
+3. **La clôture.** Dès la séance terminée en base, l'écran affichait « Aucune séance en cours » —
+   en immersif **par-dessus la cérémonie de fin**. Et « Terminer » depuis le **menu ⋮** en immersif
+   ne lançait jamais la cérémonie.
+4. **La barre chargée de l'immersif ne s'affichait jamais** : sa requête lisait une colonne qui
+   n'existe pas, et échouait en silence.
+
+### A — 🔴 Le lancement
+
+- [ ] 🔴 **Démarrer la séance du jour** (hub muscu), en **classique** : l'écran de séance s'ouvre
+      sans écran noir durable — au pire un indicateur une fraction de seconde. Idem en **immersif**
+      (brief → « C'est parti »).
+- [ ] Au lancement d'une séance de **programme**, on ne voit **jamais** passer un écran « séance
+      vide » avec « + Ajouter un exercice » avant que les exercices n'apparaissent.
+- [ ] Depuis le brief immersif (sombre), aucun **flash clair** avant la séance.
+- [ ] **Reprendre** une séance en cours (carte du hub ou de l'accueil) : même rapidité.
+- [ ] Le refaire **en mode avion** : identique (tout est local).
+
+### B — 🔴 La validation, 30 à 40 fois par séance
+
+- [ ] 🔴 Valider une série : le repos démarre **et** annonce **la série suivante** tout de suite —
+      jamais « Série 2/4 » qui devient « 3/4 » un instant après.
+- [ ] 🔴 **Double appui rapide** sur « Valider la série » : **une seule** série validée (la liste le
+      montre), un seul repos.
+- [ ] Enchaîner 6 à 8 validations : aucun ralentissement ne s'installe au fil de la séance.
+- [ ] Dé-valider une série depuis la liste des exercices, puis la revalider depuis la barre : ça
+      marche, et le compteur « 7/18 séries » suit.
+- [ ] Passer d'un exercice à l'autre dans une **séance libre** (charges vides) : la charge
+      pré-remplie est celle de **cet** exercice la dernière fois — jamais, même un instant, celle de
+      l'exercice précédent.
+- [ ] Même chose pour la **note d'exercice** : ouvrir/fermer le champ au changement d'exercice ne
+      recopie jamais la note du précédent.
+
+### C — 🔴 La bascule de mode en pleine séance
+
+- [ ] 🔴 En **immersif**, ⋮ → « Classique » : le menu **se referme**, l'écran classique s'affiche
+      **complet** (barre haute, carte, liste, barre de saisie), sans plantage ni écran vide.
+- [ ] En **classique**, ⋮ → « Immersif » : même chose dans l'autre sens.
+- [ ] Faire la bascule **pendant un repos** : le repos continue dans l'autre mode, même temps restant.
+- [ ] Aller-retour classique → immersif → classique après avoir validé 2 séries : **rien n'est
+      perdu** (séries validées, série courante, repos).
+- [ ] Arrivée par « Modifier avant de commencer » (brief) : le plan s'ouvre **une fois** ; après une
+      bascule vers classique puis retour en immersif, il ne se rouvre **pas** tout seul.
+
+### D — 🔴 La fin de séance
+
+- [ ] 🔴 **Immersif, toutes les séries faites** → « Terminer » : la cérémonie de fin s'affiche et
+      **reste** jusqu'à « Voir le bilan » — jamais « Aucune séance en cours ».
+- [ ] 🔴 **Immersif, séance écourtée** (séries restantes) → ⋮ → « Terminer la séance » : la
+      **cérémonie** s'affiche aussi (elle n'apparaissait jamais par ce chemin), puis le bilan.
+- [ ] Pendant la cérémonie, la **durée** affichée est figée sur l'instant de la fin (elle ne
+      continue pas de courir).
+- [ ] **Classique** → « Terminer » : on arrive au bilan **sans** voir passer « Aucune séance en
+      cours ».
+- [ ] ⋮ → « Terminer » **sans aucune série validée**, confirmé : **pas** de cérémonie, direct au bilan.
+- [ ] ⋮ → « Abandonner », confirmé : retour à l'accueil rapide, **sans** « Aucune séance en cours »
+      entre les deux ; la séance a bien disparu (hub, historique).
+
+### E — L'immersif, enfin complet
+
+- [ ] 🔴 Sur un exercice **à la barre** (squat, développé couché…), la **barre chargée** s'affiche
+      avec les disques de chaque côté. Elle n'était **jamais** affichée jusqu'ici.
+- [ ] Coach non muet : au lancement d'une série d'un exercice qui a des instructions, le coach dit
+      la **consigne** (première phrase).
+- [ ] Le **cadran** de reps (après « Lancer la série » → fin d'effort) : le **glissé vertical** du
+      doigt change la valeur. Seuls − / + répondaient jusqu'ici.
+
+### F — Le reste du parcours, plus vite
+
+- [ ] Pendant une séance, « + Ajouter un exercice » : la bibliothèque s'ouvre **sans attente**, la
+      recherche répond à chaque lettre.
+- [ ] Le hub muscu, au retour d'une séance : pas de gel en revenant dessus.
+
+### G — La suggestion de progression (effet de bord voulu)
+
+- [ ] Une **seule** séance difficile (RPE ≥ 8 ou « Limite ») sur un exercice, la précédente
+      correcte : la séance suivante ne propose **pas** d'alléger. (Elle le proposait à tort : la
+      requête « avant-dernière séance » renvoyait la dernière dès qu'elle comptait plusieurs séries —
+      voir §16 MUSC-F7, critères 1 et 2.)
+
+### H — Ce qu'il faut savoir
+
+- ⚠️ La **veille** du repos immersif (écran noir volontaire après 20 s sans toucher, compte à rebours
+  en ambre) **n'a pas été touchée** : c'est un choix de conception, désactivable dans les réglages
+  de séance (« Veille pendant le repos »). Si des « écrans noirs » persistent **pendant les repos
+  immersifs**, c'est probablement elle — à signaler, pour décider s'il faut la garder.
+- ⚠️ Les mesures (~3 s → ~6 ms) viennent d'un banc sur PC : le gain sur téléphone est attendu du même
+  ordre, mais c'est cette recette qui le confirme.
+- ⚠️ Le **même défaut de requête** existe dans ~30 requêtes hors séance (bilan, records, tableaux de
+  bord) : elles ne ralentissent plus la séance, mais le **bilan** peut rester un peu lent à
+  s'afficher sur un gros historique. Noté au BACKLOG.

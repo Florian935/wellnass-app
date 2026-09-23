@@ -41,8 +41,11 @@ import { RECORD_AMBER } from '@/components/workout/immersive/theme';
 import type { ImmersiveRuntime } from '@/components/workout/immersive/types';
 import { fontFamily } from '@/theme/fonts';
 
-/** Les moments qui appartiennent à ce rendu. Le repos, lui, est porté par le runtime. */
-type Phase = 'ready' | 'effort' | 'dial' | 'closing';
+/**
+ * Les moments qui appartiennent à ce rendu. Le repos et la clôture, eux, sont portés par le
+ * runtime : ils se déclenchent aussi hors de ce rendu (le menu ⋮ clôt la séance, par exemple).
+ */
+type Phase = 'ready' | 'effort' | 'dial';
 
 export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
   const { t, i18n } = useTranslation();
@@ -146,13 +149,10 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
     : t('immersive.deck.nextEnd');
 
   // ── Clôture : la cérémonie se joue pendant le calcul, puis mène au bilan ──────────────────────
-  // Séance sans aucune série validée : `onFinish` ouvre sa confirmation, et il n'y a rien à fêter.
-  const onFinishPressed = () => {
-    if (runtime.doneSets > 0) setPhase('closing');
-    runtime.onFinish();
-  };
-
-  if (phase === 'closing') {
+  // C'est l'écran de séance qui dit quand (`runtime.closing`), quel que soit le bouton — pont ou
+  // menu. Séance sans aucune série validée : `onFinish` ouvre sa confirmation, et part au bilan
+  // sans cérémonie, il n'y a rien à fêter.
+  if (runtime.closing) {
     return (
       <SessionClosing
         runtime={runtime}
@@ -282,7 +282,7 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
           </View>
           <PressableScale
             accessibilityRole="button"
-            onPress={onFinishPressed}
+            onPress={runtime.onFinish}
             style={[styles.primary, { backgroundColor: colors.accent }]}
           >
             <Text style={[styles.primaryLabel, { color: colors.accentText }]}>

@@ -21,6 +21,16 @@ import { column, Schema, Table } from '@powersync/react-native';
  * - Les timestamps sont des chaînes ISO 8601 UTC → type `text`.
  * - Les booléens (`is_active`, `done`) sont stockés en `integer` (0 = false, 1 = true).
  * - Le mapping camelCase se fait dans la couche Zod partagée, pas ici.
+ *
+ * Index (MUSCU-FIX02, 23/09/2026) :
+ * - Chaque table locale est une **vue** sur une colonne JSON : sans index déclaré ici, **toute**
+ *   recherche relit la table entière en extrayant le JSON ligne à ligne. Aucun index n'existait
+ *   jusqu'au 23/09/2026, et l'écran de séance en payait le prix à chaque série validée (la
+ *   requête de l'historique du hub : 1,26 s → 15 ms sur PC avec 200 séances).
+ * - Les index sont **locaux** : aucune migration Supabase, aucune sync rule. PowerSync les crée au
+ *   démarrage suivant (`updateSchema`), sans resynchroniser les données.
+ * - ⚠️ Un index ne sert **pas** à la table de droite d'un `LEFT JOIN` sur ces vues : voir
+ *   `exerciseNameSql` (data/repositories/_sql.ts) pour la forme qui en profite.
  */
 
 const profiles = new Table({
@@ -246,7 +256,7 @@ const exercise_translations = new Table({
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
-});
+}, { indexes: { exercise_lang: ['exercise_id', 'lang'] } });
 
 const exercise_favorites = new Table({
   user_id: column.text,
@@ -254,7 +264,7 @@ const exercise_favorites = new Table({
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
-});
+}, { indexes: { exercise: ['exercise_id'] } });
 
 // ── US Refonte-C3 : note persistante par (utilisateur, exercice) ──────────
 // Migration : supabase/migrations/20260720121317_refonte_muscu_c3_note_exercice.sql
@@ -265,7 +275,7 @@ const exercise_notes = new Table({
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
-});
+}, { indexes: { exercise: ['exercise_id'] } });
 
 // ── MUSC-F10c-2 : variantes / alternatives (liaison symétrique) ───────────
 // Migration : supabase/migrations/20260722151024_muscf10c2_exercise_variants.sql
@@ -288,7 +298,7 @@ const workout_superset_pairs = new Table({
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
-});
+}, { indexes: { workout: ['workout_id'] } });
 
 const workouts = new Table({
   user_id: column.text,
@@ -322,7 +332,7 @@ const workout_sets = new Table({
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
-});
+}, { indexes: { workout: ['workout_id'], exercise: ['exercise_id'] } });
 
 // ── US2 : tables programmes ───────────────────────────────────────────────
 
@@ -422,7 +432,7 @@ const exercise_plans = new Table({
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
-});
+}, { indexes: { session: ['session_id'] } });
 
 // ── US RUN-F2c : blocs fractionné/intervalles (une ligne = un bloc de répétitions) ──────────
 
@@ -474,7 +484,7 @@ const personal_records = new Table({
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
-});
+}, { indexes: { exercise: ['exercise_id'], workout: ['workout_id'] } });
 
 // ── Running R3a : profil coureur ──────────────────────────────────────────
 // Migration : supabase/migrations/20260712090000_running_profiles.sql

@@ -37,7 +37,7 @@ import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { refreshHomeWidget } from '@/widgets/refresh-home-widget';
 import { pushWorkout } from '@/lib/health-connect';
 import { generateId } from '@/lib/id';
-import { insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
+import { exerciseNameSql, insertWithSyncFields, nowUtc, patch, softDelete } from './_sql';
 
 // ---------------------------------------------------------------------------
 // Types de domaine exposés à l'UI
@@ -142,6 +142,8 @@ type WorkoutDbRow = {
  */
 type WorkoutSetDbRow = {
   id: string;
+  /** Séance de la série — sert à écarter une réponse périmée (voir `useActiveWorkout`). */
+  workout_id: string;
   exercise_id: string;
   order_index: number;
   set_type: string;
@@ -160,40 +162,69 @@ type WorkoutSetDbRow = {
 // ---------------------------------------------------------------------------
 
 /**
- * Séance active de l'utilisateur courant (au plus une). Jointure `planned_sessions` (US MUSC-F15,
- * roadmap 3.7) pour résoudre `week_index` en une seule requête — `NULL` dès que
- * `planned_session_id` l'est (séance libre ou démarrée hors planning, spec R3).
+ * La séance active, telle que la désignent `SELECT_ACTIVE_WORKOUT` **et** `SELECT_ACTIVE_SETS`.
+ * Un seul texte pour les deux : s'il restait par accident deux séances actives, les deux requêtes
+ * doivent choisir la même (d'où l'ordre explicite, absent jusqu'ici).
+ */
+const ACTIVE_WORKOUT_FILTER = `w.status = 'active' AND w.deleted_at IS NULL
+  ORDER BY w.started_at DESC LIMIT 1`;
+
+/**
+ * Séance active de l'utilisateur courant (au plus une). `week_index` (US MUSC-F15, roadmap 3.7)
+ * est lu sur l'occurrence planifiée — `NULL` dès que `planned_session_id` l'est (séance libre ou
+ * démarrée hors planning, spec R3). En sous-requête et non en `LEFT JOIN` : voir `exerciseNameSql`.
  */
 const SELECT_ACTIVE_WORKOUT = `
   SELECT w.id, w.started_at, w.finished_at, w.duration_seconds, w.rpe, w.notes, w.session_id,
-         w.program_id, w.planned_session_id, ps.week_index
+         w.program_id, w.planned_session_id,
+         (SELECT ps.week_index FROM planned_sessions ps
+           WHERE ps.id = w.planned_session_id AND ps.deleted_at IS NULL) AS week_index
   FROM workouts w
-  LEFT JOIN planned_sessions ps ON ps.id = w.planned_session_id AND ps.deleted_at IS NULL
-  WHERE w.status = 'active' AND w.deleted_at IS NULL
-  LIMIT 1
+  WHERE ${ACTIVE_WORKOUT_FILTER}
 `;
 
 /**
- * Séries d'une séance donnée, avec nom d'exercice résolu (langue courante → fr).
- * Premier `?` = langue courante ; second `?` = id de la séance.
- * Tri par `order_index` : garantit l'ordre des séries et l'ordre de première
- * apparition des exercices lors du regroupement en JS.
+ * Colonnes d'une série, avec le nom d'exercice résolu (langue courante → fr). Consomme **un** `?`
+ * (la langue), en tête des paramètres.
  *
- * ⚠️ **US ADMIN-01 — les jointures de traduction ne filtrent PAS `deleted_at`, volontairement.**
+ * ⚠️ **US ADMIN-01 — le nom ne filtre PAS les traductions archivées, volontairement.**
  * Archiver un exercice côté back-office soft-delete aussi ses traductions ; les filtrer ici ferait
  * afficher une **ligne d'historique sans nom** (le repli de `groupSetsByExercise` est la chaîne
  * vide). L'utilisateur perdrait le nom du mouvement qu'il a réellement soulevé. Une séance passée
  * est un fait : son libellé doit survivre au retrait du catalogue.
  * Les **listes de sélection**, elles, continuent de filtrer (cf. `SELECT_EXERCISES`).
  */
+const SET_COLUMNS = `
+  s.id, s.workout_id, s.exercise_id, s.order_index, s.set_type, s.reps, s.weight_kg,
+  s.duration_seconds, s.done, s.rpe, s.planned_weight_kg,
+  ${exerciseNameSql('s.exercise_id')} AS exercise_name`;
+
+/**
+ * Séries d'une séance donnée. Paramètres : `[lang, workoutId]`.
+ * Tri par `order_index` : garantit l'ordre des séries et l'ordre de première
+ * apparition des exercices lors du regroupement en JS.
+ */
 const SELECT_SETS_FOR_WORKOUT = `
-  SELECT s.id, s.exercise_id, s.order_index, s.set_type, s.reps, s.weight_kg,
-         s.duration_seconds, s.done, s.rpe, s.planned_weight_kg,
-         COALESCE(tl.name, tfr.name) AS exercise_name
+  SELECT ${SET_COLUMNS}
   FROM workout_sets s
-  LEFT JOIN exercise_translations tl  ON tl.exercise_id = s.exercise_id AND tl.lang = ?
-  LEFT JOIN exercise_translations tfr ON tfr.exercise_id = s.exercise_id AND tfr.lang = 'fr'
   WHERE s.workout_id = ? AND s.deleted_at IS NULL
+  ORDER BY s.order_index
+`;
+
+/**
+ * Séries de la séance **active**, sans avoir à connaître son id. Paramètres : `[lang]`.
+ *
+ * ⚠️ MUSCU-FIX02 — c'est ce qui supprime la **cascade** de l'écran de séance. Les séries étaient
+ * lues avec l'id rendu par la première requête : tant qu'elle n'avait pas répondu, la seconde
+ * tournait pour rien sur `''`, puis repartait — et entre les deux, `useQuery` rendait la séance
+ * **sans ses séries** (« séance vide », bouton « Ajouter un exercice ») pendant un rendu ou plus.
+ * Les deux requêtes partent maintenant ensemble, dès le montage.
+ */
+export const SELECT_ACTIVE_SETS = `
+  SELECT ${SET_COLUMNS}
+  FROM workout_sets s
+  WHERE s.workout_id = (SELECT w.id FROM workouts w WHERE ${ACTIVE_WORKOUT_FILTER})
+    AND s.deleted_at IS NULL
   ORDER BY s.order_index
 `;
 
@@ -302,8 +333,8 @@ function groupSetsByExercise(rows: WorkoutSetDbRow[]): WorkoutEntry[] {
 
 /**
  * Séance active de l'utilisateur courant (ou `null`), réactive aux changements
- * de la base locale. Les séries sont lues via une seconde requête filtrée sur
- * l'id de la séance active, puis regroupées par exercice.
+ * de la base locale. Les séries sont lues par une seconde requête **indépendante**
+ * (`SELECT_ACTIVE_SETS`), puis regroupées par exercice.
  *
  * `isLoading` ne dépend QUE de la résolution des requêtes locales (voir
  * profile/settings-repository) : le contenu ne doit pas se bloquer sur une
@@ -319,26 +350,26 @@ export function useActiveWorkout(): {
   const { i18n } = useTranslation();
   const lang = i18n.language === 'en' ? 'en' : 'fr';
 
+  // Les deux requêtes partent ENSEMBLE, dès le montage : les séries ne dépendent plus de l'id
+  // rendu par la première (MUSCU-FIX02 — voir `SELECT_ACTIVE_SETS`). `isLoading` couvre donc
+  // vraiment les deux premiers chargements, sans rendu intermédiaire « séance sans séries ».
   const { data: workoutRows, isLoading: workoutLoading } =
     useQuery<WorkoutDbRow>(SELECT_ACTIVE_WORKOUT);
-
-  const activeRow = workoutRows[0] ?? null;
-  const workoutId = activeRow?.id ?? '';
-
-  // Requête des séries toujours appelée (règle des hooks), avec la requête
-  // statique. Quand `workoutId === ''` (pas de séance active), la clause
-  // `s.workout_id = ?` ne matche aucune ligne → résultat vide, comportement
-  // voulu. Le hook reste donc appelable de façon stable dans tous les cas.
   const { data: setRows, isLoading: setsLoading } = useQuery<WorkoutSetDbRow>(
-    SELECT_SETS_FOR_WORKOUT,
-    [lang, workoutId],
+    SELECT_ACTIVE_SETS,
+    [lang],
   );
 
+  const activeRow = workoutRows[0] ?? null;
   const isLoading = workoutLoading || setsLoading;
 
   if (!activeRow) {
     return { workout: null, isLoading };
   }
+
+  // Les deux requêtes se rafraîchissent chacune à leur rythme : pendant un rendu, l'une peut
+  // encore décrire la séance précédente. On ne garde que les séries de CETTE séance.
+  const ownSetRows = setRows.filter((row) => row.workout_id === activeRow.id);
 
   const workout: ActiveWorkout = {
     id: activeRow.id,
@@ -347,7 +378,7 @@ export function useActiveWorkout(): {
     programId: activeRow.program_id,
     plannedSessionId: activeRow.planned_session_id ?? null,
     weekIndex: activeRow.week_index ?? null,
-    entries: groupSetsByExercise(setRows),
+    entries: groupSetsByExercise(ownSetRows),
   };
 
   return { workout, isLoading };
@@ -404,6 +435,8 @@ export function useSessionRest(sessionId: string | null): Record<string, number>
 
 /** Ligne brute d'une série de la dernière performance (poids/reps + contexte de suggestion). */
 type LastPerformanceDbRow = {
+  /** Exercice de la ligne — sert à écarter une réponse périmée (voir `useLastPerformance`). */
+  exercise_id: string;
   weight_kg: number | null;
   reps: number | null;
   set_type: string;
@@ -412,20 +445,33 @@ type LastPerformanceDbRow = {
 };
 
 /**
- * Séries validées d'un exercice dans la dernière séance terminée qui le
- * contient (deux paramètres = `exerciseId` répété : sous-requête de sélection
- * de la séance la plus récente, puis filtre des séries de cette séance).
+ * La n-ième séance terminée (0 = la dernière) où l'exercice a au moins une série qualifiante.
+ * Consomme **un** `?` : l'exercice.
+ *
+ * ⚠️ MUSCU-FIX02 — **`GROUP BY` séance.** La jointure séances × séries rendait **une ligne par
+ * série**, si bien que `OFFSET 1` sautait une série et non une séance. Avec trois séries de squat
+ * la dernière fois, « l'avant-dernière séance » était la dernière, et le deload de MUSC-F7 partait
+ * après **une** séance difficile au lieu de deux. On part des séries de l'exercice (index
+ * `exercise_id`) plutôt que des séances : un `EXISTS` par séance balayait tout l'historique
+ * (24 ms contre 0,5 ms à 200 séances, mesuré).
  */
-const SELECT_LAST_PERFORMANCE = `
-  SELECT s.weight_kg, s.reps, s.set_type, s.rpe, s.duration_seconds FROM workout_sets s
-  JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL
+const NTH_LAST_WORKOUT_WITH = (offset: 0 | 1) => `
+  SELECT s2.workout_id FROM workout_sets s2
+  JOIN workouts w2 ON w2.id = s2.workout_id AND w2.status = 'completed' AND w2.deleted_at IS NULL
+  WHERE s2.exercise_id = ? AND s2.deleted_at IS NULL AND s2.done = 1 AND s2.set_type <> 'warmup'
+  GROUP BY s2.workout_id
+  ORDER BY MAX(w2.finished_at) DESC LIMIT 1 OFFSET ${offset}`;
+
+/**
+ * Séries validées d'un exercice dans la dernière séance terminée qui le
+ * contient (deux paramètres = `exerciseId` répété : filtre des séries, puis
+ * sélection de la séance la plus récente).
+ */
+export const SELECT_LAST_PERFORMANCE = `
+  SELECT s.exercise_id, s.weight_kg, s.reps, s.set_type, s.rpe, s.duration_seconds
+  FROM workout_sets s
   WHERE s.exercise_id = ? AND s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
-    AND w.id = (
-      SELECT w2.id FROM workouts w2
-      JOIN workout_sets s2 ON s2.workout_id = w2.id AND s2.exercise_id = ? AND s2.deleted_at IS NULL AND s2.done = 1 AND s2.set_type <> 'warmup'
-      WHERE w2.status = 'completed' AND w2.deleted_at IS NULL
-      ORDER BY w2.finished_at DESC LIMIT 1
-    )
+    AND s.workout_id = (${NTH_LAST_WORKOUT_WITH(0)})
   ORDER BY s.order_index
 `;
 
@@ -433,6 +479,10 @@ const SELECT_LAST_PERFORMANCE = `
  * Séries de la dernière séance terminée où l'exercice a été fait (vide si
  * jamais fait), triées par `order_index` — sert à pré-afficher la performance
  * précédente à l'écran de saisie.
+ *
+ * Quand `exerciseId` change, `useQuery` rend encore un instant les lignes de l'exercice
+ * **précédent** : on les écarte, sinon le pré-remplissage afficherait la charge du squat sur un
+ * curl — et une validation rapide l'enregistrerait (MUSCU-FIX02).
  */
 export function useLastPerformance(
   exerciseId: string,
@@ -448,30 +498,25 @@ export function useLastPerformance(
     exerciseId,
   ]);
 
-  return data.map((row) => ({
-    weightKg: row.weight_kg,
-    reps: row.reps,
-    setType: row.set_type as SetType,
-    rpe: row.rpe,
-    durationSeconds: row.duration_seconds,
-  }));
+  return data
+    .filter((row) => row.exercise_id === exerciseId)
+    .map((row) => ({
+      weightKg: row.weight_kg,
+      reps: row.reps,
+      setType: row.set_type as SetType,
+      rpe: row.rpe,
+      durationSeconds: row.duration_seconds,
+    }));
 }
 
 /**
- * Séries qualifiantes de l'**avant-dernière** séance terminée où l'exercice a été fait — même
- * forme que `SELECT_LAST_PERFORMANCE`, sous-requête `OFFSET 1` (US MUSC-F7) : sert de signal
- * `previousStruggled` pour `computeProgressionSuggestion` (kind `deload`, spec 3.8).
+ * Séries qualifiantes de l'**avant-dernière** séance terminée où l'exercice a été fait (US MUSC-F7) :
+ * sert de signal `previousStruggled` pour `computeProgressionSuggestion` (kind `deload`, spec 3.8).
  */
-const SELECT_SECOND_LAST_PERFORMANCE = `
-  SELECT s.set_type, s.rpe FROM workout_sets s
-  JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL
+export const SELECT_SECOND_LAST_PERFORMANCE = `
+  SELECT s.exercise_id, s.set_type, s.rpe FROM workout_sets s
   WHERE s.exercise_id = ? AND s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
-    AND w.id = (
-      SELECT w2.id FROM workouts w2
-      JOIN workout_sets s2 ON s2.workout_id = w2.id AND s2.exercise_id = ? AND s2.deleted_at IS NULL AND s2.done = 1 AND s2.set_type <> 'warmup'
-      WHERE w2.status = 'completed' AND w2.deleted_at IS NULL
-      ORDER BY w2.finished_at DESC LIMIT 1 OFFSET 1
-    )
+    AND s.workout_id = (${NTH_LAST_WORKOUT_WITH(1)})
 `;
 
 /**
@@ -480,11 +525,15 @@ const SELECT_SECOND_LAST_PERFORMANCE = `
  * qualifiantes en historique) : pas de deload sans donnée suffisante pour l'établir.
  */
 export function usePreviousStruggled(exerciseId: string): boolean {
-  const { data } = useQuery<{ set_type: string; rpe: number | null }>(SELECT_SECOND_LAST_PERFORMANCE, [
-    exerciseId,
-    exerciseId,
-  ]);
-  return sessionStruggled(data.map((row) => ({ setType: row.set_type, rpe: row.rpe })));
+  const { data } = useQuery<{ exercise_id: string; set_type: string; rpe: number | null }>(
+    SELECT_SECOND_LAST_PERFORMANCE,
+    [exerciseId, exerciseId],
+  );
+  return sessionStruggled(
+    data
+      .filter((row) => row.exercise_id === exerciseId)
+      .map((row) => ({ setType: row.set_type, rpe: row.rpe })),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -697,19 +746,25 @@ export async function startWorkoutFromSession(
 /**
  * Annule une séance : passe son statut à `cancelled`, puis soft delete la séance
  * ET toutes ses séries (nettoyage complet côté local + synchro).
+ *
+ * **Une seule transaction** (MUSCU-FIX02) : l'annulation faisait une écriture par série — 26
+ * pour une séance de 24 séries — et chacune relançait toutes les requêtes réactives montées
+ * (hub, accueil, séance). « Abandonner » pouvait prendre plusieurs secondes, pendant lesquelles
+ * l'écran annonçait « Aucune séance en cours ». Même forme que `deleteWorkout`.
  */
 export async function cancelWorkout(id: string): Promise<void> {
-  await patch('workouts', id, { status: 'cancelled' });
-
-  const sets = await powerSync.getAll<{ id: string }>(
-    `SELECT id FROM workout_sets WHERE workout_id = ? AND deleted_at IS NULL`,
-    [id],
-  );
-  for (const set of sets) {
-    await softDelete('workout_sets', set.id);
-  }
-
-  await softDelete('workouts', id);
+  const now = nowUtc();
+  await powerSync.writeTransaction(async (tx) => {
+    await tx.execute(
+      `UPDATE workout_sets SET deleted_at = ?, updated_at = ?
+       WHERE workout_id = ? AND deleted_at IS NULL`,
+      [now, now, id],
+    );
+    await tx.execute(
+      `UPDATE workouts SET status = 'cancelled', deleted_at = ?, updated_at = ? WHERE id = ?`,
+      [now, now, id],
+    );
+  });
 }
 
 /**
@@ -1132,23 +1187,29 @@ export async function replaceExercise(
 
 /** Ligne brute d'une note d'exercice. */
 type ExerciseNoteDbRow = {
+  exercise_id: string;
   note: string | null;
 };
 
 /**
  * Note personnelle de l'utilisateur courant sur un exercice (ou `null` si
  * aucune note), réactive aux changements de la base locale.
+ *
+ * La ligne porte son exercice : au passage d'un exercice à l'autre, `useQuery` rend encore un
+ * instant la note du **précédent**, et un simple focus/blur du champ l'aurait recopiée sur le
+ * suivant (MUSCU-FIX02).
  */
 export function useExerciseNote(exerciseId: string): {
   note: string | null;
   isLoading: boolean;
 } {
   const { data, isLoading } = useQuery<ExerciseNoteDbRow>(
-    'SELECT note FROM exercise_notes WHERE exercise_id = ? AND deleted_at IS NULL LIMIT 1',
+    'SELECT exercise_id, note FROM exercise_notes WHERE exercise_id = ? AND deleted_at IS NULL LIMIT 1',
     [exerciseId],
   );
 
-  return { note: data[0]?.note ?? null, isLoading };
+  const row = data[0];
+  return { note: row && row.exercise_id === exerciseId ? row.note : null, isLoading };
 }
 
 /** Ligne brute pour la map complète des notes (toutes, utilisateur courant). */

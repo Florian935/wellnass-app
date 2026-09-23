@@ -196,6 +196,8 @@ export function makeRuntime(over: RuntimeOverrides = {}): ImmersiveRuntime {
     cue: null,
     openPlanOnMount: false,
     goToSummary: jest.fn(),
+    // MUSCU-FIX02 : la cérémonie de fin est un état de l'écran de séance, pas de ce rendu.
+    closing: false,
   } as unknown as ImmersiveRuntime;
 
   return { ...base, ...over, rest: { ...base.rest, ...(over.rest ?? {}) } } as ImmersiveRuntime;

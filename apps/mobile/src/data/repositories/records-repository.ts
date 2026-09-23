@@ -72,7 +72,7 @@ import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { getAppLanguage } from '@/i18n';
 import { generateId } from '@/lib/id';
-import { nowUtc } from './_sql';
+import { exerciseNameSql, nowUtc } from './_sql';
 import { useDailyTotals } from './journal-repository';
 import { useSettings } from './settings-repository';
 import {
@@ -468,10 +468,10 @@ export async function evaluateWorkoutRecords(
     const row = await powerSync.getOptional<{ name: string | null }>(
       // US ADMIN-01 : ni `e.deleted_at` ni les traductions ne sont filtrés — un record est un fait
       // passé, son libellé doit survivre à l'archivage de l'exercice au catalogue.
-      `SELECT COALESCE(tl.name, tfr.name) AS name
+      // Sous-requêtes et non `LEFT JOIN` (MUSCU-FIX02) : la clôture attend ce calcul avant de
+      // naviguer, et un `LEFT JOIN` sur une vue PowerSync relit toute la table des traductions.
+      `SELECT ${exerciseNameSql('e.id')} AS name
        FROM exercises e
-       LEFT JOIN exercise_translations tl  ON tl.exercise_id = e.id AND tl.lang = ?
-       LEFT JOIN exercise_translations tfr ON tfr.exercise_id = e.id AND tfr.lang = 'fr'
        WHERE e.id = ?
        LIMIT 1`,
       [lang, exerciseId],

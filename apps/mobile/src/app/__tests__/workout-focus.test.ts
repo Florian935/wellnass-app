@@ -18,10 +18,12 @@
  */
 
 import {
+  applyDoneOverrides,
   findSupersetPartnerSet,
   formatLastPerf,
   formatMmSs,
   parseMmSs,
+  pruneDoneOverrides,
   resolveCurrentSet,
   type CurrentSet,
 } from '../workout';
@@ -327,5 +329,61 @@ describe('formatLastPerf', () => {
     ];
 
     expect(formatLastPerf(perf, units)).toBe('12, 20×10');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Validations en attente (MUSCU-FIX02)
+// ---------------------------------------------------------------------------
+
+describe('applyDoneOverrides / pruneDoneOverrides', () => {
+  it('🔴 la série validée à l’écran n’est plus « en cours », même avant que la base l’ait relue', () => {
+    // Le défaut : entre l'appui et le retour de la requête réactive, l'écran restait sur la série
+    // qu'on venait de valider — « Série 2/4 » au repos, puis « 3/4 » — et un second appui la
+    // validait une deuxième fois.
+    const entries = [exercice('squat', [false, false, false])];
+    const firstId = entries[0]!.sets[0]!.id;
+
+    const shown = applyDoneOverrides(entries, { [firstId]: true });
+
+    expect(at(resolveCurrentSet(shown, null))).toBe('squat#1');
+  });
+
+  it('une dé-validation depuis la liste s’applique aussi, dans l’autre sens', () => {
+    const entries = [exercice('squat', [true, false])];
+    const firstId = entries[0]!.sets[0]!.id;
+
+    expect(at(resolveCurrentSet(applyDoneOverrides(entries, { [firstId]: false }), null))).toBe('squat#0');
+  });
+
+  it('rend le MÊME tableau quand il n’y a rien à appliquer', () => {
+    const entries = [exercice('squat', [false])];
+
+    expect(applyDoneOverrides(entries, {})).toBe(entries);
+    // Déjà vrai en base : l'exercice n'est pas recopié.
+    const done = [exercice('bench', [true])];
+    expect(applyDoneOverrides(done, { [done[0]!.sets[0]!.id]: true })[0]).toBe(done[0]);
+  });
+
+  it('retire une validation dès que la base l’a rattrapée — la base redevient seule juge', () => {
+    const entries = [exercice('squat', [true, false])];
+    const [a, b] = entries[0]!.sets;
+
+    expect(pruneDoneOverrides(entries, { [a!.id]: true, [b!.id]: true })).toEqual({ [b!.id]: true });
+  });
+
+  it('retire une série disparue (supprimée entre-temps)', () => {
+    const entries = [exercice('squat', [false])];
+
+    expect(pruneDoneOverrides(entries, { 'set-fantome': true })).toEqual({});
+  });
+
+  it('rend le MÊME objet quand rien n’est à retirer — l’écran s’en sert pour ne pas boucler', () => {
+    const entries = [exercice('squat', [false])];
+    const pending = { [entries[0]!.sets[0]!.id]: true };
+
+    expect(pruneDoneOverrides(entries, pending)).toBe(pending);
+    const empty = {};
+    expect(pruneDoneOverrides(entries, empty)).toBe(empty);
   });
 });

@@ -34,6 +34,7 @@ import {
 import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { maybePushRecords } from '@/data/repositories/notification-repository';
 import { useRouter } from 'expo-router';
+import { useSessionMode } from '@/stores/session-mode-store';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -90,23 +91,42 @@ jest.mock('@/components/workout/CurrentSetCard', () => {
 jest.mock('@/components/workout/SetActionBar', () => {
   const { Pressable: P, Text: T } = require('react-native');
   return {
-    SetActionBar: (props: { exerciseName: string; onValidate: () => void }) => (
+    SetActionBar: (props: { exerciseName: string; currentIndex: number; onValidate: () => void }) => (
       <P testID="valider" onPress={props.onValidate}>
-        <T>barre-{props.exerciseName}</T>
+        <T>{`barre-${props.exerciseName}-${props.currentIndex}`}</T>
       </P>
     ),
   };
 });
 // Sonde du menu : la clôture y vit désormais, puisque la barre du bas ne devient « Terminer »
 // qu'une fois **toutes** les séries validées. Écourter une séance passe donc par ici.
+//
+// MUSCU-FIX02 : la sonde compte ses montages et expose le changement de mode — c'est ce qui prouve
+// qu'une bascule immersif ↔ classique ne démonte plus le menu ouvert.
+const mockMenuMounts = { count: 0 };
 jest.mock('@/components/workout/SessionMenuSheet', () => {
-  const { Pressable: P, Text: T } = require('react-native');
+  const { useEffect } = require('react');
+  const { Pressable: P, Text: T, View: V } = require('react-native');
   return {
-    SessionMenuSheet: (props: { onFinish: () => void }) => (
-      <P testID="menu-terminer" onPress={props.onFinish}>
-        <T>menu-terminer</T>
-      </P>
-    ),
+    SessionMenuSheet: (props: {
+      visible: boolean;
+      onFinish: () => void;
+      onChangeMode?: (mode: 'classic' | 'immersive') => void;
+    }) => {
+      useEffect(() => {
+        mockMenuMounts.count += 1;
+      }, []);
+      return (
+        <V>
+          <P testID="menu-terminer" onPress={props.onFinish}>
+            <T>menu-terminer</T>
+          </P>
+          <P testID="menu-classique" onPress={() => props.onChangeMode?.('classic')}>
+            <T>{props.visible ? 'menu-ouvert' : 'menu-ferme'}</T>
+          </P>
+        </V>
+      );
+    },
   };
 });
 jest.mock('@/components/workout/ExerciseList', () => ({ ExerciseList: () => null }));
@@ -115,8 +135,14 @@ jest.mock('@/components/workout/SupersetPickerModal', () => ({ SupersetPickerMod
 // défaut ; la sonde sert surtout à couper l'arbre d'imports du mode immersif, dont `SetOptions`
 // tire l'i18n réel — incompatible avec le `react-i18next` mocké plus bas.
 jest.mock('@/components/workout/immersive/ImmersiveWorkout', () => {
-  const { Text: T } = require('react-native');
-  return { ImmersiveWorkout: () => <T testID="immersif">immersif</T> };
+  const { Pressable: P, Text: T } = require('react-native');
+  return {
+    ImmersiveWorkout: (props: { runtime: { onOpenMenu: () => void; closing: boolean } }) => (
+      <P testID="immersif" onPress={props.runtime.onOpenMenu}>
+        <T>{props.runtime.closing ? 'immersif-ceremonie' : 'immersif'}</T>
+      </P>
+    ),
+  };
 });
 // Sonde de repos : sa simple présence prouve que le décompte est parti.
 jest.mock('@/components/workout/RestOverlay', () => {
@@ -240,6 +266,9 @@ const seance = (overrides: Partial<ActiveWorkout> = {}): ActiveWorkout =>
 beforeEach(() => {
   jest.clearAllMocks();
   boutonsAlerte = [];
+  mockMenuMounts.count = 0;
+  // Le mode est une préférence d'appareil (store) : chaque test repart du classique, le défaut.
+  useSessionMode.setState({ mode: 'classic' });
   jest.spyOn(Alert, 'alert').mockImplementation((_titre, _msg, boutons) => {
     boutonsAlerte = (boutons ?? []) as BoutonAlerte[];
   });
@@ -586,5 +615,231 @@ describe('validation d’une série', () => {
 
     // Dégradation silencieuse assumée (spec §2.2).
     expect(screen.getByTestId('repos')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// MUSCU-FIX02 — la séance doit dérouler (recette du 23/09/2026)
+// ---------------------------------------------------------------------------
+
+describe('clôture : l’écran garde la séance jusqu’au départ', () => {
+  const seanceEntamee = () =>
+    seance({
+      entries: [
+        {
+          exerciseId: 'squat',
+          exerciseName: 'Squat',
+          sets: [serie('s1', 'squat', true), serie('s2', 'squat', false)],
+        },
+      ],
+    });
+
+  /**
+   * `finishWorkout` rend la séance « completed » : la requête réactive répond alors `null`. Le mock
+   * reproduit exactement cela — la séance disparaît de `useActiveWorkout` dès l'écriture.
+   */
+  const clotureQuiEfface = () => {
+    mockFinishWorkout.mockImplementation(async () => {
+      mockUseActiveWorkout.mockReturnValue({ workout: null, isLoading: false });
+    });
+    // Le calcul des records reste en cours : on observe l'écran PENDANT la clôture.
+    mockEvaluateRecords.mockReturnValue(new Promise(() => {}));
+  };
+
+  beforeEach(() => {
+    mockUseActiveWorkout.mockReturnValue({ workout: seanceEntamee(), isLoading: false });
+  });
+
+  it('🔴 classique : jamais « Aucune séance en cours » pendant le calcul des records', async () => {
+    clotureQuiEfface();
+
+    await render(<WorkoutScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('menu-terminer'));
+    });
+    await screen.rerender(<WorkoutScreen />);
+
+    expect(mockFinishWorkout).toHaveBeenCalledWith('w-1');
+    expect(screen.queryByText('workout.none')).toBeNull();
+    expect(screen.getByText('Squat')).toBeTruthy();
+  });
+
+  it('🔴 immersif : « Terminer » depuis le MENU lance la cérémonie, qui reste jusqu’au bilan', async () => {
+    // Deux défauts cumulés : seul le bouton du pont lançait la cérémonie — depuis le menu ⋮, la
+    // séance était close sans cérémonie ni navigation ; et la séance close, l'écran remplaçait tout
+    // par « Aucune séance en cours » avant que la cérémonie ait pu mener au bilan.
+    useSessionMode.setState({ mode: 'immersive' });
+    clotureQuiEfface();
+
+    await render(<WorkoutScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('menu-terminer'));
+    });
+    await screen.rerender(<WorkoutScreen />);
+
+    expect(mockFinishWorkout).toHaveBeenCalledWith('w-1');
+    expect(screen.queryByText('workout.none')).toBeNull();
+    expect(screen.getByText('immersif-ceremonie')).toBeTruthy();
+    // En immersif, c'est la cérémonie qui navigue — pas la clôture.
+    expect(replace).not.toHaveBeenCalled();
+  });
+
+  it('si la clôture échoue, la séance continue normalement — sans promesse rejetée orpheline', async () => {
+    mockFinishWorkout.mockRejectedValue(new Error('base verrouillée'));
+    const avertissement = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+    await render(<WorkoutScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('menu-terminer'));
+    });
+
+    expect(replace).not.toHaveBeenCalled();
+    expect(screen.getByText('barre-Squat-2')).toBeTruthy();
+    expect(avertissement).toHaveBeenCalled();
+  });
+});
+
+describe('clôture : ce qui s’arrête avec la séance', () => {
+  it('le repos en cours s’arrête, et plus aucune série n’est acceptée pendant la clôture', async () => {
+    // Le repos continuait sous la cérémonie et vibrait à zéro ; et la barre de saisie, encore
+    // visible en classique pendant le calcul des records, validait une série d'une séance close.
+    mockEvaluateRecords.mockReturnValue(new Promise(() => {}));
+
+    await render(<WorkoutScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('valider'));
+    });
+    expect(screen.getByTestId('repos')).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('menu-terminer'));
+    });
+    expect(screen.queryByTestId('repos')).toBeNull();
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('valider'));
+    });
+    expect(mockUpdateSet).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('validation : l’écran n’attend pas la base', () => {
+  it('🔴 la série suivante est prête AVANT que la base ait relu la validation', async () => {
+    // Le mock ne change pas : c'est la base qui n'a pas encore répondu.
+    await render(<WorkoutScreen />);
+    expect(screen.getByText('barre-Squat-1')).toBeTruthy();
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('valider'));
+    });
+
+    expect(screen.getByText('barre-Squat-2')).toBeTruthy();
+  });
+
+  it('🔴 deux validations successives valident deux séries, pas deux fois la même', async () => {
+    await render(<WorkoutScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('valider'));
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('valider'));
+    });
+
+    expect(mockUpdateSet.mock.calls.map(([id]) => id)).toEqual(['s1', 's2']);
+  });
+
+  it('🔴 deux appuis dans le MÊME cycle de rendu ne valident la série qu’une fois', async () => {
+    await render(<WorkoutScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('valider'));
+      fireEvent.press(screen.getByTestId('valider'));
+    });
+
+    expect(mockUpdateSet).toHaveBeenCalledTimes(1);
+    expect(mockUpdateSet).toHaveBeenCalledWith('s1', expect.objectContaining({ done: true }));
+  });
+
+  it('une fois la base à jour, c’est elle qui fait foi', async () => {
+    await render(<WorkoutScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('valider'));
+    });
+    // La base relit la validation.
+    mockUseActiveWorkout.mockReturnValue({
+      workout: seance({
+        entries: [
+          {
+            exerciseId: 'squat',
+            exerciseName: 'Squat',
+            sets: [serie('s1', 'squat', true), serie('s2', 'squat', false)],
+          },
+        ],
+      }),
+      isLoading: false,
+    });
+    await screen.rerender(<WorkoutScreen />);
+
+    expect(screen.getByText('barre-Squat-2')).toBeTruthy();
+  });
+});
+
+describe('bascule de mode en pleine séance', () => {
+  it('🔴 immersif → classique : le menu n’est pas remonté, il se referme', async () => {
+    // Le défaut : le menu vivait DANS chaque rendu. Changer de mode depuis le menu remplaçait tout
+    // l'arbre, modale ouverte comprise — démontée et remontée dans le même rendu, et restée ouverte
+    // par-dessus le nouveau mode.
+    useSessionMode.setState({ mode: 'immersive' });
+
+    await render(<WorkoutScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('immersif'));
+    });
+    expect(screen.getByText('menu-ouvert')).toBeTruthy();
+    const montagesAvant = mockMenuMounts.count;
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('menu-classique'));
+    });
+
+    expect(useSessionMode.getState().mode).toBe('classic');
+    expect(screen.queryByTestId('immersif')).toBeNull();
+    expect(screen.getByText('barre-Squat-1')).toBeTruthy();
+    expect(mockMenuMounts.count).toBe(montagesAvant);
+    expect(screen.getByText('menu-ferme')).toBeTruthy();
+  });
+
+  it('rien n’est perdu à la bascule : la série validée reste validée', async () => {
+    useSessionMode.setState({ mode: 'immersive' });
+    await render(<WorkoutScreen />);
+    // Retour en classique pour valider depuis la barre, puis aller-retour.
+    await act(async () => {
+      useSessionMode.setState({ mode: 'classic' });
+    });
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('valider'));
+    });
+    await act(async () => {
+      useSessionMode.setState({ mode: 'immersive' });
+    });
+    await act(async () => {
+      useSessionMode.setState({ mode: 'classic' });
+    });
+
+    expect(screen.getByText('barre-Squat-2')).toBeTruthy();
+  });
+});
+
+describe('clôture en immersif sans série validée', () => {
+  it('pas de cérémonie : rien à fêter, on part au bilan', async () => {
+    useSessionMode.setState({ mode: 'immersive' });
+
+    await render(<WorkoutScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('menu-terminer'));
+    });
+    await appuyerAlerte('workout.finishAnyway');
+
+    expect(screen.queryByText('immersif-ceremonie')).toBeNull();
+    expect(replace).toHaveBeenCalledWith({ pathname: '/workout-summary', params: { id: 'w-1' } });
   });
 });

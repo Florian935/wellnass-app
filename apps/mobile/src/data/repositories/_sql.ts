@@ -18,6 +18,49 @@ import { powerSync } from '@/powersync/system';
 export const nowUtc = (): string => new Date().toISOString();
 
 // ---------------------------------------------------------------------------
+// Traduction d'un exercice (lecture)
+// ---------------------------------------------------------------------------
+
+/**
+ * Un champ traduit d'un exercice (`name`, `instructions`) dans la langue courante, avec repli sur
+ * le français — écrit en **sous-requêtes scalaires**, jamais en `LEFT JOIN`.
+ *
+ * ⚠️ MUSCU-FIX02 (23/09/2026) : ne pas le réécrire en `LEFT JOIN exercise_translations`. Les tables
+ * PowerSync sont des **vues** sur du JSON (`CAST(json_extract(data, …))`), et SQLite n'utilise
+ * jamais un index d'expression pour la table de droite d'un `LEFT JOIN` sur une vue : chaque ligne
+ * relisait toute la table des traductions. Mesuré sur 350 exercices : 185 ms en `LEFT JOIN`,
+ * 0,6 ms ainsi (PC ; compter ×5 à ×10 sur un téléphone). Les sous-requêtes, elles, passent par
+ * l'index `(exercise_id, lang)` déclaré dans `schema.ts`. Et elles ne dupliquent jamais une ligne
+ * quand un exercice a deux traductions dans la même langue, ce que faisait le `LEFT JOIN`.
+ *
+ * Consomme **un** paramètre `?` : la langue courante.
+ *
+ * @param exerciseId expression SQL de l'id (`s.exercise_id`, `e.id`…) — jamais une saisie.
+ * @param liveOnly   `true` pour les listes de sélection : une traduction archivée n'y nomme plus
+ *   rien. Par défaut, elle reste lisible (ADMIN-01 : une séance passée garde le nom du mouvement
+ *   réellement soulevé), la traduction vivante primant quand les deux existent.
+ */
+export function exerciseTranslationSql(
+  field: 'name' | 'instructions',
+  exerciseId: string,
+  liveOnly = false,
+): string {
+  const pick = (lang: string) =>
+    liveOnly
+      ? `(SELECT xt.${field} FROM exercise_translations xt
+          WHERE xt.exercise_id = ${exerciseId} AND xt.lang = ${lang} AND xt.deleted_at IS NULL
+          LIMIT 1)`
+      : `(SELECT xt.${field} FROM exercise_translations xt
+          WHERE xt.exercise_id = ${exerciseId} AND xt.lang = ${lang}
+          ORDER BY xt.deleted_at IS NOT NULL LIMIT 1)`;
+  return `COALESCE(${pick('?')}, ${pick("'fr'")})`;
+}
+
+/** Le nom d'un exercice — voir `exerciseTranslationSql`. Consomme un `?` (la langue). */
+export const exerciseNameSql = (exerciseId: string, liveOnly = false): string =>
+  exerciseTranslationSql('name', exerciseId, liveOnly);
+
+// ---------------------------------------------------------------------------
 // Soft delete
 // ---------------------------------------------------------------------------
 

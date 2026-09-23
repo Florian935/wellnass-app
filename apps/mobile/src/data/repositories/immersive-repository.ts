@@ -30,6 +30,7 @@ import {
   type MuscleGroup,
   type SetType,
 } from '@wellness/shared';
+import { exerciseNameSql, exerciseTranslationSql } from './_sql';
 
 /** Liste de `?` pour une clause `IN`, avec un repli qui ne matche rien sur une liste vide. */
 function placeholders(count: number): string {
@@ -53,22 +54,32 @@ type ReferenceRow = {
  * Même logique que `SELECT_LAST_PERFORMANCE` (workout-repository), étendue à plusieurs exercices et
  * **enrichie de `w.finished_at`** : sans cette date, le verdict ne peut pas dire « mardi ».
  *
- * La sous-requête corrélée sur `s.exercise_id` choisit, pour chaque exercice, la dernière séance
- * terminée qui le contient. La séance **en cours** est exclue par `w.status = 'completed'`.
+ * `last` choisit, pour chaque exercice, la dernière séance terminée qui le contient (rang 1 de la
+ * fenêtre) ; on relit ensuite les séries de ce seul couple (séance, exercice). La séance **en
+ * cours** est exclue par `w.status = 'completed'`.
+ *
+ * ⚠️ MUSCU-FIX02 (23/09/2026) — **ne pas revenir à une sous-requête corrélée.** La version
+ * précédente (`AND w.id = (SELECT … WHERE s2.exercise_id = s.exercise_id … LIMIT 1)`) rejouait la
+ * recherche de la dernière séance **pour chaque série de l'historique** : 309 ms à 60 séances,
+ * 3,1 s à 200 (PC), soit plusieurs secondes à plusieurs dizaines de secondes sur un téléphone. Et
+ * ce hook est monté dans les **deux** modes, et relancé à **chaque** série validée : c'était la
+ * cause des écrans noirs au lancement et des décalages après validation. La fenêtre rend les mêmes
+ * lignes (verrouillé par `session-live-sql.test.ts`) en 13 ms, 10 ms avec index.
  */
-const SELECT_SESSION_REFERENCES = (count: number): string => `
-  SELECT s.exercise_id, s.set_type, s.reps, s.weight_kg, s.duration_seconds, w.finished_at
-  FROM workout_sets s
-  JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL
-  WHERE s.exercise_id IN (${placeholders(count)})
+export const SELECT_SESSION_REFERENCES = (count: number): string => `
+  WITH last AS (
+    SELECT s2.exercise_id AS exercise_id, w2.id AS workout_id, w2.finished_at AS finished_at,
+           ROW_NUMBER() OVER (PARTITION BY s2.exercise_id ORDER BY w2.finished_at DESC) AS recency
+    FROM workout_sets s2
+    JOIN workouts w2 ON w2.id = s2.workout_id AND w2.status = 'completed' AND w2.deleted_at IS NULL
+    WHERE s2.exercise_id IN (${placeholders(count)})
+      AND s2.deleted_at IS NULL AND s2.done = 1 AND s2.set_type <> 'warmup'
+  )
+  SELECT s.exercise_id, s.set_type, s.reps, s.weight_kg, s.duration_seconds, last.finished_at
+  FROM last
+  JOIN workout_sets s ON s.workout_id = last.workout_id AND s.exercise_id = last.exercise_id
+  WHERE last.recency = 1
     AND s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
-    AND w.id = (
-      SELECT w2.id FROM workouts w2
-      JOIN workout_sets s2 ON s2.workout_id = w2.id AND s2.exercise_id = s.exercise_id
-        AND s2.deleted_at IS NULL AND s2.done = 1 AND s2.set_type <> 'warmup'
-      WHERE w2.status = 'completed' AND w2.deleted_at IS NULL
-      ORDER BY w2.finished_at DESC LIMIT 1
-    )
   ORDER BY s.exercise_id, s.order_index
 `;
 
@@ -161,10 +172,18 @@ const SELECT_SESSION_MUSCLES = (count: number): string => `
 
 type ExerciseCardRow = { id: string; equipment: string | null; instructions: string | null };
 
-const SELECT_SESSION_CARDS = (count: number): string => `
-  SELECT id, equipment, instructions
-  FROM exercises
-  WHERE id IN (${placeholders(count)})
+/**
+ * Paramètres : `[lang, ...ids]`.
+ *
+ * ⚠️ MUSCU-FIX02 : la consigne se lit dans `exercise_translations`. Elle était lue dans
+ * `exercises.instructions`, **colonne qui n'existe pas** dans la base locale : la requête échouait
+ * à chaque appel, `useQuery` rendait une liste vide sans rien dire, et en mode immersif la barre
+ * chargée ne s'affichait jamais (plus de matériel connu) ni la consigne du coach.
+ */
+export const SELECT_SESSION_CARDS = (count: number): string => `
+  SELECT e.id, e.equipment, ${exerciseTranslationSql('instructions', 'e.id')} AS instructions
+  FROM exercises e
+  WHERE e.id IN (${placeholders(count)})
 `;
 
 /** Ce que la scène immersive sait d'un exercice au-delà de ses muscles. */
@@ -189,9 +208,15 @@ function firstSentence(text: string | null): string | null {
 }
 
 /** Matériel et consigne courte par exercice de la séance. */
-export function useSessionCards(exerciseIds: readonly string[]): Record<string, ExerciseCard> {
+export function useSessionCards(
+  exerciseIds: readonly string[],
+  lang: string,
+): Record<string, ExerciseCard> {
   const ids = [...exerciseIds];
-  const { data } = useQuery<ExerciseCardRow>(SELECT_SESSION_CARDS(ids.length), ids);
+  const { data } = useQuery<ExerciseCardRow>(SELECT_SESSION_CARDS(ids.length), [
+    lang === 'en' ? 'en' : 'fr',
+    ...ids,
+  ]);
 
   const cards: Record<string, ExerciseCard> = {};
   for (const row of data) {
@@ -221,18 +246,19 @@ type BriefRow = {
  * Même structure de jointures que `SELECT_TODAY_PLAN` (hub muscu) : traduction dans la langue
  * courante avec repli sur le français, pour qu'un exercice créé dans une langue et relu dans
  * l'autre ne s'affiche jamais vide. Paramètres : `[lang, sessionId]`.
+ *
+ * Le nom passe par `exerciseNameSql` et non par deux `LEFT JOIN` (MUSCU-FIX02) : c'est la seule
+ * forme que SQLite sait indexer sur une vue PowerSync, et le brief est sur le chemin du lancement.
  */
-const SELECT_SESSION_BRIEF = `
+export const SELECT_SESSION_BRIEF = `
   SELECT s.name AS session_name,
          ep.exercise_id,
-         COALESCE(etl.name, etfr.name) AS exercise_name,
+         ${exerciseNameSql('e.id', true)} AS exercise_name,
          e.muscle_primary,
          ep.target_sets, ep.target_reps, ep.target_weight_kg, ep.rest_seconds
   FROM sessions s
   JOIN exercise_plans ep ON ep.session_id = s.id AND ep.deleted_at IS NULL
   JOIN exercises e ON e.id = ep.exercise_id AND e.deleted_at IS NULL
-  LEFT JOIN exercise_translations etl  ON etl.exercise_id  = e.id AND etl.lang  = ?  AND etl.deleted_at IS NULL
-  LEFT JOIN exercise_translations etfr ON etfr.exercise_id = e.id AND etfr.lang = 'fr' AND etfr.deleted_at IS NULL
   WHERE s.id = ? AND s.deleted_at IS NULL
   ORDER BY ep.order_index
 `;

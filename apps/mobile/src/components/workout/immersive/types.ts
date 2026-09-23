@@ -156,4 +156,13 @@ export type ImmersiveRuntime = {
   openPlanOnMount: boolean;
   /** Ouvre le bilan de séance (MUSCU-UX02) — appelé par la cérémonie de clôture. */
   goToSummary: () => void;
+  /**
+   * La séance se clôt et la cérémonie de fin doit occuper l'écran (spec §5.13).
+   *
+   * Porté par l'écran de séance et non par ce rendu (MUSCU-FIX02) : « Terminer » vit à **deux**
+   * endroits, le pont et le menu ⋮. Seul le pont déclenchait la cérémonie ; depuis le menu, la
+   * séance était close sans cérémonie ni navigation, et l'écran affichait « Aucune séance en
+   * cours ». Faux quand il n'y a rien à fêter (clôture sans série validée) : on part au bilan.
+   */
+  closing: boolean;
 };

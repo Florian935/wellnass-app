@@ -125,6 +125,20 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
 > Insights, et le moteur n'en affiche que **2 par famille**. Les recetter tels quels aurait produit
 > **5 faux défauts**. C'est le vrai gain de l'exercice, pas les cases à cocher.
 
+- [ ] 🟠 **~30 requêtes lisent encore les traductions d'exercice par `LEFT JOIN` — non indexable.**
+      Relevé le 23/09/2026 par MUSCU-FIX02 (mesuré sur un banc qui reproduit les vues PowerSync) :
+      SQLite **n'utilise jamais un index** pour la table de droite d'un `LEFT JOIN` sur une vue
+      PowerSync — chaque ligne relit toute la table `exercise_translations` (185 ms sur PC pour
+      350 exercices, contre 0,6 ms en sous-requête). Le chemin de la **séance** est corrigé ; restent
+      notamment `records-repository.ts` (12 sites, dont `SELECT_WEIGHT_RECORDS` du hub, relancée à
+      chaque clôture), `workout-report-repository.ts` (le **bilan** : `SELECT_SETS`,
+      `SELECT_RECORDS`), `dashboard-repository.ts` (4), `strength-cards-repository.ts` (4),
+      `strength-hub-repository.ts` (`SELECT_TODAY_PLAN`), `exercise-repository.ts`
+      (`SELECT_EXERCISE_DETAIL`), `goal-repository.ts` (2). **Outil prêt** : `exerciseNameSql` /
+      `exerciseTranslationSql` (`data/repositories/_sql.ts`) ; un test sur le harnais par requête
+      reprise, sur le modèle de `session-live-sql.test.ts`. Même remarque pour les autres
+      `LEFT JOIN` sur de grosses tables (`program_translations`, `sessions`).
+
 - [ ] 🟠 **`health-connect-state.test.ts` — mode de défaillance identifié, déclencheur toujours
       inconnu.** Constaté le 07/08/2026 en intégrant ALLURE-01 : **16 des 31 tests** en échec sur un
       `npm run test` agrégé, mocks du module natif à `Number of calls: 0`, **non reproductible**
