@@ -37,7 +37,7 @@ dessus et n'écrit pas de second système de mouvement.**
 | # | Décision | Motif |
 |---|---|---|
 | D1 | **Tout en une vague**, avant la publication Play Store, recette finale unique. | Choix de Florian. |
-| D2 | **La scène se replie au défilement** (en-tête compact qui apparaît quand la scène sort de l'écran). **Ce n'est pas la parallaxe** exclue par MOTION-01 §5 : le contenu défile à 1:1, rien de ce qu'on lit ne se déplace à une autre vitesse. | Libère la place des données sans perdre le contexte. |
+| D2 | **La scène se replie au défilement** (en-tête compact qui apparaît quand la scène sort de l'écran). **Ce n'est pas la parallaxe** exclue par MOTION-01 §5 : le contenu défile à 1:1, rien de ce qu'on lit ne se déplace à une autre vitesse. | Libère la place des données sans perdre le contexte. ⚠️ **Retiré le 23/09/2026** (recette MUSCU-UX06, décision Florian) : le bandeau opaque « super moche » disparaît des quatre écrans, le corps défile sous la barre d'état transparente. |
 | D3 | **Pas de pastille d'onglet glissante ni de couleur qui déborde en plein écran.** L'arrivée sur un pilier passe par sa scène. | MOTION-01 §4.6 (reconstruction de la barre d'onglets) ; le flash plein écran se lisait comme un bug. |
 | D4 | **Hub muscu en dernier** dans l'ordre de build (conflit avec `feature/corps02-morphologie`, qui touche `strength.tsx`). | Réduire le conflit de fusion. |
 | D5 | **Les fonctions IA sont livrées avant la publication, désactivées par défaut** : consentement explicite séparé, quotas et plafond côté serveur, dégradation complète sans elles. | Choix de Florian (réserve formulée : fiche « Sécurité des données » à mettre à jour, voir §8). |

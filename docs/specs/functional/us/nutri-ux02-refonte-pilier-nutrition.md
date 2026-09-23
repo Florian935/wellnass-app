@@ -155,6 +155,9 @@ R7.3 — 🔴 Aucune régression de contraste : toutes les valeurs proposées **
 
 ### R8 — Le bord sous la barre compacte
 
+> ⚠️ **Sans objet depuis le 23/09/2026** : la barre compacte elle-même a été retirée des quatre écrans à
+> scène (recette MUSCU-UX06, décision Florian) — et son bord dégradé avec elle.
+
 R8.1 — Un dégradé de 20 px est posé **sous** la barre, solidaire de sa visibilité.
 
 R8.2 — 🔴 Ce n'est pas un fondu **sur** la barre : R1 de DASH-01 impose qu'elle apparaisse d'un coup,

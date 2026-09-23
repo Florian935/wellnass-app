@@ -318,8 +318,6 @@ export default function NutritionScreen() {
     <StageScrollView
       pillar="nutrition"
       testID="nutrition-screen"
-      compactTitle={isToday ? t('journal.today') : dayLabel}
-      compactValue={`${totals.kcal} ${t('nutrition.kcal')}`}
       stage={
         <NutritionStage
           day={day}

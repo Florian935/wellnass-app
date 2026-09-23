@@ -376,8 +376,6 @@ export default function RunningScreen() {
     <StageScrollView
       pillar="running"
       testID="running-screen"
-      compactTitle={t('pillars.running')}
-      compactValue={units.formatDistance(week.distanceM / 1000)}
       stage={
         <RunStage
           scene={scene}

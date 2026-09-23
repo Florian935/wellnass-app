@@ -10,6 +10,43 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/09/2026 — MUSCU-UX06, passe 1 : plus de bandeau en haut au défilement, sur les quatre piliers (`dev`)
+
+> Recette de Florian sur device : couleurs validées (« c'est nickel pour la couleur »), mais au
+> défilement du hub muscu un bandeau rouge « Musculation » apparaît en haut — « super moche, il faut
+> enlever ça, garder la transparence en plein écran ». Ce bandeau était l'en-tête compact de
+> `StageScrollView` (DASH-01 D2), présent sur les **quatre** écrans à scène ; question posée,
+> **Florian a choisi de le retirer partout**. Commit précédent : `a87d1f89`.
+
+### Supprimé
+- 🔴 **En-tête compact au défilement** (`components/stage/StageScrollView.tsx`) : le bandeau opaque à la
+  couleur du haut de la scène (titre + chiffre clé), son bord dégradé de 20 px (NUTRI-UX02 R8), le
+  suivi du défilement qui les pilotait (`useAnimatedScrollHandler`, seuil, `compactVisible`) et les
+  props `compactTitle` / `compactValue`. `Animated.ScrollView` redevient un `ScrollView` : plus rien
+  n'y est animé. La **coulée** de la scène (`spill`) est conservée.
+- Props retirées des quatre écrans : `app/(tabs)/index.tsx`, `nutrition.tsx`, `running.tsx`,
+  `strength.tsx`.
+- Clé i18n `home.streak.compact_one/_other` (FR + EN), qui ne servait qu'au bandeau.
+
+### Modifié
+- Test `components/stage/__tests__/stage.test.tsx` : les deux tests de l'en-tête compact sont remplacés
+  par un test « aucun en-tête compact, même masqué » sur les quatre piliers — le bandeau était rendu en
+  permanence, seulement masqué, d'où `includeHiddenElements: true`.
+- Docs : spec MUSCU-UX06 §8 (passe 1, R10) ; spec DASH-01 (D2 marqué retiré) ; spec NUTRI-UX02 (R8 sans
+  objet) ; RECETTES §85 bloc G (critères 21 à 24), §62 critères 4-5 et §80 bloc I annotés sans objet ;
+  roadmap 3.64 (note de passe) + journal ; ETAT régénéré.
+
+### Technique / Notes
+- Le bandeau semblait propre à la muscu parce qu'il prenait `stage.surfaces[0]` : bleu vif sur la
+  course, mais brun (`#45331f`) et vert (`#1f3110`) très sombres sur l'accueil et la nutrition ; le
+  rouge fonte `#8e1b1b`, plus saturé que le bordeaux, l'a rendu flagrant.
+- Le corps défile désormais sous la barre d'état transparente (edge-to-edge) sur les quatre écrans.
+- `scrollEnabled` (glisser-déposer des widgets de l'accueil) et `refreshControl` (tirer-pour-rafraîchir)
+  sont transmis comme avant.
+- Parité i18n : clés alignées ; le script signale toujours les 4 valeurs vides `coach.*.verdict.warmup`,
+  **antérieures** à ce commit (déjà rouges avant).
+- Qualité : lint 0, typecheck 0, tests verts (Jest 248 suites / 4 459 tests, Vitest 24 + 164 fichiers).
+
 ## 23/09/2026 — MUSCU-UX06 : rouge fonte pour la muscu, des cartes qui se détachent partout (`dev`)
 
 > Retour de Florian le 23/09/2026 : le pilier muscu « trop rose », « le bordeaux n'est pas adapté », et

@@ -115,3 +115,25 @@ et l'accueil.
     supprimée.
 - Les contrats existants tiennent sans modification : contrastes WCAG de la palette, non-régression
   par pilier, encres de scène (`stage.test.ts`), chroma des accents.
+
+## 8. Recette — passe 1 (23/09/2026)
+
+Florian valide les couleurs (« c'est nickel pour la couleur ») et remonte un défaut : au défilement du
+hub muscu, un **bandeau rouge « Musculation »** apparaît en haut — « super moche, il faut enlever ça,
+garder la transparence en plein écran comme sur les autres piliers ».
+
+**Constat** : ce bandeau n'était pas propre à la muscu. C'est l'en-tête compact de `StageScrollView`
+(DASH-01, D2, 13/09/2026), présent sur les **quatre** écrans à scène, à la couleur du haut de la
+scène : bleu vif sur la course, brun et vert très sombres sur l'accueil et la nutrition — d'où
+l'impression qu'il n'existait qu'en muscu. Le rouge fonte, plus saturé que le bordeaux, l'a rendu
+flagrant.
+
+- **R10. Plus d'en-tête compact, sur les quatre écrans** (décision Florian, question posée : « partout »
+  plutôt que « seulement en muscu »). `StageScrollView` perd le bandeau, son bord dégradé (NUTRI-UX02 R8)
+  et les props `compactTitle` / `compactValue` ; la coulée de la scène (`spill`) reste. Le corps défile
+  sous la barre d'état transparente. La clé i18n `home.streak.compact` (FR + EN), qui ne servait qu'au
+  bandeau, est supprimée.
+- Test : `components/stage/__tests__/stage.test.tsx` vérifie, pour les quatre piliers, que l'en-tête
+  compact **n'est plus rendu du tout** — il l'était en permanence, seulement masqué.
+- Recette : RECETTES §85 bloc G. Critères devenus sans objet annotés : §62 (DASH-01) 4-5, §80
+  (NUTRI-UX02) bloc I.

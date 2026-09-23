@@ -306,8 +306,6 @@ export default function StrengthScreen() {
     <StageScrollView
       pillar="strength"
       testID="strength-screen"
-      compactTitle={t('pillars.strength')}
-      compactValue={progress ? t('stage.strength.weekCard.meta', { done: progress.done, planned: progress.total }) : undefined}
       stage={
         <StrengthStage
           scene={scene}

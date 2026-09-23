@@ -24,31 +24,34 @@ describe('PillarStage', () => {
 });
 
 describe('StageScrollView', () => {
-  it('rend la scène, le corps, et un en-tête compact porteur du titre', async () => {
+  it('rend la scène et le corps', async () => {
     await render(
-      <StageScrollView pillar="running" stage={<Text>8,0 km</Text>} compactTitle="Course" compactValue="8,0 km">
+      <StageScrollView pillar="running" stage={<Text>8,0 km</Text>}>
         <Text>Km par km</Text>
       </StageScrollView>,
     );
-    expect(screen.getAllByText('8,0 km').length).toBeGreaterThan(0);
+    expect(screen.getByText('8,0 km')).toBeTruthy();
     expect(screen.getByText('Km par km')).toBeTruthy();
-    // L'en-tête compact existe, mais masqué tant que la scène est dépliée : il faut le chercher parmi les
-    // éléments cachés — c'est la preuve qu'un lecteur d'écran ne l'annonce pas en double.
-    expect(screen.queryByText('Course')).toBeNull();
-    expect(screen.getByText('Course', { includeHiddenElements: true })).toBeTruthy();
   });
 
-  it('l’en-tête compact est masqué quand la scène est dépliée (défilement nul)', async () => {
-    await render(
-      <StageScrollView pillar="running" stage={<Text>scène</Text>} compactTitle="Course">
-        <Text>corps</Text>
-      </StageScrollView>,
-    );
-    const header = screen.getByTestId('stage-compact-header', { includeHiddenElements: true });
-    expect(header).toHaveStyle({ opacity: 0 });
-    // Masqué pour l'œil, et pour les lecteurs d'écran : la scène dépliée porte déjà l'information.
-    expect(header.props.importantForAccessibility).toBe('no-hide-descendants');
-  });
+  /**
+   * 🔴 Recette MUSCU-UX06 (23/09/2026) — le bandeau opaque qui apparaissait en haut au défilement
+   * (titre du pilier, à la couleur du haut de la scène) est retiré des quatre écrans à scène, sur
+   * décision de Florian : « c'est super moche […] garder la transparence en plein écran ». Il était
+   * rendu en permanence, simplement masqué tant que la scène restait visible : on vérifie qu'il n'est
+   * plus rendu du tout, pas seulement invisible.
+   */
+  it.each(['home', 'strength', 'running', 'nutrition'] as const)(
+    '%s : aucun en-tête compact, même masqué',
+    async (pillar) => {
+      await render(
+        <StageScrollView pillar={pillar} stage={<Text>scène</Text>}>
+          <Text>corps</Text>
+        </StageScrollView>,
+      );
+      expect(screen.queryByTestId('stage-compact-header', { includeHiddenElements: true })).toBeNull();
+    },
+  );
 });
 
 describe('StageButton', () => {

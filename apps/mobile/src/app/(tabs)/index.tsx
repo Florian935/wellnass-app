@@ -281,8 +281,6 @@ export default function HomeScreen() {
       pillar="home"
       testID="home-screen"
       scrollEnabled={!dragging}
-      compactTitle={greeting}
-      compactValue={facts.streak > 0 ? t('home.streak.compact', { count: facts.streak }) : undefined}
       refreshControl={
         // US ACCUEIL-05 : le geste est un réflexe et ne renvoyait rien — il n'existait pas un
         // seul `RefreshControl` dans l'app.

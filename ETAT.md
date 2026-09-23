@@ -128,7 +128,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `dev` (modifications non commitées) |
-| Commits | 1327 · `main` a **1324** commits de retard sur `dev` |
+| Commits | 1328 · `main` a **1325** commits de retard sur `dev` |
 | Specs d'US | 173 au total — 88 clôturées, 85 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -139,11 +139,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `a87d1f8`  feat(muscu): rouge fonte pour le pilier, des cartes qui se détachent partout
 - `4076a96`  docs(muscu): MUSCU-FIX02 clôturée — recette validée par Florian
 - `3f7c606`  fix(muscu): l'écran qui respire disparaît, la barre dit quoi toucher
 - `12aa708`  fix(muscu): la charge se tape, la série se regarde, la barre se charge
 - `b4e1b8f`  fix(muscu): l'immersif aux couleurs du pilier, et la séance libre repensée
-- `18a5131`  fix(muscu): la séance en direct déroule — index, requêtes, clôture, bascule de mode
 
 ---
 

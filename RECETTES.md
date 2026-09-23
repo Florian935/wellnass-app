@@ -3332,10 +3332,11 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 - [ ] 3. **Arriver sur le pilier Musculation** : les muscles de la séance s'allument **une seule
       fois**, puis se posent. *C'est le correctif du « bug visuel » relevé sur la maquette : plus
       aucun clignotement en boucle.*
-- [ ] 4. **Faire défiler un pilier vers le bas** : la scène sort de l'écran et un **bandeau compact**
-      apparaît en haut, avec le titre et le chiffre clé. Remonter : il disparaît.
-- [ ] 5. **En lecteur d'écran (TalkBack)** : le bandeau compact **n'est pas annoncé** tant que la
-      scène est dépliée — l'information n'est pas lue deux fois.
+- [ ] 4. ~~**Faire défiler un pilier vers le bas** : un **bandeau compact** apparaît en haut.~~
+      ⚠️ **Remplacé le 23/09/2026** (recette MUSCU-UX06, décision Florian) : le bandeau est **retiré**
+      des quatre écrans — à vérifier désormais en §85 bloc G (aucun bandeau au défilement).
+- [ ] 5. ~~**En lecteur d'écran (TalkBack)** : le bandeau compact n'est pas annoncé…~~ Sans objet
+      depuis le retrait du bandeau (23/09/2026).
 - [ ] 6. **Thème sombre** : les quatre scènes restent lisibles, textes compris (contraste AA).
 
 ### Nutrition — le remplissage
@@ -4807,6 +4808,9 @@ Vérifié le 20/09 par comptage REST : le cloud porte **3 246 aliments** et **3 
 
 ### I — Le bord sous la barre
 
+> ⚠️ **Sans objet depuis le 23/09/2026** : la barre compacte est retirée des quatre écrans à scène
+> (recette MUSCU-UX06, §85 bloc G). Les trois critères ci-dessous ne sont plus à recetter.
+
 - [ ] Faire défiler jusqu'à ce que la barre compacte apparaisse : le contenu qui passe dessous
       n'est plus **tranché net**, il s'estompe sur ~20 px.
 - [ ] La barre, elle, apparaît toujours **d'un coup** (règle R1 de DASH-01, non modifiée).
@@ -5182,3 +5186,17 @@ aucune donnée, aucune migration — un build de `dev` suffit.
 - ⚠️ **La carte sombre n'a pas été éclaircie** (`#30271e`, comme avant) alors que la planche montrait un
   cran plus clair : ça aurait fait passer le contour des champs sous le seuil d'accessibilité. Écart de
   séparation imperceptible (1,35:1 contre 1,38:1).
+
+### G — Passe 1 (23/09/2026) : plus de bandeau en haut au défilement
+
+Retour de Florian sur le hub muscu : en faisant défiler, un bandeau rouge « Musculation » apparaissait
+en haut — « super moche ». Il existait sur les **quatre** écrans à scène ; il est retiré partout.
+
+- [ ] 21. **Hub Muscu** : faire défiler jusqu'en bas. **Aucun bandeau** n'apparaît en haut : le contenu
+      passe sous la barre d'état transparente, en plein écran. Remonter : la scène revient normalement.
+- [ ] 22. **Même vérification sur l'Accueil, la Course et la Nutrition** : aucun bandeau (sur la Course,
+      il était bleu vif).
+- [ ] 23. La **coulée** de la scène dans la page (la lueur sous la scène, qui s'éteint sur les premières
+      cartes) est **toujours là** sur les quatre écrans.
+- [ ] 24. Le **tirer-pour-rafraîchir** de l'Accueil fonctionne toujours, et le glisser-déposer des
+      widgets de l'Accueil bloque toujours le défilement pendant qu'on déplace un widget.

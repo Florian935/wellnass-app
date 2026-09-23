@@ -1239,8 +1239,6 @@
         "D"
       ],
       "empty": "Valide une activité aujourd'hui pour lancer ta série.",
-      "compact_one": "{{count}} j",
-      "compact_other": "{{count}} j",
       "eyebrow": "Régularité",
       "bannerActive_one": "{{count}} jour actif cette semaine 💪",
       "bannerActive_other": "{{count}} jours actifs cette semaine 💪",

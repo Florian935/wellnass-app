@@ -1239,8 +1239,6 @@
         "S"
       ],
       "empty": "Log an activity today to start your streak.",
-      "compact_one": "{{count}} d",
-      "compact_other": "{{count}} d",
       "eyebrow": "Consistency",
       "bannerActive_one": "{{count}} active day this week 💪",
       "bannerActive_other": "{{count}} active days this week 💪",
