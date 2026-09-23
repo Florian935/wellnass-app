@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  barChange,
   computePlates,
   DEFAULT_BAR_KG,
   loadableKg,
@@ -144,5 +145,28 @@ describe('loadableKg / stepLoadableKg (unité de stockage)', () => {
   it('n’altère pas une charge déjà chargeable en livres (aucune dérive kg ↔ lb)', () => {
     const kg = lbToKg(135);
     expect(loadableKg(kg, { barKg: 20, imperial: true })).toBe(kg);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Ce qui change sur la barre — MUSCU-FIX02, passe 3
+// ---------------------------------------------------------------------------
+
+describe('barChange', () => {
+  it('dit ce qu’il faut ajouter de chaque côté', () => {
+    expect(barChange({ from: 135, to: 137.5 })).toEqual({ direction: 'add', perSide: 1.25 });
+    expect(barChange({ from: 100, to: 120 })).toEqual({ direction: 'add', perSide: 10 });
+  });
+
+  it('dit ce qu’il faut retirer de chaque côté', () => {
+    expect(barChange({ from: 140, to: 130 })).toEqual({ direction: 'remove', perSide: 5 });
+  });
+
+  it('même charge : rien à toucher', () => {
+    expect(barChange({ from: 82.5, to: 82.5 })).toEqual({ direction: 'same', perSide: 0 });
+  });
+
+  it('calcule en centièmes — pas de 1,2499999', () => {
+    expect(barChange({ from: 0.1 + 0.2, to: 2.8 }).perSide).toBe(1.25);
   });
 });

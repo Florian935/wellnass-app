@@ -4605,12 +4605,14 @@
       "exerciseIndex": "Exercice {{index}} sur {{total}}",
       "lastExercise": "Dernier exercice",
       "lastSet": "Dernière série de la séance",
+      "cue": "Consigne",
       "stake": "{{weight}} : plus lourd que ton record ({{record}})"
     },
     "deck": {
       "nextSet": "{{name}} · série {{index}}",
       "nextEnd": "Fin de la séance",
       "launch": "Lancer la série",
+      "done": "Série faite",
       "validateDirectly": "Valider directement"
     },
     "done": {
@@ -4647,7 +4649,10 @@
     "bar": {
       "perSide": "Par côté : {{plates}} · barre {{bar}} {{unit}}",
       "barOnly": "Barre seule ({{bar}} {{unit}})",
-      "remainder": "+ {{weight}} {{unit}} non chargeable"
+      "remainder": "+ {{weight}} {{unit}} non chargeable",
+      "changeAdd": "Ajoute {{weight}} {{unit}} de chaque côté",
+      "changeRemove": "Retire {{weight}} {{unit}} de chaque côté",
+      "changeSame": "Même charge que la série d’avant"
     },
     "verdict": {
       "heavier": "+{{delta}}",

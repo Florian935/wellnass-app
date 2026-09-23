@@ -108,6 +108,7 @@ import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
 import {
   applyLiveSet,
+  barChange,
   computeProgressionSuggestion,
   computeSetVerdict,
   evaluateLiveRecord,
@@ -663,6 +664,22 @@ export default function WorkoutScreen() {
   const displayWeightKg = activeEdit ? activeEdit.weightKg : prefillWeightKg;
   const displayDurationSeconds = activeEdit ? activeEdit.durationSeconds : prefillDuration;
   const durationValue = formatMmSs(displayDurationSeconds ?? 0);
+
+  // Ce qui change sur la barre depuis la série faite juste avant, sur le même exercice : entre deux
+  // séries on ajoute ou on retire, on ne recharge pas de zéro (MUSCU-FIX02, passe 3). Référence :
+  // la dernière série validée avant la série courante, sinon la dernière validée tout court.
+  const previousLoadedKg = (() => {
+    if (!current || !currentIsBarbell) return null;
+    const loaded = current.entry.sets
+      .map((set, rank) => ({ set, rank }))
+      .filter(({ set }) => set.done && set.weightKg !== null);
+    const before = loaded.filter(({ rank }) => rank < current.rang).at(-1);
+    return (before ?? loaded.at(-1))?.set.weightKg ?? null;
+  })();
+  const currentBarChange =
+    previousLoadedKg !== null && displayWeightKg !== null
+      ? barChange({ from: previousLoadedKg, to: displayWeightKg })
+      : null;
 
   const displayNote =
     noteEdit && noteEdit.exerciseId === currentExerciseId ? noteEdit.value : currentExerciseNote ?? '';
@@ -1251,6 +1268,7 @@ export default function WorkoutScreen() {
       onDismissTakeover: () =>
         setFeedback((previous) => (previous ? { ...previous, takeover: false } : previous)),
       showBarbell: Boolean(current && showBarbellFor(current.entry.exerciseId)),
+      barChange: currentBarChange,
       cue: current ? (sessionCards[current.entry.exerciseId]?.cue ?? null) : null,
       openPlanOnMount,
       closing: closing?.ceremony === true,

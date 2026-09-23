@@ -34,7 +34,7 @@ import {
   sameDuration,
   sameNumber,
 } from '@/components/workout/DraftNumberInput';
-import { BarbellLoad } from '@/components/workout/immersive/BarbellLoad';
+import { BarbellLoad, describeBarChange } from '@/components/workout/immersive/BarbellLoad';
 import { EffortScreen } from '@/components/workout/immersive/EffortScreen';
 import { ImmersiveRest } from '@/components/workout/immersive/ImmersiveRest';
 import { RepDial } from '@/components/workout/immersive/RepDial';
@@ -395,6 +395,11 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
                   colors={colors}
                 />
               ) : null}
+              {/* La consigne se lit ici, avant de se placer : elle n'était visible que sur
+                  l'écran d'effort, disparu des séries en reps (MUSCU-FIX02, passe 3). */}
+              {runtime.cue && runtime.level !== 'simplified' ? (
+                <Ref label={t('immersive.stage.cue')} value={runtime.cue} colors={colors} />
+              ) : null}
             </View>
 
             {/* La barre chargée : ce qu'il faut mettre de chaque côté. Exercices à la barre
@@ -406,6 +411,40 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
                 imperial={units.system === 'imperial'}
                 colors={colors}
               />
+            ) : null}
+
+            {/* Ce qui change depuis la série d'avant : on ajoute ou on retire, on ne recharge
+                pas de zéro (MUSCU-FIX02, passe 3). */}
+            {runtime.showBarbell && runtime.barChange ? (
+              <View style={styles.barChange}>
+                <Ionicons
+                  name={
+                    runtime.barChange.direction === 'add'
+                      ? 'add-circle-outline'
+                      : runtime.barChange.direction === 'remove'
+                        ? 'remove-circle-outline'
+                        : 'checkmark-circle-outline'
+                  }
+                  size={20}
+                  color={runtime.barChange.direction === 'same' ? colors.textMuted : colors.accent}
+                />
+                <Text
+                  testID="bar-change"
+                  style={[
+                    styles.barChangeText,
+                    {
+                      color: runtime.barChange.direction === 'same' ? colors.textMuted : colors.text,
+                    },
+                  ]}
+                >
+                  {describeBarChange({
+                    change: runtime.barChange,
+                    imperial: units.system === 'imperial',
+                    t,
+                    language: i18n.language,
+                  })}
+                </Text>
+              </View>
             ) : null}
 
             {/* L'enjeu : l'app prévient AVANT de soulever. */}
@@ -571,9 +610,19 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
               />
             </View>
 
+            {/* Série en reps : « Série faite » ouvre le cadran tout de suite. L'écran d'effort
+                intermédiaire (qui respirait) ne servait à rien — on ne regarde ni ne touche son
+                téléphone en soulevant (recette du 23/09/2026, MUSCU-FIX02 passe 3). Il ne reste
+                que pour une série chronométrée, où son compte à rebours sert vraiment. */}
             <PressableScale
               accessibilityRole="button"
+              testID="deck-primary"
               onPress={() => {
+                if (runtime.currentSetType !== 'duration') {
+                  setEffortStartedAt(null);
+                  setPhase('dial');
+                  return;
+                }
                 setEffortStartedAt(Date.now());
                 setPhase('effort');
                 // La seule parole autorisée pendant l'effort : la consigne, dite au moment où l'on
@@ -590,9 +639,15 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
               }}
               style={[styles.primary, { backgroundColor: colors.accent }]}
             >
-              <Ionicons name="play" size={18} color={colors.accentText} />
+              <Ionicons
+                name={runtime.currentSetType === 'duration' ? 'play' : 'checkmark'}
+                size={20}
+                color={colors.accentText}
+              />
               <Text style={[styles.primaryLabel, { color: colors.accentText }]}>
-                {t('immersive.deck.launch')}
+                {runtime.currentSetType === 'duration'
+                  ? t('immersive.deck.launch')
+                  : t('immersive.deck.done')}
               </Text>
             </PressableScale>
 
@@ -880,6 +935,8 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   warmupLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
+  barChange: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  barChangeText: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 15 },
 
   restBar: {
     flexDirection: 'row',

@@ -5289,3 +5289,30 @@ Trois retours de Florian : le pont immersif ne laissait pas **taper** la charge 
 - ⚠️ Les critères 20 et 21 de §63 (MUSCU-UX03) sont annotés : le comptage au toucher a disparu, et le
   reste non chargeable ne se voit plus que sur une charge tapée.
 - ⚠️ Barre de **15 kg** (réglages de séance) : l'arrondi suit la barre réglée (40,5 → 40 sur une 15 kg).
+- ⚠️ **Les critères « Lancer la série » et « Série terminée » de ce bloc sont remplacés** par le
+  bloc K pour les séries en reps : l'écran d'effort n'existe plus que pour les séries chronométrées.
+
+### K — 3ᵉ passe de recette (23/09/2026) : l'écran qui respire disparaît
+
+Retour de Florian sur la passe 2 : l'écran « à regarder » pendant la série « sert vraiment à rien ».
+Décision (Florian) : le **supprimer** pour les séries en reps, et mettre ce qui sert vraiment là où
+on a le temps de le lire.
+
+- [ ] 🔴 **Série en reps**, en immersif : le bouton principal du pont s'appelle **« Série faite »**
+      (coche) et ouvre **directement** le cadran (reps + ressenti). Plus d'écran intermédiaire.
+- [ ] « Valider directement » reste là pour valider sans passer par le cadran.
+- [ ] **Série chronométrée** (gainage…) : le bouton reste **« Lancer la série »** et ouvre l'écran de
+      compte à rebours ; le cadran s'ouvre tout seul à zéro.
+- [ ] 🔴 **Exercice à la barre, 2ᵉ série et suivantes** : sous la barre dessinée, une ligne dit
+      **ce qu'il faut toucher** depuis la série d'avant — « Ajoute 1,25 kg de chaque côté »,
+      « Retire 5 kg de chaque côté » ou « Même charge que la série d'avant ». Elle suit la charge
+      quand on la change (− / + ou saisie).
+- [ ] 🔴 **Pendant le repos**, sous « Ensuite » : la même ligne pour la série qui vient. Si la
+      prochaine série est un **nouvel exercice** à la barre : le chargement complet par côté.
+- [ ] 1ʳᵉ série d'un exercice à la barre : pas de ligne « ajoute / retire » (rien à comparer), le
+      détail par côté sous la barre suffit.
+- [ ] Haltères, machine : aucune ligne de barre.
+- [ ] La **consigne** technique de l'exercice (quand la fiche en a une) s'affiche sur la scène,
+      ligne « Consigne », avant de se placer. Elle n'est plus dite à voix haute pour une série en
+      reps (il n'y a plus de « lancement »), toujours pour une série chronométrée.
+- [ ] FR et EN : « Série faite / Set done », « Ajoute … de chaque côté / Add … per side ».

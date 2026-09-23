@@ -265,5 +265,44 @@ avec des disques de salle (1,25 · 2,5 · 5 · 10 · 15 · 20 · 25 kg — le pl
 `workout-screen.test.tsx` (**+6**, avec le vrai parseur de charge).
 
 **Pas fait** : les disques d'1,25 kg sont supposés disponibles partout ; une salle qui n'en a pas
-(pas de 5 kg) n'est pas réglable — ce serait un réglage de plus dans les réglages de séance.
+n'est pas réglable — ce serait un réglage de plus dans les réglages de séance.
+
+## 10. 3ᵉ passe de recette (23/09/2026) : l'écran qui respire disparaît
+
+Retour de Florian sur la passe 2 : même devenu « à regarder », l'écran d'effort « sert vraiment à
+rien ». Le constat de fond : pendant une série, on ne regarde pas plus son téléphone qu'on ne le
+touche. Ce qui sert arrive **avant** (quoi changer sur la barre) et **après** (noter ses reps).
+Trois options présentées (supprimer, « prépare ta barre », coach sonore) ; **Florian a choisi la
+suppression**.
+
+- **R19.** Série **en reps** : le bouton principal du pont devient **« Série faite »** et ouvre
+  directement le cadran — deux appuis au lieu de quatre. « Valider directement » reste le chemin
+  court sans cadran.
+- **R20.** Série **chronométrée** : « Lancer la série » ouvre toujours l'écran d'effort, dont le
+  compte à rebours est utile (cadran automatique à zéro). La consigne y est toujours dite.
+- **R21.** Sur un exercice à la barre, à partir de la 2ᵉ série faite, la scène dit **ce qu'il faut
+  toucher** depuis la série d'avant du même exercice : « Ajoute / Retire X de chaque côté », ou
+  « Même charge que la série d'avant » (`barChange`, `@wellness/shared`, calcul en centièmes). La
+  référence est la dernière série validée avant la série courante.
+- **R22.** Pendant le repos, sous « Ensuite », la même ligne pour la série qui vient ; pour un
+  **nouvel** exercice à la barre, le chargement complet par côté.
+- **R23.** La consigne technique s'affiche sur la scène (ligne « Consigne ») — elle ne vivait que
+  sur l'écran d'effort, désormais hors du parcours des séries en reps.
+
+| Fichier | Changement |
+|---|---|
+| `packages/shared/src/barbell.ts` | `barChange` |
+| `app/workout.tsx` | `previousLoadedKg`, `runtime.barChange` |
+| `components/workout/immersive/types.ts` | `barChange` |
+| `components/workout/immersive/ImmersiveWorkout.tsx` | « Série faite » → cadran ; ligne de barre ; consigne sur la scène |
+| `components/workout/immersive/ImmersiveRest.tsx` | ligne « quoi toucher » sous « Ensuite » |
+| `components/workout/immersive/BarbellLoad.tsx` | `describeBarChange` |
+| `components/workout/immersive/EffortScreen.tsx` | en-tête : ne sert plus qu'aux séries chronométrées |
+| i18n FR/EN | `immersive.deck.done`, `immersive.stage.cue`, `immersive.bar.change*` |
+
+**Tests-gardes** : `barbell.test.ts` (**+4**) ; `ImmersiveWorkout.test.tsx` (**+4**, parcours
+reps/chrono réécrits) ; `ImmersiveRest.test.tsx` (**3**, neuf) ; `workout-screen.test.tsx` (**+3**).
+
+**Pas fait** : la ligne dit une masse par côté (« ajoute 2,5 kg »), pas une combinaison de disques —
+le choix des disques reste à l'utilisateur, qui sait ce qu'il a déjà monté.
 

@@ -90,10 +90,16 @@ function nodeWithRole(role: string): { accessibilityValue?: unknown } | null {
   return walk(screen.toJSON());
 }
 
-/** Lance la série courante : c'est l'entrée du moment « effort ». */
+/**
+ * Le geste principal du pont. Depuis MUSCU-FIX02 (passe 3) : « Série faite » ouvre le cadran pour
+ * une série en reps ; « Lancer la série » ouvre l'effort pour une série chronométrée seulement.
+ */
 const lancer = async () => {
-  await act(async () => fireEvent.press(screen.getByText('immersive.deck.launch')));
+  await act(async () => fireEvent.press(screen.getByTestId('deck-primary')));
 };
+
+/** Une série chronométrée — la seule qui passe encore par l'écran d'effort. */
+const chrono = { currentSetType: 'duration' as const, displayDurationSeconds: 45 };
 
 beforeEach(() => jest.clearAllMocks());
 
@@ -105,12 +111,24 @@ describe('les moments', () => {
   it('ouvre sur la scène, pas sur un moment plein écran', async () => {
     await mount();
 
-    expect(screen.getByText('immersive.deck.launch')).toBeTruthy();
+    expect(screen.getByText('immersive.deck.done')).toBeTruthy();
     expect(screen.queryByText('SONDE_EFFORT')).toBeNull();
   });
 
-  it('passe à l’effort quand on lance la série', async () => {
+  it('🔴 série en reps : « Série faite » ouvre le cadran tout de suite — plus d’écran qui respire', async () => {
+    // Recette du 23/09/2026 : l'écran d'effort intermédiaire « ne sert à rien » — on ne regarde ni
+    // ne touche son téléphone en soulevant. Quatre appuis devenaient deux.
     await mount();
+
+    await lancer();
+
+    expect(screen.queryByText('SONDE_EFFORT')).toBeNull();
+    expect(screen.getByText('SONDE_CADRAN')).toBeTruthy();
+  });
+
+  it('série chronométrée : « Lancer la série » ouvre l’effort, dont le compte à rebours sert', async () => {
+    await mount(chrono);
+    expect(screen.getByText('immersive.deck.launch')).toBeTruthy();
 
     await lancer();
 
@@ -127,11 +145,11 @@ describe('les moments', () => {
     await mount({ rest: { active: true, collapsed: true, secondsLeft: 60 } });
 
     expect(screen.queryByText('SONDE_REPOS')).toBeNull();
-    expect(screen.getByText('immersive.deck.launch')).toBeTruthy();
+    expect(screen.getByText('immersive.deck.done')).toBeTruthy();
   });
 
   it('🔴 le repos qui démarre reprend la main sur l’effort en cours', async () => {
-    const { rerender } = await mount();
+    const { rerender } = await mount(chrono);
     await lancer();
     expect(screen.getByText('SONDE_EFFORT')).toBeTruthy();
 
@@ -139,7 +157,7 @@ describe('les moments', () => {
     await act(async () =>
       rerender(
         <ImmersiveWorkout
-          runtime={makeRuntime({ rest: { active: true, collapsed: false, secondsLeft: 90 } })}
+          runtime={makeRuntime({ ...chrono, rest: { active: true, collapsed: false, secondsLeft: 90 } })}
         />,
       ),
     );
@@ -149,16 +167,16 @@ describe('les moments', () => {
   });
 
   it('revient sur la scène, et non sur l’effort, une fois le repos terminé', async () => {
-    const { rerender } = await mount();
+    const { rerender } = await mount(chrono);
     await lancer();
     await act(async () =>
       rerender(
         <ImmersiveWorkout
-          runtime={makeRuntime({ rest: { active: true, collapsed: false, secondsLeft: 90 } })}
+          runtime={makeRuntime({ ...chrono, rest: { active: true, collapsed: false, secondsLeft: 90 } })}
         />,
       ),
     );
-    await act(async () => rerender(<ImmersiveWorkout runtime={makeRuntime()} />));
+    await act(async () => rerender(<ImmersiveWorkout runtime={makeRuntime(chrono)} />));
 
     expect(screen.queryByText('SONDE_EFFORT')).toBeNull();
     expect(screen.getByText('immersive.deck.launch')).toBeTruthy();
@@ -474,9 +492,15 @@ describe('le pont', () => {
     expect(screen.getByText('workout.validateAndChain')).toBeTruthy();
   });
 
-  it('dit la consigne technique au lancement, quand il y en a une', async () => {
+  it('affiche la consigne sur la scène, avant de se placer', async () => {
+    await mount({ cue: 'Omoplates serrées' });
+
+    expect(screen.getByText('Omoplates serrées')).toBeTruthy();
+  });
+
+  it('dit la consigne au lancement d’une série chronométrée, quand il y en a une', async () => {
     const speak = jest.fn();
-    await mount({ cue: 'Omoplates serrées', speak });
+    await mount({ ...chrono, cue: 'Gaine le ventre', speak });
     speak.mockClear();
 
     await lancer();
@@ -487,7 +511,7 @@ describe('le pont', () => {
   it('🔴 se tait au lancement quand la fiche n’a aucune consigne', async () => {
     const speak = jest.fn();
     const entries = [seedEntry('ex-1', 'Développé', [{}, {}])];
-    await mount({ entries, cue: null, speak });
+    await mount({ ...chrono, entries, cue: null, speak });
     speak.mockClear();
 
     await lancer();
@@ -527,6 +551,20 @@ describe('le pont', () => {
     );
 
     expect(onStepWeight.mock.calls).toEqual([[1], [-1]]);
+  });
+
+  it('🔴 dit ce qu’il faut ajouter sur la barre depuis la série d’avant', async () => {
+    await mount({ showBarbell: true, barChange: { direction: 'add', perSide: 1.25 } });
+
+    expect(screen.getByTestId('bar-change').props.children).toBe(
+      'immersive.bar.changeAdd|{"weight":"1,25","unit":"kg"}',
+    );
+  });
+
+  it('ne parle d’aucun changement de barre hors barre', async () => {
+    await mount({ showBarbell: false, barChange: { direction: 'add', perSide: 1.25 } });
+
+    expect(screen.queryByTestId('bar-change')).toBeNull();
   });
 
   it('ouvre le plan depuis le pont', async () => {

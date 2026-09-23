@@ -197,6 +197,7 @@ export function makeRuntime(over: RuntimeOverrides = {}): ImmersiveRuntime {
     onDismissAdjust: jest.fn(),
     onDismissTakeover: jest.fn(),
     showBarbell: false,
+    barChange: null,
     cue: null,
     openPlanOnMount: false,
     goToSummary: jest.fn(),

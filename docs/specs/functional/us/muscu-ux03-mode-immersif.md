@@ -266,6 +266,9 @@ La vibration reste `hapticConfirm` (30 ms), inchangée.
   taper » (Florian). L'effort devient un écran à **regarder** — objectif en grand, disques par côté,
   chrono de la série, la dernière fois, consigne — et « Série terminée » ouvre le cadran sur
   l'objectif. Voir [muscu-fix02 §9](muscu-fix02-seance-en-direct.md).
+  ⚠️ **Puis retiré tout court pour les séries en reps** (passe 3, même jour) : l'écran restait
+  inutile. « Série faite » ouvre directement le cadran ; l'effort ne sert plus qu'aux séries
+  chronométrées. Voir [muscu-fix02 §10](muscu-fix02-seance-en-direct.md).
 - **Consigne** : une ligne tirée des instructions de la fiche exercice (première phrase), si elle existe.
 - « Terminé » ouvre le cadran. Aucun autre moyen de sortir de l'effort que « Terminé » ou le menu ⋮
   (la sortie de séance reste possible).

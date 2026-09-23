@@ -20,6 +20,13 @@
  *
  * Série à la durée : l'anneau fait un **compte à rebours**, et le cadran s'ouvre tout seul à zéro.
  *
+ * ⚠️ **Passe 3 (même jour)** : même « à regarder », l'écran restait inutile pendant une série en
+ * reps — on ne regarde pas plus son téléphone qu'on ne le touche en soulevant. Les séries en reps
+ * n'y passent donc plus : « Série faite » ouvre directement le cadran, et ce qui servait vraiment
+ * (quoi changer sur la barre, la consigne) est sur la scène et le repos. Cet écran ne sert plus
+ * qu'aux **séries chronométrées**, où son compte à rebours est utile. Le rendu « reps » est gardé
+ * tel quel : il ne coûte rien et reste couvert par ses tests.
+ *
  * ── Accessibilité ───────────────────────────────────────────────────────────────────────────────
  * Le battement est **décoratif** : animations coupées (réglage ou système), l'écran est fixe et dit
  * exactement la même chose.

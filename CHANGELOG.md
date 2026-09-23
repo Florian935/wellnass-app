@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/09/2026 — MUSCU-FIX02, passe 3 : l'écran qui respire disparaît, la barre dit quoi toucher (`dev`)
+
+> 3ᵉ passe de recette de MUSCU-FIX02 (Florian, sur device) : même devenu « à regarder », l'écran
+> d'effort « sert vraiment à rien ». Trois options présentées (supprimer, « prépare ta barre »,
+> coach sonore) ; **Florian a choisi la suppression**. Spec §10 (R19 à R23), RECETTES §84 bloc K.
+> Commit précédent : `12aa7084`.
+
+### Modifié
+- 🔴 **Pont immersif** (`ImmersiveWorkout.tsx`) — série **en reps** : le bouton principal devient
+  « **Série faite** » et ouvre directement le cadran (2 appuis au lieu de 4). Série
+  **chronométrée** : « Lancer la série » ouvre toujours l'effort (compte à rebours utile, consigne
+  dite). `EffortScreen.tsx` n'est plus atteint que par les séries chronométrées (en-tête mis à
+  jour ; son rendu « reps » est gardé, couvert par ses tests).
+- **Consigne technique** affichée sur la scène (ligne « Consigne ») : elle ne vivait que sur l'écran
+  d'effort, désormais hors du parcours des séries en reps.
+
+### Ajouté
+- 🔴 **Ce qui change sur la barre** — `barChange` (`packages/shared/src/barbell.ts`, en centièmes) :
+  ajout, retrait ou même charge, **par côté**, depuis la dernière série validée du même exercice
+  (`previousLoadedKg` dans `workout.tsx` → `runtime.barChange`). Affiché sous la barre dessinée
+  (« Ajoute 1,25 kg de chaque côté ») et, pendant le repos, sous « Ensuite »
+  (`ImmersiveRest.tsx`) ; nouvel exercice à la barre → chargement complet par côté.
+  `describeBarChange` (`BarbellLoad.tsx`), en livres dans l'unité affichée.
+- i18n FR/EN : `immersive.deck.done`, `immersive.stage.cue`, `immersive.bar.changeAdd/Remove/Same`.
+- Tests : `barbell.test.ts` (+4), `ImmersiveWorkout.test.tsx` (+4, parcours reps/chrono réécrits,
+  helper `lancer` passe par `deck-primary`), `ImmersiveRest.test.tsx` (**3**, neuf — l'écran de
+  repos n'avait aucun test), `workout-screen.test.tsx` (+3, sonde immersive exposant `barChange`).
+
+### Technique — notes
+- La ligne de barre donne une **masse** par côté, pas une combinaison de disques : l'utilisateur
+  sait ce qui est déjà monté.
+- La consigne n'est plus **dite** pour une série en reps (plus de « lancement ») ; toujours pour une
+  série chronométrée.
+- Spec MUSCU-UX03 §5.6 et bloc J de RECETTES §84 annotés.
+
 ## 23/09/2026 — MUSCU-FIX02, passe 2 : la charge se tape, la série se regarde, la barre se charge (`dev`)
 
 > 2ᵉ passe de recette de MUSCU-FIX02 (Florian, sur device). Trois retours : le pont immersif ne

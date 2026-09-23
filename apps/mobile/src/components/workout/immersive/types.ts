@@ -11,6 +11,7 @@
  */
 
 import type {
+  BarChange,
   CoachLine,
   ExerciseBests,
   ExerciseMuscles,
@@ -159,7 +160,17 @@ export type ImmersiveRuntime = {
   onDismissTakeover: () => void;
   /** Vrai quand l'exercice courant se charge sur une barre (spec §5.5). */
   showBarbell: boolean;
-  /** Consigne technique courte de l'exercice courant, dite au lancement de la série. */
+  /**
+   * Ce qui change sur la barre depuis la série validée précédente **du même exercice** — « ajoute
+   * 1,25 kg de chaque côté ». `null` hors barre, ou quand il n'y a pas encore de série faite sur
+   * cet exercice (la barre se charge alors de zéro : c'est le détail par côté qui compte). MUSCU-FIX02,
+   * passe 3 : l'information qu'on cherche vraiment entre deux séries.
+   */
+  barChange: BarChange | null;
+  /**
+   * Consigne technique courte de l'exercice courant : affichée sur la scène, et dite au lancement
+   * d'une série chronométrée (les séries en reps n'ont plus de « lancement », MUSCU-FIX02 passe 3).
+   */
   cue: string | null;
   /** Vrai quand on arrive du brief par « Modifier avant de commencer » : le plan s'ouvre. */
   openPlanOnMount: boolean;

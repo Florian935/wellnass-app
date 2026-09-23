@@ -21,6 +21,7 @@ import {
   DEFAULT_BAR_LB,
   kgToLb,
   unitSymbol,
+  type BarChange,
   type PlateLoad,
 } from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
@@ -91,6 +92,31 @@ export function describeLoad({
       ? t('immersive.bar.remainder', { weight: format(load.remainder), unit })
       : null;
   return { load, label, remainderLabel };
+}
+
+/**
+ * « Ajoute 1,25 kg de chaque côté » — ce qu'on cherche entre deux séries : on ajoute ou on retire,
+ * on ne recharge pas de zéro (MUSCU-FIX02, passe 3). En livres, la différence se dit en livres.
+ */
+export function describeBarChange({
+  change,
+  imperial,
+  t,
+  language,
+}: {
+  change: BarChange;
+  imperial: boolean;
+  t: (key: string, options?: Record<string, unknown>) => string;
+  language: string;
+}): string {
+  if (change.direction === 'same') return t('immersive.bar.changeSame');
+  const value = imperial ? Math.round(kgToLb(change.perSide) * 100) / 100 : change.perSide;
+  const weight = new Intl.NumberFormat(language, { maximumFractionDigits: 2 }).format(value);
+  const unit = unitSymbol[imperial ? 'imperial' : 'metric'].weight;
+  return t(change.direction === 'add' ? 'immersive.bar.changeAdd' : 'immersive.bar.changeRemove', {
+    weight,
+    unit,
+  });
 }
 
 export function BarbellLoad({ totalKg, barKg, imperial, colors }: Props) {

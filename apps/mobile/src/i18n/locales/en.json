@@ -4605,12 +4605,14 @@
       "exerciseIndex": "Exercise {{index}} of {{total}}",
       "lastExercise": "Last exercise",
       "lastSet": "Last set of the session",
+      "cue": "Cue",
       "stake": "{{weight}}: heavier than your record ({{record}})"
     },
     "deck": {
       "nextSet": "{{name}} · set {{index}}",
       "nextEnd": "End of session",
       "launch": "Start the set",
+      "done": "Set done",
       "validateDirectly": "Log it directly"
     },
     "done": {
@@ -4647,7 +4649,10 @@
     "bar": {
       "perSide": "Per side: {{plates}} · {{bar}} {{unit}} bar",
       "barOnly": "Empty bar ({{bar}} {{unit}})",
-      "remainder": "+ {{weight}} {{unit}} that can’t be loaded"
+      "remainder": "+ {{weight}} {{unit}} that can’t be loaded",
+      "changeAdd": "Add {{weight}} {{unit}} per side",
+      "changeRemove": "Remove {{weight}} {{unit}} per side",
+      "changeSame": "Same load as the last set"
     },
     "verdict": {
       "heavier": "+{{delta}}",

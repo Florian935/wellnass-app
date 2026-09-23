@@ -170,3 +170,21 @@ export function stepLoadableKg(
   const lb = cents(kgToLb(totalKg)) / 100;
   return lbToKg(stepLoadable({ total: lb, bar: DEFAULT_BAR_LB, direction, unit: 'lb' }));
 }
+
+// ---------------------------------------------------------------------------
+// Ce qui change sur la barre d'une série à l'autre — MUSCU-FIX02, passe 3
+// ---------------------------------------------------------------------------
+//
+// Entre deux séries, on ne recharge pas une barre de zéro : on ajoute ou on retire. Dire « par
+// côté : 25 + 25 + 5 + 2,5 » oblige à comparer de tête avec ce qui est déjà monté ; dire « ajoute
+// 1,25 kg de chaque côté » est l'information qu'on cherche vraiment pendant le repos.
+
+/** Ajout, retrait ou rien, **par côté** de la barre. */
+export type BarChange = { direction: 'add' | 'remove' | 'same'; perSide: number };
+
+/** Ce qui change sur la barre pour passer de `from` à `to` (charges totales, même unité). */
+export function barChange({ from, to }: { from: number; to: number }): BarChange {
+  const diff = cents(to) - cents(from);
+  if (diff === 0) return { direction: 'same', perSide: 0 };
+  return { direction: diff > 0 ? 'add' : 'remove', perSide: Math.abs(diff) / 2 / 100 };
+}

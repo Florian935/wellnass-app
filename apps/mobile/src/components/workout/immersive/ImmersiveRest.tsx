@@ -40,6 +40,7 @@ import {
 } from '@wellness/shared';
 import { PressableScale } from '@/components/motion/PressableScale';
 import { RestRing } from '@/components/workout/RestRing';
+import { describeBarChange, describeLoad } from '@/components/workout/immersive/BarbellLoad';
 import { BodyHeatCard } from '@/components/workout/immersive/BodyHeatCard';
 import { GhostCard } from '@/components/workout/immersive/GhostCard';
 import { RecordTakeover } from '@/components/workout/immersive/RecordTakeover';
@@ -83,7 +84,7 @@ function formatSecondsLeft(
 }
 
 export function ImmersiveRest({ runtime, ghost, ghostVisible, ghostDayLabel, onOpenPlan }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const insets = useSafeAreaInsets();
   const { colors, units, prefs, rest, feedback } = runtime;
   const reducedMotion = useAppReducedMotion();
@@ -212,6 +213,20 @@ export function ImmersiveRest({ runtime, ghost, ghostVisible, ghostDayLabel, onO
   const hottest = hottestMuscles(heat, 1)[0] ?? null;
 
   const countdown = formatSecondsLeft(rest.secondsLeft, t);
+
+  const imperial = units.system === 'imperial';
+  const nextLoadLabel =
+    runtime.current && runtime.showBarbell && runtime.displayWeightKg !== null
+      ? runtime.barChange
+        ? describeBarChange({ change: runtime.barChange, imperial, t, language: i18n.language })
+        : describeLoad({
+            totalKg: runtime.displayWeightKg,
+            barKg: prefs.barKg,
+            imperial,
+            t,
+            language: i18n.language,
+          }).label
+      : null;
   const almostDone = rest.secondsLeft <= WAKE_AT_SECONDS;
 
   const wake = () => {
@@ -441,6 +456,18 @@ export function ImmersiveRest({ runtime, ghost, ghostVisible, ghostDayLabel, onO
           </Text>
         </Pressable>
 
+        {/* Ce qu'il faut toucher sur la barre pour la série qui vient — c'est pendant le repos qu'on
+            recharge (MUSCU-FIX02, passe 3). Même exercice : la différence ; nouvel exercice à la
+            barre : le chargement complet par côté. */}
+        {nextLoadLabel ? (
+          <View style={styles.nextLoad}>
+            <Ionicons name="barbell-outline" size={18} color={colors.accent} />
+            <Text testID="rest-next-load" style={[styles.nextLoadText, { color: colors.text }]}>
+              {nextLoadLabel}
+            </Text>
+          </View>
+        ) : null}
+
         <View style={styles.actions}>
           <Pressable
             accessibilityRole="button"
@@ -572,6 +599,8 @@ const styles = StyleSheet.create({
     minHeight: 52,
   },
   nextText: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 13.5 },
+  nextLoad: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 4 },
+  nextLoadText: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 15, lineHeight: 20 },
   nextLabel: {
     fontFamily: fontFamily.mono,
     fontSize: 10.5,

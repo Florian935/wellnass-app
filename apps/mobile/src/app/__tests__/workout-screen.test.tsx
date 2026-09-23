@@ -159,9 +159,12 @@ jest.mock('@/components/workout/SupersetPickerModal', () => ({ SupersetPickerMod
 jest.mock('@/components/workout/immersive/ImmersiveWorkout', () => {
   const { Pressable: P, Text: T } = require('react-native');
   return {
-    ImmersiveWorkout: (props: { runtime: { onOpenMenu: () => void; closing: boolean } }) => (
+    ImmersiveWorkout: (props: {
+      runtime: { onOpenMenu: () => void; closing: boolean; barChange: unknown };
+    }) => (
       <P testID="immersif" onPress={props.runtime.onOpenMenu}>
         <T>{props.runtime.closing ? 'immersif-ceremonie' : 'immersif'}</T>
+        <T testID="sonde-barre">{JSON.stringify(props.runtime.barChange)}</T>
       </P>
     ),
   };
@@ -959,5 +962,58 @@ describe('charges proposées : chargeables à la barre (MUSCU-FIX02, passe 2)', 
     });
 
     expect(poids()).toBe('82');
+  });
+});
+
+describe('ce qui change sur la barre (MUSCU-FIX02, passe 3)', () => {
+  // Entre deux séries on ajoute ou on retire : « ajoute 1,25 kg de chaque côté » est ce qu'on
+  // cherche pendant le repos, pas le détail complet de la barre.
+  const squat = (sets: WorkoutSetItem[]) =>
+    seance({ entries: [{ exerciseId: 'squat', exerciseName: 'Squat', sets }] });
+  const barre = () => JSON.parse(screen.getByTestId('sonde-barre').props.children as string);
+
+  beforeEach(() => {
+    useSessionMode.setState({ mode: 'immersive' });
+    mockSessionCards.mockReturnValue({ squat: { equipment: 'barbell', cue: null } });
+  });
+
+  it('🔴 compare à la série faite juste avant, sur le même exercice', async () => {
+    mockUseActiveWorkout.mockReturnValue({
+      workout: squat([
+        { ...serie('s1', 'squat', true), weightKg: 135 },
+        { ...serie('s2', 'squat', false), weightKg: 137.5 },
+      ]),
+      isLoading: false,
+    });
+
+    await render(<WorkoutScreen />);
+
+    expect(barre()).toEqual({ direction: 'add', perSide: 1.25 });
+  });
+
+  it('pas de série faite sur l’exercice : rien à comparer, la barre se charge de zéro', async () => {
+    mockUseActiveWorkout.mockReturnValue({
+      workout: squat([{ ...serie('s1', 'squat', false), weightKg: 100 }]),
+      isLoading: false,
+    });
+
+    await render(<WorkoutScreen />);
+
+    expect(barre()).toBeNull();
+  });
+
+  it('hors barre : aucun changement annoncé', async () => {
+    mockSessionCards.mockReturnValue({});
+    mockUseActiveWorkout.mockReturnValue({
+      workout: squat([
+        { ...serie('s1', 'squat', true), weightKg: 20 },
+        { ...serie('s2', 'squat', false), weightKg: 22.5 },
+      ]),
+      isLoading: false,
+    });
+
+    await render(<WorkoutScreen />);
+
+    expect(barre()).toBeNull();
   });
 });
