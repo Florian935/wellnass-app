@@ -136,6 +136,10 @@ export function makeRuntime(over: RuntimeOverrides = {}): ImmersiveRuntime {
     displayDurationSeconds: null,
     durationValue: '0:30',
     applyEdit: jest.fn(),
+    onChangeReps: jest.fn(),
+    onChangeWeight: jest.fn(),
+    onChangeDuration: jest.fn(),
+    onStepWeight: jest.fn(),
 
     setChips: entries[0]?.sets.map((s, i) => ({ id: s.id, done: s.done, label: `${i + 1}` })) ?? [],
     lastPerfLabel: null,

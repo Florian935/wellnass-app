@@ -4622,11 +4622,9 @@
     "effort": {
       "tempo": "Descends · Pousse",
       "target": "{{weight}} × {{reps}}",
-      "tut": "Sous tension {{time}}",
-      "hint": "Touche l’écran à chaque répétition — ou pas : le cadran s’ouvrira sur ton objectif.",
-      "done": "Terminé",
-      "countA11y_one": "{{count}} répétition comptée",
-      "countA11y_other": "{{count}} répétitions comptées"
+      "clock": "Série en cours",
+      "last": "La dernière fois : {{value}}",
+      "done": "Série terminée"
     },
     "dial": {
       "title": "Combien de répétitions ?",

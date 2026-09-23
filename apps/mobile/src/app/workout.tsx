@@ -112,8 +112,10 @@ import {
   computeSetVerdict,
   evaluateLiveRecord,
   feelToRpe,
+  loadableKg,
   pickCoachLine,
   setTonnage,
+  stepLoadableKg,
   type ExerciseBests,
   type LiveRecord,
   type SetFeel,
@@ -567,10 +569,25 @@ export default function WorkoutScreen() {
   const doneSets = entries.reduce((n, e) => n + e.sets.filter((s) => s.done).length, 0);
   const progressRatio = totalSets > 0 ? doneSets / totalSets : 0;
 
+  // ── Charges chargeables (MUSCU-FIX02, passe 2) ─────────────────────────────────────────────
+  // La barre annonçait « 136,5 kg — dont 0,75 kg non chargeable » : ce que l'app PROPOSE (consigne
+  // du plan, dernière fois, suggestion, ajustement) doit tomber sur ce qu'on monte avec des disques
+  // de salle — pas de 2,5 kg au-dessus de la barre (5 lb en livres). Exercices à la barre
+  // seulement ; une charge TAPÉE n'est jamais retouchée. Les deux modes : basculer ne doit pas
+  // changer la charge proposée.
+  const currentIsBarbell = current
+    ? sessionCards[current.entry.exerciseId]?.equipment === 'barbell'
+    : false;
+  const loadOptions = { barKg: immersivePrefs.barKg, imperial: units.system === 'imperial' };
+  const proposeLoad = (kg: number | null): number | null =>
+    kg !== null && currentIsBarbell ? loadableKg(kg, loadOptions) : kg;
+
   // Valeurs pré-remplies (série puis dernière perf au même rang), avant édition.
   const rang = current?.rang ?? 0;
   const prefillReps = current ? (current.set.reps ?? lastPerf[rang]?.reps ?? null) : null;
-  const prefillWeightKg = current ? (current.set.weightKg ?? lastPerf[rang]?.weightKg ?? null) : null;
+  const prefillWeightKg = current
+    ? proposeLoad(current.set.weightKg ?? lastPerf[rang]?.weightKg ?? null)
+    : null;
   const prefillDuration = current ? current.set.durationSeconds : null;
 
   // Suggestion de progression : basée sur les séries qualifiantes de la dernière séance terminée
@@ -594,19 +611,21 @@ export default function WorkoutScreen() {
       // `formatWeight` et non `weightInputValue` : ce libellé est du **texte affiché**, pas le
       // pré-remplissage d'un champ — « 82.5 kg » au milieu d'une app qui écrit « 76,0 kg ».
       return t('workout.suggestion.weightOrReps', {
-        weight: units.formatWeight(suggestion.weightKg),
+        weight: units.formatWeight(proposeLoad(suggestion.weightKg)),
         reps: suggestion.reps,
       });
     }
     if (suggestion.kind === 'reps') return t('workout.suggestion.reps', { reps: suggestion.reps });
     if (suggestion.kind === 'weightHold') {
       return t('workout.suggestion.weightHold', {
-        weight: units.formatWeight(suggestion.weightKg),
+        weight: units.formatWeight(proposeLoad(suggestion.weightKg)),
         reps: suggestion.reps,
       });
     }
     if (suggestion.kind === 'deload') {
-      return t('workout.suggestion.deload', { weight: units.formatWeight(suggestion.weightKg) });
+      return t('workout.suggestion.deload', {
+        weight: units.formatWeight(proposeLoad(suggestion.weightKg)),
+      });
     }
     return t('workout.suggestion.duration', { duration: formatMmSs(suggestion.durationSeconds) });
   })();
@@ -666,6 +685,28 @@ export default function WorkoutScreen() {
       },
     });
   };
+
+  /**
+   * − / + sur la charge, dans les deux modes : à la barre, la charge **chargeable** voisine (on ne
+   * propose pas un poids qu'on ne peut pas monter) ; ailleurs, un pas simple — 2,5 kg, ou 5 lb en
+   * livres (le pas d'avant, 2,5 kg, faisait 5,5 lb).
+   */
+  const stepWeight = (direction: 1 | -1) => {
+    const base = displayWeightKg ?? 0;
+    const plainStep = units.system === 'imperial' ? 2.26796 : 2.5;
+    applyEdit({
+      weightKg: currentIsBarbell
+        ? stepLoadableKg(base, direction, loadOptions)
+        : Math.max(0, Math.round((base + direction * plainStep) * 10000) / 10000),
+    });
+  };
+
+  /**
+   * Charge tapée au clavier. Un séparateur final (« 82, ») est une saisie EN COURS, pas une charge
+   * vide : sans ce repli, la frappe de la virgule effaçait la charge (MUSCU-FIX02, passe 2).
+   */
+  const onChangeWeightText = (text: string) =>
+    applyEdit({ weightKg: units.parseWeightToKg(text.trim().replace(/[.,]$/, '')) });
 
   const restSecondsFor = (exerciseId: string) =>
     restOverride[exerciseId] ?? sessionRest[exerciseId] ?? DEFAULT_REST_SECONDS;
@@ -884,8 +925,10 @@ export default function WorkoutScreen() {
       (values.feel === 'limite' || values.feel === 'facile')
         ? (() => {
             const direction = values.feel === 'limite' ? ('down' as const) : ('up' as const);
-            const target =
-              direction === 'down'
+            // À la barre, la proposition est la charge CHARGEABLE voisine (MUSCU-FIX02, passe 2).
+            const target = showBarbellFor(exerciseId)
+              ? stepLoadableKg(values.weightKg!, direction === 'down' ? -1 : 1, loadOptions)
+              : direction === 'down'
                 ? Math.round((values.weightKg! - step) * 100) / 100
                 : Math.round((values.weightKg! + step) * 100) / 100;
             // Jamais sous la barre à vide, jamais sous zéro.
@@ -1128,6 +1171,10 @@ export default function WorkoutScreen() {
       displayDurationSeconds,
       durationValue,
       applyEdit,
+      onChangeReps: (text) => applyEdit({ reps: text }),
+      onChangeWeight: onChangeWeightText,
+      onChangeDuration: (text) => applyEdit({ durationSeconds: parseMmSs(text) }),
+      onStepWeight: stepWeight,
 
       setChips: currentSetChips,
       lastPerfLabel: formatLastPerf(lastPerf, units),
@@ -1363,10 +1410,8 @@ export default function WorkoutScreen() {
             }}
             weightValue={units.weightInputValue(displayWeightKg)}
             weightSymbol={units.weightSymbol}
-            onChangeWeight={(v) => applyEdit({ weightKg: units.parseWeightToKg(v) })}
-            onStepWeight={(deltaKg) =>
-              applyEdit({ weightKg: Math.max(0, (displayWeightKg ?? 0) + deltaKg) })
-            }
+            onChangeWeight={onChangeWeightText}
+            onStepWeight={(deltaKg) => stepWeight(deltaKg > 0 ? 1 : -1)}
             durationValue={durationValue}
             onChangeDuration={(v) => applyEdit({ durationSeconds: parseMmSs(v) })}
             onStepDuration={(d) =>

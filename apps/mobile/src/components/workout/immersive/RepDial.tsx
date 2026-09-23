@@ -4,8 +4,8 @@
  * ── Pourquoi un cadran plutôt qu'un champ ───────────────────────────────────────────────────────
  * Juste après une série, les mains tremblent et le nombre saisi diffère rarement de plus de deux
  * reps de l'objectif. Un clavier numérique est ici le pire outil possible : il ouvre une surface de
- * 300 dp, masque tout, et demande une précision qu'on n'a pas. Le cadran part **pré-réglé** sur la
- * bonne valeur — les reps comptées au doigt, sinon l'objectif — et un glissé vertical suffit à
+ * 300 dp, masque tout, et demande une précision qu'on n'a pas. Le cadran part **pré-réglé** sur
+ * l'objectif — et un glissé vertical suffit à
  * corriger. Un cran tous les 26 dp : assez large pour ne pas déraper, assez court pour aller de 8
  * à 12 sans lever le doigt.
  *
@@ -38,27 +38,25 @@ const DURATION_STEP_S = 5;
 
 type Props = {
   runtime: ImmersiveRuntime;
-  /** Répétitions comptées pendant l'effort — 0 si l'utilisateur n'a rien touché. */
-  taps: number;
   startedAt: number | null;
   onCancel: () => void;
   onValidate: (override: ValidateOverride) => void;
 };
 
-export function RepDial({ runtime, taps, startedAt, onCancel, onValidate }: Props) {
+export function RepDial({ runtime, startedAt, onCancel, onValidate }: Props) {
   const { t } = useTranslation();
   const { colors, units, level, currentSetType } = runtime;
 
   const isDuration = currentSetType === 'duration';
 
-  // Le cadran s'ouvre sur ce que l'utilisateur a réellement fait quand on le sait, sinon sur la
-  // consigne. Une série chronométrée part du temps écoulé : c'est la seule valeur mesurée.
+  // Le cadran s'ouvre sur la consigne : on corrige d'un glissé si on en a fait plus ou moins. Le
+  // comptage au doigt pendant l'effort a disparu (MUSCU-FIX02, passe 2 — impossible en soulevant).
+  // Une série chronométrée part du temps écoulé : c'est la seule valeur mesurée.
   const [value, setValue] = useState(() => {
     if (isDuration) {
       const measured = startedAt ? Math.round((Date.now() - startedAt) / 1000) : 0;
       return measured > 0 ? measured : (runtime.displayDurationSeconds ?? 0);
     }
-    if (taps > 0) return taps;
     const planned = Number(runtime.displayReps);
     return Number.isNaN(planned) ? 0 : planned;
   });

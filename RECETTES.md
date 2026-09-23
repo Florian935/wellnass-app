@@ -3511,8 +3511,12 @@ A2, A3, A5, A6 · S8 à S10, S12 à S14. Le socle est posé, ce sont des branche
 - [ ] **19.** Exercice à **haltères** ou sur **machine** : aucune barre dessinée.
 - [ ] **20.** Charge **inférieure ou égale** à la barre : « Barre seule ». Reste non chargeable :
   « + 0,5 kg non chargeable ».
+  ⚠️ Depuis le 23/09/2026 (MUSCU-FIX02, passe 2), une charge **proposée** tombe toujours sur une
+  charge chargeable : le reste ne se voit plus que sur une charge **tapée** (ex. 101 kg).
 - [ ] **21.** « Lancer la série » : l'écran passe en plein cadre et **bat au tempo**. Toucher le
   cercle compte une rép et vibre ; la **8ᵉ** rép sur un objectif de 7 passe en **or**.
+  ⚠️ **Remplacé le 23/09/2026** (MUSCU-FIX02, passe 2) : plus de comptage au toucher — voir §84
+  bloc J. Seul le battement au tempo reste à vérifier ici.
 - [ ] **22.** Réglages › « Guide de tempo » coupé : l'écran d'effort ne bat plus, tout le reste est
   identique.
 - [ ] **23.** « Terminé » : le cadran s'ouvre sur les **reps comptées** ; **sans aucun comptage**,
@@ -5254,3 +5258,34 @@ rosé du pilier, et « Séance libre » lançait **une séance vide** (chrono pa
 - ⚠️ **Arbitrage remplacé** : MUSCU-FIX01 (R6) démarrait directement une séance vide faute de
   modèle (« pas de choix à une seule issue »). Il n'y a plus d'issue unique — « Composer » existe
   toujours — donc la feuille s'affiche toujours. Les critères 1 et 8 de §76 sont annotés.
+
+### J — 2ᵉ passe de recette (23/09/2026) : saisie, série en cours, charges chargeables
+
+Trois retours de Florian : le pont immersif ne laissait pas **taper** la charge ; l'écran « touche
+à chaque répétition » est **inutilisable** en soulevant ; la barre proposait « 136,5 kg — dont
+0,75 kg non chargeable ».
+
+- [ ] 🔴 **Immersif** : toucher la **charge** du pont ouvre le clavier ; taper **102,5** donne
+      102,5 kg (virgule comprise). Idem pour les **répétitions**.
+- [ ] 🔴 **Classique aussi** : taper **82,5** dans la barre du bas donne 82,5 kg. (Avant, la virgule
+      **vidait** le champ, et « 82,5 » pouvait finir en « 825 ».)
+- [ ] Après une saisie, − / + reprennent la main normalement.
+- [ ] 🔴 **« Lancer la série »** : plus de « touche à chaque répétition ». L'écran montre, lisible posé
+      sur le banc : la **charge × les reps** en très grand, les **disques par côté** (exercice à la
+      barre), le **chrono de la série**, « **La dernière fois : …** » et la consigne.
+- [ ] Un seul bouton en bas, **« Série terminée »** : il ouvre le cadran **réglé sur l'objectif** ; un
+      glissé ou − / + corrige si on en a fait plus ou moins.
+- [ ] Série à la **durée** : compte à rebours, et le cadran s'ouvre tout seul à zéro.
+- [ ] 🔴 **Exercice à la barre** dont la charge prévue n'est pas chargeable (ex. programme à 136,5) :
+      la charge **proposée** est la chargeable la plus proche (137,5), et la barre dessinée n'annonce
+      **aucun** reste non chargeable.
+- [ ] − / + sur un exercice à la barre : pas de **2,5 kg**, et depuis une charge tapée non chargeable
+      (136,5), on va à la voisine (137,5 ou 135) — pas un pas plus loin.
+- [ ] Une charge **tapée** n'est jamais retouchée (101 reste 101 ; la barre dessinée dit alors le reste).
+- [ ] Haltères ou machine : aucun arrondi, − / + gardent un pas de 2,5 kg.
+- [ ] La suggestion (« Essaie X kg ») et la proposition d'ajustement après « Limite » / « Facile »
+      tombent aussi sur une charge chargeable à la barre.
+- [ ] Même charge proposée en **classique** et en **immersif** : basculer de mode ne la change pas.
+- ⚠️ Les critères 20 et 21 de §63 (MUSCU-UX03) sont annotés : le comptage au toucher a disparu, et le
+  reste non chargeable ne se voit plus que sur une charge tapée.
+- ⚠️ Barre de **15 kg** (réglages de séance) : l'arrondi suit la barre réglée (40,5 → 40 sur une 15 kg).

@@ -16,7 +16,13 @@
 
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { computePlates, DEFAULT_BAR_LB, kgToLb, unitSymbol } from '@wellness/shared';
+import {
+  computePlates,
+  DEFAULT_BAR_LB,
+  kgToLb,
+  unitSymbol,
+  type PlateLoad,
+} from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
 import type { Palette } from '@/theme/colors';
 
@@ -45,14 +51,28 @@ type Props = {
   colors: Palette;
 };
 
-export function BarbellLoad({ totalKg, barKg, imperial, colors }: Props) {
-  const { t, i18n } = useTranslation();
-
+/**
+ * Ce qu'il y a sur la barre, en mots — partagé avec l'écran de série en cours (MUSCU-FIX02,
+ * passe 2), qui le rappelle pendant l'effort sans redessiner la barre.
+ */
+export function describeLoad({
+  totalKg,
+  barKg,
+  imperial,
+  t,
+  language,
+}: {
+  totalKg: number | null;
+  barKg: number;
+  imperial: boolean;
+  t: (key: string, options?: Record<string, unknown>) => string;
+  language: string;
+}): { load: PlateLoad; label: string; remainderLabel: string | null } {
   const total = totalKg === null ? null : imperial ? Math.round(kgToLb(totalKg) * 10) / 10 : totalKg;
   const bar = imperial ? DEFAULT_BAR_LB : barKg;
   const load = computePlates({ total, bar, unit: imperial ? 'lb' : 'kg' });
 
-  const nf = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 2 });
+  const nf = new Intl.NumberFormat(language, { maximumFractionDigits: 2 });
   const format = (value: number) => nf.format(value);
 
   // L'unité est celle du **calcul**, pas celle du stockage : en livres, on charge des disques
@@ -70,6 +90,18 @@ export function BarbellLoad({ totalKg, barKg, imperial, colors }: Props) {
     load.remainder > 0
       ? t('immersive.bar.remainder', { weight: format(load.remainder), unit })
       : null;
+  return { load, label, remainderLabel };
+}
+
+export function BarbellLoad({ totalKg, barKg, imperial, colors }: Props) {
+  const { t, i18n } = useTranslation();
+  const { load, label, remainderLabel } = describeLoad({
+    totalKg,
+    barKg,
+    imperial,
+    t,
+    language: i18n.language,
+  });
 
   const plate = (mass: number, index: number, side: 'left' | 'right') => {
     const shape = PLATE_STYLE[mass] ?? FALLBACK_PLATE;

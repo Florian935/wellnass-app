@@ -4622,11 +4622,9 @@
     "effort": {
       "tempo": "Down · Push",
       "target": "{{weight}} × {{reps}}",
-      "tut": "Under tension {{time}}",
-      "hint": "Tap the screen on every rep — or don’t: the dial opens on your target.",
-      "done": "Done",
-      "countA11y_one": "{{count}} rep counted",
-      "countA11y_other": "{{count}} reps counted"
+      "clock": "Set in progress",
+      "last": "Last time: {{value}}",
+      "done": "Set done"
     },
     "dial": {
       "title": "How many reps?",

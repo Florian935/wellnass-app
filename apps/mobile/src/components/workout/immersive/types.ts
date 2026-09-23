@@ -82,6 +82,15 @@ export type ImmersiveRuntime = {
   displayDurationSeconds: number | null;
   durationValue: string;
   applyEdit: (patch: { reps?: string; weightKg?: number | null; durationSeconds?: number | null }) => void;
+  /**
+   * Saisie au clavier des champs du pont — les mêmes gestionnaires que la barre du mode classique
+   * (MUSCU-FIX02, passe 2 : le pont immersif n'avait que − / +, impossible d'y taper sa charge).
+   */
+  onChangeReps: (text: string) => void;
+  onChangeWeight: (text: string) => void;
+  onChangeDuration: (text: string) => void;
+  /** − / + sur la charge : charge chargeable voisine à la barre, pas simple ailleurs. */
+  onStepWeight: (direction: 1 | -1) => void;
 
   /** Repères de la scène. */
   setChips: SetChip[];

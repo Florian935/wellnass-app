@@ -10,6 +10,8 @@
  * donc en entiers (centièmes d'unité), et ne revient en décimal qu'à la sortie.
  */
 
+import { kgToLb, lbToKg } from './units';
+
 /** Unité de charge — la même que celle de l'app (`units`). */
 export type PlateUnit = 'kg' | 'lb';
 
@@ -75,4 +77,96 @@ export function computePlates({
 export function loadedTotal({ perSide, bar }: { perSide: number[]; bar: number }): number {
   const sum = perSide.reduce((acc, plate) => acc + cents(plate), 0);
   return (cents(bar) + sum * 2) / 100;
+}
+
+// ---------------------------------------------------------------------------
+// Charges chargeables — MUSCU-FIX02, passe 2 (recette du 23/09/2026)
+// ---------------------------------------------------------------------------
+//
+// La barre annonçait « 136,5 kg — dont 0,75 kg non chargeable » : la charge **proposée** par l'app
+// (consigne du plan, dernière fois, suggestion, ajustement) ne tombait pas sur ce qu'on peut monter
+// avec des disques de salle. Le plus petit disque courant est le 1,25 kg ; par paire, on charge
+// donc par pas de **2,5 kg** au-dessus de la barre — 5 lb en livres. Une charge **saisie** par
+// l'utilisateur n'est jamais retouchée : ces fonctions ne servent qu'à ce que l'app propose.
+
+/** Pas de charge d'une barre : le plus léger disque, par paire, en centièmes d'unité. */
+function loadStep(unit: PlateUnit): number {
+  const plates = unit === 'lb' ? LB_PLATES : KG_PLATES;
+  return cents(plates[plates.length - 1] ?? 1.25) * 2;
+}
+
+/**
+ * La charge chargeable la plus proche de `total` (barre comprise). À égale distance, la plus
+ * **légère** : on ne propose pas plus lourd que prévu. Une charge nulle, invalide ou qui ne dépasse
+ * pas la barre est rendue telle quelle — il n'y a rien à charger.
+ */
+export function roundToLoadable({
+  total,
+  bar,
+  unit = 'kg',
+}: {
+  total: number;
+  bar: number;
+  unit?: PlateUnit;
+}): number {
+  if (!Number.isFinite(total) || total <= bar) return total;
+  const step = loadStep(unit);
+  const diff = cents(total) - cents(bar);
+  const k = Math.floor(diff / step);
+  const rest = diff - k * step;
+  return (cents(bar) + (rest * 2 > step ? k + 1 : k) * step) / 100;
+}
+
+/**
+ * La charge chargeable **voisine** dans une direction — ce que font les boutons − / + sur un
+ * exercice à la barre. Depuis une charge saisie non chargeable (136,5), on va à la voisine (137,5
+ * ou 135), jamais un pas complet plus loin. Sous la barre, pas simples, jamais sous zéro, et la
+ * montée s'arrête sur la barre seule.
+ */
+export function stepLoadable({
+  total,
+  bar,
+  direction,
+  unit = 'kg',
+}: {
+  total: number;
+  bar: number;
+  direction: 1 | -1;
+  unit?: PlateUnit;
+}): number {
+  const step = loadStep(unit);
+  const value = cents(Number.isFinite(total) ? total : 0);
+  const base = cents(bar);
+  if (direction === 1) {
+    if (value < base) return Math.min(value + step, base) / 100;
+    return (base + (Math.floor((value - base) / step) + 1) * step) / 100;
+  }
+  if (value <= base) return Math.max(0, value - step) / 100;
+  return (base + (Math.ceil((value - base) / step) - 1) * step) / 100;
+}
+
+/** Réglage de barre dans l'unité de stockage : la barre en kg, et l'affichage en livres ou non. */
+export type LoadableOptions = { barKg: number; imperial: boolean };
+
+/**
+ * `roundToLoadable` sur une charge **en kilos** (l'unité de stockage). En livres, l'arrondi se fait
+ * sur les disques américains et une barre de 45 lb — comme le dessin de la barre — puis revient en
+ * kilos ; une charge déjà chargeable en livres est rendue **inchangée**, sans dérive kg ↔ lb.
+ */
+export function loadableKg(totalKg: number, { barKg, imperial }: LoadableOptions): number {
+  if (!imperial) return roundToLoadable({ total: totalKg, bar: barKg });
+  const lb = kgToLb(totalKg);
+  const rounded = roundToLoadable({ total: lb, bar: DEFAULT_BAR_LB, unit: 'lb' });
+  return cents(rounded) === cents(lb) ? totalKg : lbToKg(rounded);
+}
+
+/** `stepLoadable` sur une charge en kilos — voir `loadableKg` pour les livres. */
+export function stepLoadableKg(
+  totalKg: number,
+  direction: 1 | -1,
+  { barKg, imperial }: LoadableOptions,
+): number {
+  if (!imperial) return stepLoadable({ total: totalKg, bar: barKg, direction });
+  const lb = cents(kgToLb(totalKg)) / 100;
+  return lbToKg(stepLoadable({ total: lb, bar: DEFAULT_BAR_LB, direction, unit: 'lb' }));
 }

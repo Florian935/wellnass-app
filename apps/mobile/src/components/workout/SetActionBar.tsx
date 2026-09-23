@@ -27,13 +27,14 @@
  */
 
 import { Ionicons } from '@expo/vector-icons';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import type { SetType } from '@wellness/shared';
 import { hapticSelect } from '@/lib/haptics';
 import { PressableScale } from '@/components/motion/PressableScale';
 import { fontFamily } from '@/theme/fonts';
 import type { Palette } from '@/theme/colors';
+import { DraftNumberInput, sameDuration, sameNumber } from './DraftNumberInput';
 
 /** Un champ de la barre : ce qu'il vaut, ce qu'il mesure, comment on l'incrémente. */
 type FieldSpec = {
@@ -45,6 +46,8 @@ type FieldSpec = {
   /** Incrément d'un appui sur − / +. */
   step: number;
   keyboardType: 'number-pad' | 'decimal-pad' | 'default';
+  /** Texte tapé ≡ valeur affichée ? Garde la saisie en cours lisible (voir `DraftNumberInput`). */
+  sameValue: (typed: string, shown: string) => boolean;
   /** Champ facultatif : bordure pointillée, valeur vide admise. */
   optional?: boolean;
   a11yLabel: string;
@@ -105,6 +108,7 @@ export function SetActionBar({
         onStep: onStepDuration,
         step: 5,
         keyboardType: 'default', // « m:ss » n'est pas saisissable au pavé numérique
+        sameValue: sameDuration,
         a11yLabel: t('workout.durationLabel'),
       }
     : {
@@ -114,6 +118,7 @@ export function SetActionBar({
         onStep: onStepReps,
         step: 1,
         keyboardType: 'number-pad',
+        sameValue: sameNumber,
         a11yLabel: t('workout.reps'),
       };
 
@@ -124,6 +129,7 @@ export function SetActionBar({
     onStep: onStepWeight,
     step: 2.5,
     keyboardType: 'decimal-pad',
+    sameValue: sameNumber,
     optional: isAssisted,
     a11yLabel: isAssisted ? t('workout.addedWeightLabel') : t('workout.weight'),
   };
@@ -149,9 +155,10 @@ export function SetActionBar({
         }}
       />
       <View style={styles.fieldCore}>
-        <TextInput
+        <DraftNumberInput
           value={field.value}
           onChangeText={field.onChange}
+          sameValue={field.sameValue}
           keyboardType={field.keyboardType}
           accessibilityLabel={field.a11yLabel}
           placeholder={field.optional ? '—' : undefined}

@@ -495,6 +495,40 @@ describe('le pont', () => {
     expect(speak).not.toHaveBeenCalled();
   });
 
+  it('🔴 la charge se TAPE, comme en classique — pas seulement à coups de − / +', async () => {
+    // Recette du 23/09/2026 : le pont immersif affichait la charge en texte ; impossible d'y
+    // saisir 102,5 kg autrement qu'en appuyant sur + une quarantaine de fois.
+    const onChangeWeight = jest.fn();
+    await mount({ onChangeWeight });
+
+    await act(async () => fireEvent.changeText(screen.getByLabelText('workout.weight'), '102,5'));
+
+    expect(onChangeWeight).toHaveBeenCalledWith('102,5');
+  });
+
+  it('les répétitions se tapent aussi', async () => {
+    const onChangeReps = jest.fn();
+    await mount({ onChangeReps });
+
+    await act(async () => fireEvent.changeText(screen.getByLabelText('workout.reps'), '12'));
+
+    expect(onChangeReps).toHaveBeenCalledWith('12');
+  });
+
+  it('− / + sur la charge délèguent le pas à l’écran de séance (charge chargeable à la barre)', async () => {
+    const onStepWeight = jest.fn();
+    await mount({ onStepWeight });
+
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('workout.stepUp|{"field":"kg"}')),
+    );
+    await act(async () =>
+      fireEvent.press(screen.getByLabelText('workout.stepDown|{"field":"kg"}')),
+    );
+
+    expect(onStepWeight.mock.calls).toEqual([[1], [-1]]);
+  });
+
   it('ouvre le plan depuis le pont', async () => {
     await mount();
 

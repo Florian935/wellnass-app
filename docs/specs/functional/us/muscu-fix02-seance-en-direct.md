@@ -202,3 +202,68 @@ encore l'ancien libellé « Depuis un template », n'est pas touché.
 
 Recette : [RECETTES.md §84](../../../../RECETTES.md), bloc I ; critères 1 et 8 de §76 annotés.
 
+## 9. 2ᵉ passe de recette (23/09/2026)
+
+Trois retours de Florian, même décision (une passe, spec avec le code).
+
+### 9.1 La charge se tape — dans les deux modes
+
+Le pont immersif n'affichait la charge qu'en **texte** : − / + seulement. En corrigeant, un défaut
+**du classique** est apparu : ses champs sont contrôlés (chaque frappe est parsée puis ré-affichée),
+et `parseNumberLoose("82,")` rend `null` — taper la virgule **vidait** la charge, et « 82,5 »
+pouvait finir en « 825 ». Aucune décimale n'était saisissable.
+
+- **R13.** Les champs du pont immersif se tapent (charge, reps, durée), avec les **mêmes
+  gestionnaires** que la barre classique (`runtime.onChangeWeight` / `onChangeReps` /
+  `onChangeDuration`).
+- **R14.** Une saisie en cours reste affichée telle quelle tant qu'elle dit la même valeur que ce
+  qui est stocké (`DraftNumberInput`, `sameNumber`, `sameDuration`) ; un séparateur final (« 82, »)
+  est une saisie en cours, pas une charge vide.
+
+### 9.2 La série en cours : un écran à regarder, pas à toucher
+
+L'écran d'effort demandait de « toucher le cercle à chaque répétition » — impossible en soulevant,
+et le compteur restait donc à « — ». Il devient, lisible posé sur le banc : l'**objectif** en très
+grand, les **disques par côté** (exercices à la barre, `describeLoad` partagé avec `BarbellLoad`),
+le **chrono de la série** dans l'anneau qui bat au tempo, « **La dernière fois** » (même série, même
+rang), la consigne. Un seul geste : **« Série terminée »**, qui ouvre le cadran sur l'objectif.
+
+- **R15.** Aucun geste n'est demandé pendant la série ; le comptage au toucher disparaît (état
+  `taps` retiré d'`ImmersiveWorkout` et du cadran). Séries à la durée inchangées (compte à rebours,
+  cadran automatique à zéro).
+
+### 9.3 Des charges chargeables
+
+« 136,5 kg — dont 0,75 kg non chargeable » : la charge **proposée** ne tombait pas sur ce qu'on monte
+avec des disques de salle (1,25 · 2,5 · 5 · 10 · 15 · 20 · 25 kg — le plus petit, par paire, fait
+2,5 kg).
+
+- **R16.** Sur un exercice **à la barre**, toute charge **proposée** par l'app — consigne du plan,
+  dernière fois, suggestion, ajustement « Limite / Facile » — est la charge chargeable **la plus
+  proche** (pas de 2,5 kg au-dessus de la barre réglée, 5 lb en livres ; à égale distance, la plus
+  légère). `roundToLoadable` / `loadableKg` (`@wellness/shared`).
+- **R17.** − / + à la barre vont à la charge chargeable **voisine** (`stepLoadable`), jamais un pas
+  complet plus loin depuis une charge tapée non chargeable. Ailleurs, un pas simple : 2,5 kg, ou
+  **5 lb** en livres (2,5 kg y faisait 5,5 lb).
+- **R18.** Une charge **tapée** n'est jamais retouchée. Les deux modes proposent la même charge.
+
+| Fichier | Changement |
+|---|---|
+| `packages/shared/src/barbell.ts` | `roundToLoadable`, `stepLoadable`, `loadableKg`, `stepLoadableKg` |
+| `components/workout/DraftNumberInput.tsx` | **neuf** — le champ qui garde la saisie en cours |
+| `components/workout/SetActionBar.tsx` | champs sur `DraftNumberInput` |
+| `components/workout/immersive/ImmersiveWorkout.tsx` | champs du pont éditables ; `taps` retiré |
+| `components/workout/immersive/EffortScreen.tsx` | réécrit — la série en cours |
+| `components/workout/immersive/BarbellLoad.tsx` | `describeLoad` extrait |
+| `components/workout/immersive/RepDial.tsx` | s'ouvre sur l'objectif (plus de `taps`) |
+| `components/workout/immersive/types.ts` | `onChangeReps/Weight/Duration`, `onStepWeight` |
+| `app/workout.tsx` | charges proposées chargeables, `stepWeight`, `onChangeWeightText` |
+| i18n FR/EN | `immersive.effort.*` : `clock`, `last`, `done` revus ; `tut`, `hint`, `countA11y` retirés |
+
+**Tests-gardes** : `barbell.test.ts` (**+14**) ; `DraftNumberInput.test.tsx` (**5**, neuf) ;
+`EffortScreen.test.tsx` (**8**, neuf) ; `ImmersiveWorkout.test.tsx` (**+3**) ;
+`workout-screen.test.tsx` (**+6**, avec le vrai parseur de charge).
+
+**Pas fait** : les disques d'1,25 kg sont supposés disponibles partout ; une salle qui n'en a pas
+(pas de 5 kg) n'est pas réglable — ce serait un réglage de plus dans les réglages de séance.
+

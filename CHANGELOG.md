@@ -10,6 +10,54 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/09/2026 — MUSCU-FIX02, passe 2 : la charge se tape, la série se regarde, la barre se charge (`dev`)
+
+> 2ᵉ passe de recette de MUSCU-FIX02 (Florian, sur device). Trois retours : le pont immersif ne
+> laissait pas **taper** la charge ; l'écran « touche à chaque répétition » est inutilisable en
+> soulevant ; la barre proposait « 136,5 kg — dont 0,75 kg non chargeable ». Spec §9 (R13 à R18),
+> RECETTES §84 bloc J. Commit précédent : `b4e1b8fd`.
+
+### Corrigé
+- 🔴 **Aucune décimale n'était saisissable — classique compris.** Les champs de séance sont
+  contrôlés (frappe parsée puis ré-affichée) et `parseNumberLoose("82,")` rend `null` : taper la
+  virgule **vidait** la charge, « 82,5 » pouvait finir en « 825 ». Nouveau
+  **`components/workout/DraftNumberInput.tsx`** : garde le texte tapé tant qu'il dit la même valeur
+  (`sameNumber`, `sameDuration`) ; `onChangeWeightText` (`workout.tsx`) tolère un séparateur final.
+  Branché sur `SetActionBar` et sur le pont immersif.
+- 🔴 **Pont immersif** (`ImmersiveWorkout.tsx`) — la charge et les reps n'étaient qu'un texte, − / +
+  seulement. Les champs se tapent, avec les gestionnaires du classique (`runtime.onChangeReps /
+  onChangeWeight / onChangeDuration`, `types.ts`).
+- 🔴 **Charges proposées non chargeables** — `packages/shared/src/barbell.ts` :
+  `roundToLoadable`, `stepLoadable`, `loadableKg`, `stepLoadableKg` (pas de 2,5 kg au-dessus de la
+  barre réglée, 5 lb en livres ; à égale distance, la plus légère). `workout.tsx` : sur un exercice
+  **à la barre**, la charge pré-remplie (plan, dernière fois), la suggestion et l'ajustement
+  « Limite / Facile » sont chargeables ; − / + (`stepWeight`, les deux modes) vont à la chargeable
+  **voisine**. Une charge tapée n'est jamais retouchée ; hors barre, pas simple (2,5 kg, **5 lb** en
+  livres — 2,5 kg y faisait 5,5 lb).
+
+### Modifié
+- 🔴 **`EffortScreen.tsx` réécrit** — « touche le cercle à chaque répétition » était impossible en
+  soulevant. L'écran se **regarde** : objectif en très grand, disques par côté (`describeLoad`, extrait
+  de `BarbellLoad.tsx`), chrono de la série dans l'anneau au tempo, « La dernière fois : … » (même
+  rang, `runtime.references`), consigne. Un seul geste : « Série terminée ». Comptage `taps` retiré
+  d'`ImmersiveWorkout` et de `RepDial`, qui s'ouvre sur l'objectif.
+- **i18n FR/EN** — `immersive.effort` : `clock`, `last` ajoutés, `done` → « Série terminée » ; `tut`,
+  `hint`, `countA11y_*` retirés (plus aucun usage).
+- Spec MUSCU-UX03 §5.6 et RECETTES §63 (critères 20, 21) annotés : le comptage au toucher a disparu.
+
+### Ajouté
+- Tests : `barbell.test.ts` (+14), `DraftNumberInput.test.tsx` (5), `EffortScreen.test.tsx` (8),
+  `ImmersiveWorkout.test.tsx` (+3), `workout-screen.test.tsx` (+6, sonde de barre enrichie ;
+  `immersive-repository` mocké pour déclarer un exercice « à la barre » ; **vrai** parseur de charge
+  branché dans le mock `useUnits`, sans quoi le défaut de la virgule restait invisible).
+  `makeRuntime` porte les quatre nouveaux champs du runtime.
+
+### Technique — notes
+- ⚠️ Les disques de 1,25 kg sont supposés disponibles partout ; une salle qui n'en a pas n'est pas
+  réglable (réglage à ajouter aux réglages de séance si besoin).
+- L'arrondi suit le poids de barre réglé (`immersivePrefs.barKg`), dans les deux modes : basculer de
+  mode ne change pas la charge proposée.
+
 ## 23/09/2026 — MUSCU-FIX02, passe 1 : l'immersif aux couleurs du pilier, la séance libre repensée (`dev`)
 
 > 1ʳᵉ passe de recette de MUSCU-FIX02 (Florian, sur device, le jour même). Deux retours :

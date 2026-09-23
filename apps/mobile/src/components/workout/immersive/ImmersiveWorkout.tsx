@@ -29,6 +29,11 @@ import {
 } from '@wellness/shared';
 import { PressableScale } from '@/components/motion/PressableScale';
 import { SetOptions } from '@/components/workout/SetOptions';
+import {
+  DraftNumberInput,
+  sameDuration,
+  sameNumber,
+} from '@/components/workout/DraftNumberInput';
 import { BarbellLoad } from '@/components/workout/immersive/BarbellLoad';
 import { EffortScreen } from '@/components/workout/immersive/EffortScreen';
 import { ImmersiveRest } from '@/components/workout/immersive/ImmersiveRest';
@@ -57,7 +62,6 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
   const keyboardHeight = useKeyboardHeight();
 
   const [phase, setPhase] = useState<Phase>('ready');
-  const [taps, setTaps] = useState(0);
   const [effortStartedAt, setEffortStartedAt] = useState<number | null>(null);
   // « Modifier avant de commencer », depuis le brief : la séance s'ouvre sur son plan.
   const [planOpen, setPlanOpen] = useState(runtime.openPlanOnMount);
@@ -73,7 +77,6 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
     setRestWasActive(runtime.rest.active);
     if (runtime.rest.active) {
       setPhase('ready');
-      setTaps(0);
       setEffortStartedAt(null);
     }
   }
@@ -184,9 +187,7 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
     return (
       <EffortScreen
         runtime={runtime}
-        taps={taps}
         startedAt={effortStartedAt}
-        onTap={() => setTaps((n) => n + 1)}
         onDone={() => setPhase('dial')}
       />
     );
@@ -532,6 +533,16 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
                 unit={
                   runtime.currentSetType === 'duration' ? t('workout.durationLabel') : t('workout.reps')
                 }
+                a11yLabel={
+                  runtime.currentSetType === 'duration' ? t('workout.durationLabel') : t('workout.reps')
+                }
+                keyboardType={runtime.currentSetType === 'duration' ? 'default' : 'number-pad'}
+                sameValue={runtime.currentSetType === 'duration' ? sameDuration : sameNumber}
+                onChangeText={
+                  runtime.currentSetType === 'duration'
+                    ? runtime.onChangeDuration
+                    : runtime.onChangeReps
+                }
                 onStep={(delta) => {
                   if (runtime.currentSetType === 'duration') {
                     runtime.applyEdit({
@@ -549,12 +560,13 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
               <Field
                 value={units.weightInputValue(runtime.displayWeightKg)}
                 unit={units.weightSymbol}
+                a11yLabel={t('workout.weight')}
+                keyboardType="decimal-pad"
+                sameValue={sameNumber}
+                onChangeText={runtime.onChangeWeight}
                 highlight={stakeOn}
-                onStep={(delta) =>
-                  runtime.applyEdit({
-                    weightKg: Math.max(0, (runtime.displayWeightKg ?? 0) + delta * 2.5),
-                  })
-                }
+                // À la barre : la charge chargeable voisine (MUSCU-FIX02, passe 2).
+                onStep={(delta) => runtime.onStepWeight(delta > 0 ? 1 : -1)}
                 colors={colors}
               />
             </View>
@@ -562,7 +574,6 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
             <PressableScale
               accessibilityRole="button"
               onPress={() => {
-                setTaps(0);
                 setEffortStartedAt(Date.now());
                 setPhase('effort');
                 // La seule parole autorisée pendant l'effort : la consigne, dite au moment où l'on
@@ -628,12 +639,10 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
       {phase === 'dial' && current ? (
         <RepDial
           runtime={runtime}
-          taps={taps}
           startedAt={effortStartedAt}
           onCancel={() => setPhase('ready')}
           onValidate={(override) => {
             setPhase('ready');
-            setTaps(0);
             runtime.onValidate(override);
           }}
         />
@@ -714,16 +723,28 @@ function Ref({
   );
 }
 
-/** Un champ du pont : − / valeur / +. Même geste qu'en classique, en plus grand. */
+/**
+ * Un champ du pont : − / valeur / +. Même geste qu'en classique, en plus grand — et, comme en
+ * classique, la valeur se **tape** : on n'y trouvait qu'un texte, et une charge de 102,5 kg ne
+ * s'atteignait qu'à coups de + (MUSCU-FIX02, passe 2).
+ */
 function Field({
   value,
   unit,
+  a11yLabel,
+  keyboardType,
+  sameValue,
+  onChangeText,
   onStep,
   highlight = false,
   colors,
 }: {
   value: string;
   unit: string;
+  a11yLabel: string;
+  keyboardType: 'number-pad' | 'decimal-pad' | 'default';
+  sameValue: (typed: string, shown: string) => boolean;
+  onChangeText: (text: string) => void;
   onStep: (delta: number) => void;
   highlight?: boolean;
   colors: ImmersiveRuntime['colors'];
@@ -749,9 +770,19 @@ function Field({
         <Ionicons name="remove" size={18} color={colors.text} />
       </PressableScale>
       <View style={styles.fieldCore}>
-        <Text style={[styles.fieldValue, { color: colors.text }]} numberOfLines={1}>
-          {value === '' ? '—' : value}
-        </Text>
+        <DraftNumberInput
+          value={value}
+          onChangeText={onChangeText}
+          sameValue={sameValue}
+          keyboardType={keyboardType}
+          accessibilityLabel={a11yLabel}
+          placeholder="—"
+          placeholderTextColor={colors.textMuted}
+          selectTextOnFocus
+          // Le clavier ne doit pas fermer le pont : il est ce qui reste atteignable.
+          blurOnSubmit={false}
+          style={[styles.fieldValue, styles.fieldInput, { color: colors.text }]}
+        />
         <Text style={[styles.fieldUnit, { color: highlight ? RECORD_AMBER : colors.textMuted }]}>
           {unit.toUpperCase()}
         </Text>
@@ -907,6 +938,7 @@ const styles = StyleSheet.create({
   },
   fieldCore: { flex: 1, alignItems: 'center', gap: 2 },
   fieldValue: { fontFamily: fontFamily.displayXBold, fontSize: 32, letterSpacing: -1 },
+  fieldInput: { alignSelf: 'stretch', textAlign: 'center', padding: 0, minHeight: 40 },
   fieldUnit: { fontFamily: fontFamily.mono, fontSize: 9.5, letterSpacing: 1 },
   primary: {
     minHeight: 62,

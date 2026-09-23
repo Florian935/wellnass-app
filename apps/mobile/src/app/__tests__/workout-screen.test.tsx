@@ -33,6 +33,7 @@ import {
 } from '@/data/repositories/workout-repository';
 import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { maybePushRecords } from '@/data/repositories/notification-repository';
+import { useSessionCards } from '@/data/repositories/immersive-repository';
 import { useRouter } from 'expo-router';
 import { useSessionMode } from '@/stores/session-mode-store';
 
@@ -73,6 +74,14 @@ jest.mock('@/data/repositories/profile-repository', () => ({
 jest.mock('@/data/repositories/planned-session-repository', () => ({
   usePriorWeekAdherence: jest.fn(() => null),
 }));
+// Lectures du mode immersif : `useSessionCards` dit quels exercices se chargent sur une barre —
+// c'est ce qui décide de l'arrondi des charges proposées (MUSCU-FIX02, passe 2).
+jest.mock('@/data/repositories/immersive-repository', () => ({
+  useSessionReferences: jest.fn(() => ({})),
+  useExerciseBests: jest.fn(() => ({})),
+  useSessionMuscles: jest.fn(() => ({})),
+  useSessionCards: jest.fn(() => ({})),
+}));
 
 /**
  * Sonde de la carte de série : n'expose que le bouton de validation. C'est le seul geste que
@@ -89,12 +98,25 @@ jest.mock('@/components/workout/CurrentSetCard', () => {
   };
 });
 jest.mock('@/components/workout/SetActionBar', () => {
-  const { Pressable: P, Text: T } = require('react-native');
+  const { Pressable: P, Text: T, TextInput: I, View: V } = require('react-native');
   return {
-    SetActionBar: (props: { exerciseName: string; currentIndex: number; onValidate: () => void }) => (
-      <P testID="valider" onPress={props.onValidate}>
-        <T>{`barre-${props.exerciseName}-${props.currentIndex}`}</T>
-      </P>
+    SetActionBar: (props: {
+      exerciseName: string;
+      currentIndex: number;
+      onValidate: () => void;
+      weightValue: string;
+      onChangeWeight: (v: string) => void;
+      onStepWeight: (deltaKg: number) => void;
+    }) => (
+      <V>
+        <P testID="valider" onPress={props.onValidate}>
+          <T>{`barre-${props.exerciseName}-${props.currentIndex}`}</T>
+        </P>
+        {/* MUSCU-FIX02, passe 2 : la charge proposée, sa saisie et son pas. */}
+        <I testID="poids" value={props.weightValue} onChangeText={props.onChangeWeight} />
+        <P testID="poids-plus" onPress={() => props.onStepWeight(2.5)} />
+        <P testID="poids-moins" onPress={() => props.onStepWeight(-2.5)} />
+      </V>
     ),
   };
 });
@@ -192,7 +214,9 @@ jest.mock('@/hooks/useUnits', () => ({
     weightSymbol: 'kg',
     formatWeight: (kg: number | null | undefined) => (kg == null ? '—' : `${kg} kg`),
     weightInputValue: (kg: number | null | undefined) => (kg == null ? '' : String(kg)),
-    parseWeightToKg: (v: string) => Number(v),
+    // Le VRAI parseur : c'est lui qui rendait `null` sur « 82, » et vidait le champ.
+    parseWeightToKg: (v: string) =>
+      jest.requireActual('@wellness/shared').parseWeightToKg(v, 'metric'),
   }),
 }));
 
@@ -209,6 +233,7 @@ const mockUpdateSet = updateSet as jest.Mock;
 const mockEvaluateRecords = evaluateWorkoutRecords as jest.Mock;
 const mockPushRecords = maybePushRecords as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
+const mockSessionCards = useSessionCards as jest.Mock;
 
 const replace = jest.fn();
 const push = jest.fn();
@@ -841,5 +866,98 @@ describe('clôture en immersif sans série validée', () => {
 
     expect(screen.queryByText('immersif-ceremonie')).toBeNull();
     expect(replace).toHaveBeenCalledWith({ pathname: '/workout-summary', params: { id: 'w-1' } });
+  });
+});
+
+describe('charges proposées : chargeables à la barre (MUSCU-FIX02, passe 2)', () => {
+  // La barre annonçait « 136,5 kg — dont 0,75 kg non chargeable » : la charge PROPOSÉE doit
+  // tomber sur ce qu'on monte avec des disques de salle (pas de 2,5 kg au-dessus de la barre).
+  const seanceA = (weightKg: number) =>
+    seance({
+      entries: [
+        {
+          exerciseId: 'squat',
+          exerciseName: 'Squat',
+          sets: [{ ...serie('s1', 'squat', false), weightKg }],
+        },
+      ],
+    });
+  const aLaBarre = () =>
+    mockSessionCards.mockReturnValue({ squat: { equipment: 'barbell', cue: null } });
+  const poids = () => screen.getByTestId('poids').props.value;
+
+  beforeEach(() => {
+    mockSessionCards.mockReturnValue({});
+  });
+
+  it('🔴 à la barre, la charge prévue non chargeable est proposée sur la chargeable la plus proche', async () => {
+    aLaBarre();
+    mockUseActiveWorkout.mockReturnValue({ workout: seanceA(136.5), isLoading: false });
+
+    await render(<WorkoutScreen />);
+
+    expect(poids()).toBe('137.5');
+  });
+
+  it('hors barre (haltères, machine), la charge n’est pas retouchée', async () => {
+    mockUseActiveWorkout.mockReturnValue({ workout: seanceA(136.5), isLoading: false });
+
+    await render(<WorkoutScreen />);
+
+    expect(poids()).toBe('136.5');
+  });
+
+  it('une charge TAPÉE n’est jamais arrondie', async () => {
+    aLaBarre();
+    mockUseActiveWorkout.mockReturnValue({ workout: seanceA(100), isLoading: false });
+    await render(<WorkoutScreen />);
+
+    await act(async () => {
+      fireEvent.changeText(screen.getByTestId('poids'), '101');
+    });
+
+    expect(poids()).toBe('101');
+  });
+
+  it('− / + à la barre vont à la charge chargeable voisine — pas un pas plus loin', async () => {
+    aLaBarre();
+    mockUseActiveWorkout.mockReturnValue({ workout: seanceA(100), isLoading: false });
+    await render(<WorkoutScreen />);
+    await act(async () => {
+      fireEvent.changeText(screen.getByTestId('poids'), '136.5');
+    });
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('poids-plus'));
+    });
+    expect(poids()).toBe('137.5');
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('poids-moins'));
+    });
+    expect(poids()).toBe('135');
+  });
+
+  it('hors barre, − / + gardent un pas simple de 2,5 kg', async () => {
+    mockUseActiveWorkout.mockReturnValue({ workout: seanceA(81), isLoading: false });
+    await render(<WorkoutScreen />);
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('poids-plus'));
+    });
+
+    expect(poids()).toBe('83.5');
+  });
+
+  it('🔴 taper la virgule ne vide plus la charge', async () => {
+    // « 82, » ne se parse pas en nombre : la charge passait à vide, et « 82,5 » devenait « 825 ».
+    mockUseActiveWorkout.mockReturnValue({ workout: seanceA(80), isLoading: false });
+    await render(<WorkoutScreen />);
+
+    await act(async () => {
+      fireEvent.changeText(screen.getByTestId('poids'), '82,');
+    });
+
+    expect(poids()).toBe('82');
   });
 });
