@@ -10,6 +10,60 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/09/2026 — MUSCU-FIX02, passe 1 : l'immersif aux couleurs du pilier, la séance libre repensée (`dev`)
+
+> 1ʳᵉ passe de recette de MUSCU-FIX02 (Florian, sur device, le jour même). Deux retours :
+> l'immersif revenait au **noir et orange** au lieu du bordeaux rosé du pilier, et « Séance libre »
+> lançait une séance **vide** — « pas intuitif, pas fluide, il faut retravailler le flux ». Spec
+> complétée (§8, règles R8 à R12), RECETTES §84 bloc I. Commit précédent : `18a51317`.
+
+### Corrigé
+- 🔴 **`immersive/theme.ts`** — `immersivePalette` valait `palettes.dark`, la palette **neutre**
+  d'avant l'identité des piliers (MUSCU-UX04) : le classique était bordeaux/rose, l'immersif
+  brun/terracotta. Elle devient `pillarPalette('dark', 'strength')` : toujours sombre (spec
+  MUSCU-UX03 §4.1), mais aux couleurs du pilier. Brief, repos et cérémonie suivent.
+- 🔴 **Séance vide en immersif** (`ImmersiveWorkout.tsx`) — une phrase « ajoute un premier
+  exercice » sans rien pour le faire ; la seule issue était le menu ⋮. Bouton « + Ajouter un
+  exercice » dans le pont, comme le classique depuis MUSCU-FIX01.
+
+### Modifié
+- 🔴 **« Séance libre »** (`app/(tabs)/strength.tsx`) — sans modèle, l'appui appelait
+  `startWorkout()` : séance vide, chrono lancé, écran noir. Avec modèles, une `Alert` « À blanc /
+  Depuis un template ». Il ouvre désormais **toujours** la feuille `FreeSessionSheet`, et **rien
+  n'est créé avant un choix** : composer / refaire / modèle. L'arbitrage « pas de choix à une seule
+  issue » (MUSCU-FIX01, R6) est remplacé — « Composer » existe toujours, il n'y a plus d'issue
+  unique. En immersif, un modèle passe par le brief, comme depuis sa fiche.
+- **`app/exercises.tsx`** — `mode=compose` : choix multiple **ordonné** (pastille numérotée, second
+  appui = retrait), barre fixe « Commencer la séance », ne dépend pas de la séance active.
+  `extraData={picked}` sur la `FlatList` (sans quoi les pastilles pouvaient ne pas se redessiner).
+
+### Ajouté
+- **`components/strength/FreeSessionSheet.tsx`** — la feuille, sur le patron de `DirectorySheet` :
+  « Composer ma séance » (principal), « Refaire une séance » (3 dernières séances ayant un exercice
+  travaillé), « Depuis un modèle » (3 + « Tous mes modèles », ou « Créer un modèle »).
+- **`startWorkoutWithExercises(ids)`** (`workout-repository.ts`) — séance libre créée **déjà
+  remplie**, en une transaction : autant de séries par exercice qu'à sa dernière séance
+  (`NTH_LAST_WORKOUT_WITH`), sinon 3 ; valeurs nulles, pré-remplies par l'écran depuis la dernière
+  performance. Liste vide refusée ; séance active existante rendue telle quelle.
+- **`startWorkoutFromWorkout(id)`** — rejoue une séance terminée : exercices, ordre, types
+  (échauffements compris), reps et charges en valeur de départ, rien de validé. Séance **libre** :
+  ni programme ni occurrence planifiée (ne coche pas le planning, hors taux d'exécution).
+- **i18n FR/EN** — `workout.freeSheet.*` (12 clés), `exercises.compose.*` (4).
+- Tests : `free-session-sql.test.ts` (11, harnais SQLite), `theme.test.ts` (3), bloc « séance
+  libre » de `strength-screen.test.tsx` réécrit (7), `exercises-screen.test.tsx` (+4),
+  `ImmersiveWorkout.test.tsx` (+1).
+
+### Technique — notes
+- ⚠️ **`startWorkout()` n'a plus d'appelant dans l'UI** : conservé (exporté, couvert par
+  `workout-sql.test.ts`), c'est la séance vide que ce lot cherche justement à éviter.
+- ⚠️ **Critères 1 et 8 de RECETTES §76** (MUSCU-FIX01) annotés : ils décrivaient l'ancien parcours
+  et produiraient de faux défauts. `strength-screen.test.tsx` perd son espion `Alert`, l'écran n'en
+  pose plus.
+- `scripts/check-i18n-parity.mjs` signale 4 « valeurs vides » (`coach.*.verdict.warmup`) : **déjà
+  présentes avant ce lot** (le coach se tait volontairement sur un échauffement), non touchées.
+- Pas de maquette Claude Design : la feuille réutilise un patron existant. Non fait : réordonner la
+  composition autrement qu'en retirant/reprenant ; `StrengthNowCard` (orphelin) non touché.
+
 ## 23/09/2026 — MUSCU-FIX02 : la séance en direct doit dérouler (`dev`)
 
 > Retour de Florian le 23/09/2026 : écrans noirs, bascule immersif → classique qui plante ou

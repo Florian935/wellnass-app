@@ -122,6 +122,12 @@
     "title": "Exercises",
     "search": "Search",
     "searchPlaceholder": "Exercise name…",
+    "compose": {
+      "hint": "Tap your exercises in the order of your workout.",
+      "picked_one": "{{count}} exercise selected",
+      "picked_other": "{{count}} exercises selected",
+      "start": "Start the workout"
+    },
     "createCustom": "+ Create custom exercise",
     "customName": "Exercise name",
     "createTitle": "Create an exercise",
@@ -184,6 +190,20 @@
       "title": "Free workout",
       "blank": "Blank",
       "fromTemplate": "From a template"
+    },
+    "freeSheet": {
+      "title": "Free workout",
+      "subtitle": "Choose what to do first: the timer starts once your workout is ready.",
+      "compose": "Build my workout",
+      "composeDesc": "Pick your exercises, in the order you want to do them.",
+      "repeatTitle": "Repeat a workout",
+      "repeatUntitled": "Free workout",
+      "repeatMeta_one": "{{date}} · {{count}} exercise",
+      "repeatMeta_other": "{{date}} · {{count}} exercises",
+      "templatesTitle": "From a template",
+      "noTemplate": "Create a template",
+      "noTemplateDesc": "Save a go-to workout to start it again in one tap.",
+      "allTemplates": "All my templates"
     },
     "resumeTitle": "Workout in progress",
     "resume": "Resume workout",

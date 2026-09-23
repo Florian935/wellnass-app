@@ -743,6 +743,162 @@ export async function startWorkoutFromSession(
   });
 }
 
+// ---------------------------------------------------------------------------
+// Séance libre : on choisit quoi faire AVANT que la séance existe (MUSCU-FIX02, passe 1)
+// ---------------------------------------------------------------------------
+//
+// « Séance libre » créait une séance **vide** au premier appui (`startWorkout`) : chrono lancé,
+// écran noir, et « ajoute un exercice » pour tout programme — « pas intuitif, pas fluide »
+// (Florian, recette du 23/09/2026). Les deux fonctions ci-dessous ne créent la séance qu'une fois
+// son contenu choisi, déjà remplie, dans une seule transaction.
+
+/** Séries créées pour un exercice jamais fait : le format le plus courant, ajustable en séance. */
+const DEFAULT_FREE_SET_COUNT = 3;
+
+/** Id de la séance active de l'utilisateur, s'il y en a une. */
+async function activeWorkoutId(userId: string): Promise<string | null> {
+  const existing = await powerSync.getOptional<{ id: string }>(
+    `SELECT id FROM workouts
+     WHERE user_id = ? AND status = 'active' AND deleted_at IS NULL
+     LIMIT 1`,
+    [userId],
+  );
+  return existing?.id ?? null;
+}
+
+/**
+ * Compose une séance libre à partir d'exercices choisis, **dans l'ordre choisi**, et la démarre.
+ *
+ * Chaque exercice reçoit autant de séries qu'à sa dernière séance (séries de travail validées,
+ * comme `SELECT_LAST_PERFORMANCE`), sinon `DEFAULT_FREE_SET_COUNT`. Les valeurs restent **nulles** :
+ * l'écran de séance les pré-remplit déjà depuis la dernière performance, rang par rang — les
+ * écrire ici figerait une valeur que l'écran sait mieux choisir.
+ *
+ * Une séance active existante est rendue telle quelle (au plus une séance active, comme
+ * `startWorkout`) ; une liste vide est refusée : une séance vide est précisément ce qu'on évite.
+ */
+export async function startWorkoutWithExercises(exerciseIds: readonly string[]): Promise<string> {
+  const ids = [...new Set(exerciseIds)];
+  if (ids.length === 0) {
+    throw new Error('Séance libre sans exercice : rien à démarrer.');
+  }
+  const userId = currentUserId();
+  const existing = await activeWorkoutId(userId);
+  if (existing) return existing;
+
+  void track(ANALYTICS_EVENTS.workoutStarted);
+
+  return powerSync.writeTransaction(async (tx) => {
+    const workoutId = await txInsert(tx, 'workouts', {
+      user_id: userId,
+      session_id: null,
+      program_id: null,
+      planned_session_id: null,
+      status: 'active',
+      started_at: nowUtc(),
+      finished_at: null,
+      duration_seconds: null,
+      rpe: null,
+      notes: null,
+    });
+
+    let orderIndex = 0;
+    for (const exerciseId of ids) {
+      const last = await tx.getOptional<{ count: number }>(
+        `SELECT COUNT(*) AS count FROM workout_sets s
+         WHERE s.exercise_id = ? AND s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
+           AND s.workout_id = (${NTH_LAST_WORKOUT_WITH(0)})`,
+        [exerciseId, exerciseId],
+      );
+      const count = last?.count && last.count > 0 ? last.count : DEFAULT_FREE_SET_COUNT;
+      for (let i = 0; i < count; i++) {
+        await txInsert(tx, 'workout_sets', {
+          workout_id: workoutId,
+          user_id: userId,
+          exercise_id: exerciseId,
+          order_index: orderIndex,
+          set_type: 'normal',
+          reps: null,
+          weight_kg: null,
+          duration_seconds: null,
+          done: 0,
+          planned_weight_kg: null,
+        });
+        orderIndex += 1;
+      }
+    }
+    return workoutId;
+  });
+}
+
+/**
+ * Refait une séance passée : mêmes exercices, même ordre, mêmes types de série, mêmes charges et
+ * répétitions en valeur de départ — rien de validé. La séance créée est **libre** (ni programme,
+ * ni occurrence planifiée) : la rejouer ne doit ni compter dans l'exécution d'un programme, ni
+ * cocher un jour du planning.
+ *
+ * Séance d'origine introuvable ou supprimée → erreur, rien n'est écrit (transaction).
+ */
+export async function startWorkoutFromWorkout(sourceWorkoutId: string): Promise<string> {
+  const userId = currentUserId();
+  const existing = await activeWorkoutId(userId);
+  if (existing) return existing;
+
+  return powerSync.writeTransaction(async (tx) => {
+    const source = await tx.getOptional<{ id: string }>(
+      `SELECT id FROM workouts WHERE id = ? AND status = 'completed' AND deleted_at IS NULL`,
+      [sourceWorkoutId],
+    );
+    if (!source) {
+      throw new Error('Séance à refaire introuvable : démarrage impossible.');
+    }
+    const sets = await tx.getAll<{
+      exercise_id: string;
+      set_type: string;
+      reps: number | null;
+      weight_kg: number | null;
+      duration_seconds: number | null;
+    }>(
+      `SELECT exercise_id, set_type, reps, weight_kg, duration_seconds FROM workout_sets
+       WHERE workout_id = ? AND deleted_at IS NULL
+       ORDER BY order_index`,
+      [sourceWorkoutId],
+    );
+
+    void track(ANALYTICS_EVENTS.workoutStarted);
+
+    const workoutId = await txInsert(tx, 'workouts', {
+      user_id: userId,
+      session_id: null,
+      program_id: null,
+      planned_session_id: null,
+      status: 'active',
+      started_at: nowUtc(),
+      finished_at: null,
+      duration_seconds: null,
+      rpe: null,
+      notes: null,
+    });
+    let orderIndex = 0;
+    for (const set of sets) {
+      await txInsert(tx, 'workout_sets', {
+        workout_id: workoutId,
+        user_id: userId,
+        exercise_id: set.exercise_id,
+        order_index: orderIndex,
+        set_type: set.set_type,
+        reps: set.reps,
+        weight_kg: set.weight_kg,
+        duration_seconds: set.duration_seconds,
+        done: 0,
+        planned_weight_kg: null,
+      });
+      orderIndex += 1;
+    }
+    return workoutId;
+  });
+}
+
 /**
  * Annule une séance : passe son statut à `cancelled`, puis soft delete la séance
  * ET toutes ses séries (nettoyage complet côté local + synchro).

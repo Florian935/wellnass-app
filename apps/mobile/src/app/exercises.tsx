@@ -2,6 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { type MuscleGroup, type Equipment } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -19,8 +20,10 @@ import { addExerciseVariant, useLinkedExerciseIds } from '@/data/repositories/ex
 import {
   addExerciseToWorkout,
   replaceExercise,
+  startWorkoutWithExercises,
   useActiveWorkout,
 } from '@/data/repositories/workout-repository';
+import { useActionLock } from '@/hooks/useActionLock';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -31,6 +34,13 @@ export default function ExercisesScreen() {
   const { replaceExerciseId, mode, forExerciseId } = useLocalSearchParams<{ replaceExerciseId?: string; mode?: string; forExerciseId?: string }>();
   const browse = mode === 'browse';
   const pickVariant = mode === 'pickVariant';
+  // MUSCU-FIX02 (passe 1) — composer une séance libre : choix multiple, ordonné, et la séance ne
+  // naît qu'à « Commencer ». Avant, « Séance libre » créait une séance vide et le chrono courait
+  // pendant qu'on cherchait ses exercices ici, un par un.
+  const compose = mode === 'compose';
+  const [picked, setPicked] = useState<string[]>([]);
+  const lockStart = useActionLock();
+  const insets = useSafeAreaInsets();
 
   const { workout: active, isLoading: activeLoading } = useActiveWorkout();
   const { ids: linkedIds } = useLinkedExerciseIds(pickVariant && forExerciseId ? forExerciseId : '');
@@ -47,7 +57,7 @@ export default function ExercisesScreen() {
   // liste ne doit pas être tapable. La garde `if (active)` d'`onPick` avalait sinon l'appui en
   // silence — ni ajout, ni retour, ni message (recette du 19/09/2026). La consultation et le choix
   // d'une variante, eux, n'ont que faire de la séance : on ne les fait pas attendre.
-  const needsActive = !browse && !pickVariant;
+  const needsActive = !browse && !pickVariant && !compose;
   const isLoading = exercisesLoading || (needsActive && activeLoading);
   const filterCount = muscles.length + equipment.length;
 
@@ -91,6 +101,15 @@ export default function ExercisesScreen() {
   // Ne dépend que de l'`id` : la section « Suggestions » (MUSC-F14) peut l'appeler sans fabriquer
   // un faux `ExerciseListItem` avec des champs inventés.
   const onPick = async (item: { id: string }) => {
+    if (compose) {
+      // L'ordre des appuis est l'ordre de la séance ; un second appui retire l'exercice.
+      setPicked((previous) =>
+        previous.includes(item.id)
+          ? previous.filter((id) => id !== item.id)
+          : [...previous, item.id],
+      );
+      return;
+    }
     if (browse) {
       router.push(`/exercises/${item.id}`);
       return;
@@ -109,6 +128,18 @@ export default function ExercisesScreen() {
       router.back();
     }
   };
+
+  /** « Commencer » : la séance est créée maintenant, déjà remplie, et remplace ce sélecteur. */
+  const onStartComposed = () =>
+    void lockStart(async () => {
+      if (picked.length === 0) return;
+      try {
+        await startWorkoutWithExercises(picked);
+        router.replace('/workout');
+      } catch (error) {
+        console.warn('Démarrage de la séance composée impossible :', error);
+      }
+    });
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -148,6 +179,9 @@ export default function ExercisesScreen() {
       ) : (
         <FlatList
           data={filteredItems}
+          // Les pastilles d'ordre de la composition dépendent de `picked`, hors de `data` : sans ceci,
+          // la liste (PureComponent) ne redessinerait pas ses lignes au choix d'un exercice.
+          extraData={picked}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.list}
           keyboardShouldPersistTaps="handled"
@@ -178,11 +212,35 @@ export default function ExercisesScreen() {
               ) : null}
             </View>
           }
-          renderItem={({ item }) => (
+          renderItem={({ item }) => {
+            const rank = compose ? picked.indexOf(item.id) : -1;
+            return (
             <Pressable
               onPress={() => void onPick(item)}
-              style={[styles.row, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              accessibilityState={compose ? { selected: rank >= 0 } : undefined}
+              testID={compose ? `compose-${item.id}` : undefined}
+              style={[
+                styles.row,
+                {
+                  backgroundColor: colors.surface,
+                  borderColor: rank >= 0 ? colors.accent : colors.border,
+                },
+              ]}
             >
+              {compose ? (
+                <View
+                  style={[
+                    styles.rank,
+                    rank >= 0
+                      ? { backgroundColor: colors.accent, borderColor: colors.accent }
+                      : { borderColor: colors.border },
+                  ]}
+                >
+                  {rank >= 0 ? (
+                    <Text style={[styles.rankLabel, { color: colors.accentText }]}>{rank + 1}</Text>
+                  ) : null}
+                </View>
+              ) : null}
               <View style={styles.rowText}>
                 <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
                 <Text style={[styles.muscle, { color: colors.textMuted }]}>
@@ -199,9 +257,34 @@ export default function ExercisesScreen() {
                 />
               </Pressable>
             </Pressable>
-          )}
+            );
+          }}
         />
       )}
+
+      {compose ? (
+        <View
+          style={[
+            styles.composeBar,
+            {
+              backgroundColor: colors.surface,
+              borderTopColor: colors.border,
+              paddingBottom: insets.bottom + 12,
+            },
+          ]}
+        >
+          <Text style={[styles.composeHint, { color: colors.textMuted }]}>
+            {picked.length === 0
+              ? t('exercises.compose.hint')
+              : t('exercises.compose.picked', { count: picked.length })}
+          </Text>
+          <Button
+            label={t('exercises.compose.start')}
+            onPress={onStartComposed}
+            disabled={picked.length === 0}
+          />
+        </View>
+      ) : null}
 
       <ExerciseFilterDrawer
         visible={filtersOpen}
@@ -250,6 +333,18 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   rowText: { flex: 1, gap: 2 },
+  rank: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  rankLabel: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
+  composeBar: { borderTopWidth: 1, paddingHorizontal: 20, paddingTop: 12, gap: 10 },
+  composeHint: { fontFamily: fontFamily.body, fontSize: 13, textAlign: 'center' },
   name: { fontFamily: fontFamily.bodySemi, fontSize: 16 },
   muscle: { fontFamily: fontFamily.body, fontSize: 13 },
 });

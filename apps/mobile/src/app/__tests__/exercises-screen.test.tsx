@@ -32,6 +32,7 @@ import {
 import {
   addExerciseToWorkout,
   replaceExercise,
+  startWorkoutWithExercises,
   useActiveWorkout,
 } from '@/data/repositories/workout-repository';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -56,6 +57,7 @@ jest.mock('@/data/repositories/workout-repository', () => ({
   useActiveWorkout: jest.fn(() => ({ workout: null })),
   addExerciseToWorkout: jest.fn(),
   replaceExercise: jest.fn(),
+  startWorkoutWithExercises: jest.fn(),
 }));
 
 /** Le tiroir de filtres et la modale de création ont leurs propres tests : sondes pilotables. */
@@ -184,6 +186,7 @@ const mockAddVariant = addExerciseVariant as jest.Mock;
 const mockActive = useActiveWorkout as jest.Mock;
 const mockAddToWorkout = addExerciseToWorkout as jest.Mock;
 const mockReplace = replaceExercise as jest.Mock;
+const mockStartComposed = startWorkoutWithExercises as jest.Mock;
 const mockParams = useLocalSearchParams as unknown as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
 
@@ -536,5 +539,68 @@ describe('création d’exercice', () => {
 
     await taper(screen.getByLabelText('exercises.createCustom'));
     expect(screen.getByText('modale-creation')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Composer une séance libre (MUSCU-FIX02, passe 1)
+// ---------------------------------------------------------------------------
+
+describe('composer une séance libre', () => {
+  // « Séance libre » créait une séance vide et le chrono courait pendant qu'on cherchait ses
+  // exercices ici, un par un. En composition, on choisit tout, dans l'ordre, et la séance ne naît
+  // qu'à « Commencer ».
+  const replaceRoute = jest.fn();
+  const catalogue = [
+    exercice({ id: 'ex-1', name: 'Squat' }),
+    exercice({ id: 'ex-2', name: 'Développé couché' }),
+    exercice({ id: 'ex-3', name: 'Rowing' }),
+  ];
+
+  beforeEach(() => {
+    mockUseRouter.mockReturnValue({ push, back, replace: replaceRoute });
+    mockStartComposed.mockResolvedValue('w-compose');
+  });
+
+  it('🔴 un appui choisit l’exercice sans rien écrire — et n’attend pas de séance active', async () => {
+    // Pas de séance active, et elle « charge » encore : la composition n'en a que faire.
+    await afficher({ exercises: catalogue, params: { mode: 'compose' }, activeLoading: true });
+
+    await taper(screen.getByTestId('compose-ex-2'));
+
+    expect(mockAddToWorkout).not.toHaveBeenCalled();
+    expect(mockStartComposed).not.toHaveBeenCalled();
+    expect(back).not.toHaveBeenCalled();
+    expect(screen.getByText('1')).toBeTruthy();
+    expect(screen.getByText('exercises.compose.picked:{"count":1}')).toBeTruthy();
+  });
+
+  it('l’ordre des appuis est l’ordre de la séance ; un second appui retire l’exercice', async () => {
+    await afficher({ exercises: catalogue, params: { mode: 'compose' } });
+
+    await taper(screen.getByTestId('compose-ex-2'));
+    await taper(screen.getByTestId('compose-ex-1'));
+    await taper(screen.getByTestId('compose-ex-3'));
+    await taper(screen.getByTestId('compose-ex-1'));
+    await taper(screen.getByLabelText('exercises.compose.start'));
+
+    expect(mockStartComposed).toHaveBeenCalledWith(['ex-2', 'ex-3']);
+    expect(replaceRoute).toHaveBeenCalledWith('/workout');
+  });
+
+  it('« Commencer » sans rien choisir ne crée rien', async () => {
+    await afficher({ exercises: catalogue, params: { mode: 'compose' } });
+
+    await taper(screen.getByLabelText('exercises.compose.start'));
+
+    expect(mockStartComposed).not.toHaveBeenCalled();
+    expect(screen.getByText('exercises.compose.hint')).toBeTruthy();
+  });
+
+  it('hors composition, aucune pastille d’ordre ni barre « Commencer »', async () => {
+    await afficher({ exercises: catalogue, params: { mode: 'browse' } });
+
+    expect(screen.queryByTestId('compose-ex-1')).toBeNull();
+    expect(screen.queryByLabelText('exercises.compose.start')).toBeNull();
   });
 });

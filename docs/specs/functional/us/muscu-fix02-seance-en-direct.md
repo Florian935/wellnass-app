@@ -139,3 +139,66 @@ PowerSync se remplissaient, et les requêtes légères de l'écran attendaient d
   rouvrir, pas un défaut.
 - Le chrono de séance re-rend tout l'écran chaque seconde ; ce n'est pas une cause des symptômes,
   laissé tel quel.
+
+## 8. 1ʳᵉ passe de recette (23/09/2026)
+
+Deux retours de Florian sur device, traités dans la foulée (même décision : une passe, spec écrite
+avec le code, pas de maquette — la feuille reprend le patron de `DirectorySheet`).
+
+### 8.1 L'immersif revenait au noir et orange
+
+`immersivePalette` valait `palettes.dark` : le brun et le terracotta **neutres**, d'avant l'identité
+des piliers (MUSCU-UX04, 19/09/2026). Le classique, lui, passe par `pillarPalette` (bordeaux,
+accent rose) : basculer de mode faisait changer d'app. La palette immersive devient
+`pillarPalette('dark', 'strength')` — **toujours sombre** (spec MUSCU-UX03 §4.1), mais aux couleurs
+du pilier : mêmes surfaces et même accent que le classique en thème sombre, déjà couverts par le
+test de contraste. Brief, repos et cérémonie suivent : ils lisent la même palette.
+
+### 8.2 « Séance libre » : on choisit, puis la séance existe
+
+**Avant** : sans modèle (tout compte neuf), l'appui appelait `startWorkout()` — séance **vide**
+créée, chrono lancé, écran « ajoute un premier exercice », et en immersif **sans bouton** pour le
+faire. Avec des modèles, une `Alert` « À blanc / Depuis un template ».
+
+**Après** — règles :
+
+- **R8.** « Séance libre » ouvre **toujours** une feuille ; **rien n'est créé** avant un choix.
+  L'arbitrage « pas de choix à une seule issue » (MUSCU-FIX01, R6) est remplacé : « Composer »
+  existe toujours, il n'y a plus d'issue unique.
+- **R9.** **Composer ma séance** : la bibliothèque en **choix multiple ordonné** (l'ordre des appuis
+  est l'ordre de la séance, un second appui retire). La séance naît à « Commencer », déjà remplie :
+  chaque exercice reçoit **autant de séries qu'à sa dernière séance** (séries de travail validées),
+  sinon **3** ; valeurs **nulles**, que l'écran de séance pré-remplit déjà depuis la dernière
+  performance.
+- **R10.** **Refaire une séance** : les 3 dernières séances terminées ayant au moins un exercice
+  travaillé. La séance rejouée copie exercices, ordre, types (échauffements compris), reps et
+  charges comme valeurs de départ ; rien de validé. Elle est **libre** : ni programme, ni
+  occurrence planifiée — elle ne coche pas le planning et ne compte pas dans l'exécution.
+- **R11.** **Depuis un modèle** : les modèles (3 affichés + « Tous mes modèles ») ; sans modèle,
+  « Créer un modèle » ouvre leur liste. En immersif, un modèle passe par le brief, comme depuis sa
+  fiche.
+- **R12.** Une séance vide en immersif porte **« + Ajouter un exercice »** dans son pont (le
+  classique l'avait depuis MUSCU-FIX01, R2).
+
+| Fichier | Changement |
+|---|---|
+| `components/workout/immersive/theme.ts` | palette du pilier, en sombre |
+| `components/strength/FreeSessionSheet.tsx` | **neuf** — la feuille « Séance libre » |
+| `app/(tabs)/strength.tsx` | `onStartFree` ouvre la feuille ; composer / refaire / modèle ; plus d'`Alert` |
+| `app/exercises.tsx` | `mode=compose` : choix multiple numéroté, barre « Commencer » |
+| `data/repositories/workout-repository.ts` | `startWorkoutWithExercises`, `startWorkoutFromWorkout` (transaction, idempotentes sur une séance active) |
+| `components/workout/immersive/ImmersiveWorkout.tsx` | bouton « Ajouter un exercice » à zéro exercice |
+| i18n FR/EN | `workout.freeSheet.*`, `exercises.compose.*` |
+
+**Tests-gardes** : `free-session-sql.test.ts` (**11**, neuf, harnais SQLite) ;
+`strength-screen.test.tsx` (bloc « séance libre » réécrit, **7**) ; `exercises-screen.test.tsx`
+(**+4**, composition) ; `ImmersiveWorkout.test.tsx` (**+1**, séance vide) ; `theme.test.ts`
+(**3**, neuf, palette).
+
+**Pas fait** : pas de maquette Claude Design (patron de feuille existant réutilisé) ; la
+composition ne permet pas de **réordonner** les exercices choisis autrement qu'en les retirant et
+reprenant (l'ordre reste modifiable en séance) ; `StrengthNowCard`, composant orphelin qui porte
+encore l'ancien libellé « Depuis un template », n'est pas touché.
+
+Recette : [RECETTES.md §84](../../../../RECETTES.md), bloc I ; critères 1 et 8 de §76 annotés.
+

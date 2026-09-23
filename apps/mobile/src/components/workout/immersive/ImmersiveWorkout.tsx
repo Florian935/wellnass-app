@@ -596,9 +596,33 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
           </View>
         </>
       ) : (
-        <View style={styles.doneStage}>
-          <Text style={[styles.doneHint, { color: colors.textMuted }]}>{t('workout.empty')}</Text>
-        </View>
+        // Séance sans exercice : le pont porte le geste suivant, comme en classique (MUSCU-FIX01,
+        // R2). Il n'y avait ici qu'une phrase — « ajoute un premier exercice » — sans rien pour le
+        // faire : l'écran noir de la recette du 23/09/2026 (MUSCU-FIX02, passe 1).
+        <>
+          <View style={styles.doneStage}>
+            <Text style={[styles.doneHint, { color: colors.textMuted }]}>{t('workout.empty')}</Text>
+          </View>
+          <View
+            style={[
+              styles.deck,
+              styles.deckSolo,
+              { backgroundColor: colors.surface, borderTopColor: colors.border },
+            ]}
+          >
+            <PressableScale
+              accessibilityRole="button"
+              testID="immersive-add-exercise"
+              onPress={runtime.onAddExercise}
+              style={[styles.primary, { backgroundColor: colors.accent }]}
+            >
+              <Ionicons name="add" size={20} color={colors.accentText} />
+              <Text style={[styles.primaryLabel, { color: colors.accentText }]}>
+                {t('workout.addExercise')}
+              </Text>
+            </PressableScale>
+          </View>
+        </>
       )}
 
       {phase === 'dial' && current ? (
@@ -847,6 +871,7 @@ const styles = StyleSheet.create({
     paddingBottom: 14,
     gap: 10,
   },
+  deckSolo: { paddingTop: 14 },
   peek: {
     height: 48,
     flexDirection: 'row',

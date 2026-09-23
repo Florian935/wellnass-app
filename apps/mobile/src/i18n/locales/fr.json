@@ -122,6 +122,12 @@
     "title": "Exercices",
     "search": "Rechercher",
     "searchPlaceholder": "Nom d'exercice…",
+    "compose": {
+      "hint": "Touche tes exercices dans l'ordre de ta séance.",
+      "picked_one": "{{count}} exercice choisi",
+      "picked_other": "{{count}} exercices choisis",
+      "start": "Commencer la séance"
+    },
     "createCustom": "+ Créer un exercice perso",
     "customName": "Nom de l'exercice",
     "createTitle": "Créer un exercice",
@@ -184,6 +190,20 @@
       "title": "Séance libre",
       "blank": "À blanc",
       "fromTemplate": "Depuis un template"
+    },
+    "freeSheet": {
+      "title": "Séance libre",
+      "subtitle": "Choisis d'abord quoi faire : le chrono part quand ta séance est prête.",
+      "compose": "Composer ma séance",
+      "composeDesc": "Choisis tes exercices, dans l'ordre où tu veux les faire.",
+      "repeatTitle": "Refaire une séance",
+      "repeatUntitled": "Séance libre",
+      "repeatMeta_one": "{{date}} · {{count}} exercice",
+      "repeatMeta_other": "{{date}} · {{count}} exercices",
+      "templatesTitle": "Depuis un modèle",
+      "noTemplate": "Créer un modèle",
+      "noTemplateDesc": "Enregistre une séance type pour la relancer en un geste.",
+      "allTemplates": "Tous mes modèles"
     },
     "resumeTitle": "Séance en cours",
     "resume": "Reprendre la séance",

@@ -127,8 +127,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `HEAD` (modifications non commitées) |
-| Commits | 1322 · `main` a **1319** commits de retard sur `dev` |
+| Branche courante | `dev` (modifications non commitées) |
+| Commits | 1323 · `main` a **1320** commits de retard sur `dev` |
 | Specs d'US | 172 au total — 87 clôturées, 85 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -139,11 +139,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `18a5131`  fix(muscu): la séance en direct déroule — index, requêtes, clôture, bascule de mode
 - `ff61617`  test(ecrans): lot 11 — l'écran immersif, le résumé de segment, l'accueil (112 tests)
 - `ea65e3c`  fix(health-connect): un catch qui n'attrapait rien, et le lot 10 (106 tests)
 - `78d12e3`  test(repositories): lot 9 — plus aucun repository à 0 % (158 tests)
 - `4d8cedc`  test(repositories): lot 8 — rattraper ce que dev a livré sans filet (117 tests)
-- `1334a37`  feat(serie): la série en semaines, de la carte d'accueil au réglage
 
 ---
 

@@ -428,6 +428,17 @@ describe('la scène', () => {
 
     expect(screen.getByText('workout.empty')).toBeTruthy();
   });
+
+  it('🔴 la séance vide porte le geste suivant : ajouter un exercice', async () => {
+    // Recette du 23/09/2026 : l'écran disait « ajoute un premier exercice » sans rien pour le
+    // faire — la seule issue était le menu ⋮. Le classique avait sa barre depuis MUSCU-FIX01.
+    const onAddExercise = jest.fn();
+    await mount({ entries: [], current: null, totalSets: 0, doneSets: 0, setChips: [], onAddExercise });
+
+    await act(async () => fireEvent.press(screen.getByTestId('immersive-add-exercise')));
+
+    expect(onAddExercise).toHaveBeenCalledTimes(1);
+  });
 });
 
 // ---------------------------------------------------------------------------

@@ -4506,7 +4506,9 @@ cumulaient sur le même parcours — « Séance libre » depuis le hub muscu.
 
 - [ ] **1. Séance libre → l'écran de séance s'ouvre directement.** Plus jamais « Aucune séance en
       cours » ni « Retour à l'accueil » sur une séance qu'on vient de démarrer. Au pire un bref
-      indicateur de chargement.
+      indicateur de chargement. ⚠️ **Parcours changé le 23/09/2026** (MUSCU-FIX02, passe 1) :
+      « Séance libre » ouvre d'abord une feuille de choix — recetter l'ouverture de la séance
+      **après** « Composer → Commencer » ou « Refaire », voir §84 bloc I.
 - [ ] **2. Le refaire avec le réseau coupé** (mode avion) : même résultat — c'est du local, la
       séance doit s'ouvrir aussi vite.
 - [ ] **3. Séance vide : « + Ajouter un exercice » est visible en bas**, sans ouvrir le menu ⋮.
@@ -4520,6 +4522,8 @@ cumulaient sur le même parcours — « Séance libre » depuis le hub muscu.
       créer un (bouton +).
 - [ ] **8. Une fois un template créé**, « Séance libre » repropose bien le choix « À blanc /
       Depuis un template », et « Depuis un template » démarre la séance avec ses exercices.
+      ⚠️ **Remplacé le 23/09/2026** : le choix « À blanc / Depuis un template » n'existe plus, la
+      feuille « Séance libre » liste les modèles directement — voir §84 bloc I.
 - [ ] **9. « Exercices » depuis cette feuille ouvre la consultation** (fiche d'exercice au tap),
       pas l'ajout à une séance.
 - [ ] **10. La silhouette du hub muscu** ne ressemble plus à un mannequin segmenté : un corps d'un
@@ -5216,3 +5220,37 @@ classique qui plante ou n'affiche rien, lenteurs, incohérences en pleine séanc
 - ⚠️ Le **même défaut de requête** existe dans ~30 requêtes hors séance (bilan, records, tableaux de
   bord) : elles ne ralentissent plus la séance, mais le **bilan** peut rester un peu lent à
   s'afficher sur un gros historique. Noté au BACKLOG.
+
+### I — 1ʳᵉ passe de recette (23/09/2026) : couleurs de l'immersif et séance libre
+
+Deux retours de Florian sur ce lot : l'immersif revenait au **noir et orange** au lieu du bordeaux
+rosé du pilier, et « Séance libre » lançait **une séance vide** (chrono parti, écran noir,
+« ajoute un premier exercice ») — « pas intuitif, pas fluide ».
+
+- [ ] 🔴 **Classique → Immersif** en pleine séance : l'immersif garde les couleurs du **pilier
+      muscu** (fond bordeaux sombre, accent **rose**), plus de noir/orange. Idem pour le **brief**,
+      le **repos** et la **cérémonie de fin**.
+- [ ] L'immersif reste **sombre** même si l'app est en thème clair (c'est ce qui fait « mode »).
+- [ ] 🔴 Hub muscu → **« Séance libre »** : une **feuille s'ouvre**, aucun chrono ne part, aucune
+      séance n'apparaît dans « Reprendre » si on la ferme.
+- [ ] **« Composer ma séance »** : la bibliothèque s'ouvre en **choix multiple** — chaque appui
+      numérote l'exercice (1, 2, 3…), un second appui le retire, le bas indique « N exercices
+      choisis ».
+- [ ] **« Commencer la séance »** : la séance s'ouvre **déjà remplie**, dans l'ordre choisi. Un
+      exercice déjà fait a **autant de séries que la dernière fois**, pré-remplies avec les charges
+      d'alors ; un exercice jamais fait en a **3**.
+- [ ] Revenir en arrière depuis la composition : **rien n'a été créé** (le hub ne propose pas de
+      reprendre une séance).
+- [ ] **« Refaire une séance »** : les **3 dernières** séances terminées sont proposées (nom ou
+      « Séance libre », date, nombre d'exercices). En choisir une ouvre une séance **identique** —
+      mêmes exercices, même ordre, échauffements compris, charges reprises, rien de validé.
+- [ ] Une séance refaite depuis un **programme** ne coche **pas** le planning et ne compte pas dans
+      l'exécution du programme (c'est une séance libre).
+- [ ] **« Depuis un modèle »** : sans modèle, « Créer un modèle » ouvre la liste des modèles ; avec
+      des modèles, en choisir un démarre sa séance (en **immersif**, le brief s'affiche d'abord).
+- [ ] 🔴 **Séance vide en immersif** (tout supprimer d'une séance, par exemple) : un bouton
+      **« + Ajouter un exercice »** est visible en bas — plus de cul-de-sac.
+- [ ] FR et EN sur la feuille et la barre de composition.
+- ⚠️ **Arbitrage remplacé** : MUSCU-FIX01 (R6) démarrait directement une séance vide faute de
+  modèle (« pas de choix à une seule issue »). Il n'y a plus d'issue unique — « Composer » existe
+  toujours — donc la feuille s'affiche toujours. Les critères 1 et 8 de §76 sont annotés.

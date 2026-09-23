@@ -27,7 +27,6 @@
  * qu'on lui donne, le câblage des gestes, et la composition.
  */
 import React from 'react';
-import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import type { HubState } from '@wellness/shared';
 
@@ -35,10 +34,14 @@ import StrengthScreen from '../strength';
 import {
   startWorkout,
   startWorkoutFromSession,
+  startWorkoutFromWorkout,
   useWorkoutHistory,
 } from '@/data/repositories/workout-repository';
 import { useStrengthHub } from '@/data/repositories/strength-hub-repository';
-import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
+import {
+  startWorkoutFromTemplate,
+  useWorkoutTemplates,
+} from '@/data/repositories/workout-template-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useRouter } from 'expo-router';
 import { useSessionMode } from '@/stores/session-mode-store';
@@ -50,12 +53,14 @@ import { useSessionMode } from '@/stores/session-mode-store';
 jest.mock('@/data/repositories/workout-repository', () => ({
   startWorkout: jest.fn(),
   startWorkoutFromSession: jest.fn(),
+  startWorkoutFromWorkout: jest.fn(),
   useWorkoutHistory: jest.fn(() => ({ workouts: [], isLoading: false })),
 }));
 jest.mock('@/data/repositories/strength-hub-repository', () => ({
   useStrengthHub: jest.fn(),
 }));
 jest.mock('@/data/repositories/workout-template-repository', () => ({
+  startWorkoutFromTemplate: jest.fn(),
   useWorkoutTemplates: jest.fn(() => ({ templates: [], isLoading: false })),
 }));
 jest.mock('@/data/repositories/profile-repository', () => ({
@@ -139,6 +144,8 @@ jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k: string, opts?: Record<string, unknown>) => (opts ? `${k}:${JSON.stringify(opts)}` : k),
+    // La feuille « Séance libre » date les séances à refaire dans la langue de l'app.
+    i18n: { language: 'fr' },
   }),
   // Requis dès qu'un module de la chaîne d'import initialise i18next : `i18n.use(undefined)`
   // échoue au chargement du fichier, avant qu'aucun test ne démarre.
@@ -177,6 +184,8 @@ const mockTemplates = useWorkoutTemplates as jest.Mock;
 const mockProfile = useProfile as jest.Mock;
 const mockStartFree = startWorkout as jest.Mock;
 const mockStartFromSession = startWorkoutFromSession as jest.Mock;
+const mockStartFromWorkout = startWorkoutFromWorkout as jest.Mock;
+const mockStartFromTemplate = startWorkoutFromTemplate as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
 
 const push = jest.fn();
@@ -213,24 +222,20 @@ const taper = async (element: Parameters<typeof fireEvent.press>[0]) => {
   });
 };
 
-let boutonsAlerte: { text?: string; onPress?: () => void }[] = [];
-
 beforeEach(() => {
   jest.clearAllMocks();
   // US MUSCU-UX03, R-MO-3 : la feuille « Comment veux-tu t'entraîner ? » s'interpose au tout
   // premier démarrage. Ces tests portent sur les chemins **après** ce choix ; le cas de la feuille
   // a son propre bloc plus bas.
   useSessionMode.setState({ mode: 'classic', chosen: true, hydrated: true });
-  boutonsAlerte = [];
-  jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, boutons) => {
-    boutonsAlerte = (boutons ?? []) as typeof boutonsAlerte;
-  });
   mockUseRouter.mockReturnValue({ push });
   mockHistory.mockReturnValue({ workouts: [], isLoading: false });
   mockTemplates.mockReturnValue({ templates: [], isLoading: false });
   mockProfile.mockReturnValue({ profile: null });
   mockStartFree.mockResolvedValue('w-neuf');
   mockStartFromSession.mockResolvedValue(undefined);
+  mockStartFromWorkout.mockResolvedValue('w-rejouee');
+  mockStartFromTemplate.mockResolvedValue('w-modele');
 });
 
 afterEach(() => {
@@ -358,53 +363,103 @@ describe('démarrer la séance du jour', () => {
 // ---------------------------------------------------------------------------
 
 describe('séance libre', () => {
-  it('🔴 sans aucun modèle, démarre directement — pas de choix à une seule issue', async () => {
-    // Proposer « à blanc / depuis un modèle » quand aucun modèle n'existe fait choisir entre une
-    // option et une impasse.
-    mockTemplates.mockReturnValue({ templates: [], isLoading: false });
+  // ── Repensée le 23/09/2026 (MUSCU-FIX02, passe 1) ──────────────────────────────────────────
+  // Sans modèle, l'appui créait une séance VIDE : chrono lancé, écran noir, « ajoute un premier
+  // exercice ». L'arbitrage « pas de choix à une seule issue » (MUSCU-FIX01, R6) est remplacé :
+  // « Composer » existe toujours, il n'y a donc plus d'issue unique. On choisit, PUIS la séance naît.
+
+  const ouvrirFeuille = async () => {
     await afficher({ kind: 'onboarding' });
-
     await taper(screen.getByLabelText('stage.strength.secondary.onboarding'));
+  };
 
-    expect(Alert.alert).not.toHaveBeenCalled();
-    expect(mockStartFree).toHaveBeenCalledTimes(1);
-    expect(push).toHaveBeenCalledWith('/workout');
+  const seanceFaite = (over: Record<string, unknown> = {}) => ({
+    id: 'w-old',
+    startedAt: '2026-09-12T09:00:00.000Z',
+    finishedAt: '2026-09-12T10:00:00.000Z',
+    durationSeconds: 3600,
+    rpe: null,
+    notes: null,
+    sessionId: null,
+    programId: null,
+    volumeKg: 4200,
+    sessionName: 'Haut du corps',
+    exerciseCount: 4,
+    recordCount: 0,
+    ...over,
   });
 
-  it('avec des modèles, le choix est posé AVANT de créer quoi que ce soit', async () => {
-    mockTemplates.mockReturnValue({ templates: [{ id: 't1' }], isLoading: false });
-    await afficher({ kind: 'onboarding' });
+  it('🔴 ouvre une feuille de choix — rien n’est créé, aucun chrono ne part', async () => {
+    await ouvrirFeuille();
 
-    await taper(screen.getByLabelText('stage.strength.secondary.onboarding'));
+    expect(screen.getByText('workout.freeSheet.title')).toBeTruthy();
+    expect(mockStartFree).not.toHaveBeenCalled();
+    expect(mockStartFromWorkout).not.toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
+  });
 
-    expect(Alert.alert).toHaveBeenCalled();
+  it('« Composer ma séance » ouvre le sélecteur en composition, sans rien créer', async () => {
+    await ouvrirFeuille();
+
+    await taper(screen.getByTestId('free-compose'));
+
+    expect(push).toHaveBeenCalledWith({ pathname: '/exercises', params: { mode: 'compose' } });
     expect(mockStartFree).not.toHaveBeenCalled();
   });
 
-  it('« à blanc » crée la séance et ouvre la saisie', async () => {
-    mockTemplates.mockReturnValue({ templates: [{ id: 't1' }], isLoading: false });
-    await afficher({ kind: 'onboarding' });
-    await taper(screen.getByLabelText('stage.strength.secondary.onboarding'));
+  it('« Refaire » rejoue une séance récente, puis l’ouvre', async () => {
+    mockHistory.mockReturnValue({ workouts: [seanceFaite()], isLoading: false });
+    await ouvrirFeuille();
 
-    await act(async () => {
-      boutonsAlerte.find((b) => b.text === 'workout.freeStart.blank')?.onPress?.();
-    });
+    await taper(screen.getByTestId('free-repeat-w-old'));
 
-    expect(mockStartFree).toHaveBeenCalledTimes(1);
+    expect(mockStartFromWorkout).toHaveBeenCalledWith('w-old');
     expect(push).toHaveBeenCalledWith('/workout');
   });
 
-  it('« depuis un modèle » n’écrit rien et ouvre la liste', async () => {
-    mockTemplates.mockReturnValue({ templates: [{ id: 't1' }], isLoading: false });
-    await afficher({ kind: 'onboarding' });
-    await taper(screen.getByLabelText('stage.strength.secondary.onboarding'));
-
-    await act(async () => {
-      boutonsAlerte.find((b) => b.text === 'workout.freeStart.fromTemplate')?.onPress?.();
+  it('ne propose pas de refaire une séance sans exercice travaillé', async () => {
+    mockHistory.mockReturnValue({
+      workouts: [seanceFaite({ id: 'w-vide', exerciseCount: 0 })],
+      isLoading: false,
     });
+    await ouvrirFeuille();
 
-    expect(mockStartFree).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('free-repeat-w-vide')).toBeNull();
+  });
+
+  it('sans modèle, « Créer un modèle » mène à la liste des modèles', async () => {
+    await ouvrirFeuille();
+
+    await taper(screen.getByTestId('free-templates-empty'));
+
     expect(push).toHaveBeenCalledWith('/templates');
+  });
+
+  it('un modèle démarre sa séance puis l’ouvre (mode classique)', async () => {
+    mockTemplates.mockReturnValue({
+      templates: [{ id: 't1', name: 'Jambes', exerciseCount: 5 }],
+      isLoading: false,
+    });
+    await ouvrirFeuille();
+
+    await taper(screen.getByTestId('free-template-t1'));
+
+    expect(mockStartFromTemplate).toHaveBeenCalledWith('t1');
+    expect(push).toHaveBeenCalledWith('/workout');
+  });
+
+  it('en immersif, un modèle passe d’abord par le brief — rien n’est créé', async () => {
+    useSessionMode.setState({ mode: 'immersive' });
+    mockTemplates.mockReturnValue({
+      templates: [{ id: 't1', name: 'Jambes', exerciseCount: 5 }],
+      isLoading: false,
+    });
+    await ouvrirFeuille();
+
+    await taper(screen.getByTestId('free-template-t1'));
+
+    expect(push).toHaveBeenCalledWith({ pathname: '/workout-brief', params: { templateId: 't1' } });
+    expect(mockStartFromTemplate).not.toHaveBeenCalled();
   });
 });
 

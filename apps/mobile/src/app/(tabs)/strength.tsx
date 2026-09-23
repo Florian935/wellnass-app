@@ -45,7 +45,7 @@
 
 import { useRouter } from 'expo-router';
 import { useMemo, useRef, useState } from 'react';
-import { Alert, StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Ionicons } from '@expo/vector-icons';
 import { localDayKey } from '@wellness/shared';
@@ -53,6 +53,7 @@ import { PressableScale } from '@/components/motion/PressableScale';
 import { BodyBalanceCard } from '@/components/strength/BodyBalanceCard';
 import { DayThread } from '@/components/strength/DayThread';
 import { DirectorySheet } from '@/components/strength/DirectorySheet';
+import { FreeSessionSheet, REPEATABLE_LIMIT } from '@/components/strength/FreeSessionSheet';
 import { LifetimeLine } from '@/components/strength/LifetimeLine';
 import { LoadProgressCard } from '@/components/strength/LoadProgressCard';
 import { NearRecordsCard } from '@/components/strength/NearRecordsCard';
@@ -65,17 +66,23 @@ import { TrainingContextSheet } from '@/components/strength/TrainingContextSheet
 import { StageScrollView } from '@/components/stage/StageScrollView';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import {
-  startWorkout,
   startWorkoutFromSession,
+  startWorkoutFromWorkout,
   useWorkoutHistory,
 } from '@/data/repositories/workout-repository';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { useNearRecords } from '@/data/repositories/records-repository';
 import { useStrengthHub } from '@/data/repositories/strength-hub-repository';
-import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
+import {
+  startWorkoutFromTemplate,
+  useWorkoutTemplates,
+} from '@/data/repositories/workout-template-repository';
 import { useActionLock } from '@/hooks/useActionLock';
 import { useTodayKey } from '@/hooks/useTodayKey';
-import { briefRouteForSession } from '@/components/workout/immersive/brief-entry';
+import {
+  briefRouteForSession,
+  briefRouteForTemplate,
+} from '@/components/workout/immersive/brief-entry';
 import { SessionModeSheet } from '@/components/workout/immersive/SessionModeSheet';
 import { useSessionMode } from '@/stores/session-mode-store';
 import { fontFamily } from '@/theme/fonts';
@@ -125,28 +132,56 @@ export default function StrengthScreen() {
     return true;
   };
 
+  // ── Séance libre : on choisit quoi faire, PUIS la séance existe (MUSCU-FIX02, passe 1) ───────
+  // Sans modèle, l'appui créait une séance vide : chrono lancé, écran noir, « ajoute un premier
+  // exercice ». La feuille propose composer / refaire / modèle, et rien n'est créé avant le choix.
+  const [freeSheetOpen, setFreeSheetOpen] = useState(false);
+  // Une séance sans exercice travaillé (vide, ou d'échauffements seuls) n'a rien à rejouer.
+  const repeatable = workouts
+    .filter((workout) => workout.exerciseCount > 0)
+    .slice(0, REPEATABLE_LIMIT)
+    .map((workout) => ({
+      id: workout.id,
+      name: workout.sessionName,
+      finishedAt: workout.finishedAt,
+      exerciseCount: workout.exerciseCount,
+    }));
+
   const onStartFree = () => {
     if (askMode(onStartFree)) return;
-    // Le choix « à blanc / depuis un template » n'a de sens que si des templates existent.
-    if (templates.length === 0) {
-      void lockStart(async () => {
-        await startWorkout();
+    setFreeSheetOpen(true);
+  };
+
+  /** Démarre une séance déjà remplie puis l'ouvre — un échec laisse simplement le hub en place. */
+  const startAndOpen = (start: () => Promise<string>) =>
+    void lockStart(async () => {
+      try {
+        await start();
         router.push('/workout');
-      });
+      } catch (error) {
+        console.warn('Démarrage de la séance libre impossible :', error);
+      }
+    });
+
+  const onComposeFree = () => {
+    setFreeSheetOpen(false);
+    router.push({ pathname: '/exercises', params: { mode: 'compose' } });
+  };
+
+  const onRepeatWorkout = (workoutId: string) => {
+    setFreeSheetOpen(false);
+    startAndOpen(() => startWorkoutFromWorkout(workoutId));
+  };
+
+  const onStartTemplate = (templateId: string) => {
+    setFreeSheetOpen(false);
+    // Mode immersif : le brief annonce la séance avant de la créer, comme depuis la fiche modèle.
+    const brief = briefRouteForTemplate(templateId);
+    if (brief) {
+      router.push(brief);
       return;
     }
-    Alert.alert(t('workout.freeStart.title'), undefined, [
-      {
-        text: t('workout.freeStart.blank'),
-        onPress: () =>
-          void lockStart(async () => {
-            await startWorkout();
-            router.push('/workout');
-          }),
-      },
-      { text: t('workout.freeStart.fromTemplate'), onPress: () => router.push('/templates') },
-      { text: t('common.cancel'), style: 'cancel' },
-    ]);
+    startAndOpen(() => startWorkoutFromTemplate(templateId));
   };
 
   // `starting` ne pilote que l'affichage : la garde est portée par `useActionLock`. Un état React
@@ -402,6 +437,21 @@ export default function StrengthScreen() {
             return;
           }
           router.push(target === 'programs' ? '/programs' : '/templates');
+        }}
+        colors={colors}
+      />
+
+      <FreeSessionSheet
+        visible={freeSheetOpen}
+        onClose={() => setFreeSheetOpen(false)}
+        onCompose={onComposeFree}
+        recent={repeatable}
+        onRepeat={onRepeatWorkout}
+        templates={templates}
+        onTemplate={onStartTemplate}
+        onManageTemplates={() => {
+          setFreeSheetOpen(false);
+          router.push('/templates');
         }}
         colors={colors}
       />

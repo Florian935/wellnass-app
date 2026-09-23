@@ -7,15 +7,23 @@
  * composants de séance reçoivent déjà leurs couleurs en **prop** (`colors: Palette`), il suffit donc
  * de leur passer la palette sombre.
  *
+ * ── Sombre, mais **aux couleurs du pilier** (MUSCU-FIX02, recette du 23/09/2026) ─────────────────
+ * Elle valait `palettes.dark` : le brun et le terracotta **neutres**, d'avant l'identité des piliers
+ * (MUSCU-UX04, 19/09/2026). Basculer du classique — bordeaux, accent rose — vers l'immersif faisait
+ * donc changer d'app : « ça revient sur du noir et du orange, alors que le pilier muscu est
+ * bordeaux rosé » (Florian). C'est désormais la palette **sombre du pilier muscu** : mêmes
+ * surfaces teintées à luminance constante, même accent, déjà vérifiés par le test de contraste.
+ *
  * **Conséquence assumée** (spec §4.1) : la surcharge « Couleurs des menus » ne s'applique pas ici.
- * L'accent de la séance reste le terracotta du thème sombre, pour que le geste de validation ait la
- * même couleur pour tout le monde.
+ * L'accent de la séance reste celui du pilier, pour que le geste de validation ait la même couleur
+ * pour tout le monde.
  */
 
-import { palettes, type Palette } from '@/theme/colors';
+import type { Palette } from '@/theme/colors';
+import { pillarPalette } from '@/theme/pillar';
 
-/** La palette de la séance immersive : celle du thème sombre, sans condition. */
-export const immersivePalette: Palette = palettes.dark;
+/** La palette de la séance immersive : le pilier muscu, en sombre, sans condition. */
+export const immersivePalette: Palette = pillarPalette('dark', 'strength');
 
 /**
  * Échelle de chaleur du corps (spec §5.11), de l'éteint à l'or. Cinq valeurs interpolées —

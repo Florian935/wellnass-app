@@ -5,7 +5,7 @@ roadmap: [3.59]
 catalogue: []
 etape: recette
 branche: dev
-maj: 19/09/2026
+maj: 23/09/2026
 ---
 
 # US MUSCU-FIX01 — Les flux de la séance de musculation
@@ -78,6 +78,9 @@ trop large).
   celui que l'US Refonte-D leur avait donné le 22/07/2026.
 - **R6.** La règle « pas de choix à une seule issue » sur la séance libre **n'est pas touchée** :
   c'est un arbitrage délibéré, et le problème n'était pas là.
+  ⚠️ **Remplacée le 23/09/2026** par MUSCU-FIX02, 1ʳᵉ passe de recette : sans modèle, cette règle
+  démarrait une séance **vide** (chrono lancé, écran noir). « Séance libre » ouvre désormais toujours
+  une feuille de choix — composer, refaire, modèle — et « Composer » supprime l'issue unique.
 - **R7.** La silhouette : canon 7,5 têtes, formes qui se chevauchent sous un même remplissage
   (aucune couture possible), **aucune arête droite**, zones musculaires détourées par le corps.
 
