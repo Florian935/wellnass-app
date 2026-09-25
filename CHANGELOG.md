@@ -10,6 +10,57 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 25/09/2026 — MUSCU-UX07, étapes 1-2 : briques pures et requêtes du hub en trois onglets (`feature/muscu-ux07-hub-trois-onglets`)
+
+> Socle du hub Musculation en trois onglets (spec
+> [muscu-ux07-hub-trois-onglets.md](docs/specs/functional/us/muscu-ux07-hub-trois-onglets.md), plan
+> étapes 1 et 2). **Aucun écran ne change encore**, à une exception près, voulue : la carte du jour
+> ne compte plus qu'une séance quand deux sont prévues le même jour (R9). Commit précédent : `463c58bc`.
+
+### Ajouté
+- `packages/shared/src/last-performance.ts` (+ 20 tests) : `formatLastPerformance`, la dernière fois
+  d'un exercice en une ligne (R3) ; charge unique regroupée, charges mêlées avec l'unité en fin, poids
+  du corps, lest et assistance signés (vrai signe moins U+2212), durées en m:ss, types mêlés série par
+  série, troncature à 5 séries puis « +N ». `commonDayKey` pour la date d'en-tête.
+- `packages/shared/src/history-calendar.ts` (+ 15 tests) : grille du mois lundi → dimanche, états
+  séance / record / prévu / vide (prévu seulement aujourd'hui ou plus tard), résumé du mois, bornes de
+  navigation (R5, R6).
+- `packages/shared/src/hub-section.ts` (+ 6 tests) : `resolveHubSection`, paramètre de route >
+  mémoire > S'entraîner (D3).
+- `packages/shared/src/session-target.ts` (+ 5 tests) : l'objectif d'un exercice planifié, avec la
+  même règle que `startWorkoutFromSession` (`max(1, target_sets)`).
+- `apps/mobile/src/data/repositories/session-preview-repository.ts` : `SELECT_SESSION_PREVIEW` et
+  `useSessionPreview`, **sans** filtre sur les exercices archivés, pour lister exactement ce que
+  Démarrer créera.
+- `workout-repository.ts` : `SELECT_EXERCISES_LAST_DONE`, `groupExercisesLastDone` et
+  `useExercisesLastDone` (R7) ; le record de charge (`personal_records`, type `max_weight`) ; repli du
+  nom sur toute traduction.
+- `planned-session-repository.ts` : `SELECT_PLANNED_STRENGTH_DAYS` et `usePlannedStrengthDays` (R5).
+- Tests SQL : `__tests__/muscu-ux07-sql.test.ts` (12), `strength-hub-sql.test.ts` (+5).
+
+### Modifié
+- `strength-hub-repository.ts` :
+  - `SELECT_TODAY_PLAN` ramène `exercise_id` et `program_id` ;
+  - le hook expose `todayExercises` et `todayProgram` ;
+  - l'état « en cours » est nommé d'après sa séance d'origine (`SELECT_SESSION_NAME`).
+- `workout-repository.ts` : `SELECT_HISTORY` est exportée et prend `[lang, lang]` ;
+  `WorkoutHistoryItem.firstExercises` porte les deux premiers exercices d'une séance **libre** (D9).
+
+### Corrigé
+- **R9** : avec deux séances muscu prévues le même jour, la carte du jour additionnait leurs exercices
+  (« 3 exercices » pour une séance de 2) alors que Démarrer ne lance que la première.
+  `rowsOfFirstOccurrence` ne garde que la première.
+
+### Technique / Notes
+- `SELECT_EXERCISES_LAST_DONE` s'appuie sur `ROW_NUMBER() OVER` (SQLite ≥ 3.25, présent dans
+  PowerSync). Une seule requête pour toute la liste. Sa performance est **à vérifier en recette sur le
+  compte de Florian**, le plus chargé.
+- Les deux premiers exercices d'une séance libre sont deux sous-requêtes corrélées, évaluées seulement
+  quand `session_id` est nul (`CASE`). Elles ne passent pas par une table dérivée : SQLite ne permet pas
+  de corréler une sous-requête du `FROM`.
+- Vérifié : lint 0, typecheck 0, 4 476 tests Jest et 168 fichiers Vitest verts, codes de sortie lus
+  sans pipe.
+
 ## 25/09/2026 — MUSCU-UX07 : cadrage du hub Musculation en trois onglets, validé (`feature/muscu-ux07-hub-trois-onglets`)
 
 > Test utilisateur du 23/09/2026 (le frère de Florian) : en ouvrant le pilier Muscu, on veut démarrer

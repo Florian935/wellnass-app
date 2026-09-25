@@ -120,6 +120,11 @@ export * from './comparison';
 export * from './contrast';
 export * from './decimal';
 export * from './load-progress';
+// US MUSCU-UX07 — hub Musculation en trois onglets.
+export * from './last-performance';
+export * from './history-calendar';
+export * from './hub-section';
+export * from './session-target';
 // US CARDIO-UX02 — « Ton allure », la carte dominante du hub Course.
 export * from './pace-progress';
 export * from './root-route';

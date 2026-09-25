@@ -349,6 +349,33 @@ const SELECT_HAS_PLANNED_STRENGTH_TODAY = `
   LIMIT 1
 `;
 
+/**
+ * US MUSCU-UX07 (R5) — les jours d'occurrences muscu **prévues** entre deux dates (bornes incluses),
+ * pour le calendrier de l'historique. Statut `planned` strictement : une séance sautée ou faite
+ * n'est pas « prévue ». Paramètres : `[userId, fromKey, toKey]`.
+ */
+export const SELECT_PLANNED_STRENGTH_DAYS = `
+  SELECT DISTINCT ps.scheduled_date
+  FROM planned_sessions ps
+  JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+  JOIN programs p ON p.id = ps.program_id AND p.deleted_at IS NULL
+  WHERE ps.owner_id = ? AND ps.deleted_at IS NULL
+    AND ps.status = 'planned' AND p.pillar = 'strength'
+    AND ps.scheduled_date >= ? AND ps.scheduled_date <= ?
+  ORDER BY ps.scheduled_date
+`;
+
+/** Jours (`AAAA-MM-JJ`) d'occurrences muscu prévues entre `fromKey` et `toKey`, bornes incluses. */
+export function usePlannedStrengthDays(fromKey: string, toKey: string): string[] {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { data } = useQuery<{ scheduled_date: string }>(SELECT_PLANNED_STRENGTH_DAYS, [
+    userId,
+    fromKey,
+    toKey,
+  ]);
+  return useMemo(() => data.map((row) => row.scheduled_date), [data]);
+}
+
 /** Une occurrence `planned` de pilier muscu existe-t-elle pour `dayKey` ? */
 export function useHasPlannedStrengthSessionToday(dayKey: string): {
   hasPlanned: boolean;

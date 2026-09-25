@@ -17,8 +17,10 @@
  */
 
 import {
+  rowsOfFirstOccurrence,
   SELECT_NEXT_STRENGTH,
   SELECT_PROGRAM_PROGRESS,
+  SELECT_SESSION_NAME,
   SELECT_TODAY_DONE,
   SELECT_TODAY_PLAN,
 } from '../strength-hub-repository';
@@ -253,5 +255,64 @@ describe('SELECT_PROGRAM_PROGRESS', () => {
     expect(row!.done_count).toBe(1);
     expect(row!.total_count).toBe(2);
     expect(row!.current_week).toBe(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US MUSCU-UX07 — « la dernière fois » dans la carte du jour, et une seule séance par jour (R9)
+// ---------------------------------------------------------------------------
+
+describe('MUSCU-UX07 — la séance du jour', () => {
+  it('ramène l’exercice et le programme de chaque ligne (la dernière fois, R11)', async () => {
+    seedTodayPlanned();
+
+    const rows = await testPowerSync.getAll<{ exercise_id: string; program_id: string }>(
+      SELECT_TODAY_PLAN,
+      ['fr', 'fr', USER, TODAY],
+    );
+
+    expect(rows.map((r) => r.exercise_id)).toEqual(['ex-1', 'ex-2']);
+    expect(rows[0]!.program_id).toBe('prog-1');
+  });
+
+  it('deux séances prévues le même jour : seule la première est gardée (R9)', async () => {
+    seed('sessions', [
+      { id: 'sess-2', program_id: 'prog-1', owner_id: USER, name: 'Séance B', order_index: 1 },
+    ]);
+    seed('exercise_plans', [
+      {
+        id: 'ep-3', session_id: 'sess-2', owner_id: USER, exercise_id: 'ex-1',
+        order_index: 0, target_sets: 5, rest_seconds: 90,
+      },
+    ]);
+    seed('planned_sessions', [
+      {
+        id: 'ps-2', program_id: 'prog-1', session_id: 'sess-2', owner_id: USER,
+        scheduled_date: TODAY, status: 'planned', week_index: 0,
+      },
+    ]);
+    seedTodayPlanned();
+
+    const rows = await todayPlan();
+    // Avant MUSCU-UX07, les trois lignes étaient additionnées : « 3 exercices » pour une séance de 2.
+    expect(rows).toHaveLength(3);
+
+    const first = rowsOfFirstOccurrence(rows);
+    expect(first.map((r) => r.session_name)).toEqual(['Séance A', 'Séance A']);
+    expect(first).toHaveLength(2);
+  });
+
+  it('sans occurrence : aucune ligne', () => {
+    expect(rowsOfFirstOccurrence([])).toEqual([]);
+  });
+
+  it('SELECT_SESSION_NAME nomme la séance en cours', async () => {
+    const rows = await testPowerSync.getAll<{ name: string | null }>(SELECT_SESSION_NAME, ['sess-1']);
+    expect(rows[0]!.name).toBe('Séance A');
+  });
+
+  it('SELECT_SESSION_NAME ne renvoie rien pour une séance libre (pas de séance d’origine)', async () => {
+    const rows = await testPowerSync.getAll<{ name: string | null }>(SELECT_SESSION_NAME, ['']);
+    expect(rows).toEqual([]);
   });
 });

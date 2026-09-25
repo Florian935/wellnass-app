@@ -96,6 +96,12 @@ export type WorkoutHistoryItem = {
   exerciseCount: number;
   /** Records battus pendant cette séance — sert la pastille 🏆 de la liste. */
   recordCount: number;
+  /**
+   * US MUSCU-UX07 (D9) — une séance **libre** se reconnaît à ses deux premiers exercices travaillés
+   * (« Curl barre, Développé couché… ») : refaite ou composée, elle n'a pas de nom. Vide pour une
+   * séance de programme, qui a déjà le sien.
+   */
+  firstExercises: string[];
 };
 
 /** Champs modifiables d'une série via `updateSet`. */
@@ -130,6 +136,9 @@ type WorkoutDbRow = {
   volume_kg?: number | null;
   /** US MUSCU-UX01, `SELECT_HISTORY` seulement : nom de la séance de programme d'origine. */
   session_name?: string | null;
+  /** US MUSCU-UX07 (D9), `SELECT_HISTORY` seulement : deux premiers exercices d'une séance libre. */
+  first_exercise?: string | null;
+  second_exercise?: string | null;
   /** US MUSCU-UX01, `SELECT_HISTORY` seulement : exercices travaillés, échauffements exclus. */
   exercise_count?: number | null;
   /** US MUSCU-UX01, `SELECT_HISTORY` seulement : records battus pendant la séance. */
@@ -241,10 +250,31 @@ export const SELECT_ACTIVE_SETS = `
  * centaines de lignes en SQLite local, c'est sans effet mesurable, et cela évite trois jointures
  * avec agrégation qui rendraient la requête bien plus difficile à relire.
  */
-const SELECT_HISTORY = `
+/**
+ * Le n-ième exercice travaillé d'une séance **libre**, par ordre d'apparition — US MUSCU-UX07 (D9).
+ * Rien pour une séance de programme, qui a déjà son nom. Consomme un `?` : la langue.
+ */
+const nthFreeExerciseSql = (offset: 0 | 1) => `
+  CASE WHEN w.session_id IS NULL THEN (
+    SELECT ${exerciseNameSql('ws.exercise_id')}
+      FROM workout_sets ws
+     WHERE ws.workout_id = w.id AND ws.deleted_at IS NULL
+       AND ws.done = 1 AND ws.set_type <> 'warmup'
+     GROUP BY ws.exercise_id
+     ORDER BY MIN(ws.order_index)
+     LIMIT 1 OFFSET ${offset}
+  ) END`;
+
+/**
+ * L'historique des séances terminées. Paramètres : `[lang, lang]` (les deux premiers exercices des
+ * séances libres, D9). Exportée pour le test SQL.
+ */
+export const SELECT_HISTORY = `
   SELECT w.id, w.started_at, w.finished_at, w.duration_seconds, w.rpe, w.notes,
          w.session_id, w.program_id,
          s.name AS session_name,
+         ${nthFreeExerciseSql(0)} AS first_exercise,
+         ${nthFreeExerciseSql(1)} AS second_exercise,
          (SELECT COALESCE(SUM(ws.reps * ws.weight_kg), 0)
             FROM workout_sets ws
            WHERE ws.workout_id = w.id AND ws.deleted_at IS NULL
@@ -297,6 +327,9 @@ function rowToHistoryItem(row: WorkoutDbRow): WorkoutHistoryItem {
     sessionName: row.session_name ?? null,
     exerciseCount: row.exercise_count ?? 0,
     recordCount: row.record_count ?? 0,
+    firstExercises: [row.first_exercise, row.second_exercise].filter(
+      (name): name is string => (name ?? '').trim() !== '',
+    ),
   };
 }
 
@@ -393,13 +426,116 @@ export function useWorkoutHistory(): {
   workouts: WorkoutHistoryItem[];
   isLoading: boolean;
 } {
-  const { data, isLoading: queryLoading } =
-    useQuery<WorkoutDbRow>(SELECT_HISTORY);
+  const lang = getAppLanguage() === 'en' ? 'en' : 'fr';
+  const { data, isLoading: queryLoading } = useQuery<WorkoutDbRow>(SELECT_HISTORY, [lang, lang]);
 
   const isLoading = queryLoading;
   const workouts = data.map(rowToHistoryItem);
 
   return { workouts, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// US MUSCU-UX07 (R7) — la dernière fois, exercice par exercice
+// ---------------------------------------------------------------------------
+
+/**
+ * Pour chaque exercice déjà pratiqué, les séries de travail de **sa dernière séance terminée**, une
+ * ligne par série. Une seule requête pour toute la liste : `ROW_NUMBER()` choisit la séance la plus
+ * récente de chaque exercice. Le nom se lit dans la langue courante, sinon en français, sinon dans
+ * n'importe quelle traduction — un exercice perso créé dans l'autre langue garde un nom.
+ *
+ * Paramètre : `[lang]`.
+ */
+export const SELECT_EXERCISES_LAST_DONE = `
+  WITH per_workout AS (
+    SELECT s.exercise_id, s.workout_id, w.finished_at, w.session_id,
+           ROW_NUMBER() OVER (PARTITION BY s.exercise_id ORDER BY w.finished_at DESC) AS rn
+      FROM workout_sets s
+      JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL
+     WHERE s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
+     GROUP BY s.exercise_id, s.workout_id
+  )
+  SELECT l.exercise_id,
+         COALESCE(
+           ${exerciseNameSql('l.exercise_id')},
+           (SELECT xt.name FROM exercise_translations xt
+             WHERE xt.exercise_id = l.exercise_id
+             ORDER BY xt.deleted_at IS NOT NULL LIMIT 1)
+         ) AS exercise_name,
+         l.finished_at,
+         se.name AS session_name,
+         s.set_type, s.weight_kg, s.reps, s.duration_seconds,
+         (SELECT pr.value FROM personal_records pr
+           WHERE pr.exercise_id = l.exercise_id AND pr.type = 'max_weight' AND pr.deleted_at IS NULL
+           ORDER BY pr.value DESC, pr.achieved_at DESC LIMIT 1) AS record_kg,
+         (SELECT pr.reps FROM personal_records pr
+           WHERE pr.exercise_id = l.exercise_id AND pr.type = 'max_weight' AND pr.deleted_at IS NULL
+           ORDER BY pr.value DESC, pr.achieved_at DESC LIMIT 1) AS record_reps
+    FROM per_workout l
+    LEFT JOIN sessions se ON se.id = l.session_id AND se.deleted_at IS NULL
+    JOIN workout_sets s ON s.workout_id = l.workout_id AND s.exercise_id = l.exercise_id
+     AND s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
+   WHERE l.rn = 1
+   ORDER BY l.finished_at DESC, l.exercise_id, s.order_index
+`;
+
+export type ExerciseLastDoneRow = {
+  exercise_id: string;
+  exercise_name: string | null;
+  finished_at: string;
+  session_name: string | null;
+  set_type: string;
+  weight_kg: number | null;
+  reps: number | null;
+  duration_seconds: number | null;
+  record_kg: number | null;
+  record_reps: number | null;
+};
+
+export type ExerciseLastDone = {
+  exerciseId: string;
+  name: string | null;
+  finishedAt: string;
+  /** Nom de la séance de programme, `null` pour une séance libre. */
+  sessionName: string | null;
+  sets: { setType: string; weightKg: number | null; reps: number | null; durationSeconds: number | null }[];
+  recordKg: number | null;
+  recordReps: number | null;
+};
+
+/** Regroupe les lignes par exercice, dans l'ordre de la requête (le plus récent d'abord). */
+export function groupExercisesLastDone(rows: readonly ExerciseLastDoneRow[]): ExerciseLastDone[] {
+  const byExercise = new Map<string, ExerciseLastDone>();
+  for (const row of rows) {
+    let item = byExercise.get(row.exercise_id);
+    if (!item) {
+      item = {
+        exerciseId: row.exercise_id,
+        name: row.exercise_name,
+        finishedAt: row.finished_at,
+        sessionName: row.session_name,
+        sets: [],
+        recordKg: row.record_kg,
+        recordReps: row.record_reps,
+      };
+      byExercise.set(row.exercise_id, item);
+    }
+    item.sets.push({
+      setType: row.set_type,
+      weightKg: row.weight_kg,
+      reps: row.reps,
+      durationSeconds: row.duration_seconds,
+    });
+  }
+  return [...byExercise.values()];
+}
+
+/** La dernière fois de chaque exercice pratiqué (onglet Historique › Par exercice). */
+export function useExercisesLastDone(): { items: ExerciseLastDone[]; isLoading: boolean } {
+  const lang = getAppLanguage() === 'en' ? 'en' : 'fr';
+  const { data, isLoading } = useQuery<ExerciseLastDoneRow>(SELECT_EXERCISES_LAST_DONE, [lang]);
+  return { items: groupExercisesLastDone(data), isLoading };
 }
 
 /** Ligne brute d'un plan d'exercice (repos cible). */

@@ -42,6 +42,10 @@ const PREVIEW_EXERCISE_COUNT = 3;
 type TodayPlanRow = {
   planned_session_id: string;
   session_id: string;
+  /** US MUSCU-UX07 — programme de l'occurrence : la suggestion du hub en a besoin (R11). */
+  program_id: string;
+  /** US MUSCU-UX07 — l'exercice planifié : « la dernière fois » se lit par exercice. */
+  exercise_id: string;
   session_name: string | null;
   order_index: number;
   program_name: string | null;
@@ -64,12 +68,12 @@ type TodayPlanRow = {
  * alors que la carte de course a ses propres champs (allure, blocs).
  */
 export const SELECT_TODAY_PLAN = `
-  SELECT ps.id AS planned_session_id, ps.session_id, ps.week_index,
+  SELECT ps.id AS planned_session_id, ps.session_id, ps.program_id, ps.week_index,
          s.name AS session_name, s.order_index,
          COALESCE(tl.name, tfr.name) AS program_name,
          COALESCE(etl.name, etfr.name) AS exercise_name,
          ep.order_index AS exercise_order, ep.target_sets, ep.rest_seconds,
-         e.muscle_primary
+         e.id AS exercise_id, e.muscle_primary
   FROM planned_sessions ps
   JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
   JOIN programs  p ON p.id = ps.program_id AND p.deleted_at IS NULL
@@ -82,6 +86,26 @@ export const SELECT_TODAY_PLAN = `
   WHERE ps.owner_id = ? AND ps.deleted_at IS NULL AND p.pillar = 'strength'
     AND ps.scheduled_date = ? AND ps.status = 'planned'
   ORDER BY s.order_index, ep.order_index
+`;
+
+/**
+ * Les lignes de la **première** occurrence du jour seulement — US MUSCU-UX07, règle R9.
+ *
+ * `SELECT_TODAY_PLAN` rend une ligne par exercice de **toutes** les occurrences du jour. Avec deux
+ * séances muscu prévues le même jour, la carte additionnait leurs exercices (« 3 exercices » pour
+ * une séance de 2) alors que Démarrer ne lance que la première. La première est celle de la
+ * première ligne : la requête trie par rang de séance dans le programme.
+ */
+export function rowsOfFirstOccurrence<T extends { planned_session_id: string }>(
+  rows: readonly T[],
+): T[] {
+  const first = rows[0];
+  return first ? rows.filter((r) => r.planned_session_id === first.planned_session_id) : [];
+}
+
+/** US MUSCU-UX07 — le nom de la séance en cours, repris de sa séance de programme d'origine. */
+export const SELECT_SESSION_NAME = `
+  SELECT s.name FROM sessions s WHERE s.id = ? AND s.deleted_at IS NULL
 `;
 
 type TodayDoneRow = { session_name: string | null };
@@ -150,6 +174,16 @@ export type StrengthHubData = {
   progress: ReturnType<typeof resolveProgramProgress>;
   /** Nom du programme actif, pour la barre de progression. */
   programName: string | null;
+  /**
+   * US MUSCU-UX07 — les exercices de la séance du jour, dans l'ordre du plan : « la dernière fois »
+   * de la carte les lit un par un. Vide sans séance du jour.
+   */
+  todayExercises: { exerciseId: string; name: string | null }[];
+  /**
+   * US MUSCU-UX07 — programme et semaine de l'occurrence du jour : la suggestion du hub les passe à
+   * `usePriorWeekAdherence`, comme la séance (R11). `null` sans séance du jour.
+   */
+  todayProgram: { programId: string; weekIndex: number | null } | null;
   isLoading: boolean;
 };
 
@@ -186,29 +220,35 @@ export function useStrengthHub(): StrengthHubData {
     SELECT_PROGRAM_PROGRESS,
     [userId, program?.id ?? ''],
   );
+  // Une séance libre n'a pas de séance d'origine : la chaîne vide ne ramène aucune ligne.
+  const { data: activeNameRows } = useQuery<{ name: string | null }>(SELECT_SESSION_NAME, [
+    workout?.sessionId ?? '',
+  ]);
 
   const isLoading =
     workoutLoading || programLoading || planLoading || doneLoading || nextLoading || progressLoading;
 
   // ── Séance du jour : une ligne par exercice, à replier en une carte ────────────────────────
-  const first = planRows[0];
+  // R9 : la première occurrence seulement — deux séances le même jour ne s'additionnent plus.
+  const todayRows = rowsOfFirstOccurrence(planRows);
+  const first = todayRows[0];
   const todaySession = first
     ? {
         sessionId: first.session_id,
         plannedSessionId: first.planned_session_id,
         name: first.session_name,
         orderIndex: first.order_index,
-        exerciseCount: planRows.length,
+        exerciseCount: todayRows.length,
         programName: first.program_name,
         // Les noms manquants sont écartés AVANT la troncature : un exercice créé dans une langue
         // et relu dans l'autre n'a de traduction ni en courant ni en français, et sa puce serait
         // vide. Mieux vaut nommer deux exercices sur trois que d'afficher un blanc.
-        previewExercises: planRows
+        previewExercises: todayRows
           .map((r) => r.exercise_name)
           .filter((name): name is string => (name ?? '').trim() !== '')
           .slice(0, PREVIEW_EXERCISE_COUNT),
         estimatedMinutes: estimateSessionMinutes(
-          planRows.map((r) => ({ targetSets: r.target_sets, restSeconds: r.rest_seconds })),
+          todayRows.map((r) => ({ targetSets: r.target_sets, restSeconds: r.rest_seconds })),
         ),
       }
     : null;
@@ -222,7 +262,8 @@ export function useStrengthHub(): StrengthHubData {
           0,
         ),
         totalSets: workout.entries.reduce((n, e) => n + e.sets.length, 0),
-        name: null,
+        // US MUSCU-UX07 : le nom de la séance d'origine ; `null` pour une séance libre.
+        name: activeNameRows[0]?.name ?? null,
       }
     : null;
 
@@ -232,7 +273,7 @@ export function useStrengthHub(): StrengthHubData {
 
   // Ordre canonique plutôt qu'ordre d'apparition : la silhouette ne doit pas changer d'aspect
   // parce qu'un exercice a été remonté dans la séance.
-  const muscles = new Set(planRows.map((r) => r.muscle_primary));
+  const muscles = new Set(todayRows.map((r) => r.muscle_primary));
   const todayMuscles = MUSCLE_GROUPS.filter((group) => muscles.has(group));
 
   return {
@@ -256,6 +297,8 @@ export function useStrengthHub(): StrengthHubData {
         : null,
     todayMuscles,
     programName: program?.name ?? null,
+    todayExercises: todayRows.map((r) => ({ exerciseId: r.exercise_id, name: r.exercise_name })),
+    todayProgram: first ? { programId: first.program_id, weekIndex: first.week_index } : null,
     isLoading,
   };
 }
