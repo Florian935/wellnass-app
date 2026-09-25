@@ -3,7 +3,7 @@ id: MUSCU-UX06
 titre: "Rouge fonte — la couleur du pilier Musculation, et des cartes qui se détachent du fond"
 roadmap: [3.64]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
 maj: 23/09/2026
 ---
@@ -135,5 +135,10 @@ flagrant.
   bandeau, est supprimée.
 - Test : `components/stage/__tests__/stage.test.tsx` vérifie, pour les quatre piliers, que l'en-tête
   compact **n'est plus rendu du tout** — il l'était en permanence, seulement masqué.
-- Recette : RECETTES §85 bloc G. Critères devenus sans objet annotés : §62 (DASH-01) 4-5, §80
+- Recette : RECETTES §85 bloc G (section purgée à la clôture, 23/09/2026). Critères devenus sans objet annotés : §62 (DASH-01) 4-5, §80
   (NUTRI-UX02) bloc I.
+
+## 9. Clôture (23/09/2026)
+
+Recette complète **validée par Florian** le 23/09/2026 (« c'est recetté et validé »), passe 1 comprise.
+US clôturée, section §85 purgée de RECETTES.md.

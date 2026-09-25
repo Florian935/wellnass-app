@@ -70,7 +70,6 @@ avant de pouvoir publier.
 | **MUSCU-UX03** — Mode immersif de la séance de musculation — la séance vivante, en plus du mode classique | `recette` | `feature/muscu-ux03-mode-immersif` | [3.61] |
 | **MUSCU-UX04** — L'identité d'un pilier tenue par toute la page — accent, surfaces, et la scène qui coule | `recette` | `dev` | [3.59] |
 | **MUSCU-UX05** — Refonte du hub Musculation — un écran qui a quelque chose à dire | `recette` | `dev` | [3.63] |
-| **MUSCU-UX06** — Rouge fonte — la couleur du pilier Musculation, et des cartes qui se détachent du fond | `recette` | `dev` | [3.64] |
 | **MUSCU-UX07** — Hub Musculation en trois onglets — S'entraîner, Historique, Progrès | `recette` | `feature/muscu-ux07-hub-trois-onglets` | [3.65] |
 | **MUSCU-UX02** — Bilan de séance — 3 niveaux de lecture, écran unique récap/historique | `recette` | `feature/muscu-ux02-bilan-seance` | [3.35] |
 | **NARR-01** — L'IA raconte le dossier d'enquête — et ne peut pas inventer un chiffre | `recette` | `dev` | [7.33] |
@@ -106,7 +105,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **85 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, CARDIO-UX02, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LAUNCHER-01, LETTRE-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX06, MUSCU-UX07, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, OBJ-01, PARTAGE-01, PARTAGE-02, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **84 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, CARDIO-UX02, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LAUNCHER-01, LETTRE-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX07, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, OBJ-01, PARTAGE-01, PARTAGE-02, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -128,9 +127,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/muscu-ux07-hub-trois-onglets` (modifications non commitées) |
-| Commits | 1332 · `main` a **1329** commits de retard sur `dev` |
-| Specs d'US | 174 au total — 88 clôturées, 86 en cours |
+| Branche courante | `HEAD` (modifications non commitées) |
+| Commits | 1333 · `main` a **1330** commits de retard sur `dev` |
+| Specs d'US | 174 au total — 89 clôturées, 85 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -140,11 +139,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `45074af`  feat(muscu): MUSCU-UX07, le hub Musculation en trois onglets — S'entraîner, Historique, Progrès
 - `5f51625`  refactor(muscu): MUSCU-UX07, la suggestion de progression partagée entre la séance et le hub
 - `cc77302`  feat(muscu): MUSCU-UX07, le socle du hub en trois onglets — briques et requêtes
 - `463c58b`  docs(muscu): MUSCU-UX07 cadrée et validée — le hub Musculation en trois onglets
 - `5cbaaa4`  fix(stage): plus de bandeau en haut au défilement, sur les quatre piliers
-- `a87d1f8`  feat(muscu): rouge fonte pour le pilier, des cartes qui se détachent partout
 
 ---
 

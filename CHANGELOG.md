@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 25/09/2026 — MUSCU-UX06 clôturée : recette validée, §85 purgée (`docs/muscu-ux06-cloture`)
+
+> Recette de MUSCU-UX06 (rouge fonte, cartes qui se détachent, plus de bandeau au défilement)
+> **validée par Florian le 23/09/2026** (« c'est recetté et validé »), passe 1 comprise. Les fichiers
+> de clôture préparés le 23/09 à 21 h 59 étaient restés non commités dans le dossier principal.
+> Florian a autorisé à les commiter le 25/09/2026, par-dessus les quatre commits de MUSCU-UX07.
+> Commit précédent (base de la branche) : `5cbaaa40`.
+
+### Modifié
+- `docs/specs/functional/us/muscu-ux06-rouge-fonte.md` : `etape: close`, §9 Clôture.
+- `RECETTES.md` : section §85 purgée ; renvois des §62 et §80 annotés « recetté et validé avec
+  MUSCU-UX06 » ; en-tête du fichier mis à jour.
+- `docs/roadmap/roadmap.md` : remarque de la ligne 3.64 (clôturée) ; journal « 23/09/2026 (octies) ».
+  Le statut ne change pas (✅).
+- `ETAT.md` régénéré.
+
+### Technique / Notes
+- Aucune ligne de code. Intégré à `dev` par rebase sur `origin/dev`. Les conflits, uniquement dans les
+  fichiers de suivi, ont été résolus en gardant les deux côtés :
+  - `RECETTES.md` : §85 retirée, §86 MUSCU-UX07 gardée ;
+  - roadmap : journal et lignes 3.64 / 3.65 ;
+  - `ETAT.md` : régénéré ;
+  - `CHANGELOG.md`.
 ## 25/09/2026 — MUSCU-UX07, étapes 4-7 : le hub Musculation en trois onglets (`feature/muscu-ux07-hub-trois-onglets`)
 
 > Test utilisateur du 23/09/2026 : en ouvrant le pilier Muscu, on veut démarrer sa séance ou retrouver
