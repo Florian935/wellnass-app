@@ -127,8 +127,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `HEAD` (modifications non commitées) |
-| Commits | 1333 · `main` a **1330** commits de retard sur `dev` |
+| Branche courante | `chore/integration-compat-codex` (modifications non commitées) |
+| Commits | 1334 · `main` a **1331** commits de retard sur `dev` |
 | Specs d'US | 174 au total — 89 clôturées, 85 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -139,11 +139,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `2de531b`  docs(muscu): MUSCU-UX06 clôturée — recette validée par Florian, §85 purgée
 - `45074af`  feat(muscu): MUSCU-UX07, le hub Musculation en trois onglets — S'entraîner, Historique, Progrès
 - `5f51625`  refactor(muscu): MUSCU-UX07, la suggestion de progression partagée entre la séance et le hub
 - `cc77302`  feat(muscu): MUSCU-UX07, le socle du hub en trois onglets — briques et requêtes
 - `463c58b`  docs(muscu): MUSCU-UX07 cadrée et validée — le hub Musculation en trois onglets
-- `5cbaaa4`  fix(stage): plus de bandeau en haut au défilement, sur les quatre piliers
 
 ---
 

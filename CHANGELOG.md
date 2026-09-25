@@ -1,7 +1,7 @@
 # Changelog
 
 Toutes les modifications notables du projet sont consignées ici — **maintenu automatiquement
-par la commande [`/commit`](.claude/commands/commit.md)**. Chaque entrée est construite à partir
+par le workflow partagé [`commit`](docs/agent-workflows/commit.md)**. Chaque entrée est construite à partir
 de l'analyse du `git diff` du commit, pour garder une **trace complète** des modifications
 (utile aux devs et au débogage).
 
@@ -9,6 +9,67 @@ Format inspiré de [Keep a Changelog](https://keepachangelog.com/fr/). Dates au 
 Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **Technique / Notes**.
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
+
+## 25/09/2026 — Intégration de la compatibilité Claude Code / Codex, workflow commit remis à jour (`chore/integration-compat-codex`)
+
+> La branche `chore/compatibilite-claude-codex` (21-22/07/2026, 5 commits) n'avait jamais été
+> intégrée : elle n'existait qu'en local, dans le worktree `.expo/codex-worktrees/compat`. Florian
+> demande que tout soit sur `dev`, sans rien perdre. Elle est **fusionnée** (merge, historique
+> conservé), puis remise à niveau : son workflow commit datait d'avant la refonte du suivi du
+> 26/07/2026. Commit précédent sur `dev` : `2de531b3`.
+
+### Ajouté
+- Adaptateurs du workflow commit partagé (venus de la branche) :
+  - `.claude/skills/commit/SKILL.md` ;
+  - `.agents/skills/commit/SKILL.md` (Codex, sans attribution Claude) ;
+  - `.codex/config.toml` : Codex charge `CLAUDE.md` par fallback.
+- `docs/agent-workflows/README.md` et le contrôle `npm run agents:check`
+  (`scripts/check-agent-compat.mjs`).
+- Spec et plan du chantier, gelés à leur date : `docs/superpowers/specs/` et `docs/superpowers/plans/`
+  (`2026-07-21-compatibilite-claude-codex*`).
+
+### Modifié
+- **`docs/agent-workflows/commit.md`** : la version de juillet est remplacée par le `/commit`
+  **actuel**, mot pour mot, avec quatre écarts seulement :
+  - pas d'attribution dans le cœur : chaque adaptateur porte la sienne ;
+  - revue : la capacité de l'outil courant, sinon une revue complète faite à la main ;
+  - `npm run agents:check` rejoint l'étape qualité ;
+  - `git add` par chemins explicites, jamais `git add .` à l'aveugle (règle reprise de la
+    branche).
+
+  Sans cette mise à jour, la fusion aurait fait régresser `/commit` : retour à l'étape « TODO.md »
+  (fichier retiré le 26/07), plus de front-matter d'US, plus de régénération d'ETAT, plus de
+  consigne « code de sortie sans pipe ».
+- `.claude/commands/commit.md` devient un **renvoi** vers le workflow commun, comme le prévoyait la
+  branche. Il conserve l'attribution `Claude Opus 5` et les outils autorisés, dont
+  `node scripts/etat.mjs`.
+- `scripts/check-agent-compat.mjs` :
+  - vérifie la **forme** de la ligne d'attribution, plus une version figée (le contrôle exigeait
+    « Claude Opus 4.8 » et aurait échoué) ;
+  - exige la même ligne dans le skill et dans la commande Claude ;
+  - refuse toute attribution dans le cœur commun.
+- `CLAUDE.md` :
+  - section Commits : workflow partagé, `/commit` côté Claude et `$commit` côté Codex (venu de la
+    branche) ;
+  - table des skills et des commandes : `/commit` pointe sur le workflow commun, et
+    `npm run agents:check` est ajouté.
+- `docs/agent-workflows/README.md` : précise que seul commit est partagé ; `/us`, `/etat` et
+  `/reconcilier` restent propres à Claude.
+- `package.json` : `agents:check` s'ajoute à côté de `test:coverage` (conflit résolu en gardant
+  les deux).
+
+### Technique / Notes
+- **Conflits résolus** :
+  - `CHANGELOG.md` : les trois entrées de la branche restent à leur date (21/07), juste au-dessus
+    du 20/07 ;
+  - `.claude/commands/commit.md` : voir ci-dessus ;
+  - `package.json` : les deux scripts sont gardés.
+- **Écarté** : l'ajout de la branche à `TODO.md`. Git l'avait reporté sur
+  `docs/journal/todo-archive-2026-07.md`, une archive gelée, qui reste identique à `dev`.
+- **Doublon de nom assumé** : `.claude/commands/commit.md` et `.claude/skills/commit/SKILL.md`
+  exposent tous deux `commit` côté Claude. C'est le choix de la branche (la commande sert à la
+  compatibilité historique) ; les deux renvoient au même cœur.
+- **Roadmap** : non touchée, c'est de l'outillage.
 
 ## 25/09/2026 — MUSCU-UX06 clôturée : recette validée, §85 purgée (`docs/muscu-ux06-cloture`)
 
@@ -17787,6 +17848,69 @@ marche en dev build sans eux.
 - Revue plan : 2 passages (❌ → ✅) — ajout du 2ᵉ checkpoint sync rules PowerSync (oubli qui aurait rendu les
   2 nouvelles tables muettes côté synchro cloud), clarification du partage des helpers de champs, extraction
   d'un composant `TemplateComposer` partagé.
+### 21/07/2026 — `chore/compatibilite-claude-codex` — validation croisée Claude Code / Codex
+
+**Validé**
+- Chargement de `CLAUDE.md` et découverte du workflow commit dans de nouvelles sessions Claude et Codex.
+- `npm run agents:check`, typecheck, lint et tests monorepo verts.
+
+**Technique / Notes**
+- `AGENTS.md` local sauvegardé sous un nom non découvert ; rollback disponible.
+- Aucun changement de roadmap, d'application ou de base de données.
+
+### 21/07/2026 — `chore/compatibilite-claude-codex` — documentation des workflows multi-agents
+
+**Ajouté**
+- Guide de maintenance des workflows partagés et procédure d'ajout d'un futur skill.
+
+**Modifié**
+- `CLAUDE.md`, `CHANGELOG.md` et `TODO.md` pointent vers la source commune du workflow commit.
+
+**Technique / Notes**
+- Claude conserve `/commit` ; Codex utilise `$commit`.
+
+### 21/07/2026 — `chore/compatibilite-claude-codex` — socle de compatibilité des agents
+
+**Ajouté**
+- Fallback Codex vers `CLAUDE.md`, validation `npm run agents:check` et skill `$commit`.
+- Workflow de commit partagé avec adaptateurs Claude moderne, Claude historique et Codex.
+
+**Technique / Notes**
+- Aucun code applicatif, aucune migration et aucun statut de roadmap modifiés.
+
+### 21/07/2026 — `chore/compatibilite-claude-codex` — plan d'implémentation de la migration agents
+
+> Spec/design validé par l'utilisateur. Plan uniquement : aucune configuration d'agent ni aucun
+> workflow actif modifié dans cet incrément.
+
+**Ajouté**
+- **Plan d'implémentation Claude Code / Codex**
+  ([2026-07-21-compatibilite-claude-codex.md](docs/superpowers/plans/2026-07-21-compatibilite-claude-codex.md)) :
+  trois incréments testables couvrant fallback, workflow commun, adaptateurs, documentation,
+  validation croisée et intégration vers `dev`.
+
+**Modifié**
+- La spec/design porte désormais son statut de validation du 21/07/2026.
+
+**Technique / Notes**
+- Aucun statut de roadmap modifié : outillage hors périmètre fonctionnel produit.
+
+### 21/07/2026 — `chore/compatibilite-claude-codex` — conception de la cohabitation Claude Code / Codex
+
+> Conception technique uniquement : aucune configuration d'agent ni aucun code applicatif modifié.
+> Baseline vérifiée dans un worktree isolé : typecheck et tests verts, lint sans erreur
+> (4 avertissements préexistants).
+
+**Ajouté**
+- **Spec/design de compatibilité Claude Code / Codex**
+  ([2026-07-21-compatibilite-claude-codex-design.md](docs/superpowers/specs/2026-07-21-compatibilite-claude-codex-design.md)) :
+  `CLAUDE.md` reste la source unique, Codex le charge par fallback, et les workflows partagés
+  utilisent un cœur neutre avec adaptateurs `.claude/skills` et `.agents/skills`.
+
+**Technique / Notes**
+- Le `AGENTS.md` non suivi du checkout principal n'est ni modifié ni supprimé par ce commit.
+- Aucun statut de roadmap modifié : ce chantier concerne l'outillage des agents, hors périmètre
+  fonctionnel produit.
 
 ### 20/07/2026 — `feature/widgets-v2-dnd` — couleur d'accent par menu (Accueil/Muscu/Course/Alim)
 

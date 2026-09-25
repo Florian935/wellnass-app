@@ -103,8 +103,12 @@ Modèle de branches : `main` = branche protégée (release) · **`dev` = branche
 (cible de tout le travail courant) · `feature/*` etc. = branches de travail.
 
 ### Commits
-Utiliser la commande **`/commit`** (voir [.claude/commands/commit.md](.claude/commands/commit.md)).
-En une passe, elle :
+Utiliser le workflow partagé **commit**
+([docs/agent-workflows/commit.md](docs/agent-workflows/commit.md)) :
+- Claude Code : `/commit [sujet optionnel]` ;
+- Codex : `$commit [sujet optionnel]` ou une demande équivalente en langage naturel.
+
+En une passe, il :
 - analyse et **relit le `git diff`** (revue de code : bugs, secrets, specs, offline-first, i18n) ;
 - applique le **garde-fou confidentialité** (jamais de secrets) ;
 - tient le **[CHANGELOG.md](CHANGELOG.md)** — une entrée par commit, construite à partir du diff,
@@ -243,7 +247,7 @@ Cycle **sans Docker** :
 |---|---|
 | [`/etat`](.claude/commands/etat.md) | **Début de session** — régénère ETAT.md et dit où on en est. |
 | [`/us`](.claude/commands/us.md) | Démarrer une US : branche + spec + plan + maquette + front-matter. S'arrête à la validation. |
-| [`/commit`](.claude/commands/commit.md) | Commiter : revue de diff, CHANGELOG, front-matter, roadmap, ETAT, push sur `dev`. |
+| [`/commit`](docs/agent-workflows/commit.md) | Commiter : revue de diff, CHANGELOG, front-matter, roadmap, ETAT, push sur `dev`. Workflow partagé avec Codex (`$commit`). |
 | [`/reconcilier`](.claude/commands/reconcilier.md) | Mensuel / avant jalon — audite l'écart code ↔ documentation. |
 
 ## Commandes
@@ -258,6 +262,7 @@ Cycle **sans Docker** :
 | `npm run test` | Tests des workspaces : **Vitest** sur `packages/shared` (~860) + **Jest** sur `apps/mobile` (~116). ⚠️ **lire le code de sortie sans pipe** — un `\| tail` en aval renvoie 0 même si un test échoue. |
 | `npm run mobile` | Raccourci → démarre le serveur de dev Expo de `apps/mobile`. |
 | `node scripts/etat.mjs` | Régénère [ETAT.md](ETAT.md). `--check` = échoue si le fichier est périmé. |
+| `npm run agents:check` | Vérifie la compatibilité Claude Code / Codex (workflow commit partagé, voir [docs/agent-workflows/](docs/agent-workflows/README.md)). |
 
 **App mobile** (`apps/mobile`, package `@wellness/mobile`) :
 
