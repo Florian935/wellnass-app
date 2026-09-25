@@ -10,6 +10,42 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 25/09/2026 — CARDIO-UX03, cadrage : le hub Course en trois onglets (`feature/cardio-ux03-hub-onglets`)
+
+> Même chantier que MUSCU-UX07 (livrée ce matin), transposé au pilier Course, dans un worktree
+> dédié pendant qu'une autre session fait la même chose sur la Nutrition (NUTRI-UX03).
+> Exploration A/B/C sur la toile https://claude.ai/artifact/PxNU7GfyTcEZz1Ba7t9RhD ; **Florian retient
+> A** et répond aux dix questions (Q1–Q10), puis demande **tout le lot en une seule vague**.
+> Commit précédent sur `dev` : `9af937ca`.
+
+### Ajouté
+- **Spec** `docs/specs/functional/us/cardio-ux03-hub-onglets.md` (`etape: code`) : le problème vu du
+  coureur (neuf questions, six constats vérifiés dans le code), les décisions de Florian, D1–D12,
+  l'écran, R1–R12, les cas limites, l'i18n, l'offline, les critères de recette.
+- **Plan** `docs/plans/cardio-ux03-hub-onglets.md` : quatre étapes TDD, aucune migration.
+- **Maquette** `design/cardio-ux03-hub-onglets/` (prototype jouable + dix planches figées + README),
+  publiée sur la toile https://claude.ai/artifact/JjUraxv9AYkC6vyVUsfzHW.
+- **Roadmap 5.44** en ⬜ (hors cadrage) : total 265 → 266, à faire 2 → 3. Ligne « Hors cadrage »
+  du tableau par version **recomptée sur le réel** : 62 lignes (elle en annonçait 54 depuis le
+  18/09).
+
+### Modifié
+- `BACKLOG.md` : CARDIO-03 et CARDIO-04 **absorbés en partie** par CARDIO-UX03 (titre et mode retenu
+  de l'écran de départ ; historique en onglet, lignes enrichies, filtre par type) ; ce qui reste
+  à faire est listé sur chaque ligne.
+
+### Technique / Notes
+- **Spec relue par un agent de revue** avant le code : vingt constats. Les plus lourds, intégrés :
+  - l'échauffement, les éducatifs et le retour au calme sont développés en phases « rapides » : sans
+    filtre sur le segment `work`, « la dernière fois » les aurait comptés comme des fractions ;
+  - « Recourir » doit suivre le seuil du fantôme (500 m, trace lisible), et l'écran de départ
+    posait le fantôme même en mode sans GPS ;
+  - « Ta semaine » découpait la date ISO en UTC : une sortie finie après minuit changeait de jour
+    entre la semaine et le calendrier ;
+  - le test-garde d'identité exige `useMenuFocus` jusque dans la redirection de `/running-history`.
+- ⚠️ **Écart de workflow assumé** : spec, plan et maquette n'ont pas été relus séparément par
+  Florian ; il a validé la proposition A et les dix réponses, les retours se font à la recette.
+
 ## 25/09/2026 — Intégration de la compatibilité Claude Code / Codex, workflow commit remis à jour (`chore/integration-compat-codex`)
 
 > La branche `chore/compatibilite-claude-codex` (21-22/07/2026, 5 commits) n'avait jamais été

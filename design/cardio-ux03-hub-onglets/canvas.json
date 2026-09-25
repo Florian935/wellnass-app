@@ -1,0 +1,46 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-09-25T17:10:00Z" },
+  "title": "CARDIO-UX03 · Hub Course en trois onglets",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "designSystems": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 390, "h": 904, "title": "Prototype jouable · hub Course", "is_interactive": true },
+    "T1Prevue.dc.html": { "x": 0, "y": 1324, "w": 390, "h": 844, "title": "Courir · séance du jour", "is_interactive": true },
+    "T2Arrivee.dc.html": { "x": 470, "y": 1324, "w": 390, "h": 844, "title": "Courir · sortie finie", "is_interactive": true },
+    "T3Repos.dc.html": { "x": 940, "y": 1324, "w": 390, "h": 844, "title": "Courir · jour de repos", "is_interactive": true },
+    "T4EnCours.dc.html": { "x": 1410, "y": 1324, "w": 390, "h": 844, "title": "Courir · course en cours", "is_interactive": true },
+    "T5Debut.dc.html": { "x": 1880, "y": 1324, "w": 390, "h": 844, "title": "Courir · premiers pas", "is_interactive": true },
+    "D1Depart.dc.html": { "x": 2350, "y": 1324, "w": 390, "h": 844, "title": "Écran de départ, retitré", "is_interactive": true },
+    "H1Historique.dc.html": { "x": 0, "y": 2588, "w": 390, "h": 844, "title": "Historique · calendrier et sorties", "is_interactive": true },
+    "H2ParType.dc.html": { "x": 470, "y": 2588, "w": 390, "h": 844, "title": "Historique · par type", "is_interactive": true },
+    "H3Detail.dc.html": { "x": 940, "y": 2588, "w": 390, "h": 844, "title": "Détail d'une sortie · Recourir", "is_interactive": true },
+    "G1Progres.dc.html": { "x": 1410, "y": 2588, "w": 390, "h": 844, "title": "Progrès", "is_interactive": true }
+  },
+  "order": [
+    "Main.dc.html",
+    "T1Prevue.dc.html",
+    "T2Arrivee.dc.html",
+    "T3Repos.dc.html",
+    "T4EnCours.dc.html",
+    "T5Debut.dc.html",
+    "D1Depart.dc.html",
+    "H1Historique.dc.html",
+    "H2ParType.dc.html",
+    "H3Detail.dc.html",
+    "G1Progres.dc.html"
+  ],
+  "notes": {
+    "t-courir": { "kind": "title1", "x": 0, "y": 1064, "text": "Courir, et partir", "maxW": 2740 },
+    "t-hist": { "kind": "title1", "x": 0, "y": 2328, "text": "Historique et Progrès", "maxW": 1800 },
+    "s-main": {
+      "x": 470, "y": 0, "w": 360, "fill": "orange", "size": "m",
+      "text": "Prototype jouable de CARDIO-UX03 (proposition A validée le 25/09/2026, réponses Q1–Q10 appliquées).\n\nLa bande SIMULER change la situation : séance prévue, repos, course en cours, sortie finie, débutant. À essayer : Partir, Recourir, « Revoir cette sortie », Tout l'historique, un jour du calendrier, Par type, Progrès."
+    },
+    "s-q": {
+      "x": 910, "y": 0, "w": 360, "fill": "green", "size": "m",
+      "text": "Ce qui a changé depuis l'exploration : plus de tuiles « Sortie passée » (Q6) ni « Autre activité » (Q7) ; « Autre chose » = Course libre, les jours de séance et après une sortie ; la carte d'arrivée ne compare plus à la dernière fois ; le détail d'une sortie est l'écran d'analyse, avec Recourir sous les chiffres ; le départ dit « Démarrer la séance »."
+    }
+  }
+}

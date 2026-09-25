@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 253 livré · 4 partiel · 2 à faire (sur 265)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 253 livré · 4 partiel · 3 à faire (sur 266)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -100,6 +100,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **CARDIO-UX03** — Hub Course en trois onglets — Courir, Historique, Progrès | `code` | `feature/cardio-ux03-hub-onglets` | [5.44] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -127,9 +128,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `chore/integration-compat-codex` (modifications non commitées) |
-| Commits | 1334 · `main` a **1331** commits de retard sur `dev` |
-| Specs d'US | 174 au total — 89 clôturées, 85 en cours |
+| Branche courante | `feature/cardio-ux03-hub-onglets` (modifications non commitées) |
+| Commits | 1340 · `main` a **1337** commits de retard sur `dev` |
+| Specs d'US | 175 au total — 89 clôturées, 86 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -139,11 +140,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `9af937c`  chore(outillage): intégrer la compatibilité Claude Code / Codex, workflow commit remis à jour
 - `2de531b`  docs(muscu): MUSCU-UX06 clôturée — recette validée par Florian, §85 purgée
 - `45074af`  feat(muscu): MUSCU-UX07, le hub Musculation en trois onglets — S'entraîner, Historique, Progrès
 - `5f51625`  refactor(muscu): MUSCU-UX07, la suggestion de progression partagée entre la séance et le hub
 - `cc77302`  feat(muscu): MUSCU-UX07, le socle du hub en trois onglets — briques et requêtes
-- `463c58b`  docs(muscu): MUSCU-UX07 cadrée et validée — le hub Musculation en trois onglets
 
 ---
 

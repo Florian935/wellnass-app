@@ -1,0 +1,1135 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hub Course en trois onglets — CARDIO-UX03</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font-family:inherit;cursor:pointer}
+button:disabled{cursor:default}
+.nosb::-webkit-scrollbar{display:none}
+@keyframes toastin{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes popin{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+@keyframes flow{from{stroke-dashoffset:0}to{stroke-dashoffset:-280}}
+</style>
+</helmet>
+<div style="width: 390px; height: {{rootH}}px; display: flex; flex-direction: column; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', sans-serif; overflow: hidden;">
+
+  <sc-if value="{{chrome}}" hint-placeholder-val="{{ true }}">
+    <div style="height: 60px; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 0 8px; background: #ebdcc4; border-bottom: 2px dashed #b9a88c;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 1.2px; color: #5e5244;">CARDIO-UX03 · SIMULER LA SITUATION</span>
+      <div style="display: flex; gap: 5px;">
+        <sc-for list="{{etats}}" as="e" hint-placeholder-count="5">
+          <button onClick="{{e.pick}}" style="height: 32px; padding: 0 9px; border-radius: 16px; border: 1px solid {{e.border}}; background: {{e.bg}}; color: {{e.color}}; font-size: 12px; font-weight: 700; white-space: nowrap;">{{e.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="position: relative; width: 390px; height: 844px; flex-shrink: 0; overflow: hidden; background: #f7eede;">
+    <div class="nosb" style="position: absolute; top: 0; left: 0; right: 0; bottom: 74px; overflow-y: auto; scrollbar-width: none;">
+
+      <!-- ═════════════ HUB ═════════════ -->
+      <sc-if value="{{isHub}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column;">
+
+          <!-- En-tête compact : titre, trois accès, trois onglets. Défile avec la page. La trace en filigrane (Q3). -->
+          <div style="position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; padding: 12px 16px 16px; background: linear-gradient(180deg, #2a64ad 0%, #1d4586 62%, #0f2547 100%); border-bottom-left-radius: 26px; border-bottom-right-radius: 26px;">
+            <svg width="390" height="140" viewBox="0 0 390 140" style="position: absolute; left: 0; top: 0; pointer-events: none;" aria-hidden="true">
+              <path d="M-10 104 C 46 44, 112 128, 182 76 S 300 22, 400 62" fill="none" stroke="rgba(183,214,255,0.34)" stroke-width="2.2" stroke-linecap="round" style="stroke-dasharray: 5 9; animation: flow 9s linear infinite;"></path>
+              <circle cx="182" cy="76" r="3.2" fill="#b7d6ff" opacity="0.55"></circle>
+            </svg>
+            <div style="position: relative; display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.8px; color: #ffffff;">Course</span>
+              <div style="display: flex; margin-right: -10px;">
+                <button aria-label="Planning" onClick="{{toastPlanning}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M3.5 10h17"></path></svg>
+                </button>
+                <button aria-label="Profil coureur : allure de référence, fréquence, voix" onClick="{{toastProfile}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="8" r="3.8"></circle><path d="M4.8 20c1.2-3.9 4-5.8 7.2-5.8s6 1.9 7.2 5.8"></path></svg>
+                </button>
+                <button aria-label="Programmes" onClick="{{toastPrograms}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round"><path d="M5 4v16M10 4v16M15 5l4 15"></path></svg>
+                </button>
+              </div>
+            </div>
+            <div role="tablist" style="position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 16px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);">
+              <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+                <button role="tab" aria-selected="{{t.pressed}}" onClick="{{t.pick}}" style="height: 44px; border-radius: 12px; border: none; background: {{t.bg}}; color: {{t.color}}; font-size: 14.5px; font-weight: 700;">{{t.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- ═════════ COURIR ═════════ -->
+          <sc-if value="{{isRunTab}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 20px; padding: 16px 16px 28px;">
+
+              <!-- La carte du moment -->
+              <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1.3px; color: #2a64ad; font-weight: 700;">{{m.eyebrow}}</span>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; line-height: 1.08; letter-spacing: -0.8px;">{{m.title}}</span>
+                  <span style="font-size: 13.5px; line-height: 19px; color: #786a59;">{{m.meta}}</span>
+                </div>
+
+                <sc-if value="{{m.showBig}}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 2px;">
+                    <div style="display: flex; align-items: baseline; gap: 6px;">
+                      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 54px; line-height: 56px; letter-spacing: -2.4px; color: #1d4586;">{{m.big}}</span>
+                      <span style="font-size: 16px; font-weight: 600; color: #5e5244;">km</span>
+                    </div>
+                    <span style="font-family: 'Space Mono', monospace; font-size: 13px; color: #5e5244;">{{m.bigMeta}}</span>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{m.showChips}}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; flex-direction: column; gap: 10px;">
+                    <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                      <sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+                        <span style="padding: 5px 9px; border-radius: 9px; background: {{c.bg}}; color: {{c.color}}; font-size: 12.5px; font-weight: 600;">{{c.label}}</span>
+                      </sc-for>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+                      <div style="display: flex; flex-direction: column; gap: 1px;">
+                        <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; color: #786a59;">VOLUME</span>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700;">6,4 km</span>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 1px;">
+                        <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; color: #786a59;">DURÉE EST.</span>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700;">≈ 45 min</span>
+                      </div>
+                      <div style="display: flex; flex-direction: column; gap: 1px;">
+                        <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; color: #786a59;">ALLURE CIBLE</span>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 16px; font-weight: 700;">3:50–4:00</span>
+                      </div>
+                    </div>
+                    <span style="font-size: 13px; line-height: 19px; font-style: italic; color: #5e5244;">« Régulier : les deux dernières doivent ressembler aux deux premières. »</span>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{m.showLast}}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; flex-direction: column; gap: 9px; padding: 12px; border-radius: 14px; background: #f7eede;">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px;">
+                      <span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.2px; color: #5e5244; font-weight: 700;">LA DERNIÈRE FOIS · VEN. 18/09</span>
+                      <span style="font-size: 11.5px; color: #786a59;">même séance</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px;">
+                      <sc-for list="{{lastReps}}" as="r" hint-placeholder-count="6">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 1px; padding: 6px 0; border-radius: 9px; background: {{r.bg}}; border: 1.5px solid {{r.border}};">
+                          <span style="font-family: 'Space Mono', monospace; font-size: 9.5px; color: {{r.sub}};">{{r.n}}</span>
+                          <span style="font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: {{r.ink}};">{{r.t}}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                    <span style="font-size: 12.5px; line-height: 18px; color: #5e5244;">5 sur 6 dans la plage</span>
+                    <button onClick="{{openLast}}" style="align-self: flex-start; display: flex; align-items: center; gap: 4px; min-height: 36px; padding: 0; background: transparent; border: none; color: #1d4586; font-size: 13.5px; font-weight: 700;">
+                      <span>Revoir cette sortie</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d4586" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+                    </button>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{m.showBar}}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <div style="height: 8px; border-radius: 4px; background: #dfe7f2; overflow: hidden;">
+                      <div style="height: 8px; width: 55%; border-radius: 4px; background: #2a64ad;"></div>
+                    </div>
+                    <span style="font-size: 13px; color: #5e5244;">Segment en cours : 400 m rapide · encore 180 m</span>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{m.showValid}}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; align-items: center; gap: 9px; padding: 10px 12px; border-radius: 14px; background: #e1eaf6;">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#1d4586" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+                      <span style="font-size: 13.5px; font-weight: 700; color: #1d4586;">Séance validée dans ton programme</span>
+                    </div>
+                    <span style="font-size: 13.5px; line-height: 20px;">Fractions : 6 sur 6 dans la plage</span>
+                    <span style="font-family: 'Space Mono', monospace; font-size: 12.5px; color: #5e5244;">10 km estimé : 49:21</span>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{m.showProfile}}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; align-items: center; gap: 10px; padding: 11px 12px; border-radius: 14px; background: #f7eede;">
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+                      <span style="font-size: 13.5px; font-weight: 700;">Ton allure de référence</span>
+                      <span style="font-size: 12.5px; line-height: 17px; color: #786a59;">Pas encore donnée. Sans elle, aucune allure cible.</span>
+                    </div>
+                    <button onClick="{{toastProfile}}" style="flex-shrink: 0; height: 44px; padding: 0 12px; border-radius: 22px; border: 1.5px solid #2a64ad; background: transparent; color: #1d4586; font-size: 13px; font-weight: 700;">La donner</button>
+                  </div>
+                </sc-if>
+
+                <div style="display: flex; gap: 8px;">
+                  <button onClick="{{m.onPrimary}}" style="flex-grow: 1; height: 52px; border-radius: 16px; border: none; background: #2a64ad; color: #ffffff; font-size: 16px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <sc-if value="{{m.play}}" hint-placeholder-val="{{ true }}">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff"><path d="M7 4.5v15l12.5-7.5z"></path></svg>
+                    </sc-if>
+                    <span>{{m.primary}}</span>
+                  </button>
+                  <sc-if value="{{m.hasSecondary}}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{m.onSecondary}}" style="flex-shrink: 0; height: 52px; padding: 0 16px; border-radius: 16px; border: 1.5px solid #c9b79a; background: transparent; color: #33291f; font-size: 14.5px; font-weight: 700;">{{m.secondary}}</button>
+                  </sc-if>
+                </div>
+              </div>
+
+              <!-- Tes dernières sorties -->
+              <sc-if value="{{showRecent}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.4px;">Tes dernières sorties</span>
+                  <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+                    <sc-for list="{{recent}}" as="r" hint-placeholder-count="3">
+                      <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #efe3cf;">
+                        <button onClick="{{r.open}}" aria-label="{{r.openLabel}}" style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 11px; padding: 0; background: transparent; border: none; text-align: left; color: #33291f;">
+                          <span style="flex-shrink: 0; width: 44px; height: 48px; border-radius: 12px; background: {{r.dateBg}}; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <span style="font-family: 'Space Mono', monospace; font-size: 9.5px; font-weight: 700; color: {{r.dateInk}};">{{r.dow}}</span>
+                            <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px; line-height: 20px; color: {{r.dayInk}};">{{r.day}}</span>
+                          </span>
+                          <span style="min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                            <span style="display: flex; align-items: center; gap: 6px;">
+                              <span style="font-size: 14.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.name}}</span>
+                              <sc-if value="{{r.hasRec}}" hint-placeholder-val="{{ false }}">
+                                <span style="flex-shrink: 0; display: flex; align-items: center; gap: 3px; padding: 1px 6px; border-radius: 7px; background: #f5e6c4; color: #6b4c0f; font-size: 11px; font-weight: 700;">
+                                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#6b4c0f" stroke-width="2.4" stroke-linecap="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"></path><path d="M12 13v4M8.5 20h7"></path></svg>{{r.rec}}
+                                </span>
+                              </sc-if>
+                            </span>
+                            <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #5e5244;">{{r.meta}}</span>
+                            <span style="font-size: 12px; color: #786a59; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.sub}}</span>
+                          </span>
+                        </button>
+                        <sc-if value="{{r.canGhost}}" hint-placeholder-val="{{ true }}">
+                          <button onClick="{{r.ghost}}" aria-label="{{r.ghostLabel}}" style="flex-shrink: 0; height: 44px; padding: 0 11px; border-radius: 22px; border: 1.5px solid #2a64ad; background: transparent; color: #1d4586; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#1d4586" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20V10a6 6 0 0 1 12 0v10l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5z"></path><path d="M10 10h.01M14 10h.01"></path></svg>
+                            <span>Recourir</span>
+                          </button>
+                        </sc-if>
+                        <sc-if value="{{r.noGhost}}" hint-placeholder-val="{{ false }}">
+                          <span style="flex-shrink: 0; width: 70px; text-align: right; font-size: 11.5px; line-height: 15px; color: #786a59;">sans trace GPS</span>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                    <button onClick="{{goHistory}}" style="display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 46px; background: transparent; border: none; color: #1d4586; font-size: 13.5px; font-weight: 700;">
+                      <span>Tout l'historique</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d4586" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+                    </button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <!-- Autre chose : Course libre seule (Q6, Q7) -->
+              <sc-if value="{{showOther}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.4px;">Autre chose</span>
+                  <button onClick="{{goFree}}" style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 0 14px; border-radius: 18px; border: 1px solid #e3d3ba; background: #fffaf2; color: #33291f; text-align: left;">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2a64ad" stroke-width="2" stroke-linecap="round"><path d="M5 19c2.5-6 6-2 7.5-7S17 6 19 5"></path><circle cx="5" cy="19" r="1.7"></circle><circle cx="19" cy="5" r="1.7"></circle></svg>
+                    <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;">
+                      <span style="font-size: 15px; font-weight: 700;">Course libre</span>
+                      <span style="font-size: 12.5px; color: #786a59;">sans séance, tout est enregistré</span>
+                    </span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+                  </button>
+                </div>
+              </sc-if>
+              <!-- Ta semaine -->
+              <sc-if value="{{showWeek}}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{toastPlanning}}" style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 22px; border: 1px solid #e3d3ba; background: #fffaf2; color: #33291f; text-align: left;">
+                  <div style="display: flex; align-items: baseline; justify-content: space-between; width: 100%;">
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.4px;">Ta semaine</span>
+                    <span style="font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700; color: #1d4586;">{{week.count}}</span>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; width: 100%;">
+                    <sc-for list="{{week.days}}" as="d" hint-placeholder-count="7">
+                      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                        <span style="font-size: 11px; font-weight: 700; color: {{d.labelColor}};">{{d.l}}</span>
+                        <span style="width: 32px; height: 32px; border-radius: 16px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; background: {{d.bg}}; border: {{d.border}}; color: {{d.ink}}; font-size: 12px; font-weight: 800;">{{d.mark}}</span>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 10px; color: #5e5244;">{{d.km}}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <span style="font-size: 13px; line-height: 19px; color: #5e5244;">{{week.rest}}</span>
+                  <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #786a59;">{{week.vol}}</span>
+                </button>
+              </sc-if>
+
+              <!-- Ton programme -->
+              <sc-if value="{{showProgram}}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{toastPrograms}}" style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 22px; border: 1px solid #e3d3ba; background: #fffaf2; color: #33291f; text-align: left;">
+                  <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1.3px; color: #2a64ad; font-weight: 700;">TON PROGRAMME</span>
+                  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; width: 100%;">
+                    <div style="display: flex; flex-direction: column; gap: 2px;">
+                      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -0.4px;">10 km en 8 semaines</span>
+                      <span style="font-size: 13px; color: #786a59;">{{prog.meta}}</span>
+                    </div>
+                    <div style="flex-shrink: 0; display: flex; flex-direction: column; align-items: flex-end;">
+                      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; line-height: 30px; letter-spacing: -1px; color: #1d4586;">J-44</span>
+                      <span style="font-size: 11.5px; color: #786a59;">dim. 08/11</span>
+                    </div>
+                  </div>
+                  <div style="height: 8px; width: 100%; border-radius: 4px; background: #dfe7f2; overflow: hidden;">
+                    <div style="height: 8px; width: {{prog.pct}}; border-radius: 4px; background: #2a64ad;"></div>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; box-sizing: border-box; border-radius: 14px; background: #f7eede;">
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;">
+                      <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; color: #786a59;">OBJECTIF · 10 KM</span>
+                      <span style="font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700;">49:00</span>
+                    </div>
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 1px;">
+                      <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; color: #786a59;">ESTIMÉ AUJOURD’HUI</span>
+                      <span style="font-family: 'Space Mono', monospace; font-size: 17px; font-weight: 700; color: #1d4586;">49:21</span>
+                    </div>
+                  </div>
+                </button>
+              </sc-if>
+
+            </div>
+          </sc-if>
+
+          <!-- ═════════ HISTORIQUE ═════════ -->
+          <sc-if value="{{isHistTab}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 16px; padding: 16px 16px 28px;">
+              <sc-if value="{{encours}}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{resume}}" style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 16px; border: none; background: #2a64ad; color: #ffffff; text-align: left;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="#ffffff"><path d="M7 4.5v15l12.5-7.5z"></path></svg>
+                  <span style="flex-grow: 1; font-size: 14px; font-weight: 700;">Course en cours · 3,42 km</span>
+                  <span style="font-size: 14px; font-weight: 800;">Reprendre</span>
+                </button>
+              </sc-if>
+
+              <div style="display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                <div style="display: flex; align-items: center; gap: 4px;">
+                  <button aria-label="Mois précédent" disabled="{{cal.noPrev}}" onClick="{{cal.prev}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 22px; border: none; background: transparent; opacity: {{cal.prevOp}};">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.4" stroke-linecap="round"><path d="M15 6l-6 6 6 6"></path></svg>
+                  </button>
+                  <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 1px;">
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -0.3px;">{{cal.title}}</span>
+                    <span style="font-family: 'Space Mono', monospace; font-size: 11.5px; color: #5e5244;">{{cal.line1}}</span>
+                  </div>
+                  <button aria-label="Mois suivant" disabled="{{cal.noNext}}" onClick="{{cal.next}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 22px; border: none; background: transparent; opacity: {{cal.nextOp}};">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+                  </button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px;">
+                  <sc-for list="{{weekdays}}" as="w" hint-placeholder-count="7">
+                    <span style="text-align: center; font-size: 11px; font-weight: 700; color: #786a59;">{{w}}</span>
+                  </sc-for>
+                  <sc-for list="{{cal.cells}}" as="c" hint-placeholder-count="35">
+                    <div style="height: 40px; display: flex; align-items: center; justify-content: center;">
+                      <sc-if value="{{c.isRun}}" hint-placeholder-val="{{ false }}">
+                        <button aria-label="{{c.a11y}}" onClick="{{c.open}}" style="position: relative; width: 38px; height: 38px; border-radius: 19px; border: none; background: #2a64ad; color: #ffffff; font-size: 13px; font-weight: 800; box-shadow: {{c.ring}};">
+                          {{c.label}}
+                          <sc-if value="{{c.hasRec}}" hint-placeholder-val="{{ false }}">
+                            <span style="position: absolute; top: -1px; right: -1px; width: 11px; height: 11px; border-radius: 6px; background: #e0a526; border: 2px solid #fffaf2;"></span>
+                          </sc-if>
+                        </button>
+                      </sc-if>
+                      <sc-if value="{{c.isPlain}}" hint-placeholder-val="{{ true }}">
+                        <span style="width: 38px; height: 38px; box-sizing: border-box; border-radius: 19px; border: {{c.border}}; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: {{c.weight}}; color: {{c.color}};">{{c.label}}</span>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding-top: 2px;">
+                  <span style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: #5e5244;"><span style="width: 12px; height: 12px; border-radius: 6px; background: #2a64ad;"></span>sortie</span>
+                  <span style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: #5e5244;"><span style="width: 10px; height: 10px; border-radius: 5px; background: #e0a526;"></span>record</span>
+                  <span style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: #5e5244;"><span style="width: 12px; height: 12px; box-sizing: border-box; border-radius: 6px; border: 1.5px dashed #2a64ad;"></span>prévue</span>
+                  <span style="flex-grow: 1; text-align: right; font-size: 11.5px; font-weight: 700; color: #6b4c0f;">{{cal.line2}}</span>
+                </div>
+              </div>
+
+              <div role="tablist" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: #efe5d4;">
+                <sc-for list="{{histTabs}}" as="h" hint-placeholder-count="2">
+                  <button role="tab" aria-selected="{{h.pressed}}" onClick="{{h.pick}}" style="height: 44px; border-radius: 11px; border: none; background: {{h.bg}}; color: {{h.color}}; font-size: 14px; font-weight: 700;">{{h.label}}</button>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{isSorties}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <sc-if value="{{hasFilter}}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{clearFilter}}" style="align-self: flex-start; display: flex; align-items: center; gap: 6px; height: 36px; padding: 0 12px; border-radius: 18px; border: none; background: #1d4586; color: #ffffff; font-size: 13px; font-weight: 700;">
+                      <span>{{filterLabel}}</span>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{listEmpty}}" hint-placeholder-val="{{ false }}">
+                    <span style="padding: 18px; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba; text-align: center; font-size: 14px; color: #786a59;">Aucune sortie ce mois-ci.</span>
+                  </sc-if>
+                  <sc-if value="{{hasList}}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+                    <sc-for list="{{monthRows}}" as="r" hint-placeholder-count="6">
+                      <div style="display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #efe3cf;">
+                        <button onClick="{{r.open}}" aria-label="{{r.openLabel}}" style="flex-grow: 1; min-width: 0; display: flex; align-items: center; gap: 11px; padding: 0; background: transparent; border: none; text-align: left; color: #33291f;">
+                          <span style="flex-shrink: 0; width: 44px; height: 48px; border-radius: 12px; background: {{r.dateBg}}; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <span style="font-family: 'Space Mono', monospace; font-size: 9.5px; font-weight: 700; color: {{r.dateInk}};">{{r.dow}}</span>
+                            <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px; line-height: 20px; color: {{r.dayInk}};">{{r.day}}</span>
+                          </span>
+                          <span style="min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                            <span style="display: flex; align-items: center; gap: 6px;">
+                              <span style="font-size: 14.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.name}}</span>
+                              <sc-if value="{{r.hasRec}}" hint-placeholder-val="{{ false }}">
+                                <span style="flex-shrink: 0; padding: 1px 6px; border-radius: 7px; background: #f5e6c4; color: #6b4c0f; font-size: 11px; font-weight: 700;">{{r.rec}}</span>
+                              </sc-if>
+                            </span>
+                            <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #5e5244;">{{r.meta}}</span>
+                            <span style="font-size: 12px; color: #786a59; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.sub}}</span>
+                          </span>
+                        </button>
+                        <sc-if value="{{r.canGhost}}" hint-placeholder-val="{{ true }}">
+                          <button onClick="{{r.ghost}}" aria-label="{{r.ghostLabel}}" style="flex-shrink: 0; width: 44px; height: 44px; border-radius: 22px; border: 1.5px solid #2a64ad; background: transparent; display: flex; align-items: center; justify-content: center;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d4586" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 20V10a6 6 0 0 1 12 0v10l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5z"></path><path d="M10 10h.01M14 10h.01"></path></svg>
+                          </button>
+                        </sc-if>
+                      </div>
+                    </sc-for>
+                  </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{isTypes}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 8px;">
+                  <span style="font-size: 13px; line-height: 19px; color: #786a59;">Chaque type de séance, et ce que tu y as fait la dernière fois. Touche un type pour ne voir que ses sorties.</span>
+                  <sc-for list="{{typeRows}}" as="y" hint-placeholder-count="4">
+                    <button onClick="{{y.pick}}" style="display: flex; flex-direction: column; gap: 4px; padding: 13px 14px; border-radius: 18px; border: 1px solid #e3d3ba; background: #fffaf2; color: #33291f; text-align: left;">
+                      <span style="display: flex; align-items: baseline; justify-content: space-between; width: 100%;">
+                        <span style="font-size: 15px; font-weight: 800;">{{y.name}}</span>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 11.5px; color: #786a59;">{{y.count}}</span>
+                      </span>
+                      <span style="font-size: 13px; color: #5e5244;">{{y.last}}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- ═════════ PROGRÈS ═════════ -->
+          <sc-if value="{{isProgTab}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 16px 28px;">
+              <sc-if value="{{encours}}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{resume}}" style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 16px; border: none; background: #2a64ad; color: #ffffff; text-align: left;">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="#ffffff"><path d="M7 4.5v15l12.5-7.5z"></path></svg>
+                  <span style="flex-grow: 1; font-size: 14px; font-weight: 700;">Course en cours · 3,42 km</span>
+                  <span style="font-size: 14px; font-weight: 800;">Reprendre</span>
+                </button>
+              </sc-if>
+
+              <sc-if value="{{isDebut}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 12px; padding: 22px 18px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px; line-height: 27px; letter-spacing: -0.5px;">Ta progression démarre à ta première sortie.</span>
+                  <span style="font-size: 14px; line-height: 21px; color: #786a59;">Allure, records, estimations de chrono : tout s'affichera ici.</span>
+                  <button onClick="{{goRunTab}}" style="align-self: flex-start; height: 48px; padding: 0 20px; border-radius: 16px; border: none; background: #2a64ad; color: #ffffff; font-size: 15px; font-weight: 700;">Commencer</button>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{hasRuns}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                  <!-- Le fil du jour -->
+                  <button onClick="{{toastInsights}}" style="display: flex; align-items: center; gap: 12px; padding: 13px 14px; border-radius: 18px; border: 1px solid #e3d3ba; background: #fffaf2; color: #33291f; text-align: left;">
+                    <span style="flex-shrink: 0; width: 36px; height: 36px; border-radius: 18px; background: #e1eaf6; display: flex; align-items: center; justify-content: center;">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d4586" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 4 3 7-8"></path><path d="M15 7h5v5"></path></svg>
+                    </span>
+                    <span style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px;">
+                      <span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.2px; color: #2a64ad; font-weight: 700;">AUJOURD'HUI</span>
+                      <span style="font-size: 14px; line-height: 20px; font-weight: 600;">Ton allure s'améliore : 9 s/km de mieux en un mois.</span>
+                    </span>
+                  </button>
+
+                  <!-- Ton allure : le panneau du pilier -->
+                  <div style="display: flex; flex-direction: column; gap: 10px; padding: 18px; border-radius: 24px; background: linear-gradient(160deg, #2a64ad 0%, #1d4586 70%, #163a73 100%); color: #ffffff;">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                      <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1.3px; color: #d6e6fa; font-weight: 700;">TON ALLURE · 30 J VS 30 J</span>
+                      <span style="font-size: 12px; color: #d6e6fa;">13 vs 11 sorties</span>
+                    </div>
+                    <div style="display: flex; align-items: baseline; gap: 10px;">
+                      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 56px; line-height: 56px; letter-spacing: -2.4px;">5:31</span>
+                      <span style="font-size: 15px; color: #d6e6fa;">/km</span>
+                      <span style="margin-left: auto; padding: 4px 10px; border-radius: 10px; background: rgba(255,255,255,0.16); font-size: 13.5px; font-weight: 800;">+9 s/km</span>
+                    </div>
+                    <svg width="100%" height="56" viewBox="0 0 320 56" preserveAspectRatio="none" aria-hidden="true">
+                      <polyline points="0,44 30,40 60,46 90,36 120,38 150,30 180,33 210,24 240,26 270,17 300,14 320,12" fill="none" stroke="#b7d6ff" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"></polyline>
+                    </svg>
+                    <span style="font-size: 13.5px; line-height: 20px; color: #ffffff;">Plus rapide que le mois précédent, qui était à 5:40.</span>
+                  </div>
+
+                  <!-- Si tu courais demain -->
+                  <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px;">Si tu courais demain</span>
+                      <span style="font-size: 12px; color: #786a59;">depuis ton record 5 km</span>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+                      <div style="display: flex; flex-direction: column; gap: 2px; padding: 9px 8px; border-radius: 12px; background: #f7eede;"><span style="font-size: 11px; font-weight: 700; color: #786a59;">5 km</span><span style="font-family: 'Space Mono', monospace; font-size: 13.5px; font-weight: 700;">23:40</span></div>
+                      <div style="display: flex; flex-direction: column; gap: 2px; padding: 9px 8px; border-radius: 12px; background: #e1eaf6;"><span style="font-size: 11px; font-weight: 700; color: #1d4586;">10 km</span><span style="font-family: 'Space Mono', monospace; font-size: 13.5px; font-weight: 700; color: #1d4586;">49:21</span></div>
+                      <div style="display: flex; flex-direction: column; gap: 2px; padding: 9px 8px; border-radius: 12px; background: #f7eede;"><span style="font-size: 11px; font-weight: 700; color: #786a59;">Semi</span><span style="font-family: 'Space Mono', monospace; font-size: 13.5px; font-weight: 700;">1:49:30</span></div>
+                      <div style="display: flex; flex-direction: column; gap: 2px; padding: 9px 8px; border-radius: 12px; background: #f7eede;"><span style="font-size: 11px; font-weight: 700; color: #786a59;">Marathon</span><span style="font-family: 'Space Mono', monospace; font-size: 13.5px; font-weight: 700;">3:52:10</span></div>
+                    </div>
+                  </div>
+
+                  <!-- Ton moteur -->
+                  <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px;">Ton moteur</span>
+                    <div style="display: flex; height: 14px; border-radius: 7px; overflow: hidden;">
+                      <div style="width: 78%; background: #2a64ad;"></div>
+                      <div style="width: 22%; background: #e0a526;"></div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 13px; font-weight: 700;"><span style="color: #1d4586;">78 % endurance</span><span style="color: #6b4c0f;">22 % intensité</span></div>
+                    <span style="font-size: 12.5px; line-height: 18px; color: #786a59;">Sur 99 km tracés. Le repère souvent cité est ~80 % en endurance : c'est un repère, pas un objectif.</span>
+                  </div>
+
+                  <!-- Tes records -->
+                  <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 0 16px 16px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px;">Tes records</span>
+                    <div class="nosb" style="display: flex; gap: 8px; overflow-x: auto; padding-right: 16px; scrollbar-width: none;">
+                      <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; width: 92px; padding: 10px; border-radius: 14px; background: #f5e6c4;"><span style="font-size: 11px; font-weight: 700; color: #6b4c0f;">5 km</span><span style="font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700;">23:40</span><span style="font-size: 11px; color: #6b4c0f;">16/09</span></div>
+                      <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; width: 92px; padding: 10px; border-radius: 14px; background: #f7eede;"><span style="font-size: 11px; font-weight: 700; color: #786a59;">1 km</span><span style="font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700;">4:21</span><span style="font-size: 11px; color: #786a59;">21/08</span></div>
+                      <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; width: 92px; padding: 10px; border-radius: 14px; background: #f7eede;"><span style="font-size: 11px; font-weight: 700; color: #786a59;">10 km</span><span style="font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700;">51:02</span><span style="font-size: 11px; color: #786a59;">13/09</span></div>
+                      <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 2px; width: 92px; padding: 10px; border-radius: 14px; background: #f7eede;"><span style="font-size: 11px; font-weight: 700; color: #786a59;">Semi</span><span style="font-family: 'Space Mono', monospace; font-size: 15px; font-weight: 700;">—</span><span style="font-size: 11px; color: #786a59;">pas encore</span></div>
+                    </div>
+                  </div>
+
+                  <!-- Ta charge -->
+                  <div style="display: flex; align-items: center; gap: 14px; padding: 16px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1px; color: #1d4586;">1,08</span>
+                    <span style="display: flex; flex-direction: column; gap: 2px;">
+                      <span style="font-size: 15px; font-weight: 800;">Ta charge</span>
+                      <span style="font-size: 13px; color: #786a59;">Dans ta zone habituelle.</span>
+                    </span>
+                  </div>
+
+                  <!-- Km par km -->
+                  <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px;">Km par km</span>
+                      <span style="font-size: 12px; color: #786a59;">{{splitsFor}}</span>
+                    </div>
+                    <div style="display: flex; align-items: flex-end; gap: 6px; height: 70px;">
+                      <sc-for list="{{progSplits}}" as="b" hint-placeholder-count="8">
+                        <div style="flex-grow: 1; height: {{b.h}}px; border-radius: 6px 6px 3px 3px; background: {{b.bg}};"></div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <span style="padding: 2px 4px; font-size: 13.5px; line-height: 20px; color: #5e5244;">498 km depuis le début, en 47 h 20 et 74 sorties.</span>
+
+                  <button onClick="{{toastStats}}" style="display: flex; align-items: center; justify-content: center; gap: 6px; min-height: 50px; border-radius: 16px; border: 1.5px solid #2a64ad; background: transparent; color: #1d4586; font-size: 14.5px; font-weight: 700;">
+                    <span>Toutes tes stats</span>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1d4586" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+                  </button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ═════════════ DÉTAIL D'UNE SORTIE ═════════════ -->
+      <sc-if value="{{isDetail}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; padding-bottom: 110px;">
+          <div style="display: flex; align-items: center; gap: 2px; height: 56px; padding: 0 8px; border-bottom: 1px solid #e3d3ba;">
+            <button onClick="{{back}}" aria-label="Retour" style="display: flex; align-items: center; gap: 2px; height: 44px; padding: 0 8px; border: none; background: transparent; color: #1d4586; font-size: 15px; font-weight: 700;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d4586" stroke-width="2.4" stroke-linecap="round"><path d="M15 6l-6 6 6 6"></path></svg>
+              <span>{{backLabel}}</span>
+            </button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 16px; padding: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1.3px; color: #2a64ad; font-weight: 700;">{{d.eyebrow}}</span>
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px; line-height: 32px; letter-spacing: -0.8px;">{{d.name}}</span>
+              <span style="font-size: 13.5px; color: #786a59;">{{d.when}}</span>
+            </div>
+            <sc-if value="{{d.hasRec}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; align-items: center; gap: 9px; padding: 10px 12px; border-radius: 14px; background: #f5e6c4;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#6b4c0f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"></path><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"></path><path d="M12 13v4M8.5 20h7"></path></svg>
+                <span style="font-size: 13.5px; font-weight: 700; color: #4d370c;">{{d.rec}}</span>
+              </div>
+            </sc-if>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+              <sc-for list="{{d.figures}}" as="f" hint-placeholder-count="4">
+                <div style="display: flex; flex-direction: column; gap: 2px; padding: 12px; border-radius: 16px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                  <span style="font-size: 10.5px; font-weight: 700; letter-spacing: 0.6px; color: #786a59;">{{f.label}}</span>
+                  <span style="font-family: 'Space Mono', monospace; font-size: 18px; font-weight: 700;">{{f.value}}</span>
+                </div>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{d.canGhost}}" hint-placeholder-val="{{ true }}">
+              <button onClick="{{d.ghost}}" style="height: 58px; border-radius: 16px; border: none; background: #2a64ad; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;">
+                <span style="font-size: 15.5px; font-weight: 800;">Recourir cette sortie</span>
+                <span style="font-size: 12px; color: #d6e6fa;">elle court à côté de toi, en fantôme</span>
+              </button>
+            </sc-if>
+
+            <sc-if value="{{d.hasReps}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 8px; padding: 14px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px;">Les fractions</span>
+                  <span style="font-size: 12px; color: #786a59;">plage 1:32–1:36</span>
+                </div>
+                <sc-for list="{{d.reps}}" as="r" hint-placeholder-count="6">
+                  <div style="display: grid; grid-template-columns: 34px minmax(0, 1fr) 70px 70px; align-items: center; gap: 8px; min-height: 30px; border-top: 1px solid #efe3cf;">
+                    <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #786a59;">{{r.n}}</span>
+                    <span style="font-size: 13px;">400 m</span>
+                    <span style="font-family: 'Space Mono', monospace; font-size: 13.5px; font-weight: 700; color: {{r.ink}};">{{r.t}}</span>
+                    <span style="justify-self: end; padding: 1px 7px; border-radius: 7px; background: {{r.bg}}; color: {{r.tagInk}}; font-size: 11px; font-weight: 700;">{{r.tag}}</span>
+                  </div>
+                </sc-for>
+                <span style="font-size: 12.5px; color: #5e5244;">{{d.repsLine}}</span>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{d.hasSplits}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px;">Km par km</span>
+                <div style="display: flex; align-items: flex-end; gap: 5px; height: 76px;">
+                  <sc-for list="{{d.splits}}" as="b" hint-placeholder-count="7">
+                    <div style="flex-grow: 1; display: flex; flex-direction: column; align-items: center; gap: 3px;">
+                      <span style="font-family: 'Space Mono', monospace; font-size: 9px; color: #5e5244;">{{b.p}}</span>
+                      <div style="width: 100%; height: {{b.h}}px; border-radius: 5px 5px 2px 2px; background: {{b.bg}};"></div>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{d.noTrack}}" hint-placeholder-val="{{ false }}">
+              <span style="padding: 14px; border-radius: 16px; background: #efe5d4; font-size: 13.5px; line-height: 20px; color: #5e5244;">Sortie sans trace GPS (tapis) : ni carte, ni km par km, ni fantôme.</span>
+            </sc-if>
+
+            <div style="display: flex; gap: 8px;">
+              <button onClick="{{toastShare}}" style="flex-grow: 1; height: 44px; border-radius: 14px; border: 1px solid #e3d3ba; background: #fffaf2; color: #33291f; font-size: 13.5px; font-weight: 700;">Partager</button>
+              <button onClick="{{toastFix}}" style="flex-grow: 1; height: 44px; border-radius: 14px; border: 1px solid #e3d3ba; background: #fffaf2; color: #33291f; font-size: 13.5px; font-weight: 700;">Corriger</button>
+              <button onClick="{{toastDelete}}" style="flex-grow: 1; height: 44px; border-radius: 14px; border: 1px solid #e3d3ba; background: #fffaf2; color: #33291f; font-size: 13.5px; font-weight: 700;">Supprimer</button>
+            </div>
+          </div>
+        </div>
+      </sc-if>
+
+      <!-- ═════════════ ÉCRAN DE DÉPART ═════════════ -->
+      <sc-if value="{{isDepart}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; padding-bottom: 110px;">
+          <div style="display: flex; align-items: center; height: 56px; padding: 0 8px; border-bottom: 1px solid #e3d3ba;">
+            <button onClick="{{backHub}}" aria-label="Retour" style="display: flex; align-items: center; gap: 2px; height: 44px; padding: 0 8px; border: none; background: transparent; color: #1d4586; font-size: 15px; font-weight: 700;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1d4586" stroke-width="2.4" stroke-linecap="round"><path d="M15 6l-6 6 6 6"></path></svg>
+              <span>Course</span>
+            </button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 16px; padding: 16px;">
+            <div style="display: flex; flex-direction: column; gap: 4px;">
+              <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1.3px; color: #2a64ad; font-weight: 700;">{{dep.eyebrow}}</span>
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px; line-height: 32px; letter-spacing: -0.8px;">{{dep.title}}</span>
+              <span style="font-size: 13.5px; line-height: 19px; color: #786a59;">{{dep.meta}}</span>
+            </div>
+            <sc-if value="{{dep.showChips}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+                  <span style="padding: 5px 9px; border-radius: 9px; background: {{c.bg}}; color: {{c.color}}; font-size: 12.5px; font-weight: 600;">{{c.label}}</span>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.6px; color: #786a59;">MODE · RETENU DE TA DERNIÈRE SORTIE</span>
+              <div role="radiogroup" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+                <sc-for list="{{modes}}" as="o" hint-placeholder-count="2">
+                  <button role="radio" aria-checked="{{o.checked}}" onClick="{{o.pick}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px; min-height: 64px; padding: 11px 12px; border-radius: 16px; border: {{o.border}}; background: {{o.bg}}; color: #33291f; text-align: left;">
+                    <span style="font-size: 14.5px; font-weight: 800;">{{o.label}}</span>
+                    <span style="font-size: 12px; line-height: 16px; color: #786a59;">{{o.hint}}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+
+            <sc-if value="{{dep.showGhost}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.6px; color: #786a59;">UN FANTÔME ? PROPOSÉ, JAMAIS IMPOSÉ</span>
+                <sc-for list="{{ghostOpts}}" as="g" hint-placeholder-count="3">
+                  <button role="radio" aria-checked="{{g.checked}}" onClick="{{g.pick}}" style="display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 0 12px; border-radius: 14px; border: {{g.border}}; background: {{g.bg}}; color: #33291f; text-align: left;">
+                    <span style="flex-shrink: 0; width: 18px; height: 18px; box-sizing: border-box; border-radius: 9px; border: {{g.dot}};"></span>
+                    <span style="flex-grow: 1; font-size: 13.5px; font-weight: 600;">{{g.label}}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{dep.manualNote}}" hint-placeholder-val="{{ false }}">
+              <span style="padding: 12px 14px; border-radius: 14px; background: #efe5d4; font-size: 13px; line-height: 19px; color: #5e5244;">Sans GPS : pas de fantôme, et tu saisiras la distance à la fin.</span>
+            </sc-if>
+
+            <sc-if value="{{dep.gpsLine}}" hint-placeholder-val="{{ true }}">
+              <span style="display: flex; align-items: center; gap: 8px; font-size: 13px; color: #5e5244;">
+                <span style="width: 10px; height: 10px; border-radius: 5px; background: #2a64ad;"></span>
+                GPS prêt · précision 6 m
+              </span>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- Bouton collé en bas : détail (Recourir) ou départ (Démarrer) -->
+    <sc-if value="{{showDetailCta}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; left: 0; right: 0; bottom: 74px; padding: 12px 16px; background: #f7eede; border-top: 1px solid #e3d3ba;">
+        <button onClick="{{d.ghost}}" style="width: 100%; height: 56px; border-radius: 16px; border: none; background: #2a64ad; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;">
+          <span style="font-size: 15.5px; font-weight: 800;">Recourir cette sortie</span>
+          <span style="font-size: 12px; color: #d6e6fa;">elle court à côté de toi, en fantôme</span>
+        </button>
+      </div>
+    </sc-if>
+    <sc-if value="{{isDepart}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; left: 0; right: 0; bottom: 74px; padding: 12px 16px; background: #f7eede; border-top: 1px solid #e3d3ba;">
+        <button onClick="{{startRun}}" style="width: 100%; height: 56px; border-radius: 16px; border: none; background: #2a64ad; color: #ffffff; font-size: 16.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff"><path d="M7 4.5v15l12.5-7.5z"></path></svg>
+          <span>{{dep.cta}}</span>
+        </button>
+      </div>
+    </sc-if>
+
+    <!-- Barre du bas -->
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 74px; box-sizing: border-box; padding: 6px 6px 14px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #fffaf2; border-top: 1px solid #e3d3ba;">
+      <sc-for list="{{nav}}" as="n" hint-placeholder-count="5">
+        <button onClick="{{n.pick}}" aria-label="{{n.label}}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: none; background: transparent; color: {{n.color}};">
+          <span style="width: 44px; height: 28px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background: {{n.pill}};">
+            <sc-if value="{{n.isHome}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{n.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-6 8 6v8.5H4z"></path></svg></sc-if>
+            <sc-if value="{{n.isStrength}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{n.color}}" stroke-width="2" stroke-linecap="round"><path d="M6 8v8M3.5 10v4M18 8v8M20.5 10v4M6 12h12"></path></svg></sc-if>
+            <sc-if value="{{n.isRun}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{n.color}}" stroke-width="2" stroke-linecap="round"><path d="M5 19c2.5-6 6-2 7.5-7S17 6 19 5"></path><circle cx="5" cy="19" r="1.7"></circle><circle cx="19" cy="5" r="1.7"></circle></svg></sc-if>
+            <sc-if value="{{n.isFood}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{n.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18c0-7 5-12 13-12 0 8-5 13-12 13"></path><path d="M6 18l7-7"></path></svg></sc-if>
+            <sc-if value="{{n.isLab}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{n.color}}" stroke-width="2"><circle cx="12" cy="12" r="8"></circle><circle cx="12" cy="12" r="3"></circle></svg></sc-if>
+          </span>
+          <span style="font-size: 11px; font-weight: {{n.weight}};">{{n.label}}</span>
+        </button>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="position: absolute; top: 14px; left: 16px; right: 16px; padding: 12px 14px; border-radius: 14px; background: #33291f; color: #f4ecdd; font-size: 13.5px; line-height: 19px; box-shadow: 0 10px 30px rgba(51,41,31,0.28); animation: toastin 0.25s ease-out both;">{{toast}}</div>
+    </sc-if>
+
+    <sc-if value="{{busy}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 24px; background: rgba(28,21,14,0.5); animation: fadein 0.2s ease-out both;">
+        <div role="alertdialog" aria-label="Une course est en cours" style="display: flex; flex-direction: column; gap: 10px; width: 100%; padding: 20px; border-radius: 22px; background: #fffaf2; animation: popin 0.2s ease-out both;">
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px;">Une course est en cours</span>
+          <span style="font-size: 14px; line-height: 21px; color: #5e5244;">Termine-la ou reprends-la avant d'en commencer une autre.</span>
+          <div style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 6px;">
+            <button onClick="{{closeBusy}}" style="height: 44px; padding: 0 16px; border-radius: 14px; border: 1px solid #e3d3ba; background: transparent; color: #33291f; font-size: 14px; font-weight: 700;">Annuler</button>
+            <button onClick="{{resume}}" style="height: 44px; padding: 0 16px; border-radius: 14px; border: none; background: #2a64ad; color: #ffffff; font-size: 14px; font-weight: 700;">Reprendre</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"section":{"editor":"enum","options":["run","history","progress"],"default":"run"},"etat":{"editor":"enum","options":["prevue","repos","encours","arrivee","debut"],"default":"prevue"},"screen":{"editor":"enum","options":["hub","detail","depart"],"default":"hub"},"histTab":{"editor":"enum","options":["sorties","types"],"default":"sorties"},"sortie":{"editor":"enum","options":["s18","s20","s16","s07","a25"],"default":"s18"},"depFrom":{"editor":"enum","options":["today","free","ghost"],"default":"today"},"chrome":{"editor":"boolean","default":true},"busy":{"editor":"boolean","default":false},"$preview":{"width":390,"height":904}}'>
+class Component extends DCLogic {
+  flash(msg) {
+    clearTimeout(this._t);
+    this.setState({ toast: msg });
+    this._t = setTimeout(() => this.setState({ toast: null }), 3400);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this._t);
+  }
+
+  renderVals() {
+    const st = this.state || {};
+    const pick = (k, d) => (st[k] !== undefined ? st[k] : (this.props[k] !== undefined ? this.props[k] : d));
+    const etat = pick('etat', 'prevue');
+    const screen = pick('screen', 'hub');
+    const section = pick('section', 'run');
+    const histTab = pick('histTab', 'sorties');
+    const sortieId = pick('sortie', 's18');
+    const depFrom = pick('depFrom', 'today');
+    const busy = !!pick('busy', false);
+    const chrome = this.props.chrome === undefined ? true : !!this.props.chrome;
+    const month = st.month || '2026-09';
+    const typeFilter = st.typeFilter || null;
+    const mode = st.mode || 'gps';
+    const backTo = st.backTo || 'history';
+    const encours = etat === 'encours';
+    const debut = etat === 'debut';
+    const arrivee = etat === 'arrivee';
+    const prevue = etat === 'prevue';
+    const repos = etat === 'repos';
+    const pad = (n) => String(n).padStart(2, '0');
+    const fmtKm = (km) => km.toFixed(1).replace('.', ',');
+    const toSec = (s) => s.split(':').map(Number).reduce((a, b) => a * 60 + b, 0);
+    const fromSec = (s) => Math.floor(s / 60) + ':' + pad(Math.round(s % 60));
+
+    const TYPES = { frac: 'Fractionné (VMA)', sl: 'Sortie longue', ef: 'Endurance fondamentale', libre: 'Course libre' };
+    const DOW = ['DIM.', 'LUN.', 'MAR.', 'MER.', 'JEU.', 'VEN.', 'SAM.'];
+    const DOWL = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+    const DOWS = ['dim.', 'lun.', 'mar.', 'mer.', 'jeu.', 'ven.', 'sam.'];
+    const R = (id, m, d, type, km, dur, pace, o) => {
+      const x = o || {};
+      const wd = new Date(2026, m - 1, d).getDay();
+      return {
+        id, m, d, type, km, dur, pace, wd,
+        hh: x.hh || '18:30', terrain: x.terrain || 'Route', gps: x.gps !== false, rec: x.rec || null,
+        feel: x.feel || 'facile', reps: x.reps || null, splits: x.splits || null,
+      };
+    };
+    const REPS18 = ['1:36', '1:34', '1:35', '1:33', '1:37', '1:35'];
+    const REPS25 = ['1:35', '1:34', '1:34', '1:33', '1:35', '1:34'];
+    const REPS11 = ['1:37', '1:36', '1:36', '1:35', '1:38', '1:36'];
+    const TODAY = R('a25', 9, 25, 'frac', 7.5, '43:52', '5:51', { hh: '18:08', feel: 'difficile', reps: REPS25, splits: ['6:08', '6:01', '4:05', '5:38', '4:02', '5:50', '6:12'] });
+    const SEP = [
+      R('s23', 9, 23, 'ef', 8.1, '46:12', '5:42', { hh: '07:10', splits: ['5:48', '5:44', '5:41', '5:40', '5:42', '5:39', '5:41', '5:38'] }),
+      R('s21', 9, 21, 'ef', 7.2, '41:05', '5:42', { hh: '18:40', splits: ['5:46', '5:43', '5:42', '5:41', '5:40', '5:39', '5:41'] }),
+      R('s20', 9, 20, 'sl', 11.4, '1:07:30', '5:55', { hh: '09:15', terrain: 'Sentier', feel: 'dur sur la fin', splits: ['5:58', '5:52', '5:50', '5:51', '5:49', '5:53', '5:55', '5:57', '6:01', '6:04', '5:59'] }),
+      R('s18', 9, 18, 'frac', 7.4, '44:10', '5:58', { hh: '18:34', feel: 'difficile', reps: REPS18, splits: ['6:10', '6:02', '4:12', '5:41', '4:09', '5:52', '6:15'] }),
+      R('s16', 9, 16, 'libre', 5.0, '23:40', '4:44', { hh: '12:20', rec: 'Record 5 km', feel: 'à fond', splits: ['4:41', '4:46', '4:47', '4:45', '4:41'] }),
+      R('s14', 9, 14, 'ef', 7.0, '40:02', '5:43', { splits: ['5:47', '5:44', '5:43', '5:42', '5:41', '5:42', '5:43'] }),
+      R('s13', 9, 13, 'sl', 10.5, '1:02:10', '5:55', { hh: '09:30', terrain: 'Sentier', splits: ['5:58', '5:54', '5:53', '5:55', '5:52', '5:56', '5:55', '5:57', '5:54', '5:56'] }),
+      R('s11', 9, 11, 'frac', 7.1, '43:30', '6:08', { reps: REPS11, feel: 'difficile' }),
+      R('s09', 9, 9, 'ef', 6.8, '39:20', '5:47'),
+      R('s07', 9, 7, 'libre', 6.0, '36:00', '6:00', { terrain: 'Tapis', gps: false, feel: 'facile' }),
+      R('s06', 9, 6, 'sl', 10.0, '59:40', '5:58', { hh: '09:40' }),
+      R('s04', 9, 4, 'frac', 6.9, '43:10', '6:15', { feel: 'difficile' }),
+      R('s02', 9, 2, 'ef', 6.5, '37:50', '5:49'),
+    ];
+    const AUG = [
+      R('a30', 8, 30, 'sl', 9.5, '57:10', '6:01', { hh: '09:30' }),
+      R('a28', 8, 28, 'frac', 6.6, '42:05', '6:23'),
+      R('a26', 8, 26, 'ef', 6.2, '36:40', '5:55'),
+      R('a23', 8, 23, 'sl', 9.0, '54:30', '6:03', { hh: '09:20' }),
+      R('a21', 8, 21, 'frac', 6.4, '41:10', '6:26', { rec: 'Record 1 km' }),
+      R('a19', 8, 19, 'ef', 6.0, '35:40', '5:57'),
+      R('a16', 8, 16, 'sl', 8.5, '51:40', '6:05', { hh: '09:10' }),
+      R('a14', 8, 14, 'frac', 6.2, '40:20', '6:30'),
+      R('a12', 8, 12, 'ef', 5.8, '34:50', '6:00'),
+      R('a09', 8, 9, 'sl', 8.0, '48:50', '6:06', { hh: '09:00' }),
+      R('a07', 8, 7, 'ef', 5.6, '33:50', '6:03'),
+      R('a05', 8, 5, 'ef', 5.5, '33:30', '6:05'),
+      R('a03', 8, 3, 'libre', 5.0, '27:40', '5:32'),
+    ];
+    const all = debut ? [] : (arrivee ? [TODAY] : []).concat(SEP, AUG);
+    const byId = {};
+    [TODAY].concat(SEP, AUG).forEach((r) => { byId[r.id] = r; });
+
+    const toast = (msg) => () => this.flash(msg);
+    const openDetail = (id, from) => () => this.setState({ screen: 'detail', sortie: id, backTo: from, toast: null });
+    const goGhost = (id) => () => {
+      if (encours) { this.setState({ busy: true }); return; }
+      this.setState({ screen: 'depart', depFrom: 'ghost', ghostPick: id, toast: null });
+    };
+
+    const row = (r, from) => {
+      const isToday = r.id === 'a25';
+      const dd = pad(r.d) + '/' + pad(r.m);
+      return {
+        dow: isToday ? 'AUJ.' : DOW[r.wd], day: String(r.d), name: TYPES[r.type],
+        meta: fmtKm(r.km) + ' km · ' + r.dur + ' · ' + r.pace + '/km',
+        sub: r.terrain + ' · ' + r.feel,
+        hasRec: !!r.rec, rec: r.rec || '',
+        canGhost: r.gps, noGhost: !r.gps,
+        dateBg: isToday ? '#2a64ad' : '#e1eaf6', dateInk: isToday ? '#d6e6fa' : '#1d4586', dayInk: isToday ? '#ffffff' : '#33291f',
+        open: openDetail(r.id, from),
+        openLabel: TYPES[r.type] + ' du ' + DOWL[r.wd] + ' ' + dd + ', ' + fmtKm(r.km) + ' kilomètres',
+        ghost: goGhost(r.id),
+        ghostLabel: 'Recourir contre ta sortie du ' + dd,
+      };
+    };
+
+    // ── Situations, onglets ─────────────────────────────────────────────────────
+    const ETATS = [['prevue', 'Prévue'], ['repos', 'Repos'], ['encours', 'En cours'], ['arrivee', 'Finie'], ['debut', 'Débutant']];
+    const etats = ETATS.map(([k, label]) => ({
+      label,
+      bg: k === etat ? '#1d4586' : '#fffaf2',
+      color: k === etat ? '#ffffff' : '#33291f',
+      border: k === etat ? '#1d4586' : '#c9b79a',
+      pick: () => this.setState({ etat: k, screen: 'hub', busy: false, toast: null, typeFilter: null }),
+    }));
+    const tabs = [['run', 'Courir'], ['history', 'Historique'], ['progress', 'Progrès']].map(([k, label]) => ({
+      label,
+      pressed: k === section ? 'true' : 'false',
+      bg: k === section ? '#ffffff' : 'transparent',
+      color: k === section ? '#1d4586' : '#ffffff',
+      pick: () => this.setState({ section: k, typeFilter: null, toast: null }),
+    }));
+
+    // ── La carte du moment ─────────────────────────────────────────────────────
+    const toDepart = (from) => () => this.setState({ screen: 'depart', depFrom: from, ghostPick: from === 'ghost' ? st.ghostPick : 'none', toast: null });
+    const MOMENTS = {
+      prevue: {
+        eyebrow: 'AUJOURD’HUI · 18:30 · SEMAINE 3 SUR 8', title: 'Fractionné (VMA)',
+        meta: 'Dans 2 heures environ',
+        showChips: true, showLast: true, play: true, primary: 'Partir', onPrimary: toDepart('today'),
+      },
+      repos: {
+        eyebrow: 'REPOS · SEMAINE 3 SUR 8', title: 'Rien de prévu aujourd’hui',
+        meta: 'Prochaine séance le dim. 27/09 — Sortie longue, 12 km.',
+        play: false, primary: 'Course libre', onPrimary: toDepart('free'),
+        hasSecondary: true, secondary: 'Planning', onSecondary: toast('Ouvre le planning de la semaine.'),
+      },
+      encours: {
+        eyebrow: 'COURSE EN COURS', title: 'Fractionné (VMA)', meta: 'Suivi GPS',
+        showBig: true, big: '3,42', bigMeta: '21:08 déjà courues', showBar: false,
+        play: true, primary: 'Reprendre', onPrimary: () => this.flash('Retour sur l’écran de course.'),
+      },
+      arrivee: {
+        eyebrow: 'SORTIE TERMINÉE · 18:52', title: 'Fractionné (VMA)', meta: 'Route · difficile',
+        showBig: true, big: '7,50', bigMeta: '43:52 · 5:51/km de moyenne', showValid: true,
+        play: false, primary: 'Voir l’analyse', onPrimary: openDetail('a25', 'hub'),
+        hasSecondary: true, secondary: 'Partager', onSecondary: toast('La carte à partager (PARTAGE-01/02) s’ouvre.'),
+      },
+      debut: {
+        eyebrow: 'TON PILIER COURSE', title: 'Par où commencer ?',
+        meta: 'Suis un programme pour être guidé semaine après semaine, ou pars quand tu veux en course libre.',
+        showProfile: true, play: false, primary: 'Choisir un programme', onPrimary: toast('Ouvre la liste des programmes.'),
+        hasSecondary: true, secondary: 'Course libre', onSecondary: toDepart('free'),
+      },
+    };
+    const mm0 = MOMENTS[etat];
+    const m = Object.assign({ showBig: false, showChips: false, showLast: false, showBar: false, showValid: false, showProfile: false, hasSecondary: false, secondary: '', onSecondary: () => {}, big: '', bigMeta: '' }, mm0);
+
+    const chips = [
+      { label: '15 min échauffement', bg: '#efe5d4', color: '#5e5244' },
+      { label: '6 × 400 m · 3:50–4:00/km', bg: '#e1eaf6', color: '#1d4586' },
+      { label: 'récup 200 m trot', bg: '#efe5d4', color: '#5e5244' },
+      { label: '10 min retour au calme', bg: '#efe5d4', color: '#5e5244' },
+    ];
+    const inRange = (t) => { const s = toSec(t); return s >= 92 && s <= 96; };
+    const lastReps = REPS18.map((t, i) => {
+      const ok = inRange(t);
+      return { n: String(i + 1), t, bg: ok ? '#2a64ad' : '#fffaf2', border: ok ? '#2a64ad' : '#c9b79a', ink: ok ? '#ffffff' : '#5e5244', sub: ok ? '#d6e6fa' : '#786a59' };
+    });
+
+    const recent = all.slice(0, 3).map((r) => row(r, 'hub'));
+
+    // ── Ta semaine, ton programme ──────────────────────────────────────────────
+    const W = (l, state, km) => {
+      const S = {
+        done: { bg: '#2a64ad', border: 'none', ink: '#ffffff', mark: '✓' },
+        todo: { bg: 'transparent', border: '1.5px dashed #2a64ad', ink: '#1d4586', mark: '' },
+        today: { bg: 'transparent', border: '2px solid #33291f', ink: '#33291f', mark: '' },
+        todayPlanned: { bg: '#e1eaf6', border: '2px solid #33291f', ink: '#1d4586', mark: '' },
+        todayDone: { bg: '#2a64ad', border: '2px solid #33291f', ink: '#ffffff', mark: '✓' },
+        none: { bg: '#f1e7d6', border: 'none', ink: '#786a59', mark: '' },
+      }[state];
+      return Object.assign({ l, km: km || '', labelColor: state.indexOf('today') === 0 ? '#33291f' : '#786a59' }, S);
+    };
+    const todayState = arrivee ? 'todayDone' : (repos ? 'today' : 'todayPlanned');
+    const week = {
+      count: arrivee ? '3 sur 4 · 22,6 km' : '2 sur 4 · 15,3 km',
+      days: [W('L', 'done', '7,2'), W('M', 'none'), W('M', 'done', '8,1'), W('J', 'none'), W('V', todayState, arrivee ? '7,5' : (repos ? '' : '6,4')), W('S', 'none'), W('D', 'todo', '12')],
+      rest: arrivee || repos ? 'Il reste : dim. 27/09 — Sortie longue, 12 km.' : 'Il reste : aujourd’hui le fractionné, puis dim. 27/09 la sortie longue (12 km).',
+      vol: arrivee ? '2 h 11 · D+ 118 m' : '1 h 27 · D+ 96 m',
+    };
+    const prog = { meta: arrivee ? 'Semaine 3 sur 8 · 10 séances sur 32' : 'Semaine 3 sur 8 · 9 séances sur 32', pct: arrivee ? '31%' : '28%' };
+    const starters = [
+      { name: 'Reprise en douceur', meta: '4 semaines · 3 sorties par semaine' },
+      { name: 'Premiers 5 km', meta: '6 semaines · 3 sorties par semaine' },
+      { name: '10 km en 8 semaines', meta: '8 semaines · 4 sorties par semaine' },
+    ];
+
+    // ── Historique : le calendrier du mois ─────────────────────────────────────
+    const [yy, mo] = month.split('-').map(Number);
+    const MONTHS = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+    const offset = (new Date(yy, mo - 1, 1).getDay() + 6) % 7;
+    const dim = new Date(yy, mo, 0).getDate();
+    const monthRuns = all.filter((r) => r.m === mo);
+    const byDay = {};
+    monthRuns.forEach((r) => { if (!byDay[r.d]) byDay[r.d] = r; });
+    const plannedDays = mo === 9 && !debut ? (prevue || encours ? [25, 27, 28, 30] : [27, 28, 30]) : [];
+    const cells = [];
+    for (let i = 0; i < offset; i++) cells.push({ isRun: false, isPlain: false });
+    for (let d = 1; d <= dim; d++) {
+      const r = byDay[d];
+      const isToday = mo === 9 && d === 25;
+      if (r) {
+        cells.push({
+          isRun: true, isPlain: false, label: String(d), hasRec: !!r.rec,
+          ring: isToday ? '0 0 0 2px #fffaf2, 0 0 0 4px #33291f' : 'none',
+          open: openDetail(r.id, 'history'),
+          a11y: DOWL[r.wd] + ' ' + d + ' ' + MONTHS[mo - 1].toLowerCase() + ' : ' + TYPES[r.type] + ', ' + fmtKm(r.km) + ' km' + (r.rec ? ', ' + r.rec : ''),
+        });
+      } else {
+        const planned = plannedDays.indexOf(d) >= 0;
+        cells.push({
+          isRun: false, isPlain: true, label: String(d),
+          border: isToday ? '2px solid #33291f' : (planned ? '1.5px dashed #2a64ad' : '1px solid transparent'),
+          color: planned ? '#1d4586' : (isToday ? '#33291f' : '#786a59'),
+          weight: isToday || planned ? '800' : '500',
+        });
+      }
+    }
+    while (cells.length % 7 !== 0) cells.push({ isRun: false, isPlain: false });
+    const totKm = monthRuns.reduce((a, r) => a + r.km, 0);
+    const totS = monthRuns.reduce((a, r) => a + toSec(r.dur), 0);
+    const recN = monthRuns.filter((r) => r.rec).length;
+    const minMonth = debut ? '2026-09' : '2026-08';
+    const noPrev = month === minMonth;
+    const noNext = month === '2026-09';
+    const cal = {
+      title: MONTHS[mo - 1] + ' ' + yy,
+      line1: monthRuns.length === 0 ? 'Aucune sortie' : monthRuns.length + (monthRuns.length > 1 ? ' sorties' : ' sortie') + ' · ' + fmtKm(totKm) + ' km · ' + Math.floor(totS / 3600) + ' h ' + pad(Math.floor((totS % 3600) / 60)),
+      line2: recN === 0 ? '' : recN + (recN > 1 ? ' records' : ' record'),
+      cells,
+      noPrev, noNext, prevOp: noPrev ? 0.3 : 1, nextOp: noNext ? 0.3 : 1,
+      prev: () => this.setState({ month: '2026-08', typeFilter: null }),
+      next: () => this.setState({ month: '2026-09', typeFilter: null }),
+    };
+    const histTabs = [['sorties', 'Sorties'], ['types', 'Par type']].map(([k, label]) => ({
+      label, pressed: k === histTab ? 'true' : 'false',
+      bg: k === histTab ? '#fffaf2' : 'transparent', color: k === histTab ? '#1d4586' : '#5e5244',
+      pick: () => this.setState({ histTab: k, typeFilter: k === 'types' ? null : st.typeFilter }),
+    }));
+    const listSource = typeFilter ? all.filter((r) => r.type === typeFilter) : monthRuns;
+    const monthRows = listSource.map((r) => row(r, 'history'));
+    const typeRows = ['frac', 'ef', 'sl', 'libre']
+      .map((k) => {
+        const rs = all.filter((r) => r.type === k);
+        if (rs.length === 0) return null;
+        const last = rs[0];
+        const when = DOWS[last.wd] + ' ' + pad(last.d) + '/' + pad(last.m);
+        const lastTxt = when + ' · ' + fmtKm(last.km) + ' km à ' + last.pace + '/km';
+        return {
+          name: TYPES[k], count: rs.length + (rs.length > 1 ? ' sorties' : ' sortie'),
+          last: 'La dernière : ' + lastTxt, best: '', order: last.m * 100 + last.d,
+          pick: () => this.setState({ histTab: 'sorties', typeFilter: k }),
+        };
+      })
+      .filter((x) => x)
+      .sort((a, b) => b.order - a.order);
+
+    // ── Progrès : km par km de la dernière sortie ──────────────────────────────
+    const lastSplitRun = all.find((r) => r.splits) || null;
+    const bars = (splits) => {
+      const secs = splits.map(toSec);
+      const mx = Math.max.apply(null, secs), mn = Math.min.apply(null, secs);
+      return splits.map((p, i) => ({
+        p, h: Math.round(14 + ((mx - secs[i]) / Math.max(1, mx - mn)) * 50),
+        bg: secs[i] <= mn + (mx - mn) * 0.35 ? '#2a64ad' : '#9dbbe3',
+      }));
+    };
+    const progSplits = lastSplitRun ? bars(lastSplitRun.splits) : [];
+    const splitsFor = lastSplitRun ? DOWS[lastSplitRun.wd] + ' ' + pad(lastSplitRun.d) + '/' + pad(lastSplitRun.m) + ' · ' + TYPES[lastSplitRun.type] : '';
+
+    // ── Détail d'une sortie ────────────────────────────────────────────────────
+    const r0 = byId[sortieId] || byId.s18;
+    const repRows = r0.reps
+      ? r0.reps.map((t, i) => {
+          const ok = inRange(t);
+          return { n: '#' + (i + 1), t, ink: ok ? '#1d4586' : '#6b4c0f', tag: ok ? 'dans la plage' : 'hors plage', bg: ok ? '#e1eaf6' : '#f5e6c4', tagInk: ok ? '#1d4586' : '#6b4c0f' };
+        })
+      : [];
+    const okCount = repRows.filter((x) => x.tag === 'dans la plage').length;
+    const d = {
+      eyebrow: r0.type === 'libre' ? 'COURSE LIBRE' : 'SÉANCE DU PROGRAMME',
+      name: TYPES[r0.type],
+      when: DOWL[r0.wd] + ' ' + pad(r0.d) + '/' + pad(r0.m) + ' · ' + r0.hh + ' · ' + r0.terrain,
+      hasRec: !!r0.rec, rec: (r0.rec || '') + ' sur cette sortie',
+      figures: [
+        { label: 'DISTANCE', value: fmtKm(r0.km) + ' km' },
+        { label: 'DURÉE', value: r0.dur },
+        { label: 'ALLURE MOY.', value: r0.pace + '/km' },
+        { label: 'RESSENTI', value: r0.feel },
+      ],
+      hasReps: !!r0.reps, reps: repRows,
+      repsLine: okCount + ' sur ' + repRows.length + ' dans la plage.',
+      hasSplits: !!r0.splits, splits: r0.splits ? bars(r0.splits) : [],
+      noTrack: !r0.gps,
+      canGhost: r0.gps,
+      ghost: goGhost(r0.id),
+    };
+    const backLabel = backTo === 'history' ? 'Historique' : 'Course';
+
+    // ── Écran de départ ────────────────────────────────────────────────────────
+    const ghostPick = st.ghostPick || 'none';
+    const gr = byId[ghostPick];
+    const DEPS = {
+      today: { eyebrow: 'SÉANCE DU JOUR', title: 'Fractionné (VMA)', meta: '6,4 km · allure cible 3:50–4:00/km', showChips: true, cta: 'Démarrer la séance' },
+      free: { eyebrow: 'COURSE LIBRE', title: 'Course libre', meta: 'Enregistre ta sortie avec le GPS, ou saisis-la à la main.', showChips: false, cta: 'Démarrer une course libre' },
+      ghost: {
+        eyebrow: 'COURSE LIBRE · CONTRE TOI',
+        title: gr ? 'Recourir ta sortie du ' + DOWS[gr.wd] + ' ' + pad(gr.d) + '/' + pad(gr.m) : 'Course libre',
+        meta: gr ? fmtKm(gr.km) + ' km en ' + gr.dur : '',
+        showChips: false,
+        cta: 'Démarrer contre ton fantôme',
+      },
+    };
+    const dep = Object.assign({ showGhost: mode === 'gps', manualNote: mode !== 'gps', gpsLine: mode === 'gps' }, DEPS[depFrom] || DEPS.today);
+    const modes = [['gps', 'Suivi GPS', 'Trace, distance et allure en direct.'], ['manuel', 'Sans GPS', 'Chrono seul ; distance saisie à la fin.']].map(([k, label, hint]) => ({
+      label, hint, checked: k === mode ? 'true' : 'false',
+      border: k === mode ? '2px solid #2a64ad' : '1px solid #e3d3ba',
+      bg: k === mode ? '#e1eaf6' : '#fffaf2',
+      pick: () => this.setState({ mode: k }),
+    }));
+    const candidates = depFrom === 'ghost' && gr ? [gr.id] : ['s18', 's20', 's23'];
+    const ghostOpts = ['none'].concat(candidates).map((id) => {
+      const r = byId[id];
+      const checked = id === ghostPick;
+      const label = id === 'none' ? 'Pas de fantôme' : DOWS[r.wd] + ' ' + pad(r.d) + '/' + pad(r.m) + ' · ' + (r.id === 's18' ? 'même séance · ' : '') + fmtKm(r.km) + ' km en ' + r.dur;
+      return {
+        label, checked: checked ? 'true' : 'false',
+        border: checked ? '2px solid #2a64ad' : '1px solid #e3d3ba', bg: checked ? '#e1eaf6' : '#fffaf2',
+        dot: checked ? '6px solid #2a64ad' : '2px solid #b9a88c',
+        pick: () => this.setState({ ghostPick: id }),
+      };
+    });
+    const startRun = () => {
+      const title = dep.title;
+      const g = ghostPick !== 'none' && mode === 'gps' && gr ? ' · fantôme du ' + pad(gr.d) + '/' + pad(gr.m) : '';
+      clearTimeout(this._t);
+      this.setState({ etat: 'encours', screen: 'hub', section: 'run', busy: false, toast: 'Décompte 3, 2, 1… « ' + title + ' » est lancée' + g + '.' });
+      this._t = setTimeout(() => this.setState({ toast: null }), 3600);
+    };
+
+    // ── Barre du bas ───────────────────────────────────────────────────────────
+    const nav = [['home', 'Accueil'], ['strength', 'Muscu'], ['run', 'Course'], ['food', 'Alim'], ['lab', 'Labo']].map(([k, label]) => ({
+      label,
+      isHome: k === 'home', isStrength: k === 'strength', isRun: k === 'run', isFood: k === 'food', isLab: k === 'lab',
+      color: k === 'run' ? '#1d4586' : '#786a59', pill: k === 'run' ? '#e1eaf6' : 'transparent', weight: k === 'run' ? '800' : '600',
+      pick: k === 'run'
+        ? () => { clearTimeout(this._t); this.setState({ screen: 'hub', busy: false, toast: 'Nouvel appui sur Course : retour en haut du hub, sur l’onglet ouvert.' }); this._t = setTimeout(() => this.setState({ toast: null }), 3000); }
+        : toast('Hors de cette maquette.'),
+    }));
+
+    return {
+      rootH: chrome ? 904 : 844,
+      chrome, etats, tabs,
+      isHub: screen === 'hub', isDetail: screen === 'detail', isDepart: screen === 'depart',
+      isRunTab: section === 'run', isHistTab: section === 'history', isProgTab: section === 'progress',
+      encours, isDebut: debut, hasRuns: !debut,
+      m, chips, lastReps, recent,
+      showRecent: !encours && !debut, showOther: prevue || arrivee, showWeek: !encours && !debut, showProgram: !encours && !debut,
+      week, prog, starters,
+      weekdays: ['L', 'M', 'M', 'J', 'V', 'S', 'D'],
+      cal, histTabs, isSorties: histTab === 'sorties', isTypes: histTab === 'types',
+      monthRows, listEmpty: monthRows.length === 0, hasList: monthRows.length > 0, typeRows,
+      hasFilter: !!typeFilter, filterLabel: typeFilter ? TYPES[typeFilter] + ' · tout l’historique' : '',
+      clearFilter: () => this.setState({ typeFilter: null }),
+      progSplits, splitsFor,
+      d, backLabel, showDetailCta: false,
+      dep, modes, ghostOpts, startRun,
+      nav, busy,
+      hasToast: !!st.toast, toast: st.toast || '',
+      openLast: openDetail('s18', 'hub'),
+      goHistory: () => this.setState({ section: 'history', histTab: 'sorties', typeFilter: null, toast: null }),
+      goRunTab: () => this.setState({ section: 'run', toast: null }),
+      goFree: toDepart('free'),
+      back: () => this.setState({ screen: 'hub', section: backTo === 'history' ? 'history' : 'run', toast: null }),
+      backHub: () => this.setState({ screen: 'hub', toast: null }),
+      resume: () => { clearTimeout(this._t); this.setState({ busy: false, screen: 'hub', toast: 'Retour sur l’écran de course.' }); this._t = setTimeout(() => this.setState({ toast: null }), 2600); },
+      closeBusy: () => this.setState({ busy: false }),
+      toastPlanning: toast('Ouvre le planning (inchangé).'),
+      toastProfile: toast('Ouvre le profil coureur : allure de référence, fréquence visée, voix.'),
+      toastPrograms: toast('Ouvre le programme : ses semaines, ses séances, sa course objectif.'),
+      toastInsights: toast('Ouvre l’écran Insights, filtré sur la course.'),
+      toastStats: toast('Ouvre « Toutes tes stats » : périodes, courbe 30/90 j, records détaillés, charge, polarisation (Q8).'),
+      toastShare: toast('La carte à partager s’ouvre.'),
+      toastFix: toast('Corriger la distance, la durée ou la date (existant).'),
+      toastDelete: toast('Supprimer, après confirmation (existant).'),
+    };
+  }
+}
+</script>
+</body>
+</html>
