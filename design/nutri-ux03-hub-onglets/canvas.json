@@ -1,0 +1,312 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "AHier.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "A · jeudi consulté depuis la trame",
+      "w": 390,
+      "x": 470,
+      "y": 5350
+    },
+    "AMidi.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "A · Aujourd’hui à 12 h 40",
+      "w": 390,
+      "x": 0,
+      "y": 5350
+    },
+    "AProgres.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "A · Progrès",
+      "w": 390,
+      "x": 940,
+      "y": 5350
+    },
+    "BBiblio.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "B · Ta bibliothèque",
+      "w": 390,
+      "x": 3760,
+      "y": 3300
+    },
+    "BHistJours.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "B · Historique, le calendrier en verres",
+      "w": 390,
+      "x": 1410,
+      "y": 3300
+    },
+    "BHistRepas.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "B · Historique, repas habituels",
+      "w": 390,
+      "x": 1880,
+      "y": 3300
+    },
+    "BJour.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "B · Détail d’un jour et Reprendre",
+      "w": 390,
+      "x": 2350,
+      "y": 3300
+    },
+    "BJourVide.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "B · Un jour oublié, à compléter",
+      "w": 390,
+      "x": 2820,
+      "y": 3300
+    },
+    "BMatin.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "B · Aujourd’hui à 8 h, journée vide",
+      "w": 390,
+      "x": 470,
+      "y": 3300
+    },
+    "BMidi.dc.html": {
+      "h": 1680,
+      "is_interactive": true,
+      "title": "B · Aujourd’hui à 12 h 40, tout l’onglet",
+      "w": 390,
+      "x": 0,
+      "y": 3300
+    },
+    "BNeuf.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "B · Compte neuf",
+      "w": 390,
+      "x": 4230,
+      "y": 3300
+    },
+    "BProgres.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "B · Progrès",
+      "w": 390,
+      "x": 3290,
+      "y": 3300
+    },
+    "BSoir.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "B · Aujourd’hui à 20 h, dîner prévu",
+      "w": 390,
+      "x": 940,
+      "y": 3300
+    },
+    "CJournal.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "C · Journal à 12 h 40",
+      "w": 390,
+      "x": 0,
+      "y": 6564
+    },
+    "CRepas.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "C · Mes repas",
+      "w": 390,
+      "x": 470,
+      "y": 6564
+    },
+    "Main.dc.html": {
+      "h": 928,
+      "is_interactive": true,
+      "title": "Prototype jouable · Actuel, A, B, C",
+      "w": 390,
+      "x": 0,
+      "y": 0
+    },
+    "NowHier.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Actuel · jeudi consulté depuis la trame",
+      "w": 390,
+      "x": 940,
+      "y": 1400
+    },
+    "NowMenu.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Actuel · le ⋯ du petit-déjeuner",
+      "w": 390,
+      "x": 470,
+      "y": 1400
+    },
+    "NowMidi.dc.html": {
+      "h": 1500,
+      "is_interactive": true,
+      "title": "Actuel · Aujourd’hui à 12 h 40, tout l’onglet",
+      "w": 390,
+      "x": 0,
+      "y": 1400
+    },
+    "NowSemaine.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "title": "Actuel · La semaine",
+      "w": 390,
+      "x": 1410,
+      "y": 1400
+    },
+    "BNomType.dc.html": {
+      "x": 4700,
+      "y": 3300,
+      "w": 390,
+      "h": 844,
+      "title": "B · Nommer un repas type (nom obligatoire)",
+      "is_interactive": true
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-09-25T15:32:22Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "s-a": {
+      "fill": "gray",
+      "text": "A\n\nPour : le plus court à livrer ; rien de NUTRI-UX01 n’est renversé.\n\nContre : pas d’historique. On relit toujours un jour à la fois, et l’écran de saisie bascule sur le jour consulté (repère 2). Deux onglets là où la muscu en a trois : « Historique » manque au rendez-vous commun des piliers.",
+      "w": 400,
+      "x": 1410,
+      "y": 5350
+    },
+    "s-b": {
+      "fill": "green",
+      "text": "B EN DÉTAIL\n\n· Aujourd’hui est toujours aujourd’hui : plus de ◀ ▶ ni de verres. La ligne « dimanche 20 n’a rien de noté » ouvre ce jour-là.\n· « Reprendre un déjeuner » (le repas de l’heure) : les trois derniers différents, un geste chacun. Le bloc disparaît dès que ce repas est rempli.\n· Historique : calendrier du mois (dans ta cible, hors cible, rien de noté), la liste des jours, puis les repas habituels.\n· Le détail d’un jour : on y complète un oubli (+), on reprend un repas ou toute la journée sur aujourd’hui, avec une confirmation si aujourd’hui n’est pas vide.\n· Progrès : La semaine, renommée.\n\nHors périmètre : l’accueil (sauf Q8), la feuille d’ajout, le planning repas lui-même, l’écran Statistiques.",
+      "w": 420,
+      "x": 5170,
+      "y": 3300
+    },
+    "s-c": {
+      "fill": "gray",
+      "text": "C\n\nPour : réunit ce qui est dispersé (repas habituels, planning, courses, repas types, recettes) ; le journal ne change pas.\n\nContre : pas d’« Historique », le libellé commun aux piliers est rompu ; Reprendre est à un onglet de la saisie, soit un geste de plus au moment où l’on mange ; « Journal » et « Mes repas » se recoupent ; le passé se relit toujours un jour à la fois.",
+      "w": 400,
+      "x": 940,
+      "y": 6564
+    },
+    "s-diag": {
+      "fill": "blue",
+      "text": "LES QUESTIONS DE QUELQU’UN QUI NOTE CE QU’IL MANGE\n\nBien servies\n· « Je note ce que je viens de manger » (3 à 6 fois par jour) : « Chercher un aliment », 3 récents en un geste, + par repas, scan.\n· « Il me reste combien ? » (à chaque repas) : le grand chiffre, les tiges P/G/L.\n· « J’ai oublié de noter dimanche » : la trame et sa ligne.\n· « Je tiens mon objectif sur la semaine ? » (1 à 2 fois par semaine) : La semaine, verdict et trois cartes.\n\nMal servies\n· « Je reprends mon petit-déj, le déjeuner d’hier » (chaque jour) : caché. « Copier d’hier » n’existe que dans le ⋯ d’un repas déjà rempli ; les repas types n’apparaissent qu’en tapant leur nom, et ce nom est celui du repas (« Déjeuner »).\n· « Qu’ai-je prévu ce soir ? » : le planning est en bas de l’onglet, et ses repas n’apparaissent pas dans la journée.\n\nÀ moitié\n· « Qu’ai-je mangé hier, mardi ? » : un geste, mais tout l’écran bascule sur ce jour, l’ajout compris ; un jour à la fois ; rien ne se reprend aujourd’hui.\n· « Mon poids suit ? » : carte dans La semaine ; « Me peser » (accueil) ouvre Stats sur Régularité, pas sur Poids.\n\nLE DIAGNOSTIC\nContrairement à la muscu, le haut du hub est juste : le geste et « il me reste » y sont déjà. Ce qui cloche, c’est tout ce qui touche au passé : reprendre, relire, retrouver. C’est caché, ou mêlé à la saisie, un jour à la fois.",
+      "w": 440,
+      "x": 880,
+      "y": 0
+    },
+    "s-fix": {
+      "fill": "teal",
+      "text": "COMMUN À A, B ET C\n· Onglets dans l’en-tête vert, visibles sans défiler ; ils défilent avec la page ; un nouvel appui sur Alim remonte en haut.\n· « Chercher un aliment » ne s’éloigne pas : en B il remonte d’une cinquantaine de pixels. Scanner passe à côté de lui.\n· « Comme hier » sur un repas vide ; le ⋯ ne garde qu’« Enregistrer comme repas type ».\n· Les repas prévus du jour dans « Ta journée », avec « J’ai mangé ça ».\n· « La semaine » devient « Progrès », contenu inchangé ; l’icône Stats quitte l’en-tête (lien en bas de Progrès).\n· En-tête : Planning repas · Bibliothèque · Réglages.\n· Onglet affiché : paramètre section lu une fois, sinon le dernier choisi (en mémoire), sinon le premier.\n\nCE QU’ON GARDE DES DEUX ONGLETS ACTUELS\nAujourd’hui : tout (le remplissage, le restant, les tiges, les 3 récents, la suggestion, le Réservoir, Ta journée, l’eau, l’énergie repliée, les micros, la qualité). La semaine : tout, sous le nom Progrès.",
+      "w": 400,
+      "x": 2350,
+      "y": 0
+    },
+    "s-lire": {
+      "fill": "orange",
+      "text": "Prototype jouable (bouton Play).\n\nLa bande du haut change la VARIANTE (Actuel, A, B, C) et l’HEURE (8 h, 12 h 40, 20 h), sur les mêmes données : vendredi 25/09, cible 2 400 kcal, jour de séance. « Compte neuf » montre un premier jour.\n\nÀ essayer :\n· Actuel : le ⋯ du petit-déjeuner puis « Copier d’hier » (le repas se double) ; le verre de jeudi, puis « Chercher un aliment ».\n· B : Reprendre un déjeuner · « Comme hier » sur un repas vide · « J’ai mangé ça » au dîner (20 h) · Historique : calendrier, jours, repas habituels · un jour, puis Reprendre · l’icône Bibliothèque · un nouvel appui sur Alim.\n\nLes écrans inchangés (feuille d’ajout, scanner, planning, statistiques) s’annoncent par un bandeau.",
+      "w": 360,
+      "x": 470,
+      "y": 0
+    },
+    "s-now": {
+      "fill": "red",
+      "text": "LES REPÈRES DES PLANCHES « ACTUEL »\n\n1. « Copier d’hier » vit dans le ⋯, qui n’existe que sur un repas rempli. Sur un repas vide, là où il servirait, il est introuvable ; sur un repas rempli, il le double.\n2. On consulte jeudi en touchant son verre : tout l’écran bascule, et « Chercher un aliment » écrit alors sur jeudi.\n3. Le planning repas est en bas de l’onglet, sous l’énergie, les micros et la qualité ; ses repas prévus n’apparaissent pas dans la journée.\n4. Les onglets sont sous la scène, à mi-hauteur d’écran.\n\nAutre constat : un repas type prend le nom du repas (« Déjeuner ») et ne se retrouve qu’en tapant ce nom dans la recherche. Les habitudes de la feuille d’ajout ne montrent que des aliments.",
+      "w": 400,
+      "x": 1880,
+      "y": 1400
+    },
+    "s-q": {
+      "fill": "purple",
+      "text": "QUESTIONS POUR FLORIAN\n\nQ1. A, B ou C ? Recommandée : B.\nQ2. B retire la navigation par jour (◀ ▶ et les 7 verres) de l’écran de saisie ; le passé se lit dans Historique. D’accord ? Cela renverse R3.1 et R3.2 de NUTRI-UX01 (calendrier et trame dans la barre du jour).\nQ3. Planning repas : une icône d’en-tête, et les repas prévus du jour dans « Ta journée » avec « J’ai mangé ça » ; la carte du bas disparaît. Cela renverse l’arbitrage du 04/08 (REPAS-01 : « rangé dans un sous-menu, il ne serait jamais adopté »).\nQ4. Repas habituels (mêmes aliments notés au moins deux fois) : dans cette US, ou dans une suivante ?\nQ5. Au changement de jour, revenir sur Aujourd’hui même si le dernier onglet choisi était Progrès ? C’est l’intention de R3.2 de NUTRI-UX02, et une petite entorse à « rien ne change d’onglet de force ».\nQ6. Enregistrer un repas type demande un nom, proposé à partir de ses deux premiers aliments ?\nQ7. Titre de l’en-tête : « Alim », comme la barre du bas (patron muscu), ou « Nutrition » ?\nQ8. L’accueil ne change pas, sauf « Me peser », qui ouvrirait Stats sur Poids ?",
+      "w": 440,
+      "x": 1860,
+      "y": 0
+    },
+    "s-var": {
+      "fill": "green",
+      "text": "TROIS VARIANTES, ONGLETS DANS L’EN-TÊTE\n\nA · Aujourd’hui · Progrès. Le moins de changement : « La semaine » devient Progrès, la navigation par jour reste, Reprendre s’ajoute. Pas d’historique.\n\nB · Aujourd’hui · Historique · Progrès ★. Aligné sur la muscu. Aujourd’hui est toujours aujourd’hui : on ne note plus par mégarde sur hier. Le passé part dans Historique : calendrier du mois, liste des jours, repas habituels, et un détail par jour avec Reprendre.\n\nC · Journal · Mes repas · Progrès. Le garde-manger : repas habituels, planning, repas types et recettes au même endroit ; le journal garde sa navigation par jour. Mais pas d’« Historique », et Reprendre est à un onglet de la saisie.\n\nRECOMMANDATION : B. C’est la seule qui sépare noter et relire, qui met Reprendre à un geste de la saisie et qui garde les mots de la muscu. De C, elle reprend la bibliothèque (icône de l’en-tête) ; l’onglet Aujourd’hui garde tout son contenu.",
+      "w": 440,
+      "x": 1370,
+      "y": 0
+    },
+    "t-a": {
+      "kind": "title1",
+      "maxW": 1810,
+      "text": "A · Aujourd’hui · Progrès",
+      "w": 240,
+      "x": 0,
+      "y": 5050
+    },
+    "t-b": {
+      "kind": "title1",
+      "maxW": 5590,
+      "text": "B, recommandée · Aujourd’hui · Historique · Progrès",
+      "w": 240,
+      "x": 0,
+      "y": 3000
+    },
+    "t-c": {
+      "kind": "title1",
+      "maxW": 1340,
+      "text": "C · Journal · Mes repas · Progrès",
+      "w": 240,
+      "x": 0,
+      "y": 6264
+    },
+    "t-now": {
+      "kind": "title1",
+      "maxW": 2280,
+      "text": "Le hub aujourd’hui",
+      "w": 240,
+      "x": 0,
+      "y": 1100
+    },
+    "s-dec": {
+      "x": 2800,
+      "y": 0,
+      "w": 420,
+      "fill": "pink",
+      "size": "s",
+      "text": "DÉCISIONS DE FLORIAN, 25/09/2026\n\nQ1 · B, « clairement, direct ».\nQ2 · Oui, et le calendrier d’Historique montre chaque jour comme les anciens verres : rempli selon la cible, « + » au-dessus. Planche B · Historique mise à jour.\nQ3 · Oui ; l’ajout manuel reste à côté des repas prévus.\nQ4 · Les repas habituels entrent dans l’US.\nQ5 · On reste sur l’onglet choisi ; un jour passé s’ouvre depuis le calendrier ou la liste d’Historique.\nQ6 · Le nom d’un repas type est saisi par l’utilisateur, obligatoirement (planche B · Nommer un repas type).\nQ7 · « Alimentation ».\nQ8 · Oui : « Me peser » ouvre Stats › Poids.\n\nSpec : docs/specs/functional/us/nutri-ux03-hub-onglets.md"
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "NowMidi.dc.html",
+    "NowMenu.dc.html",
+    "NowHier.dc.html",
+    "NowSemaine.dc.html",
+    "BMidi.dc.html",
+    "BMatin.dc.html",
+    "BSoir.dc.html",
+    "BHistJours.dc.html",
+    "BHistRepas.dc.html",
+    "BJour.dc.html",
+    "BJourVide.dc.html",
+    "BProgres.dc.html",
+    "BBiblio.dc.html",
+    "BNeuf.dc.html",
+    "BNomType.dc.html",
+    "AMidi.dc.html",
+    "AHier.dc.html",
+    "AProgres.dc.html",
+    "CJournal.dc.html",
+    "CRepas.dc.html"
+  ],
+  "pages": [],
+  "title": "Nutrition — le hub en onglets"
+}

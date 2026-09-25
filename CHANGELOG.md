@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 25/09/2026 — NUTRI-UX03 cadrée : le hub Nutrition en trois onglets (`feature/nutri-ux03-hub-onglets`)
+
+> Florian demande « le même travail que MUSCU-UX07 sur le pilier Nutrition ». Analyse du hub
+> (les questions de quelqu'un qui note ce qu'il mange, et ce que le hub y répond), trois variantes
+> en onglets sur une toile jouable, **variante B choisie** le jour même avec ses réponses Q1 à Q8.
+> Lot en une vague sur sa décision : ce commit pose le cadrage, le code suit. Travail en parallèle
+> de CARDIO-UX03, dans le worktree `.expo/claude-worktrees/nutri-ux03`. Commit précédent sur
+> `dev` : `daef357b`.
+
+### Ajouté
+- **Spec** `docs/specs/functional/us/nutri-ux03-hub-onglets.md` (`etape: code`) :
+  - cinq constats vérifiés dans le code : « Copier d'hier » inatteignable sur un repas vide et
+    doublant un repas plein ; repas type nommé d'après le repas ; bascule de tout le hub sur un jour
+    passé ; repas prévus absents de la journée ; « Me peser » ouvrant Stats sur Régularité ;
+  - décisions D1 à D14, règles R1 à R13, cas limites, i18n (`nutritionHub.*`), offline ;
+  - **deux renversements assumés et validés** : la navigation par jour quitte l'écran de saisie
+    (NUTRI-UX01 R3.1 / R3.2), la carte Planning du bas devient une icône d'en-tête (arbitrage
+    REPAS-01 du 04/08) ;
+  - §11 : la factorisation des briques d'onglets entre piliers, à faire quand les trois chantiers
+    auront atterri.
+  - **relue par un agent de revue** avant le code : 22 constats, tous intégrés. Les deux bloquants :
+    l'état « journée vide » cachait les repas prévus et l'eau ; et les micros, la qualité et
+    l'énergie d'un jour passé n'auraient plus été visibles nulle part (ils passent sur la page du
+    jour). Aussi : une seule source de cible pour Historique (`useDailyCalorieTargets`), pas de
+    reprise de la section « Autres », libellés TalkBack sans article, pluriels, liens entrants
+    « noter un repas » forcés sur Aujourd'hui, « Me peser » des mensurations.
+- **Plan** `docs/plans/nutri-ux03-hub-onglets.md` : cinq étapes TDD, quatre commits.
+- **Maquette** `design/nutri-ux03-hub-onglets/` (toile https://claude.ai/artifact/2nD3MciUjRVAxQX6ud5D3i) :
+  prototype jouable (Actuel, A, B, C × trois heures × compte neuf), 20 planches figées, compte rendu
+  et décisions en notes. Les planches B intègrent les réponses de Florian : titre « Alimentation »,
+  calendrier en verres remplis selon la cible, nom de repas type obligatoire.
+
+### Modifié
+- Roadmap : ligne **4.47** (hors cadrage, ⬜), total 265 → 266, à faire 2 → 3, journal.
+
+### Notes
+- Aucune ligne de code applicatif, aucune migration.
+
 ## 25/09/2026 — CARDIO-UX03, l'écran de départ et le détail d'une sortie (`feature/cardio-ux03-hub-onglets`)
 
 > Étape 3 du plan : les deux écrans que le hub ouvrira, avant le hub lui-même. Commit précédent :

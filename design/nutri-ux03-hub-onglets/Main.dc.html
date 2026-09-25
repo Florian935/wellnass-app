@@ -1,0 +1,1500 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hub Nutrition en onglets — prototype</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font-family:inherit;cursor:pointer}
+.nosb::-webkit-scrollbar{display:none}
+@keyframes toastin{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+@keyframes sheetup{from{opacity:.3;transform:translateY(60px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+</style>
+</helmet>
+<div style="width: 390px; height: {{rootH}}px; display: flex; flex-direction: column; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', sans-serif; overflow: hidden;">
+
+  <!-- ═════════════ BANDE DE SIMULATION ═════════════ -->
+  <sc-if value="{{chrome}}" hint-placeholder-val="{{ true }}">
+    <div style="height: 84px; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 0 8px; background: #ebdcc4; border-bottom: 2px dashed #b9a88c;">
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <span style="width: 56px; flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 1px; color: #5e5244;">VARIANTE</span>
+        <sc-for list="{{simVar}}" as="v" hint-placeholder-count="4">
+          <button onClick="{{v.pick}}" aria-pressed="{{v.pressed}}" style="height: 30px; padding: 0 11px; border-radius: 15px; border: 1px solid {{v.border}}; background: {{v.bg}}; color: {{v.color}}; font-size: 12px; font-weight: 700; white-space: nowrap;">{{v.label}}</button>
+        </sc-for>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <span style="width: 56px; flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 1px; color: #5e5244;">HEURE</span>
+        <sc-for list="{{simHeure}}" as="v" hint-placeholder-count="3">
+          <button onClick="{{v.pick}}" aria-pressed="{{v.pressed}}" style="height: 30px; padding: 0 9px; border-radius: 15px; border: 1px solid {{v.border}}; background: {{v.bg}}; color: {{v.color}}; font-size: 12px; font-weight: 700; white-space: nowrap;">{{v.label}}</button>
+        </sc-for>
+        <button onClick="{{simNew.pick}}" aria-pressed="{{simNew.pressed}}" style="height: 30px; padding: 0 9px; border-radius: 15px; border: 1px solid {{simNew.border}}; background: {{simNew.bg}}; color: {{simNew.color}}; font-size: 12px; font-weight: 700; white-space: nowrap;">Compte neuf</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ═════════════ LE TÉLÉPHONE ═════════════ -->
+  <div style="position: relative; width: 390px; height: {{vh}}px; flex-shrink: 0; overflow: hidden; background: #f7eede;">
+    <div class="nosb" ref="{{setScroll}}" style="position: absolute; top: 0; left: 0; right: 0; bottom: {{scrollBottom}}px; overflow-y: auto; scrollbar-width: none;">
+
+      <!-- ═══════════════════ HUB ═══════════════════ -->
+      <sc-if value="{{isHub}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column;">
+
+          <!-- Bloc vert : en-tête (titre, icônes, onglets) puis, sur l'onglet du jour, le remplissage -->
+          <div style="position: relative; overflow: hidden; display: flex; flex-direction: column; background: #1f3110; border-bottom-left-radius: 26px; border-bottom-right-radius: 26px;">
+
+            <sc-if value="{{showHeader}}" hint-placeholder-val="{{ true }}">
+              <div style="position: relative; display: flex; flex-direction: column; gap: 12px; padding: 12px 16px {{headerPadB}}px;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.8px; color: #ffffff;">{{hubTitle}}</span>
+                  <div style="display: flex; margin-right: -10px;">
+                    <button aria-label="Planning repas" onClick="{{iconPlanning}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M3.5 10h17"></path></svg>
+                    </button>
+                    <button aria-label="Bibliothèque : recettes, repas types, aliments" onClick="{{iconLibrary}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round"><path d="M5 4v16M10 4v16M15 5l4 15"></path></svg>
+                    </button>
+                    <button aria-label="Objectif et réglages" onClick="{{iconSettings}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>
+                    </button>
+                  </div>
+                </div>
+                <div role="tablist" style="display: grid; grid-template-columns: {{tabCols}}; gap: 4px; padding: 4px; border-radius: 16px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);">
+                  <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+                    <button role="tab" aria-selected="{{t.pressed}}" onClick="{{t.pick}}" style="height: 42px; border-radius: 12px; border: none; background: {{t.bg}}; color: {{t.color}}; font-size: 14.5px; font-weight: 700; white-space: nowrap;">{{t.label}}</button>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{showLevel}}" hint-placeholder-val="{{ true }}">
+              <div style="position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; padding: {{levelPadT}}px 16px 18px;">
+                <!-- le niveau qui monte : consommé / cible -->
+                <div style="position: absolute; left: 0; right: 0; bottom: 0; height: {{fillH}}; background: linear-gradient(180deg, #456f22 0%, #365f19 100%); border-top: 2px solid #9ed16a;"></div>
+                <div style="position: absolute; left: 20px; right: 20px; top: 38%; border-top: 1.5px dashed rgba(232,240,214,0.45);"></div>
+
+                <sc-if value="{{showDayNav}}" hint-placeholder-val="{{ false }}">
+                  <div style="position: relative; display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; margin-left: -10px;">
+                      <button aria-label="Jour précédent" onClick="{{prevDay}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#e1ebcf" stroke-width="2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"></path></svg>
+                      </button>
+                      <button aria-label="Ouvrir le calendrier" onClick="{{openCalendar}}" style="height: 44px; display: flex; align-items: center; gap: 5px; background: transparent; border: none; padding: 0 2px; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.2px; color: #ffffff;">{{dayLabel}}
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#e1ebcf" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg>
+                      </button>
+                      <button aria-label="Jour suivant" onClick="{{nextDay}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#e1ebcf" stroke-width="2" stroke-linecap="round"><path d="M9 5l7 7-7 7"></path></svg>
+                      </button>
+                    </div>
+                    <sc-if value="{{showStageIcons}}" hint-placeholder-val="{{ false }}">
+                      <div style="display: flex; margin-right: -10px;">
+                        <button aria-label="Scanner" onClick="{{scan}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"><path d="M4 6v12M7.5 6v12M11 6v12M14 6v12M17.5 6v12M20 6v12"></path></svg>
+                        </button>
+                        <button aria-label="Statistiques" onClick="{{stats}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"><path d="M5 20V11M12 20V5M19 20v-7"></path></svg>
+                        </button>
+                        <button aria-label="Profil nutritionnel" onClick="{{iconSettings}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                          <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"></path><circle cx="16" cy="7" r="2"></circle><circle cx="10" cy="17" r="2"></circle></svg>
+                        </button>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{showEyebrow}}" hint-placeholder-val="{{ true }}">
+                  <span style="position: relative; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.2px; color: #ffffff;">{{eyebrow}}</span>
+                </sc-if>
+
+                <sc-if value="{{showGlasses}}" hint-placeholder-val="{{ false }}">
+                  <div style="position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px;">
+                    <sc-for list="{{glasses}}" as="g" hint-placeholder-count="7">
+                      <button aria-label="{{g.a11y}}" onClick="{{g.pick}}" style="display: flex; flex-direction: column; align-items: center; gap: 5px; background: transparent; border: none; padding: 0; opacity: {{g.op}};">
+                        <span style="position: relative; display: block; width: 100%; height: 38px; box-sizing: border-box; border-radius: 9px; overflow: hidden; background: rgba(255,255,255,0.06); border: {{g.border}};">
+                          <span style="position: absolute; left: 0; right: 0; bottom: 0; height: {{g.fillH}}; background: {{g.fillBg}};"></span>
+                        </span>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 10px; color: {{g.wdColor}};">{{g.wd}}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{showBackToday}}" hint-placeholder-val="{{ false }}">
+                  <button onClick="{{backToday}}" style="position: relative; align-self: flex-start; height: 36px; display: flex; align-items: center; gap: 7px; padding: 0 12px; border-radius: 18px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.24); color: #ffffff; font-size: 12.5px; font-weight: 600;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+                    Revenir à aujourd’hui
+                  </button>
+                </sc-if>
+
+                <sc-if value="{{showMissing}}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{openMissing}}" style="position: relative; min-height: 32px; display: flex; align-items: center; gap: 8px; background: transparent; border: none; padding: 0; text-align: left; color: #e1ebcf; font-size: 12.5px; font-weight: 500;">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="#e1ebcf" stroke="none"><circle cx="6" cy="12" r="1.6"></circle><circle cx="12" cy="12" r="1.6"></circle><circle cx="18" cy="12" r="1.6"></circle></svg>
+                    <span>{{missingTxt}}</span>
+                  </button>
+                </sc-if>
+
+                <div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin-top: 4px;">
+                  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 58px; letter-spacing: -2.4px; line-height: 62px; color: #ffffff;">{{hero}}</span>
+                      <span style="font-weight: 600; font-size: 15px; color: #e1ebcf;">kcal</span>
+                    </div>
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -0.4px; color: #ffffff;">{{status}}</span>
+                    <sc-if value="{{hasDetail}}" hint-placeholder-val="{{ true }}">
+                      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: #e1ebcf;">{{detail}}</span>
+                    </sc-if>
+                  </div>
+                  <div style="display: flex; gap: 10px; padding-bottom: 2px;">
+                    <sc-for list="{{stems}}" as="s" hint-placeholder-count="3">
+                      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                        <div style="position: relative; width: 14px; height: 78px; border-radius: 7px; background: rgba(255,255,255,0.16); overflow: hidden;">
+                          <div style="position: absolute; left: 0; right: 0; bottom: 0; height: {{s.h}}; border-radius: 7px; background: {{s.col}};"></div>
+                        </div>
+                        <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 10px; color: #ffffff;">{{s.val}}</span>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 10px; color: #e1ebcf;">{{s.lab}}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </div>
+
+                <sc-if value="{{showQuick}}" hint-placeholder-val="{{ true }}">
+                  <div style="position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px;">
+                    <sc-for list="{{quick}}" as="q" hint-placeholder-count="3">
+                      <button onClick="{{q.add}}" aria-label="{{q.a11y}}" style="min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 4px; padding: 0 8px; border-radius: 12px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.24); color: #ffffff;">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                        <span style="font-size: 12.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{q.n}}</span>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 10px; color: #e1ebcf;">{{q.k}}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+
+                <div style="position: relative; display: flex; gap: 8px;">
+                  <button onClick="{{search}}" style="flex: 1; height: 52px; border-radius: 16px; border: none; background: #ffffff; color: #2f6b12; font-size: 15.5px; font-weight: 700; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2f6b12" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+                    Chercher un aliment
+                    <sc-if value="{{marker2}}" hint-placeholder-val="{{ false }}">
+                      <span style="width: 22px; height: 22px; border-radius: 11px; background: #b14f2b; color: #ffffff; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;">2</span>
+                    </sc-if>
+                  </button>
+                  <sc-if value="{{showScanBtn}}" hint-placeholder-val="{{ true }}">
+                    <button aria-label="Scanner un code-barres" onClick="{{scan}}" style="width: 52px; height: 52px; flex-shrink: 0; border-radius: 16px; background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.24); display: flex; align-items: center; justify-content: center; padding: 0;">
+                      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-linecap="round"><path d="M4 6v12M7.5 6v12M11 6v12M14 6v12M17.5 6v12M20 6v12"></path></svg>
+                    </button>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- Actuel : les deux onglets vivent SOUS la scène -->
+          <sc-if value="{{showLightTabs}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; align-items: center; gap: 8px; padding: 14px 16px 0;">
+              <sc-for list="{{tabs}}" as="t" hint-placeholder-count="2">
+                <button aria-pressed="{{t.pressed}}" onClick="{{t.pick}}" style="flex: 1; height: 40px; border-radius: 12px; border: 1px solid {{t.lborder}}; background: {{t.lbg}}; color: {{t.lcolor}}; font-size: 14px; font-weight: 700;">{{t.label}}</button>
+              </sc-for>
+              <sc-if value="{{marker4}}" hint-placeholder-val="{{ false }}">
+                <span style="width: 22px; height: 22px; flex-shrink: 0; border-radius: 11px; background: #b14f2b; color: #ffffff; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;">4</span>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- ═════════ ONGLET DU JOUR (Aujourd'hui / Journal) ═════════ -->
+          <sc-if value="{{isTodayTab}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 16px 28px;">
+
+              <!-- Reprendre un repas (A, B) -->
+              <sc-if value="{{showReprendre}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; padding: 14px 14px 4px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                  <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 0 2px 8px;">
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.4px;">{{reTitle}}</span>
+                    <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; color: #786a59;">{{reHint}}</span>
+                  </div>
+                  <sc-for list="{{reRows}}" as="r" hint-placeholder-count="3">
+                    <div style="display: flex; align-items: center; gap: 10px; padding: 8px 0; border-top: 1px solid #efe3cf;">
+                      <button onClick="{{r.open}}" aria-label="{{r.openA11y}}" style="flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; background: transparent; border: none; padding: 0; text-align: left; color: #33291f;">
+                        <span style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; background: #e3edd3; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                          <span style="font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; color: #2f6b12;">{{r.dow}}</span>
+                          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 17px; line-height: 18px; color: #33291f;">{{r.d}}</span>
+                        </span>
+                        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                          <span style="font-weight: 700; font-size: 14px; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.name}}</span>
+                          <span style="font-size: 12.5px; color: #786a59;">{{r.meta}}</span>
+                        </span>
+                      </button>
+                      <button onClick="{{r.redo}}" aria-label="{{r.a11y}}" style="height: 44px; flex-shrink: 0; padding: 0 12px; border-radius: 12px; border: none; background: #e3edd3; color: #2f6b12; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f6b12" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"></path><path d="M20 4v4.5h-4.5"></path><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"></path><path d="M4 20v-4.5h4.5"></path></svg>
+                        Reprendre
+                      </button>
+                    </div>
+                  </sc-for>
+                  <button onClick="{{reFoot}}" style="height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; background: transparent; border: none; border-top: 1px solid #efe3cf; color: #3f6b1c; font-size: 13.5px; font-weight: 700;">{{reFootLabel}}
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2.4" stroke-linecap="round"><path d="M9 5l7 7-7 7"></path></svg>
+                  </button>
+                </div>
+              </sc-if>
+
+              <!-- Journée vide -->
+              <sc-if value="{{showEmptyState}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 30px 22px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                  <span style="width: 60px; height: 60px; border-radius: 20px; background: #efe3cf; display: flex; align-items: center; justify-content: center; margin-bottom: 8px;">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="7"></circle><circle cx="12" cy="12" r="3.2"></circle></svg>
+                  </span>
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 18px;">Journée encore vide</span>
+                  <span style="max-width: 260px; font-size: 13.5px; line-height: 20px; text-align: center; color: #786a59; margin-bottom: 12px;">{{emptyBody}}</span>
+                  <sc-if value="{{emptyCopy}}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{copyDay}}" style="align-self: stretch; height: 48px; border-radius: 15px; border: none; background: #33291f; color: #fbf4e8; font-size: 15px; font-weight: 700;">Copier toute la journée d’hier</button>
+                  </sc-if>
+                  <button onClick="{{addFirst}}" style="align-self: stretch; height: 48px; border-radius: 15px; border: 1px solid #90897d; background: transparent; color: #3f6b1c; font-size: 15px; font-weight: 700;">+ Ajouter un aliment</button>
+                </div>
+              </sc-if>
+
+              <!-- Ta journée -->
+              <sc-if value="{{showDayCard}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+                  <div style="display: flex; align-items: baseline; justify-content: space-between; padding: 14px 16px 10px;">
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 18px; letter-spacing: -0.4px;">Ta journée</span>
+                    <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: #786a59;">{{dayCardMeta}}</span>
+                  </div>
+                  <sc-for list="{{mealRows}}" as="m" hint-placeholder-count="4">
+                    <div style="display: flex; flex-direction: column; border-top: 1px solid #efe3cf;">
+                      <div style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 10px 0 16px;">
+                        <span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 9px; background: #efe3cf; display: flex; align-items: center; justify-content: center;">
+                          <sc-if value="{{m.isBf}}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2" stroke-linecap="round"><path d="M5 9h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"></path><path d="M16 11h1.5a2 2 0 0 1 0 4H16"></path><path d="M8.5 3.5v2.5M12 3.5v2.5"></path></svg></sc-if>
+                          <sc-if value="{{m.isLu}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"></circle><circle cx="12" cy="12" r="3.2"></circle></svg></sc-if>
+                          <sc-if value="{{m.isSn}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2" stroke-linecap="round"><path d="M12 7.5c-3-2-7 0-7 4.5S8 20 10 20c1 0 1.2-.5 2-.5s1 .5 2 .5c2 0 5-4 5-8S15 5.5 12 7.5z"></path><path d="M12 7.5c0-2 1-3 2.5-3.5"></path></svg></sc-if>
+                          <sc-if value="{{m.isDi}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"></path></svg></sc-if>
+                        </span>
+                        <span style="flex: 1; min-width: 0; font-weight: {{m.nameW}}; font-size: 14.5px; color: {{m.nameColor}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{m.label}}</span>
+                        <sc-if value="{{m.filled}}" hint-placeholder-val="{{ true }}">
+                          <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #786a59;">{{m.kcal}} kcal</span>
+                          <button aria-label="{{m.addA11y}}" onClick="{{m.add}}" style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 20px; border: none; background: #efe3cf; display: flex; align-items: center; justify-content: center; padding: 0;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                          </button>
+                          <button aria-label="{{m.menuA11y}}" aria-expanded="{{m.menuExpanded}}" onClick="{{m.toggleMenu}}" style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 20px; border: none; background: #efe3cf; display: flex; align-items: center; justify-content: center; padding: 0;">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="#33291f" stroke="none"><circle cx="6" cy="12" r="1.7"></circle><circle cx="12" cy="12" r="1.7"></circle><circle cx="18" cy="12" r="1.7"></circle></svg>
+                          </button>
+                          <sc-if value="{{m.marker1}}" hint-placeholder-val="{{ false }}">
+                            <span style="width: 22px; height: 22px; flex-shrink: 0; border-radius: 11px; background: #b14f2b; color: #ffffff; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;">1</span>
+                          </sc-if>
+                        </sc-if>
+                        <sc-if value="{{m.empty}}" hint-placeholder-val="{{ false }}">
+                          <sc-if value="{{m.commeHier}}" hint-placeholder-val="{{ true }}">
+                            <button onClick="{{m.copyHier}}" aria-label="{{m.commeHierA11y}}" style="height: 36px; flex-shrink: 0; padding: 0 10px; border-radius: 18px; border: 1px solid #c3d4aa; background: #f1f6e8; color: #2f6b12; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#2f6b12" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"></path><path d="M20 4v4.5h-4.5"></path><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"></path><path d="M4 20v-4.5h4.5"></path></svg>
+                              Comme hier
+                            </button>
+                          </sc-if>
+                          <button onClick="{{m.add}}" aria-label="{{m.addA11y}}" style="height: 44px; flex-shrink: 0; padding: 0 6px; background: transparent; border: none; color: #3f6b1c; font-size: 14px; font-weight: 700;">+ Ajouter</button>
+                        </sc-if>
+                      </div>
+
+                      <sc-if value="{{m.showShare}}" hint-placeholder-val="{{ true }}">
+                        <div style="display: flex; align-items: center; gap: 8px; padding: 0 16px 6px 54px;">
+                          <div style="flex: 1; height: 4px; border-radius: 2px; background: #efe3cf; overflow: hidden;">
+                            <div style="width: {{m.shareW}}; height: 4px; border-radius: 2px; background: #3f6b1c;"></div>
+                          </div>
+                          <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; color: #786a59;">{{m.share}}</span>
+                        </div>
+                      </sc-if>
+
+                      <sc-if value="{{m.menuOpen}}" hint-placeholder-val="{{ false }}">
+                        <div style="display: flex; gap: 8px; flex-wrap: wrap; padding: 10px 16px; background: #f4ead9;">
+                          <sc-if value="{{m.menuActuel}}" hint-placeholder-val="{{ true }}">
+                            <button onClick="{{m.copyHier}}" style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid #e3d3ba; background: #fffaf2; color: #33291f; font-size: 13px; font-weight: 600;">Copier d’hier</button>
+                          </sc-if>
+                          <button onClick="{{m.saveTpl}}" style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid #e3d3ba; background: #fffaf2; color: #33291f; font-size: 13px; font-weight: 600;">Enregistrer comme repas type</button>
+                        </div>
+                      </sc-if>
+
+                      <sc-for list="{{m.items}}" as="e" hint-placeholder-count="2">
+                        <div style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 16px 0 54px;">
+                          <span style="flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{e.n}}</span>
+                          <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: #786a59;">{{e.q}}</span>
+                          <span style="width: 58px; text-align: right; font-family: 'Space Mono', monospace; font-size: 12px; color: #786a59;">{{e.k}}</span>
+                        </div>
+                      </sc-for>
+
+                      <sc-if value="{{m.planned}}" hint-placeholder-val="{{ false }}">
+                        <div style="display: flex; align-items: center; gap: 10px; margin: 0 12px 12px 54px; padding: 10px 10px 10px 12px; border-radius: 14px; border: 1.5px dashed #b3c79a; background: #f6f9ef;">
+                          <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                            <span style="font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 1px; font-weight: 700; color: #3f6b1c;">PRÉVU AU PLANNING</span>
+                            <span style="font-weight: 700; font-size: 13.5px;">Poulet basquaise, riz</span>
+                            <span style="font-size: 12px; color: #786a59;">640 kcal · 1 portion</span>
+                          </span>
+                          <button onClick="{{m.eat}}" style="height: 44px; flex-shrink: 0; padding: 0 12px; border-radius: 12px; border: none; background: #2f6b12; color: #ffffff; font-size: 13px; font-weight: 700;">J’ai mangé ça</button>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+
+                  <sc-if value="{{copyDayFoot}}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{copyDay}}" style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 7px; background: transparent; border: none; border-top: 1px solid #efe3cf; color: #3f6b1c; font-size: 13.5px; font-weight: 700;">
+                      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"></rect><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"></path></svg>
+                      Copier toute la journée d’hier
+                    </button>
+                  </sc-if>
+
+                  <div style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 10px 0 16px; border-top: 1px solid #efe3cf;">
+                    <span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 9px; background: #efe3cf; display: flex; align-items: center; justify-content: center;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c3 4 6 7 6 10.5a6 6 0 0 1-12 0c0-3.5 3-6.5 6-10.5z"></path></svg>
+                    </span>
+                    <span style="flex: 1; font-weight: 600; font-size: 14.5px;">Eau</span>
+                    <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #786a59;">{{waterTxt}}</span>
+                    <button onClick="{{addWater}}" aria-label="Ajouter un verre d’eau" style="height: 36px; padding: 0 10px; border-radius: 18px; border: none; background: #efe3cf; color: #3f6b1c; font-size: 12.5px; font-weight: 700;">+ 1 verre</button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <!-- Énergie, repliée -->
+              <button onClick="{{energy}}" style="display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 0 14px; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba; text-align: left; color: #33291f;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c1 3.5 5 5.5 5 10a5 5 0 0 1-10 0c0-2.5 1.5-3.5 2.5-5 .5 1.5 1.5 2.5 2.5 2.5 0-3-1-5 0-7.5z"></path></svg>
+                <span style="flex: 1; display: flex; flex-direction: column; gap: 1px;">
+                  <span style="font-weight: 700; font-size: 14px;">Ta journée en énergie</span>
+                  <span style="font-size: 12.5px; color: #786a59;">{{energyTxt}}</span>
+                </span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"></path></svg>
+              </button>
+
+              <!-- Micronutriments suivis -->
+              <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1px; font-weight: 700; color: #786a59;">MICRONUTRIMENTS SUIVIS</span>
+                <sc-if value="{{microsKnown}}" hint-placeholder-val="{{ true }}">
+                  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 12px;">
+                    <sc-for list="{{microCells}}" as="c" hint-placeholder-count="6">
+                      <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <span style="font-size: 12px; font-weight: 600;">{{c.label}}</span>
+                        <div style="height: 4px; border-radius: 2px; background: #efe3cf; overflow: hidden;">
+                          <div style="width: {{c.w}}; height: 4px; background: #3f6b1c;"></div>
+                        </div>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; color: #786a59;">{{c.pct}}</span>
+                      </div>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{microsUnknown}}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 13px; line-height: 19px; color: #786a59;">Rien de noté pour l’instant : les micronutriments suivis s’afficheront avec le premier repas.</span>
+                </sc-if>
+              </div>
+
+              <!-- Actuel : planning et réglage des repas, tout en bas -->
+              <sc-if value="{{isActuel}}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{planning}}" style="display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba; text-align: left; color: #33291f;">
+                  <span style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 12px; background: #f4ead9; display: flex; align-items: center; justify-content: center;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="1.9" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M3.5 10h17"></path></svg>
+                  </span>
+                  <span style="flex: 1; display: flex; flex-direction: column; gap: 2px;">
+                    <span style="font-weight: 700; font-size: 15px;">Planning repas</span>
+                    <span style="font-size: 12.5px; line-height: 17px; color: #786a59;">Planifie tes repas et génère ta liste de courses.</span>
+                  </span>
+                  <sc-if value="{{marker3}}" hint-placeholder-val="{{ false }}">
+                    <span style="width: 22px; height: 22px; flex-shrink: 0; border-radius: 11px; background: #b14f2b; color: #ffffff; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;">3</span>
+                  </sc-if>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"></path></svg>
+                </button>
+                <button onClick="{{manage}}" style="align-self: center; height: 44px; padding: 0 12px; background: transparent; border: none; color: #786a59; font-size: 13.5px; font-weight: 600;">Gérer les repas</button>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- ═════════ HISTORIQUE (B) ═════════ -->
+          <sc-if value="{{isHistoryTab}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 16px 28px;">
+              <div style="display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <button aria-label="Mois précédent" onClick="{{prevMonth}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: none; background: #f4ead9; padding: 0;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"></path></svg>
+                  </button>
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -0.4px;">Septembre 2026</span>
+                  <button aria-label="Mois suivant" disabled="{{yes}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 12px; border: none; background: transparent; padding: 0; opacity: 0.35; cursor: default;">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"></path></svg>
+                  </button>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 2px;">
+                  <span style="font-weight: 700; font-size: 14.5px;">{{mSum1}}</span>
+                  <span style="font-size: 13px; color: #786a59;">{{mSum2}}</span>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 5px;">
+                  <sc-for list="{{weekHead}}" as="w" hint-placeholder-count="7">
+                    <span style="text-align: center; font-family: 'Space Mono', monospace; font-size: 10px; color: #786a59;">{{w.l}}</span>
+                  </sc-for>
+                  <sc-for list="{{calCells}}" as="c" hint-placeholder-count="35">
+                    <div style="height: 46px; display: flex;">
+                      <sc-if value="{{c.btn}}" hint-placeholder-val="{{ true }}">
+                        <button aria-label="{{c.a11y}}" onClick="{{c.open}}" style="position: relative; flex: 1; overflow: hidden; border-radius: 11px; border: {{c.border}}; background: #fffaf2; padding: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+                          <span style="position: absolute; left: 0; right: 0; bottom: 0; height: {{c.fillH}}; background: {{c.fillBg}};"></span>
+                          <span style="position: relative; margin-top: 3px; font-family: 'Space Mono', monospace; font-size: 11.5px; font-weight: 700; color: {{c.color}};">{{c.n}}</span>
+                          <sc-if value="{{c.hasMark}}" hint-placeholder-val="{{ false }}">
+                            <span style="position: absolute; right: 4px; bottom: 3px; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700; line-height: 12px; color: #33291f;">+</span>
+                          </sc-if>
+                        </button>
+                      </sc-if>
+                      <sc-if value="{{c.plain}}" hint-placeholder-val="{{ false }}">
+                        <span style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 12.5px; color: #a3957f;">{{c.n}}</span>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px 14px; font-size: 11.5px; color: #786a59;">
+                  <span style="display: flex; align-items: center; gap: 5px;"><span style="position: relative; overflow: hidden; width: 12px; height: 14px; border-radius: 4px; border: 1.5px solid #8fb86a;"><span style="position: absolute; left: 0; right: 0; bottom: 0; height: 90%; background: #a9cf82;"></span></span>dans ta cible</span>
+                  <span style="display: flex; align-items: center; gap: 5px;"><span style="position: relative; overflow: hidden; width: 12px; height: 14px; border-radius: 4px; border: 1.5px solid #8fb86a; background: #a9cf82;"></span>+ au-dessus</span>
+                  <span style="display: flex; align-items: center; gap: 5px;"><span style="position: relative; overflow: hidden; width: 12px; height: 14px; border-radius: 4px; border: 1.5px solid #c3d4aa;"><span style="position: absolute; left: 0; right: 0; bottom: 0; height: 50%; background: #d6e6c4;"></span></span>en dessous</span>
+                  <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 12px; border-radius: 4px; border: 1.5px dashed #9a8a72;"></span>rien de noté</span>
+                </div>
+              </div>
+
+              <div role="tablist" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 14px; background: #efe3cf;">
+                <sc-for list="{{histTabs}}" as="h" hint-placeholder-count="2">
+                  <button role="tab" aria-selected="{{h.pressed}}" onClick="{{h.pick}}" style="height: 40px; border-radius: 11px; border: none; background: {{h.bg}}; color: {{h.color}}; font-size: 14px; font-weight: 700;">{{h.label}}</button>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{histDays}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+                  <sc-for list="{{dayRows}}" as="r" hint-placeholder-count="6">
+                    <button onClick="{{r.open}}" aria-label="{{r.a11y}}" style="display: flex; align-items: center; gap: 12px; min-height: 64px; padding: 10px 12px 10px 14px; background: transparent; border: none; border-top: 1px solid {{r.sep}}; text-align: left; color: #33291f;">
+                      <span style="width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; background: {{r.pillBg}}; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                        <span style="font-family: 'Space Mono', monospace; font-size: 9px; font-weight: 700; color: {{r.pillInk}};">{{r.dow}}</span>
+                        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 17px; line-height: 18px; color: {{r.pillNum}};">{{r.d}}</span>
+                      </span>
+                      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                        <span style="display: flex; align-items: center; gap: 8px;">
+                          <span style="font-weight: 700; font-size: 14.5px; color: {{r.kcalColor}};">{{r.kcal}}</span>
+                          <sc-if value="{{r.hasChip}}" hint-placeholder-val="{{ true }}">
+                            <span style="padding: 2px 8px; border-radius: 10px; background: {{r.chipBg}}; color: {{r.chipInk}}; font-size: 11.5px; font-weight: 700;">{{r.chip}}</span>
+                          </sc-if>
+                        </span>
+                        <span style="font-size: 12.5px; color: {{r.subColor}}; font-weight: {{r.subW}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.sub}}</span>
+                      </span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"></path></svg>
+                    </button>
+                  </sc-for>
+                  <sc-if value="{{histEmpty}}" hint-placeholder-val="{{ false }}">
+                    <span style="padding: 18px 16px; font-size: 13.5px; line-height: 20px; color: #786a59;">Aucun jour noté ce mois-ci. Tes journées apparaîtront ici, de la plus récente à la plus ancienne.</span>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{histMeals}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <sc-for list="{{repasChips}}" as="c" hint-placeholder-count="4">
+                      <button aria-pressed="{{c.pressed}}" onClick="{{c.pick}}" style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid {{c.border}}; background: {{c.bg}}; color: {{c.color}}; font-size: 13px; font-weight: 700;">{{c.label}}</button>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+                    <sc-for list="{{habitRows}}" as="h" hint-placeholder-count="3">
+                      <div style="display: flex; align-items: center; gap: 10px; padding: 12px 12px 12px 16px; border-top: 1px solid {{h.sep}};">
+                        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                          <span style="font-weight: 700; font-size: 14px; line-height: 19px;">{{h.name}}</span>
+                          <span style="font-size: 12.5px; color: #786a59;">{{h.meta}}</span>
+                        </span>
+                        <button onClick="{{h.redo}}" aria-label="{{h.a11y}}" style="height: 44px; flex-shrink: 0; padding: 0 12px; border-radius: 12px; border: none; background: #e3edd3; color: #2f6b12; font-size: 13px; font-weight: 700; display: flex; align-items: center; gap: 6px;">
+                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#2f6b12" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"></path><path d="M20 4v4.5h-4.5"></path><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"></path><path d="M4 20v-4.5h4.5"></path></svg>
+                          {{h.label}}
+                        </button>
+                      </div>
+                    </sc-for>
+                    <sc-if value="{{habitEmpty}}" hint-placeholder-val="{{ false }}">
+                      <span style="padding: 18px 16px; font-size: 13.5px; line-height: 20px; color: #786a59;">Tes repas habituels apparaîtront ici dès que tu auras noté deux fois le même repas.</span>
+                    </sc-if>
+                  </div>
+                  <span style="padding: 0 4px; font-size: 12px; line-height: 17px; color: #786a59;">Un repas habituel : les mêmes aliments, notés au moins deux fois. Il est repris avec les quantités de la dernière fois, dans le repas du même nom aujourd’hui.</span>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- ═════════ MES REPAS (C) ═════════ -->
+          <sc-if value="{{isMealsTab}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 16px 28px;">
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px; letter-spacing: -0.4px; padding: 0 2px;">Reprendre un repas</span>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <sc-for list="{{repasChips}}" as="c" hint-placeholder-count="4">
+                  <button aria-pressed="{{c.pressed}}" onClick="{{c.pick}}" style="height: 36px; padding: 0 12px; border-radius: 18px; border: 1px solid {{c.border}}; background: {{c.bg}}; color: {{c.color}}; font-size: 13px; font-weight: 700;">{{c.label}}</button>
+                </sc-for>
+              </div>
+              <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+                <sc-for list="{{habitRows}}" as="h" hint-placeholder-count="3">
+                  <div style="display: flex; align-items: center; gap: 10px; padding: 12px 12px 12px 16px; border-top: 1px solid {{h.sep}};">
+                    <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                      <span style="font-weight: 700; font-size: 14px; line-height: 19px;">{{h.name}}</span>
+                      <span style="font-size: 12.5px; color: #786a59;">{{h.meta}}</span>
+                    </span>
+                    <button onClick="{{h.redo}}" aria-label="{{h.a11y}}" style="height: 44px; flex-shrink: 0; padding: 0 12px; border-radius: 12px; border: none; background: #e3edd3; color: #2f6b12; font-size: 13px; font-weight: 700;">{{h.label}}</button>
+                  </div>
+                </sc-for>
+                <sc-if value="{{habitEmpty}}" hint-placeholder-val="{{ false }}">
+                  <span style="padding: 18px 16px; font-size: 13.5px; line-height: 20px; color: #786a59;">Tes repas habituels apparaîtront ici dès que tu auras noté deux fois le même repas.</span>
+                </sc-if>
+              </div>
+
+              <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px 14px 10px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 17px; padding: 0 2px 6px;">Au planning cette semaine</span>
+                <sc-for list="{{cPlanRows}}" as="p" hint-placeholder-count="3">
+                  <div style="display: flex; align-items: center; gap: 10px; padding: 8px 2px; border-top: 1px solid #efe3cf;">
+                    <span style="width: 70px; flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #3f6b1c;">{{p.when}}</span>
+                    <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
+                      <span style="font-weight: 700; font-size: 13.5px;">{{p.what}}</span>
+                      <span style="font-size: 12px; color: #786a59;">{{p.meta}}</span>
+                    </span>
+                  </div>
+                </sc-for>
+                <sc-if value="{{cPlanEmpty}}" hint-placeholder-val="{{ false }}">
+                  <span style="padding: 8px 2px; font-size: 13px; color: #786a59;">Rien de prévu cette semaine.</span>
+                </sc-if>
+                <div style="display: flex; gap: 8px; padding-top: 8px;">
+                  <button onClick="{{iconPlanning}}" style="flex: 1; height: 44px; border-radius: 12px; border: none; background: #2f6b12; color: #ffffff; font-size: 13.5px; font-weight: 700;">Ouvrir le planning</button>
+                  <button onClick="{{openShopping}}" style="flex: 1; height: 44px; border-radius: 12px; border: 1px solid #90897d; background: transparent; color: #33291f; font-size: 13.5px; font-weight: 700;">Liste de courses</button>
+                </div>
+              </div>
+
+              <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+                <sc-for list="{{libRows}}" as="l" hint-placeholder-count="3">
+                  <button onClick="{{l.open}}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 0 14px; background: transparent; border: none; border-top: 1px solid {{l.sep}}; text-align: left; color: #33291f;">
+                    <span style="flex: 1; font-weight: 700; font-size: 14.5px;">{{l.label}}</span>
+                    <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #786a59;">{{l.meta}}</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"></path></svg>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+
+          <!-- ═════════ PROGRÈS / LA SEMAINE ═════════ -->
+          <sc-if value="{{isProgressTab}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 16px 28px;">
+              <sc-if value="{{progEmpty}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 30px 22px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 18px; text-align: center;">Tes progrès démarrent à ton premier repas noté.</span>
+                  <span style="max-width: 270px; font-size: 13.5px; line-height: 20px; text-align: center; color: #786a59; margin-bottom: 10px;">Cible, protéines, poids, régularité : tout s’affichera ici au fil des jours.</span>
+                  <button onClick="{{startLogging}}" style="align-self: stretch; height: 48px; border-radius: 15px; border: none; background: #2f6b12; color: #ffffff; font-size: 15px; font-weight: 700;">Noter un repas</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{progFull}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 14px;">
+                  <div style="display: flex; flex-direction: column; gap: 6px; padding: 16px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1.2px; font-weight: 700; color: #3f6b1c;">LE VERDICT DE LA SEMAINE</span>
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 25px; letter-spacing: -0.6px; line-height: 28px;">Tu tiens ton cap.</span>
+                    <span style="font-size: 14px; line-height: 20px;">4 jours sur 6 dans ta cible calorique.</span>
+                    <span style="font-size: 14px; line-height: 20px; color: #786a59;">Tes protéines sont le poste le plus en retard.</span>
+                    <button onClick="{{adjustMacros}}" style="align-self: flex-start; margin-top: 6px; height: 44px; padding: 0 16px; border-radius: 12px; border: 1px solid #3f6b1c; background: transparent; color: #3f6b1c; font-size: 14px; font-weight: 700;">Ajuster mes macros</button>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <span style="font-weight: 700; font-size: 15px;">Protéines par kilo</span>
+                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1px;">1,5</span>
+                      <span style="font-size: 13.5px; color: #786a59;">g/kg par jour · 7 derniers jours</span>
+                    </div>
+                    <div style="position: relative; height: 10px; border-radius: 5px; background: #efe3cf;">
+                      <div style="position: absolute; left: 53%; width: 20%; top: 0; bottom: 0; border-radius: 5px; background: #cfe0b8;"></div>
+                      <div style="position: absolute; left: 50%; top: -3px; width: 4px; height: 16px; border-radius: 2px; background: #33291f;"></div>
+                    </div>
+                    <span style="font-size: 12.5px; color: #786a59;">Ta fourchette : 1,6 à 2,2 g/kg</span>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <span style="font-weight: 700; font-size: 15px;">Poids</span>
+                      <button onClick="{{weighIn}}" style="height: 36px; padding: 0 12px; border-radius: 18px; border: none; background: #efe3cf; color: #3f6b1c; font-size: 13px; font-weight: 700;">Me peser</button>
+                    </div>
+                    <div style="display: flex; align-items: baseline; gap: 8px;">
+                      <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1px;">78,4 kg</span>
+                      <span style="font-size: 13.5px; color: #3f6b1c; font-weight: 700;">−0,4 kg / sem.</span>
+                    </div>
+                    <svg width="326" height="54" viewBox="0 0 326 54" fill="none"><path d="M0 12 L40 16 L80 14 L120 22 L160 24 L200 28 L240 30 L280 36 L326 38" stroke="#3f6b1c" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path><path d="M0 50 L326 50" stroke="#e3d3ba" stroke-width="1" stroke-dasharray="4 4"></path></svg>
+                    <span style="font-size: 12.5px; color: #786a59;">Objectif 75 kg · à ce rythme, vers la mi-décembre</span>
+                  </div>
+
+                  <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <span style="font-weight: 700; font-size: 15px;">Régularité</span>
+                    <span style="font-size: 13.5px;">6 jours notés sur les 7 derniers</span>
+                    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px;">
+                      <sc-for list="{{regDays}}" as="r" hint-placeholder-count="7">
+                        <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                          <span style="width: 100%; height: 26px; box-sizing: border-box; border-radius: 8px; background: {{r.bg}}; border: {{r.border}};"></span>
+                          <span style="font-family: 'Space Mono', monospace; font-size: 10px; color: #786a59;">{{r.l}}</span>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </div>
+
+                  <button onClick="{{weekLink}}" style="height: 48px; display: flex; align-items: center; justify-content: center; gap: 8px; background: transparent; border: none; color: #3f6b1c; font-size: 14px; font-weight: 700;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2.2" stroke-linecap="round"><path d="M5 20V11M12 20V5M19 20v-7"></path></svg>
+                    {{weekLinkLabel}}
+                  </button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ═══════════════════ DÉTAIL D'UN JOUR (B) ═══════════════════ -->
+      <sc-if value="{{isDay}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column;">
+          <div style="display: flex; align-items: center; gap: 4px; height: 56px; padding: 0 8px;">
+            <button onClick="{{backFromDay}}" aria-label="Retour à l’historique" style="height: 44px; display: flex; align-items: center; gap: 6px; padding: 0 8px; border-radius: 12px; border: none; background: transparent; color: #33291f; font-size: 14.5px; font-weight: 600;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M19 12H5M11 6l-6 6 6 6"></path></svg>
+              {{dBack}}
+            </button>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 4px; padding: 0 16px;">
+            <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.8px; line-height: 32px;">{{dTitle}}</span>
+            <span style="font-size: 14px; color: #786a59;">{{dSub}}</span>
+            <sc-if value="{{dHasItems}}" hint-placeholder-val="{{ true }}">
+              <span style="font-family: 'Space Mono', monospace; font-size: 11.5px; color: #786a59;">{{dMacros}}</span>
+            </sc-if>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 16px 120px;">
+            <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+              <sc-for list="{{dMealRows}}" as="m" hint-placeholder-count="4">
+                <div style="display: flex; flex-direction: column; border-top: 1px solid {{m.sep}};">
+                  <div style="display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 0 10px 0 16px;">
+                    <span style="width: 28px; height: 28px; flex-shrink: 0; border-radius: 9px; background: #efe3cf; display: flex; align-items: center; justify-content: center;">
+                      <sc-if value="{{m.isBf}}" hint-placeholder-val="{{ true }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2" stroke-linecap="round"><path d="M5 9h11v5a4 4 0 0 1-4 4H9a4 4 0 0 1-4-4z"></path><path d="M16 11h1.5a2 2 0 0 1 0 4H16"></path><path d="M8.5 3.5v2.5M12 3.5v2.5"></path></svg></sc-if>
+                      <sc-if value="{{m.isLu}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="7"></circle><circle cx="12" cy="12" r="3.2"></circle></svg></sc-if>
+                      <sc-if value="{{m.isSn}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2" stroke-linecap="round"><path d="M12 7.5c-3-2-7 0-7 4.5S8 20 10 20c1 0 1.2-.5 2-.5s1 .5 2 .5c2 0 5-4 5-8S15 5.5 12 7.5z"></path><path d="M12 7.5c0-2 1-3 2.5-3.5"></path></svg></sc-if>
+                      <sc-if value="{{m.isDi}}" hint-placeholder-val="{{ false }}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14.5A7.5 7.5 0 0 1 9.5 5a7.5 7.5 0 1 0 9.5 9.5z"></path></svg></sc-if>
+                    </span>
+                    <span style="flex: 1; min-width: 0; font-weight: {{m.nameW}}; font-size: 14.5px; color: {{m.nameColor}};">{{m.label}}</span>
+                    <sc-if value="{{m.filled}}" hint-placeholder-val="{{ true }}">
+                      <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #786a59;">{{m.kcal}}</span>
+                      <button onClick="{{m.redoToday}}" aria-label="{{m.redoA11y}}" style="height: 40px; flex-shrink: 0; padding: 0 10px; border-radius: 12px; border: none; background: #e3edd3; color: #2f6b12; font-size: 12.5px; font-weight: 700; display: flex; align-items: center; gap: 5px;">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#2f6b12" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"></path><path d="M20 4v4.5h-4.5"></path><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"></path><path d="M4 20v-4.5h4.5"></path></svg>
+                        Aujourd’hui
+                      </button>
+                    </sc-if>
+                    <button onClick="{{m.add}}" aria-label="{{m.addA11y}}" style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 20px; border: none; background: #efe3cf; display: flex; align-items: center; justify-content: center; padding: 0;">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3f6b1c" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                    </button>
+                  </div>
+                  <sc-for list="{{m.items}}" as="e" hint-placeholder-count="2">
+                    <div style="display: flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 16px 0 54px;">
+                      <span style="flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{e.n}}</span>
+                      <span style="font-family: 'Space Mono', monospace; font-size: 11px; color: #786a59;">{{e.q}}</span>
+                      <span style="width: 58px; text-align: right; font-family: 'Space Mono', monospace; font-size: 12px; color: #786a59;">{{e.k}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-for>
+            </div>
+            <sc-if value="{{dEmpty}}" hint-placeholder-val="{{ false }}">
+              <span style="padding: 0 4px; font-size: 13.5px; line-height: 20px; color: #786a59;">Rien de noté ce jour-là. Ajoute ce dont tu te souviens avec les « + » : ta régularité et tes moyennes n’en seront que plus justes.</span>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- Bouton collé en bas du détail -->
+    <sc-if value="{{showRedoAll}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; padding: 14px 16px 22px; background: linear-gradient(180deg, rgba(247,238,222,0) 0%, #f7eede 30%);">
+        <button onClick="{{redoAll}}" style="width: 100%; min-height: 56px; border-radius: 16px; border: none; background: #2f6b12; color: #ffffff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;">
+          <span style="font-size: 15.5px; font-weight: 700;">Reprendre toute la journée aujourd’hui</span>
+          <span style="font-size: 12px; color: #e1ebcf;">{{dRedoAllSub}}</span>
+        </button>
+      </div>
+    </sc-if>
+
+    <!-- Barre d'onglets du bas -->
+    <sc-if value="{{showTabBar}}" hint-placeholder-val="{{ true }}">
+      <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 74px; box-sizing: border-box; padding-bottom: 12px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); background: #fffaf2; border-top: 1px solid #e3d3ba;">
+        <sc-for list="{{bottomTabs}}" as="b" hint-placeholder-count="5">
+          <button onClick="{{b.pick}}" aria-label="{{b.label}}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: transparent; border: none; padding: 0; color: {{b.color}}; font-size: 11px; font-weight: 700;">
+            <sc-if value="{{b.isHome}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{b.color}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6h-6v6H4z"></path></svg></sc-if>
+            <sc-if value="{{b.isStrength}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{b.color}}" stroke-width="2" stroke-linecap="round"><path d="M6.5 7v10M17.5 7v10M3.5 9.5v5M20.5 9.5v5M6.5 12h11"></path></svg></sc-if>
+            <sc-if value="{{b.isRunning}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{b.color}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 16.5h13l3.5-2c0-2-2-3-4-3l-3-4.5H9l-2 5H3.5z"></path></svg></sc-if>
+            <sc-if value="{{b.isNutrition}}" hint-placeholder-val="{{ true }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{b.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-13 14-14 0 9-5 14-13 14"></path><path d="M5 19l7-7"></path></svg></sc-if>
+            <sc-if value="{{b.isLab}}" hint-placeholder-val="{{ false }}"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="{{b.color}}" stroke-width="1.9" stroke-linecap="round"><rect x="4" y="4" width="7" height="7" rx="1.5"></rect><rect x="13" y="4" width="7" height="7" rx="1.5"></rect><rect x="4" y="13" width="7" height="7" rx="1.5"></rect><rect x="13" y="13" width="7" height="7" rx="1.5"></rect></svg></sc-if>
+            <span>{{b.label}}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <!-- Feuille « Ta bibliothèque » -->
+    <sc-if value="{{libraryOpen}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 20; display: flex; flex-direction: column; justify-content: flex-end;">
+        <button aria-label="Fermer" onClick="{{closeLibrary}}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: none; padding: 0; background: rgba(20,14,8,0.45); animation: fadein .2s both;"></button>
+        <div style="position: relative; display: flex; flex-direction: column; padding: 10px 16px 26px; border-top-left-radius: 24px; border-top-right-radius: 24px; background: #f7eede; animation: sheetup .25s ease-out both;">
+          <span style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: #90897d; margin-bottom: 10px;"></span>
+          <div style="display: flex; align-items: center; justify-content: space-between; padding-bottom: 8px;">
+            <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -0.5px;">Ta bibliothèque</span>
+            <button aria-label="Fermer" onClick="{{closeLibrary}}" style="width: 44px; height: 44px; border-radius: 22px; border: none; background: #efe3cf; display: flex; align-items: center; justify-content: center; padding: 0;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+            </button>
+          </div>
+          <div style="display: flex; flex-direction: column; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+            <sc-for list="{{libRows}}" as="l" hint-placeholder-count="4">
+              <button onClick="{{l.open}}" style="display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 0 14px; background: transparent; border: none; border-top: 1px solid {{l.sep}}; text-align: left; color: #33291f;">
+                <span style="flex: 1; display: flex; flex-direction: column; gap: 1px;">
+                  <span style="font-weight: 700; font-size: 15px;">{{l.label}}</span>
+                  <span style="font-size: 12.5px; color: #786a59;">{{l.hint}}</span>
+                </span>
+                <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #786a59;">{{l.meta}}</span>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"></path></svg>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Nommer un repas type : le nom est obligatoire (décision Q6) -->
+    <sc-if value="{{tplOpen}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 22; display: flex; flex-direction: column; justify-content: flex-end;">
+        <button aria-label="Annuler" onClick="{{tplCancel}}" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border: none; padding: 0; background: rgba(20,14,8,0.45); animation: fadein .2s both;"></button>
+        <div style="position: relative; display: flex; flex-direction: column; gap: 10px; padding: 10px 16px 26px; border-top-left-radius: 24px; border-top-right-radius: 24px; background: #f7eede; animation: sheetup .25s ease-out both;">
+          <span style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: #90897d; margin-bottom: 4px;"></span>
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px; letter-spacing: -0.5px;">Nommer ce repas type</span>
+          <span style="font-size: 13.5px; color: #786a59;">{{tplSub}}</span>
+          <label for="tpl-name" style="margin-top: 4px; font-size: 13px; font-weight: 700;">Nom du repas type</label>
+          <input id="tpl-name" value="{{tplName}}" onChange="{{tplInput}}" placeholder="Ex. : Petit-déj du matin" maxLength="60" style="height: 50px; box-sizing: border-box; padding: 0 14px; border-radius: 14px; border: 1.5px solid #90897d; background: #fffaf2; font-family: inherit; font-size: 16px; color: #33291f;">
+          <span style="font-size: 12.5px; color: #786a59;">Tu le retrouveras sous ce nom dans la recherche.</span>
+          <div style="display: flex; gap: 8px; margin-top: 6px;">
+            <button onClick="{{tplCancel}}" style="flex: 1; height: 48px; border-radius: 14px; border: 1px solid #90897d; background: transparent; color: #33291f; font-size: 15px; font-weight: 700;">Annuler</button>
+            <button onClick="{{tplSave}}" disabled="{{tplDisabled}}" style="flex: 1; height: 48px; border-radius: 14px; border: none; background: {{tplSaveBg}}; color: {{tplSaveColor}}; font-size: 15px; font-weight: 700;">Enregistrer</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Confirmation : reprendre toute une journée sur un aujourd'hui déjà entamé -->
+    <sc-if value="{{confirmOpen}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 25; display: flex; align-items: center; justify-content: center; padding: 0 28px; background: rgba(20,14,8,0.5); animation: fadein .2s both;">
+        <div role="alertdialog" style="width: 100%; display: flex; flex-direction: column; gap: 8px; padding: 20px; border-radius: 22px; background: #fffaf2;">
+          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px;">Aujourd’hui n’est pas vide</span>
+          <span style="font-size: 14px; line-height: 20px; color: #786a59;">{{confirmMsg}}</span>
+          <div style="display: flex; gap: 8px; margin-top: 8px;">
+            <button onClick="{{confirmNo}}" style="flex: 1; height: 46px; border-radius: 13px; border: 1px solid #90897d; background: transparent; color: #33291f; font-size: 14.5px; font-weight: 700;">Annuler</button>
+            <button onClick="{{confirmYes}}" style="flex: 1; height: 46px; border-radius: 13px; border: none; background: #2f6b12; color: #ffffff; font-size: 14.5px; font-weight: 700;">Ajouter</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Toast -->
+    <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="position: absolute; top: 12px; left: 12px; right: 12px; z-index: 30; padding: 12px 14px; border-radius: 14px; background: #33291f; color: #fbf4e8; font-size: 13.5px; font-weight: 600; line-height: 18px; box-shadow: 0 8px 24px rgba(0,0,0,0.25); animation: toastin .25s ease-out both;">{{toast}}</div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"variante":{"editor":"enum","options":["actuel","A","B","C"],"default":"B"},"tab":{"editor":"enum","options":["today","history","meals","progress"],"default":"today"},"heure":{"editor":"enum","options":["matin","midi","soir"],"default":"midi"},"compte":{"editor":"enum","options":["habitue","nouveau"],"default":"habitue"},"screen":{"editor":"enum","options":["hub","day"],"default":"hub"},"day":{"editor":"text","default":"24"},"view":{"editor":"text","default":"today"},"hist":{"editor":"enum","options":["days","meals"],"default":"days"},"repas":{"editor":"enum","options":["","bf","lu","sn","di"],"default":""},"menu":{"editor":"enum","options":["","bf","lu","sn","di"],"default":""},"library":{"editor":"boolean","default":false},"chrome":{"editor":"boolean","default":true},"vh":{"editor":"int","default":844},"toast":{"editor":"text","default":""},"tpl":{"editor":"enum","options":["","bf","lu","sn","di"],"default":""},"tplName":{"editor":"text","default":""},"$preview":{"width":390,"height":928}}'>
+class Component extends DCLogic {
+  flash(msg) {
+    clearTimeout(this._t);
+    this.setState({ toast: msg });
+    this._t = setTimeout(() => this.setState({ toast: null }), 3400);
+  }
+
+  renderVals() {
+    const st = this.state || {};
+    const P = this.props || {};
+    const has = (v) => v !== undefined && v !== null && v !== '';
+    const pick = (k, d) => (st[k] !== undefined ? st[k] : has(P[k]) ? P[k] : d);
+    const truthy = (v) => v === true || v === 'true';
+
+    const variante = pick('variante', 'B');
+    const heure = pick('heure', 'midi');
+    const compte = pick('compte', 'habitue');
+    const nouveau = compte === 'nouveau';
+    const chrome = P.chrome === undefined ? true : truthy(P.chrome);
+    const vh = Number(P.vh) > 0 ? Number(P.vh) : 844;
+    const isActuel = variante === 'actuel';
+    const isA = variante === 'A';
+    const isB = variante === 'B';
+    const isC = variante === 'C';
+    const reperes = isActuel;
+    const T = 2400;
+    const fmt = (n) => String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    const sum = (items, key) => items.reduce((s, e) => s + e[key], 0);
+    const names = (items) => items.slice(0, 3).map((e) => e.n).join(', ') + (items.length > 3 ? '…' : '');
+    const names2 = (items) => items.slice(0, 2).map((e) => e.n).join(', ');
+
+    // ── Aliments et repas ─────────────────────────────────────────────────
+    const F = (n, q, k, p, g, l) => ({ n, q, k, p, g, l });
+    const C = {
+      skyr: [F('Skyr nature', '150 g', 95, 16, 6, 0), F('Flocons d’avoine', '60 g', 225, 8, 36, 4), F('Banane', '120 g', 107, 1, 24, 0), F('Café au lait', '1 tasse', 40, 2, 3, 2)],
+      tartines: [F('Pain complet', '80 g', 190, 7, 34, 2), F('Beurre', '10 g', 74, 0, 0, 8), F('Confiture', '20 g', 50, 0, 12, 0), F('Café', '1 tasse', 2, 0, 0, 0)],
+      omelette2: [F('Omelette, 2 œufs', '', 180, 13, 1, 14), F('Pain complet', '50 g', 120, 4, 21, 1), F('Tomate', '100 g', 18, 1, 3, 0)],
+      poulet: [F('Poulet grillé', '150 g', 240, 45, 0, 6), F('Riz basmati cuit', '200 g', 260, 5, 57, 1), F('Haricots verts', '150 g', 45, 3, 7, 0), F('Huile d’olive', '10 g', 90, 0, 0, 10)],
+      burger: [F('Burger maison', '1', 780, 38, 52, 44), F('Frites', '150 g', 450, 5, 55, 23)],
+      lentilles: [F('Salade de lentilles', '250 g', 290, 18, 40, 6), F('Thon au naturel', '100 g', 116, 26, 0, 1), F('Pomme', '150 g', 72, 0, 19, 0)],
+      pates: [F('Pâtes complètes cuites', '250 g', 350, 13, 66, 3), F('Sauce bolognaise', '150 g', 180, 12, 8, 11), F('Parmesan', '15 g', 60, 5, 0, 4)],
+      brunch: [F('Pancakes', '3', 450, 12, 66, 14), F('Sirop d’érable', '20 g', 52, 0, 13, 0), F('Œufs brouillés', '2 œufs', 180, 13, 2, 14), F('Bacon', '40 g', 160, 10, 0, 13), F('Jus d’orange', '25 cl', 110, 2, 25, 0)],
+      amandes: [F('Pomme', '150 g', 72, 0, 19, 0), F('Amandes', '30 g', 174, 6, 3, 15)],
+      yaourt: [F('Yaourt grec', '150 g', 146, 6, 6, 11), F('Miel', '10 g', 30, 0, 8, 0)],
+      saumonHier: [F('Saumon', '130 g', 270, 26, 0, 18), F('Pommes de terre', '250 g', 200, 5, 43, 0), F('Brocoli', '150 g', 50, 4, 6, 1), F('Fromage blanc, miel', '150 g', 160, 11, 18, 5), F('Pain complet', '80 g', 190, 7, 34, 2)],
+      omeletteSoir: [F('Omelette, 3 œufs', '', 270, 19, 1, 21), F('Salade verte', '', 30, 1, 3, 2), F('Pain complet', '50 g', 120, 4, 21, 1), F('Tarte aux pommes', '1 part', 300, 3, 40, 14)],
+      saumonRiz: [F('Saumon', '130 g', 270, 26, 0, 18), F('Riz basmati cuit', '200 g', 260, 5, 57, 1), F('Brocoli', '150 g', 50, 4, 6, 1), F('Yaourt grec', '150 g', 146, 6, 6, 11)],
+      pouletQuinoa: [F('Poulet grillé', '150 g', 240, 45, 0, 6), F('Légumes rôtis', '250 g', 180, 4, 20, 9), F('Quinoa cuit', '150 g', 180, 7, 32, 3), F('Pain complet', '80 g', 190, 7, 34, 2), F('Compote', '100 g', 70, 0, 17, 0)],
+      pizza: [F('Pizza maison', '1/2', 820, 34, 90, 34), F('Bière', '33 cl', 140, 1, 12, 0), F('Chips', '50 g', 270, 3, 25, 17), F('Tiramisu', '1 part', 380, 7, 35, 23)],
+      omelette3: [F('Omelette, 3 œufs', '', 270, 19, 1, 21), F('Salade verte', '', 30, 1, 3, 2), F('Pain complet', '50 g', 120, 4, 21, 1)],
+      saumonPdt: [F('Saumon', '130 g', 270, 26, 0, 18), F('Pommes de terre', '250 g', 200, 5, 43, 0), F('Brocoli', '150 g', 50, 4, 6, 1)],
+      pouletLegumes: [F('Poulet grillé', '150 g', 240, 45, 0, 6), F('Légumes rôtis', '250 g', 180, 4, 20, 9), F('Quinoa cuit', '150 g', 180, 7, 32, 3)],
+    };
+    const PLANNED = F('Poulet basquaise, riz', '1 portion', 640, 42, 70, 18);
+    const MEALS = [
+      { m: 'bf', label: 'Petit-déjeuner', low: 'petit-déjeuner', art: 'un petit-déjeuner', le: 'le petit-déjeuner', chip: 'Petit-déj' },
+      { m: 'lu', label: 'Déjeuner', low: 'déjeuner', art: 'un déjeuner', le: 'le déjeuner', chip: 'Déjeuner' },
+      { m: 'sn', label: 'Collation', low: 'collation', art: 'une collation', le: 'la collation', chip: 'Collation' },
+      { m: 'di', label: 'Dîner', low: 'dîner', art: 'un dîner', le: 'le dîner', chip: 'Dîner' },
+    ];
+    const MEAL = {};
+    MEALS.forEach((M) => { MEAL[M.m] = M; });
+    const EMPTY = () => ({ bf: [], lu: [], sn: [], di: [] });
+
+    // ── Les jours ─────────────────────────────────────────────────────────
+    const DOW = ['LUN.', 'MAR.', 'MER.', 'JEU.', 'VEN.', 'SAM.', 'DIM.'];
+    const DOWL = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+    const di = (d) => Number(d) % 7; // 1er septembre 2026 = mardi
+    const dow = (d) => DOW[di(d)];
+    const dayLong = (d) => DOWL[di(d)] + ' ' + d;
+    const dayFull = (d) => { const s = DOWL[di(d)]; return s.charAt(0).toUpperCase() + s.slice(1) + ' ' + d + ' septembre'; };
+    const dayShort = (d) => DOWL[di(d)].slice(0, 3) + '. ' + d;
+    const DAYCOMP = {
+      '24': { bf: 'skyr', lu: 'poulet', sn: 'amandes', di: 'saumonHier' },
+      '23': { bf: 'tartines', lu: 'burger', sn: 'yaourt', di: 'omeletteSoir' },
+      '22': { bf: 'skyr', lu: 'lentilles', sn: 'amandes', di: 'saumonRiz' },
+      '21': { bf: 'skyr', lu: 'pates', sn: 'amandes', di: 'pouletQuinoa' },
+      '19': { lu: 'brunch', sn: 'yaourt', di: 'pizza' },
+    };
+    const OLDER = {
+      '18': [2290, 'Omelette, pain · Poulet grillé, riz · Omelette, salade'],
+      '17': [1880, 'Tartines · Salade de lentilles · Saumon, pommes de terre'],
+      '16': [2350, 'Skyr, flocons · Pâtes complètes · Omelette, salade'],
+      '15': [2450, 'Skyr, flocons · Poulet grillé, riz · Pizza maison'],
+      '14': [2300, 'Skyr, flocons · Poulet grillé, riz · Poulet, légumes rôtis'],
+      '12': [3020, 'Brunch · Burger, frites · Pizza maison'],
+      '11': [2380, 'Skyr, flocons · Salade de lentilles · Saumon, riz'],
+      '10': [2260, 'Skyr, flocons · Poulet grillé, riz · Omelette, salade'],
+      '9': [2020, 'Tartines · Pâtes complètes · Soupe, pain'],
+      '8': [2410, 'Skyr, flocons · Poulet grillé, riz · Saumon, pommes de terre'],
+      '7': [2330, 'Skyr, flocons · Salade de lentilles · Poulet, légumes rôtis'],
+      '5': [2810, 'Brunch · Pizza maison'],
+      '4': [2400, 'Skyr, flocons · Poulet grillé, riz · Omelette, salade'],
+      '3': [2290, 'Tartines · Pâtes complètes · Saumon, riz'],
+      '2': [1950, 'Skyr, flocons · Salade de lentilles · Soupe, pain'],
+      '1': [2350, 'Skyr, flocons · Poulet grillé, riz · Saumon, pommes de terre'],
+    };
+
+    // ── Aujourd'hui (état du prototype) ───────────────────────────────────
+    const scen = heure + '|' + compte;
+    const INIT = {
+      matin: EMPTY(),
+      midi: { bf: C.skyr, lu: [], sn: [], di: [] },
+      soir: { bf: C.skyr, lu: C.poulet, sn: C.amandes, di: [] },
+    };
+    const base = nouveau ? EMPTY() : INIT[heure] || INIT.midi;
+    const same = st.scen === scen;
+    const today = same && st.today ? st.today : base;
+    const plannedEaten = same ? !!st.plannedEaten : false;
+    const water = same && st.water !== undefined ? st.water : heure === 'matin' ? 1 : heure === 'midi' ? 4 : 7;
+    const setToday = (next, extra) => this.setState(Object.assign({ scen, today: next, plannedEaten, water }, extra || {}));
+    const addTo = (m, items, extra) => {
+      const next = Object.assign({}, today);
+      next[m] = today[m].concat(items);
+      setToday(next, extra);
+    };
+    const mh = heure === 'matin' ? 'bf' : heure === 'midi' ? 'lu' : 'di';
+    const hourLabel = heure === 'matin' ? '8 h 10' : heure === 'midi' ? '12 h 40' : '20 h 15';
+
+    const mealsOf = (dk) => {
+      if (dk === 'today' || dk === '25') return today;
+      const o = EMPTY();
+      if (nouveau) return o;
+      const c = DAYCOMP[dk];
+      if (c) Object.keys(c).forEach((m) => { o[m] = C[c[m]]; });
+      return o;
+    };
+    const totalsOf = (meals) => {
+      const all = [].concat(meals.bf, meals.lu, meals.sn, meals.di);
+      return { k: sum(all, 'k'), p: sum(all, 'p'), g: sum(all, 'g'), l: sum(all, 'l'), n: all.length, meals: MEALS.filter((M) => meals[M.m].length > 0).length };
+    };
+    const kOf = (d) => {
+      if (d === '25') return totalsOf(today).k;
+      if (nouveau) return 0;
+      if (DAYCOMP[d]) return totalsOf(mealsOf(d)).k;
+      if (OLDER[d]) return OLDER[d][0];
+      return 0;
+    };
+    const statusOf = (k) => (k === 0 ? 'none' : Math.abs(k - T) <= 240 ? 'in' : k > T ? 'over' : 'under');
+
+    // ── Navigation ────────────────────────────────────────────────────────
+    const TABSETS = {
+      actuel: [['today', 'Aujourd’hui'], ['progress', 'La semaine']],
+      A: [['today', 'Aujourd’hui'], ['progress', 'Progrès']],
+      B: [['today', 'Aujourd’hui'], ['history', 'Historique'], ['progress', 'Progrès']],
+      C: [['today', 'Journal'], ['meals', 'Mes repas'], ['progress', 'Progrès']],
+    };
+    const tabset = TABSETS[variante] || TABSETS.B;
+    let tab = pick('tab', 'today');
+    if (!tabset.some((x) => x[0] === tab)) tab = 'today';
+    let screen = pick('screen', 'hub');
+    if (!isB) screen = 'hub';
+    const dayId = String(pick('day', '24'));
+    let view = String(pick('view', 'today'));
+    if (isB || view === '25') view = 'today';
+    const viewToday = view === 'today';
+    const histTab = pick('hist', 'days');
+    const repasSel = pick('repas', '') || mh;
+    const menu = pick('menu', '');
+    const libraryOpen = st.library !== undefined ? !!st.library : truthy(P.library);
+    const toast = st.toast !== undefined ? st.toast : has(P.toast) ? P.toast : null;
+
+    const openDay = (d) => this.setState({ screen: 'day', day: d, library: false, menu: '' });
+    const tabs = tabset.map(([k, label]) => {
+      const on = k === tab;
+      return {
+        label,
+        pressed: on ? 'true' : 'false',
+        bg: on ? '#ffffff' : 'transparent',
+        color: on ? '#2f6b12' : '#ffffff',
+        lbg: on ? '#3f6b1c' : 'transparent',
+        lcolor: on ? '#ffffff' : '#786a59',
+        lborder: on ? '#3f6b1c' : '#e3d3ba',
+        pick: () => this.setState({ tab: k, menu: '' }),
+      };
+    });
+
+    // ── Le remplissage (scène) ────────────────────────────────────────────
+    const vMeals = mealsOf(view);
+    const vt = totalsOf(vMeals);
+    const remaining = T - vt.k;
+    const showRemaining = viewToday && remaining > 0;
+    const status = !viewToday
+      ? 'sur ' + fmt(T) + ' kcal visées'
+      : showRemaining
+        ? 'encore disponibles aujourd’hui'
+        : remaining < 0
+          ? fmt(-remaining) + ' kcal au-dessus'
+          : 'Objectif atteint';
+    const stems = [['P', vt.p, 150, '#e8f0d6'], ['G', vt.g, 280, '#f2d9a3'], ['L', vt.l, 75, '#f0b79b']].map(([lab, v, goal, col]) => ({
+      lab,
+      val: Math.round(v) + '/' + goal,
+      h: Math.round(Math.min(1, v / goal) * 100) + '%',
+      col,
+    }));
+    const WEEK = [['21', 'L'], ['22', 'M'], ['23', 'M'], ['24', 'J'], ['25', 'V'], ['26', 'S'], ['27', 'D']];
+    const glasses = WEEK.map(([d, wd]) => {
+      const future = Number(d) > 25;
+      const isT = d === '25';
+      const k = future ? 0 : kOf(d);
+      const sel = (isT && viewToday) || view === d;
+      const hazy = !future && !isT && k === 0 && !nouveau;
+      return {
+        wd,
+        border: sel ? '2px solid #ffffff' : hazy ? '1.5px dashed rgba(255,255,255,0.5)' : '1.5px solid rgba(255,255,255,0.28)',
+        fillH: Math.round(Math.min(1, k / T) * 100) + '%',
+        fillBg: sel ? '#e8f0d6' : 'rgba(158,209,106,0.75)',
+        op: future ? '0.4' : '1',
+        wdColor: sel ? '#ffffff' : '#e1ebcf',
+        a11y: dayLong(d) + (future ? ', à venir' : k > 0 ? ', ' + fmt(k) + ' kcal' : ', rien de noté'),
+        pick: () => {
+          if (future) return;
+          this.setState({ view: isT ? 'today' : d, menu: '' });
+        },
+      };
+    });
+    const shift = (n) => {
+      const cur = viewToday ? 25 : Number(view);
+      const next = Math.min(25, Math.max(1, cur + n));
+      this.setState({ view: next === 25 ? 'today' : String(next), menu: '' });
+    };
+    const quickFoods = [F('Skyr nature', '150 g', 95, 16, 6, 0), F('Banane', '120 g', 107, 1, 24, 0), F('Café au lait', '1 tasse', 40, 2, 3, 2)];
+    const quick = quickFoods.map((f) => ({
+      n: f.n,
+      k: String(f.k),
+      a11y: 'Ajouter ' + f.n + ', ' + f.k + ' kcal',
+      add: () => {
+        addTo(mh, [f]);
+        this.flash(f.n + ' ajouté au ' + MEAL[mh].low + ' · ' + f.k + ' kcal');
+      },
+    }));
+    const missingTxt = isB ? 'Dimanche 20 n’a rien de noté — le compléter affinerait tes repères' : 'dimanche 20 n’a rien de saisi — le compléter affinerait tes repères';
+    const openMissing = () => (isB ? openDay('20') : this.setState({ view: '20', menu: '' }));
+
+    // ── Reprendre (A, B) ──────────────────────────────────────────────────
+    const RECENT = {
+      bf: [['24', 'skyr', 12], ['23', 'tartines', 5], ['18', 'omelette2', 3]],
+      lu: [['24', 'poulet', 6], ['23', 'burger', 1], ['22', 'lentilles', 3]],
+      sn: [['24', 'amandes', 9], ['23', 'yaourt', 6]],
+      di: [['24', 'saumonHier', 1], ['23', 'omeletteSoir', 1], ['22', 'saumonRiz', 1]],
+    };
+    const when = (d) => (d === '24' ? 'hier' : dayShort(d));
+    const reRows = (RECENT[mh] || []).map(([d, c, times]) => {
+      const items = C[c];
+      const k = sum(items, 'k');
+      return {
+        dow: dow(d),
+        d,
+        name: names(items),
+        meta: fmt(k) + ' kcal · ' + (times >= 2 ? times + ' fois en 2 mois' : 'une seule fois'),
+        a11y: 'Reprendre ' + MEAL[mh].le + ' du ' + dayLong(d),
+        openA11y: 'Voir la journée du ' + dayLong(d),
+        open: () => (isB ? openDay(d) : this.setState({ view: d, menu: '' })),
+        redo: () => {
+          addTo(mh, items);
+          this.flash(MEAL[mh].label + ' de ' + (d === '24' ? 'hier' : dayLong(d)) + ' repris · ' + fmt(k) + ' kcal');
+        },
+      };
+    });
+    const showReprendre = (isA || isB) && tab === 'today' && viewToday && !nouveau && today[mh].length === 0 && reRows.length > 0;
+
+    // ── Ta journée ────────────────────────────────────────────────────────
+    const yesterday = mealsOf('24');
+    const firstFilled = (MEALS.find((M) => vMeals[M.m].length > 0) || {}).m;
+    const mealRows = MEALS.map((M) => {
+      const items = vMeals[M.m];
+      const k = sum(items, 'k');
+      const empty = items.length === 0;
+      const yk = sum(yesterday[M.m], 'k');
+      return {
+        label: M.label,
+        isBf: M.m === 'bf',
+        isLu: M.m === 'lu',
+        isSn: M.m === 'sn',
+        isDi: M.m === 'di',
+        empty,
+        filled: !empty,
+        nameW: empty ? '600' : '700',
+        nameColor: empty ? '#786a59' : '#33291f',
+        kcal: fmt(k),
+        showShare: !empty && vt.k > 0,
+        share: Math.round((k / Math.max(1, vt.k)) * 100) + ' %',
+        shareW: Math.round((k / Math.max(1, vt.k)) * 100) + '%',
+        items: items.map((e) => ({ n: e.n, q: e.q, k: fmt(e.k) })),
+        commeHier: !isActuel && empty && viewToday && !nouveau && yesterday[M.m].length > 0,
+        commeHierA11y: 'Reprendre ' + M.le + ' d’hier, ' + fmt(yk) + ' kcal',
+        planned: !isActuel && M.m === 'di' && viewToday && !nouveau && !plannedEaten,
+        menuOpen: menu === M.m && !empty,
+        menuExpanded: menu === M.m ? 'true' : 'false',
+        menuActuel: isActuel,
+        menuA11y: 'Actions du ' + M.low,
+        marker1: reperes && !empty && M.m === firstFilled,
+        addA11y: M.label + ' · ajouter un aliment',
+        add: () => this.flash(viewToday ? 'Feuille d’ajout (inchangée) · ' + M.label : 'Feuille d’ajout · l’aliment sera noté sur ' + dayLong(view) + ', pas aujourd’hui'),
+        toggleMenu: () => this.setState({ menu: menu === M.m ? '' : M.m }),
+        copyHier: () => {
+          if (!viewToday) { this.setState({ menu: '' }); this.flash('Copie de la veille de ' + dayLong(view)); return; }
+          addTo(M.m, yesterday[M.m], { menu: '' });
+          this.flash(isActuel ? M.label + ' d’hier copié : il est maintenant en double' : M.label + ' d’hier repris · ' + fmt(yk) + ' kcal');
+        },
+        saveTpl: () => {
+          if (isActuel) {
+            this.setState({ menu: '' });
+            this.flash('Repas type enregistré sous le nom « ' + M.label + ' »');
+            return;
+          }
+          this.setState({ menu: '', tplMeal: M.m, tplName: '' });
+        },
+        eat: () => {
+          const next = Object.assign({}, today);
+          next.di = today.di.concat([PLANNED]);
+          setToday(next, { plannedEaten: true });
+          this.flash('Poulet basquaise, riz noté au dîner · 640 kcal');
+        },
+      };
+    });
+    const showEmptyState = vt.n === 0 && (isActuel || nouveau);
+    const copyDay = () => {
+      if (!viewToday) { this.flash('Journée de la veille copiée sur ' + dayLong(view)); return; }
+      if (nouveau) { this.flash('Rien à copier : aucune entrée hier'); return; }
+      setToday(mealsOf('24'));
+      this.flash('Journée d’hier copiée · ' + fmt(totalsOf(mealsOf('24')).k) + ' kcal');
+    };
+
+    // ── Micros ────────────────────────────────────────────────────────────
+    const ratioDay = Math.min(1.2, vt.k / T);
+    const MICROS = [['Fer', 0.92], ['Calcium', 0.88], ['Magnésium', 0.81], ['Vitamine D', 0.35], ['Vitamine C', 0.96], ['Potassium', 0.9]];
+    const microCells = MICROS.map(([label, full]) => {
+      const pct = Math.round(full * ratioDay * 100);
+      return { label, pct: pct + ' % des apports', w: Math.min(100, pct) + '%' };
+    });
+
+    // ── Historique (B) ────────────────────────────────────────────────────
+    const noted = [];
+    for (let d = 1; d <= 24; d += 1) { const k = kOf(String(d)); if (k > 0) noted.push(k); }
+    const cnt = (s) => { let n = 0; for (let d = 1; d <= 24; d += 1) { if (statusOf(kOf(String(d))) === s) n += 1; } return n; };
+    const avg = noted.length ? noted.reduce((a, b) => a + b, 0) / noted.length : 0;
+    const mSum1 = noted.length ? noted.length + ' jours notés · ' + fmt(avg) + ' kcal en moyenne' : 'Aucun jour noté ce mois-ci';
+    const mSum2 = noted.length ? cnt('in') + ' dans ta cible · ' + cnt('over') + ' au-dessus · ' + cnt('under') + ' en dessous' : 'Ton premier repas noté ouvrira le calendrier.';
+    const canOpen = (d) => !OLDER[d];
+    const openOrToast = (d) => (canOpen(d) ? openDay(d) : this.flash('Journée du ' + dayLong(d) + ' : même écran de détail que jeudi 24'));
+    const weekHead = ['L', 'M', 'M', 'J', 'V', 'S', 'D'].map((l) => ({ l }));
+    const calCells = [{ btn: false, plain: true, n: '' }];
+    for (let d = 1; d <= 30; d += 1) {
+      const key = String(d);
+      if (d > 25) { calCells.push({ btn: false, plain: true, n: key }); continue; }
+      const isT = d === 25;
+      const k = kOf(key);
+      const s = isT ? 'today' : statusOf(k);
+      const look = {
+        today: ['#cfe2b8', '#33291f', '2px solid #33291f', false],
+        in: ['#a9cf82', '#33291f', '1.5px solid #8fb86a', false],
+        over: ['#a9cf82', '#33291f', '1.5px solid #8fb86a', true],
+        under: ['#d6e6c4', '#33291f', '1.5px solid #c3d4aa', false],
+        none: nouveau ? ['transparent', '#786a59', '1px solid transparent', false] : ['transparent', '#786a59', '1.5px dashed #9a8a72', false],
+      }[s];
+      const label = { today: 'aujourd’hui, en cours', in: fmt(k) + ' kcal, dans ta cible', over: fmt(k) + ' kcal, au-dessus de ta cible', under: fmt(k) + ' kcal, en dessous de ta cible', none: 'rien de noté' }[s];
+      calCells.push({
+        btn: !nouveau || isT,
+        plain: nouveau && !isT,
+        n: key,
+        fillBg: look[0],
+        fillH: (s === 'over' ? 100 : Math.round(Math.min(1, k / T) * 100)) + '%',
+        color: look[1],
+        border: look[2],
+        hasMark: look[3],
+        a11y: dayLong(key) + ' septembre : ' + label,
+        open: () => (isT ? this.setState({ tab: 'today' }) : openOrToast(key)),
+      });
+    }
+    while (calCells.length < 35) calCells.push({ btn: false, plain: true, n: '' });
+    const histTabs = [['days', 'Jours'], ['meals', 'Repas habituels']].map(([k, label]) => ({
+      label,
+      pressed: k === histTab ? 'true' : 'false',
+      bg: k === histTab ? '#fffaf2' : 'transparent',
+      color: k === histTab ? '#33291f' : '#786a59',
+      pick: () => this.setState({ hist: k }),
+    }));
+    const firstFoods = (meals) => MEALS.filter((M) => meals[M.m].length).map((M) => names2(meals[M.m])).join(' · ');
+    const dayRows = [];
+    for (let d = 25; d >= 1; d -= 1) {
+      const key = String(d);
+      const isT = d === 25;
+      const k = kOf(key);
+      if (nouveau && !isT) continue;
+      const s = isT ? 'today' : statusOf(k);
+      const chipDef = { today: ['en cours', '#33291f', '#fbf4e8'], in: ['dans ta cible', '#e3edd3', '#2f6b12'], over: ['+' + fmt(k - T) + ' kcal', '#f6e3d3', '#7a3f14'], under: ['−' + fmt(T - k) + ' kcal', '#efe7da', '#5e5244'], none: ['', '', ''] }[s];
+      const sub = isT ? (totalsOf(today).n ? firstFoods(today) : 'Rien de noté pour l’instant') : DAYCOMP[key] ? firstFoods(mealsOf(key)) : OLDER[key] ? OLDER[key][1] : 'Compléter ce jour';
+      dayRows.push({
+        dow: isT ? 'AUJ.' : dow(key),
+        d: key,
+        pillBg: isT ? '#2f6b12' : s === 'none' ? 'transparent' : '#e3edd3',
+        pillInk: isT ? '#e1ebcf' : s === 'none' ? '#786a59' : '#2f6b12',
+        pillNum: isT ? '#ffffff' : s === 'none' ? '#786a59' : '#33291f',
+        kcal: s === 'none' ? 'Rien de noté' : fmt(k) + ' kcal',
+        kcalColor: s === 'none' ? '#786a59' : '#33291f',
+        hasChip: s !== 'none',
+        chip: chipDef[0],
+        chipBg: chipDef[1],
+        chipInk: chipDef[2],
+        sub,
+        subColor: s === 'none' ? '#3f6b1c' : '#786a59',
+        subW: s === 'none' ? '700' : '400',
+        sep: dayRows.length === 0 ? 'transparent' : '#efe3cf',
+        a11y: (isT ? 'Aujourd’hui' : dayLong(key)) + ' : ' + (s === 'none' ? 'rien de noté' : fmt(k) + ' kcal'),
+        open: () => (isT ? this.setState({ tab: 'today' }) : openOrToast(key)),
+      });
+    }
+
+    // ── Repas habituels (B › Historique, C › Mes repas) ───────────────────
+    const HABITS = {
+      bf: [['skyr', 12, 'hier'], ['tartines', 5, 'mer. 23'], ['omelette2', 3, 'ven. 18']],
+      lu: [['poulet', 6, 'hier'], ['lentilles', 3, 'mar. 22'], ['pates', 3, 'lun. 21']],
+      sn: [['amandes', 9, 'hier'], ['yaourt', 6, 'mer. 23']],
+      di: [['omelette3', 4, 'mer. 16'], ['saumonPdt', 3, 'jeu. 17'], ['pouletLegumes', 2, 'lun. 14']],
+    };
+    const repasChips = MEALS.map((M) => {
+      const on = M.m === repasSel;
+      return {
+        label: M.chip,
+        pressed: on ? 'true' : 'false',
+        bg: on ? '#2f6b12' : '#fffaf2',
+        color: on ? '#ffffff' : '#33291f',
+        border: on ? '#2f6b12' : '#e3d3ba',
+        pick: () => this.setState({ repas: M.m }),
+      };
+    });
+    const added = st.added || {};
+    const habitRows = nouveau ? [] : (HABITS[repasSel] || []).map(([c, times, last], i) => {
+      const items = C[c];
+      const k = sum(items, 'k');
+      const addedKey = repasSel + ':' + c;
+      return {
+        label: added[addedKey] ? 'Ajouté' : 'Reprendre',
+        name: items.map((e) => e.n).join(', '),
+        meta: fmt(k) + ' kcal · ' + times + ' fois · dernière : ' + last,
+        sep: i === 0 ? 'transparent' : '#efe3cf',
+        a11y: 'Reprendre ' + items.map((e) => e.n).join(', ') + ' au ' + MEAL[repasSel].low + ' d’aujourd’hui',
+        redo: () => {
+          if (added[addedKey]) return;
+          addTo(repasSel, items, { added: Object.assign({}, added, { [addedKey]: true }) });
+          this.flash('Ajouté à ' + MEAL[repasSel].le + ' d’aujourd’hui · ' + fmt(k) + ' kcal');
+        },
+      };
+    });
+
+    // ── Détail d'un jour (B) ──────────────────────────────────────────────
+    const dMeals = mealsOf(dayId);
+    const dt = totalsOf(dMeals);
+    const ds = statusOf(dt.k);
+    const dSub = dt.n === 0 ? 'Rien de noté ce jour-là' : fmt(dt.k) + ' kcal · ' + { in: 'dans ta cible', over: fmt(dt.k - T) + ' kcal au-dessus de ta cible', under: fmt(T - dt.k) + ' kcal en dessous de ta cible' }[ds];
+    const dMealRows = MEALS.map((M, i) => {
+      const items = dMeals[M.m];
+      const k = sum(items, 'k');
+      const empty = items.length === 0;
+      return {
+        label: M.label,
+        isBf: M.m === 'bf',
+        isLu: M.m === 'lu',
+        isSn: M.m === 'sn',
+        isDi: M.m === 'di',
+        filled: !empty,
+        nameW: empty ? '600' : '700',
+        nameColor: empty ? '#786a59' : '#33291f',
+        kcal: fmt(k) + ' kcal',
+        sep: i === 0 ? 'transparent' : '#efe3cf',
+        items: items.map((e) => ({ n: e.n, q: e.q, k: fmt(e.k) })),
+        redoA11y: 'Reprendre ' + M.le + ' du ' + dayLong(dayId) + ' aujourd’hui',
+        redoToday: () => {
+          addTo(M.m, items);
+          this.flash(M.label + ' du ' + dayLong(dayId) + ' ajouté à aujourd’hui · ' + fmt(k) + ' kcal');
+        },
+        addA11y: M.label + ' du ' + dayLong(dayId) + ' · ajouter un oubli',
+        add: () => this.flash('Feuille d’ajout · ' + dayLong(dayId) + ' · ' + M.label),
+      };
+    });
+    const doRedoAll = () => {
+      const next = Object.assign({}, today);
+      MEALS.forEach((M) => { next[M.m] = today[M.m].concat(dMeals[M.m]); });
+      setToday(next, { confirmAll: false, screen: 'hub', tab: 'today' });
+      this.flash('Journée du ' + dayLong(dayId) + ' reprise aujourd’hui · ' + fmt(dt.k) + ' kcal');
+    };
+    const todayN = totalsOf(today).n;
+    const confirmOpen = !!st.confirmAll;
+    const tplMeal = st.tplMeal !== undefined ? st.tplMeal : has(P.tpl) ? P.tpl : '';
+    const tplOpen = !isActuel && tplMeal !== '' && !!MEAL[tplMeal] && vMeals[tplMeal].length > 0;
+    const tplName = st.tplName !== undefined ? st.tplName : has(P.tplName) ? P.tplName : '';
+
+    // ── C › Au planning ───────────────────────────────────────────────────
+    const cPlanRows = nouveau ? [] : [
+      plannedEaten ? null : { when: 'CE SOIR', what: 'Poulet basquaise, riz', meta: 'Dîner · 640 kcal' },
+      { when: 'SAM. 26', what: 'Salade de lentilles, thon', meta: 'Déjeuner · 478 kcal' },
+      { when: 'DIM. 27', what: 'Pizza maison', meta: 'Dîner · 820 kcal' },
+    ].filter(Boolean);
+    const libRows = [
+      ['Recettes', '5', 'Tes plats composés, à la portion'],
+      ['Repas types', '3', 'Des repas enregistrés, à ajouter d’un geste'],
+      ['Mes aliments', '12', 'Créés ou scannés par toi'],
+      ['Repas de la journée', '4 repas', 'Leur nombre, leurs noms, leur ordre'],
+    ].map(([label, meta, hint], i) => ({
+      label,
+      meta: nouveau && i < 3 ? '0' : meta,
+      hint,
+      sep: i === 0 ? 'transparent' : '#efe3cf',
+      open: () => this.flash(label + ' — écran existant'),
+    }));
+
+    // ── Progrès ───────────────────────────────────────────────────────────
+    const regDays = [['18', 'V'], ['19', 'S'], ['20', 'D'], ['21', 'L'], ['22', 'M'], ['23', 'M'], ['24', 'J']].map(([d, l]) => {
+      const k = kOf(d);
+      return { l, bg: k > 0 ? '#3f6b1c' : 'transparent', border: k > 0 ? '1.5px solid #3f6b1c' : '1.5px dashed #9a8a72' };
+    });
+
+    // ── Simulation ────────────────────────────────────────────────────────
+    const reset = { tab: 'today', view: 'today', screen: 'hub', menu: '', library: false, confirmAll: false, toast: null, hist: 'days', repas: '' };
+    const chip = (on) => ({ bg: on ? '#33291f' : '#fbf4e8', color: on ? '#fbf4e8' : '#33291f', border: on ? '#33291f' : '#b9a88c', pressed: on ? 'true' : 'false' });
+    const simVar = [['actuel', 'Actuel'], ['A', 'A · 2 onglets'], ['B', 'B · 3 ★'], ['C', 'C']].map(([k, label]) => Object.assign({ label, pick: () => this.setState(Object.assign({ variante: k }, reset)) }, chip(k === variante)));
+    const simHeure = [['matin', '8 h'], ['midi', '12 h 40'], ['soir', '20 h']].map(([k, label]) => Object.assign({ label, pick: () => this.setState(Object.assign({ heure: k }, reset)) }, chip(k === heure)));
+    const simNew = Object.assign({ pick: () => this.setState(Object.assign({ compte: nouveau ? 'habitue' : 'nouveau' }, reset)) }, chip(nouveau));
+
+    const bottomTabs = [['home', 'Accueil'], ['strength', 'Muscu'], ['running', 'Course'], ['nutrition', 'Alim'], ['lab', 'Labo']].map(([k, label]) => ({
+      label,
+      isHome: k === 'home',
+      isStrength: k === 'strength',
+      isRunning: k === 'running',
+      isNutrition: k === 'nutrition',
+      isLab: k === 'lab',
+      color: k === 'nutrition' ? '#3f6b1c' : '#786a59',
+      pick: () => {
+        if (k !== 'nutrition') { this.flash(label + ' — hors de cette maquette'); return; }
+        if (isActuel) { this.flash('Aujourd’hui, un nouvel appui sur Alim ne fait rien'); return; }
+        if (this._scrollEl) this._scrollEl.scrollTo({ top: 0, behavior: 'smooth' });
+        this.flash('Nouvel appui sur Alim : retour en haut, même onglet');
+      },
+    }));
+
+    const isHub = screen === 'hub';
+    const isDay = screen === 'day';
+    const isTodayTab = isHub && tab === 'today';
+    const showHeader = !isActuel;
+    const showLevel = isActuel || tab === 'today';
+    const dayLabel = viewToday ? 'AUJOURD’HUI' : (dow(view) + ' ' + view + ' SEPT.');
+
+    return {
+      no: false,
+      yes: true,
+      rootH: (chrome ? 84 : 0) + vh,
+      chrome,
+      vh,
+      scrollBottom: isDay ? 0 : 74,
+      setScroll: (el) => { this._scrollEl = el; },
+      simVar,
+      simHeure,
+      simNew,
+      isHub,
+      isDay,
+      showTabBar: isHub,
+      bottomTabs,
+
+      showHeader,
+      headerPadB: showLevel ? 4 : 16,
+      tabs,
+      tabCols: 'repeat(' + tabset.length + ', minmax(0, 1fr))',
+      iconPlanning: () => this.flash('Planning repas — écran existant, inchangé'),
+      iconLibrary: () => this.setState({ library: true, menu: '' }),
+      iconSettings: () => this.flash('Profil nutritionnel — écran existant, inchangé'),
+
+      showLevel,
+      levelPadT: isActuel ? 10 : 8,
+      fillH: Math.round(Math.min(1, vt.k / T) * 62) + '%',
+      showDayNav: !isB,
+      dayLabel,
+      prevDay: () => shift(-1),
+      nextDay: () => shift(1),
+      openCalendar: () => this.flash('Calendrier du mois — feuille existante'),
+      showStageIcons: isActuel,
+      scan: () => this.flash('Scanner — écran existant'),
+      stats: () => this.flash('Statistiques — écran existant'),
+      showEyebrow: isB,
+      eyebrow: 'AUJOURD’HUI · VEN. 25 SEPT.',
+      showGlasses: !isB,
+      glasses,
+      showBackToday: !viewToday,
+      backToday: () => this.setState({ view: 'today', menu: '' }),
+      showMissing: viewToday && !nouveau,
+      missingTxt,
+      openMissing,
+      hero: fmt(showRemaining ? remaining : vt.k),
+      status,
+      hasDetail: showRemaining,
+      detail: fmt(vt.k) + ' sur ' + fmt(T) + ' · +300 jour de séance',
+      stems,
+      showQuick: viewToday && !nouveau,
+      quick,
+      search: () => this.flash(viewToday ? 'Feuille d’ajout (inchangée) · repas déduit de l’heure : ' + MEAL[mh].label : 'Feuille d’ajout · l’aliment sera noté sur ' + dayLong(view) + ', pas aujourd’hui'),
+      marker2: reperes && !viewToday,
+      showScanBtn: !isActuel,
+
+      showLightTabs: isActuel,
+      marker4: reperes,
+
+      isTodayTab,
+      isHistoryTab: isHub && tab === 'history',
+      isMealsTab: isHub && tab === 'meals',
+      isProgressTab: isHub && tab === 'progress',
+
+      showReprendre,
+      reTitle: 'Reprendre ' + MEAL[mh].art,
+      reHint: hourLabel,
+      reRows,
+      reFoot: () => (isB ? this.setState({ tab: 'history', hist: 'meals', repas: mh }) : this.flash('Calendrier du mois — feuille existante')),
+      reFootLabel: isB ? 'Tous tes repas habituels' : 'Choisir un autre jour',
+
+      showEmptyState,
+      emptyBody: nouveau ? 'Note ton premier repas : tes habitudes apparaîtront ici au fil des jours.' : 'Note ton premier repas, ou repars de ce que tu mangeais hier.',
+      emptyCopy: isActuel,
+      copyDay,
+      addFirst: () => this.flash('Feuille d’ajout (inchangée) · ' + MEAL[mh].label),
+      showDayCard: !showEmptyState,
+      dayCardMeta: vt.n + (vt.n > 1 ? ' entrées · ' : ' entrée · ') + fmt(vt.k) + ' kcal',
+      mealRows,
+      copyDayFoot: !isActuel && viewToday && vt.n === 0 && !nouveau,
+      waterTxt: String(water * 0.25).replace('.', ',') + ' L sur 2 L',
+      addWater: () => this.setState({ scen, today, plannedEaten, water: water + 1 }),
+
+      energyTxt: viewToday ? 'Dépense estimée : 2 950 kcal · jour de séance' : 'Dépense : 2 870 kcal',
+      energy: () => this.flash('Carte énergie — inchangée, se déplie d’elle-même quand il y a un écart'),
+      microsKnown: vt.n > 0,
+      microsUnknown: vt.n === 0,
+      microCells,
+
+      isActuel,
+      planning: () => this.flash('Planning repas — écran existant'),
+      manage: () => this.flash('Gérer les repas — écran existant'),
+      marker3: reperes,
+
+      prevMonth: () => this.flash('Août 2026 — même vue'),
+      mSum1,
+      mSum2,
+      weekHead,
+      calCells,
+      histTabs,
+      histDays: histTab !== 'meals',
+      histMeals: histTab === 'meals',
+      dayRows,
+      histEmpty: nouveau && dayRows.length <= 1,
+      repasChips,
+      habitRows,
+      habitEmpty: habitRows.length === 0,
+
+      progEmpty: nouveau,
+      progFull: !nouveau,
+      adjustMacros: () => this.flash('Profil nutritionnel › macros — écran existant'),
+      weighIn: () => this.flash('Pesée — Statistiques › Poids'),
+      regDays,
+      weekLink: () => this.flash('Statistiques — écran existant, 4 sous-onglets'),
+      weekLinkLabel: isActuel ? 'Voir toutes les statistiques' : 'Toutes tes statistiques',
+      startLogging: () => this.setState({ tab: 'today' }),
+
+      cPlanRows,
+      cPlanEmpty: cPlanRows.length === 0,
+      openShopping: () => this.flash('Liste de courses — écran existant'),
+      libRows,
+
+      dBack: 'Historique',
+      dTitle: dayFull(dayId),
+      dSub,
+      dHasItems: dt.n > 0,
+      dMacros: 'P ' + dt.p + ' g · G ' + dt.g + ' g · L ' + dt.l + ' g',
+      dMealRows,
+      dEmpty: dt.n === 0,
+      showRedoAll: isDay && dt.n > 0,
+      dRedoAllSub: dt.meals + ' repas · ' + fmt(dt.k) + ' kcal',
+      redoAll: () => (todayN > 0 ? this.setState({ confirmAll: true }) : doRedoAll()),
+      backFromDay: () => this.setState({ screen: 'hub', tab: 'history' }),
+
+      libraryOpen,
+      closeLibrary: () => this.setState({ library: false }),
+
+      confirmOpen,
+      confirmMsg: 'Tu as déjà noté ' + todayN + ' aliment' + (todayN > 1 ? 's' : '') + ' aujourd’hui. Ajouter les repas du ' + dayLong(dayId) + ' en plus ?',
+      confirmNo: () => this.setState({ confirmAll: false }),
+      confirmYes: doRedoAll,
+
+      hasToast: has(toast),
+      toast,
+
+      hubTitle: isB ? 'Alimentation' : 'Alim',
+      tplOpen,
+      tplSub: tplOpen ? MEAL[tplMeal].label + ' · ' + vMeals[tplMeal].length + ' aliments · ' + fmt(sum(vMeals[tplMeal], 'k')) + ' kcal' : '',
+      tplName,
+      tplInput: (e) => this.setState({ tplMeal, tplName: e && e.target ? e.target.value : '' }),
+      tplDisabled: tplName.trim() === '',
+      tplSaveBg: tplName.trim() === '' ? '#d9ceb9' : '#2f6b12',
+      tplSaveColor: tplName.trim() === '' ? '#786a59' : '#ffffff',
+      tplCancel: () => this.setState({ tplMeal: '', tplName: '' }),
+      tplSave: () => {
+        const nm = tplName.trim();
+        if (nm === '') return;
+        this.setState({ tplMeal: '', tplName: '' });
+        this.flash('Repas type « ' + nm + ' » enregistré');
+      },
+    };
+  }
+}
+</script>
+</body>
+</html>

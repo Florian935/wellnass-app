@@ -1,4 +1,4 @@
-# État du projet — 25/09/2026
+# État du projet — 26/09/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 253 livré · 5 partiel · 2 à faire (sur 266)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 253 livré · 5 partiel · 3 à faire (sur 267)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -101,6 +101,7 @@ avant de pouvoir publier.
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
 | **CARDIO-UX03** — Hub Course en trois onglets — Courir, Historique, Progrès | `code` | `feature/cardio-ux03-hub-onglets` | [5.44] |
+| **NUTRI-UX03** — Hub Nutrition en trois onglets — Aujourd'hui, Historique, Progrès | `code` | `feature/nutri-ux03-hub-onglets` | [4.47] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -128,9 +129,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/cardio-ux03-hub-onglets` (modifications non commitées) |
-| Commits | 1342 · `main` a **1339** commits de retard sur `dev` |
-| Specs d'US | 175 au total — 89 clôturées, 86 en cours |
+| Branche courante | `HEAD` (modifications non commitées) |
+| Commits | 1343 · `main` a **1340** commits de retard sur `dev` |
+| Specs d'US | 176 au total — 89 clôturées, 87 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -140,11 +141,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `daef357`  feat(cardio): CARDIO-UX03, l'écran de départ nommé et le vrai détail d'une sortie
 - `fb4946d`  feat(cardio): CARDIO-UX03, le socle du hub Course en trois onglets — briques, requêtes, préférences
 - `a941cd2`  docs(cardio): CARDIO-UX03, cadrage du hub Course en trois onglets — Courir, Historique, Progrès
 - `9af937c`  chore(outillage): intégrer la compatibilité Claude Code / Codex, workflow commit remis à jour
 - `2de531b`  docs(muscu): MUSCU-UX06 clôturée — recette validée par Florian, §85 purgée
-- `45074af`  feat(muscu): MUSCU-UX07, le hub Musculation en trois onglets — S'entraîner, Historique, Progrès
 
 ---
 
