@@ -3938,6 +3938,15 @@
       "caption_other": "lifted over {{count}} workouts",
       "a11y_one": "{{tonnes}} tonnes lifted over {{count}} workout",
       "a11y_other": "{{tonnes}} tonnes lifted over {{count}} workouts"
+    },
+    "lastTime": {
+      "tip": {
+        "weightOrReps": "{{weight}} or {{reps}} reps",
+        "reps": "aim for {{reps}} reps",
+        "weightHold": "stay at {{weight}}",
+        "deload": "drop to {{weight}}",
+        "duration": "aim for {{duration}}"
+      }
     }
   },
   "hydration": {

@@ -73,8 +73,6 @@ import {
   useActiveWorkout,
   useExerciseNote,
   useExerciseNotes,
-  useLastPerformance,
-  usePreviousStruggled,
   useSessionRest,
   useSupersetPairs,
   type ActiveWorkout,
@@ -84,7 +82,6 @@ import {
 import { evaluateWorkoutRecords } from '@/data/repositories/records-repository';
 import { maybePushRecords } from '@/data/repositories/notification-repository';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
-import { usePriorWeekAdherence } from '@/data/repositories/planned-session-repository';
 import {
   useExerciseBests,
   useSessionCards,
@@ -92,6 +89,8 @@ import {
   useSessionReferences,
 } from '@/data/repositories/immersive-repository';
 import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
+import { useProgressionSuggestion } from '@/hooks/useProgressionSuggestion';
+import { formatProgressionSuggestion, formatSetDuration } from '@/lib/progression-suggestion';
 import { useIsAppActive } from '@/hooks/useIsAppActive';
 import {
   cancelRestReminder,
@@ -109,7 +108,6 @@ import { useUnits } from '@/hooks/useUnits';
 import {
   applyLiveSet,
   barChange,
-  computeProgressionSuggestion,
   computeSetVerdict,
   evaluateLiveRecord,
   feelToRpe,
@@ -261,10 +259,7 @@ type Units = ReturnType<typeof useUnits>;
 
 /** Formate un nombre de secondes en « m:ss » (ex. 90 → « 1:30 »). */
 export function formatMmSs(totalSeconds: number): string {
-  const s = Math.max(0, Math.floor(totalSeconds));
-  const m = Math.floor(s / 60);
-  const ss = String(s % 60).padStart(2, '0');
-  return `${m}:${ss}`;
+  return formatSetDuration(totalSeconds);
 }
 
 /**
@@ -408,12 +403,13 @@ export default function WorkoutScreen() {
   const current = resolveCurrentSet(entries, focusOverride);
   const currentExerciseId = current?.entry.exerciseId ?? '';
 
-  const lastPerf = useLastPerformance(currentExerciseId);
-  const previousStruggled = usePreviousStruggled(currentExerciseId);
-  const priorWeekAdherenceOk = usePriorWeekAdherence(
-    active?.programId ?? null,
-    active?.weekIndex ?? null,
-  );
+  // US MUSCU-UX07 (R11) : la dernière fois et la suggestion viennent du hook que partage le hub, qui
+  // affiche avant le départ la suggestion de la première série. Un seul calcul pour les deux écrans.
+  const progression = useProgressionSuggestion(currentExerciseId, current?.rang ?? 0, {
+    programId: active?.programId ?? null,
+    weekIndex: active?.weekIndex ?? null,
+  });
+  const lastPerf = progression.lastPerf;
   const { note: currentExerciseNote } = useExerciseNote(currentExerciseId);
   const allExerciseNotes = useExerciseNotes();
   const supersetPairs = useSupersetPairs(active?.id ?? '');
@@ -593,43 +589,15 @@ export default function WorkoutScreen() {
 
   // Suggestion de progression : basée sur les séries qualifiantes de la dernière séance terminée
   // et la série de référence au même rang. `previousStruggled` (MUSC-F7) active la branche deload.
-  const referenceSet = current ? lastPerf[rang] : undefined;
-  const suggestion = current
-    ? computeProgressionSuggestion(
-        lastPerf.map((p) => ({ setType: p.setType, rpe: p.rpe, done: true })),
-        referenceSet,
-        {
-          weightIncrementKg: 2.5,
-          durationIncrementSeconds: 10,
-          previousStruggled,
-          priorWeekAdherenceOk: priorWeekAdherenceOk ?? undefined,
-        },
-      )
-    : null;
-  const suggestionLabel = (() => {
-    if (!suggestion) return null;
-    if (suggestion.kind === 'weightOrReps') {
-      // `formatWeight` et non `weightInputValue` : ce libellé est du **texte affiché**, pas le
-      // pré-remplissage d'un champ — « 82.5 kg » au milieu d'une app qui écrit « 76,0 kg ».
-      return t('workout.suggestion.weightOrReps', {
-        weight: units.formatWeight(proposeLoad(suggestion.weightKg)),
-        reps: suggestion.reps,
-      });
-    }
-    if (suggestion.kind === 'reps') return t('workout.suggestion.reps', { reps: suggestion.reps });
-    if (suggestion.kind === 'weightHold') {
-      return t('workout.suggestion.weightHold', {
-        weight: units.formatWeight(proposeLoad(suggestion.weightKg)),
-        reps: suggestion.reps,
-      });
-    }
-    if (suggestion.kind === 'deload') {
-      return t('workout.suggestion.deload', {
-        weight: units.formatWeight(proposeLoad(suggestion.weightKg)),
-      });
-    }
-    return t('workout.suggestion.duration', { duration: formatMmSs(suggestion.durationSeconds) });
-  })();
+  // Calcul et libellé : `lib/progression-suggestion.ts`, partagés avec le hub (US MUSCU-UX07, R11).
+  const suggestion = current ? progression.suggestion : null;
+  // `formatWeight` et non `weightInputValue` : ce libellé est du **texte affiché**, pas le
+  // pré-remplissage d'un champ — « 82.5 kg » au milieu d'une app qui écrit « 76,0 kg ».
+  const suggestionLabel = formatProgressionSuggestion(suggestion, {
+    t,
+    formatWeight: units.formatWeight,
+    propose: proposeLoad,
+  });
 
   // Liaison superset (lien explicite, choix libre du partenaire, valable pour toute la séance).
   const partnerExerciseId = current ? supersetPairs[current.entry.exerciseId] : undefined;

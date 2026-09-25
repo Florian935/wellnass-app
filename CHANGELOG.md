@@ -10,6 +10,42 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 25/09/2026 — MUSCU-UX07, étape 3 : la suggestion de progression, partagée entre la séance et le hub (`feature/muscu-ux07-hub-trois-onglets`)
+
+> Le hub affichera avant le départ la suggestion de la première série de chaque exercice (R11). Pour
+> qu'elle soit **la même** que dans la séance, le calcul sort de `app/workout.tsx` au lieu d'être
+> recopié. **Aucun changement de comportement de la séance** : ses tests passent sans retouche.
+> Commit isolé, comme le prévoit le plan. Commit précédent : `cc773024`.
+
+### Ajouté
+- `apps/mobile/src/lib/progression-suggestion.ts` :
+  - `progressionSuggestionFor` : le calcul exact de la séance ;
+  - `formatProgressionSuggestion` : libellé long `workout.suggestion.*` ou court
+    `strengthHub.lastTime.tip.*` ;
+  - `makeLoadProposer` : arrondi chargeable à la barre ;
+  - `formatSetDuration` : m:ss tronqué à la seconde.
+- `apps/mobile/src/hooks/useProgressionSuggestion.ts` : `useLastPerformance` + `usePreviousStruggled`
+  + `usePriorWeekAdherence` + le calcul, en un seul hook appelable par la séance et par le hub.
+- Tests `lib/__tests__/progression-suggestion.test.ts` (19). Huit cas comparent le module à **l'appel
+  inline d'avant l'extraction**, recopié en référence. Les autres couvrent les libellés long et court
+  et l'arrondi.
+- i18n (FR + EN) : `strengthHub.lastTime.tip.{weightOrReps,reps,weightHold,deload,duration}`, les
+  libellés courts des pastilles du hub.
+
+### Modifié
+- `app/workout.tsx` :
+  - les trois lectures et le calcul passent par `useProgressionSuggestion` ;
+  - le libellé passe par `formatProgressionSuggestion`, avec l'arrondi `proposeLoad` de l'écran, inchangé ;
+  - `formatMmSs` délègue à `formatSetDuration`, même logique ;
+  - imports retirés : `useLastPerformance`, `usePreviousStruggled`, `usePriorWeekAdherence`,
+    `computeProgressionSuggestion`.
+
+### Technique / Notes
+- `formatMmSs` de `@wellness/shared` (course) **arrondit** à la seconde, celui de la séance **tronque**.
+  Le module reprend la troncature de la séance, pour que « 0:44 » reste « 0:44 ».
+- Vérifié : lint 0, typecheck 0, 4 495 tests Jest et 168 fichiers Vitest verts, codes de sortie lus
+  sans pipe.
+
 ## 25/09/2026 — MUSCU-UX07, étapes 1-2 : briques pures et requêtes du hub en trois onglets (`feature/muscu-ux07-hub-trois-onglets`)
 
 > Socle du hub Musculation en trois onglets (spec

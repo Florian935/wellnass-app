@@ -3938,6 +3938,15 @@
       "caption_other": "soulevées sur {{count}} séances",
       "a11y_one": "{{tonnes}} tonnes soulevées sur {{count}} séance",
       "a11y_other": "{{tonnes}} tonnes soulevées sur {{count}} séances"
+    },
+    "lastTime": {
+      "tip": {
+        "weightOrReps": "{{weight}} ou {{reps}} reps",
+        "reps": "vise {{reps}} reps",
+        "weightHold": "reste à {{weight}}",
+        "deload": "allège à {{weight}}",
+        "duration": "vise {{duration}}"
+      }
     }
   },
   "hydration": {

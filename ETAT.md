@@ -129,7 +129,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/muscu-ux07-hub-trois-onglets` (modifications non commitées) |
-| Commits | 1330 · `main` a **1327** commits de retard sur `dev` |
+| Commits | 1331 · `main` a **1328** commits de retard sur `dev` |
 | Specs d'US | 174 au total — 88 clôturées, 86 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -140,11 +140,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `cc77302`  feat(muscu): MUSCU-UX07, le socle du hub en trois onglets — briques et requêtes
 - `463c58b`  docs(muscu): MUSCU-UX07 cadrée et validée — le hub Musculation en trois onglets
 - `5cbaaa4`  fix(stage): plus de bandeau en haut au défilement, sur les quatre piliers
 - `a87d1f8`  feat(muscu): rouge fonte pour le pilier, des cartes qui se détachent partout
 - `4076a96`  docs(muscu): MUSCU-FIX02 clôturée — recette validée par Florian
-- `3f7c606`  fix(muscu): l'écran qui respire disparaît, la barre dit quoi toucher
 
 ---
 
