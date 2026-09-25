@@ -2449,7 +2449,12 @@
       "manualMode": "No-GPS mode",
       "manualModeHint": "No track: you'll enter the distance at the end.",
       "startCta": "Start a free run",
-      "starting": "Starting…"
+      "starting": "Starting…",
+      "sessionSubtitle": "Today's session",
+      "ghostTitle": "Run again: your run of {{date}}",
+      "ghostSubtitle": "{{distance}} in {{duration}}",
+      "startSessionCta": "Start the session",
+      "startGhostCta": "Start against your ghost"
     },
     "resume": {
       "title": "Run in progress",
@@ -2919,7 +2924,10 @@
       "correctTitle": "Correct this run",
       "correctCta": "Correct the distance",
       "correctHint": "The GPS track is left untouched: only the recorded distance changes, and the average pace is recomputed.",
-      "saveCorrection": "Save correction"
+      "saveCorrection": "Save correction",
+      "fromProgram": "Program session",
+      "again": "Run this again",
+      "againHint": "it runs beside you, as a ghost"
     },
     "ghost": {
       "cta": "Race a ghost",

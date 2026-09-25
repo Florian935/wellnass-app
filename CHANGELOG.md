@@ -10,6 +10,44 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 25/09/2026 — CARDIO-UX03, l'écran de départ et le détail d'une sortie (`feature/cardio-ux03-hub-onglets`)
+
+> Étape 3 du plan : les deux écrans que le hub ouvrira, avant le hub lui-même. Commit précédent :
+> `fb4946d8` (socle).
+
+### Modifié
+- **`app/run/index.tsx` — l'écran de départ porte le nom de ce qu'on lance (D5, Q5)** :
+  - séance du jour : le type de la séance en titre, « Séance du jour », ses segments en pastilles,
+    bouton « Démarrer la séance » — il s'appelait « Course libre » même pour la séance planifiée ;
+  - « Recourir » (`ghostRunId`) : « Recourir ta sortie du ven. 20/09 », « 11,4 km en … », GPS forcé,
+    fantôme présélectionné, bouton « Démarrer contre ton fantôme ». La sortie est lue par son
+    identifiant **et** vérifiée par son profil de fantôme (`useRunGhost`) : une trace qui n'en donne
+    pas retombe sur une course libre, sans rien promettre ;
+  - **le dernier mode est retenu** (`run-start-mode-store`) : celui qu'on vient effectivement de
+    démarrer, y compris le repli sur « sans GPS » après un refus de permission.
+- `components/running/GhostPicker.tsx` : prop `pinned`, la sortie à recourir listée en tête même
+  partie d'ailleurs (Q4 assouplit FANT-01 R2 pour un choix explicite).
+- **`app/run/analysis.tsx` devient le vrai détail d'une sortie (D6)** : type de la séance (ou
+  « Course libre »), « Séance du programme », heure et terrain, quatre chiffres (distance, durée,
+  allure, ressenti), et **« Recourir cette sortie »** (sorties GPS de 500 m et plus). `share=1` ouvre
+  la carte à partager une fois la course chargée (geste « Partager » de la carte d'arrivée).
+- `components/Button.tsx` : `testID` facultatif, transmis tel quel.
+- i18n FR + EN : `running.start.{sessionSubtitle,ghostTitle,ghostSubtitle,startSessionCta,startGhostCta}`,
+  `running.analysis.{fromProgram,again,againHint}`.
+
+### Corrigé
+- 🔴 **Le fantôme était posé même en mode sans GPS** (`setRunGhost` appelé quel que soit le mode) :
+  une course sans trace se retrouvait « contre » un fantôme qu'elle ne pouvait pas suivre. Posé en
+  GPS seulement (R5).
+
+### Technique / Notes
+- Tests : `run-start-screen.test.tsx` (+9 : titres, mode relu et retenu, Recourir, fantôme jamais
+  posé sans GPS, profil manquant), `run-analysis-screen.test.tsx` (+6), `GhostPicker.test.tsx` (4,
+  nouveau). Le bouton de départ se trouve désormais par `testID` : son libellé dépend du contexte.
+- Un test qui démontait l'écran à la main (`unmount()` hors `act`) faisait échouer le suivant par
+  chevauchement d'`act` : scindé en deux tests.
+- Roadmap inchangée (5.44 reste 🟡).
+
 ## 25/09/2026 — CARDIO-UX03, le socle : briques pures, requêtes et préférences (`feature/cardio-ux03-hub-onglets`)
 
 > Étapes 1 et 2 du plan : tout ce que les écrans liront, sans aucun écran encore. Commit précédent :

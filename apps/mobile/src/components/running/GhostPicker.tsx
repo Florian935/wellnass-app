@@ -8,6 +8,10 @@
  *
  * Sans position, aucune proposition (R2) : proposer une course partie d'une autre ville serait pire
  * que de ne rien proposer.
+ *
+ * US CARDIO-UX03 (D4, Q4) — **sauf choix explicite** : « Recourir » depuis une sortie passée l'épingle
+ * (`pinned`) en tête de liste, même partie d'ailleurs. La règle de proximité reste celle des
+ * **propositions** ; un choix du coureur l'emporte sur elle.
  */
 
 import { useEffect, useState } from 'react';
@@ -17,7 +21,11 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { Card } from '@/components/Card';
-import { GHOST_SUGGESTIONS, useGhostCandidates } from '@/data/repositories/run-repository';
+import {
+  GHOST_SUGGESTIONS,
+  useGhostCandidates,
+  type GhostCandidate,
+} from '@/data/repositories/run-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -57,15 +65,19 @@ function formatDuration(totalSeconds: number | null): string {
 export function GhostPicker({
   selectedId,
   onSelect,
+  pinned = null,
 }: {
   selectedId: string | null;
   onSelect: (id: string | null) => void;
+  /** La sortie à recourir (CARDIO-UX03), listée en tête qu'elle soit partie d'ici ou non. */
+  pinned?: GhostCandidate | null;
 }) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const units = useUnits();
   const position = useKnownPosition();
-  const { candidates } = useGhostCandidates(position);
+  const { candidates: nearby } = useGhostCandidates(position);
+  const candidates = pinned ? [pinned, ...nearby.filter((c) => c.id !== pinned.id)] : nearby;
   const [expanded, setExpanded] = useState(false);
 
   const shown = expanded ? candidates : candidates.slice(0, GHOST_SUGGESTIONS);

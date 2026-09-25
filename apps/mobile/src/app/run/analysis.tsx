@@ -1,5 +1,7 @@
 import {
+  canRunAgain,
   computeKmSplits,
+  feelingFromStoredRpe,
   formatDurationHms,
   ordinalCategory,
   RECORD_DISTANCE_I18N_KEY,
@@ -28,6 +30,7 @@ import {
   deleteRun,
   setRunTerrain,
   updateRunCore,
+  useIntervalBlocksForRun,
   useRun,
   useRunIntervals,
 } from '@/data/repositories/run-repository';
@@ -76,7 +79,9 @@ export default function RunAnalysisScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const units = useUnits();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  // US CARDIO-UX03 — `share=1` : « Partager », depuis la carte d'arrivée du hub, ouvre la carte à
+  // partager une fois la course chargée (même geste que le bilan muscu, MUSCU-UX07).
+  const { id, share } = useLocalSearchParams<{ id?: string; share?: string }>();
 
   const { run, isLoading } = useRun(id);
 
@@ -88,6 +93,15 @@ export default function RunAnalysisScreen() {
   const [distanceText, setDistanceText] = useState('');
 
   const lockDelete = useActionLock();
+
+  // US CARDIO-UX03 (D6) — le type de la séance réalisée : l'analyse sert désormais de détail à toute
+  // sortie ouverte depuis le hub ou l'historique, et doit dire ce qu'était la sortie.
+  const { sessionType } = useIntervalBlocksForRun(run?.plannedSessionId ?? null);
+  const [shareInit, setShareInit] = useState(false);
+  if (run && !shareInit) {
+    setShareInit(true);
+    if (share === '1') setShareOpen(true);
+  }
 
   if (run && !terrainInit) {
     setTerrainInit(true);
@@ -211,6 +225,7 @@ export default function RunAnalysisScreen() {
   }
 
   const distanceKm = run.distanceM !== null ? run.distanceM / 1000 : null;
+  const feeling = feelingFromStoredRpe(run.rpe);
   const canExport = run.status === 'completed' && run.source !== 'manual' && validPointCount >= 2;
 
   return (
@@ -219,6 +234,52 @@ export default function RunAnalysisScreen() {
         title={t('running.analysis.title')}
         subtitle={formatDayFull(run.startedAt)}
       />
+
+      {/* ── US CARDIO-UX03 (D6) — ce qu'était la sortie, puis la recourir ──────────────────── */}
+      <Card>
+        <View style={styles.identity}>
+          {run.plannedSessionId ? (
+            <Text style={[styles.eyebrow, { color: colors.accent }]}>{t('running.analysis.fromProgram')}</Text>
+          ) : null}
+          <Text style={[styles.identityTitle, { color: colors.text }]} accessibilityRole="header">
+            {sessionType ? t(`running.sessionType.${sessionType}`) : t('running.hub.freeRun')}
+          </Text>
+          <Text testID="run-analysis-meta" style={[styles.identityMeta, { color: colors.textMuted }]}>
+            {[
+              new Date(run.startedAt).toLocaleTimeString(i18n.language, { hour: '2-digit', minute: '2-digit' }),
+              run.terrain ? t(`running.terrain.${run.terrain}`) : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </Text>
+        </View>
+        <View style={styles.figures}>
+          {[
+            { label: t('running.summary.distance'), value: units.formatDistance(distanceKm) },
+            { label: t('running.summary.duration'), value: formatDuration(run.durationSeconds) },
+            { label: t('running.summary.avgPace'), value: units.formatPace(run.avgPaceSPerKm) },
+            {
+              label: t('running.summary.feeling'),
+              value: feeling ? t(`workout.summary.feeling.${feeling}`) : '—',
+            },
+          ].map((figure) => (
+            <View key={figure.label} style={[styles.figure, { backgroundColor: colors.surfaceAlt }]}>
+              <Text style={[styles.figureLabel, { color: colors.textMuted }]}>{figure.label}</Text>
+              <Text style={[styles.figureValue, { color: colors.text }]}>{figure.value}</Text>
+            </View>
+          ))}
+        </View>
+      </Card>
+
+      {canRunAgain(run) ? (
+        <Button
+          testID="run-analysis-again"
+          label={t('running.analysis.again')}
+          accessibilityLabel={`${t('running.analysis.again')} · ${t('running.analysis.againHint')}`}
+          haptic="confirm"
+          onPress={() => router.push({ pathname: '/run', params: { ghostRunId: run.id } })}
+        />
+      ) : null}
 
       {/* ── Fraction par fraction (constat F21) ─────────────────────────────────────────── */}
       {intervalRows.length > 0 ? (
@@ -483,6 +544,14 @@ export default function RunAnalysisScreen() {
 
 const styles = StyleSheet.create({
   empty: { fontFamily: fontFamily.body, fontSize: 15, textAlign: 'center', marginTop: 32 },
+  identity: { gap: 3, marginBottom: 12 },
+  eyebrow: { fontFamily: fontFamily.monoBold, fontSize: 10.5, letterSpacing: 1.2, textTransform: 'uppercase' },
+  identityTitle: { fontFamily: fontFamily.displayXBold, fontSize: 24, letterSpacing: -0.6 },
+  identityMeta: { fontFamily: fontFamily.body, fontSize: 13.5 },
+  figures: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  figure: { flexGrow: 1, flexBasis: '45%', gap: 2, borderRadius: 14, paddingHorizontal: 12, paddingVertical: 10 },
+  figureLabel: { fontFamily: fontFamily.bodySemi, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.5 },
+  figureValue: { fontFamily: fontFamily.monoBold, fontSize: 17 },
   sectionTitle: { fontFamily: fontFamily.displaySemi, fontSize: 15 },
   headRow: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
   headNote: { fontFamily: fontFamily.bodyBold, fontSize: 12 },

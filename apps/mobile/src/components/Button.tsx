@@ -19,6 +19,8 @@ type ButtonProps = {
    * Un bouton qui clôt une séance ou valide un objectif peut passer à `milestone`.
    */
   haptic?: PressHaptic;
+  /** Repère de test, transmis tel quel. */
+  testID?: string;
 };
 
 export function Button({
@@ -29,6 +31,7 @@ export function Button({
   disabled = false,
   accessibilityLabel,
   haptic = 'select',
+  testID,
 }: ButtonProps) {
   const { colors } = useTheme();
   const isPrimary = variant === 'primary';
@@ -46,6 +49,7 @@ export function Button({
     // le bouton, une variation d'opacité est le retour le plus faible qui existe. L'opacité reste
     // employée pour l'état **désactivé**, où elle dit autre chose (« indisponible », pas « pressé »).
     <PressableScale
+      testID={testID}
       accessibilityRole="button"
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: isDisabled, busy: loading }}

@@ -2449,7 +2449,12 @@
       "manualMode": "Mode sans GPS",
       "manualModeHint": "Sans trace : tu saisiras la distance à la fin.",
       "startCta": "Démarrer une course libre",
-      "starting": "Démarrage…"
+      "starting": "Démarrage…",
+      "sessionSubtitle": "Séance du jour",
+      "ghostTitle": "Recourir ta sortie du {{date}}",
+      "ghostSubtitle": "{{distance}} en {{duration}}",
+      "startSessionCta": "Démarrer la séance",
+      "startGhostCta": "Démarrer contre ton fantôme"
     },
     "resume": {
       "title": "Course en cours",
@@ -2919,7 +2924,10 @@
       "correctTitle": "Corriger cette course",
       "correctCta": "Corriger la distance",
       "correctHint": "La trace GPS n’est pas modifiée : seule la distance retenue change, et l’allure moyenne est recalculée.",
-      "saveCorrection": "Enregistrer la correction"
+      "saveCorrection": "Enregistrer la correction",
+      "fromProgram": "Séance du programme",
+      "again": "Recourir cette sortie",
+      "againHint": "elle court à côté de toi, en fantôme"
     },
     "ghost": {
       "cta": "Courir contre un fantôme",

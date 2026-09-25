@@ -23,7 +23,18 @@ import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import RunStartScreen from '../index';
-import { cancelRun, startRun, useActiveRun } from '@/data/repositories/run-repository';
+import {
+  cancelRun,
+  setRunGhost,
+  startRun,
+  useActiveRun,
+  useIntervalBlocksForRun,
+  useRun,
+  useRunGhost,
+} from '@/data/repositories/run-repository';
+import { GhostPicker } from '@/components/running/GhostPicker';
+import { useRunStartMode } from '@/stores/run-start-mode-store';
+import { secureStorage } from '@/lib/secure-storage';
 import { startTracking } from '@/running/tracker';
 import { powerSync } from '@/powersync/system';
 import { useLocalSearchParams, useRouter } from 'expo-router';
@@ -45,12 +56,31 @@ jest.mock('@/data/repositories/run-repository', () => ({
   GHOST_SUGGESTIONS: 3,
   startRun: jest.fn(),
   cancelRun: jest.fn(),
+  // US CARDIO-UX03 : le contexte de la séance du jour, et la sortie à recourir.
+  useIntervalBlocksForRun: jest.fn(() => ({ sessionType: null, blocks: [] })),
+  useRun: jest.fn(() => ({ run: null, isLoading: false })),
+  useRunGhost: jest.fn(() => ({ ghost: null, isLoading: false })),
+}));
+// US CARDIO-UX03 — le dernier mode de départ est une préférence locale (R6).
+jest.mock('@/lib/secure-storage', () => ({
+  secureStorage: {
+    getItem: jest.fn().mockResolvedValue(null),
+    setItem: jest.fn().mockResolvedValue(undefined),
+    removeItem: jest.fn().mockResolvedValue(undefined),
+  },
 }));
 // `startManualClock` : le mode sans GPS a désormais son propre chrono (US CARDIO-UX01, R1b).
 // Sans ce mock, l'écran plante — et c'est exactement le chemin que le test suivant vérifie.
 // US FANT-01 : le sélecteur de fantôme tire `useUnits`, donc l'initialisation i18n de l'app.
 // Il a son propre test ; ici on le remplace par un marqueur, comme `Screen`.
-jest.mock('@/components/running/GhostPicker', () => ({ GhostPicker: () => null }));
+jest.mock('@/components/running/GhostPicker', () => ({ GhostPicker: jest.fn(() => null) }));
+
+jest.mock('@/running/interval-summary', () => ({
+  formatIntervalBlockSummary: (_t: unknown, block: { id: string }) => `bloc-${block.id}`,
+}));
+jest.mock('@/hooks/useUnits', () => ({
+  useUnits: () => ({ formatDistance: (km: number | null) => (km == null ? '—' : `${km} km`) }),
+}));
 
 jest.mock('@/running/tracker', () => ({
   startTracking: jest.fn(),
@@ -76,8 +106,8 @@ jest.mock('@/components/Card', () => {
 jest.mock('@/components/Button', () => {
   const { Pressable, Text } = require('react-native');
   return {
-    Button: ({ label, onPress }: { label: string; onPress: () => void }) => (
-      <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}>
+    Button: ({ label, onPress, testID }: { label: string; onPress: () => void; testID?: string }) => (
+      <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} testID={testID}>
         <Text>{label}</Text>
       </Pressable>
     ),
@@ -97,6 +127,7 @@ jest.mock('expo-router', () => ({
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k: string, opts?: Record<string, unknown>) => (opts ? `${k}:${JSON.stringify(opts)}` : k),
+    i18n: { language: 'fr' },
   }),
 }));
 
@@ -124,6 +155,11 @@ const mockStartTracking = startTracking as jest.Mock;
 const mockGetOptional = (powerSync as unknown as { getOptional: jest.Mock }).getOptional;
 const mockParams = useLocalSearchParams as unknown as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
+const mockBlocks = useIntervalBlocksForRun as jest.Mock;
+const mockUseRun = useRun as jest.Mock;
+const mockRunGhost = useRunGhost as jest.Mock;
+const mockSetGhost = setRunGhost as jest.Mock;
+const mockGhostPicker = GhostPicker as unknown as jest.Mock;
 
 const push = jest.fn();
 
@@ -143,8 +179,9 @@ const taper = async (element: Parameters<typeof fireEvent.press>[0]) => {
   });
 };
 
+/** Le bouton de départ, quel que soit son libellé (séance, fantôme, course libre — CARDIO-UX03 D5). */
 const demarrer = async () => {
-  await taper(screen.getByLabelText('running.start.startCta'));
+  await taper(screen.getByTestId('run-start-cta'));
 };
 
 /** Bascule sur le mode sans GPS. */
@@ -156,6 +193,11 @@ let boutonsAlerte: { text?: string; style?: string; onPress?: () => void }[] = [
 
 beforeEach(() => {
   jest.clearAllMocks();
+  useRunStartMode.setState({ source: 'gps', hydrated: false });
+  (secureStorage.getItem as jest.Mock).mockResolvedValue(null);
+  mockBlocks.mockReturnValue({ sessionType: null, blocks: [] });
+  mockUseRun.mockReturnValue({ run: null, isLoading: false });
+  mockRunGhost.mockReturnValue({ ghost: null, isLoading: false });
   boutonsAlerte = [];
   jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, boutons) => {
     boutonsAlerte = (boutons ?? []) as typeof boutonsAlerte;
@@ -400,5 +442,124 @@ describe('permission refusée', () => {
     // l'arrière-plan par défaut.
     expect(Alert.alert).not.toHaveBeenCalled();
     expect(push).toHaveBeenCalledWith('/run/active');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US CARDIO-UX03 — l'écran porte le nom de ce qu'on lance (D5), retient le mode (R6), et Recourir
+// présélectionne le fantôme (D4, R5)
+// ---------------------------------------------------------------------------
+
+const FANTOME = {
+  id: 'run-dimanche',
+  source: 'gps',
+  status: 'completed',
+  startedAt: '2026-09-20T07:08:00.000Z',
+  finishedAt: '2026-09-20T08:15:30.000Z',
+  durationSeconds: 4050,
+  distanceM: 11400,
+};
+
+describe('le nom de ce qu’on lance (D5)', () => {
+  it('🔴 une séance du jour n’est plus présentée comme une « course libre »', async () => {
+    mockBlocks.mockReturnValue({
+      sessionType: 'fractionne',
+      blocks: [{ id: 'b1', orderIndex: 0, reps: 6, fastDistanceM: 400, kind: 'work' }],
+    });
+    await afficher({ params: { plannedSessionId: 'ps-1' } });
+
+    expect(screen.getByText('running.sessionType.fractionne')).toBeTruthy();
+    expect(screen.queryByText('running.start.title')).toBeNull();
+    expect(screen.getByLabelText('running.start.startSessionCta')).toBeTruthy();
+  });
+
+  it('une course libre garde son titre et son bouton', async () => {
+    await afficher();
+    expect(screen.getByText('running.start.title')).toBeTruthy();
+    expect(screen.getByLabelText('running.start.startCta')).toBeTruthy();
+  });
+});
+
+describe('le dernier mode de départ (R6, Q5)', () => {
+  it('🔴 relit le mode retenu : un coureur de tapis ne rebascule plus à chaque séance', async () => {
+    (secureStorage.getItem as jest.Mock).mockResolvedValue('manual');
+    await afficher();
+    await act(async () => {});
+
+    await demarrer();
+    expect(mockStartRun).toHaveBeenCalledWith('manual', undefined);
+  });
+
+  it('retient le mode effectivement démarré', async () => {
+    await afficher();
+    await choisirManuel();
+    await demarrer();
+    expect(secureStorage.setItem).toHaveBeenCalledWith('run_start_source', 'manual');
+  });
+
+  it('🔴 le repli sur « sans GPS » après un refus de permission est ce qui est retenu', async () => {
+    mockStartTracking.mockResolvedValue({ ok: false, reason: 'foreground-denied' });
+    await afficher();
+    await demarrer();
+    await act(async () => {
+      await boutonsAlerte.find((b) => b.text === 'running.permission.continueManual')?.onPress?.();
+    });
+    expect(secureStorage.setItem).toHaveBeenLastCalledWith('run_start_source', 'manual');
+  });
+});
+
+describe('Recourir une sortie (D4, R5)', () => {
+  const avecFantome = () => {
+    mockUseRun.mockReturnValue({ run: FANTOME, isLoading: false });
+    mockRunGhost.mockReturnValue({
+      ghost: { id: 'run-dimanche', finishedAt: FANTOME.finishedAt, profile: { points: [] } },
+      isLoading: false,
+    });
+  };
+
+  it('🔴 la sortie est présélectionnée, et posée en fantôme au départ', async () => {
+    avecFantome();
+    await afficher({ params: { ghostRunId: 'run-dimanche' } });
+
+    expect(screen.getByText(/running\.start\.ghostTitle/)).toBeTruthy();
+    const props = mockGhostPicker.mock.calls.at(-1)![0];
+    expect(props.selectedId).toBe('run-dimanche');
+    // Listée même si elle n'est pas partie d'ici (Q4) : le sélecteur la reçoit épinglée.
+    expect(props.pinned).toMatchObject({ id: 'run-dimanche', distanceM: 11400 });
+
+    await demarrer();
+    expect(mockStartRun).toHaveBeenCalledWith('gps', undefined);
+    expect(mockSetGhost).toHaveBeenCalledWith('run-1', 'run-dimanche');
+  });
+
+  it('🔴 Recourir part en GPS, même si le dernier mode retenu était « sans GPS »', async () => {
+    avecFantome();
+    (secureStorage.getItem as jest.Mock).mockResolvedValue('manual');
+    await afficher({ params: { ghostRunId: 'run-dimanche' } });
+    await act(async () => {});
+
+    await demarrer();
+    expect(mockStartRun).toHaveBeenCalledWith('gps', undefined);
+  });
+
+  it('🔴 en mode sans GPS, le fantôme n’est JAMAIS posé', async () => {
+    avecFantome();
+    await afficher({ params: { ghostRunId: 'run-dimanche' } });
+    await choisirManuel();
+
+    await demarrer();
+    expect(mockStartRun).toHaveBeenCalledWith('manual', undefined);
+    expect(mockSetGhost).not.toHaveBeenCalled();
+  });
+
+  it('🔴 une trace qui ne donne pas de profil : course libre, rien de promis', async () => {
+    mockUseRun.mockReturnValue({ run: FANTOME, isLoading: false });
+    mockRunGhost.mockReturnValue({ ghost: null, isLoading: false });
+    await afficher({ params: { ghostRunId: 'run-dimanche' } });
+
+    expect(screen.getByText('running.start.title')).toBeTruthy();
+    expect(screen.queryByText(/running\.start\.ghostTitle/)).toBeNull();
+    await demarrer();
+    expect(mockSetGhost).not.toHaveBeenCalled();
   });
 });

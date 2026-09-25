@@ -22,10 +22,11 @@ import {
   deleteRun,
   setRunTerrain,
   updateRunCore,
+  useIntervalBlocksForRun,
   useRun,
   useRunIntervals,
 } from '@/data/repositories/run-repository';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 // US CARDIO-UX02 — chaque écran du pilier déclare désormais sa couleur (`useMenuFocus`). Le hook
 // s'appuie sur `useFocusEffect`, absent des mocks d'`expo-router` de ces fichiers : on le neutralise
@@ -38,13 +39,18 @@ jest.mock('@/data/repositories/run-repository', () => ({
   setRunTerrain: jest.fn().mockResolvedValue(undefined),
   updateRunCore: jest.fn().mockResolvedValue(undefined),
   deleteRun: jest.fn().mockResolvedValue(undefined),
+  // US CARDIO-UX03 — le type de la séance réalisée, pour l'en-tête du détail.
+  useIntervalBlocksForRun: jest.fn(() => ({ sessionType: null, blocks: [] })),
 }));
 
 jest.mock('@/lib/gpx-export', () => ({ exportRunAsGpx: jest.fn() }));
 jest.mock('@/components/running/RouteMap', () => ({ RouteMap: () => null }));
-jest.mock('@/components/share/ShareCardSheet', () => ({ ShareCardSheet: () => null }));
+jest.mock('@/components/share/ShareCardSheet', () => {
+  const { Text } = require('react-native');
+  return { ShareCardSheet: ({ visible }: { visible: boolean }) => (visible ? <Text>sonde-carte-partage</Text> : null) };
+});
 jest.mock('@/components/run/PaceCurveCards', () => ({ PaceCurveCards: () => null }));
-jest.mock('expo-router', () => ({ useRouter: jest.fn(), useLocalSearchParams: () => ({ id: 'run-1' }) }));
+jest.mock('expo-router', () => ({ useRouter: jest.fn(), useLocalSearchParams: jest.fn(() => ({ id: 'run-1' })) }));
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -93,6 +99,9 @@ const mockTerrain = setRunTerrain as jest.Mock;
 const mockUpdate = updateRunCore as jest.Mock;
 const mockDelete = deleteRun as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
+const mockParams = useLocalSearchParams as unknown as jest.Mock;
+const mockBlocks = useIntervalBlocksForRun as jest.Mock;
+const push = jest.fn();
 
 const replace = jest.fn();
 
@@ -117,7 +126,9 @@ const course = (overrides: Record<string, unknown> = {}) => ({
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockUseRouter.mockReturnValue({ replace });
+  mockUseRouter.mockReturnValue({ replace, push });
+  mockParams.mockReturnValue({ id: 'run-1' });
+  mockBlocks.mockReturnValue({ sessionType: null, blocks: [] });
   mockUseRun.mockReturnValue({ run: course(), isLoading: false });
   mockUseRunIntervals.mockReturnValue({ intervals: [], isLoading: false });
   mockTerrain.mockResolvedValue(undefined);
@@ -322,5 +333,66 @@ describe('terrain (déménagé depuis le résumé)', () => {
     expect(
       screen.getByText('running.terrain.road').parent?.props.accessibilityState,
     ).toMatchObject({ selected: true });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US CARDIO-UX03 — l'analyse devient le vrai détail d'une sortie (D6)
+// ---------------------------------------------------------------------------
+
+describe('le détail d’une sortie (CARDIO-UX03, D6)', () => {
+  it('🔴 dit ce qu’était la sortie : le type de la séance réalisée, et ses quatre chiffres', async () => {
+    mockUseRun.mockReturnValue({
+      run: course({ plannedSessionId: 'ps-1', terrain: 'trail', rpe: 8 }),
+      isLoading: false,
+    });
+    mockBlocks.mockReturnValue({ sessionType: 'fractionne', blocks: [] });
+    await render(<RunAnalysisScreen />);
+
+    expect(screen.getByText('running.sessionType.fractionne')).toBeTruthy();
+    expect(screen.getByText('running.analysis.fromProgram')).toBeTruthy();
+    // Le terrain figure aussi dans les pastilles de choix, plus bas : on lit la ligne d'en-tête.
+    expect(screen.getByTestId('run-analysis-meta').props.children).toMatch(/running\.terrain\.trail/);
+    for (const libelle of ['running.summary.distance', 'running.summary.duration', 'running.summary.avgPace', 'running.summary.feeling']) {
+      expect(screen.getByText(libelle)).toBeTruthy();
+    }
+    expect(screen.getByText('8.00 km')).toBeTruthy();
+    expect(screen.getByText('workout.summary.feeling.hard')).toBeTruthy();
+  });
+
+  it('une course sans séance se dit « course libre »', async () => {
+    await render(<RunAnalysisScreen />);
+    expect(screen.getAllByText('running.hub.freeRun').length).toBeGreaterThan(0);
+  });
+
+  it('🔴 « Recourir cette sortie » ouvre le départ avec cette sortie en fantôme (D4)', async () => {
+    await render(<RunAnalysisScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('run-analysis-again'));
+    });
+    expect(push).toHaveBeenCalledWith({ pathname: '/run', params: { ghostRunId: 'run-1' } });
+  });
+
+  it('🔴 pas de Recourir pour une sortie sans GPS : pas de trace à suivre (R5)', async () => {
+    mockUseRun.mockReturnValue({ run: course({ source: 'manual' }), isLoading: false });
+    await render(<RunAnalysisScreen />);
+    expect(screen.queryByTestId('run-analysis-again')).toBeNull();
+  });
+
+  it('ni pour une sortie de moins de 500 m, le seuil du fantôme (R5)', async () => {
+    mockUseRun.mockReturnValue({ run: course({ distanceM: 420 }), isLoading: false });
+    await render(<RunAnalysisScreen />);
+    expect(screen.queryByTestId('run-analysis-again')).toBeNull();
+  });
+
+  it('`share=1` ouvre la carte à partager une fois la course chargée (Partager, depuis le hub)', async () => {
+    mockParams.mockReturnValue({ id: 'run-1', share: '1' });
+    await render(<RunAnalysisScreen />);
+    expect(screen.getByText('sonde-carte-partage')).toBeTruthy();
+  });
+
+  it('sans `share`, la carte reste fermée', async () => {
+    await render(<RunAnalysisScreen />);
+    expect(screen.queryByText('sonde-carte-partage')).toBeNull();
   });
 });

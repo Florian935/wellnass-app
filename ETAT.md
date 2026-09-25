@@ -129,7 +129,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/cardio-ux03-hub-onglets` (modifications non commitées) |
-| Commits | 1341 · `main` a **1337** commits de retard sur `dev` |
+| Commits | 1342 · `main` a **1339** commits de retard sur `dev` |
 | Specs d'US | 175 au total — 89 clôturées, 86 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -140,11 +140,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `fb4946d`  feat(cardio): CARDIO-UX03, le socle du hub Course en trois onglets — briques, requêtes, préférences
 - `a941cd2`  docs(cardio): CARDIO-UX03, cadrage du hub Course en trois onglets — Courir, Historique, Progrès
 - `9af937c`  chore(outillage): intégrer la compatibilité Claude Code / Codex, workflow commit remis à jour
 - `2de531b`  docs(muscu): MUSCU-UX06 clôturée — recette validée par Florian, §85 purgée
 - `45074af`  feat(muscu): MUSCU-UX07, le hub Musculation en trois onglets — S'entraîner, Historique, Progrès
-- `5f51625`  refactor(muscu): MUSCU-UX07, la suggestion de progression partagée entre la séance et le hub
 
 ---
 

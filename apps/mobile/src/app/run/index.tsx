@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { RunSource } from '@wellness/shared';
+import { formatDurationHms, type RunSource } from '@wellness/shared';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { ActivityIndicator, Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
@@ -13,10 +13,16 @@ import {
   setRunGhost,
   startRun,
   useActiveRun,
+  useIntervalBlocksForRun,
+  useRun,
+  useRunGhost,
 } from '@/data/repositories/run-repository';
 import { GhostPicker } from '@/components/running/GhostPicker';
 import { powerSync } from '@/powersync/system';
 import { startManualClock, startTracking } from '@/running/tracker';
+import { formatIntervalBlockSummary } from '@/running/interval-summary';
+import { useRunStartMode } from '@/stores/run-start-mode-store';
+import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useActionLock } from '@/hooks/useActionLock';
 import { useTheme } from '@/theme/useTheme';
@@ -33,6 +39,9 @@ import { useMenuFocus } from '@/hooks/useMenuFocus';
  *   une seconde (le repository est idempotent, mais l'UX doit être explicite).
  * - `plannedSessionId` (US RUN-F3, roadmap 5.25) : param de route optionnel, posé par le hub
  *   course quand une séance planifiée du jour est démarrée depuis là — sinon absent (course libre).
+ * - US CARDIO-UX03 : l'écran porte le nom de ce qu'on lance (la séance, « Recourir ta sortie du … »,
+ *   ou « Course libre ») et rappelle la séance ; il **retient le dernier mode** (R6) ; `ghostRunId`
+ *   (Recourir) présélectionne ce fantôme, posé en GPS seulement (R5).
  */
 export default function RunStartScreen() {
   // US CARDIO-UX02 — **l'identité du pilier appartient à l'écran, pas à l'onglet d'où l'on vient.**
@@ -42,18 +51,87 @@ export default function RunStartScreen() {
   // que soit le chemin — un test de garde vérifie qu'aucun écran course ne l'oublie.
   useMenuFocus('running');
 
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const { plannedSessionId } = useLocalSearchParams<{ plannedSessionId?: string }>();
+  const units = useUnits();
+  const { plannedSessionId, ghostRunId: againId } = useLocalSearchParams<{
+    plannedSessionId?: string;
+    /** US CARDIO-UX03 (D4) — « Recourir » : la sortie passée à affronter, présélectionnée. */
+    ghostRunId?: string;
+  }>();
 
   const { run: active, isLoading } = useActiveRun();
 
-  const [source, setSource] = useState<RunSource>('gps');
+  // ── US CARDIO-UX03 — la sortie à recourir (D4, R5) ─────────────────────────────────────────
+  // Lue par son identifiant, et **vérifiée par son profil de fantôme** : une trace illisible ou
+  // trop courte ne donne rien à suivre. L'écran retombe alors sur une course libre plutôt que de
+  // promettre un fantôme qui ne courra pas.
+  const { run: againRun } = useRun(againId);
+  const { ghost: againGhost } = useRunGhost(againId);
+  const again = againId && againRun && againGhost ? againRun : null;
+
+  // ── US CARDIO-UX03 — le dernier mode retenu (D5, R6 ; Q5) ──────────────────────────────────
+  // CARDIO-UX01 (F4) l'avait promis : l'écran repartait chaque fois sur « Suivi GPS ». Recourir
+  // part en GPS quoi qu'il arrive : un fantôme ne court qu'à côté d'une trace.
+  const storedSource = useRunStartMode((s) => s.source);
+  const hydrateMode = useRunStartMode((s) => s.hydrate);
+  const rememberSource = useRunStartMode((s) => s.setSource);
+  useEffect(() => {
+    void hydrateMode();
+  }, [hydrateMode]);
+  const [pickedSource, setSource] = useState<RunSource | null>(null);
+  const source: RunSource = pickedSource ?? (again ? 'gps' : storedSource);
+
   // US FANT-01 — le fantôme choisi avant le départ, écrit une seule fois sur la course (R8).
-  const [ghostRunId, setGhostRunId] = useState<string | null>(null);
+  // `undefined` = rien touché encore : la sortie à recourir, si elle est valable, est présélectionnée.
+  const [chosenGhost, setGhostRunId] = useState<string | null | undefined>(undefined);
+  const ghostRunId = chosenGhost === undefined ? (again?.id ?? null) : chosenGhost;
+
+  // ── US CARDIO-UX03 — la séance du jour, rappelée (D5) ──────────────────────────────────────
+  // L'écran s'appelait « Course libre » même pour la séance planifiée qu'on venait de lancer.
+  const { sessionType, blocks } = useIntervalBlocksForRun(plannedSessionId ?? null);
+  const segments = blocks.map((block) => formatIntervalBlockSummary(t, block));
+
   const [starting, setStarting] = useState(false);
   const lockStart = useActionLock();
+
+  const againDate = again ? new Date(again.finishedAt ?? again.startedAt) : null;
+  const header = again
+    ? {
+        title: t('running.start.ghostTitle', {
+          date: `${new Intl.DateTimeFormat(i18n.language, { weekday: 'short' }).format(againDate!)} ${String(
+            againDate!.getDate(),
+          ).padStart(2, '0')}/${String(againDate!.getMonth() + 1).padStart(2, '0')}`,
+        }),
+        subtitle: t('running.start.ghostSubtitle', {
+          distance: units.formatDistance(again.distanceM != null ? again.distanceM / 1000 : null),
+          duration: formatDurationHms(again.durationSeconds),
+        }),
+      }
+    : plannedSessionId
+      ? {
+          title: sessionType ? t(`running.sessionType.${sessionType}`) : t('running.start.sessionSubtitle'),
+          subtitle: sessionType ? t('running.start.sessionSubtitle') : undefined,
+        }
+      : { title: t('running.start.title'), subtitle: t('running.start.subtitle') };
+
+  const startLabel = plannedSessionId
+    ? t('running.start.startSessionCta')
+    : source === 'gps' && ghostRunId !== null
+      ? t('running.start.startGhostCta')
+      : t('running.start.startCta');
+
+  /** La sortie à recourir, telle que le sélecteur de fantôme l'affiche (listée même partie d'ailleurs, Q4). */
+  const pinnedGhost =
+    again && again.finishedAt && again.distanceM != null
+      ? {
+          id: again.id,
+          finishedAt: again.finishedAt,
+          distanceM: again.distanceM,
+          durationSeconds: again.durationSeconds,
+        }
+      : null;
 
   /** Lit l'epoch (ms) de démarrage de la course active en base (source de vérité). */
   const readStartedAtMs = async (runId: string): Promise<number> => {
@@ -72,7 +150,10 @@ export default function RunStartScreen() {
       setStarting(true);
       try {
         const id = await startRun(source, plannedSessionId);
-        if (ghostRunId !== null) await setRunGhost(id, ghostRunId);
+        // US CARDIO-UX03 (R5) — **en GPS seulement** : l'écran posait jusqu'ici le fantôme choisi
+        // quel que soit le mode, et une course sans trace se retrouvait « contre » un fantôme
+        // qu'elle ne pouvait pas suivre.
+        if (source === 'gps' && ghostRunId !== null) await setRunGhost(id, ghostRunId);
         const startedAtMs = await readStartedAtMs(id);
 
         if (source === 'manual') {
@@ -94,6 +175,8 @@ export default function RunStartScreen() {
           // `background-denied` : le suivi avant-plan fonctionne, on continue (R1).
         }
 
+        // US CARDIO-UX03 (R6) — le mode retenu est celui qu'on vient **effectivement** de démarrer.
+        rememberSource(source);
         router.push('/run/active');
       } finally {
         setStarting(false);
@@ -122,6 +205,8 @@ export default function RunStartScreen() {
           // le chrono sans chercher un signal GPS indisponible.
           await cancelRun(gpsRunId);
           const manualId = await startRun('manual', plannedSessionId);
+          // R6 : c'est ce repli que le coureur a finalement lancé, c'est lui qu'on retient.
+          rememberSource('manual');
           startManualClock(manualId, await readStartedAtMs(manualId));
           router.push('/run/active');
         },
@@ -142,7 +227,7 @@ export default function RunStartScreen() {
 
   return (
     <Screen edges={['top']}>
-      <ScreenHeader title={t('running.start.title')} subtitle={t('running.start.subtitle')} />
+      <ScreenHeader title={header.title} subtitle={header.subtitle} />
 
       {active ? (
         <Card>
@@ -159,6 +244,19 @@ export default function RunStartScreen() {
         </Card>
       ) : (
         <>
+          {/* US CARDIO-UX03 (D5) — la séance qu'on lance, rappelée avant de partir (F7). */}
+          {plannedSessionId && segments.length > 0 ? (
+            <Card>
+              <View style={styles.segments} testID="run-start-segments">
+                {segments.map((label, index) => (
+                  <View key={`${label}-${index}`} style={[styles.segment, { backgroundColor: colors.surfaceAlt }]}>
+                    <Text style={[styles.segmentText, { color: colors.text }]}>{label}</Text>
+                  </View>
+                ))}
+              </View>
+            </Card>
+          ) : null}
+
           <Card>
             <ModeOption
               selected={source === 'gps'}
@@ -178,11 +276,12 @@ export default function RunStartScreen() {
 
           {/* US FANT-01 — proposé, jamais imposé (D1) : sans choix, la course démarre comme avant. */}
           {source === 'gps' ? (
-            <GhostPicker selectedId={ghostRunId} onSelect={setGhostRunId} />
+            <GhostPicker selectedId={ghostRunId} onSelect={setGhostRunId} pinned={pinnedGhost} />
           ) : null}
 
           <Button
-            label={starting ? t('running.start.starting') : t('running.start.startCta')}
+            testID="run-start-cta"
+            label={starting ? t('running.start.starting') : startLabel}
             onPress={onStart}
             loading={starting}
           />
@@ -251,4 +350,7 @@ const styles = StyleSheet.create({
   modeTexts: { flex: 1, gap: 2 },
   modeLabel: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
   modeHint: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
+  segments: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  segment: { borderRadius: 9, paddingHorizontal: 9, paddingVertical: 5 },
+  segmentText: { fontFamily: fontFamily.bodyMedium, fontSize: 13 },
 });
