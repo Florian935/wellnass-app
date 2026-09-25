@@ -1,4 +1,4 @@
-# État du projet — 23/09/2026
+# État du projet — 25/09/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 252 livré · 4 partiel · 2 à faire (sur 264)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 252 livré · 4 partiel · 3 à faire (sur 265)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -100,6 +100,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **MUSCU-UX07** — Hub Musculation en trois onglets — S'entraîner, Historique, Progrès | `code` | `feature/muscu-ux07-hub-trois-onglets` | [3.65] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -127,9 +128,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `dev` (modifications non commitées) |
-| Commits | 1328 · `main` a **1325** commits de retard sur `dev` |
-| Specs d'US | 173 au total — 88 clôturées, 85 en cours |
+| Branche courante | `feature/muscu-ux07-hub-trois-onglets` (modifications non commitées) |
+| Commits | 1329 · `main` a **1326** commits de retard sur `dev` |
+| Specs d'US | 174 au total — 88 clôturées, 86 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -139,11 +140,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `5cbaaa4`  fix(stage): plus de bandeau en haut au défilement, sur les quatre piliers
 - `a87d1f8`  feat(muscu): rouge fonte pour le pilier, des cartes qui se détachent partout
 - `4076a96`  docs(muscu): MUSCU-FIX02 clôturée — recette validée par Florian
 - `3f7c606`  fix(muscu): l'écran qui respire disparaît, la barre dit quoi toucher
 - `12aa708`  fix(muscu): la charge se tape, la série se regarde, la barre se charge
-- `b4e1b8f`  fix(muscu): l'immersif aux couleurs du pilier, et la séance libre repensée
 
 ---
 

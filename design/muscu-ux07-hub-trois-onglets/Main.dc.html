@@ -1,0 +1,975 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Hub Musculation en trois onglets — prototype</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font-family:inherit;cursor:pointer}
+.nosb::-webkit-scrollbar{display:none}
+@keyframes toastin{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+@keyframes sheetup{from{opacity:.3;transform:translateY(60px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes popin{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: {{rootH}}px; display: flex; flex-direction: column; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', sans-serif; overflow: hidden;">
+
+  <sc-if value="{{chrome}}" hint-placeholder-val="{{ true }}">
+    <div style="height: 60px; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; gap: 4px; padding: 0 8px; background: #ebdcc4; border-bottom: 2px dashed #b9a88c;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 1.2px; color: #5e5244;">PROTOTYPE · SIMULER LA SITUATION</span>
+      <div style="display: flex; gap: 5px;">
+        <sc-for list="{{etats}}" as="e" hint-placeholder-count="5">
+          <button onClick="{{e.pick}}" style="height: 32px; padding: 0 9px; border-radius: 16px; border: 1px solid {{e.border}}; background: {{e.bg}}; color: {{e.color}}; font-size: 12px; font-weight: 700; white-space: nowrap;">{{e.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="position: relative; width: 390px; height: 844px; flex-shrink: 0; overflow: hidden; background: #f7eede;">
+    <div class="nosb" style="position: absolute; top: 0; left: 0; right: 0; bottom: 74px; overflow-y: auto; scrollbar-width: none;">
+
+      <!-- ═════════════ HUB ═════════════ -->
+      <sc-if value="{{isHub}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column;">
+
+          <!-- En-tête compact : titre, icônes, trois onglets. Défile avec la page (D2). -->
+          <div style="position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; padding: 12px 16px 16px; background: linear-gradient(180deg, #8e1b1b 0%, #5f1512 70%, #2b0d0b 100%); border-bottom-left-radius: 26px; border-bottom-right-radius: 26px;">
+            <div style="position: absolute; right: -60px; top: -60px; width: 220px; height: 220px; border-radius: 110px; background: radial-gradient(circle, rgba(255,154,143,0.28) 0%, rgba(255,154,143,0) 70%);"></div>
+            <div style="position: relative; display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.8px; color: #ffffff;">Muscu</span>
+              <div style="display: flex; margin-right: -10px;">
+                <button aria-label="Planning" onClick="{{toastPlanning}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round"><rect x="3.5" y="5" width="17" height="15" rx="3"></rect><path d="M8 3v4M16 3v4M3.5 10h17"></path></svg>
+                </button>
+                <button aria-label="Exercices, programmes, modèles" onClick="{{toastLibrary}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round"><path d="M5 4v16M10 4v16M15 5l4 15"></path></svg>
+                </button>
+              </div>
+            </div>
+            <div style="position: relative; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 16px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);">
+              <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+                <button aria-pressed="{{t.pressed}}" onClick="{{t.pick}}" style="height: 42px; border-radius: 12px; border: none; background: {{t.bg}}; color: {{t.color}}; font-size: 14.5px; font-weight: 700;">{{t.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- ═════════ S'ENTRAÎNER ═════════ -->
+          <sc-if value="{{isTrain}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 18px; padding: 16px 16px 28px;">
+
+              <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1.3px; color: #a8261d; font-weight: 700;">{{m.eyebrow}}</span>
+                <div style="display: flex; flex-direction: column; gap: 3px;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: {{m.titleSize}}; line-height: 1.08; letter-spacing: -0.8px;">{{m.title}}</span>
+                  <span style="font-size: 13.5px; line-height: 19px; color: #786a59;">{{m.meta}}</span>
+                </div>
+
+                <sc-if value="{{m.showLast}}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; flex-direction: column; border-radius: 14px; background: #f7eede;">
+                    <span style="padding: 10px 12px 4px; font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1.2px; color: #5e5244;">LA DERNIÈRE FOIS · JEU. 17/09</span>
+                    <sc-for list="{{lastRows}}" as="l" hint-placeholder-count="3">
+                      <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-top: 1px solid #ebdcc4;">
+                        <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 2px; min-width: 0;">
+                          <span style="font-size: 14px; font-weight: 700;">{{l.name}}</span>
+                          <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #5e5244;">{{l.last}}</span>
+                        </div>
+                        <span style="flex-shrink: 0; padding: 4px 8px; border-radius: 9px; background: {{l.tipBg}}; color: {{l.tipColor}}; font-size: 12px; font-weight: 700; white-space: nowrap;">{{l.tip}}</span>
+                      </div>
+                    </sc-for>
+                    <button onClick="{{goPreview}}" style="display: flex; align-items: center; justify-content: center; gap: 4px; min-height: 44px; background: transparent; border: none; border-top: 1px solid #ebdcc4; color: #a8261d; font-size: 13.5px; font-weight: 700;">
+                      <span>Voir les 6 exercices</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#a8261d" stroke-width="2.4" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+                    </button>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{m.showRun}}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <div style="height: 8px; border-radius: 4px; background: #eadcc6; overflow: hidden;">
+                      <div style="height: 8px; width: {{m.runPct}}; border-radius: 4px; background: #a8261d;"></div>
+                    </div>
+                    <span style="font-size: 13px; color: #5e5244;">{{m.runHint}}</span>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{m.showRec}}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-radius: 14px; background: #f5e6c4;">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#7a5714" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"></path><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4"></path><path d="M12 13v4M8.5 20h7"></path></svg>
+                    <span style="font-size: 13.5px; font-weight: 700; color: #4d370c;">{{m.rec}}</span>
+                  </div>
+                </sc-if>
+
+                <div style="display: flex; gap: 10px;">
+                  <button onClick="{{m.onPrimary}}" style="flex-grow: 1; height: 54px; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 16px; background: #a8261d; color: #ffffff; font-size: 17px; font-weight: 700;">
+                    <sc-if value="{{m.play}}" hint-placeholder-val="{{ true }}">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="#ffffff"><path d="M8 5.5v13l10.5-6.5z"></path></svg>
+                    </sc-if>
+                    <span>{{m.primary}}</span>
+                  </button>
+                  <sc-if value="{{m.hasSecondary}}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{m.onSecondary}}" style="flex-grow: 1; height: 54px; border-radius: 16px; background: transparent; border: 1px solid #d6c6ac; color: #33291f; font-size: 16px; font-weight: 700;">{{m.secondary}}</button>
+                  </sc-if>
+                </div>
+
+                <sc-if value="{{m.showMode}}" hint-placeholder-val="{{ true }}">
+                  <button onClick="{{openMode}}" style="align-self: center; min-height: 36px; margin-top: -4px; display: flex; align-items: center; gap: 6px; background: transparent; border: none; color: #5e5244; font-size: 13px; font-weight: 600;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#5e5244" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h13l-3-3M20 16H7l3 3"></path></svg>
+                    <span>Mode {{modeLabel}} · <span style="color: #a8261d; font-weight: 700;">Changer</span></span>
+                  </button>
+                </sc-if>
+              </div>
+
+              <sc-if value="{{showRedo}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.4px;">Refaire une séance</span>
+                  <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+                    <sc-for list="{{recent}}" as="r" hint-placeholder-count="3">
+                      <div style="display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-bottom: 1px solid #efe3cf;">
+                        <button onClick="{{r.open}}" style="flex-grow: 1; display: flex; align-items: center; gap: 12px; min-height: 50px; background: transparent; border: none; padding: 0; text-align: left; color: #33291f;">
+                          <span style="width: 46px; height: 50px; flex-shrink: 0; border-radius: 13px; background: {{r.dateBg}}; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                            <span style="font-family: 'Space Mono', monospace; font-size: 9.5px; color: {{r.dateInk}};">{{r.dow}}</span>
+                            <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; line-height: 21px; color: {{r.dayInk}};">{{r.day}}</span>
+                          </span>
+                          <span style="display: flex; flex-direction: column; gap: 3px; min-width: 0;">
+                            <span style="display: flex; align-items: center; gap: 7px;">
+                              <span style="font-size: 15.5px; font-weight: 700;">{{r.name}}</span>
+                              <sc-if value="{{r.hasRec}}" hint-placeholder-val="{{ false }}">
+                                <span style="display: flex; align-items: center; gap: 3px; padding: 2px 7px 2px 5px; border-radius: 9px; background: #f5e6c4; color: #7a5714; font-size: 11.5px; font-weight: 700;">
+                                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7a5714" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"></path><path d="M12 13v4M8.5 20h7"></path></svg>
+                                  <span>{{r.recCount}}</span>
+                                </span>
+                              </sc-if>
+                            </span>
+                            <span style="font-size: 13px; color: #786a59;">{{r.meta}}</span>
+                          </span>
+                        </button>
+                        <button aria-label="{{r.redoLabel}}" onClick="{{r.redo}}" style="flex-shrink: 0; height: 44px; padding: 0 12px; display: flex; align-items: center; gap: 6px; border-radius: 14px; border: none; background: #f3ddd0; color: #a8261d; font-size: 13.5px; font-weight: 700;">
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#a8261d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"></path><path d="M20 3.5v5h-5"></path><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"></path><path d="M4 20.5v-5h5"></path></svg>
+                          <span>Refaire</span>
+                        </button>
+                      </div>
+                    </sc-for>
+                    <button onClick="{{goHistoryTab}}" style="display: flex; align-items: center; justify-content: space-between; min-height: 48px; padding: 0 16px; background: transparent; border: none; color: #33291f; font-size: 14px; font-weight: 700;">
+                      <span>Tout l'historique</span>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+                    </button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{showOther}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.4px;">Autre chose</span>
+                  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+                    <button onClick="{{toastCompose}}" style="display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 0 14px; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba; color: #33291f; font-size: 14.5px; font-weight: 700; text-align: left;">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a8261d" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg>
+                      <span>Séance libre</span>
+                    </button>
+                    <button onClick="{{toastTemplates}}" style="display: flex; align-items: center; gap: 10px; min-height: 60px; padding: 0 14px; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba; color: #33291f; font-size: 14.5px; font-weight: 700; text-align: left;">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a8261d" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4l8 4-8 4-8-4z"></path><path d="M4 12l8 4 8-4"></path><path d="M4 16l8 4 8-4"></path></svg>
+                      <span>Mes modèles</span>
+                    </button>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{showProgram}}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{toastPlanning}}" style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; color: #33291f; text-align: left;">
+                  <span style="display: flex; align-items: baseline; justify-content: space-between; width: 100%;">
+                    <span style="font-size: 15px; font-weight: 700;">Push Pull Legs</span>
+                    <span style="font-size: 12.5px; color: #786a59;">semaine 3 sur 8 · 9/24 séances</span>
+                  </span>
+                  <span style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; width: 100%;">
+                    <sc-for list="{{week}}" as="w" hint-placeholder-count="7">
+                      <span style="display: flex; flex-direction: column; align-items: center; gap: 5px;">
+                        <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; color: #786a59;">{{w.l}}</span>
+                        <span style="width: 34px; height: 34px; box-sizing: border-box; border-radius: 17px; display: flex; align-items: center; justify-content: center; background: {{w.bg}}; border: 2px {{w.style}} {{w.ring}}; color: {{w.ink}}; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700;">{{w.n}}</span>
+                      </span>
+                    </sc-for>
+                  </span>
+                  <span style="display: block; width: 100%; height: 6px; border-radius: 3px; background: #eadcc6;"><span style="display: block; width: 37%; height: 6px; border-radius: 3px; background: #a8261d;"></span></span>
+                  <span style="font-size: 13px; color: #5e5244;">Prochaine : Pull, samedi 26/09</span>
+                </button>
+              </sc-if>
+
+              <sc-if value="{{showSuggested}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; letter-spacing: -0.4px;">Suggérés pour toi</span>
+                  <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+                    <button onClick="{{toastProgram}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 14px 16px; background: transparent; border: none; border-bottom: 1px solid #efe3cf; color: #33291f; text-align: left;">
+                      <span style="font-size: 15.5px; font-weight: 700;">Full body débutant</span>
+                      <span style="font-size: 13px; color: #786a59;">3 séances par semaine · 6 semaines</span>
+                    </button>
+                    <button onClick="{{toastProgram}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 3px; padding: 14px 16px; background: transparent; border: none; color: #33291f; text-align: left;">
+                      <span style="font-size: 15.5px; font-weight: 700;">Push Pull Legs</span>
+                      <span style="font-size: 13px; color: #786a59;">4 séances par semaine · 8 semaines</span>
+                    </button>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- ═════════ HISTORIQUE ═════════ -->
+          <sc-if value="{{isHistory}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 16px 28px;">
+              <sc-if value="{{resumeLine}}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{resumeFromLine}}" style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 16px; border: none; background: #a8261d; color: #ffffff; text-align: left;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff"><path d="M8 5.5v13l10.5-6.5z"></path></svg>
+                  <span style="flex-grow: 1; font-size: 14.5px; font-weight: 700;">Séance en cours · {{runName}}</span>
+                  <span style="font-size: 14px; font-weight: 700; text-decoration: underline;">Reprendre</span>
+                </button>
+              </sc-if>
+              <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                  <button aria-label="Mois précédent" onClick="{{prevMonth}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; opacity: {{cal.prevOpacity}};">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"></path></svg>
+                  </button>
+                  <div style="display: flex; flex-direction: column; align-items: center;">
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px;">{{cal.title}}</span>
+                    <span style="font-size: 12.5px; color: #786a59;">{{cal.summary}}</span>
+                    <sc-if value="{{cal.hasRecords}}" hint-placeholder-val="{{ true }}">
+                      <span style="font-size: 12.5px; font-weight: 700; color: #7a5714;">{{cal.records}}</span>
+                    </sc-if>
+                  </div>
+                  <button aria-label="Mois suivant" onClick="{{nextMonth}}" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; opacity: {{cal.nextOpacity}};">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+                  </button>
+                </div>
+                <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); row-gap: 5px;">
+                  <sc-for list="{{dow}}" as="h" hint-placeholder-count="7">
+                    <span style="text-align: center; font-family: 'Space Mono', monospace; font-size: 10.5px; color: #786a59;">{{h.l}}</span>
+                  </sc-for>
+                  <sc-for list="{{cal.cells}}" as="c" hint-placeholder-count="35">
+                    <div style="display: flex; justify-content: center;">
+                      <sc-if value="{{c.tappable}}" hint-placeholder-val="{{ false }}">
+                        <button aria-label="{{c.aria}}" onClick="{{c.open}}" style="width: 40px; height: 40px; border-radius: 20px; border: {{c.selBorder}}; background: {{c.bg}}; color: #ffffff; font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700;">{{c.n}}</button>
+                      </sc-if>
+                      <sc-if value="{{c.plain}}" hint-placeholder-val="{{ true }}">
+                        <span style="width: 40px; height: 40px; box-sizing: border-box; border-radius: 20px; display: flex; align-items: center; justify-content: center; border: 2px {{c.ringStyle}} {{c.ring}}; color: {{c.ink}}; font-family: 'Space Mono', monospace; font-size: 13px; font-weight: {{c.weight}};">{{c.n}}</span>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+                </div>
+                <div style="display: flex; gap: 14px; justify-content: center; font-size: 12px; color: #5e5244;">
+                  <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 5px; background: #a8261d;"></span>séance</span>
+                  <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; border-radius: 5px; background: #7a5714;"></span>avec record</span>
+                  <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 10px; height: 10px; box-sizing: border-box; border-radius: 5px; border: 2px dashed #a8261d;"></span>prévue</span>
+                </div>
+              </div>
+
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 15px; background: #ebdcc4;">
+                <sc-for list="{{histTabs}}" as="h" hint-placeholder-count="2">
+                  <button aria-pressed="{{h.pressed}}" onClick="{{h.pick}}" style="height: 40px; border-radius: 12px; border: none; background: {{h.bg}}; color: {{h.color}}; font-size: 14px; font-weight: 700;">{{h.label}}</button>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{isSeances}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <sc-if value="{{dayFiltered}}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                      <span style="font-size: 14px; font-weight: 700;">{{dayLabel}}</span>
+                      <button onClick="{{clearDay}}" style="height: 34px; padding: 0 12px; border-radius: 17px; border: 1px solid #d6c6ac; background: #fffaf2; color: #33291f; font-size: 13px; font-weight: 700;">Tout le mois</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{hasMonthRows}}" hint-placeholder-val="{{ true }}">
+                    <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+                      <sc-for list="{{monthRows}}" as="r" hint-placeholder-count="5">
+                        <div style="display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-bottom: 1px solid #efe3cf;">
+                          <button onClick="{{r.open}}" style="flex-grow: 1; display: flex; align-items: center; gap: 12px; min-height: 48px; background: transparent; border: none; padding: 0; text-align: left; color: #33291f;">
+                            <span style="width: 46px; height: 48px; flex-shrink: 0; border-radius: 13px; background: {{r.dateBg}}; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                              <span style="font-family: 'Space Mono', monospace; font-size: 9.5px; color: {{r.dateInk}};">{{r.dow}}</span>
+                              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 20px; line-height: 21px; color: {{r.dayInk}};">{{r.day}}</span>
+                            </span>
+                            <span style="display: flex; flex-direction: column; gap: 3px;">
+                              <span style="display: flex; align-items: center; gap: 7px;">
+                                <span style="font-size: 15.5px; font-weight: 700;">{{r.name}}</span>
+                                <sc-if value="{{r.hasRec}}" hint-placeholder-val="{{ false }}">
+                                  <span style="display: flex; align-items: center; gap: 3px; padding: 2px 7px 2px 5px; border-radius: 9px; background: #f5e6c4; color: #7a5714; font-size: 11.5px; font-weight: 700;">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#7a5714" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"></path><path d="M12 13v4M8.5 20h7"></path></svg>
+                                    <span>{{r.recCount}}</span>
+                                  </span>
+                                </sc-if>
+                              </span>
+                              <span style="font-size: 13px; color: #786a59;">{{r.meta}}</span>
+                            </span>
+                          </button>
+                          <button aria-label="{{r.redoLabel}}" onClick="{{r.redo}}" style="flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 14px; border: none; background: #f3ddd0;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#a8261d" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"></path><path d="M20 3.5v5h-5"></path><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"></path><path d="M4 20.5v-5h5"></path></svg>
+                          </button>
+                        </div>
+                      </sc-for>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{noMonthRows}}" hint-placeholder-val="{{ false }}">
+                    <div style="padding: 18px 16px; border-radius: 20px; background: #fffaf2; border: 1px dashed #c9b79a; font-size: 14px; color: #5e5244;">Aucune séance ce mois-ci.</div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{isExos}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                  <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <label for="ux07-exsearch" style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1.2px; color: #5e5244;">CHERCHER UN EXERCICE</label>
+                    <div style="display: flex; align-items: center; gap: 8px; height: 48px; padding: 0 14px; border-radius: 14px; background: #fffaf2; border: 1px solid #90897d;">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4 4"></path></svg>
+                      <input id="ux07-exsearch" type="text" value="{{query}}" onChange="{{onSearch}}" placeholder="couché, squat, tractions…" style="flex-grow: 1; min-width: 0; height: 44px; border: none; outline: none; background: transparent; font-family: 'Hanken Grotesk', sans-serif; font-size: 15px; color: #33291f;">
+                    </div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; border-radius: 20px; background: #fffaf2; border: 1px solid #e3d3ba; overflow: hidden;">
+                    <sc-for list="{{exRows}}" as="e" hint-placeholder-count="6">
+                      <button onClick="{{e.open}}" style="display: flex; flex-direction: column; align-items: stretch; gap: 4px; padding: 12px 14px; background: transparent; border: none; border-bottom: 1px solid #efe3cf; color: #33291f; text-align: left;">
+                        <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                          <span style="font-size: 15px; font-weight: 700;">{{e.name}}</span>
+                          <span style="font-size: 12px; color: #786a59; white-space: nowrap;">{{e.when}}</span>
+                        </span>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 13px;">{{e.last}}</span>
+                        <span style="font-size: 12px; font-weight: 600; color: {{e.bestColor}};">{{e.best}}</span>
+                      </button>
+                    </sc-for>
+                    <sc-if value="{{noExRows}}" hint-placeholder-val="{{ false }}">
+                      <span style="padding: 16px; font-size: 13.5px; color: #786a59;">Aucun exercice ne correspond.</span>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <!-- ═════════ PROGRÈS ═════════ -->
+          <sc-if value="{{isProgress}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 28px;">
+              <sc-if value="{{resumeLine}}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{resumeFromLine}}" style="display: flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 14px; border-radius: 16px; border: none; background: #a8261d; color: #ffffff; text-align: left;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="#ffffff"><path d="M8 5.5v13l10.5-6.5z"></path></svg>
+                  <span style="flex-grow: 1; font-size: 14.5px; font-weight: 700;">Séance en cours · {{runName}}</span>
+                  <span style="font-size: 14px; font-weight: 700; text-decoration: underline;">Reprendre</span>
+                </button>
+              </sc-if>
+              <sc-if value="{{progressEmpty}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 12px; padding: 20px; border-radius: 22px; background: #fffaf2; border: 1px dashed #c9b79a;">
+                  <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px;">Ta progression démarre à ta première séance.</span>
+                  <span style="font-size: 14px; line-height: 20px; color: #5e5244;">Charges, records, équilibre du corps : tout s'affichera ici au fil de tes séances.</span>
+                  <button onClick="{{goTrainTab}}" style="height: 50px; border: none; border-radius: 15px; background: #a8261d; color: #ffffff; font-size: 16px; font-weight: 700;">Commencer</button>
+                </div>
+              </sc-if>
+              <sc-if value="{{progressFull}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                  <div style="display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1.2px; color: #a8261d;">LE FIL DU JOUR</span>
+                    <span style="font-size: 14.5px; font-weight: 600; line-height: 20px;">Ton développé couché est à une répétition de son record.</span>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <div style="display: flex; align-items: baseline; justify-content: space-between;">
+                      <span style="font-size: 15px; font-weight: 700;">Tes charges</span>
+                      <span style="font-size: 12.5px; color: #786a59;">5 sur 7 montent</span>
+                    </div>
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 40px; line-height: 42px; letter-spacing: -1.2px; color: #3f6b1c;">+4,2 %</span>
+                    <span style="font-size: 13px; color: #5e5244;">médiane sur tes 7 exercices réguliers, 6 semaines</span>
+                    <sc-for list="{{loads}}" as="x" hint-placeholder-count="3">
+                      <div style="display: flex; align-items: center; justify-content: space-between; padding-top: 8px; border-top: 1px solid #efe3cf;">
+                        <span style="font-size: 14px; font-weight: 600;">{{x.name}}</span>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 12.5px;">{{x.range}} <span style="color: #3f6b1c; font-weight: 700;">{{x.delta}}</span></span>
+                      </div>
+                    </sc-for>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 8px; padding: 16px; border-radius: 22px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                    <span style="font-size: 15px; font-weight: 700;">À ta portée</span>
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;"><span>Développé couché</span><span style="font-weight: 700; color: #a8261d;">1 rep du record</span></div>
+                    <div style="display: flex; justify-content: space-between; font-size: 14px;"><span>Soulevé de terre roumain</span><span style="font-weight: 700; color: #a8261d;">2,5 kg du record</span></div>
+                  </div>
+                  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+                    <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                      <span style="font-size: 13px; font-weight: 700; color: #786a59;">Ton corps · 14 j</span>
+                      <span style="font-size: 13.5px; line-height: 19px;">Réparti comme il faut sur les six groupes.</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba;">
+                      <span style="font-size: 13px; font-weight: 700; color: #786a59;">Le mur</span>
+                      <span style="font-size: 13.5px; line-height: 19px;">3 records ce mois-ci : squat, presse, tractions.</span>
+                    </div>
+                  </div>
+                  <div style="display: flex; align-items: baseline; gap: 8px; padding: 4px;">
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px;">412 t</span>
+                    <span style="font-size: 13px; color: #786a59;">soulevées sur 47 séances</span>
+                  </div>
+                  <button onClick="{{toastProgress}}" style="display: flex; align-items: center; justify-content: space-between; min-height: 52px; padding: 0 16px; border-radius: 16px; background: #fffaf2; border: 1px solid #e3d3ba; color: #33291f; font-size: 14.5px; font-weight: 700;">
+                    <span>Toute ta progression</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"></path></svg>
+                  </button>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <!-- ═════════════ APERÇU DE LA SÉANCE ═════════════ -->
+      <sc-if value="{{isPreview}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 12px; padding: 12px 16px 110px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-left: -10px;">
+            <button aria-label="Retour" onClick="{{goHub}}" style="width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"></path></svg>
+            </button>
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px; line-height: 30px; letter-spacing: -0.8px;">Push</span>
+              <span style="font-size: 13px; color: #786a59;">Aujourd'hui · 6 exercices · ~55 min</span>
+            </div>
+          </div>
+          <sc-for list="{{previewExos}}" as="x" hint-placeholder-count="6">
+            <div style="display: flex; flex-direction: column; gap: 9px; padding: 14px; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="width: 26px; height: 26px; flex-shrink: 0; border-radius: 13px; background: #33291f; color: #fffaf2; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', monospace; font-size: 12px; font-weight: 700;">{{x.n}}</span>
+                <span style="flex-grow: 1; font-size: 15.5px; font-weight: 700;">{{x.name}}</span>
+                <span style="font-family: 'Space Mono', monospace; font-size: 12px; color: #786a59;">{{x.target}}</span>
+              </div>
+              <sc-if value="{{x.done}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 5px;">
+                  <span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; color: #786a59; margin-right: 3px;">DERNIÈRE FOIS</span>
+                  <sc-for list="{{x.sets}}" as="s" hint-placeholder-count="3">
+                    <span style="padding: 3px 7px; border-radius: 8px; background: #f7eede; border: 1px solid #e3d3ba; font-family: 'Space Mono', monospace; font-size: 12px;">{{s.v}}</span>
+                  </sc-for>
+                </div>
+              </sc-if>
+              <div style="display: flex; align-items: center; gap: 7px; align-self: flex-start; padding: 5px 10px; border-radius: 10px; background: {{x.tipBg}};">
+                <span style="font-size: 13px; font-weight: 700; color: {{x.tipColor}};">{{x.tip}}</span>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <!-- ═════════════ DÉTAIL D'UNE SÉANCE ═════════════ -->
+      <sc-if value="{{isDetail}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px; padding: 12px 16px 120px;">
+          <div style="display: flex; align-items: center; gap: 6px; margin-left: -10px;">
+            <button aria-label="Retour" onClick="{{goHub}}" style="width: 44px; height: 44px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"></path></svg>
+            </button>
+            <div style="display: flex; flex-direction: column;">
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px; line-height: 30px; letter-spacing: -0.8px;">{{d.name}}</span>
+              <span style="font-size: 13px; color: #786a59;">{{d.dateLong}}</span>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px;">
+            <div style="display: flex; flex-direction: column; gap: 4px; padding: 11px 12px; border-radius: 16px; background: #fffaf2; border: 1px solid #e3d3ba;">
+              <span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; color: #786a59;">DURÉE</span>
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px;">{{d.minLabel}}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px; padding: 11px 12px; border-radius: 16px; background: #fffaf2; border: 1px solid #e3d3ba;">
+              <span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; color: #786a59;">VOLUME</span>
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px;">{{d.volume}}</span>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 4px; padding: 11px 12px; border-radius: 16px; background: #fffaf2; border: 1px solid #e3d3ba;">
+              <span style="font-family: 'Space Mono', monospace; font-size: 10px; letter-spacing: 1px; color: #786a59;">RESSENTI</span>
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 19px;">{{d.rpe}}</span>
+            </div>
+          </div>
+          <sc-if value="{{d.hasRec}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 16px; background: #f5e6c4;">
+              <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; letter-spacing: 1.2px; color: #7a5714; font-weight: 700;">RECORDS BATTUS</span>
+              <sc-for list="{{d.records}}" as="rc" hint-placeholder-count="1">
+                <div style="display: flex; justify-content: space-between; gap: 8px; font-size: 14px;">
+                  <span style="font-weight: 700; color: #4d370c;">{{rc.ex}}</span>
+                  <span style="font-family: 'Space Mono', monospace; font-size: 13px; color: #4d370c;">{{rc.v}}</span>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-for list="{{d.exos}}" as="x" hint-placeholder-count="5">
+            <div style="display: flex; flex-direction: column; gap: 8px; padding: 13px 14px; border-radius: 18px; background: #fffaf2; border: 1px solid #e3d3ba;">
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                <span style="font-size: 15px; font-weight: 700;">{{x.name}}</span>
+                <span style="font-size: 12px; color: #786a59; white-space: nowrap;">{{x.count}}</span>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 5px;">
+                <sc-for list="{{x.sets}}" as="s" hint-placeholder-count="3">
+                  <span style="padding: 4px 8px; border-radius: 8px; background: #f7eede; border: 1px solid #e3d3ba; font-family: 'Space Mono', monospace; font-size: 12.5px;">{{s.v}}</span>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- Boutons collés en bas -->
+    <sc-if value="{{isPreview}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; left: 0; right: 0; bottom: 74px; padding: 22px 16px 14px; background: linear-gradient(180deg, rgba(247,238,222,0) 0%, #f7eede 38%);">
+        <button onClick="{{startToday}}" style="width: 100%; height: 56px; display: flex; align-items: center; justify-content: center; gap: 8px; border: none; border-radius: 16px; background: #a8261d; color: #ffffff; font-size: 17px; font-weight: 700; box-shadow: 0 10px 24px -10px rgba(142,27,27,0.6);">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="#ffffff"><path d="M8 5.5v13l10.5-6.5z"></path></svg>
+          <span>Démarrer</span>
+        </button>
+      </div>
+    </sc-if>
+    <sc-if value="{{isDetail}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; left: 0; right: 0; bottom: 74px; padding: 22px 16px 14px; background: linear-gradient(180deg, rgba(247,238,222,0) 0%, #f7eede 38%);">
+        <button onClick="{{d.redo}}" style="width: 100%; min-height: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; border: none; border-radius: 16px; background: #a8261d; color: #ffffff; box-shadow: 0 10px 24px -10px rgba(142,27,27,0.6);">
+          <span style="display: flex; align-items: center; gap: 8px; font-size: 16.5px; font-weight: 700;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 0 1 13.7-5.6L20 8.5"></path><path d="M20 3.5v5h-5"></path><path d="M20 12a8 8 0 0 1-13.7 5.6L4 15.5"></path><path d="M4 20.5v-5h5"></path></svg>
+            <span>Refaire cette séance</span>
+          </span>
+          <span style="font-size: 12px; color: #ffe1dc;">mêmes exercices, mêmes charges au départ</span>
+        </button>
+      </div>
+    </sc-if>
+
+    <!-- Feuille : choix du mode (D4) -->
+    <sc-if value="{{modeSheet}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end; background: rgba(33,17,12,0.5); animation: fadein 0.2s ease both;">
+        <div style="display: flex; flex-direction: column; gap: 14px; padding: 10px 18px 22px; border-top-left-radius: 26px; border-top-right-radius: 26px; background: #fffaf2; animation: sheetup 0.28s ease both;">
+          <div style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #d6c6ac;"></div>
+          <div style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.5px;">Comment veux-tu t'entraîner ?</span>
+            <button aria-label="Fermer" onClick="{{closeMode}}" style="width: 44px; height: 44px; margin-right: -10px; display: flex; align-items: center; justify-content: center; background: transparent; border: none;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+            </button>
+          </div>
+          <sc-for list="{{modeOptions}}" as="o" hint-placeholder-count="2">
+            <button aria-pressed="{{o.pressed}}" onClick="{{o.pick}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 14px 16px; border-radius: 18px; background: {{o.bg}}; border: 2px solid {{o.border}}; color: #33291f; text-align: left;">
+              <span style="font-size: 16px; font-weight: 700;">{{o.label}}</span>
+              <span style="font-size: 13.5px; line-height: 19px; color: #5e5244;">{{o.desc}}</span>
+            </button>
+          </sc-for>
+          <span style="font-size: 13px; line-height: 18px; color: #5e5244;">Le mode choisi s'applique à tes prochaines séances.</span>
+          <button onClick="{{confirmMode}}" style="height: 52px; border: none; border-radius: 16px; background: #a8261d; color: #ffffff; font-size: 16px; font-weight: 700;">Valider</button>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Alerte : séance en cours (R4) -->
+    <sc-if value="{{busy}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; padding: 0 28px; background: rgba(33,17,12,0.5); animation: fadein 0.2s ease both;">
+        <div role="alertdialog" aria-labelledby="ux07-busy-title" style="width: 100%; display: flex; flex-direction: column; gap: 10px; padding: 22px 22px 12px; border-radius: 24px; background: #fffaf2; box-shadow: 0 20px 40px -16px rgba(0,0,0,0.5); animation: popin 0.2s ease both;">
+          <span id="ux07-busy-title" style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 21px;">Une séance est en cours</span>
+          <span style="font-size: 14.5px; line-height: 21px; color: #5e5244;">Termine-la ou reprends-la avant d'en commencer une autre.</span>
+          <div style="display: flex; justify-content: flex-end; gap: 6px; margin-top: 4px;">
+            <button onClick="{{closeBusy}}" style="height: 44px; padding: 0 14px; border: none; background: transparent; color: #5e5244; font-size: 15px; font-weight: 700;">Annuler</button>
+            <button onClick="{{resumeFromBusy}}" style="height: 44px; padding: 0 16px; border: none; border-radius: 14px; background: #a8261d; color: #ffffff; font-size: 15px; font-weight: 700;">Reprendre</button>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- Toast -->
+    <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; top: 14px; left: 14px; right: 14px; display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 16px; background: #33291f; color: #ffffff; box-shadow: 0 14px 30px -12px rgba(0,0,0,0.5); animation: toastin 0.25s ease both;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#b9d98e" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>
+        <span style="font-size: 13.5px; line-height: 18px; font-weight: 600;">{{toast}}</span>
+      </div>
+    </sc-if>
+
+    <!-- Barre d'onglets de l'app -->
+    <div style="position: absolute; left: 0; right: 0; bottom: 0; height: 74px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center; background: #fffaf2; border-top: 1px solid #e3d3ba;">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.9" stroke-linejoin="round"><path d="M4 11l8-7 8 7v8.5a1 1 0 0 1-1 1h-4.5V15h-5v5.5H5a1 1 0 0 1-1-1z"></path></svg>
+        <span style="font-size: 11.5px; font-weight: 600; color: #786a59;">Accueil</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#a8261d" stroke-width="2.2" stroke-linecap="round"><path d="M3 12h18"></path><path d="M6 8v8M9 7v10M15 7v10M18 8v8"></path></svg>
+        <span style="font-size: 11.5px; font-weight: 700; color: #a8261d;">Muscu</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="14" cy="4.5" r="1.8"></circle><path d="M9 21l2.5-6 3 2.5V21"></path><path d="M6.5 11.5l3-3.5h4l2.5 3.5 3 1"></path><path d="M11.5 15l1.5-7"></path></svg>
+        <span style="font-size: 11.5px; font-weight: 600; color: #786a59;">Course</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="8.5"></circle><path d="M12 3.5l4 7M20.5 12h-8M16 19.5l-4-7M7.5 19l4-7M3.5 12h8M8 4.5l4 7"></path></svg>
+        <span style="font-size: 11.5px; font-weight: 600; color: #786a59;">Labo</span>
+      </div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 7c-2-1.5-7-1.5-7 4.5 0 4 3 8.5 5 8.5 1 0 1.3-.5 2-.5s1 .5 2 .5c2 0 5-4.5 5-8.5 0-6-5-6-7-4.5z"></path><path d="M12 7c0-2 1-3.5 3-4"></path></svg>
+        <span style="font-size: 11.5px; font-weight: 600; color: #786a59;">Alim</span>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"section":{"editor":"enum","options":["train","history","progress"],"default":"train"},"etat":{"editor":"enum","options":["prevue","repos","encours","faite","debut"],"default":"prevue"},"screen":{"editor":"enum","options":["hub","preview","detail"],"default":"hub"},"histTab":{"editor":"enum","options":["seances","exos"],"default":"seances"},"seance":{"editor":"enum","options":["legs22","pull19","libre19","push17"],"default":"legs22"},"chrome":{"editor":"boolean","default":true},"modeSheet":{"editor":"boolean","default":false},"busy":{"editor":"boolean","default":false},"$preview":{"width":390,"height":904}}'>
+class Component extends DCLogic {
+  flash(msg) {
+    clearTimeout(this._t);
+    this.setState({ toast: msg });
+    this._t = setTimeout(() => this.setState({ toast: null }), 3200);
+  }
+
+  start(name, suffix) {
+    clearTimeout(this._t);
+    this.setState({
+      etat: 'encours', runName: name, justStarted: true, screen: 'hub', section: 'train', busy: false,
+      toast: 'Séance « ' + name + ' » lancée · ' + suffix,
+    });
+    this._t = setTimeout(() => this.setState({ toast: null }), 3400);
+  }
+
+  renderVals() {
+    const st = this.state || {};
+    const pick = (k, d) => (st[k] !== undefined ? st[k] : (this.props[k] !== undefined ? this.props[k] : d));
+    const etat = pick('etat', 'prevue');
+    const screen = pick('screen', 'hub');
+    const section = pick('section', 'train');
+    const histTab = pick('histTab', 'seances');
+    const detailId = pick('seance', 'legs22');
+    const chrome = this.props.chrome === undefined ? true : !!this.props.chrome;
+    const modeSheet = !!pick('modeSheet', false);
+    const busy = !!pick('busy', false);
+    const query = st.query || '';
+    const month = st.month || '2026-09';
+    const day = st.day || null;
+    const mode = st.mode || 'classique';
+    const modePick = st.modePick || mode;
+    const encours = etat === 'encours';
+    const debut = etat === 'debut';
+    const fmtT = (t) => t.toFixed(1).replace('.', ',') + ' t';
+
+    const TEMPL = {
+      push: [
+        { name: 'Développé couché', sets: ['80 × 8', '80 × 8', '80 × 7', '80 × 6'] },
+        { name: 'Développé incliné haltères', sets: ['28 × 10', '28 × 9', '28 × 8'] },
+        { name: 'Développé militaire', sets: ['50 × 8', '50 × 8', '50 × 8'] },
+        { name: 'Élévations latérales', sets: ['10 × 15', '10 × 14', '10 × 12'] },
+        { name: 'Dips lestés', sets: ['+10 × 10', '+10 × 9', '+10 × 8'] },
+        { name: 'Extensions triceps poulie', sets: ['25 × 12', '25 × 12', '25 × 12'] },
+      ],
+      pull: [
+        { name: 'Tractions lestées', sets: ['+12,5 × 6', '+12,5 × 5', '+10 × 6'] },
+        { name: 'Rowing barre', sets: ['70 × 10', '70 × 10', '70 × 9'] },
+        { name: 'Tirage vertical', sets: ['60 × 12', '60 × 12', '60 × 11'] },
+        { name: 'Face pull', sets: ['20 × 15', '20 × 15', '20 × 15'] },
+        { name: 'Curl barre', sets: ['35 × 10', '35 × 9', '35 × 8'] },
+      ],
+      legs: [
+        { name: 'Squat', sets: ['120 × 5', '120 × 5', '120 × 5', '120 × 5'] },
+        { name: 'Soulevé de terre roumain', sets: ['100 × 8', '100 × 8', '100 × 8'] },
+        { name: 'Presse à cuisses', sets: ['220 × 10', '220 × 10', '220 × 10'] },
+        { name: 'Leg curl', sets: ['45 × 12', '45 × 12', '45 × 11'] },
+        { name: 'Mollets debout', sets: ['60 × 15', '60 × 15', '60 × 14', '60 × 12'] },
+      ],
+      libre: [
+        { name: 'Curl barre', sets: ['35 × 10', '35 × 10', '35 × 9'] },
+        { name: 'Curl marteau', sets: ['14 × 12', '14 × 12', '14 × 10'] },
+        { name: 'Extensions triceps poulie', sets: ['25 × 12', '25 × 12', '25 × 11'] },
+      ],
+      today: [
+        { name: 'Développé couché', sets: ['80 × 8', '80 × 8', '80 × 8', '80 × 7'] },
+        { name: 'Développé incliné haltères', sets: ['28 × 10', '28 × 10', '28 × 9'] },
+        { name: 'Développé militaire', sets: ['52,5 × 8', '52,5 × 7', '52,5 × 7'] },
+        { name: 'Élévations latérales', sets: ['10 × 15', '10 × 15', '10 × 13'] },
+        { name: 'Dips lestés', sets: ['+10 × 11', '+10 × 10', '+10 × 9'] },
+        { name: 'Extensions triceps poulie', sets: ['27,5 × 12', '27,5 × 11', '27,5 × 10'] },
+      ],
+    };
+    const W = (id, type, name, m, d, dow, dateLong, min, t, recs) => ({ id, type, name, m, d, dow, dateLong, min, t, records: recs || [] });
+    const SEP = [
+      W('legs22', 'legs', 'Legs', 9, 22, 'MAR.', 'mardi 22/09 · 19:05', 64, 11.4, [{ ex: 'Squat', v: '120 kg × 5' }, { ex: 'Presse à cuisses', v: '220 kg × 10' }]),
+      W('libre19', 'libre', 'Séance libre', 9, 19, 'SAM.', 'samedi 19/09 · 18:30', 25, 2.1),
+      W('pull19', 'pull', 'Pull', 9, 19, 'SAM.', 'samedi 19/09 · 10:15', 52, 7.8, [{ ex: 'Tractions lestées', v: '+12,5 kg × 6' }]),
+      W('push17', 'push', 'Push', 9, 17, 'JEU.', 'jeudi 17/09 · 18:42', 58, 6.9),
+      W('legs14', 'legs', 'Legs', 9, 14, 'LUN.', 'lundi 14/09 · 19:20', 61, 10.5),
+      W('pull12', 'pull', 'Pull', 9, 12, 'SAM.', 'samedi 12/09 · 09:50', 50, 7.1),
+      W('push10', 'push', 'Push', 9, 10, 'JEU.', 'jeudi 10/09 · 18:30', 55, 6.6),
+      W('legs08', 'legs', 'Legs', 9, 8, 'MAR.', 'mardi 08/09 · 19:10', 63, 10.9),
+      W('pull05', 'pull', 'Pull', 9, 5, 'SAM.', 'samedi 05/09 · 10:05', 51, 7.4),
+      W('push03', 'push', 'Push', 9, 3, 'JEU.', 'jeudi 03/09 · 18:45', 54, 6.4),
+    ];
+    const AUG = [
+      W('legs29', 'legs', 'Legs', 8, 29, 'SAM.', 'samedi 29/08 · 10:30', 60, 10.2),
+      W('pull27', 'pull', 'Pull', 8, 27, 'JEU.', 'jeudi 27/08 · 18:40', 49, 7.0),
+      W('push25', 'push', 'Push', 8, 25, 'MAR.', 'mardi 25/08 · 19:00', 53, 6.2),
+      W('legs22a', 'legs', 'Legs', 8, 22, 'SAM.', 'samedi 22/08 · 10:10', 59, 10.1),
+      W('pull20', 'pull', 'Pull', 8, 20, 'JEU.', 'jeudi 20/08 · 18:35', 50, 6.9),
+      W('push18', 'push', 'Push', 8, 18, 'MAR.', 'mardi 18/08 · 19:05', 54, 6.1),
+      W('legs15', 'legs', 'Legs', 8, 15, 'SAM.', 'samedi 15/08 · 10:20', 61, 10.0, [{ ex: 'Squat', v: '117,5 kg × 5' }]),
+      W('pull13', 'pull', 'Pull', 8, 13, 'JEU.', 'jeudi 13/08 · 18:45', 48, 6.8),
+      W('push11', 'push', 'Push', 8, 11, 'MAR.', 'mardi 11/08 · 19:00', 52, 6.0),
+      W('legs08a', 'legs', 'Legs', 8, 8, 'SAM.', 'samedi 08/08 · 10:00', 58, 9.9),
+      W('pull06', 'pull', 'Pull', 8, 6, 'JEU.', 'jeudi 06/08 · 18:30', 47, 6.8),
+      W('push04', 'push', 'Push', 8, 4, 'MAR.', 'mardi 04/08 · 19:10', 51, 5.9),
+    ];
+    const TODAY = Object.assign(W('push24', 'today', 'Push', 9, 24, 'AUJ.', 'jeudi 24/09 · 12:30', 61, 7.2, [{ ex: 'Développé militaire', v: '52,5 kg × 8' }]));
+
+    const sepAll = debut ? [] : (etat === 'faite' ? [TODAY].concat(SEP) : SEP);
+    const augAll = debut ? [] : AUG;
+    const all = sepAll.concat(augAll);
+    const byId = {};
+    SEP.concat(AUG, [TODAY]).forEach((s) => { byId[s.id] = s; });
+
+    const redo = (s) => () => {
+      if (encours) { this.setState({ busy: true }); return; }
+      this.start(s.name, 'charges du ' + s.dow.toLowerCase() + ' ' + String(s.d).padStart(2, '0') + '/' + String(s.m).padStart(2, '0') + ' pré-remplies');
+    };
+    const row = (s) => {
+      const dd = String(s.d).padStart(2, '0') + '/' + String(s.m).padStart(2, '0');
+      const today = s.id === 'push24';
+      return {
+        dow: s.dow, day: String(s.d), name: s.name,
+        meta: s.min + ' min · ' + fmtT(s.t) + (s.type === 'libre' ? ' · ' + TEMPL.libre[0].name + ', ' + TEMPL.libre[1].name + '…' : ''),
+        hasRec: s.records.length > 0, recCount: String(s.records.length),
+        dateBg: today ? '#a8261d' : '#f3ddd0',
+        dateInk: today ? '#ffe1dc' : '#a8261d',
+        dayInk: today ? '#ffffff' : '#33291f',
+        open: () => this.setState({ screen: 'detail', seance: s.id }),
+        redo: redo(s),
+        redoLabel: 'Refaire ' + s.name + ' du ' + dd,
+      };
+    };
+
+    // ── Onglets ───────────────────────────────────────────────────────────────
+    const tabs = [['train', 'S’entraîner'], ['history', 'Historique'], ['progress', 'Progrès']].map(([k, label]) => ({
+      label,
+      pressed: k === section ? 'true' : 'false',
+      bg: k === section ? '#ffffff' : 'transparent',
+      color: k === section ? '#8e1b1b' : '#ffffff',
+      pick: () => this.setState({ section: k, day: null }),
+    }));
+
+    // ── La carte du moment ────────────────────────────────────────────────────
+    const runName = st.runName || 'Push';
+    const MOMENTS = {
+      prevue: {
+        eyebrow: 'AUJOURD’HUI · SEMAINE 3 SUR 8', title: 'Push', titleSize: '32px',
+        meta: 'Push Pull Legs · 6 exercices · ~55 min',
+        showLast: true, showMode: true, play: true,
+        primary: 'Démarrer', onPrimary: () => this.start('Push', 'charges du jeu. 17/09 pré-remplies'),
+      },
+      repos: {
+        eyebrow: 'REPOS · SEMAINE 3 SUR 8', title: 'Repos aujourd’hui', titleSize: '30px',
+        meta: 'Prochaine : Pull, samedi 26/09.',
+        primary: 'Voir le planning', onPrimary: () => this.flash('Ouvre le planning (écran existant)'),
+      },
+      encours: {
+        eyebrow: 'SÉANCE EN COURS', title: runName, titleSize: '32px',
+        meta: st.justStarted ? 'Démarrée à l’instant' : 'Démarrée à 12:04 · 32 min',
+        showRun: true, runPct: st.justStarted ? '3%' : '64%',
+        runHint: st.justStarted ? '0 série sur 22 · la séance s’ouvrirait ici' : '14 séries sur 22 · Développé militaire en cours',
+        play: true, primary: 'Reprendre', onPrimary: () => this.flash('Rouvre la séance en cours (écran existant)'),
+      },
+      faite: {
+        eyebrow: 'SÉANCE FAITE · AUJOURD’HUI', title: '7 180 kg', titleSize: '40px',
+        meta: 'Push · 6 exercices',
+        showRec: true, rec: '1 record battu : Développé militaire, 52,5 kg × 8',
+        primary: 'Voir le bilan', onPrimary: () => this.flash('Ouvre le bilan de la séance (écran existant)'),
+        secondary: 'Partager', onSecondary: () => this.flash('Carte à partager (PARTAGE-01)'),
+      },
+      debut: {
+        eyebrow: 'POUR COMMENCER', title: 'Choisis un programme, on planifie le reste', titleSize: '24px',
+        meta: 'Trois questions, et ta première séance est calée pour aujourd’hui.',
+        primary: 'Voir les programmes', onPrimary: () => this.flash('Ouvre la bibliothèque de programmes'),
+      },
+    };
+    const m0 = MOMENTS[etat] || MOMENTS.prevue;
+    const m = Object.assign({ showLast: false, showRun: false, showRec: false, showMode: false, play: false, runPct: '0%', runHint: '', rec: '', secondary: '', onSecondary: () => {} }, m0, { hasSecondary: !!m0.secondary });
+
+    const lastRows = [
+      { name: 'Développé couché', last: '80 kg × 8 · 8 · 7 · 6', tip: '82,5 kg ou 9 reps' },
+      { name: 'Développé militaire', last: '50 kg × 8 · 8 · 8', tip: '52,5 kg ou 9 reps' },
+      { name: 'Dips lestés', last: '+10 kg × 10 · 9 · 8', tip: 'vise 11 reps' },
+    ].map((l) => Object.assign({}, l, { tipBg: '#f3ddd0', tipColor: '#a8261d' }));
+
+    const recent = all.slice(0, 3).map(row);
+    const WL = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    const week = [21, 22, 23, 24, 25, 26, 27].map((n, i) => {
+      const done = n === 22 || (n === 24 && etat === 'faite');
+      const today = n === 24 && etat !== 'faite';
+      const planned = n === 26;
+      return {
+        l: WL[i], n: String(n),
+        bg: done ? '#a8261d' : 'transparent',
+        ink: done ? '#ffffff' : '#33291f',
+        ring: done || today || planned ? '#a8261d' : '#e3d3ba',
+        style: planned ? 'dashed' : 'solid',
+      };
+    });
+
+    // ── Calendrier ────────────────────────────────────────────────────────────
+    const isSep = month === '2026-09';
+    const monthList = isSep ? sepAll : augAll;
+    const firstDow = isSep ? 1 : 5; // lundi = 0 : 01/09/2026 est un mardi, 01/08/2026 un samedi
+    const nDays = isSep ? 30 : 31;
+    const byDay = {};
+    monthList.forEach((s) => { (byDay[s.d] = byDay[s.d] || []).push(s); });
+    const planned = isSep && !debut ? (etat === 'faite' ? [26, 28] : [24, 26, 28]) : [];
+    const cells = [];
+    const blank = { n: '', tappable: false, plain: true, ring: 'transparent', ringStyle: 'solid', ink: '#33291f', weight: '400', bg: 'transparent', aria: '', open: () => {}, selBorder: 'none' };
+    for (let i = 0; i < firstDow; i++) cells.push(blank);
+    for (let n = 1; n <= nDays; n++) {
+      const list = byDay[n];
+      const isToday = isSep && n === 24;
+      if (list) {
+        const rec = list.some((s) => s.records.length > 0);
+        const names = list.map((s) => s.name + (s.records.length ? ', ' + s.records.length + (s.records.length > 1 ? ' records' : ' record') : '')).join(' ; ');
+        cells.push(Object.assign({}, blank, {
+          n: String(n), tappable: true, plain: false,
+          bg: rec ? '#7a5714' : '#a8261d',
+          selBorder: day === n ? '3px solid #33291f' : 'none',
+          aria: n + (isSep ? ' septembre : ' : ' août : ') + names,
+          open: list.length === 1
+            ? () => this.setState({ screen: 'detail', seance: list[0].id })
+            : () => this.setState({ day: n, histTab: 'seances' }),
+        }));
+      } else {
+        const isPlanned = planned.indexOf(n) !== -1;
+        cells.push(Object.assign({}, blank, {
+          n: String(n),
+          ring: isToday ? '#33291f' : (isPlanned ? '#a8261d' : 'transparent'),
+          ringStyle: isPlanned && !isToday ? 'dashed' : 'solid',
+          ink: isSep && n > 24 ? '#786a59' : '#33291f',
+          weight: isToday ? '700' : '400',
+        }));
+      }
+    }
+    while (cells.length % 7 !== 0) cells.push(blank);
+    const recTotal = monthList.reduce((a, s) => a + s.records.length, 0);
+    const cal = {
+      title: isSep ? 'Septembre 2026' : 'Août 2026',
+      summary: monthList.length
+        ? monthList.length + (monthList.length > 1 ? ' séances · ' : ' séance · ') + fmtT(monthList.reduce((a, s) => a + s.t, 0))
+        : 'aucune séance',
+      hasRecords: recTotal > 0,
+      records: recTotal + (recTotal > 1 ? ' records' : ' record'),
+      cells,
+      prevOpacity: isSep ? '1' : '0.3',
+      nextOpacity: isSep ? '0.3' : '1',
+    };
+    const dayList = day ? (byDay[day] || []) : monthList;
+    const monthRows = dayList.map(row);
+    const histTabs = [['seances', 'Séances'], ['exos', 'Par exercice']].map(([k, label]) => ({
+      label,
+      pressed: k === histTab ? 'true' : 'false',
+      bg: k === histTab ? '#fffaf2' : 'transparent',
+      color: k === histTab ? '#33291f' : '#5e5244',
+      pick: () => this.setState({ histTab: k }),
+    }));
+
+    const EXLAST = [
+      { name: 'Squat', last: '120 kg × 5 · 5 · 5 · 5', when: 'mar. 22/09 · Legs', best: 'Record battu ce jour-là', rec: true },
+      { name: 'Presse à cuisses', last: '220 kg × 10 · 10 · 10', when: 'mar. 22/09 · Legs', best: 'Record battu ce jour-là', rec: true },
+      { name: 'Soulevé de terre roumain', last: '100 kg × 8 · 8 · 8', when: 'mar. 22/09 · Legs', best: 'Record : 110 kg × 6' },
+      { name: 'Curl barre', last: '35 kg × 10 · 10 · 9', when: 'sam. 19/09 · Séance libre', best: 'Record : 40 kg × 6' },
+      { name: 'Curl marteau', last: '14 kg × 12 · 12 · 10', when: 'sam. 19/09 · Séance libre', best: 'Record : 16 kg × 10' },
+      { name: 'Tractions lestées', last: '+12,5 kg × 6 · 5, +10 × 6', when: 'sam. 19/09 · Pull', best: 'Record battu ce jour-là', rec: true },
+      { name: 'Rowing barre', last: '70 kg × 10 · 10 · 9', when: 'sam. 19/09 · Pull', best: 'Record : 75 kg × 8' },
+      { name: 'Développé couché', last: '80 kg × 8 · 8 · 7 · 6', when: 'jeu. 17/09 · Push', best: 'Record : 85 kg × 5' },
+      { name: 'Développé militaire', last: '50 kg × 8 · 8 · 8', when: 'jeu. 17/09 · Push', best: 'Record : 55 kg × 5' },
+      { name: 'Élévations latérales', last: '10 kg × 15 · 14 · 12', when: 'jeu. 17/09 · Push', best: 'Record : 12 kg × 12' },
+    ];
+    const norm = (x) => x.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+    const exRows = (debut ? [] : EXLAST)
+      .filter((e) => norm(e.name).indexOf(norm(query)) !== -1)
+      .map((e) => Object.assign({}, e, {
+        bestColor: e.rec ? '#7a5714' : '#786a59',
+        open: () => this.flash('Ouvre la fiche « ' + e.name + ' » (écran existant)'),
+      }));
+
+    // ── Aperçu et détail ──────────────────────────────────────────────────────
+    const TIP = { up: ['#dfe8cf', '#2f5214'], reps: ['#f3ddd0', '#a8261d'], hold: ['#efe5d4', '#5e5244'], first: ['#efe5d4', '#5e5244'] };
+    const PREVIEW = [
+      { name: 'Développé couché', target: '4 × 6-8', sets: TEMPL.push[0].sets, tip: 'Essaie 82,5 kg ou 9 reps', kind: 'reps' },
+      { name: 'Développé incliné haltères', target: '3 × 8-10', sets: TEMPL.push[1].sets, tip: 'Essaie 11 reps', kind: 'reps' },
+      { name: 'Développé militaire', target: '3 × 6-8 · 50 kg prévus', sets: TEMPL.push[2].sets, tip: 'Essaie 52,5 kg ou 9 reps', kind: 'reps' },
+      { name: 'Élévations latérales', target: '3 × 12-15', sets: TEMPL.push[3].sets, tip: 'Reste à 10 kg, essaie 15 reps — la charge remonte en enchaînant mieux les séances du programme', kind: 'hold' },
+      { name: 'Dips lestés', target: '3 × AMRAP', sets: TEMPL.push[4].sets, tip: 'Essaie 11 reps', kind: 'reps' },
+      { name: 'Pompes déclinées', target: '2 séries', sets: [], tip: 'Première fois', kind: 'first' },
+    ];
+    const previewExos = PREVIEW.map((x, i) => ({
+      n: String(i + 1), name: x.name, target: x.target, tip: x.tip,
+      done: x.sets.length > 0,
+      sets: x.sets.map((v) => ({ v })),
+      tipBg: TIP[x.kind][0], tipColor: TIP[x.kind][1],
+    }));
+    const d0 = byId[detailId] || byId.legs22;
+    const d = {
+      name: d0.name, dateLong: d0.dateLong,
+      minLabel: d0.min + ' min',
+      volume: Math.round(d0.t * 1000).toLocaleString('fr-FR').replace(/ | /g, ' ') + ' kg',
+      rpe: d0.type === 'libre' ? '3 / 5' : '4 / 5',
+      hasRec: d0.records.length > 0,
+      records: d0.records,
+      exos: TEMPL[d0.type].map((e) => ({ name: e.name, count: e.sets.length + ' séries', sets: e.sets.map((v) => ({ v })) })),
+      redo: redo(d0),
+    };
+
+    // ── Mode (D4) ─────────────────────────────────────────────────────────────
+    const modeOptions = [
+      ['classique', 'Classique', 'Tes séries, tes charges, le chrono. Rien d’autre.'],
+      ['immersif', 'Immersif', 'Barre chargée, effort au tempo, repos guidé, fantôme de ta dernière séance.'],
+    ].map(([k, label, desc]) => ({
+      label, desc,
+      pressed: k === modePick ? 'true' : 'false',
+      bg: k === modePick ? '#f3ddd0' : '#fffaf2',
+      border: k === modePick ? '#a8261d' : '#e3d3ba',
+      pick: () => this.setState({ modePick: k }),
+    }));
+
+    // ── Situations simulées ───────────────────────────────────────────────────
+    const etats = [['prevue', 'Prévue'], ['repos', 'Repos'], ['encours', 'En cours'], ['faite', 'Faite'], ['debut', 'Débutant']].map(([k, label]) => ({
+      label,
+      bg: k === etat ? '#33291f' : '#fffaf2',
+      color: k === etat ? '#ffffff' : '#33291f',
+      border: k === etat ? '#33291f' : '#d6c6ac',
+      // D3 : rien ne change d'onglet de force ; pendant une séance, Historique et Progrès portent la ligne « Reprendre ».
+      pick: () => this.setState({ etat: k, screen: 'hub', justStarted: false, runName: 'Push', toast: null, busy: false, modeSheet: false, day: null }),
+    }));
+
+    const loads = [
+      { name: 'Squat', range: '147 → 156 kg', delta: '+6 %' },
+      { name: 'Rowing barre', range: '91 → 96 kg', delta: '+5 %' },
+      { name: 'Développé couché', range: '99 → 101 kg', delta: '+2 %' },
+    ];
+
+    return {
+      chrome, rootH: chrome ? 904 : 844, etats,
+      isHub: screen === 'hub', isPreview: screen === 'preview', isDetail: screen === 'detail',
+      tabs,
+      isTrain: section === 'train', isHistory: section === 'history', isProgress: section === 'progress',
+      m, lastRows, modeLabel: mode,
+      recent, showRedo: !encours && recent.length > 0, showOther: !encours,
+      showProgram: !debut, showSuggested: debut, week,
+      dow: WL.map((l) => ({ l })), cal, histTabs,
+      isSeances: histTab === 'seances', isExos: histTab === 'exos',
+      monthRows, hasMonthRows: monthRows.length > 0, noMonthRows: monthRows.length === 0,
+      dayFiltered: !!day, dayLabel: day ? 'Samedi ' + day + ' septembre · ' + dayList.length + ' séances' : '',
+      clearDay: () => this.setState({ day: null }),
+      prevMonth: () => { if (isSep) this.setState({ month: '2026-08', day: null }); },
+      nextMonth: () => { if (!isSep) this.setState({ month: '2026-09', day: null }); },
+      query, exRows, noExRows: exRows.length === 0,
+      onSearch: (e) => this.setState({ query: e.target.value }),
+      progressEmpty: debut, progressFull: !debut, loads,
+      previewExos, d,
+      modeSheet, modeOptions,
+      openMode: () => this.setState({ modeSheet: true, modePick: mode }),
+      closeMode: () => this.setState({ modeSheet: false }),
+      confirmMode: () => {
+        this.setState({ modeSheet: false, mode: modePick });
+        this.flash('Mode ' + modePick + ' pour tes prochaines séances');
+      },
+      busy,
+      resumeLine: encours,
+      runName,
+      resumeFromLine: () => this.flash('Rouvre la séance en cours (écran existant)'),
+      closeBusy: () => this.setState({ busy: false }),
+      resumeFromBusy: () => { this.setState({ busy: false }); this.flash('Rouvre la séance en cours (écran existant)'); },
+      hasToast: !!st.toast, toast: st.toast || '',
+      goHub: () => this.setState({ screen: 'hub' }),
+      goPreview: () => this.setState({ screen: 'preview' }),
+      goHistoryTab: () => this.setState({ section: 'history', day: null }),
+      goTrainTab: () => this.setState({ section: 'train' }),
+      startToday: () => this.start('Push', 'charges du jeu. 17/09 pré-remplies'),
+      toastPlanning: () => this.flash('Ouvre le planning (écran existant)'),
+      toastLibrary: () => this.flash('Ouvre la bibliothèque : exercices, programmes, modèles'),
+      toastCompose: () => this.flash('Composer une séance libre (écran existant)'),
+      toastTemplates: () => this.flash('Ouvre tes modèles de séance (écran existant)'),
+      toastProgram: () => this.flash('Ouvre la fiche du programme (parcours GUID-01 inchangé)'),
+      toastProgress: () => this.flash('Ouvre l’écran Progression : vue d’ensemble, par exercice, mon corps'),
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,166 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-09-24T12:30:46Z"
+  },
+  "title": "MUSCU-UX07 · Hub en trois onglets",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 904,
+      "title": "Prototype jouable · hub Musculation",
+      "is_interactive": true
+    },
+    "T1Prevue.dc.html": {
+      "x": 0,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Séance du jour",
+      "is_interactive": true
+    },
+    "T2Repos.dc.html": {
+      "x": 470,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Jour de repos",
+      "is_interactive": true
+    },
+    "T3EnCours.dc.html": {
+      "x": 940,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Séance en cours",
+      "is_interactive": true
+    },
+    "T4Faite.dc.html": {
+      "x": 1410,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Séance faite",
+      "is_interactive": true
+    },
+    "T5Debut.dc.html": {
+      "x": 1880,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Premiers pas",
+      "is_interactive": true
+    },
+    "P1Apercu.dc.html": {
+      "x": 2350,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Aperçu · « Voir les 6 exercices »",
+      "is_interactive": true
+    },
+    "H1Calendrier.dc.html": {
+      "x": 0,
+      "y": 2588,
+      "w": 390,
+      "h": 844,
+      "title": "Historique · calendrier et séances",
+      "is_interactive": true
+    },
+    "H2ParExercice.dc.html": {
+      "x": 470,
+      "y": 2588,
+      "w": 390,
+      "h": 844,
+      "title": "Historique · par exercice",
+      "is_interactive": true
+    },
+    "H3Detail.dc.html": {
+      "x": 940,
+      "y": 2588,
+      "w": 390,
+      "h": 844,
+      "title": "Détail d'une séance · Refaire",
+      "is_interactive": true
+    },
+    "H4Alerte.dc.html": {
+      "x": 1410,
+      "y": 2588,
+      "w": 390,
+      "h": 844,
+      "title": "Refaire pendant une séance en cours",
+      "is_interactive": true
+    },
+    "G1Progres.dc.html": {
+      "x": 1880,
+      "y": 2588,
+      "w": 390,
+      "h": 844,
+      "title": "Progrès",
+      "is_interactive": true
+    },
+    "M1Mode.dc.html": {
+      "x": 2820,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Mode · Classique ou Immersif",
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "T1Prevue.dc.html",
+    "T2Repos.dc.html",
+    "T3EnCours.dc.html",
+    "T4Faite.dc.html",
+    "T5Debut.dc.html",
+    "P1Apercu.dc.html",
+    "H1Calendrier.dc.html",
+    "H2ParExercice.dc.html",
+    "H3Detail.dc.html",
+    "H4Alerte.dc.html",
+    "G1Progres.dc.html",
+    "M1Mode.dc.html"
+  ],
+  "notes": {
+    "t-train": {
+      "x": 0,
+      "y": 1024,
+      "text": "S'entraîner",
+      "kind": "title1",
+      "maxW": 3210
+    },
+    "t-hist": {
+      "x": 0,
+      "y": 2288,
+      "text": "Historique et Progrès",
+      "kind": "title1",
+      "maxW": 2270
+    },
+    "s-play": {
+      "x": 470,
+      "y": 0,
+      "w": 340,
+      "fill": "orange",
+      "size": "m",
+      "text": "Prototype jouable (bouton Play).\n\nLa bande SIMULER change la situation : séance prévue, repos, en cours, faite, débutant.\n\nÀ essayer : les trois onglets · Démarrer · « Voir les 6 exercices » · Refaire · « Mode classique · Changer » · dans Historique, le 19 (deux séances ce jour-là), les flèches de mois, « Par exercice » et sa recherche · en situation « En cours » : Historique et Progrès portent la ligne « Reprendre », et Refaire déclenche l'alerte."
+    },
+    "s-dec": {
+      "x": 870,
+      "y": 0,
+      "w": 380,
+      "fill": "blue",
+      "size": "m",
+      "text": "Décisions à valider avec la spec :\n\n· Le sélecteur d'onglets défile avec la page : pas de bandeau collé en haut (ton retour du 23/09). Un nouvel appui sur l'onglet Muscu remonte en haut.\n· Onglet affiché : le dernier choisi, S'entraîner au démarrage. Rien ne change d'onglet de force : pendant une séance, une ligne « Reprendre » est en tête des autres onglets.\n· Classique · Immersif : une ligne sous Démarrer, qui ouvre le choix (mode courant présélectionné).\n· L'accueil ne change pas : sa carte du moment propose déjà Démarrer et Reprendre, et ses actions rapides sont plafonnées à quatre.\n· Plus de silhouette dans le hub.\n· Repris de A : la dernière fois dans la carte du jour, les 3 dernières séances avec Refaire, l'historique par exercice, Refaire sur le détail."
+    }
+  },
+  "designSystems": []
+}

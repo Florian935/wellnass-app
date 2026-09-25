@@ -10,6 +10,39 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 25/09/2026 — MUSCU-UX07 : cadrage du hub Musculation en trois onglets, validé (`feature/muscu-ux07-hub-trois-onglets`)
+
+> Test utilisateur du 23/09/2026 (le frère de Florian) : en ouvrant le pilier Muscu, on veut démarrer
+> sa séance, ou retrouver ses séances pour savoir ce qu'on a fait la dernière fois — « l'info
+> principale n'est pas en haut ». Exploration de trois propositions (toile « Muscu — l'essentiel
+> d'abord ») ; **Florian retient B, trois onglets**, et valide spec, plan et maquette le 25/09/2026.
+> **Aucune ligne de code.** Commit précédent : `5cbaaa40`.
+
+### Ajouté
+- Spec `docs/specs/functional/us/muscu-ux07-hub-trois-onglets.md` (front-matter `etape: code`) :
+  constats vérifiés dans le code (l'historique sans aucun lien depuis le hub, « Voir le détail » qui
+  ouvre le planning, « Refaire » réservé aux jours de repos, la dernière fois visible seulement en
+  séance) ; décisions D1-D10 ; règles R1-R11 ; cas limites ; i18n FR/EN ; critères de recette.
+- Plan `docs/plans/muscu-ux07-hub-trois-onglets.md` : 8 étapes TDD, sans migration ni sync rule.
+- Maquette `design/muscu-ux07-hub-trois-onglets/` (13 planches, toile
+  https://claude.ai/artifact/1i8j8mqA3SipkuKzTUYSAU) : un prototype jouable et des planches figées qui
+  l'importent (`<dc-import name="Main">`), une par état.
+- Roadmap : ligne **3.65** (hors cadrage, ⬜), compteurs 264 → 265 et 2 → 3 à faire, journal.
+
+### Technique / Notes
+- **Relecture de la spec par un agent : 24 constats, tous intégrés.** Ceux qui ont changé la conception :
+  - l'ordre réel des états du hub est « en cours > séance du jour > faite aujourd'hui » (et non l'inverse) ;
+  - la rangée d'actions rapides de l'accueil est plafonnée à 4 (ACCUEIL-03), et la carte du moment y
+    propose déjà Démarrer et Reprendre : **l'accueil ne change pas** (D5) ;
+  - la suggestion du hub doit être **extraite** de `workout.tsx`, pas recopiée (R11) ;
+  - un bandeau « charges pré-remplies » aurait été faux quand le programme fixe une charge ;
+  - une séance refaite est libre (`session_id` nul, filtré par `records-repository.ts:1181`) : elle
+    se reconnaîtra à ses deux premiers exercices (D9).
+- Le sélecteur d'onglets **ne colle pas** en haut au défilement (D2), à cause du bandeau retiré le
+  23/09/2026.
+- Travail fait dans un worktree (`.expo/claude-worktrees/muscu-ux07`) : le dossier principal, sur
+  `dev`, porte des modifications non commitées de la veille (clôture de MUSCU-UX06), laissées intactes.
+
 ## 23/09/2026 — MUSCU-UX06, passe 1 : plus de bandeau en haut au défilement, sur les quatre piliers (`dev`)
 
 > Recette de Florian sur device : couleurs validées (« c'est nickel pour la couleur »), mais au
