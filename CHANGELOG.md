@@ -10,6 +10,41 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 25/09/2026 — CARDIO-UX03, le socle : briques pures, requêtes et préférences (`feature/cardio-ux03-hub-onglets`)
+
+> Étapes 1 et 2 du plan : tout ce que les écrans liront, sans aucun écran encore. Commit précédent :
+> `a941cd2a` (cadrage).
+
+### Ajouté
+- `packages/shared` (Vitest, 46 tests) :
+  - `run-hub-section.ts` — les trois onglets et le choix de l'onglet affiché (paramètre > mémoire >
+    Courir), dupliqué exprès de la muscu (spec §11) ;
+  - `run-last-time.ts` — `pickRunLastTime` (même séance, sinon même type, jamais une course libre) ;
+    `lastTimeReps` (une pastille par répétition du **corps de séance**, en temps ou en allure, dans
+    la plage ou non) ; `repsInRange` (« X sur Y », jamais « 0 sur 0 ») ;
+  - `run-history.ts` — `runDayKey` (jour **local**), `canRunAgain` (seuil du fantôme : GPS, 500 m),
+    `recordCountsByRun`, `runMonthSummary`, `runTypeSummaries` ;
+  - `race-objective.ts` — l'objectif chrono face à ton record à la distance, sinon à l'estimation
+    Riegel du jour ; un semi saisi à 21 097 m retrouve le record de semi (21 097,5).
+- `apps/mobile` :
+  - `run-hub-repository.ts` — `useRunProgram` : avancement (même forme que la muscu, recopiée) et
+    échéance avec la **distance de la course**, lue sur la séance de type « course » du programme ;
+  - `planned-session-repository.ts` — `SELECT_PLANNED_RUNNING_DAYS` / `usePlannedRunningDays` ;
+  - `stores/run-section-store.ts` (onglet, en mémoire) et `stores/run-start-mode-store.ts` (dernier
+    mode de départ, `secureStorage`, aucune colonne) ;
+  - tests : `cardio-ux03-sql.test.ts` (6, sur du vrai SQLite), `run-hub-stores.test.ts` (9).
+
+### Modifié
+- `SELECT_HISTORY` ramène `s.id AS session_id` (jointure existante) ; `RunHistoryItem.sessionId`.
+  Toujours **sans** `gps_track` : le test-garde de `polarisation-sql.test.ts` reste vert.
+
+### Technique / Notes
+- Deux fonctions pures de la muscu sont **importées sans modification** (`buildMonthGrid`,
+  `resolveProgramProgress`) : déjà agnostiques du pilier.
+- `secureStorage.setItem` ne rend pas toujours une promesse (`MaybePromisify`) : la persistance passe
+  par un `async` + `try/catch`, comme `session-mode-store` (le typecheck l'a signalé).
+- Roadmap 5.44 ⬜ → 🟡 : le socle est là, aucun écran.
+
 ## 25/09/2026 — CARDIO-UX03, cadrage : le hub Course en trois onglets (`feature/cardio-ux03-hub-onglets`)
 
 > Même chantier que MUSCU-UX07 (livrée ce matin), transposé au pilier Course, dans un worktree

@@ -135,6 +135,12 @@ export type RunHistoryItem = {
    * type, et c'est déjà une information — la ligne affiche « Course libre ».
    */
   sessionType: ProgramSessionType | null;
+  /**
+   * US CARDIO-UX03 — la séance de programme réalisée (`sessions.id`, par la même jointure que le
+   * type), `null` pour une course libre ou si l'occurrence a été supprimée depuis. C'est elle que
+   * cherche « la dernière fois » de la séance du jour (R3).
+   */
+  sessionId: string | null;
 };
 
 /** Détail complet d'une course (résumé post-clôture). */
@@ -232,6 +238,8 @@ type RunHistoryDbRow = {
   // US CARDIO-UX01 (R7 / F24) — jointes, pas stockées : voir la note de `SELECT_HISTORY`.
   terrain: string | null;
   planned_session_id: string | null;
+  /** US CARDIO-UX03 — la séance de programme réalisée, pour « la dernière fois » (R3). */
+  session_id: string | null;
   session_type: string | null;
 };
 
@@ -290,7 +298,7 @@ const SELECT_ACTIVE_RUN = `
 const SELECT_HISTORY = `
   SELECT r.id, r.source, r.started_at, r.finished_at, r.duration_seconds, r.distance_m,
          r.avg_pace_s_per_km, r.rpe, r.notes, r.elevation_gain_m, r.elevation_loss_m,
-         r.terrain, r.planned_session_id, s.session_type
+         r.terrain, r.planned_session_id, s.id AS session_id, s.session_type
   FROM runs r
   LEFT JOIN planned_sessions ps
          ON ps.id = r.planned_session_id AND ps.deleted_at IS NULL
@@ -360,6 +368,7 @@ function rowToHistoryItem(row: RunHistoryDbRow): RunHistoryItem {
       ? (row.terrain as RunTerrain)
       : null,
     plannedSessionId: row.planned_session_id,
+    sessionId: row.session_id ?? null,
     sessionType: (row.session_type as ProgramSessionType | null) ?? null,
   };
 }

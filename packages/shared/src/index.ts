@@ -189,3 +189,8 @@ export * from './ai-assist';
 export * from './ai-context';
 // US NARR-01 — narration vérifiée d'un dossier d'enquête.
 export * from './ai-narration';
+// US CARDIO-UX03 — le hub Course en trois onglets : onglet, dernière fois, historique, objectif.
+export * from './run-hub-section';
+export * from './run-last-time';
+export * from './run-history';
+export * from './race-objective';

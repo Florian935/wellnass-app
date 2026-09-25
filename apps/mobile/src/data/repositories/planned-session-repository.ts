@@ -376,6 +376,32 @@ export function usePlannedStrengthDays(fromKey: string, toKey: string): string[]
   return useMemo(() => data.map((row) => row.scheduled_date), [data]);
 }
 
+/**
+ * US CARDIO-UX03 — les jours de course prévus du calendrier de l'historique (R8). Même forme que la
+ * requête muscu ci-dessus, pour le pilier `running` : statut `planned` seulement, bornes incluses.
+ */
+export const SELECT_PLANNED_RUNNING_DAYS = `
+  SELECT DISTINCT ps.scheduled_date
+  FROM planned_sessions ps
+  JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
+  JOIN programs p ON p.id = ps.program_id AND p.deleted_at IS NULL
+  WHERE ps.owner_id = ? AND ps.deleted_at IS NULL
+    AND ps.status = 'planned' AND p.pillar = 'running'
+    AND ps.scheduled_date >= ? AND ps.scheduled_date <= ?
+  ORDER BY ps.scheduled_date
+`;
+
+/** Jours (`AAAA-MM-JJ`) d'occurrences de course prévues entre `fromKey` et `toKey`, bornes incluses. */
+export function usePlannedRunningDays(fromKey: string, toKey: string): string[] {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { data } = useQuery<{ scheduled_date: string }>(SELECT_PLANNED_RUNNING_DAYS, [
+    userId,
+    fromKey,
+    toKey,
+  ]);
+  return useMemo(() => data.map((row) => row.scheduled_date), [data]);
+}
+
 /** Une occurrence `planned` de pilier muscu existe-t-elle pour `dayKey` ? */
 export function useHasPlannedStrengthSessionToday(dayKey: string): {
   hasPlanned: boolean;
