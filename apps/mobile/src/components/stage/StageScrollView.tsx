@@ -14,7 +14,7 @@
  * transparente. `__tests__/stage.test.tsx` garde qu'il ne revienne pas.
  */
 
-import type { ReactElement, ReactNode } from 'react';
+import type { ReactElement, ReactNode, RefObject } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -39,6 +39,11 @@ type Props = {
   scrollEnabled?: boolean;
   bodyStyle?: StyleProp<ViewStyle>;
   testID?: string;
+  /**
+   * US MUSCU-UX07 (D2) — la référence du défilement, pour « un nouvel appui sur l'onglet ramène en
+   * haut » (`useScrollToTop`). Facultative : les écrans qui ne la passent pas ne changent pas.
+   */
+  scrollRef?: RefObject<ScrollView | null>;
 };
 
 export function StageScrollView({
@@ -49,6 +54,7 @@ export function StageScrollView({
   scrollEnabled = true,
   bodyStyle,
   testID,
+  scrollRef,
 }: Props) {
   const { colors } = useTheme();
   const theme = useStageTheme(pillar);
@@ -59,6 +65,7 @@ export function StageScrollView({
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]} testID={testID}>
       <ScrollView
+        ref={scrollRef}
         showsVerticalScrollIndicator={false}
         scrollEnabled={scrollEnabled}
         refreshControl={refreshControl}

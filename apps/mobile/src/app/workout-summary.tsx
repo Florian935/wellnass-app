@@ -8,7 +8,7 @@
  */
 
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { computeSessionHeat, formatDayFull, type SetType } from '@wellness/shared';
@@ -32,7 +32,7 @@ export default function WorkoutSummaryScreen() {
   const { colors } = useTheme();
   const units = useUnits();
   const router = useRouter();
-  const { id } = useLocalSearchParams<{ id?: string }>();
+  const { id, share } = useLocalSearchParams<{ id?: string; share?: string }>();
   const workoutId = typeof id === 'string' ? id : '';
 
   const { workouts } = useWorkoutHistory();
@@ -68,6 +68,17 @@ export default function WorkoutSummaryScreen() {
   const [shareOpen, setShareOpen] = useState(false);
 
   const hasContent = report !== null && report.totals.exercises > 0;
+
+  // US MUSCU-UX07 — « Partager », depuis la carte « séance faite » du hub, arrive ici avec `share=1` :
+  // la carte à partager s'ouvre une fois le bilan chargé, une seule fois. Ainsi le hub réutilise la
+  // carte du bilan au lieu d'en reconstruire une seconde.
+  const shareRequested = useRef(share === '1');
+  useEffect(() => {
+    if (shareRequested.current && hasContent) {
+      shareRequested.current = false;
+      setShareOpen(true);
+    }
+  }, [hasContent]);
   const canSaveAsTemplate =
     workout?.sessionId === null && workout?.programId === null && hasContent;
 

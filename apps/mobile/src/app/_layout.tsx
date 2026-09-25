@@ -306,6 +306,8 @@ function RootNavigator() {
         {/* Brief d'entrée en séance (US MUSCU-UX03) : plein écran sans en-tête, comme la séance
             elle-même — c'est le même moment, pas un écran de réglage. */}
         <Stack.Screen name="workout-brief" options={{ headerShown: false }} />
+        {/* Aperçu de la séance du jour (US MUSCU-UX07, §4.5) : il porte son propre en-tête. */}
+        <Stack.Screen name="session-preview" options={{ headerShown: false }} />
         {/* Spike VBT-01 — écran d'essai jetable, branche `spike/vbt01-camera` uniquement. */}
         <Stack.Screen name="spike-vbt" options={{ headerShown: false }} />
         <Stack.Screen

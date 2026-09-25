@@ -3,7 +3,7 @@ id: MUSCU-UX07
 titre: "Hub Musculation en trois onglets — S'entraîner, Historique, Progrès"
 roadmap: [3.65]
 catalogue: []
-etape: code
+etape: recette
 branche: feature/muscu-ux07-hub-trois-onglets
 maj: 25/09/2026
 ---
@@ -188,7 +188,7 @@ De haut en bas :
      trois entrées disparaît puisque chacune a maintenant sa place.
    - Bloc masqué pendant une séance en cours.
 4. **Ton programme** (programme actif seulement) : la semaine (`StrengthWeekCard`) et l'avancement
-   (`ProgramProgressBar`) dans une même carte. Sans programme : les programmes suggérés
+   (`ProgramProgressBar`), l'un sous l'autre. Sans programme : les programmes suggérés
    (`SuggestedPrograms`, parcours GUID-01 inchangé), **sauf pendant une séance**.
 
 #### 4.2.1 « La dernière fois »
@@ -516,3 +516,23 @@ sombre.
 - [ ] TalkBack annonce les onglets et leur état, les jours du calendrier, les flèches de mois et les
       boutons Refaire.
 - [ ] Toutes les cibles font au moins 44 px ; les tests-gardes de contraste passent.
+
+## 11. Notes d'implémentation (25/09/2026)
+
+Écarts et précisions par rapport au texte ci-dessus, pour la recette et la maintenance :
+
+- **« Partager »** (séance faite aujourd'hui) ouvre le bilan avec `share=1`, qui ouvre sa carte à
+  partager une fois chargé : la carte n'est pas reconstruite dans le hub.
+- **« Ton programme »** : la semaine et l'avancement restent deux composants empilés, pas une carte
+  fusionnée (§4.2-4 ajusté).
+- **Retour en haut (D2)** : `StageScrollView` accepte une prop facultative `scrollRef`, que seul le hub
+  muscu passe à `useScrollToTop`. Les trois autres écrans à scène ne changent pas.
+- **« Mes templates »** garde le mot de l'app (`templates.title`), pas « Mes modèles ».
+- **R4** : la lecture « une séance est-elle en cours ? » se fait au moment de l'appui
+  (`hasActiveWorkout`), pas depuis un état React qui pourrait dater.
+- **Supprimés** : `StrengthStage` (+ test), `ImpactSilhouette`, `FreeSessionSheet`, et les clés i18n
+  qu'ils étaient seuls à lire (`stage.strength.{eyebrow,primary,secondary,kg,tonnageA11y,week}`,
+  `workout.freeSheet.*`, les clés de l'ancien écran `/history`).
+- **Non touché, signalé** : `StrengthNowCard` n'a plus d'appelant depuis avant cette US (seul un
+  commentaire le cite). Ses clés i18n (`strengthHub.today.*`, `strengthHub.onboarding.*`…) restent donc
+  en place. À retirer dans un lot de nettoyage.

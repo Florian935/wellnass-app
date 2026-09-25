@@ -13,6 +13,7 @@ import {
   groupExercisesLastDone,
   SELECT_EXERCISES_LAST_DONE,
   SELECT_HISTORY,
+  selectLastDoneDates,
   type ExerciseLastDoneRow,
 } from '../workout-repository';
 import { resetTestDb, seed, testPowerSync } from '@/test-utils/sqlite-harness';
@@ -274,5 +275,39 @@ describe('SELECT_SESSION_PREVIEW — §4.5', () => {
     const rows = await testPowerSync.getAll<Row>(SELECT_SESSION_PREVIEW, ['fr', 'legs']);
 
     expect(rows.map((r) => r.exercise_name)).toContain('Pull-over');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// §4.2.1 — la date de la dernière fois, pour l'en-tête de la carte du jour
+// ---------------------------------------------------------------------------
+
+describe('selectLastDoneDates — §4.2.1', () => {
+  it('la dernière séance terminée de chaque exercice ; rien pour un exercice jamais fait', async () => {
+    seedWorkout('w1', '2026-09-10T18:00:00Z', null, [{ exercise: 'bench', weight: 77.5, reps: 8 }]);
+    seedWorkout('w2', '2026-09-17T18:00:00Z', null, [
+      { exercise: 'bench', weight: 80, reps: 8 },
+      { exercise: 'squat', weight: 40, reps: 10, type: 'warmup' },
+    ]);
+
+    const rows = await testPowerSync.getAll<{ exercise_id: string; finished_at: string }>(
+      selectLastDoneDates(3),
+      ['bench', 'squat', 'curl'],
+    );
+
+    expect(rows).toEqual([{ exercise_id: 'bench', finished_at: '2026-09-17T18:00:00Z' }]);
+  });
+});
+
+describe('SELECT_SESSION_PREVIEW — équipement', () => {
+  it('ramène l’équipement de l’exercice (arrondi chargeable à la barre)', async () => {
+    seed('exercises', [{ id: 'barre', source: 'library', equipment: 'barbell' }]);
+    seed('exercise_plans', [
+      { id: 'ep-b', session_id: 'legs', owner_id: USER, exercise_id: 'barre', order_index: 0, target_sets: 3 },
+    ]);
+
+    const rows = await testPowerSync.getAll<{ equipment: string | null }>(SELECT_SESSION_PREVIEW, ['fr', 'legs']);
+
+    expect(rows[0]!.equipment).toBe('barbell');
   });
 });

@@ -1,14 +1,13 @@
 /**
  * US MUSCU-UX05 — les chemins de la silhouette, extraits pour être **partagés**.
  *
- * Deux surfaces la dessinent désormais : la matière de la scène (`ImpactSilhouette`, où les muscles
- * de la séance encaissent un impact) et la carte « Ton corps » du hub, où les mêmes zones portent
- * la répartition du volume sur 30 jours. Recopier seize chemins de Bézier dans un second fichier
- * aurait garanti qu'ils divergent à la première retouche.
+ * La carte « Ton corps » les dessine : les zones y portent la répartition du volume sur 30 jours.
+ * Elles avaient été extraites pour être partagées avec la matière de la scène muscu
+ * (`ImpactSilhouette`), retirée du hub par MUSCU-UX07 (la silhouette n'était pas nécessaire, Q3) —
+ * le tracé reste ici, prêt pour un autre usage (par exemple l'après-séance).
  *
  * Géométrie : canon 7,5 têtes, viewBox `0 0 120 200`, symétrique autour de x = 60. Les formes se
- * **chevauchent** sous un même remplissage — c'est ce qui empêche toute couture d'apparaître. Voir
- * l'en-tête de `ImpactSilhouette` pour le détail du tracé.
+ * **chevauchent** sous un même remplissage — c'est ce qui empêche toute couture d'apparaître.
  */
 
 /** Tête — un cercle légèrement ovale, posé sur le cou. */

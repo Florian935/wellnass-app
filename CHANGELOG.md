@@ -10,6 +10,86 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 25/09/2026 — MUSCU-UX07, étapes 4-7 : le hub Musculation en trois onglets (`feature/muscu-ux07-hub-trois-onglets`)
+
+> Test utilisateur du 23/09/2026 : en ouvrant le pilier Muscu, on veut démarrer sa séance ou retrouver
+> ce qu'on a fait la dernière fois, et « l'info principale n'est pas en haut ». Proposition B validée par
+> Florian le 25/09/2026, avec quatre éléments de A. **L'US passe en recette** : RECETTES.md §86
+> (29 critères). Commit précédent : `5f516257`.
+
+### Ajouté
+- **Trois onglets** dans le hub (`app/(tabs)/strength.tsx`, réécrit) : S'entraîner, Historique, Progrès.
+  - `StrengthHeader` : en-tête compact rouge fonte, sans silhouette. Onglets **non collés** (D2) ;
+    un nouvel appui sur l'onglet Muscu remonte en haut.
+  - Onglet affiché (D3, `stores/strength-section-store.ts`) : paramètre `section` lu puis effacé,
+    sinon le dernier choisi, sinon S'entraîner.
+- **S'entraîner** (`sections/TrainSection.tsx`) :
+  - `MomentCard` : la carte du moment, cinq états dans l'ordre réel du code (R2) ;
+  - `LastTimeList` : la dernière fois de trois exercices et la suggestion en pastille courte (R11) ;
+  - `ModeLine` : « Mode classique · Changer » (D4) ;
+  - `RecentWorkouts` + `WorkoutRow` : les trois dernières séances, chacune avec Refaire ;
+  - `OtherActions` : séance libre et templates ;
+  - le programme, ou les programmes suggérés.
+- **Historique** (`sections/HistorySection.tsx`) :
+  - `HistoryCalendar` : grille du mois, record, prévu, bornes de navigation ;
+  - les séances du mois, avec Refaire et suppression par appui long ;
+  - `ExerciseLastDoneList` : « Par exercice », avec recherche sans accents ;
+  - `ResumeLine` pendant une séance.
+- **Progrès** (`sections/ProgressSection.tsx`) : les cartes de MUSCU-UX05 déplacées telles quelles,
+  « Toute ta progression », et un message unique sans séance.
+- **Aperçu de la séance** (`app/session-preview.tsx`, déclaré dans le Stack racine) : tous les exercices
+  que Démarrer créera, l'objectif tel qu'écrit, la charge prévue, la dernière fois en pastilles, la
+  suggestion en toutes lettres.
+- **Refaire cette séance** sur le détail d'une séance passée (`app/history/[id].tsx`).
+- **Hooks** :
+  - `useModeGate` (R-MO-3, sorti du hub) ;
+  - `useStartTodaySession` (mode, brief, verrou anti-double-appui) ;
+  - `useRedo` (R4 : alerte et rien de créé pendant une séance) ;
+  - `useLastPerfFormat` (charges sans zéro inutile, date courte, tonnes).
+- **Données** :
+  - `hasActiveWorkout` et `useLastDoneDates` (workout) ;
+  - `useSessionName` (aperçu) ;
+  - l'équipement des exercices du jour et de l'aperçu (arrondi chargeable à la barre).
+- **i18n FR + EN** : onglets, carte du moment, dernière fois, refaire, autre chose, mode, progrès,
+  aperçu, calendrier, par exercice, détail.
+
+### Modifié
+- `app/history/index.tsx` devient une **redirection** vers Muscu › Historique (D7). La carte
+  d'activation du 6ᵉ jour y mène toujours.
+- `SessionModeSheet` : variante `purpose="change"`, avec le mode courant présélectionné, « Valider » et
+  pas de case « retenir ». La sélection dérive du mode courant, **sans effet** (règle React Compiler).
+- `StageScrollView` : prop facultative `scrollRef`, que seul le hub muscu utilise.
+- `app/workout-summary.tsx` : `share=1` ouvre la carte à partager une fois le bilan chargé. C'est ce que
+  fait « Partager » depuis la carte « séance faite ».
+- `silhouette-paths.ts` : commentaire à jour.
+
+### Supprimé
+- `components/strength/StrengthStage.tsx` (+ test), `components/stage/matter/ImpactSilhouette.tsx`,
+  `components/strength/FreeSessionSheet.tsx`.
+- Clés i18n qu'ils étaient seuls à lire : `stage.strength.{eyebrow,primary,secondary,kg,tonnageA11y,week}`,
+  `workout.freeSheet.*`, et celles de l'ancien écran `/history` (`title`, `subtitle`, `empty`,
+  `filter*`, `summary_*`, `monthSummary_*`, `freeBadge`).
+
+### Technique / Notes
+- Tests :
+  - `strength-screen.test.tsx` réécrit (32), dont la garde de double appui ;
+  - `history-section.test.tsx` (18) : reprend les garanties de l'ancien écran, dont la date de fin ;
+  - `history-screen.test.tsx` : la redirection ;
+  - `workout-detail-screen.test.tsx` (+3) ;
+  - `last-time-list.test.tsx` (6), `useRedo.test.tsx` (3), `session-preview.test.tsx` (6).
+- **Signalé, non touché** : `StrengthNowCard` n'a plus d'appelant depuis avant cette US ; ses clés
+  restent en place.
+- **Export web** (`npx expo export --platform web`) : en échec, sur `op-sqlite` → `better-sqlite3`,
+  absent des modules.
+  **Défaut préexistant** : `dev` échoue à l'identique, par `auth-store` → `powersync/system` →
+  `@powersync/op-sqlite`, chaîne que cette US ne touche pas. Ce n'est pas une régression, mais le
+  test de bundling documenté dans CLAUDE.md ne passe plus : à traiter à part.
+- **Revue de code** : l'agent `superpowers:code-reviewer` s'est arrêté sur une limite d'utilisation de
+  l'API, sans rapport. Relecture ciblée faite à la main : ordre des hooks, effet du paramètre `section`,
+  dates locales, unités, feuille de mode, barre Refaire. Contrôle automatique : toutes les clés i18n
+  statiques des fichiers touchés existent en FR et en EN.
+- Vérifié : lint 0, typecheck 0, Jest et Vitest verts, codes de sortie lus sans pipe. **4 513 tests Jest** (249 suites) et **168 fichiers Vitest**.
+
 ## 25/09/2026 — MUSCU-UX07, étape 3 : la suggestion de progression, partagée entre la séance et le hub (`feature/muscu-ux07-hub-trois-onglets`)
 
 > Le hub affichera avant le départ la suggestion de la première série de chaque exercice (R11). Pour

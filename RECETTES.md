@@ -11,8 +11,8 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **23/09/2026** — **84 sections** (§84 MUSCU-FIX02 recettée et clôturée le
-> 23/09/2026, section purgée ; §85 MUSCU-UX06 ajoutée).
+> Dernière mise à jour : **25/09/2026** — **85 sections** (§86 MUSCU-UX07 ajoutée ; le 23/09/2026 :
+> §84 MUSCU-FIX02 recettée et clôturée, section purgée ; §85 MUSCU-UX06 ajoutée).
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -5200,3 +5200,85 @@ en haut — « super moche ». Il existait sur les **quatre** écrans à scène 
       cartes) est **toujours là** sur les quatre écrans.
 - [ ] 24. Le **tirer-pour-rafraîchir** de l'Accueil fonctionne toujours, et le glisser-déposer des
       widgets de l'Accueil bloque toujours le défilement pendant qu'on déplace un widget.
+
+## 86. MUSCU-UX07 — Le hub Musculation en trois onglets (`feature/muscu-ux07-hub-trois-onglets` → `dev`)
+
+Spec : [muscu-ux07-hub-trois-onglets.md](docs/specs/functional/us/muscu-ux07-hub-trois-onglets.md) ·
+plan : [muscu-ux07-hub-trois-onglets.md](docs/plans/muscu-ux07-hub-trois-onglets.md) ·
+maquette : [design/muscu-ux07-hub-trois-onglets/](design/muscu-ux07-hub-trois-onglets/)
+(toile https://claude.ai/artifact/1i8j8mqA3SipkuKzTUYSAU)
+
+Né du test de ton frère (23/09/2026) : « en ouvrant le pilier, on veut démarrer sa séance, ou retrouver ce
+qu'on a fait la dernière fois ». Proposition **B** validée le 25/09/2026. Aucune migration : un build de
+`dev` suffit. Téléphone de recette de Florian, **police système par défaut**, thème clair **puis** sombre.
+Il faut un compte avec un programme actif et au moins trois séances terminées (idéalement une séance
+libre, et deux séances le même jour pour l'item 14).
+
+### A — S'entraîner
+
+- [ ] 1. Un jour de séance prévue, on lit **sans défiler** : le nom de la séance, trois lignes « la
+      dernière fois » et le bouton Démarrer.
+- [ ] 2. Les **pastilles** de la carte (« 82,5 kg ou 9 reps », « vise 9 reps »…) donnent la même charge
+      et les mêmes répétitions que la suggestion de la **première série** une fois la séance lancée.
+- [ ] 3. Un exercice jamais fait affiche « Première fois » ; quand le moteur ne propose rien (séance
+      précédente difficile), pas de pastille.
+- [ ] 4. En-tête « LA DERNIÈRE FOIS · JEU. 17/09 » quand les trois exercices viennent de la même séance ;
+      sinon, chaque ligne porte sa date.
+- [ ] 5. Une séance libre faite le matin d'un jour de séance prévue laisse la carte sur **Démarrer**.
+- [ ] 6. « Refaire une séance » montre les **trois dernières** ; Refaire lance une séance libre
+      pré-remplie avec ses exercices et ses charges ; le planning **n'est pas** coché.
+- [ ] 7. Une séance refaite apparaît « Séance libre » suivie de ses **deux premiers exercices**.
+- [ ] 8. Pendant une séance, S'entraîner ne montre que **Reprendre** (ni Refaire, ni Autre chose, ni
+      programmes suggérés).
+- [ ] 9. « Mode classique · Changer » ouvre le choix, **mode courant présélectionné**, bouton
+      « Valider », pas de case « retenir » ; le Démarrer suivant utilise le nouveau mode.
+- [ ] 10. Sur un compte **neuf**, « Séance libre » (et Démarrer) posent d'abord la question du mode.
+- [ ] 11. Le hub n'a plus de silhouette ni de « Voir le détail ». Séance faite aujourd'hui : « Voir le
+      bilan » et « Partager » (la carte à partager s'ouvre sur le bilan).
+
+### B — Aperçu de la séance
+
+- [ ] 12. « Voir les N exercices » liste **tous** les exercices du plan, leur objectif (« 4 × 8-12 »,
+      « 3 × AMRAP », « 1 série »), la charge prévue s'il y en a une, la dernière fois en pastilles et la
+      suggestion **en toutes lettres** (le libellé de la séance).
+- [ ] 13. Démarrer depuis l'aperçu lance la séance (en immersif : via le brief).
+
+### C — Historique
+
+- [ ] 14. Le calendrier marque les jours de séance, le repère **record**, les séances **prévues à venir**
+      (pointillé) et aujourd'hui ; les jours des mois voisins sont vides. Un jour à **deux** séances
+      restreint la liste ; « Tout le mois » la rétablit. Un jour à une séance ouvre son détail.
+- [ ] 15. Les flèches s'arrêtent au mois de la **première séance** et au **mois courant** ; un mois vide
+      dit « Aucune séance ce mois-ci. » Le résumé du mois (séances, tonnes, records) est juste, bien
+      accordé au singulier.
+- [ ] 16. « Par exercice » : trié du plus récent au plus ancien ; taper « couche » trouve « Développé
+      couché » ; chaque ligne montre la dernière fois, sa date, sa séance et le record s'il existe.
+      ⚠️ Sur ton compte (le plus chargé), noter si la liste met du temps à s'afficher.
+- [ ] 17. Appui long sur une séance → suppression après confirmation ; elle disparaît du calendrier, de
+      la liste, de « Refaire » et de « Par exercice ».
+- [ ] 18. Le détail d'une séance passée propose **« Refaire cette séance »** (bouton collé en bas).
+- [ ] 19. **Pendant une séance**, Refaire (historique ou détail) affiche l'alerte « Une séance est en
+      cours » et ne crée **rien** ; « Reprendre » rouvre la séance.
+- [ ] 20. La **carte d'activation du 6ᵉ jour** mène à Muscu › Historique ; « retour » depuis un détail
+      revient à l'écran d'où l'on venait.
+
+### D — Progrès et navigation
+
+- [ ] 21. Progrès montre les cartes d'analyse ; « Toute ta progression » ouvre l'écran Progression. Un
+      compte sans séance voit un seul message et « Commencer ».
+- [ ] 22. Les trois onglets changent le contenu **sans changer d'écran**, et **ne restent pas collés** en
+      haut au défilement.
+- [ ] 23. Un **nouvel appui sur l'onglet Muscu** de la barre du bas ramène en haut du hub.
+- [ ] 24. Revenir sur Muscu depuis un autre pilier rouvre le **dernier onglet choisi** ; relancer l'app
+      rouvre S'entraîner.
+- [ ] 25. Pendant une séance, Historique et Progrès affichent « Séance en cours · Reprendre » en tête ;
+      revenir d'un détail **ne change pas** d'onglet.
+
+### E — Transverse
+
+- [ ] 26. L'accueil est **inchangé** (carte du moment, quatre actions rapides).
+- [ ] 27. Tout fonctionne en **mode avion**.
+- [ ] 28. En **anglais**, aucun libellé français ne subsiste ; en **livres**, toutes les charges sont
+      converties (le tonnage reste en tonnes).
+- [ ] 29. **TalkBack** annonce les onglets et leur état, les jours du calendrier, les flèches de mois et
+      les boutons Refaire.

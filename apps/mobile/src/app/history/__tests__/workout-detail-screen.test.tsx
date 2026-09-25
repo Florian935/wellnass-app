@@ -16,11 +16,12 @@
  * titrer par la date.
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import WorkoutDetailScreen from '../[id]';
 import { useWorkoutReport } from '@/data/repositories/workout-report-repository';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useRedo } from '@/hooks/useRedo';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -62,6 +63,9 @@ jest.mock('@/components/ScreenHeader', () => {
     ),
   };
 });
+// US MUSCU-UX07 — « Refaire cette séance » : le geste lui-même (et son alerte pendant une séance)
+// est testé avec `useRedo` ; ici, qu'il est présent, absent, et câblé à la bonne séance.
+jest.mock('@/hooks/useRedo', () => ({ useRedo: jest.fn() }));
 jest.mock('@expo/vector-icons', () => {
   const { Text } = require('react-native');
   return { Ionicons: ({ name }: { name: string }) => <Text>icone-{name}</Text> };
@@ -76,7 +80,9 @@ jest.mock('react-i18next', () => ({
   }),
 }));
 jest.mock('@/theme/useTheme', () => ({
-  useTheme: () => ({ colors: { text: '#f4ecdd', textMuted: '#c9b79a', accent: '#dd6e40' } }),
+  useTheme: () => ({
+    colors: { text: '#f4ecdd', textMuted: '#c9b79a', accent: '#dd6e40', accentText: '#0f0a06', background: '#0f0a06' },
+  }),
 }));
 
 // ---------------------------------------------------------------------------
@@ -86,12 +92,15 @@ jest.mock('@/theme/useTheme', () => ({
 const mockReport = useWorkoutReport as jest.Mock;
 const mockParams = useLocalSearchParams as unknown as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
+const mockUseRedo = useRedo as jest.Mock;
 const back = jest.fn();
+const redo = jest.fn();
 
 const bilan = (over: Record<string, unknown> = {}) => ({
   workoutId: 'w-1',
   title: 'Haut du corps',
   startedAt: '2026-09-11T16:42:00.000Z',
+  totals: { exercises: 4 },
   ...over,
 });
 
@@ -108,6 +117,7 @@ const afficher = async ({
 beforeEach(() => {
   jest.clearAllMocks();
   mockUseRouter.mockReturnValue({ back });
+  mockUseRedo.mockReturnValue(redo);
 });
 
 // ---------------------------------------------------------------------------
@@ -178,5 +188,33 @@ describe('bilan', () => {
     // C'est ce qui empêche la célébration de rejouer à la réouverture d'une vieille séance
     // (spec R9) — la seule différence de fond entre les deux montages.
     expect(screen.getByText('bilan:history')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US MUSCU-UX07 — Refaire cette séance (§4.6)
+// ---------------------------------------------------------------------------
+
+describe('refaire cette séance', () => {
+  it('🔴 le détail propose de refaire LA séance affichée', async () => {
+    await afficher({ params: { id: 'w-1' } });
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('history-detail-redo'));
+    });
+
+    expect(redo).toHaveBeenCalledWith('w-1');
+  });
+
+  it('absent pour une séance sans exercice travaillé : rien à rejouer', async () => {
+    await afficher({ report: bilan({ totals: { exercises: 0 } }) });
+
+    expect(screen.queryByTestId('history-detail-redo')).toBeNull();
+  });
+
+  it('absent quand la séance est introuvable', async () => {
+    await afficher({ report: null, isLoading: false });
+
+    expect(screen.queryByTestId('history-detail-redo')).toBeNull();
   });
 });

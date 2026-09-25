@@ -21,7 +21,7 @@ lu **sans pipe**. TDD : le test d'abord, rouge, puis le code. Références `R*` 
 | `src/last-performance.ts` | `summarizeLastPerformance(sets)` → forme structurée de R3 : `uniform` (une charge, reps[]), `mixed`, `bodyweight`, `loaded`, `assisted`, `duration`, `loadedDuration`, `heterogeneous` (types mêlés), `none` ; troncature à cinq séries + reste. `commonWorkoutDate(rows)` pour l'en-tête « LA DERNIÈRE FOIS · date » (date commune, sinon `null`). | Charge uniforme, charges mixtes, poids du corps, lest, assistance, durée, durée lestée, PdC + lest mêlés, série sans charge, série sans reps, dropset, six séries, liste vide, décimales. |
 | `src/history-calendar.ts` | `buildMonthGrid({ year, month, workouts, plannedDayKeys, todayKey })` → semaines × 7 cellules, lundi en premier, cases des mois voisins vides ; `monthSummary(workouts)` (séances, tonnes, records) ; `monthRange(firstWorkoutDayKey \| null, todayKey)` ; `shiftMonth`. | Mois qui commence un lundi / un dimanche, 28 à 31 jours, février bissextile (2028), prévu dans le passé ignoré, record prioritaire, deux séances le même jour, aujourd'hui, bornes (dont « aucune séance » = mois courant seul). |
 | `src/hub-section.ts` | `HUB_SECTIONS` ; `resolveHubSection({ param, remembered })` (D3 : paramètre > mémoire > `train`). | Chaque priorité, paramètre invalide ignoré. |
-| `src/session-target.ts` | `formatSessionTarget({ targetSets, targetReps, targetWeightKg })` → parties (séries × reps texte, « 1 série » si vide, charge prévue). | « 4 × 8-12 », « 3 × AMRAP », séries seules, `targetSets` null, charge prévue. |
+| `src/session-target.ts` | `resolveSessionTarget({ targetSets, targetReps, targetWeightKg })` → parties (séries × reps texte, « 1 série » si vide, charge prévue). | « 4 × 8-12 », « 3 × AMRAP », séries seules, `targetSets` null, charge prévue. |
 
 Exports dans `src/index.ts`.
 
@@ -89,7 +89,7 @@ Tests Jest (`components/strength/__tests__/`) :
 | Fichier | Changement |
 |---|---|
 | `stores/strength-section-store.ts` (nouveau) | Zustand en mémoire : `section`, `setSection`. |
-| `components/stage/StageScrollView.tsx` | Accepte une `ref` (`forwardRef`) vers son `ScrollView`, sans rien changer d'autre. Les trois autres écrans à scène n'en passent pas. `stage.test.tsx` doit rester vert. |
+| `components/stage/StageScrollView.tsx` | Accepte une prop facultative `scrollRef` vers son `ScrollView`, sans rien changer d'autre. Les trois autres écrans à scène n'en passent pas. `stage.test.tsx` doit rester vert. |
 | `app/(tabs)/strength.tsx` | Réécrit : `StrengthHeader` + une section parmi trois. Garde `useMenuFocus`, `TrainingContextSheet` (GUID-01), `DirectorySheet`, `SessionModeSheet`. D3 : `resolveHubSection`, paramètre `section` effacé après lecture (`router.setParams({ section: undefined })`). D2 : `useScrollToTop(ref)`. |
 | `components/strength/sections/TrainSection.tsx` | §4.2, R8. |
 | `components/strength/sections/HistorySection.tsx` | §4.3 : `ResumeLine`, calendrier, « Séances · Par exercice ». Reprend `dateOf`, la suppression par appui long et sa confirmation depuis `app/history/index.tsx`. |
@@ -140,7 +140,7 @@ L'ordre est 1 → 2 → 3 → 4 → 5 → 6 → 7.
 | Pastille du hub différente de la séance | Même hook, même semaine de programme, même arrondi (R11) ; critère de recette |
 | Liens vers `/history` cassés | Redirection (D7) + test ; recherche de tous les `'/history'` avant de finir |
 | Paramètre `section` qui se réapplique à chaque retour | Effacé après lecture (D3) ; test |
-| `forwardRef` sur `StageScrollView` qui dérange les autres piliers | Prop optionnelle ; `stage.test.tsx` et tests des trois autres hubs au vert |
+| `scrollRef` sur `StageScrollView` qui dérange les autres piliers | Prop optionnelle ; `stage.test.tsx` et tests des trois autres hubs au vert |
 | Performance de « Par exercice » et des deux premiers exercices sur un gros historique | Requêtes agrégées ; recette sur le compte de Florian, le plus chargé |
 | Orphelins après suppression (`FreeSessionSheet`, `ImpactSilhouette`, clés i18n) | Recherche d'usages avant chaque suppression ; lint |
 | Réintroduire un bandeau collé | Sélecteur non collé (D2) ; `stage.test.tsx` en garde |
@@ -148,3 +148,21 @@ L'ordre est 1 → 2 → 3 → 4 → 5 → 6 → 7.
 ## Estimation
 
 Environ 5 jours de développement, hors recette sur device.
+
+## Réalisé (25/09/2026)
+
+Livré en trois commits sur la branche, poussés sur `dev` :
+
+1. Étapes 1-2 : briques pures et requêtes.
+2. Étape 3 : la suggestion sort de `workout.tsx`, seule dans son commit.
+3. Étapes 4 à 7 : les écrans.
+
+Ajouts par rapport au plan :
+- `hooks/useModeGate.ts` : la question du premier mode (R-MO-3), sortie du hub pour servir aussi l'aperçu ;
+- `useLastDoneDates` : la date d'en-tête de « la dernière fois » ;
+- `hasActiveWorkout` : R4 lu au moment de l'appui ;
+- `useSessionName` : le titre de l'aperçu ;
+- `hooks/useLastPerfFormat.ts` : les charges sans zéro inutile, la date courte, les tonnes ;
+- le paramètre `share=1` de `workout-summary`.
+
+Détail dans le §11 de la spec et dans le CHANGELOG.

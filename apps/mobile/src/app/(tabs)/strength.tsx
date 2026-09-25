@@ -1,91 +1,59 @@
 /**
- * Hub Musculation — **un écran qui a quelque chose à dire** (US MUSCU-UX05, 19/09/2026).
+ * Hub Musculation — **trois onglets : S'entraîner, Historique, Progrès** (US MUSCU-UX07, 25/09/2026).
  *
- * ── Ce que cet écran était ───────────────────────────────────────────────────────────────────────
- * Neuf surfaces, toutes de la même forme, qui répondaient à « où en suis-je administrativement ».
- * L'audit du 19/09 a relevé cinq défauts, et une cause sous les cinq :
+ * ── Pourquoi ─────────────────────────────────────────────────────────────────────────────────────
+ * Test utilisateur du 23/09/2026 : « en ouvrant le pilier, ce que tu veux, c'est démarrer ta séance,
+ * ou revoir tes séances pour savoir ce que tu as fait la dernière fois — l'info principale n'est pas
+ * en haut ». Le hub de MUSCU-UX05 répondait très bien à « est-ce que je progresse ? » (six cartes)
+ * et mal aux questions de la salle :
+ *  - l'historique existait, mais **aucun bouton du hub n'y menait** ;
+ *  - « Refaire une séance » n'était atteignable que les jours de repos ;
+ *  - les charges de la dernière fois n'apparaissaient qu'une fois la séance lancée ;
+ *  - « Voir le détail » ouvrait le planning.
  *
- *  1. **Le haut changeait cinq fois, le bas jamais.** La scène a cinq états ; le corps rendait les
- *     mêmes six blocs dans les cinq cas — un jour de repos et le lendemain d'un record affichaient
- *     le même écran.
- *  2. **La moitié des blocs parlaient de ce qui manque** : « encore 3 mesures et la projection
- *     devient possible », « rien de prévu ces prochains jours »… sur un compte qui soulevait
- *     17 tonnes par semaine.
- *  3. **Une seule forme, répétée neuf fois.** « Tu es à une série d'un record » avait le même poids
- *     visuel que « rien de prévu ».
- *  4. **Le plus gros chiffre était rangé en bas**, sous un « ▼ 49 % » sans référence écrite — et le
- *     volume hebdomadaire n'est pas une mesure de progrès : il monte quand on s'entraîne plus
- *     longtemps, pas quand on devient plus fort.
- *  5. **Le bas de l'écran était un cul-de-sac** : une date, un volume, un planning vide.
+ * ── Ce qu'il est ─────────────────────────────────────────────────────────────────────────────────
+ * Proposition B validée par Florian (« ultra clair »), avec quatre éléments repris de A (D1) :
+ *   · **S'entraîner** — la carte du moment (la dernière fois, un jour de séance), Refaire en un geste,
+ *     séance libre et modèles, le programme ;
+ *   · **Historique** — le calendrier du mois, les séances, la dernière fois exercice par exercice ;
+ *   · **Progrès** — les cartes d'analyse de MUSCU-UX05, déplacées telles quelles.
  *
- * **La cause** : sur 36 analyses muscu au catalogue, 20 sont livrées et testées — le hub en montrait
- * **une**. Et `selectInsights` (INSIGHTS-01), qui sait choisir les analyses pertinentes de l'instant
- * par pilier, n'était appelé ni ici ni nulle part côté muscu.
+ * L'onglet affiché (D3) : un paramètre `section` (lu une fois, puis effacé), sinon le dernier choisi
+ * pendant la vie de l'app, sinon S'entraîner. Rien ne change d'onglet de force : pendant une séance,
+ * Historique et Progrès portent une ligne « Reprendre ».
  *
- * ── La contrainte qui tient la refonte ──────────────────────────────────────────────────────────
- * MUSCU-UX01 avait **ramené** ce hub de 9 blocs à 6 le 10/09. « Plus sympa » ne pouvait donc pas
- * vouloir dire « plus de blocs », sinon on refaisait l'inflation qui a justifié la coupe. Le budget
- * ne bouge pas : **neuf surfaces d'administration deviennent six cartes et deux lignes.**
- *
- * Sortent : « Et si… », le widget Volume total, le widget Dernière, le widget Planning — et avec
- * eux la grille de widgets du hub. Entrent : le fil du jour, Tes charges, Ton corps, Le mur.
- *
- * ── L'ordre, et pourquoi ────────────────────────────────────────────────────────────────────────
- *   1 · `StrengthStage`      — la scène (US DASH-01), inchangée : cinq états, la silhouette
- *   2 · `DayThread`          — **la seule chose qui change tous les jours** (défaut 1)
- *   3 · `LoadProgressCard`   — la carte dominante : « est-ce que je progresse ? » (défaut 4)
- *   4 · `NearRecordsCard`    — promue : c'était déjà la meilleure carte de l'écran
- *   5 · `BodyBalanceCard`    — la silhouette cesse de décorer
- *   6 · `StrengthWeekCard`   — la semaine ET le planning, fusionnés
- *   7 · `RecordWall`         — les records tombés, en bande horizontale (défaut 3)
- *   8 · `LifetimeLine`       — une ligne, pas une carte
- *
- * Chaque carte **se tait quand elle n'a rien à dire** : c'est le défaut 2 traité à la racine.
+ * Les onglets défilent avec la page (D2) — pas de bandeau collé en haut, retiré le 23/09 ; un nouvel
+ * appui sur l'onglet Muscu de la barre du bas ramène en haut.
  */
 
-import { useRouter } from 'expo-router';
-import { useMemo, useRef, useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { useLocalSearchParams, useRouter, useScrollToTop } from 'expo-router';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
-import { localDayKey } from '@wellness/shared';
-import { PressableScale } from '@/components/motion/PressableScale';
-import { BodyBalanceCard } from '@/components/strength/BodyBalanceCard';
-import { DayThread } from '@/components/strength/DayThread';
+import { localDayKey, resolveHubSection, type HubSection } from '@wellness/shared';
 import { DirectorySheet } from '@/components/strength/DirectorySheet';
-import { FreeSessionSheet, REPEATABLE_LIMIT } from '@/components/strength/FreeSessionSheet';
-import { LifetimeLine } from '@/components/strength/LifetimeLine';
-import { LoadProgressCard } from '@/components/strength/LoadProgressCard';
-import { NearRecordsCard } from '@/components/strength/NearRecordsCard';
+import type { DoneTodayWorkout } from '@/components/strength/MomentCard';
+import { ModeLine } from '@/components/strength/ModeLine';
 import { ProgramProgressBar } from '@/components/strength/ProgramProgressBar';
-import { RecordWall } from '@/components/strength/RecordWall';
-import { StrengthStage, type StrengthScene } from '@/components/strength/StrengthStage';
+import { StrengthHeader } from '@/components/strength/StrengthHeader';
 import { StrengthWeekCard } from '@/components/strength/StrengthWeekCard';
 import { SuggestedPrograms } from '@/components/strength/SuggestedPrograms';
 import { TrainingContextSheet } from '@/components/strength/TrainingContextSheet';
+import { HistorySection } from '@/components/strength/sections/HistorySection';
+import { ProgressSection } from '@/components/strength/sections/ProgressSection';
+import { TrainSection } from '@/components/strength/sections/TrainSection';
 import { StageScrollView } from '@/components/stage/StageScrollView';
-import { useMenuFocus } from '@/hooks/useMenuFocus';
-import {
-  startWorkoutFromSession,
-  startWorkoutFromWorkout,
-  useWorkoutHistory,
-} from '@/data/repositories/workout-repository';
-import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
-import { useNearRecords } from '@/data/repositories/records-repository';
-import { useStrengthHub } from '@/data/repositories/strength-hub-repository';
-import {
-  startWorkoutFromTemplate,
-  useWorkoutTemplates,
-} from '@/data/repositories/workout-template-repository';
-import { useActionLock } from '@/hooks/useActionLock';
-import { useTodayKey } from '@/hooks/useTodayKey';
-import {
-  briefRouteForSession,
-  briefRouteForTemplate,
-} from '@/components/workout/immersive/brief-entry';
 import { SessionModeSheet } from '@/components/workout/immersive/SessionModeSheet';
+import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
+import { useStrengthHub } from '@/data/repositories/strength-hub-repository';
+import { useWorkoutHistory } from '@/data/repositories/workout-repository';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
+import { useModeGate } from '@/hooks/useModeGate';
+import { useRedo } from '@/hooks/useRedo';
+import { useStartTodaySession } from '@/hooks/useStartTodaySession';
+import { useTodayKey } from '@/hooks/useTodayKey';
 import { useSessionMode } from '@/stores/session-mode-store';
-import { fontFamily } from '@/theme/fonts';
+import { useStrengthSection } from '@/stores/strength-section-store';
 import { useTheme } from '@/theme/useTheme';
 
 /** `AAAA-MM-JJ` → `JJ/MM` (découpage direct : `new Date('AAAA-MM-JJ')` décalerait le jour). */
@@ -99,258 +67,88 @@ export default function StrengthScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const params = useLocalSearchParams<{ section?: string }>();
 
-  const { state, progress, programName, todayMuscles } = useStrengthHub();
+  const { state, progress, programName, todayExercises, todayProgram } = useStrengthHub();
   const todayKey = useTodayKey();
   const { profile } = useProfile();
-  const [starting, setStarting] = useState(false);
-  const lockStart = useActionLock();
-  // US MUSCU-UX03, R-MO-3 : la question du mode, posée **une seule fois**, et seulement à
-  // quelqu'un qui n'a encore rien fait. `pendingStart` retient l'action à rejouer après le choix.
-  const modeChosen = useSessionMode((s) => s.chosen);
-  const setSessionMode = useSessionMode((s) => s.setMode);
-  const [pendingStart, setPendingStart] = useState<(() => void) | null>(null);
+  const { workouts } = useWorkoutHistory();
+
+  // ── L'onglet affiché (D3) ──────────────────────────────────────────────────────────────────────
+  const remembered = useStrengthSection((s) => s.section);
+  const setSection = useStrengthSection((s) => s.setSection);
+  const section: HubSection = resolveHubSection({ param: params.section, remembered });
+  useEffect(() => {
+    // Un paramètre de route est lu **une fois** : laissé en place, il s'appliquerait de nouveau à
+    // chaque retour sur l'onglet et écraserait le choix de l'utilisateur.
+    if (params.section === undefined) return;
+    setSection(section);
+    router.setParams({ section: undefined });
+  }, [params.section, section, setSection, router]);
+
+  // D2 — un nouvel appui sur l'onglet Muscu ramène en haut.
+  const scrollRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollRef);
+
+  // ── Démarrer, refaire, changer de mode ─────────────────────────────────────────────────────────
+  const modeGate = useModeGate(workouts.length > 0);
+  const { start: startToday, starting } = useStartTodaySession(modeGate.gate);
+  const redo = useRedo();
+  const mode = useSessionMode((s) => s.mode);
+  const setMode = useSessionMode((s) => s.setMode);
+  const [changingMode, setChangingMode] = useState(false);
+
+  // ── Feuilles ───────────────────────────────────────────────────────────────────────────────────
+  const [directoryOpen, setDirectoryOpen] = useState(false);
   // US GUID-01 — la feuille « niveau + disponibilité », et le programme qu'on ouvrira juste après.
   const [contextSheetVisible, setContextSheetVisible] = useState(false);
   const [pendingProgramId, setPendingProgramId] = useState<string | null>(null);
-  // Une fois la question posée, elle ne se repose pas dans la même session d'écran — sinon
-  // « ne pas retenir mon choix » bouclerait à l'infini sur la feuille.
-  const modeAsked = useRef(false);
-  // L'annuaire : l'icône 📚 dit « Exercices, programmes, templates » et n'ouvrait que les
-  // exercices. Les templates n'avaient alors plus AUCUN point d'entrée à zéro template — voir
-  // `DirectorySheet`.
-  const [directoryOpen, setDirectoryOpen] = useState(false);
 
-  const { workouts } = useWorkoutHistory();
-  const { templates } = useWorkoutTemplates();
-
-  /** Faut-il poser la question du mode avant de démarrer ? (R-MO-3) */
-  const askMode = (run: () => void): boolean => {
-    if (modeAsked.current || modeChosen || workouts.length > 0) return false;
-    modeAsked.current = true;
-    setPendingStart(() => run);
-    return true;
-  };
-
-  // ── Séance libre : on choisit quoi faire, PUIS la séance existe (MUSCU-FIX02, passe 1) ───────
-  // Sans modèle, l'appui créait une séance vide : chrono lancé, écran noir, « ajoute un premier
-  // exercice ». La feuille propose composer / refaire / modèle, et rien n'est créé avant le choix.
-  const [freeSheetOpen, setFreeSheetOpen] = useState(false);
-  // Une séance sans exercice travaillé (vide, ou d'échauffements seuls) n'a rien à rejouer.
-  const repeatable = workouts
-    .filter((workout) => workout.exerciseCount > 0)
-    .slice(0, REPEATABLE_LIMIT)
-    .map((workout) => ({
-      id: workout.id,
-      name: workout.sessionName,
-      finishedAt: workout.finishedAt,
-      exerciseCount: workout.exerciseCount,
-    }));
-
-  const onStartFree = () => {
-    if (askMode(onStartFree)) return;
-    setFreeSheetOpen(true);
-  };
-
-  /** Démarre une séance déjà remplie puis l'ouvre — un échec laisse simplement le hub en place. */
-  const startAndOpen = (start: () => Promise<string>) =>
-    void lockStart(async () => {
-      try {
-        await start();
-        router.push('/workout');
-      } catch (error) {
-        console.warn('Démarrage de la séance libre impossible :', error);
-      }
-    });
-
-  const onComposeFree = () => {
-    setFreeSheetOpen(false);
-    router.push({ pathname: '/exercises', params: { mode: 'compose' } });
-  };
-
-  const onRepeatWorkout = (workoutId: string) => {
-    setFreeSheetOpen(false);
-    startAndOpen(() => startWorkoutFromWorkout(workoutId));
-  };
-
-  const onStartTemplate = (templateId: string) => {
-    setFreeSheetOpen(false);
-    // Mode immersif : le brief annonce la séance avant de la créer, comme depuis la fiche modèle.
-    const brief = briefRouteForTemplate(templateId);
-    if (brief) {
-      router.push(brief);
-      return;
-    }
-    startAndOpen(() => startWorkoutFromTemplate(templateId));
-  };
-
-  // `starting` ne pilote que l'affichage : la garde est portée par `useActionLock`. Un état React
-  // ne voit pas un second appui du même cycle de rendu — sans le verrou, deux appuis créaient
-  // DEUX séances, dont une orpheline que rien ne rouvrirait.
-  const onStartToday = (sessionId: string, plannedSessionId: string) => {
-    if (askMode(() => onStartToday(sessionId, plannedSessionId))) return;
-    // Mode immersif : on annonce la séance **avant** de la créer (US MUSCU-UX03, §5.1). Le brief
-    // porte lui-même le démarrage, pour que le chrono parte sur « C'est parti ».
-    const brief = briefRouteForSession(sessionId, plannedSessionId);
-    if (brief) {
-      router.push(brief);
-      return;
-    }
-    void lockStart(async () => {
-      setStarting(true);
-      try {
-        await startWorkoutFromSession(sessionId, { plannedSessionId });
-        router.push('/workout');
-      } catch {
-        // offline-first : échec improbable
-      } finally {
-        setStarting(false);
-      }
-    });
-  };
-
-  // ── La scène (US DASH-01, §4.4) ───────────────────────────────────────────────────────────
   /**
-   * La séance terminée **aujourd'hui** : le moment d'après, le cinquième état de la scène. Le hub
-   * le rangeait avec les jours de repos — on venait de soulever deux tonnes et l'écran répondait
-   * « repos mérité », sans un chiffre.
+   * La séance terminée **aujourd'hui** : le moment d'après. Seulement hors séance du jour (R2) —
+   * une séance libre du matin laisse « Démarrer » à l'écran un jour de séance prévue.
    */
-  const doneTodayWorkout = useMemo(
-    () =>
-      workouts.find(
-        (w) => w.finishedAt != null && localDayKey(new Date(w.finishedAt)) === todayKey,
-      ) ?? null,
-    [workouts, todayKey],
-  );
+  const doneToday: DoneTodayWorkout | null = useMemo(() => {
+    if (state.kind === 'today' || state.kind === 'resume') return null;
+    const w = workouts.find((item) => item.finishedAt != null && localDayKey(new Date(item.finishedAt)) === todayKey);
+    return w
+      ? {
+          id: w.id,
+          name: w.sessionName,
+          tonnageKg: w.volumeKg,
+          exerciseCount: w.exerciseCount,
+          recordsBeaten: w.recordCount,
+        }
+      : null;
+  }, [state.kind, workouts, todayKey]);
 
-  const { items: nearRecordItems } = useNearRecords(1);
-  const nearRecord = nearRecordItems[0] ?? null;
+  const weekLabel = progress
+    ? t('strengthHub.moment.week', { week: progress.week, total: progress.totalWeeks })
+    : null;
 
-  const scene: StrengthScene = useMemo(() => {
-    if (state.kind === 'resume') {
-      return { kind: 'resume', doneSets: state.workout.doneSets, totalSets: state.workout.totalSets };
-    }
-    // L'après-séance prime sur le repos : il n'a de sens que le jour même.
-    if (state.kind !== 'today' && doneTodayWorkout) {
-      return {
-        kind: 'after-session',
-        name: doneTodayWorkout.sessionName,
-        tonnageKg: doneTodayWorkout.volumeKg,
-        exerciseCount: doneTodayWorkout.exerciseCount,
-        recordsBeaten: doneTodayWorkout.recordCount,
-      };
-    }
-    if (state.kind === 'today') {
-      return {
-        kind: 'today',
-        name: state.session.name,
-        orderIndex: state.session.orderIndex,
-        programName: state.session.programName,
-        exerciseCount: state.session.exerciseCount,
-        estimatedMinutes: state.session.estimatedMinutes,
-        previewExercises: state.session.previewExercises,
-      };
-    }
-    if (state.kind === 'rest') {
-      return {
-        kind: 'rest',
-        doneToday: state.doneToday !== null,
-        // Mêmes libellés que la carte qu'elle remplace : « faite le … » / « prochaine le … ».
-        nextLabel: state.doneToday
-          ? t('home.today.doneToday', {
-              name: state.doneToday.name?.trim() || t('stage.strength.session'),
+  const nextLabel =
+    state.kind === 'rest'
+      ? state.doneToday
+        ? t('home.today.doneToday', { name: state.doneToday.name?.trim() || t('stage.strength.session') })
+        : state.nextUpcoming
+          ? t('home.today.next', {
+              date: dayMonth(state.nextUpcoming.scheduledDate),
+              name: state.nextUpcoming.name?.trim() || t('stage.strength.session'),
             })
-          : state.nextUpcoming
-            ? t('home.today.next', {
-                date: dayMonth(state.nextUpcoming.scheduledDate),
-                name: state.nextUpcoming.name?.trim() || t('stage.strength.session'),
-              })
-            : null,
-      };
-    }
-    return { kind: 'onboarding' };
-  }, [state, doneTodayWorkout, t]);
+          : null
+      : null;
 
-  /** Le geste principal de la scène, un par état — c'est là que le hub agit. */
-  const onPrimary = () => {
-    switch (scene.kind) {
-      case 'resume':
-        return router.push('/workout');
-      case 'after-session':
-        return doneTodayWorkout
-          ? router.push(`/workout-summary?id=${doneTodayWorkout.id}`)
-          : undefined;
-      case 'today':
-        return state.kind === 'today'
-          ? onStartToday(state.session.sessionId, state.session.plannedSessionId)
-          : undefined;
-      case 'rest':
-        return onStartFree();
-      default:
-        return router.push('/programs');
-    }
-  };
+  const resumeName =
+    state.kind === 'resume' ? state.workout.name?.trim() || t('stage.strength.freeSession') : null;
 
-  const onSecondary = () => {
-    switch (scene.kind) {
-      case 'onboarding':
-        return onStartFree();
-      default:
-        return router.push('/planning');
-    }
-  };
+  const openWorkout = (id: string) => router.push(`/history/${id}`);
+  const openExercise = (id: string) => router.push(`/exercises/${id}`);
+  const onFree = () =>
+    modeGate.gate(() => router.push({ pathname: '/exercises', params: { mode: 'compose' } }));
 
-  const openExercise = (exerciseId: string) => router.push(`/exercises/${exerciseId}`);
-
-  return (
-    <StageScrollView
-      pillar="strength"
-      testID="strength-screen"
-      stage={
-        <StrengthStage
-          scene={scene}
-          muscles={todayMuscles}
-          nearRecord={
-            nearRecord
-              ? { exerciseName: nearRecord.exerciseName, gapKind: nearRecord.gapKind, gap: nearRecord.gap }
-              : null
-          }
-          weekLabel={
-            progress
-              ? t('stage.strength.week', {
-                  week: progress.week,
-                  total: progress.totalWeeks,
-                  done: progress.done,
-                })
-              : null
-          }
-          busy={starting}
-          onPrimary={onPrimary}
-          onSecondary={onSecondary}
-          onPlanning={() => router.push('/planning')}
-          onDirectory={() => setDirectoryOpen(true)}
-        />
-      }
-    >
-      {/* La seule chose qui change tous les jours. Se tait s'il n'y a rien à dire. */}
-      <DayThread onPress={() => router.push('/insights')} />
-
-      {/* La carte dominante : « est-ce que je progresse ? ». */}
-      <LoadProgressCard onPress={() => router.push('/progress')} />
-
-      {/* Déjà la meilleure carte de l'écran avant la refonte — elle remonte. */}
-      <NearRecordsCard onOpenExercise={openExercise} />
-
-      {/* La silhouette au travail, plus en décor. */}
-      <BodyBalanceCard onPress={() => router.push('/body')} />
-
-      {/* La semaine ET la prochaine séance : le widget Planning a fondu ici. */}
+  const programBlock = (
+    <>
       <StrengthWeekCard onOpenDay={() => router.push('/planning')} />
-
-      {/* Le trophée, pas seulement la carotte — et le seul bloc qui ne se lit pas de haut en bas. */}
-      <RecordWall onOpenExercise={openExercise} />
-
-      {/* L'avancement du programme, quand il y en a un. */}
       {progress && programName ? (
         <ProgramProgressBar
           programName={programName}
@@ -362,17 +160,14 @@ export default function StrengthScreen() {
           onPress={() => router.push('/programs')}
         />
       ) : null}
-
-      {/* Les propositions, uniquement pour qui n'a pas encore de programme. */}
       {state.kind === 'onboarding' ? (
         <SuggestedPrograms
           trainingLevel={profile?.trainingLevel}
           displayLevel={profile?.workoutDisplayLevel}
           weeklyAvailability={profile?.weeklyAvailability}
           onPick={(programId) => {
-            // US GUID-01 — la question de contexte se pose ici, devant la bibliothèque, et pas
-            // avant : c'est le moment où elle a un objet visible (décision D6). Elle ne bloque
-            // pas le parcours — on ouvre le programme dès qu'elle est refermée.
+            // US GUID-01 — la question de contexte se pose ici, devant la bibliothèque (décision D6).
+            // Elle ne bloque pas le parcours : on ouvre le programme dès qu'elle est refermée.
             if (profile != null && profile.trainingLevel == null) {
               setPendingProgramId(programId);
               setContextSheetVisible(true);
@@ -383,44 +178,103 @@ export default function StrengthScreen() {
           onSeeAll={() => router.push('/programs')}
         />
       ) : null}
+    </>
+  );
 
-      {/* Une ligne, pas une carte — elle ferme la page sans ajouter une boîte de plus. */}
-      <LifetimeLine onPress={() => router.push('/progress')} />
+  const closeContextSheet = () => {
+    setContextSheetVisible(false);
+    const target = pendingProgramId;
+    setPendingProgramId(null);
+    if (target) router.push(`/programs/${target}`);
+  };
 
-      {/* L'annuaire, en pied : la section « Suivre » et sa grille de widgets ont disparu avec les
-          trois tuiles d'administration qu'elle portait. */}
-      <PressableScale
-        haptic="select"
-        onPress={() => setDirectoryOpen(true)}
-        accessibilityRole="button"
-        // Pas d' : le libellé visible EST le nom accessible. En poser un
-        // dupliquerait celui de l'icône de la scène, et TalkBack annoncerait deux fois la même
-        // chose sans pouvoir les distinguer — trouvé par le test du hub.
-        testID="strength-directory-link"
-        style={[styles.directory, { backgroundColor: colors.surface, borderColor: colors.border }]}
-      >
-        <Ionicons name="library-outline" size={20} color={colors.accent} />
-        <Text style={[styles.directoryLabel, { color: colors.text }]} numberOfLines={1}>
-          {t('strengthHub.directory')}
-        </Text>
-        <Ionicons name="chevron-forward" size={15} color={colors.textMuted} />
-      </PressableScale>
+  return (
+    <StageScrollView
+      pillar="strength"
+      testID="strength-screen"
+      scrollRef={scrollRef}
+      stage={
+        <StrengthHeader
+          section={section}
+          onSection={setSection}
+          onPlanning={() => router.push('/planning')}
+          onDirectory={() => setDirectoryOpen(true)}
+        />
+      }
+    >
+      {section === 'train' ? (
+        <TrainSection
+          state={state}
+          doneToday={doneToday}
+          weekLabel={weekLabel}
+          nextLabel={nextLabel}
+          todayExercises={todayExercises}
+          todayProgram={{
+            programId: todayProgram?.programId ?? null,
+            weekIndex: todayProgram?.weekIndex ?? null,
+          }}
+          workouts={workouts}
+          todayKey={todayKey}
+          starting={starting}
+          modeLine={<ModeLine mode={mode} onChange={() => setChangingMode(true)} />}
+          programBlock={programBlock}
+          onStart={() => {
+            if (state.kind === 'today') startToday(state.session.sessionId, state.session.plannedSessionId);
+          }}
+          onResume={() => router.push('/workout')}
+          onSummary={() => doneToday && router.push(`/workout-summary?id=${doneToday.id}`)}
+          onShare={() => doneToday && router.push(`/workout-summary?id=${doneToday.id}&share=1`)}
+          onPlanning={() => router.push('/planning')}
+          onPrograms={() => router.push('/programs')}
+          onPreview={() => {
+            if (state.kind !== 'today') return;
+            router.push({
+              pathname: '/session-preview',
+              params: {
+                sessionId: state.session.sessionId,
+                plannedSessionId: state.session.plannedSessionId,
+                // La suggestion de l'aperçu doit être celle de la séance (R11) : même programme, même
+                // semaine que l'occurrence du jour.
+                programId: todayProgram?.programId ?? '',
+                weekIndex: todayProgram?.weekIndex != null ? String(todayProgram.weekIndex) : '',
+              },
+            });
+          }}
+          onOpenWorkout={openWorkout}
+          onRedo={redo}
+          onAllHistory={() => setSection('history')}
+          onFree={onFree}
+          onTemplates={() => router.push('/templates')}
+        />
+      ) : section === 'history' ? (
+        <HistorySection
+          workouts={workouts}
+          todayKey={todayKey}
+          resumeName={resumeName}
+          onResume={() => router.push('/workout')}
+          onOpenWorkout={openWorkout}
+          onRedo={redo}
+          onOpenExercise={openExercise}
+        />
+      ) : (
+        <ProgressSection
+          hasWorkouts={workouts.length > 0}
+          resumeName={resumeName}
+          onResume={() => router.push('/workout')}
+          onInsights={() => router.push('/insights')}
+          onProgress={() => router.push('/progress')}
+          onBody={() => router.push('/body')}
+          onOpenExercise={openExercise}
+          onStart={() => setSection('train')}
+        />
+      )}
 
       <TrainingContextSheet
         visible={contextSheetVisible}
-        onClose={() => {
-          // « Plus tard » n'écrit rien : `null` reste « pas de réponse », jamais « débutant ».
-          setContextSheetVisible(false);
-          const target = pendingProgramId;
-          setPendingProgramId(null);
-          if (target) router.push(`/programs/${target}`);
-        }}
+        onClose={closeContextSheet}
         onSubmit={(level, weeklyAvailability) => {
           void upsertProfile({ trainingLevel: level, weeklyAvailability });
-          setContextSheetVisible(false);
-          const target = pendingProgramId;
-          setPendingProgramId(null);
-          if (target) router.push(`/programs/${target}`);
+          closeContextSheet();
         }}
         colors={colors}
       />
@@ -439,47 +293,21 @@ export default function StrengthScreen() {
         colors={colors}
       />
 
-      <FreeSessionSheet
-        visible={freeSheetOpen}
-        onClose={() => setFreeSheetOpen(false)}
-        onCompose={onComposeFree}
-        recent={repeatable}
-        onRepeat={onRepeatWorkout}
-        templates={templates}
-        onTemplate={onStartTemplate}
-        onManageTemplates={() => {
-          setFreeSheetOpen(false);
-          router.push('/templates');
-        }}
-        colors={colors}
-      />
+      {/* R-MO-3 — la question du tout premier démarrage, qui rejoue ensuite l'action demandée. */}
+      <SessionModeSheet {...modeGate.sheet} colors={colors} />
 
-      {/* La question du mode, posée une seule fois (US MUSCU-UX03, R-MO-3). Elle rejoue ensuite
-          l'action qui l'avait déclenchée : l'utilisateur voulait démarrer, pas régler quelque chose. */}
+      {/* D4 — « Mode classique · Changer » : le mode courant présélectionné, rien ne démarre. */}
       <SessionModeSheet
-        visible={pendingStart !== null}
-        onClose={() => setPendingStart(null)}
-        onPick={(mode, remember) => {
-          setSessionMode(mode, { remember });
-          const run = pendingStart;
-          setPendingStart(null);
-          run?.();
+        purpose="change"
+        current={mode}
+        visible={changingMode}
+        onClose={() => setChangingMode(false)}
+        onPick={(picked) => {
+          setMode(picked, { remember: true });
+          setChangingMode(false);
         }}
         colors={colors}
       />
     </StageScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  directory: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 11,
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 13,
-    minHeight: 48,
-  },
-  directoryLabel: { flex: 1, fontFamily: fontFamily.bodyBold, fontSize: 13 },
-});

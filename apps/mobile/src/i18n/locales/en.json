@@ -191,20 +191,6 @@
       "blank": "Blank",
       "fromTemplate": "From a template"
     },
-    "freeSheet": {
-      "title": "Free workout",
-      "subtitle": "Choose what to do first: the timer starts once your workout is ready.",
-      "compose": "Build my workout",
-      "composeDesc": "Pick your exercises, in the order you want to do them.",
-      "repeatTitle": "Repeat a workout",
-      "repeatUntitled": "Free workout",
-      "repeatMeta_one": "{{date}} · {{count}} exercise",
-      "repeatMeta_other": "{{date}} · {{count}} exercises",
-      "templatesTitle": "From a template",
-      "noTemplate": "Create a template",
-      "noTemplateDesc": "Save a go-to workout to start it again in one tap.",
-      "allTemplates": "All my templates"
-    },
     "resumeTitle": "Workout in progress",
     "resume": "Resume workout",
     "exerciseCount_one": "{{count}} exercise",
@@ -1959,18 +1945,6 @@
     "deleteConfirm": "This will permanently delete this template. Continue?"
   },
   "history": {
-    "title": "History",
-    "subtitle": "Your completed workouts.",
-    "empty": {
-      "title": "No workouts yet",
-      "message": "Finish your first workout to see it here.",
-      "filtered": "No sessions in this period.",
-      "resetFilter": "See full history"
-    },
-    "filterAll": "All",
-    "filter7d": "7 days",
-    "filter30d": "30 days",
-    "filter90d": "90 days",
     "row": {
       "durationMin": "{{count}} min",
       "rpe": "Feeling {{value}} / 5",
@@ -2006,19 +1980,43 @@
         "max_weight": "Max weight",
         "estimated_1rm": "Est. 1RM",
         "best_volume": "Set volume"
-      }
+      },
+      "redo": "Repeat this workout",
+      "redoHint": "same exercises, same starting loads"
     },
     "freeSession": "Free session",
-    "freeBadge": "FREE",
     "deleteHint": "Long press to delete",
-    "summary_one": "{{count}} session · {{volume}} lifted",
-    "summary_other": "{{count}} sessions · {{volume}} lifted",
-    "monthSummary_one": "{{count}} session · {{volume}}",
-    "monthSummary_other": "{{count}} sessions · {{volume}}",
     "delete": {
       "title": "Delete this session?",
       "message": "“{{name}}” will be removed from your history, along with its records. If it came from your plan, that day goes back to pending.",
       "confirm": "Delete"
+    },
+    "tabs": {
+      "sessions": "Workouts",
+      "byExercise": "By exercise"
+    },
+    "calendar": {
+      "previous": "Previous month",
+      "next": "Next month",
+      "workouts_one": "{{count}} workout",
+      "workouts_other": "{{count}} workouts",
+      "tonnage": "{{tonnes}} t",
+      "records_one": "{{count}} PR",
+      "records_other": "{{count}} PRs",
+      "legend": {
+        "done": "workout",
+        "record": "with a PR",
+        "planned": "planned"
+      },
+      "dayA11y": "{{date}}: {{sessions}}",
+      "empty": "No workouts this month.",
+      "wholeMonth": "Whole month"
+    },
+    "byExercise": {
+      "search": "Search an exercise",
+      "when": "{{date}} · {{session}}",
+      "record": "PR: {{value}}",
+      "none": "No matching exercise."
     }
   },
   "progress": {
@@ -3946,7 +3944,65 @@
         "weightHold": "stay at {{weight}}",
         "deload": "drop to {{weight}}",
         "duration": "aim for {{duration}}"
-      }
+      },
+      "title": "Last time",
+      "titleOn": "Last time · {{date}}",
+      "firstTime": "First time",
+      "seeAll_one": "See the exercise",
+      "seeAll_other": "See all {{count}} exercises",
+      "bodyweight": "BW"
+    },
+    "sections": {
+      "train": "Train",
+      "history": "History",
+      "progress": "Progress"
+    },
+    "resumeLine": {
+      "title": "Workout in progress",
+      "action": "Resume"
+    },
+    "moment": {
+      "eyebrow": {
+        "resume": "Workout in progress",
+        "today": "Today",
+        "after": "Done · today",
+        "rest": "Rest",
+        "onboarding": "Getting started"
+      },
+      "week": "week {{week}} of {{total}}",
+      "primary": {
+        "resume": "Resume",
+        "today": "Start",
+        "after": "See summary",
+        "rest": "See the plan",
+        "onboarding": "Browse programs"
+      },
+      "share": "Share"
+    },
+    "redo": {
+      "title": "Repeat a workout",
+      "action": "Repeat",
+      "a11y": "Repeat {{name}} from {{date}}",
+      "allHistory": "Full history",
+      "freeExercises": "{{first}}, {{second}}…",
+      "busyTitle": "A workout is in progress",
+      "busyMessage": "Finish or resume it before starting another one."
+    },
+    "other": {
+      "title": "Something else",
+      "free": "Free workout",
+      "templates": "My templates"
+    },
+    "mode": {
+      "classic": "Classic mode",
+      "immersive": "Immersive mode",
+      "change": "Change"
+    },
+    "progressLink": "All your progress",
+    "progressEmpty": {
+      "title": "Your progress starts with your first workout.",
+      "body": "Loads, records, body balance: it will all show up here as you train.",
+      "cta": "Get started"
     }
   },
   "hydration": {
@@ -4434,34 +4490,11 @@
       }
     },
     "strength": {
-      "eyebrow": {
-        "resume": "Workout in progress",
-        "after-session": "Workout done",
-        "today": "Today's session",
-        "rest": "Your strength pillar",
-        "onboarding": "Getting started"
-      },
-      "primary": {
-        "resume": "Resume",
-        "after-session": "See summary",
-        "today": "Start",
-        "rest": "Free session",
-        "onboarding": "See programs"
-      },
-      "secondary": {
-        "resume": "See planning",
-        "after-session": "My week",
-        "today": "See details",
-        "rest": "See planning",
-        "onboarding": "Free session"
-      },
-      "kg": "kg",
       "session": "Today's session",
       "freeSession": "Free session",
       "exercises_one": "one exercise",
       "exercises_other": "{{count}} exercises",
       "setsProgress": "{{done}} of {{total}} sets",
-      "tonnageA11y": "{{kg}} kilos lifted",
       "afterMeta": "{{name}} · {{exercises}} exercises",
       "recordsBeaten_one": "One record beaten",
       "recordsBeaten_other": "{{count}} records beaten",
@@ -4471,7 +4504,6 @@
         "reps_other": "{{exercise}}: {{gap}} reps off your record",
         "beaten": "{{exercise}}: record matched — one set away"
       },
-      "week": "Week {{week}} of {{total}} · {{done}} sessions done",
       "weekCard": {
         "title": "Your week",
         "meta": "{{done}} of {{planned}}",
@@ -4580,7 +4612,8 @@
     "start": "Start in {{mode}}",
     "hubHint": "Your choice is remembered. Change it here, or in Settings › Session.",
     "switchTitle": "Display mode",
-    "switchHint": "Same session, same sets: nothing is lost."
+    "switchHint": "Same session, same sets: nothing is lost.",
+    "changeCta": "Confirm"
   },
   "settingsSession": {
     "title": "Session",
@@ -5608,5 +5641,13 @@
       "profile": "Runner profile",
       "profileDesc": "Reference pace, target frequency, voice."
     }
+  },
+  "sessionPreview": {
+    "subtitle_one": "Today · {{count}} exercise",
+    "subtitle_other": "Today · {{count}} exercises",
+    "target": "{{sets}} × {{reps}}",
+    "targetSets_one": "{{count}} set",
+    "targetSets_other": "{{count}} sets",
+    "plannedLoad": "{{weight}} planned"
   }
 }

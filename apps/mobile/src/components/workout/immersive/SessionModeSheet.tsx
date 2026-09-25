@@ -11,6 +11,11 @@
  * Aucun des deux modes n'est présélectionné : la feuille pose une vraie question, elle ne pousse
  * pas une réponse. Seule « Retenir mon choix » est cochée, parce que c'est ce qu'on attend d'un
  * choix qu'on vient de faire — et qu'il se défait d'un toucher.
+ *
+ * ── Variante « changer » (US MUSCU-UX07, D4) ────────────────────────────────────────────────────
+ * Ouverte par « Mode classique · Changer », sous Démarrer. Là, rien ne démarre : le mode courant est
+ * présélectionné, le bouton dit « Valider » et non « Commencer en … », et la case « retenir »
+ * disparaît — changer de mode depuis le hub, c'est changer **le** mode.
  */
 
 import { Ionicons } from '@expo/vector-icons';
@@ -29,21 +34,41 @@ type Props = {
   /** Le mode choisi, et s'il faut le retenir comme préférence. */
   onPick: (mode: WorkoutDisplayMode, remember: boolean) => void;
   colors: Palette;
+  /** `start` (défaut) : la question du premier démarrage. `change` : changer le mode depuis le hub. */
+  purpose?: 'start' | 'change';
+  /** Le mode courant, présélectionné en variante `change`. */
+  current?: WorkoutDisplayMode;
 };
 
-export function SessionModeSheet({ visible, onClose, onPick, colors }: Props) {
+export function SessionModeSheet({
+  visible,
+  onClose,
+  onPick,
+  colors,
+  purpose = 'start',
+  current,
+}: Props) {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
-  const [selected, setSelected] = useState<WorkoutDisplayMode | null>(null);
+  const changing = purpose === 'change';
+  // En variante « changer », la sélection part du mode en vigueur tant qu'on n'a rien touché ; elle
+  // est oubliée à la fermeture, pour repartir du mode en vigueur à la prochaine ouverture.
+  const [picked, setPicked] = useState<WorkoutDisplayMode | null>(null);
+  const selected = picked ?? (changing ? (current ?? null) : null);
+  const setSelected = setPicked;
   const [remember, setRemember] = useState(true);
+  const close = () => {
+    setPicked(null);
+    onClose();
+  };
 
   return (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
       <View style={styles.backdrop}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('common.close')}
-          onPress={onClose}
+          onPress={close}
           style={styles.dismissZone}
         />
         <View
@@ -87,6 +112,7 @@ export function SessionModeSheet({ visible, onClose, onPick, colors }: Props) {
             })}
           </View>
 
+          {changing ? null : (
           <Pressable
             accessibilityRole="checkbox"
             accessibilityState={{ checked: remember }}
@@ -102,13 +128,16 @@ export function SessionModeSheet({ visible, onClose, onPick, colors }: Props) {
               {t('workoutMode.remember')}
             </Text>
           </Pressable>
+          )}
 
           <PressableScale
             accessibilityRole="button"
             accessibilityState={{ disabled: selected === null }}
             haptic="confirm"
             onPress={() => {
-              if (selected) onPick(selected, remember);
+              if (!selected) return;
+              setPicked(null);
+              onPick(selected, changing ? true : remember);
             }}
             style={[
               styles.primary,
@@ -121,9 +150,11 @@ export function SessionModeSheet({ visible, onClose, onPick, colors }: Props) {
                 { color: selected ? colors.accentText : colors.textMuted },
               ]}
             >
-              {selected
-                ? t('workoutMode.start', { mode: t(`workoutMode.${selected}`) })
-                : t('workoutMode.sheetTitle')}
+              {changing
+                ? t('workoutMode.changeCta')
+                : selected
+                  ? t('workoutMode.start', { mode: t(`workoutMode.${selected}`) })
+                  : t('workoutMode.sheetTitle')}
             </Text>
           </PressableScale>
         </View>

@@ -9,16 +9,25 @@
  * deux lectures contradictoires de `workouts.rpe`.
  *
  * Tout cela vit désormais dans `<WorkoutReport>`. Cet écran ne garde que son en-tête.
+ *
+ * ── « Refaire cette séance » (US MUSCU-UX07, §4.6) ─────────────────────────────────────────────
+ * Le détail d'une séance passée n'avait pas de bouton pour la refaire : il fallait revenir au hub,
+ * un jour de repos, ouvrir « Séance libre ». Le bouton est collé en bas, et suit R4 (`useRedo`) :
+ * pendant une séance en cours, une alerte, et rien n'est créé. Absent pour une séance sans exercice
+ * travaillé, qui n'a rien à rejouer.
  */
 
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
+import { PressableScale } from '@/components/motion/PressableScale';
 import { WorkoutReport } from '@/components/workout/report/WorkoutReport';
 import { useWorkoutReport } from '@/data/repositories/workout-report-repository';
+import { useRedo } from '@/hooks/useRedo';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -38,6 +47,8 @@ export default function WorkoutDetailScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const { report, isLoading } = useWorkoutReport(workoutId);
+  const redo = useRedo();
+  const insets = useSafeAreaInsets();
 
   const back = (
     <Pressable
@@ -79,11 +90,35 @@ export default function WorkoutDetailScreen() {
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <WorkoutReport report={report} context="history" />
       </ScrollView>
+      {report.totals.exercises > 0 ? (
+        <View style={[styles.redoBar, { paddingBottom: insets.bottom + 12, backgroundColor: colors.background }]}>
+          <PressableScale
+            testID="history-detail-redo"
+            haptic="confirm"
+            onPress={() => redo(workoutId)}
+            accessibilityRole="button"
+            accessibilityLabel={t('history.detail.redo')}
+            accessibilityHint={t('history.detail.redoHint')}
+            style={[styles.redo, { backgroundColor: colors.accent }]}
+          >
+            <View style={styles.redoRow}>
+              <Ionicons name="refresh" size={17} color={colors.accentText} />
+              <Text style={[styles.redoLabel, { color: colors.accentText }]}>{t('history.detail.redo')}</Text>
+            </View>
+            <Text style={[styles.redoHint, { color: colors.accentText }]}>{t('history.detail.redoHint')}</Text>
+          </PressableScale>
+        </View>
+      ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: { paddingBottom: 32 },
+  scroll: { paddingBottom: 110 },
+  redoBar: { position: 'absolute', left: 0, right: 0, bottom: 0, paddingHorizontal: 20, paddingTop: 12 },
+  redo: { minHeight: 58, borderRadius: 16, alignItems: 'center', justifyContent: 'center', gap: 1 },
+  redoRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  redoLabel: { fontFamily: fontFamily.bodyBold, fontSize: 16.5 },
+  redoHint: { fontFamily: fontFamily.body, fontSize: 12, opacity: 0.9 },
   notFound: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
 });

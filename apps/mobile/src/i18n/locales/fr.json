@@ -191,20 +191,6 @@
       "blank": "À blanc",
       "fromTemplate": "Depuis un template"
     },
-    "freeSheet": {
-      "title": "Séance libre",
-      "subtitle": "Choisis d'abord quoi faire : le chrono part quand ta séance est prête.",
-      "compose": "Composer ma séance",
-      "composeDesc": "Choisis tes exercices, dans l'ordre où tu veux les faire.",
-      "repeatTitle": "Refaire une séance",
-      "repeatUntitled": "Séance libre",
-      "repeatMeta_one": "{{date}} · {{count}} exercice",
-      "repeatMeta_other": "{{date}} · {{count}} exercices",
-      "templatesTitle": "Depuis un modèle",
-      "noTemplate": "Créer un modèle",
-      "noTemplateDesc": "Enregistre une séance type pour la relancer en un geste.",
-      "allTemplates": "Tous mes modèles"
-    },
     "resumeTitle": "Séance en cours",
     "resume": "Reprendre la séance",
     "exerciseCount_one": "{{count}} exercice",
@@ -1959,18 +1945,6 @@
     "deleteConfirm": "Cette action supprimera définitivement ce template. Continuer ?"
   },
   "history": {
-    "title": "Historique",
-    "subtitle": "Tes séances terminées.",
-    "empty": {
-      "title": "Aucune séance enregistrée",
-      "message": "Termine ta première séance pour la retrouver ici.",
-      "filtered": "Aucune séance sur cette période.",
-      "resetFilter": "Voir tout l’historique"
-    },
-    "filterAll": "Tout",
-    "filter7d": "7 jours",
-    "filter30d": "30 jours",
-    "filter90d": "90 jours",
     "row": {
       "durationMin": "{{count}} min",
       "rpe": "Ressenti {{value}} / 5",
@@ -2006,19 +1980,43 @@
         "max_weight": "Charge max",
         "estimated_1rm": "1RM estimé",
         "best_volume": "Volume série"
-      }
+      },
+      "redo": "Refaire cette séance",
+      "redoHint": "mêmes exercices, mêmes charges au départ"
     },
     "freeSession": "Séance libre",
-    "freeBadge": "LIBRE",
     "deleteHint": "Appui long pour supprimer",
-    "summary_one": "{{count}} séance · {{volume}} soulevés",
-    "summary_other": "{{count}} séances · {{volume}} soulevés",
-    "monthSummary_one": "{{count}} séance · {{volume}}",
-    "monthSummary_other": "{{count}} séances · {{volume}}",
     "delete": {
       "title": "Supprimer cette séance ?",
       "message": "« {{name}} » sera retirée de ton historique, avec ses records. Si elle venait de ton planning, le jour redeviendra à faire.",
       "confirm": "Supprimer"
+    },
+    "tabs": {
+      "sessions": "Séances",
+      "byExercise": "Par exercice"
+    },
+    "calendar": {
+      "previous": "Mois précédent",
+      "next": "Mois suivant",
+      "workouts_one": "{{count}} séance",
+      "workouts_other": "{{count}} séances",
+      "tonnage": "{{tonnes}} t",
+      "records_one": "{{count}} record",
+      "records_other": "{{count}} records",
+      "legend": {
+        "done": "séance",
+        "record": "avec record",
+        "planned": "prévue"
+      },
+      "dayA11y": "{{date}} : {{sessions}}",
+      "empty": "Aucune séance ce mois-ci.",
+      "wholeMonth": "Tout le mois"
+    },
+    "byExercise": {
+      "search": "Chercher un exercice",
+      "when": "{{date}} · {{session}}",
+      "record": "Record : {{value}}",
+      "none": "Aucun exercice ne correspond."
     }
   },
   "progress": {
@@ -3946,7 +3944,65 @@
         "weightHold": "reste à {{weight}}",
         "deload": "allège à {{weight}}",
         "duration": "vise {{duration}}"
-      }
+      },
+      "title": "La dernière fois",
+      "titleOn": "La dernière fois · {{date}}",
+      "firstTime": "Première fois",
+      "seeAll_one": "Voir l’exercice",
+      "seeAll_other": "Voir les {{count}} exercices",
+      "bodyweight": "PdC"
+    },
+    "sections": {
+      "train": "S’entraîner",
+      "history": "Historique",
+      "progress": "Progrès"
+    },
+    "resumeLine": {
+      "title": "Séance en cours",
+      "action": "Reprendre"
+    },
+    "moment": {
+      "eyebrow": {
+        "resume": "Séance en cours",
+        "today": "Aujourd’hui",
+        "after": "Séance faite · aujourd’hui",
+        "rest": "Repos",
+        "onboarding": "Pour commencer"
+      },
+      "week": "semaine {{week}} sur {{total}}",
+      "primary": {
+        "resume": "Reprendre",
+        "today": "Démarrer",
+        "after": "Voir le bilan",
+        "rest": "Voir le planning",
+        "onboarding": "Voir les programmes"
+      },
+      "share": "Partager"
+    },
+    "redo": {
+      "title": "Refaire une séance",
+      "action": "Refaire",
+      "a11y": "Refaire {{name}} du {{date}}",
+      "allHistory": "Tout l’historique",
+      "freeExercises": "{{first}}, {{second}}…",
+      "busyTitle": "Une séance est en cours",
+      "busyMessage": "Termine-la ou reprends-la avant d’en commencer une autre."
+    },
+    "other": {
+      "title": "Autre chose",
+      "free": "Séance libre",
+      "templates": "Mes templates"
+    },
+    "mode": {
+      "classic": "Mode classique",
+      "immersive": "Mode immersif",
+      "change": "Changer"
+    },
+    "progressLink": "Toute ta progression",
+    "progressEmpty": {
+      "title": "Ta progression démarre à ta première séance.",
+      "body": "Charges, records, équilibre du corps : tout s’affichera ici au fil de tes séances.",
+      "cta": "Commencer"
     }
   },
   "hydration": {
@@ -4434,34 +4490,11 @@
       }
     },
     "strength": {
-      "eyebrow": {
-        "resume": "Séance en cours",
-        "after-session": "Séance faite",
-        "today": "Ta séance du jour",
-        "rest": "Ton pilier muscu",
-        "onboarding": "Pour commencer"
-      },
-      "primary": {
-        "resume": "Reprendre",
-        "after-session": "Voir le bilan",
-        "today": "Démarrer",
-        "rest": "Séance libre",
-        "onboarding": "Voir les programmes"
-      },
-      "secondary": {
-        "resume": "Voir le planning",
-        "after-session": "Ma semaine",
-        "today": "Voir le détail",
-        "rest": "Voir le planning",
-        "onboarding": "Séance libre"
-      },
-      "kg": "kg",
       "session": "Séance du jour",
       "freeSession": "Séance libre",
       "exercises_one": "un exercice",
       "exercises_other": "{{count}} exercices",
       "setsProgress": "{{done}} séries sur {{total}}",
-      "tonnageA11y": "{{kg}} kilos soulevés",
       "afterMeta": "{{name}} · {{exercises}} exercices",
       "recordsBeaten_one": "Un record battu",
       "recordsBeaten_other": "{{count}} records battus",
@@ -4471,7 +4504,6 @@
         "reps_other": "{{exercise}} : {{gap}} répétitions du record",
         "beaten": "{{exercise}} : record égalé — il ne tient qu'à une série"
       },
-      "week": "Semaine {{week}} sur {{total}} · {{done}} séances faites",
       "weekCard": {
         "title": "Ta semaine",
         "meta": "{{done}} sur {{planned}}",
@@ -4580,7 +4612,8 @@
     "start": "Commencer en {{mode}}",
     "hubHint": "Le mode se retient. Il se change ici, ou dans Réglages › Séance.",
     "switchTitle": "Mode d'affichage",
-    "switchHint": "Même séance, mêmes séries : rien n'est perdu."
+    "switchHint": "Même séance, mêmes séries : rien n'est perdu.",
+    "changeCta": "Valider"
   },
   "settingsSession": {
     "title": "Séance",
@@ -5608,5 +5641,13 @@
       "profile": "Profil coureur",
       "profileDesc": "Allure de référence, fréquence visée, voix."
     }
+  },
+  "sessionPreview": {
+    "subtitle_one": "Aujourd’hui · {{count}} exercice",
+    "subtitle_other": "Aujourd’hui · {{count}} exercices",
+    "target": "{{sets}} × {{reps}}",
+    "targetSets_one": "{{count}} série",
+    "targetSets_other": "{{count}} séries",
+    "plannedLoad": "{{weight}} prévus"
   }
 }

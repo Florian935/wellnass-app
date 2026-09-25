@@ -46,6 +46,8 @@ type TodayPlanRow = {
   program_id: string;
   /** US MUSCU-UX07 — l'exercice planifié : « la dernière fois » se lit par exercice. */
   exercise_id: string;
+  /** US MUSCU-UX07 — équipement : une charge suggérée à la barre est arrondie au chargeable (R11). */
+  equipment: string | null;
   session_name: string | null;
   order_index: number;
   program_name: string | null;
@@ -73,7 +75,7 @@ export const SELECT_TODAY_PLAN = `
          COALESCE(tl.name, tfr.name) AS program_name,
          COALESCE(etl.name, etfr.name) AS exercise_name,
          ep.order_index AS exercise_order, ep.target_sets, ep.rest_seconds,
-         e.id AS exercise_id, e.muscle_primary
+         e.id AS exercise_id, e.equipment, e.muscle_primary
   FROM planned_sessions ps
   JOIN sessions s ON s.id = ps.session_id AND s.deleted_at IS NULL
   JOIN programs  p ON p.id = ps.program_id AND p.deleted_at IS NULL
@@ -178,7 +180,7 @@ export type StrengthHubData = {
    * US MUSCU-UX07 — les exercices de la séance du jour, dans l'ordre du plan : « la dernière fois »
    * de la carte les lit un par un. Vide sans séance du jour.
    */
-  todayExercises: { exerciseId: string; name: string | null }[];
+  todayExercises: { exerciseId: string; name: string | null; equipment: string | null }[];
   /**
    * US MUSCU-UX07 — programme et semaine de l'occurrence du jour : la suggestion du hub les passe à
    * `usePriorWeekAdherence`, comme la séance (R11). `null` sans séance du jour.
@@ -297,7 +299,11 @@ export function useStrengthHub(): StrengthHubData {
         : null,
     todayMuscles,
     programName: program?.name ?? null,
-    todayExercises: todayRows.map((r) => ({ exerciseId: r.exercise_id, name: r.exercise_name })),
+    todayExercises: todayRows.map((r) => ({
+      exerciseId: r.exercise_id,
+      name: r.exercise_name,
+      equipment: r.equipment,
+    })),
     todayProgram: first ? { programId: first.program_id, weekIndex: first.week_index } : null,
     isLoading,
   };

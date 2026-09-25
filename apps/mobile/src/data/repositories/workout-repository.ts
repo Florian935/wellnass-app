@@ -531,6 +531,33 @@ export function groupExercisesLastDone(rows: readonly ExerciseLastDoneRow[]): Ex
   return [...byExercise.values()];
 }
 
+/**
+ * La date de la dernière séance terminée de chaque exercice demandé — l'en-tête « LA DERNIÈRE FOIS ·
+ * JEU. 17/09 » de la carte du jour (US MUSCU-UX07, §4.2.1). Mêmes filtres que
+ * `SELECT_LAST_PERFORMANCE` : séries validées hors échauffement, séance terminée non supprimée.
+ * Un `?` par exercice (la carte en montre trois au plus).
+ */
+export const selectLastDoneDates = (count: number) => `
+  SELECT s.exercise_id, MAX(w.finished_at) AS finished_at
+  FROM workout_sets s
+  JOIN workouts w ON w.id = s.workout_id AND w.status = 'completed' AND w.deleted_at IS NULL
+  WHERE s.exercise_id IN (${Array.from({ length: Math.max(1, count) }, () => '?').join(', ')})
+    AND s.deleted_at IS NULL AND s.done = 1 AND s.set_type <> 'warmup'
+  GROUP BY s.exercise_id
+`;
+
+/** `exerciseId` → date ISO de sa dernière séance terminée (absent si jamais fait). */
+export function useLastDoneDates(exerciseIds: readonly string[]): Record<string, string> {
+  const ids = exerciseIds.length > 0 ? [...exerciseIds] : [''];
+  const { data } = useQuery<{ exercise_id: string; finished_at: string }>(
+    selectLastDoneDates(ids.length),
+    ids,
+  );
+  const dates: Record<string, string> = {};
+  for (const row of data) dates[row.exercise_id] = row.finished_at;
+  return dates;
+}
+
 /** La dernière fois de chaque exercice pratiqué (onglet Historique › Par exercice). */
 export function useExercisesLastDone(): { items: ExerciseLastDone[]; isLoading: boolean } {
   const lang = getAppLanguage() === 'en' ? 'en' : 'fr';
@@ -900,6 +927,15 @@ async function activeWorkoutId(userId: string): Promise<string | null> {
     [userId],
   );
   return existing?.id ?? null;
+}
+
+/**
+ * Une séance est-elle en cours ? — US MUSCU-UX07, R4. Lu **au moment de l'appui**, pas depuis un
+ * état React qui pourrait dater : `startWorkoutFromWorkout` renverrait sinon en silence la séance en
+ * cours, et l'utilisateur atterrirait dans une autre séance que celle qu'il voulait refaire.
+ */
+export async function hasActiveWorkout(): Promise<boolean> {
+  return (await activeWorkoutId(currentUserId())) !== null;
 }
 
 /**
