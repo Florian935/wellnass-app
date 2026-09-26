@@ -47,7 +47,7 @@ const FIRST_ACTION_ORDER: readonly Pillar[] = ['strength', 'running', 'nutrition
 const FIRST_ACTION_ROUTE: Record<Pillar, string> = {
   strength: '/(tabs)/strength',
   running: '/(tabs)/running',
-  nutrition: '/(tabs)/nutrition',
+  nutrition: '/(tabs)/nutrition?section=today',
 };
 
 function Row({ label, value, note }: { label: string; value: string; note?: string }) {

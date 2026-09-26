@@ -40,7 +40,14 @@ export default function FoodPickerScreen() {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const params = useLocalSearchParams<{ date?: string; meal?: string; mode?: string; recipeId?: string }>();
+  const params = useLocalSearchParams<{
+    date?: string;
+    meal?: string;
+    mode?: string;
+    recipeId?: string;
+    /** US NUTRI-UX03 — ouvert depuis la Bibliothèque sur un onglet (`favorites`, `recipes`, `templates`). */
+    tab?: string;
+  }>();
   const mode = params.mode === 'recipe' ? 'recipe' : 'journal';
   /**
    * Repli sur **aujourd'hui**, et non sur la chaîne vide.
@@ -69,7 +76,9 @@ const meal = params.meal ?? mealForHour(hour);
   const TABS = mode === 'recipe'
     ? (['all', 'favorites'] as const)
     : (['all', 'favorites', 'recent', 'recipes', 'templates'] as const);
-  const [tab, setTab] = useState<string>('all');
+  const [tab, setTab] = useState<string>(() =>
+    params.tab && (TABS as readonly string[]).includes(params.tab) ? params.tab : 'all',
+  );
   const [search, setSearch] = useState('');
   const { foods: favoriteFoods } = useFavoriteFoods();
   const { foods: recentFoods } = useRecentFoods();

@@ -195,7 +195,8 @@ describe('saisies dues', () => {
     givenAction({ kind: 'weigh-in-due' });
     await render(<NowCard />);
     fireEvent.press(screen.getByText('Enregistrer ma pesée'));
-    expect(push).toHaveBeenCalledWith('/nutrition-stats');
+    // US NUTRI-UX03 (Q8) — la pesée est dans l'onglet Poids de Stats, pas sur Régularité.
+    expect(push).toHaveBeenCalledWith('/nutrition-stats?tab=weight');
   });
 
   it('mène au check-in de bien-être', async () => {

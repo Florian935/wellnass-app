@@ -32,7 +32,8 @@ function ctaRoute(theme: ActivationDayTheme, day: number): Href | null {
   if (theme.kind === 'pillar') {
     if (theme.pillar === 'strength') return '/(tabs)/strength';
     if (theme.pillar === 'running') return '/(tabs)/running';
-    return '/(tabs)/nutrition';
+    // US NUTRI-UX03 (D14) — noter un repas : l'onglet Aujourd'hui, quel que soit le dernier choisi.
+    return '/(tabs)/nutrition?section=today';
   }
   if (day === 3) return '/goals'; // repli « fixe-toi un objectif » (OBJ-01)
   if (day === 4) return '/wellbeing';

@@ -19,6 +19,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -29,6 +30,9 @@ import {
   percentChange,
   resolveMealConfig,
   resolveMealSplit,
+  resolveStatsTab,
+  NUTRITION_STATS_TABS,
+  type NutritionStatsTab,
   weightTrend,
   type MealSplitRow,
 } from '@wellness/shared';
@@ -81,14 +85,17 @@ type WeightRange = keyof typeof WEIGHT_RANGES;
 const INTAKE_RANGES = { '7d': 7, '30d': 30 } as const;
 type IntakeRange = keyof typeof INTAKE_RANGES;
 
-const TABS = ['regularity', 'intake', 'weight', 'quality'] as const;
-type Tab = (typeof TABS)[number];
+const TABS = NUTRITION_STATS_TABS;
+type Tab = NutritionStatsTab;
 
 export default function NutritionStatsScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
-  const [tab, setTab] = useState<Tab>('regularity');
+  // US NUTRI-UX03 (R12) — `tab` ouvre un sous-onglet : « Me peser » mène à Poids, où est la pesée.
+  // Lu au montage seulement : l'écran est poussé, il ne reçoit pas de nouveau paramètre ensuite.
+  const params = useLocalSearchParams<{ tab?: string }>();
+  const [tab, setTab] = useState<Tab>(() => resolveStatsTab(params.tab));
 
   useEffect(() => {
     void track(ANALYTICS_EVENTS.statsViewed, { pillar: 'nutrition' });

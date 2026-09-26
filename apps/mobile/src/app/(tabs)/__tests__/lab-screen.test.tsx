@@ -338,7 +338,8 @@ describe('appliquer une proposition', () => {
 
     // Une feuille « ce qui change dans ton plan » devant un changement qui n'existe pas apprendrait
     // à la confirmer sans lire — et c'est la seule protection de cet écran.
-    expect(push).toHaveBeenCalledWith('/nutrition');
+    // US NUTRI-UX03 (D14) — noter un repas : l'onglet Aujourd'hui, quel que soit le dernier choisi.
+    expect(push).toHaveBeenCalledWith('/nutrition?section=today');
     expect(screen.queryByLabelText('lab.apply.confirm')).toBeNull();
   });
 

@@ -704,8 +704,6 @@
     },
     "week": {
       "eyebrow": "LE VERDICT DE LA SEMAINE",
-      "tabToday": "Aujourd'hui",
-      "tabWeek": "La semaine",
       "allStats": "Voir toutes les statistiques",
       "headline": {
         "onTrack": "Tu tiens ton cap.",
@@ -789,7 +787,6 @@
     "longPressEdit": "Appui long pour modifier ou supprimer"
   },
   "journal": {
-    "today": "Aujourd'hui",
     "remaining": "restantes",
     "over": "dépassé",
     "setTarget": "Définir un objectif calorique",
@@ -829,10 +826,7 @@
     "noTemplate": "Aucun repas type. Enregistre un repas depuis le journal.",
     "saveMeal": "Enregistrer comme repas type",
     "templateSaved": "Repas type enregistré ✓",
-    "copyYesterday": "Copier d'hier",
-    "nothingYesterday": "Rien à copier pour ce repas hier.",
     "copyDayYesterday": "Copier toute la journée d'hier",
-    "nothingYesterdayFull": "Rien à copier : la journée d'hier est vide.",
     "trainingDayBadge": "+{{kcal}} kcal · jour de séance",
     "runDayBadge": "+{{kcal}} kcal · course",
     "detail": {
@@ -878,8 +872,7 @@
       "a11yCell": "{{label}} : {{value}} {{unit}}, soit {{pct}} % des apports conseillés."
     },
     "emptyDay": {
-      "title": "Journée encore vide",
-      "body": "Note ton premier repas, ou repars de ce que tu mangeais hier."
+      "title": "Journée encore vide"
     },
     "mealMenu": "Actions du repas {{meal}}",
     "addSheet": {
@@ -909,24 +902,11 @@
       "addA11y": "Ajouter {{name}}"
     },
     "calendar": {
-      "title": "Aller à un jour",
-      "previousMonth": "Mois précédent",
-      "nextMonth": "Mois suivant",
-      "legend": {
-        "complete": "Journée complète",
-        "partial": "Partielle",
-        "empty": "Rien saisi"
-      },
-      "shortcuts": {
-        "yesterday": "Hier",
-        "today": "Aujourd'hui"
-      },
       "dayA11y": {
         "complete": "{{day}} — journée complète",
         "partial": "{{day}} — journée partielle",
         "empty": "{{day}} — rien saisi"
-      },
-      "open": "Choisir un jour"
+      }
     },
     "quantity": {
       "per100": "{{kcal}} kcal pour 100 g",
@@ -3566,7 +3546,6 @@
   "mealPlan": {
     "title": "Planning repas",
     "subtitle": "Prépare ta semaine, puis tes courses.",
-    "hubTeaser": "Planifie tes repas et génère ta liste de courses.",
     "week": {
       "range": "{{from}} – {{to}}",
       "current": "Cette semaine",
@@ -4008,6 +3987,137 @@
       "title": "Ta progression démarre à ta première séance.",
       "body": "Charges, records, équilibre du corps : tout s’affichera ici au fil de tes séances.",
       "cta": "Commencer"
+    }
+  },
+  "nutritionHub": {
+    "title": "Alimentation",
+    "sections": {
+      "today": "Aujourd'hui",
+      "history": "Historique",
+      "progress": "Progrès"
+    },
+    "icons": {
+      "planning": "Planning repas",
+      "library": "Bibliothèque",
+      "settings": "Objectif et réglages"
+    },
+    "eyebrow": "Aujourd'hui · {{date}}",
+    "repeat": {
+      "title": {
+        "breakfast": "Reprendre un petit-déjeuner",
+        "lunch": "Reprendre un déjeuner",
+        "dinner": "Reprendre un dîner",
+        "snack": "Reprendre une collation"
+      },
+      "action": "Reprendre",
+      "done": "Ajouté",
+      "meta_one": "{{kcal}} kcal · une seule fois",
+      "meta_other": "{{kcal}} kcal · {{count}} fois en 2 mois",
+      "a11y": "Reprendre : {{meal}} du {{date}}",
+      "openA11y": "Voir la journée du {{date}}",
+      "allHabits": "Tous tes repas habituels"
+    },
+    "likeYesterday": "Comme hier",
+    "likeYesterdayA11y": "Comme hier : {{meal}}, {{kcal}} kcal",
+    "emptyDay": {
+      "body": "Note ce que tu manges au fil de la journée."
+    },
+    "planned": {
+      "eyebrow": "PRÉVU AU PLANNING",
+      "eat": "J'ai mangé ça",
+      "eatA11y": "J'ai mangé ça : {{name}}, {{meal}}",
+      "meta": "{{kcal}} kcal"
+    },
+    "template": {
+      "title": "Nommer ce repas type",
+      "subtitle_one": "{{meal}} · {{count}} aliment · {{kcal}} kcal",
+      "subtitle_other": "{{meal}} · {{count}} aliments · {{kcal}} kcal",
+      "label": "Nom du repas type",
+      "placeholder": "Ex. : Petit-déj du matin",
+      "hint": "Tu le retrouveras sous ce nom dans la recherche.",
+      "save": "Enregistrer"
+    },
+    "library": {
+      "title": "Ta bibliothèque",
+      "recipesHint": "Tes plats composés, à la portion",
+      "templatesHint": "Tes repas enregistrés, à ajouter d'un geste",
+      "favoritesHint": "Les aliments que tu as mis de côté",
+      "mealsHint": "Leur nombre, leurs noms, leur ordre"
+    },
+    "calendar": {
+      "previous": "Mois précédent",
+      "next": "Mois suivant",
+      "loggedDays_one": "{{count}} jour noté",
+      "loggedDays_other": "{{count}} jours notés",
+      "average": "{{kcal}} kcal en moyenne",
+      "split": "dans ta cible : {{inTarget}} · au-dessus : {{over}} · en dessous : {{under}}",
+      "empty": "Aucun jour noté ce mois-ci.",
+      "legend": {
+        "in": "dans ta cible",
+        "over": "au-dessus",
+        "under": "en dessous",
+        "noTarget": "sans cible",
+        "none": "rien de noté"
+      },
+      "status": {
+        "in": "{{kcal}} kcal, dans ta cible",
+        "over": "{{kcal}} kcal, au-dessus de ta cible",
+        "under": "{{kcal}} kcal, en dessous de ta cible",
+        "logged": "{{kcal}} kcal",
+        "none": "rien de noté",
+        "today": "aujourd'hui, en cours",
+        "future": "à venir"
+      },
+      "dayA11y": "{{date}} : {{status}}"
+    },
+    "historyTabs": {
+      "days": "Jours",
+      "habits": "Repas habituels"
+    },
+    "days": {
+      "in": "dans ta cible",
+      "over": "+{{kcal}} kcal",
+      "under": "−{{kcal}} kcal",
+      "today": "en cours",
+      "nothing": "Rien de noté",
+      "complete": "Compléter ce jour",
+      "todayPill": "AUJ.",
+      "kcal": "{{kcal}} kcal",
+      "a11y": "{{date}} : {{summary}}"
+    },
+    "habits": {
+      "meta_one": "{{kcal}} kcal · {{count}} fois · dernière : {{date}}",
+      "meta_other": "{{kcal}} kcal · {{count}} fois · dernière : {{date}}",
+      "a11y": "Reprendre aujourd'hui, {{meal}} : {{name}}",
+      "yesterday": "hier",
+      "empty": "Tes repas habituels apparaîtront ici dès que tu auras noté deux fois le même repas.",
+      "note": "Un repas habituel : les mêmes aliments, notés au moins deux fois. Il est repris avec les quantités de la dernière fois, dans le repas du même nom aujourd'hui."
+    },
+    "day": {
+      "status": {
+        "in": "{{kcal}} kcal · dans ta cible",
+        "over": "{{kcal}} kcal · {{delta}} kcal au-dessus de ta cible",
+        "under": "{{kcal}} kcal · {{delta}} kcal en dessous de ta cible",
+        "noTarget": "{{kcal}} kcal",
+        "none": "Rien de noté ce jour-là"
+      },
+      "macros": "P {{p}} g · G {{g}} g · L {{l}} g",
+      "redoMeal": "Aujourd'hui",
+      "redoMealA11y": "Reprendre aujourd'hui : {{meal}} du {{date}}",
+      "redoneA11y": "{{meal}} du {{date}} : ajouté à aujourd'hui",
+      "redoAll": "Reprendre toute la journée aujourd'hui",
+      "redoAllMeta_one": "{{count}} repas · {{kcal}} kcal",
+      "redoAllMeta_other": "{{count}} repas · {{kcal}} kcal",
+      "confirmTitle": "Aujourd'hui n'est pas vide",
+      "confirmBody_one": "Tu as déjà noté {{count}} aliment aujourd'hui. Ajouter les repas du {{date}} en plus ?",
+      "confirmBody_other": "Tu as déjà noté {{count}} aliments aujourd'hui. Ajouter les repas du {{date}} en plus ?",
+      "confirmAdd": "Ajouter",
+      "empty": "Rien de noté ce jour-là. Ajoute ce dont tu te souviens avec les « + » : ta régularité et tes moyennes n'en seront que plus justes."
+    },
+    "progressEmpty": {
+      "title": "Tes progrès démarrent à ton premier repas noté.",
+      "body": "Cible, protéines, poids, régularité : tout s'affichera ici au fil des jours.",
+      "cta": "Noter un repas"
     }
   },
   "hydration": {
@@ -4562,7 +4672,6 @@
       "remaining": "Il te reste {{kcal}} kcal",
       "reached": "Objectif atteint",
       "over": "{{kcal}} kcal au-dessus",
-      "ofTarget": "sur {{kcal}} kcal visées",
       "noTarget": "Aucun objectif calorique",
       "trainingBonus": "+{{kcal}} kcal — jour de séance",
       "macroP": "P",
@@ -4578,8 +4687,7 @@
       "detail": "{{consumed}} sur {{target}} kcal",
       "detailWithBonus": "{{consumed}} sur {{target}} · +{{bonus}} jour de séance",
       "remainingA11y": "{{kcal}} kcal encore disponibles aujourd'hui",
-      "macroGrams": "{{value}}/{{goal}}",
-      "backToToday": "Revenir à aujourd'hui"
+      "macroGrams": "{{value}}/{{goal}}"
     }
   },
   "workoutMode": {

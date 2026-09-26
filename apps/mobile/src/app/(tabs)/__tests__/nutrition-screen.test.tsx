@@ -1,23 +1,16 @@
 /**
- * Journal alimentaire (`app/(tabs)/nutrition.tsx`) — le **vrai** écran, monté.
+ * Hub Nutrition (`app/(tabs)/nutrition.tsx`) — le **vrai** écran, monté.
  *
- * Le plus gros écran restant à **0 %** (188 instructions) et le plus manipulé de l'app : c'est ici
- * qu'on saisit plusieurs fois par jour. Ce qui est vérifié porte sur ce que l'écran **décide**, pas
- * sur ce qu'il affiche :
+ * Réécrit par US NUTRI-UX03 (trois onglets). Ce qui est vérifié porte sur ce que l'écran **décide** :
  *
- *  1. **Le jour affiché suit « aujourd'hui » UNIQUEMENT si on y était.** À minuit, ou au retour de
- *     veille, `useTodayKey` change : écraser une navigation délibérée vers le 5 août ramènerait
- *     l'utilisateur à aujourd'hui pendant qu'il saisit un repas passé.
- *  2. **Les entrées ORPHELINES ne sont jamais perdues.** Supprimer un repas de la config laisse ses
- *     entrées avec une `mealType` qui n'existe plus : elles remontent dans « Autres », d'où on peut
- *     les réaffecter. Sans cette section, elles disparaîtraient de l'écran en restant en base — et
- *     compteraient quand même dans les totaux, ce qui rend le journal incompréhensible.
- *  3. **La modification d'une quantité recalcule le snapshot** (règle de trois, `rescaleEntryNutrition`).
- *     Les macros sont figées à la saisie ; les recalculer à l'affichage ferait bouger l'historique
- *     quand la base CIQUAL est mise à jour.
- *  4. **Deux types d'entrée, deux formulaires** : avec grammes → on édite les grammes ; sans
- *     (ajout rapide, recette) → on édite directement kcal et macros. Proposer les grammes sur un
- *     ajout rapide demanderait une densité qui n'existe pas.
+ *  1. **Aujourd'hui est toujours aujourd'hui** (D4) : plus de flèches ni de trame, le journal suit le
+ *     jour courant, et le passé s'ouvre sur sa propre page.
+ *  2. **L'onglet affiché** (D3) : paramètre lu une fois, sinon le dernier choisi, sinon Aujourd'hui.
+ *  3. **Reprendre, Comme hier, repas prévus** (R3, R4, R6) : ce qui accélère la saisie sans l'éloigner.
+ *  4. **Le repas type porte un nom saisi** (R5) — plus jamais « Déjeuner ».
+ *  5. Et, repris tels quels de NUTRI-UX01/02 : les entrées ORPHELINES ne sont jamais perdues, la
+ *     modification d'une quantité recalcule le snapshot, deux types d'entrée ont deux formulaires, les
+ *     micros ne mentent pas.
  */
 import React from 'react';
 import { Alert } from 'react-native';
@@ -32,16 +25,20 @@ import {
   removeEntry,
   updateEntry,
   useDayEntries,
+  useEntriesBetween,
+  useMonthTotals,
 } from '@/data/repositories/journal-repository';
+import { consumePlannedEntry, useDayMealPlan } from '@/data/repositories/meal-plan-repository';
 import { saveMealAsTemplate } from '@/data/repositories/meal-template-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useDayCalorieTarget } from '@/data/repositories/dashboard-repository';
 import { useRealLifePeriods } from '@/data/repositories/real-life-repository';
 import { useRecentFoods } from '@/data/repositories/food-repository';
-import { useTodayKey } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
+import { useNutritionSection } from '@/stores/nutrition-section-store';
 import { DEFAULT_TRACKED_MICROS, useTrackedMicros } from '@/stores/tracked-micros';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter, useScrollToTop } from 'expo-router';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -55,13 +52,19 @@ jest.mock('@/data/repositories/journal-repository', () => ({
   reassignEntryMeal: jest.fn(),
   duplicateDay: jest.fn(),
   copyMeal: jest.fn(),
-  // US NUTRI-UX01 : la trame de semaine (R3.2) et le calendrier (R3.1) lisent les totaux d'une
-  // plage bornée ; la carte qualité (R3.5) lit les sous-macros par jointure.
+  addFoodEntry: jest.fn(),
+  // La ligne « … n'a rien de saisi » lit les totaux des six derniers jours.
   useMonthTotals: jest.fn(() => ({ totals: [], isLoading: false })),
+  // US NUTRI-UX03 — les 60 jours de « Reprendre un repas ».
+  useEntriesBetween: jest.fn(() => ({ rows: [], isLoading: false })),
   useDayQuality: jest.fn(() => ({
     quality: { fiber: 0, sugars: 0, saturatedFat: 0, coverageRatio: 0 },
     isLoading: false,
   })),
+}));
+jest.mock('@/data/repositories/meal-plan-repository', () => ({
+  useDayMealPlan: jest.fn(() => ({ entries: [], isLoading: false })),
+  consumePlannedEntry: jest.fn(),
 }));
 jest.mock('@/data/repositories/water-repository', () => ({
   useDayWater: jest.fn(() => ({ totalMl: 0, isLoading: false })),
@@ -92,16 +95,14 @@ jest.mock('@/data/repositories/real-life-repository', () => ({
 }));
 jest.mock('@/data/repositories/food-repository', () => ({
   useRecentFoods: jest.fn(() => ({ foods: [] })),
-  // US NUTRI-UX02 — la feuille d'ajout sait désormais dire « la bibliothèque n'est pas arrivée ».
-  // Ici elle l'est : ces tests portent sur le journal, pas sur la panne de synchro.
+  // US NUTRI-UX02 — la feuille d'ajout sait dire « la bibliothèque n'est pas arrivée ». Ici elle l'est.
   useLibraryPresence: jest.fn(() => ({ count: 3244, isLoading: false, isEmpty: false })),
-  // US NUTR-F2 — vivier de repli ouvert le 12/08/2026. Vide par défaut : ces tests portent sur la
-  // navigation et les repas, pas sur la carte de suggestion.
+  // US NUTR-F2 — vivier de repli. Vide par défaut : ces tests ne portent pas sur la suggestion.
   useDenseFoodCandidates: jest.fn(() => ({ foods: [], isLoading: false })),
 }));
 jest.mock('@/hooks/useTodayKey', () => ({
   useTodayKey: jest.fn(),
-  // US NUTRI-UX01 (R2.6) : le repas se déduit désormais de l'heure. 12 h → déjeuner.
+  // NUTRI-UX01 (R2.6) : le repas se déduit de l'heure. 12 h → déjeuner.
   useCurrentHour: jest.fn(() => 12),
 }));
 jest.mock('@/hooks/useMenuFocus', () => ({ useMenuFocus: jest.fn() }));
@@ -183,28 +184,33 @@ jest.mock('@expo/vector-icons', () => {
   return { Ionicons: ({ name }: { name: string }) => <Text>icone-{name}</Text> };
 });
 
-// US DEPENSE-03 : la carte « Ta journée en énergie » a ses propres tests ; ici elle tirerait
-// settings-repository et tout le graphe i18n dans un test d'écran qui mocke react-i18next.
+// Les cartes qui tirent toute la chaîne des repositories ont leurs propres tests.
 jest.mock('@/components/energy/DayEnergyCard', () => ({ DayEnergyCard: () => null }));
-// US RESERV-01 : la carte Réservoir tire la chaîne des repositories, donc l'initialisation i18n de
-// l'app. Elle a son propre test ; ici on la neutralise, comme DayEnergyCard juste au-dessus.
 jest.mock('@/components/nutrition/FuelTankCard', () => ({ FuelTankCard: () => null }));
-// US NUTRI-UX02 : les cartes de l'onglet « La semaine », remontées de `Nutrition › Stats`. Même
-// raison que les deux ci-dessus — elles tirent la chaîne complète des repositories et
-// l'initialisation i18n réelle. Chacune a ses propres tests ; l'onglet, lui, est vérifié plus bas
-// par la présence de ses deux boutons et par le basculement du contenu.
-jest.mock('@/components/nutrition/WeekVerdictCard', () => ({
-  WeekVerdictCard: () => {
-    const { Text } = require('react-native');
-    return <Text>verdict-semaine</Text>;
+// US NUTRI-UX03 — Historique et Progrès ont leurs propres tests ; ici on vérifie qu'ils s'affichent
+// au bon onglet et qu'ils reçoivent ce que l'écran leur doit.
+jest.mock('@/components/nutrition/sections/HistorySection', () => ({
+  HistorySection: ({ mealOfHour, onToday }: { mealOfHour: string; onToday: () => void }) => {
+    const { Pressable, Text } = require('react-native');
+    return (
+      <Pressable onPress={onToday} accessibilityRole="button">
+        <Text>{`historique:${mealOfHour}`}</Text>
+      </Pressable>
+    );
   },
 }));
-jest.mock('@/components/nutrition/RegularityCard', () => ({ RegularityCard: () => null }));
-jest.mock('@/components/ProteinPerKgCard', () => ({ ProteinPerKgCard: () => null }));
-jest.mock('@/components/TrainingNutritionCrossCard', () => ({ TrainingNutritionCrossCard: () => null }));
-jest.mock('@/components/WeightGoalCard', () => ({ WeightGoalCard: () => null }));
+jest.mock('@/components/nutrition/sections/ProgressSection', () => ({
+  ProgressSection: () => {
+    const { Text } = require('react-native');
+    return <Text>progres</Text>;
+  },
+}));
 
-jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
+jest.mock('expo-router', () => ({
+  useRouter: jest.fn(),
+  useLocalSearchParams: jest.fn(() => ({})),
+  useScrollToTop: jest.fn(),
+}));
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -229,6 +235,7 @@ jest.mock('@/theme/useTheme', () => ({
       panel: '#33291f',
       panelText: '#ffffff',
       accent: '#c0562f',
+      accentText: '#ffffff',
       danger: '#b23b2e',
     },
   }),
@@ -245,6 +252,10 @@ const mockMove = moveEntry as jest.Mock;
 const mockReassign = reassignEntryMeal as jest.Mock;
 const mockDuplicateDay = duplicateDay as jest.Mock;
 const mockCopyMeal = copyMeal as jest.Mock;
+const mockBetween = useEntriesBetween as jest.Mock;
+const mockMonthTotals = useMonthTotals as jest.Mock;
+const mockPlan = useDayMealPlan as jest.Mock;
+const mockConsume = consumePlannedEntry as jest.Mock;
 const mockSaveTemplate = saveMealAsTemplate as jest.Mock;
 const mockProfile = useProfile as jest.Mock;
 const mockNutritionProfile = useNutritionProfile as jest.Mock;
@@ -252,11 +263,16 @@ const mockTarget = useDayCalorieTarget as jest.Mock;
 const mockRealLife = useRealLifePeriods as jest.Mock;
 const mockRecent = useRecentFoods as jest.Mock;
 const mockToday = useTodayKey as jest.Mock;
+const mockHour = useCurrentHour as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
+const mockParams = useLocalSearchParams as jest.Mock;
+const mockScrollToTop = useScrollToTop as jest.Mock;
 
 const push = jest.fn();
+const setParams = jest.fn();
 
 const AUJOURDHUI = '2026-08-12';
+const HIER = '2026-08-11';
 
 const entree = (overrides: Record<string, unknown> = {}) => ({
   id: 'e-1',
@@ -273,12 +289,44 @@ const entree = (overrides: Record<string, unknown> = {}) => ({
   ...overrides,
 });
 
+/** Une ligne d'historique pour « Reprendre un repas » (R3). */
+const passe = (logDate: string, mealType: string, name: string, orderIndex = 0) => ({
+  logDate,
+  mealType,
+  foodId: `f-${name}`,
+  name,
+  kcal: 200,
+  orderIndex,
+});
+
+const prevu = (overrides: Record<string, unknown> = {}) => ({
+  id: 'p-1',
+  planDate: AUJOURDHUI,
+  mealKey: 'dinner',
+  orderIndex: 0,
+  sourceType: 'recipe',
+  recipeId: 'r-1',
+  templateId: null,
+  foodId: null,
+  quantityG: null,
+  servings: 1,
+  label: 'Poulet basquaise',
+  kcal: 640,
+  proteinG: 40,
+  carbsG: 70,
+  fatG: 18,
+  consumedAt: null,
+  ...overrides,
+});
+
 const afficher = async ({
   entries = [] as unknown[],
+  hier = [] as unknown[],
   aujourdhui = AUJOURDHUI,
-}: { entries?: unknown[]; aujourdhui?: string } = {}) => {
+}: { entries?: unknown[]; hier?: unknown[]; aujourdhui?: string } = {}) => {
   mockToday.mockReturnValue(aujourdhui);
-  mockEntries.mockReturnValue({ entries });
+  // Deux lectures du journal : aujourd'hui, et la veille (« Comme hier », R4).
+  mockEntries.mockImplementation((date: string) => ({ entries: date === aujourdhui ? entries : hier }));
   await render(<NutritionScreen />);
 };
 
@@ -295,20 +343,12 @@ const saisir = async (label: string, valeur: string) => {
 };
 
 /**
- * Le grand chiffre de la scène (US DASH-01). Il se lit sur `defaultValue` : `AnimatedNumber`
- * n'écrit jamais `value`, qui figerait le texte côté JS et annulerait la piste d'animation.
- */
-/**
- * Le grand chiffre de la scène, **espaces de groupement normalisés**.
- *
- * `AnimatedNumber` formate avec le séparateur de la locale — en français une espace fine
- * insécable (U+202F), invisible à la lecture d'un diff mais différente d'une espace ordinaire.
- * Comparer sans normaliser produit un `Expected: "1 500" / Received: "1 500"`, deux chaînes qui
- * s'affichent à l'identique et ne sont pas égales : une demi-heure perdue pour rien.
+ * Le grand chiffre, **espaces de groupement normalisés** : `AnimatedNumber` formate avec le
+ * séparateur de la locale (une espace fine insécable en français).
  */
 const kcalAffichees = () =>
   (screen.getByTestId('stage-kcal', { includeHiddenElements: true }).props.defaultValue as string)
-    .replace(/[  \s]/g, ' ');
+    .replace(/[  \s]/g, ' ');
 
 /** Ouvre le détail d'une entrée par un appui simple sur sa ligne. */
 const ouvrirDetail = async (nom: string) => {
@@ -320,11 +360,9 @@ let titreAlerte: string | undefined;
 
 beforeEach(() => {
   jest.clearAllMocks();
-  // Le store des micros suivis est un singleton : sans remise à zéro, un test qui vide la
-  // sélection la laisserait vide pour les suivants.
   useTrackedMicros.setState({ tracked: DEFAULT_TRACKED_MICROS, hydrated: true });
-  // L'écran compare le jour affiché à `new Date()` pour décider du libellé « Aujourd'hui » :
-  // sans horloge figée, le test change de verdict chaque jour.
+  // Le store de l'onglet est un singleton en mémoire : chaque test repart d'un lancement à froid.
+  useNutritionSection.setState({ section: null, historyMonth: null, historyTab: 'days', habitsMeal: null });
   jest.useFakeTimers();
   jest.setSystemTime(new Date(`${AUJOURDHUI}T10:00:00`));
   boutonsAlerte = [];
@@ -333,11 +371,16 @@ beforeEach(() => {
     titreAlerte = titre;
     boutonsAlerte = (boutons ?? []) as typeof boutonsAlerte;
   });
-  mockUseRouter.mockReturnValue({ push });
+  mockUseRouter.mockReturnValue({ push, setParams });
+  mockParams.mockReturnValue({});
+  mockHour.mockReturnValue(12);
   mockProfile.mockReturnValue({ profile: null });
   mockNutritionProfile.mockReturnValue({ nutritionProfile: null });
   mockRealLife.mockReturnValue({ periods: [] });
   mockRecent.mockReturnValue({ foods: [] });
+  mockBetween.mockReturnValue({ rows: [], isLoading: false });
+  mockMonthTotals.mockReturnValue({ totals: [], isLoading: false });
+  mockPlan.mockReturnValue({ entries: [], isLoading: false });
   mockTarget.mockReturnValue({
     effectiveTarget: 2000,
     trainingBonus: 0,
@@ -347,77 +390,44 @@ beforeEach(() => {
   });
   mockDuplicateDay.mockResolvedValue(3);
   mockCopyMeal.mockResolvedValue(2);
+  mockConsume.mockResolvedValue(1);
   mockSaveTemplate.mockResolvedValue(undefined);
   mockUpdate.mockResolvedValue(undefined);
+  // Les vraies écritures renvoient une promesse, que l'écran capture (`.catch`) : les simulations aussi.
+  mockRemove.mockResolvedValue(undefined);
+  mockMove.mockResolvedValue(undefined);
+  mockReassign.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
   // 🔴 Purger les timers AVANT de repasser en horloge réelle : la feuille d'ajout arme un
-  // `setTimeout` de debounce (US NUTRI-UX01, R6.2), et un timer laissé en attente sous fausse
-  // horloge se déclenche au test suivant — pendant son rendu, donc hors de tout `act()`.
+  // `setTimeout` de debounce, qui se déclencherait au test suivant, hors de tout `act()`.
   jest.clearAllTimers();
   jest.useRealTimers();
   jest.restoreAllMocks();
 });
 
 // ---------------------------------------------------------------------------
-// Navigation par jour
+// Aujourd'hui, toujours (D4)
 // ---------------------------------------------------------------------------
 
-describe('navigation par jour', () => {
-  it('ouvre sur aujourd’hui, avec la date en sous-titre', async () => {
+describe('Aujourd’hui est toujours aujourd’hui (D4)', () => {
+  it('ouvre sur aujourd’hui, nommé en tête du remplissage', async () => {
     await afficher();
 
-    // Le libellé « Aujourd'hui » seul ne dit pas quel jour on est — la date reste utile pour se
-    // repérer quand on revient d'une navigation dans l'historique.
-    expect(screen.getByText('journal.today')).toBeTruthy();
     expect(mockEntries).toHaveBeenCalledWith(AUJOURDHUI);
+    expect(screen.getByText(/nutritionHub\.eyebrow/)).toBeTruthy();
   });
 
-  it('les flèches changent le jour interrogé', async () => {
+  it('🔴 plus de flèches ni de trame : on ne note plus par mégarde sur un autre jour', async () => {
     await afficher();
 
-    await taper(screen.getByLabelText('journal.prevDay'));
-    expect(mockEntries).toHaveBeenLastCalledWith('2026-08-11');
-
-    await taper(screen.getByLabelText('journal.nextDay'));
-    await taper(screen.getByLabelText('journal.nextDay'));
-    expect(mockEntries).toHaveBeenLastCalledWith('2026-08-13');
+    expect(screen.queryByLabelText('journal.prevDay')).toBeNull();
+    expect(screen.queryByLabelText('journal.nextDay')).toBeNull();
+    expect(screen.queryByTestId('back-to-today')).toBeNull();
   });
 
-  it('🔴 la veille franchit correctement un début de mois', async () => {
-    await afficher({ aujourdhui: '2026-08-01' });
-
-    await taper(screen.getByLabelText('journal.prevDay'));
-
-    // Arithmétique sur les composants de date, jamais sur la chaîne : « 2026-08-00 » n'existe pas.
-    expect(mockEntries).toHaveBeenLastCalledWith('2026-07-31');
-  });
-
-  it('un jour passé n’affiche plus « aujourd’hui »', async () => {
-    await afficher();
-
-    await taper(screen.getByLabelText('journal.prevDay'));
-
-    expect(screen.queryByText('journal.today')).toBeNull();
-  });
-
-  it('🔴 le passage de minuit NE déplace PAS un jour choisi délibérément', async () => {
-    await afficher();
-    await taper(screen.getByLabelText('journal.prevDay'));
-    expect(mockEntries).toHaveBeenLastCalledWith('2026-08-11');
-
-    // Minuit passe pendant que l'utilisateur saisit un repas de la veille.
-    mockToday.mockReturnValue('2026-08-13');
-    await act(async () => {
-      await screen.rerender(<NutritionScreen />);
-    });
-
-    // Le ramener à aujourd'hui effacerait sa navigation sous ses doigts, au milieu d'une saisie.
-    expect(mockEntries).toHaveBeenLastCalledWith('2026-08-11');
-  });
-
-  it('🔴 mais il SUIT le jour courant si on était resté sur « aujourd’hui »', async () => {
+  it('🔴 au passage de minuit, le journal suit le jour courant', async () => {
     await afficher();
 
     mockToday.mockReturnValue('2026-08-13');
@@ -426,62 +436,397 @@ describe('navigation par jour', () => {
     });
 
     // Sans ce suivi, l'app rouverte au petit-déjeuner ajouterait les aliments à la veille.
-    expect(mockEntries).toHaveBeenLastCalledWith('2026-08-13');
+    expect(mockEntries).toHaveBeenCalledWith('2026-08-13');
+    expect(mockTarget).toHaveBeenLastCalledWith('2026-08-13');
+  });
+
+  it('le jour sans saisie ouvre SA page, au lieu de faire basculer le hub', async () => {
+    // Six jours passés, un seul saisi : la ligne nomme le plus récent des trous (le 11).
+    mockMonthTotals.mockReturnValue({ totals: [{ logDate: '2026-08-10', kcal: 2100 }], isLoading: false });
+    await afficher();
+
+    await taper(screen.getByText(/stage\.nutrition\.missingDay/));
+
+    expect(push).toHaveBeenCalledWith({ pathname: '/nutrition-day', params: { date: HIER } });
+  });
+
+  it('🔴 la cible est demandée pour aujourd’hui', async () => {
+    await afficher({ entries: [entree()] });
+
+    expect(mockTarget).toHaveBeenLastCalledWith(AUJOURDHUI);
   });
 });
 
 // ---------------------------------------------------------------------------
-// Journée vide
+// Les onglets (D1 à D3)
+// ---------------------------------------------------------------------------
+
+describe('les trois onglets', () => {
+  it('🔴 démarrage à froid : Aujourd’hui — le geste de vingt fois par jour, pas les analyses', async () => {
+    await afficher({ entries: [entree()] });
+
+    expect(screen.getByTestId('nutrition-tab-today').props.accessibilityState.selected).toBe(true);
+    expect(screen.getByText('nutritionHub.sections.history')).toBeTruthy();
+    expect(screen.getByText('nutritionHub.sections.progress')).toBeTruthy();
+    expect(screen.queryByText('progres')).toBeNull();
+  });
+
+  it('Historique remplace la journée, et reçoit le repas de l’heure', async () => {
+    await afficher({ entries: [entree()] });
+
+    await taper(screen.getByTestId('nutrition-tab-history'));
+
+    expect(screen.getByText('historique:lunch')).toBeTruthy();
+    expect(screen.queryByText('journal.dayCard.title')).toBeNull();
+    // Le remplissage est propre à Aujourd'hui : l'en-tête redevient compact.
+    expect(screen.queryByTestId('stage-kcal', { includeHiddenElements: true })).toBeNull();
+  });
+
+  it('Progrès : l’ancienne « La semaine »', async () => {
+    await afficher({ entries: [entree()] });
+
+    await taper(screen.getByTestId('nutrition-tab-progress'));
+
+    expect(screen.getByText('progres')).toBeTruthy();
+    expect(screen.queryByText('Banane')).toBeNull();
+  });
+
+  it('🔴 le dernier onglet choisi est rouvert — rien ne change d’onglet de force', async () => {
+    useNutritionSection.setState({ section: 'progress' });
+    await afficher({ entries: [entree()] });
+
+    expect(screen.getByText('progres')).toBeTruthy();
+  });
+
+  it('🔴 un paramètre `section` est lu UNE fois, puis effacé', async () => {
+    mockParams.mockReturnValue({ section: 'history' });
+    await afficher();
+
+    expect(screen.getByText('historique:lunch')).toBeTruthy();
+    expect(useNutritionSection.getState().section).toBe('history');
+    // Laissé en place, il s'appliquerait à chaque retour sur l'onglet.
+    expect(setParams).toHaveBeenCalledWith({ section: undefined });
+  });
+
+  it('un retour à Aujourd’hui depuis Historique rouvre la journée', async () => {
+    await afficher({ entries: [entree()] });
+    await taper(screen.getByTestId('nutrition-tab-history'));
+
+    await taper(screen.getByText('historique:lunch'));
+
+    expect(screen.getByText('Banane')).toBeTruthy();
+  });
+
+  it('D2 — un nouvel appui sur l’onglet Alim ramène en haut', async () => {
+    await afficher();
+
+    // La référence passée à `useScrollToTop` doit être celle du défilement RÉEL de la page : une
+    // référence jamais branchée ferait passer un simple « a été appelé ».
+    const ref = mockScrollToTop.mock.calls[0]![0] as { current: unknown };
+    expect(ref.current).not.toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// L'en-tête (D8)
+// ---------------------------------------------------------------------------
+
+describe('l’en-tête', () => {
+  it('s’appelle « Alimentation » (Q7)', async () => {
+    await afficher();
+
+    expect(screen.getByText('nutritionHub.title')).toBeTruthy();
+  });
+
+  it.each([
+    ['nutritionHub.icons.planning', '/meal-plan'],
+    ['nutritionHub.icons.settings', '/nutrition-profile'],
+  ])('%s ouvre %s', async (label, route) => {
+    await afficher();
+
+    await taper(screen.getByLabelText(label));
+    expect(push).toHaveBeenCalledWith(route);
+  });
+
+  it('🔴 l’icône Statistiques quitte l’en-tête — le lien vit en bas de Progrès', async () => {
+    await afficher();
+
+    expect(screen.queryByLabelText('stats.title')).toBeNull();
+  });
+
+  it('Scanner est à côté de « Chercher un aliment », sur le repas de l’heure', async () => {
+    await afficher();
+
+    await taper(screen.getByLabelText('scan.title'));
+    expect(push).toHaveBeenCalledWith({ pathname: '/food-scan', params: { date: AUJOURDHUI, meal: 'lunch' } });
+  });
+
+  it.each([
+    ['journal.tabs.recipes', { pathname: '/food-picker', params: { tab: 'recipes' } }],
+    ['journal.tabs.templates', { pathname: '/food-picker', params: { tab: 'templates' } }],
+    ['journal.tabs.favorites', { pathname: '/food-picker', params: { tab: 'favorites' } }],
+    ['meals.manage', '/nutrition-meals'],
+  ])('la Bibliothèque ouvre %s', async (label, route) => {
+    await afficher();
+
+    await taper(screen.getByLabelText('nutritionHub.icons.library'));
+    await taper(screen.getByLabelText(label));
+
+    expect(push).toHaveBeenCalledWith(route);
+  });
+
+  it('🔴 la carte Planning du bas a disparu (D7)', async () => {
+    await afficher({ entries: [entree()] });
+
+    expect(screen.queryByLabelText('mealPlan.title')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Reprendre un repas (R3)
+// ---------------------------------------------------------------------------
+
+describe('Reprendre un repas (R3)', () => {
+  const historique = [
+    passe('2026-08-11', 'lunch', 'Poulet', 0),
+    passe('2026-08-11', 'lunch', 'Riz', 1),
+    passe('2026-08-10', 'lunch', 'Lentilles', 0),
+    passe('2026-08-09', 'lunch', 'Poulet', 0),
+    passe('2026-08-09', 'lunch', 'Riz', 1),
+    passe('2026-08-11', 'breakfast', 'Skyr', 0),
+  ];
+
+  it('à midi, les derniers déjeuners différents', async () => {
+    mockBetween.mockReturnValue({ rows: historique, isLoading: false });
+    await afficher();
+
+    expect(screen.getByText('nutritionHub.repeat.title.lunch')).toBeTruthy();
+    expect(screen.getByText('Poulet, Riz')).toBeTruthy();
+    expect(screen.getByText('Lentilles')).toBeTruthy();
+    // Deux fois le même déjeuner : une ligne, et le compte le dit.
+    expect(screen.getByText(/"count":2/)).toBeTruthy();
+    expect(screen.queryByText('Skyr')).toBeNull();
+  });
+
+  it('🔴 la fenêtre est de 60 jours, aujourd’hui exclu', async () => {
+    await afficher();
+
+    expect(mockBetween).toHaveBeenCalledWith('2026-06-13', HIER);
+  });
+
+  it('Reprendre copie CETTE occurrence dans le repas de l’heure, aujourd’hui', async () => {
+    mockBetween.mockReturnValue({ rows: historique, isLoading: false });
+    await afficher();
+
+    await taper(screen.getAllByText('nutritionHub.repeat.action')[1]!);
+
+    expect(mockCopyMeal).toHaveBeenCalledWith('2026-08-10', 'lunch', AUJOURDHUI);
+  });
+
+  it('🔴 un double appui n’écrit qu’une fois', async () => {
+    let finir: () => void = () => undefined;
+    mockCopyMeal.mockImplementation(() => new Promise<number>((r) => (finir = () => r(2))));
+    mockBetween.mockReturnValue({ rows: historique, isLoading: false });
+    await afficher();
+
+    const bouton = screen.getAllByText('nutritionHub.repeat.action')[0]!;
+    await taper(bouton);
+    await taper(bouton);
+    await act(async () => finir());
+
+    expect(mockCopyMeal).toHaveBeenCalledTimes(1);
+  });
+
+  it('🔴 masqué dès que le repas de l’heure a une entrée', async () => {
+    mockBetween.mockReturnValue({ rows: historique, isLoading: false });
+    await afficher({ entries: [entree({ mealType: 'lunch' })] });
+
+    expect(screen.queryByText('nutritionHub.repeat.title.lunch')).toBeNull();
+  });
+
+  it('masqué quand le repas de l’heure n’est pas dans la configuration', async () => {
+    mockNutritionProfile.mockReturnValue({
+      nutritionProfile: { meals: [{ key: 'breakfast' }, { key: 'dinner' }] },
+    });
+    mockBetween.mockReturnValue({ rows: historique, isLoading: false });
+    await afficher();
+
+    expect(screen.queryByText('nutritionHub.repeat.title.lunch')).toBeNull();
+  });
+
+  it('« Tous tes repas habituels » ouvre Historique sur ce repas', async () => {
+    mockBetween.mockReturnValue({ rows: historique, isLoading: false });
+    await afficher();
+
+    await taper(screen.getByText('nutritionHub.repeat.allHabits'));
+
+    expect(useNutritionSection.getState()).toMatchObject({
+      section: 'history',
+      historyTab: 'habits',
+      habitsMeal: 'lunch',
+    });
+  });
+
+  it('une ligne ouvre la page de ce jour', async () => {
+    mockBetween.mockReturnValue({ rows: historique, isLoading: false });
+    await afficher();
+
+    await taper(screen.getByText('Lentilles'));
+
+    expect(push).toHaveBeenCalledWith({ pathname: '/nutrition-day', params: { date: '2026-08-10' } });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Journée vide, Comme hier (R4), repas prévus (R6)
 // ---------------------------------------------------------------------------
 
 describe('journée vide', () => {
-  it('propose « copier hier » et « ajouter », sans cartes de repas', async () => {
-    await afficher({ entries: [] });
+  it('🔴 rien à proposer (ni hier, ni planning) : l’état vide, avec l’eau', async () => {
+    await afficher();
 
-    expect(screen.getByLabelText('journal.copyDayYesterday')).toBeTruthy();
-    // Cinq cartes pointillées identiques par-dessus l'état vide ne donnent aucun repère de plus.
+    expect(screen.getByTestId('nutrition-empty-day')).toBeTruthy();
+    expect(screen.getByText('nutritionHub.emptyDay.body')).toBeTruthy();
+    // On boit avant de manger : la ligne d'eau reste dans l'état vide (§4.2-4).
+    expect(screen.getByTestId('hydration-compact')).toBeTruthy();
+    // Son ancien bouton « Copier toute la journée d'hier » n'avait rien à copier.
+    expect(screen.queryByText('journal.copyDayYesterday')).toBeNull();
     expect(screen.queryByText('journal.meals.breakfast')).toBeNull();
   });
 
-  it('copier hier copie le jour PRÉCÉDENT vers le jour affiché', async () => {
-    await afficher({ entries: [] });
+  it('🔴 la veille remplie : les repas s’affichent, avec « Comme hier » et la copie de la journée', async () => {
+    await afficher({ hier: [entree({ id: 'h-1', mealType: 'breakfast', kcal: 450 })] });
 
-    await taper(screen.getByLabelText('journal.copyDayYesterday'));
-
-    expect(mockDuplicateDay).toHaveBeenCalledWith('2026-08-11', AUJOURDHUI);
+    expect(screen.queryByTestId('nutrition-empty-day')).toBeNull();
+    expect(screen.getByText('journal.meals.breakfast')).toBeTruthy();
+    expect(
+      screen.getByLabelText('nutritionHub.likeYesterdayA11y:{"meal":"journal.meals.breakfast","kcal":"450"}'),
+    ).toBeTruthy();
+    expect(screen.getByText('journal.copyDayYesterday')).toBeTruthy();
   });
 
-  it('🔴 copier une veille VIDE le dit au lieu de ne rien faire', async () => {
-    mockDuplicateDay.mockResolvedValue(0);
-    await afficher({ entries: [] });
+  it('copier la journée d’hier copie la VEILLE vers aujourd’hui', async () => {
+    await afficher({ hier: [entree({ id: 'h-1' })] });
 
-    await taper(screen.getByLabelText('journal.copyDayYesterday'));
+    await taper(screen.getByText('journal.copyDayYesterday'));
 
-    // Un bouton qui ne produit rien et ne dit rien se lit comme un bug.
-    expect(titreAlerte).toBe('journal.copyDayYesterday');
+    expect(mockDuplicateDay).toHaveBeenCalledWith(HIER, AUJOURDHUI);
   });
 
   it('🔴 aucune suggestion de macro sur une journée vide', async () => {
-    await afficher({ entries: [] });
+    await afficher();
 
-    // « Il te manque 160 g de protéines » sur une journée vide n'est qu'une paraphrase de
-    // l'objectif, pas un conseil.
     expect(screen.queryByText('suggestion')).toBeNull();
   });
 
-  it('la suggestion apparaît dès qu’il y a des entrées, aujourd’hui', async () => {
+  it('la suggestion apparaît dès qu’il y a des entrées', async () => {
     await afficher({ entries: [entree()] });
 
     expect(screen.getByText('suggestion')).toBeTruthy();
   });
+});
 
-  it('🔴 mais jamais sur un jour PASSÉ', async () => {
+describe('Comme hier (R4)', () => {
+  it('reprend le MÊME repas de la veille, sur aujourd’hui', async () => {
+    await afficher({
+      entries: [entree({ mealType: 'breakfast' })],
+      hier: [entree({ id: 'h-1', mealType: 'lunch', kcal: 635 })],
+    });
+
+    await taper(screen.getByText('nutritionHub.likeYesterday'));
+
+    expect(mockCopyMeal).toHaveBeenCalledWith(HIER, 'lunch', AUJOURDHUI);
+  });
+
+  it('🔴 un double appui sur « Comme hier » ne copie qu’une fois', async () => {
+    let finir: () => void = () => undefined;
+    mockCopyMeal.mockImplementation(() => new Promise<number>((r) => (finir = () => r(1))));
+    await afficher({
+      entries: [entree({ mealType: 'breakfast' })],
+      hier: [entree({ id: 'h-1', mealType: 'lunch' })],
+    });
+
+    const bouton = screen.getByText('nutritionHub.likeYesterday');
+    await taper(bouton);
+    await taper(bouton);
+    await act(async () => finir());
+
+    expect(mockCopyMeal).toHaveBeenCalledTimes(1);
+  });
+
+  it('🔴 jamais sur un repas déjà rempli : il le doublerait', async () => {
+    await afficher({
+      entries: [entree({ mealType: 'breakfast' })],
+      hier: [entree({ id: 'h-1', mealType: 'breakfast' })],
+    });
+
+    expect(screen.queryByText('nutritionHub.likeYesterday')).toBeNull();
+  });
+
+  it('absent quand la veille n’a pas ce repas', async () => {
+    await afficher({ entries: [entree()], hier: [entree({ id: 'h-1', mealType: 'dinner' })] });
+
+    expect(screen.getAllByText('nutritionHub.likeYesterday')).toHaveLength(1);
+    expect(
+      screen.getByLabelText(/nutritionHub\.likeYesterdayA11y:\{"meal":"journal\.meals\.dinner"/),
+    ).toBeTruthy();
+  });
+});
+
+describe('repas prévus (R6)', () => {
+  it('un repas prévu s’affiche sous son repas, même sur une journée vide', async () => {
+    mockPlan.mockReturnValue({ entries: [prevu()], isLoading: false });
+    await afficher();
+
+    expect(screen.queryByTestId('nutrition-empty-day')).toBeNull();
+    expect(screen.getByText('nutritionHub.planned.eyebrow')).toBeTruthy();
+    expect(screen.getByText('Poulet basquaise')).toBeTruthy();
+  });
+
+  it('« J’ai mangé ça » le porte au journal', async () => {
+    mockPlan.mockReturnValue({ entries: [prevu()], isLoading: false });
+    await afficher();
+
+    await taper(
+      screen.getByLabelText('nutritionHub.planned.eatA11y:{"name":"Poulet basquaise","meal":"journal.meals.dinner"}'),
+    );
+
+    expect(mockConsume).toHaveBeenCalledWith('p-1');
+  });
+
+  it('🔴 un double appui sur « J’ai mangé ça » ne porte qu’une fois', async () => {
+    let finir: () => void = () => undefined;
+    mockConsume.mockImplementation(() => new Promise<number>((r) => (finir = () => r(1))));
+    mockPlan.mockReturnValue({ entries: [prevu()], isLoading: false });
+    await afficher();
+
+    const bouton = screen.getByText('nutritionHub.planned.eat');
+    await taper(bouton);
+    await taper(bouton);
+    await act(async () => finir());
+
+    expect(mockConsume).toHaveBeenCalledTimes(1);
+  });
+
+  it('🔴 l’ajout manuel reste disponible à côté (Q3)', async () => {
+    mockPlan.mockReturnValue({ entries: [prevu()], isLoading: false });
+    await afficher();
+
+    expect(screen.getByLabelText('journal.meals.dinner · journal.addFood')).toBeTruthy();
+  });
+
+  it('un repas déjà porté, ou d’un repas supprimé de la configuration, n’est pas montré', async () => {
+    mockPlan.mockReturnValue({
+      entries: [
+        prevu({ id: 'p-1', consumedAt: '2026-08-12T19:00:00.000Z' }),
+        prevu({ id: 'p-2', mealKey: 'custom-supprime', label: 'Brunch' }),
+      ],
+      isLoading: false,
+    });
     await afficher({ entries: [entree()] });
 
-    await taper(screen.getByLabelText('journal.prevDay'));
-
-    // Conseiller quoi manger pour combler un manque d'avant-hier n'a aucun sens.
-    expect(screen.queryByText('suggestion')).toBeNull();
+    expect(screen.queryByText('Poulet basquaise')).toBeNull();
+    expect(screen.queryByText('Brunch')).toBeNull();
   });
 });
 
@@ -491,10 +836,13 @@ describe('journée vide', () => {
 
 describe('repas', () => {
   it('un repas vide propose l’ajout, sans total', async () => {
-    await afficher({ entries: [entree({ mealType: 'lunch' })] });
+    await afficher({ entries: [entree({ mealType: 'lunch', kcal: 430 })] });
 
-    // Le petit-déjeuner est vide : carte pointillée, il n'y a rien à totaliser.
     expect(screen.getByLabelText('journal.meals.breakfast · journal.addFood')).toBeTruthy();
+    // 430 s'affiche deux fois — le total du déjeuner et sa ligne — et aucun « 0 » : le petit-déjeuner
+    // vide ne porte pas de total.
+    expect(screen.getAllByText(/^430/)).toHaveLength(2);
+    expect(screen.queryByText(/^0( |$)/)).toBeNull();
   });
 
   it('chaque entrée affiche ses propres calories', async () => {
@@ -514,11 +862,16 @@ describe('repas', () => {
 
     await taper(screen.getByLabelText('journal.meals.breakfast · journal.addFood'));
 
-    // US NUTRI-UX01 (R2.1) : « + Ajouter » n'envoie plus vers un écran plein à 9 entrées, il
-    // ouvre la feuille à 3 modes — et celle-ci nomme le repas visé, sans quoi l'aliment
-    // atterrirait au repas de l'heure plutôt qu'à celui d'où l'on vient.
     expect(screen.getByText('journal.addSheet.title:{"meal":"journal.meals.breakfast"}')).toBeTruthy();
     expect(push).not.toHaveBeenCalled();
+  });
+
+  it('« Chercher un aliment » ouvre la feuille sur le repas de l’heure', async () => {
+    await afficher({ entries: [entree()] });
+
+    await taper(screen.getByLabelText('stage.nutrition.search'));
+
+    expect(screen.getByText('journal.addSheet.title:{"meal":"journal.meals.lunch"}')).toBeTruthy();
   });
 
   it('🔴 les entrées ORPHELINES remontent dans « Autres »', async () => {
@@ -526,8 +879,6 @@ describe('repas', () => {
       entries: [entree({ id: 'orp', mealType: 'custom-supprime', name: 'Reste de pizza' })],
     });
 
-    // Sans cette section, l'entrée disparaîtrait de l'écran tout en restant en base — et
-    // continuerait de compter dans les totaux, ce qui rend le journal incompréhensible.
     expect(screen.getByText('journal.meals.other')).toBeTruthy();
     expect(screen.getByText('Reste de pizza')).toBeTruthy();
   });
@@ -535,55 +886,72 @@ describe('repas', () => {
   it('🔴 la section « Autres » ne propose PAS d’ajout', async () => {
     await afficher({ entries: [entree({ mealType: 'custom-supprime' })] });
 
-    // On ne crée rien dans un repas qui n'existe plus : on en sort, par réaffectation.
-    //
-    // ⚠️ L'assertion porte sur le bouton DE CETTE SECTION, et non sur l'absence de tout bouton
-    // d'ajout à l'écran. Depuis NUTRI-UX02, la carte « Ta journée » porte un bouton d'ajout unique
-    // à son pied — qui vise le repas de l'heure courante, jamais le repas disparu. Compter les
-    // libellés de l'écran entier faisait échouer ce test sur un comportement pourtant correct.
-    expect(
-      screen.queryByLabelText('journal.meals.other · journal.addFood'),
-    ).toBeNull();
+    expect(screen.queryByLabelText('journal.meals.other · journal.addFood')).toBeNull();
   });
 
   it('le menu du repas est replié par défaut', async () => {
     await afficher({ entries: [entree()] });
 
-    expect(screen.queryByText('journal.copyYesterday')).toBeNull();
+    expect(screen.queryByText('journal.saveMeal')).toBeNull();
     expect(
-      screen.getByLabelText('journal.mealMenu:{"meal":"journal.meals.breakfast"}').props
-        .accessibilityState.expanded,
+      screen.getByLabelText('journal.mealMenu:{"meal":"journal.meals.breakfast"}').props.accessibilityState.expanded,
     ).toBe(false);
   });
 
-  it('copier le repas d’hier vise le MÊME repas, la veille', async () => {
-    await afficher({ entries: [entree()] });
+  it('🔴 le ⋯ ne propose plus « Copier d’hier » : il doublait un repas déjà rempli', async () => {
+    await afficher({ entries: [entree()], hier: [entree({ id: 'h-1' })] });
 
     await taper(screen.getByLabelText('journal.mealMenu:{"meal":"journal.meals.breakfast"}'));
-    await taper(screen.getByText('journal.copyYesterday'));
 
-    expect(mockCopyMeal).toHaveBeenCalledWith('2026-08-11', 'breakfast', AUJOURDHUI);
+    expect(screen.getByText('journal.saveMeal')).toBeTruthy();
+    expect(screen.queryByText(/copyYesterday/)).toBeNull();
   });
+});
 
-  it('🔴 un repas d’hier vide le dit', async () => {
-    mockCopyMeal.mockResolvedValue(0);
-    await afficher({ entries: [entree()] });
-
-    await taper(screen.getByLabelText('journal.mealMenu:{"meal":"journal.meals.breakfast"}'));
-    await taper(screen.getByText('journal.copyYesterday'));
-
-    expect(titreAlerte).toBe('journal.meals.breakfast');
-  });
-
-  it('enregistrer comme modèle transmet les entrées du repas', async () => {
+describe('repas type (R5, décision Q6)', () => {
+  const ouvrirFeuille = async () => {
     await afficher({ entries: [entree({ name: 'Banane', quantityG: 120, kcal: 108 })] });
-
     await taper(screen.getByLabelText('journal.mealMenu:{"meal":"journal.meals.breakfast"}'));
     await taper(screen.getByText('journal.saveMeal'));
+  };
 
-    expect(mockSaveTemplate).toHaveBeenCalledWith('journal.meals.breakfast', [
+  it('🔴 le nom est OBLIGATOIRE : rien n’est enregistré sans lui', async () => {
+    await ouvrirFeuille();
+
+    expect(screen.getByTestId('save-template-sheet')).toBeTruthy();
+    const enregistrer = screen.getByLabelText('nutritionHub.template.save');
+    expect(enregistrer.props.accessibilityState.disabled).toBe(true);
+    await taper(enregistrer);
+    expect(mockSaveTemplate).not.toHaveBeenCalled();
+  });
+
+  it('🔴 des espaces ne font pas un nom', async () => {
+    await ouvrirFeuille();
+
+    await saisir('nutritionHub.template.label', '   ');
+
+    expect(screen.getByLabelText('nutritionHub.template.save').props.accessibilityState.disabled).toBe(true);
+  });
+
+  it('enregistre sous le nom saisi, rogné, avec les entrées du repas', async () => {
+    await ouvrirFeuille();
+
+    await saisir('nutritionHub.template.label', '  Petit-déj du matin ');
+    await taper(screen.getByLabelText('nutritionHub.template.save'));
+
+    // Avant : le repas type s'appelait « Déjeuner », comme tous les autres déjeuners enregistrés.
+    expect(mockSaveTemplate).toHaveBeenCalledWith('Petit-déj du matin', [
       expect.objectContaining({ name: 'Banane', quantityG: 120, kcal: 108 }),
     ]);
+  });
+
+  it('annuler n’enregistre rien', async () => {
+    await ouvrirFeuille();
+
+    await taper(screen.getByLabelText('common.cancel'));
+
+    expect(screen.queryByTestId('save-template-sheet')).toBeNull();
+    expect(mockSaveTemplate).not.toHaveBeenCalled();
   });
 });
 
@@ -860,7 +1228,6 @@ describe('objectif du jour', () => {
     });
     await afficher({ entries: [entree()] });
 
-    // Une entrée à 1 g de protéines sur les 180 g demandés : la tige le dit, chiffres compris.
     expect(
       screen.getByLabelText(
         'stage.nutrition.macroA11y:{"macro":"nutrition.macros.protein","value":1,"goal":180}',
@@ -878,19 +1245,8 @@ describe('objectif du jour', () => {
     });
     await afficher({ entries: [entree()] });
 
-    // Sans cible, pas de tige : une jauge sans repère inventerait un objectif.
     expect(screen.queryByLabelText(/stage\.nutrition\.macroA11y/)).toBeNull();
     expect(screen.getByText('stage.nutrition.noTarget')).toBeTruthy();
-  });
-
-  it('🔴 l’objectif du jour est demandé pour le jour AFFICHÉ, pas pour aujourd’hui', async () => {
-    await afficher({ entries: [entree()] });
-
-    await taper(screen.getByLabelText('journal.prevDay'));
-
-    // Cet écran navigue dans l'historique : une cible rétroactive doit refléter ce qui était
-    // demandé ce jour-là, bonus de séance compris.
-    expect(mockTarget).toHaveBeenLastCalledWith('2026-08-11');
   });
 
   it('🔴 US NUTRI-UX02 — le grand chiffre dit ce qu’il RESTE, et la sous-ligne porte le détail', async () => {
@@ -898,21 +1254,9 @@ describe('objectif du jour', () => {
       entries: [entree({ id: 'a', kcal: 90 }), entree({ id: 'b', kcal: 410 })],
     });
 
-    // Avant : le grand chiffre valait « 500 » (le consommé), déjà lisible deux fois — par le niveau
-    // qui monte derrière le texte et par « sur 2000 kcal visées ». On n'ouvre pas ce journal pour
-    // savoir ce qu'on a mangé, mais pour savoir ce qu'on peut encore manger.
     expect(kcalAffichees()).toBe('1 500');
     expect(screen.getByText('stage.nutrition.stillAvailable')).toBeTruthy();
-    // Rien n'est perdu : le consommé et la cible restent, en sous-ligne.
     expect(screen.getByText('stage.nutrition.detail:{"consumed":500,"target":2000}')).toBeTruthy();
-  });
-
-  it('🔴 sur un JOUR PASSÉ, on revient au consommé — « il te reste » n’y a aucun sens', async () => {
-    await afficher({ entries: [entree({ kcal: 90 })] });
-    await taper(screen.getByLabelText('journal.prevDay'));
-
-    expect(kcalAffichees()).toBe('90');
-    expect(screen.queryByText('stage.nutrition.stillAvailable')).toBeNull();
   });
 
   it('🔴 cible dépassée : le chiffre repasse au consommé, jamais un restant négatif', async () => {
@@ -922,7 +1266,7 @@ describe('objectif du jour', () => {
     expect(screen.getByText('stage.nutrition.over:{"kcal":600}')).toBeTruthy();
   });
 
-  it('🔴 le badge « jour de séance » ne s’affiche pas pendant le CHARGEMENT', async () => {
+  it('🔴 le bonus « jour de séance » ne s’affiche pas pendant le CHARGEMENT', async () => {
     mockTarget.mockReturnValue({
       effectiveTarget: 2300,
       trainingBonus: 300,
@@ -932,12 +1276,7 @@ describe('objectif du jour', () => {
     });
     await afficher({ entries: [entree()] });
 
-    // Un badge transitoire qui apparaît puis disparaît est pire qu'un badge tardif : il fait
-    // douter de la valeur affichée à côté.
-    //
-    // ⚠️ Depuis NUTRI-UX02 le bonus n'est plus une pastille mais la sous-ligne de détail : c'est
-    // elle qui ne doit pas annoncer un bonus pendant le chargement. Le grand chiffre, lui, affiche
-    // le restant (2300 − 90).
+    // Un bonus transitoire qui apparaît puis disparaît fait douter de la valeur affichée à côté.
     expect(kcalAffichees()).toBe('2 210');
     expect(screen.queryByText(/detailWithBonus/)).toBeNull();
     expect(screen.getByText('stage.nutrition.detail:{"consumed":90,"target":2300}')).toBeTruthy();
@@ -996,74 +1335,6 @@ describe('micronutriments suivis', () => {
   });
 });
 
-// ---------------------------------------------------------------------------
-// Accès
-// ---------------------------------------------------------------------------
-
-describe('accès depuis l’en-tête', () => {
-  it.each([
-    ['stats.title', '/nutrition-stats'],
-    ['nutrition.title', '/nutrition-profile'],
-  ])('%s ouvre %s', async (label, route) => {
-    await afficher();
-
-    await taper(screen.getByLabelText(label));
-    expect(push).toHaveBeenCalledWith(route);
-  });
-
-  it('le planning repas est accessible depuis le journal', async () => {
-    await afficher();
-
-    await taper(screen.getByLabelText('mealPlan.title'));
-
-    // Arbitrage du 04/08/2026 : rangé dans un sous-menu, il ne serait jamais adopté.
-    expect(push).toHaveBeenCalledWith('/meal-plan');
-  });
-});
-
-// ---------------------------------------------------------------------------
-// US NUTRI-UX02 — les deux moments du journal, et la carte unique
-// ---------------------------------------------------------------------------
-
-describe('onglets « Aujourd’hui » / « La semaine »', () => {
-  it('🔴 ouvre sur « Aujourd’hui » — le geste de vingt fois par jour, pas les analyses', async () => {
-    await afficher({ entries: [entree()] });
-
-    expect(screen.getByTestId('nutrition-tab-today').props.accessibilityState.selected).toBe(true);
-    expect(screen.queryByText('verdict-semaine')).toBeNull();
-  });
-
-  it('bascule sur la semaine, et le journal cède la place aux analyses', async () => {
-    await afficher({ entries: [entree()] });
-
-    await taper(screen.getByTestId('nutrition-tab-week'));
-
-    // Le verdict arrive…
-    expect(screen.getByText('verdict-semaine')).toBeTruthy();
-    // …et la saisie s'efface : les onze analyses étaient invisibles parce qu'elles partageaient
-    // l'écran avec le journal, chacune poussant l'autre hors de vue.
-    expect(screen.queryByText('journal.dayCard.title')).toBeNull();
-  });
-
-  it('🔴 passe 2 — le tableau 8 semaines n’est PLUS dans l’onglet', async () => {
-    await afficher({ entries: [entree()] });
-    await taper(screen.getByTestId('nutrition-tab-week'));
-
-    // Cinq colonnes de chiffres sur 390 px : les dates s'y cassaient en deux. C'est un outil
-    // d'analyse — il reste sur `Nutrition › Stats`, et l'onglet garde le lien qui y mène.
-    expect(screen.getByText('nutrition.week.allStats')).toBeTruthy();
-  });
-
-  it('revient sur la journée sans rien perdre', async () => {
-    await afficher({ entries: [entree()] });
-
-    await taper(screen.getByTestId('nutrition-tab-week'));
-    await taper(screen.getByTestId('nutrition-tab-today'));
-
-    expect(screen.getByText('Banane')).toBeTruthy();
-    expect(screen.queryByText('verdict-semaine')).toBeNull();
-  });
-});
 
 describe('carte « Ta journée »', () => {
   it('🔴 UNE carte porte tous les repas, au lieu d’une carte par repas', async () => {

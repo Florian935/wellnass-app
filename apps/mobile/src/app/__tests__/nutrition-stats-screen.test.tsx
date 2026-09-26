@@ -165,6 +165,9 @@ jest.mock('@/components/Segment', () => {
   };
 });
 
+// US NUTRI-UX03 (R12) — l'écran s'ouvre sur un sous-onglet passé en paramètre.
+jest.mock('expo-router', () => ({ useLocalSearchParams: jest.fn(() => ({})) }));
+
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     i18n: { language: 'fr' },
@@ -668,5 +671,36 @@ describe('régularité du journal', () => {
 
     // Les apports et la répartition sont affichés ensemble : ils partagent donc leur sélecteur.
     expect(mockMealTotals).toHaveBeenLastCalledWith('2026-07-15');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US NUTRI-UX03 — « Me peser » ouvre l'onglet Poids (R12, décision Q8)
+// ---------------------------------------------------------------------------
+
+describe('sous-onglet passé en paramètre', () => {
+  const { useLocalSearchParams } = jest.requireMock('expo-router') as { useLocalSearchParams: jest.Mock };
+
+  afterEach(() => {
+    useLocalSearchParams.mockReturnValue({});
+  });
+
+  it('🔴 `tab=weight` ouvre directement Poids, où sont la pesée et la courbe', async () => {
+    // Avant : les trois portes « Me peser » de l'accueil ouvraient Régularité, et il fallait
+    // trouver l'onglet Poids pour saisir sa pesée.
+    useLocalSearchParams.mockReturnValue({ tab: 'weight' });
+    mockTotals.mockReturnValue({ totals: [], isLoading: false });
+    await render(<NutritionStatsScreen />);
+
+    expect(screen.getByLabelText('plage-weight').props.accessibilityState.selected).toBe(true);
+    expect(screen.getByLabelText(CHAMP_POIDS)).toBeTruthy();
+  });
+
+  it('un paramètre inconnu retombe sur Régularité, comme avant', async () => {
+    useLocalSearchParams.mockReturnValue({ tab: 'poids' });
+    mockTotals.mockReturnValue({ totals: [], isLoading: false });
+    await render(<NutritionStatsScreen />);
+
+    expect(screen.getByLabelText('plage-regularity').props.accessibilityState.selected).toBe(true);
   });
 });

@@ -3,7 +3,7 @@ id: NUTRI-UX03
 titre: "Hub Nutrition en trois onglets — Aujourd'hui, Historique, Progrès"
 roadmap: [4.47]
 catalogue: []
-etape: code
+etape: recette
 branche: feature/nutri-ux03-hub-onglets
 maj: 26/09/2026
 ---
@@ -149,7 +149,7 @@ la saisie, un jour à la fois.
   montrer les cartes (l'objectif de poids a alors quelque chose à dire).
 - **D13 — « Me peser » ouvre Stats › Poids (Q8).** `/nutrition-stats` accepte un paramètre `tab` ;
   les trois portes de pesée de l'accueil le passent, ainsi que « Voir la courbe de poids » des
-  mensurations (`measurements.tsx`), qui avait le même défaut. L'accueil ne change pas autrement.
+  mensurations (`measurements.tsx`) et du bien-être (`wellbeing.tsx`), qui avaient le même défaut. L'accueil ne change pas autrement.
 - **D14 — Aucune ancienne route à rediriger.** Aucun écran n'est retiré : `/nutrition-stats` reste le
   détail des analyses (comme `/progress` pour la muscu). Une route s'ajoute : `/nutrition-day`.
   Les **liens entrants faits pour noter un repas** passent `section=today`, sinon la mémoire de D3
@@ -407,6 +407,7 @@ l'interpolation (NUTRI-UX02 R17).
 | `nutritionHub.likeYesterday` / `.likeYesterdayA11y` | Comme hier / Comme hier : {{meal}}, {{kcal}} kcal | Same as yesterday / Same as yesterday: {{meal}}, {{kcal}} kcal |
 | `nutritionHub.emptyDay.body` | Note ce que tu manges au fil de la journée. | Log what you eat as the day goes. |
 | `nutritionHub.planned.eyebrow` / `.eat` | PRÉVU AU PLANNING / J'ai mangé ça | PLANNED / I ate this |
+| `nutritionHub.planned.eatA11y` | J'ai mangé ça : {{name}}, {{meal}} | I ate this: {{name}}, {{meal}} |
 | `nutritionHub.template.*` | Nommer ce repas type · Nom du repas type · Ex. : Petit-déj du matin · Tu le retrouveras sous ce nom dans la recherche. | Name this meal template · Template name · e.g. Morning breakfast · You'll find it under this name when searching. |
 | `nutritionHub.library.*` | Ta bibliothèque, une ligne d'aide par entrée | Your library, one hint per row |
 | `nutritionHub.calendar.*` | Mois précédent / suivant · `loggedDays_one` / `_other` ({{count}} jour noté / jours notés) · {{kcal}} kcal en moyenne · dans ta cible : {{inTarget}} · au-dessus : {{over}} · en dessous : {{under}} · Aucun jour noté ce mois-ci. · légende (dans ta cible, au-dessus, en dessous, sans cible, rien de noté) · statuts TalkBack | the same in English, `_one` / `_other` |
@@ -414,12 +415,14 @@ l'interpolation (NUTRI-UX02 R17).
 | `nutritionHub.days.*` | dans ta cible · +{{kcal}} kcal · −{{kcal}} kcal · en cours · Rien de noté · Compléter ce jour · AUJ. | on target · +{{kcal}} kcal · −{{kcal}} kcal · in progress · Nothing logged · Fill in this day · TODAY |
 | `nutritionHub.habits.meta_one` / `_other` | {{kcal}} kcal · {{count}} fois · dernière : {{date}} | {{kcal}} kcal · once / {{count}} times · last: {{date}} |
 | `nutritionHub.habits.empty` / `.note` | message vide, définition | the same in English |
+| `nutritionHub.habits.a11y` | Reprendre aujourd'hui, {{meal}} : {{name}} | Add to today, {{meal}}: {{name}} |
+| `nutritionHub.day.redoMealA11y` / `.redoneA11y` | Reprendre aujourd'hui : {{meal}} du {{date}} / {{meal}} du {{date}} : ajouté à aujourd'hui | Add to today: {{meal}} from {{date}} / {{meal}} from {{date}}: added to today |
 | `nutritionHub.day.*` | statuts du résumé · P {{p}} g · G {{g}} g · L {{l}} g · Aujourd'hui · Reprendre toute la journée aujourd'hui · `redoAllMeta_one` / `_other` ({{count}} repas · {{kcal}} kcal) · Aujourd'hui n'est pas vide · `confirmBody_one` / `_other` (Tu as déjà noté {{count}} aliment(s) aujourd'hui…) · Ajouter · Rien de noté ce jour-là… | the same in English, `_one` / `_other` |
 | `nutritionHub.progressEmpty.*` | Tes progrès démarrent à ton premier repas noté. · Cible, protéines, poids, régularité : tout s'affichera ici au fil des jours. · Noter un repas | Your progress starts with your first logged meal. · … · Log a meal |
 
 Réutilisées telles quelles : `stage.nutrition.*` (remplissage), `journal.*` (repas, détail, balayage,
-réaffectation, `copyDayYesterday`, `prevDay` / `nextDay`, `emptyDay.title`), `mealPlan.entry.consumeA11y`
-(« J'ai mangé {{name}} »), `scan.title`, `nutrition.week.allStats`, `mealPlan.title`, `meals.manage`,
+réaffectation, `copyDayYesterday`, `prevDay` / `nextDay`, `emptyDay.title`), `scan.title`,
+`nutrition.week.allStats`, `mealPlan.title`, `meals.manage`,
 les libellés d'onglets du sélecteur (Favoris, Recettes, Repas types), `common.*`.
 
 ## 8. Comportement offline
@@ -456,9 +459,57 @@ les libellés d'onglets du sélecteur (Favoris, Recettes, Repas types), `common.
 Voir [RECETTES.md](../../../../RECETTES.md) §88. Sur le téléphone de recette, taille de police
 système par défaut, thème clair puis sombre, en mode avion pour une passe.
 
-## 11. Notes d'implémentation
+## 11. Notes d'implémentation (26/09/2026)
 
-*(complétées à la livraison)*
+Livrée en trois commits, poussés sur `dev` : cadrage (`1584e8dd`), socle (`20a4055a` — briques,
+requêtes, et le journal sorti de l'écran sans changement visible), écrans. Écarts et précisions par
+rapport au texte ci-dessus, pour la recette et la maintenance :
+
+- **Le socle et l'extraction ont partagé un commit** (le plan en prévoyait deux) : l'extraction a été
+  vérifiée à part, par les 151 tests du hub et des composants passés **sans modification**.
+- **`app/(tabs)/nutrition.tsx`** : 1 533 → 421 lignes. Le journal vit dans
+  `components/nutrition/journal/` (`DayJournal`, `MealSection`, `EntryDetailModal`,
+  `TrackedMicrosRecap`), commun au hub et à la page d'un jour.
+- **L'en-tête** (`NutritionHeader`) porte le remplissage en enfant sur Aujourd'hui, avec sa matière
+  (`NutritionLevelMatter`). Le filet de cible reste à 38 % du haut : il passe sous les onglets.
+- **Maquette et spec** : la toile ne marque que « + » sur les verres ; la spec (R7) et le code marquent
+  aussi « − » en dessous, pour que le statut se lise sans la couleur (constat de la relecture).
+- **La page d'un jour** a son propre en-tête (retour, jour précédent / suivant) et se déclare dans la
+  pile (`_layout.tsx`, `headerShown: false`), comme le détail d'une séance. Elle appelle
+  `useMenuFocus('nutrition')` : c'est le correctif que BACKLOG IDENT-01 demande pour les écrans empilés.
+- **« Reprendre toute la journée »** appelle `copyMeal` repas par repas (repas configurés seulement) au
+  lieu de `duplicateDay`, qui aurait recopié la section « Autres ».
+- **Les « Ajouté »** de la page d'un jour sont gardés par jour (`jour:repas`) : changer de jour avec les
+  flèches ne montre pas ceux d'un autre jour.
+- **Nombres** : `useKcalFormat` groupe les milliers selon la langue (même source qu'`AnimatedNumber`).
+- **Relecture du code (26/09), corrigé avant le commit des écrans** :
+  - *Retour au hub* : la page d'un jour revient par `router.dismissTo('/(tabs)/nutrition?section=today')`
+    (date invalide ou future, « Aujourd'hui », après « Reprendre toute la journée »). `navigate` et
+    `replace` empilaient un second arbre d'onglets ; `dismissTo` revient à l'écran déjà dans la pile.
+  - *La liste des jours* ne propose pas de « Compléter » avant le premier repas jamais noté
+    (`historyListDayKeys` reçoit `firstLogDayKey`) : un compte neuf n'a aucune ligne vide.
+  - *Une seule requête de 60 jours* : le hub la lit une fois et la passe à Historique (repas habituels),
+    au lieu de deux requêtes surveillées identiques.
+  - *« Ajouté »* des repas habituels est gardé par jour (`jour:repas:signature`) : après minuit, la
+    nouvelle journée peut reprendre le même repas.
+  - *Cibles tactiles* : « Comme hier », « Aujourd'hui » (page d'un jour) et les puces de repas
+    atteignent 44 dp ; les fonds des feuilles sont masqués à TalkBack.
+  - *Libellés TalkBack* : « J'ai mangé ça » nomme l'aliment **et** le repas (`planned.eatA11y`, qui
+    remplace `mealPlan.entry.consumeA11y`) ; « Reprendre » d'un repas habituel nomme le repas ; un
+    repas déjà repris annonce « ajouté à aujourd'hui » (`day.redoneA11y`).
+  - *Écritures* : suppression, déplacement et réaffectation depuis le journal ont leur `.catch`, comme
+    les copies.
+  - *Portes « Me peser »* : un test couvre l'action rapide et la carte Poids de l'accueil
+    (`weigh-in-links.test.tsx`), la carte du moment avait déjà le sien.
+- **Supprimés** : `NutritionStage` (+ test, remplacé par `NutritionLevel.test.tsx`), `DayCalendarSheet`,
+  et les clés qu'ils étaient seuls à lire : `journal.calendar.{title,previousMonth,nextMonth,legend,
+  shortcuts,open}`, `journal.today`, `journal.copyYesterday`, `journal.nothingYesterday(Full)`,
+  `journal.emptyDay.body`, `stage.nutrition.{backToToday,ofTarget}`, `nutrition.week.{tabToday,tabWeek}`,
+  `mealPlan.hubTeaser`.
+- **Non touché, signalé** : `WeekStrip.tsx` n'a plus d'appelant depuis avant cette US ; il lit encore
+  `journal.calendar.dayA11y`, gardée pour lui. À retirer dans un lot de nettoyage. Les valeurs vides
+  `coach.*.verdict.warmup` que signale `scripts/check-i18n-parity.mjs` existent sur `dev` avant cette
+  US.
 
 ### Factorisation entre piliers — à faire quand muscu, course et nutrition auront atterri
 

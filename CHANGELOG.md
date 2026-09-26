@@ -10,6 +10,73 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 26/09/2026 — NUTRI-UX03 livrée : le hub Nutrition en trois onglets — Aujourd'hui, Historique, Progrès (`feature/nutri-ux03-hub-onglets`)
+
+> Troisième et dernier commit de l'US (plan, étapes 4 et 5). Variante B choisie par Florian le
+> 25/09/2026, avec ses réponses Q1 à Q8. L'US passe en recette : RECETTES §88 (31 critères).
+> Commit précédent sur `dev` : `20a4055a`.
+
+### Ajouté
+- **L'en-tête** `NutritionHeader` : « Alimentation » (Q7), icônes Planning repas, Bibliothèque,
+  Objectif et réglages, et les trois onglets (`tablist`), qui défilent avec la page. Un nouvel appui
+  sur l'onglet Alim ramène en haut (`useScrollToTop`). L'onglet affiché : paramètre `section` lu une
+  fois, sinon le dernier choisi (store en mémoire), sinon Aujourd'hui (D3, Q5).
+- **Aujourd'hui** (toujours aujourd'hui, D4) :
+  - `NutritionLevel` — le remplissage de la scène sans la navigation par jour ; Scanner à côté de
+    « Chercher un aliment » ; la ligne du jour sans saisie ouvre la page de ce jour ;
+  - `RepeatMealCard` — « Reprendre un déjeuner » : les trois derniers repas différents du repas de
+    l'heure, sur 60 jours, un geste chacun (R3) ;
+  - `DayJournal` — « Ta journée » commune au hub et à la page d'un jour : « Comme hier » sur un repas
+    vide (R4), les repas prévus du jour avec « J'ai mangé ça » (R6), la copie de la journée d'hier,
+    l'eau ; le détail d'entrée et la suppression y vivent ;
+  - `SaveTemplateSheet` — le nom d'un repas type est saisi, obligatoire (R5, Q6).
+- **Historique** (`sections/HistorySection`) : `NutritionCalendar`, les verres remplis selon la cible
+  du jour, « + » / « − » sans la couleur (R7, Q2) ; la liste des jours avec les trous récents (R8) ;
+  les repas habituels, Reprendre → « Ajouté » (R9, Q4). Mois, sous-onglet et repas gardés en mémoire.
+- **Progrès** (`sections/ProgressSection`) : « La semaine » renommée, inchangée ; un seul message pour
+  un compte sans repas ni pesée (D12).
+- **La page d'un jour** `app/nutrition-day.tsx` (déclarée dans `_layout.tsx`) : résumé face à la cible
+  de ce jour, journal éditable sur ce jour, « Aujourd'hui » par repas, « Reprendre toute la journée »
+  (alerte si aujourd'hui n'est pas vide, jamais « Autres »), énergie, micros et qualité du jour (R10,
+  D15).
+- **La Bibliothèque** `LibrarySheet` : Recettes, Repas types, Favoris (sélecteur sur le bon onglet),
+  Repas de la journée.
+- Clés `nutritionHub.*` en FR et EN (129 lignes chacune), pluriels `_one` / `_other`.
+- Tests : `nutrition-screen.test.tsx` réécrit (88), `NutritionLevel` (15), `NutritionCalendar` (11),
+  `nutrition-history-section` (16), `nutrition-progress-section` (5), `nutrition-day-screen` (16),
+  portes « Me peser » de l'accueil (`weigh-in-links`, 2), paramètre `tab` de Stats (2) et du
+  sélecteur (2) ; `nutrition-calendar` (shared) : 2 cas de plus sur la borne du premier repas.
+
+### Modifié
+- `app/(tabs)/nutrition.tsx` réduit à l'assemblage (421 lignes). La carte Planning repas et « Gérer
+  les repas » quittent le bas de l'onglet (icône d'en-tête, Bibliothèque) ; l'icône Statistiques quitte
+  l'en-tête (lien en bas de Progrès).
+- `MealSection` : « Copier d'hier » quitte le menu ⋯, qui ne garde qu'« Enregistrer comme repas type » ;
+  un repas vide porte « Comme hier » et « + Ajouter » séparément (TalkBack les atteint tous les deux).
+- `nutrition-stats.tsx` et `food-picker.tsx` : paramètre `tab` (R12).
+- « Me peser » (`QuickActions`, `NowCard`, `WeightCard`) et « Voir la courbe de poids »
+  (`measurements.tsx`, `wellbeing.tsx`) → `/nutrition-stats?tab=weight` (D13, Q8).
+- Liens « noter un repas » → `section=today` : Labo (`lab.tsx`), carte d'activation, fin d'onboarding
+  (D14).
+- Spec `etape: recette`, §11 complété ; plan (ordre des commits) ; roadmap **4.47** 🟡 → ✅.
+
+### Supprimé
+- `NutritionStage.tsx` (+ test, remplacé par `NutritionLevel.test.tsx`), `DayCalendarSheet.tsx`, et
+  les clés i18n qu'ils étaient seuls à lire (liste au §11 de la spec).
+
+### Notes
+- **Deux renversements, validés par Florian** : la navigation par jour quitte l'écran de saisie
+  (NUTRI-UX01 R3.1 / R3.2), la carte Planning devient une icône (REPAS-01, 04/08/2026).
+- **Relecture** : spec relue avant le code (22 constats intégrés), diff relu par un agent de revue avant
+  ce commit (1 bloquant + 9 constats, tous corrigés — détail au §11 de la spec) : retour au hub par
+  `router.dismissTo` (au lieu d'empiler un second arbre d'onglets), pas de « Compléter » avant le
+  premier repas noté, une seule requête de 60 jours, « Ajouté » gardé par jour, cibles tactiles à
+  44 dp, libellés TalkBack qui nomment le repas, `.catch` sur les écritures du journal.
+- **Contrôle des tests par mutation** : deux mutations volontaires du hub (Reprendre toujours affiché,
+  mauvais jour copié) sont attrapées.
+- Signalés, non traités : `WeekStrip.tsx` sans appelant depuis avant l'US ; valeurs vides
+  `coach.*.verdict.warmup` relevées par `check-i18n-parity.mjs`, présentes sur `dev` avant l'US.
+
 ## 26/09/2026 — CARDIO-UX03, le hub Course en trois onglets — Courir, Historique, Progrès (`feature/cardio-ux03-hub-onglets`)
 
 > Étape 4 et dernière du plan. Le hub répondait à « est-ce que je cours plus vite ? » et mal aux

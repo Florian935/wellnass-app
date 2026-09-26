@@ -189,7 +189,7 @@ export function NowCard() {
           cta: {
             label: t('home.now.weighIn.cta'),
             icon: 'add',
-            onPress: () => router.push('/nutrition-stats'),
+            onPress: () => router.push('/nutrition-stats?tab=weight'),
           },
         };
 

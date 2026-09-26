@@ -138,6 +138,7 @@ describe('historyListDayKeys — R8', () => {
       month: 9,
       loggedDayKeys: ['2026-09-24', '2026-09-22', '2026-09-03', '2026-09-25'],
       todayKey: '2026-09-25',
+      firstLogDayKey: '2026-07-01',
     });
     expect(keys).toEqual([
       '2026-09-25',
@@ -152,7 +153,13 @@ describe('historyListDayKeys — R8', () => {
   });
 
   it('aujourd’hui n’y est que s’il a des entrées', () => {
-    const keys = historyListDayKeys({ year: 2026, month: 9, loggedDayKeys: ['2026-09-10'], todayKey: '2026-09-25' });
+    const keys = historyListDayKeys({
+      year: 2026,
+      month: 9,
+      loggedDayKeys: ['2026-09-10'],
+      todayKey: '2026-09-25',
+      firstLogDayKey: '2026-09-10',
+    });
     expect(keys[0]).toBe('2026-09-24');
   });
 
@@ -162,12 +169,34 @@ describe('historyListDayKeys — R8', () => {
       month: 8,
       loggedDayKeys: ['2026-08-30', '2026-08-02', '2026-09-24'],
       todayKey: '2026-09-25',
+      firstLogDayKey: '2026-08-02',
     });
     expect(keys).toEqual(['2026-08-30', '2026-08-02']);
   });
 
+  it('🔴 compte neuf : aucun trou à compléter (§6 — « Historique : mois courant, aucun jour »)', () => {
+    expect(historyListDayKeys({ year: 2026, month: 9, loggedDayKeys: [], todayKey: '2026-09-25', firstLogDayKey: null })).toEqual([]);
+  });
+
+  it('🔴 pas de trou AVANT la première entrée : on ne complète pas un jour d’avant l’inscription', () => {
+    const keys = historyListDayKeys({
+      year: 2026,
+      month: 9,
+      loggedDayKeys: ['2026-09-23'],
+      todayKey: '2026-09-25',
+      firstLogDayKey: '2026-09-23',
+    });
+    expect(keys).toEqual(['2026-09-24', '2026-09-23']);
+  });
+
   it('en début de mois, les trous récents ne débordent pas sur le mois précédent', () => {
-    const keys = historyListDayKeys({ year: 2026, month: 10, loggedDayKeys: [], todayKey: '2026-10-03' });
+    const keys = historyListDayKeys({
+      year: 2026,
+      month: 10,
+      loggedDayKeys: [],
+      todayKey: '2026-10-03',
+      firstLogDayKey: '2026-09-01',
+    });
     expect(keys).toEqual(['2026-10-02', '2026-10-01']);
   });
 });

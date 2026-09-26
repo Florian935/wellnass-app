@@ -154,20 +154,25 @@ export function nutritionMonthSummary(
  * R8 — les jours de la liste d'Historique, du plus récent au plus ancien : les jours notés du mois
  * affiché (aujourd'hui compris s'il a des entrées), plus les jours **vides** des
  * `RECENT_EMPTY_DAYS` jours précédant aujourd'hui, pour qu'un oubli récent se complète en un geste.
+ *
+ * Les trous ne remontent pas avant la **première entrée** du journal : un compte neuf n'a rien à
+ * compléter (§6 de la spec), et un jour d'avant l'inscription n'est pas un oubli.
  */
 export function historyListDayKeys(input: {
   year: number;
   month: number;
   loggedDayKeys: readonly string[];
   todayKey: string;
+  /** Première entrée du journal (`MIN(log_date)`), `null` sans aucune entrée. */
+  firstLogDayKey: string | null;
 }): string[] {
-  const { year, month, loggedDayKeys, todayKey } = input;
+  const { year, month, loggedDayKeys, todayKey, firstLogDayKey } = input;
   const prefix = `${year}-${pad(month)}-`;
   const keys = new Set(loggedDayKeys.filter((k) => k.startsWith(prefix) && k <= todayKey));
   const today = localDateFromDayKey(todayKey);
-  for (let i = 1; i <= RECENT_EMPTY_DAYS; i++) {
+  for (let i = 1; i <= RECENT_EMPTY_DAYS && firstLogDayKey !== null; i++) {
     const key = localDayKey(addDays(today, -i));
-    if (key.startsWith(prefix)) keys.add(key);
+    if (key.startsWith(prefix) && key >= firstLogDayKey) keys.add(key);
   }
   return [...keys].sort().reverse();
 }

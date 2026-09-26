@@ -60,7 +60,7 @@ export function WeightCard({ size = 'wide' }: { size?: WidgetSize }) {
   if (latestLoading || entriesLoading) {
     return <WidgetSkeleton size={size} label={t('home.weight.eyebrow')} />;
   }
-  const open = () => router.push('/nutrition-stats');
+  const open = () => router.push('/nutrition-stats?tab=weight');
 
   const weightStr = latest != null ? units.formatWeight(latest.weightKg) : t('home.weight.compactEmpty');
 

@@ -602,6 +602,9 @@ function RootNavigator() {
             headerTintColor: colors.accent,
           }}
         />
+        {/* US NUTRI-UX03 — la page d'un jour passé : son propre en-tête (retour, jour précédent /
+            suivant), comme le détail d'une séance. */}
+        <Stack.Screen name="nutrition-day" options={{ headerShown: false }} />
         <Stack.Screen
           name="programs"
           options={{

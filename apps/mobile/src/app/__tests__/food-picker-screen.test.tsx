@@ -409,6 +409,17 @@ describe('ajout depuis la liste', () => {
 // ---------------------------------------------------------------------------
 
 describe('onglets', () => {
+  it('🔴 US NUTRI-UX03 — ouvert depuis la Bibliothèque, il démarre sur l’onglet demandé', async () => {
+    await afficher({ params: { tab: 'recipes' } });
+
+    expect(screen.getByLabelText('onglet-recipes').props.accessibilityState.selected).toBe(true);
+  });
+
+  it('un onglet inconnu retombe sur « tous »', async () => {
+    await afficher({ params: { tab: 'inconnu' } });
+    expect(screen.getByLabelText('onglet-all').props.accessibilityState.selected).toBe(true);
+  });
+
   it('la recherche n’est offerte que sur « tous »', async () => {
     await afficher();
     expect(screen.getByLabelText('journal.searchFood')).toBeTruthy();

@@ -245,7 +245,7 @@ export default function WellbeingScreen() {
             </Card>
 
             <Pressable
-              onPress={() => router.push('/nutrition-stats')}
+              onPress={() => router.push('/nutrition-stats?tab=weight')}
               hitSlop={8}
               accessibilityRole="link"
               style={styles.link}

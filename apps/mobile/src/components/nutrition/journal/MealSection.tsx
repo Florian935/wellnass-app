@@ -11,29 +11,34 @@
  *
  * 🔴 Le `+` par repas est **conservé**, en icône dans l'en-tête. Le supprimer aurait forcé à passer
  * par la feuille, qui déduit le repas de l'heure courante (R2.6 de NUTRI-UX01) : noter son
- * petit-déjeuner à 20 h serait redevenu un parcours à corriger, exactement le défaut que R2.6 avait
- * réglé. On supprime la répétition, pas le raccourci.
+ * petit-déjeuner à 20 h serait redevenu un parcours à corriger. On supprime la répétition, pas le
+ * raccourci.
  *
- * Sorti de `app/(tabs)/nutrition.tsx` par NUTRI-UX03 (la page d'un jour passé en a besoin). Le mode
- * « carte autonome » (`dense = false`) n'avait plus d'appelant depuis NUTRI-UX02 : il n'a pas suivi.
+ * ── US NUTRI-UX03 ────────────────────────────────────────────────────────────────────────────────
+ *  - **« Comme hier »** sur un repas **vide** (R4). « Copier d'hier » vivait dans le ⋯, qui n'existe
+ *    que sur un repas rempli : introuvable là où il servait, il doublait un repas plein. Il quitte
+ *    le menu, qui ne garde qu'« Enregistrer comme repas type » (nom saisi, R5).
+ *  - Les **repas prévus** du jour sous leur repas, avec « J'ai mangé ça » (R6).
+ *  - Sur la page d'un jour passé, **« Aujourd'hui »** reprend ce repas sur aujourd'hui (R10).
+ *  - Un repas vide n'est plus un seul bouton : « Comme hier » et « + Ajouter » y cohabitent, et
+ *    chacun doit rester atteignable par TalkBack.
  */
 
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { addDays, localDateFromDayKey, localDayKey } from '@wellness/shared';
+import type { PlannedMealEntry } from '@wellness/shared';
 import { MealGlyph } from '@/components/nutrition/CategoryGlyph';
-import { copyMeal, type JournalEntry } from '@/data/repositories/journal-repository';
-import { saveMealAsTemplate } from '@/data/repositories/meal-template-repository';
+import type { JournalEntry } from '@/data/repositories/journal-repository';
+import { useKcalFormat } from '@/hooks/useKcalFormat';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 type Props = {
   mealKey: string;
   mealLabel: string;
-  day: string;
   entries: JournalEntry[];
   /** Total calorique du jour, pour la part que ce repas représente. 0 = pas de barre. */
   dayKcal?: number;
@@ -42,91 +47,142 @@ type Props = {
   onDeleteEntry: (e: JournalEntry) => void;
   onSelectEntry: (e: JournalEntry) => void;
   onEditEntry: (e: JournalEntry) => void;
+  /** Menu ⋯ : « Enregistrer comme repas type ». Absent = pas de menu. */
+  onSaveTemplate?: () => void;
+  /** R4 — la veille a ce repas : « Comme hier » sur le repas vide. */
+  likeYesterday?: { kcal: number; onPress: () => void };
+  /** R6 — les entrées du planning de ce repas, non encore portées au journal. */
+  planned?: readonly PlannedMealEntry[];
+  onEatPlanned?: (entry: PlannedMealEntry) => void;
+  /** R10 — page d'un jour passé : reprendre ce repas sur aujourd'hui. */
+  redoToday?: { done: boolean; a11y: string; onPress: () => void };
 };
 
 export function MealSection({
   mealKey,
   mealLabel,
-  day,
   entries,
   dayKcal = 0,
   onAdd,
   onDeleteEntry,
   onSelectEntry,
   onEditEntry,
+  onSaveTemplate,
+  likeYesterday,
+  planned = [],
+  onEatPlanned,
+  redoToday,
 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const kcal = useKcalFormat();
   const mealKcal = entries.reduce((s, e) => s + e.kcal, 0);
-  // Menu du repas (copier / enregistrer comme modèle) : replié par défaut. Deux actions
-  // secondaires n'ont pas à occuper l'en-tête de chacun des 3 à 6 repas de la journée.
+  // Menu du repas : replié par défaut. Une action secondaire n'a pas à occuper l'en-tête de chacun
+  // des 3 à 6 repas de la journée.
   const [menuOpen, setMenuOpen] = useState(false);
+  const empty = entries.length === 0;
 
-  const copyFromYesterday = () => {
-    void copyMeal(localDayKey(addDays(localDateFromDayKey(day), -1)), mealKey, day)
-      .then((n) => {
-        if (n === 0) Alert.alert(mealLabel, t('journal.nothingYesterday'));
-      })
-      .catch(() => undefined);
-  };
-
-  const saveAsTemplate = () => {
-    const items = entries.map((e) => ({
-      foodId: e.foodId,
-      name: e.name,
-      quantityG: e.quantityG,
-      kcal: e.kcal,
-      proteinG: e.proteinG,
-      carbsG: e.carbsG,
-      fatG: e.fatG,
-    }));
-    void saveMealAsTemplate(mealLabel, items)
-      .then(() => Alert.alert(t('journal.templateSaved'), mealLabel))
-      // 🔴 Ici l'alerte est une CONFIRMATION : la taire sur échec est le comportement voulu —
-      // annoncer « modèle enregistré » alors que l'écriture a échoué serait pire que se taire.
-      .catch(() => undefined);
-  };
+  const plannedLines = planned.map((p) => (
+    <View
+      key={p.id}
+      testID={`planned-${p.id}`}
+      style={[styles.planned, { borderColor: colors.borderStrong, backgroundColor: colors.surface }]}
+    >
+      <View style={styles.plannedTexts}>
+        <Text style={[styles.plannedEyebrow, { color: colors.accent }]}>{t('nutritionHub.planned.eyebrow')}</Text>
+        <Text style={[styles.plannedName, { color: colors.text }]} numberOfLines={2}>
+          {p.label}
+        </Text>
+        <Text style={[styles.plannedMeta, { color: colors.textMuted }]}>
+          {t('nutritionHub.planned.meta', { kcal: kcal(p.kcal) })}
+        </Text>
+      </View>
+      {onEatPlanned ? (
+        <Pressable
+          onPress={() => onEatPlanned(p)}
+          accessibilityRole="button"
+          accessibilityLabel={t('nutritionHub.planned.eatA11y', { name: p.label, meal: mealLabel })}
+          style={[styles.eat, { backgroundColor: colors.accent }]}
+        >
+          <Text style={[styles.eatLabel, { color: colors.accentText }]}>{t('nutritionHub.planned.eat')}</Text>
+        </Pressable>
+      ) : null}
+    </View>
+  ));
 
   /*
-   * Passe 2 — un repas vide est une **section discrète**, pas un cadre pointillé.
-   *
-   * Le cadre pointillé a été conçu pour une liste de cartes, où il se lit comme « une carte encore
-   * vide ». Posé au milieu d'une carte unique, entre des repas pleins, il coupe la lecture et se lit
-   * comme un bouton d'action — c'est le « Snack » relevé en recette du 20/09.
+   * Un repas vide est une **ligne de section discrète** (passe 2 de NUTRI-UX02), pas un cadre
+   * pointillé : posé au milieu d'une carte unique, un cadre se lit comme un bouton d'action.
    */
-  if (entries.length === 0 && onAdd) {
+  if (empty && onAdd) {
     return (
-      <Pressable
-        onPress={onAdd}
-        accessibilityRole="button"
-        accessibilityLabel={`${mealLabel} · ${t('journal.addFood')}`}
-        style={[styles.mealHead, styles.mealSection, { borderTopColor: colors.border }]}
-      >
-        <MealGlyph mealKey={mealKey} />
-        <Text style={[styles.mealName, { color: colors.textMuted }]} numberOfLines={1}>
-          {mealLabel}
-        </Text>
-        <Text style={[styles.mealEmptyAdd, { color: colors.accent }]}>+ {t('journal.add')}</Text>
-      </Pressable>
+      <View style={[styles.mealSection, { borderTopColor: colors.border }]}>
+        <View style={styles.mealHead}>
+          <MealGlyph mealKey={mealKey} />
+          <Text style={[styles.mealName, { color: colors.textMuted }]} numberOfLines={1}>
+            {mealLabel}
+          </Text>
+          {likeYesterday ? (
+            <Pressable
+              onPress={likeYesterday.onPress}
+              accessibilityRole="button"
+              accessibilityLabel={t('nutritionHub.likeYesterdayA11y', { meal: mealLabel, kcal: kcal(likeYesterday.kcal) })}
+              // 34 px dessinés + 6 px de part et d'autre : la cible reste à 46 px (R13).
+              hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+              style={[styles.likeYesterday, { borderColor: colors.borderStrong, backgroundColor: colors.surface }]}
+            >
+              <Ionicons name="refresh" size={13} color={colors.accent} />
+              <Text style={[styles.likeYesterdayLabel, { color: colors.accent }]}>{t('nutritionHub.likeYesterday')}</Text>
+            </Pressable>
+          ) : null}
+          <Pressable
+            onPress={onAdd}
+            accessibilityRole="button"
+            accessibilityLabel={`${mealLabel} · ${t('journal.addFood')}`}
+            hitSlop={8}
+            style={styles.emptyAdd}
+          >
+            <Text style={[styles.mealEmptyAdd, { color: colors.accent }]}>+ {t('journal.add')}</Text>
+          </Pressable>
+        </View>
+        {plannedLines}
+      </View>
     );
   }
 
-  // US NUTRI-UX02 — la part du jour que pèse ce repas. C'est NUTR-16 (« répartition par repas »,
-  // livrée mais rangée dans l'écran Stats) rendue là où la décision se prend, sans nouvel écran :
-  // « mon dîner pèse un tiers de ma journée » se lit d'un coup d'œil, pas dans un rapport hebdo.
+  // US NUTRI-UX02 — la part du jour que pèse ce repas (NUTR-16 rendue là où la décision se prend).
   const mealShare = dayKcal > 0 ? Math.round((mealKcal / dayKcal) * 100) : null;
 
   return (
     <View style={[styles.mealSection, { borderTopColor: colors.border }]}>
       <View style={styles.mealHead}>
         <MealGlyph mealKey={mealKey} />
-        <Text style={[styles.mealName, { color: colors.text }]} numberOfLines={1}>
+        <Text style={[styles.mealName, { color: empty ? colors.textMuted : colors.text }]} numberOfLines={1}>
           {mealLabel}
         </Text>
-        <Text style={[styles.mealKcal, { color: colors.textMuted }]}>
-          {mealKcal}
-          <Text style={styles.mealKcalUnit}> {t('nutrition.kcal')}</Text>
-        </Text>
+        {!empty ? (
+          <Text style={[styles.mealKcal, { color: colors.textMuted }]}>
+            {mealKcal}
+            <Text style={styles.mealKcalUnit}> {t('nutrition.kcal')}</Text>
+          </Text>
+        ) : null}
+        {redoToday && !empty ? (
+          <Pressable
+            onPress={redoToday.onPress}
+            disabled={redoToday.done}
+            accessibilityRole="button"
+            accessibilityLabel={redoToday.a11y}
+            accessibilityState={{ disabled: redoToday.done }}
+            // 32 px dessinés + 6 px de part et d'autre : la cible reste à 44 px (R13).
+            hitSlop={{ top: 6, bottom: 6, left: 4, right: 4 }}
+            style={[styles.redo, { backgroundColor: colors.track }]}
+          >
+            <Ionicons name={redoToday.done ? 'checkmark' : 'refresh'} size={14} color={colors.accent} />
+            <Text style={[styles.redoLabel, { color: colors.accent }]}>
+              {redoToday.done ? t('nutritionHub.repeat.done') : t('nutritionHub.day.redoMeal')}
+            </Text>
+          </Pressable>
+        ) : null}
         {onAdd ? (
           <Pressable
             onPress={onAdd}
@@ -138,7 +194,7 @@ export function MealSection({
             <Ionicons name="add" size={16} color={colors.accent} />
           </Pressable>
         ) : null}
-        {entries.length > 0 ? (
+        {!empty && onSaveTemplate ? (
           <Pressable
             onPress={() => setMenuOpen((v) => !v)}
             hitSlop={8}
@@ -152,7 +208,7 @@ export function MealSection({
         ) : null}
       </View>
 
-      {mealShare != null && entries.length > 0 ? (
+      {mealShare != null && !empty ? (
         <View
           style={styles.mealShareRow}
           accessible
@@ -167,22 +223,12 @@ export function MealSection({
         </View>
       ) : null}
 
-      {menuOpen ? (
+      {menuOpen && onSaveTemplate ? (
         <View style={[styles.mealMenu, { backgroundColor: colors.track, borderBottomColor: colors.border }]}>
           <Pressable
             onPress={() => {
               setMenuOpen(false);
-              copyFromYesterday();
-            }}
-            style={[styles.mealMenuChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            accessibilityRole="button"
-          >
-            <Text style={[styles.mealMenuLabel, { color: colors.text }]}>{t('journal.copyYesterday')}</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              setMenuOpen(false);
-              saveAsTemplate();
+              onSaveTemplate();
             }}
             style={[styles.mealMenuChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
             accessibilityRole="button"
@@ -241,13 +287,14 @@ export function MealSection({
           </ReanimatedSwipeable>
         ))}
       </View>
+      {plannedLines}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   mealSection: { borderTopWidth: 1 },
-  mealHead: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 11 },
+  mealHead: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 11, minHeight: 52 },
   mealName: { fontFamily: fontFamily.bodyBold, fontSize: 15, flex: 1 },
   mealKcal: { fontFamily: fontFamily.monoBold, fontSize: 13 },
   mealKcalUnit: { fontFamily: fontFamily.mono, fontSize: 10 },
@@ -263,11 +310,44 @@ const styles = StyleSheet.create({
   mealMenuChip: { borderWidth: 1, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 11 },
   mealMenuLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
   mealItems: { paddingVertical: 4, paddingHorizontal: 4 },
+  emptyAdd: { minHeight: 36, justifyContent: 'center' },
   mealEmptyAdd: { fontFamily: fontFamily.bodyBold, fontSize: 14 },
+  likeYesterday: {
+    minHeight: 34,
+    borderRadius: 17,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+  },
+  likeYesterdayLabel: { fontFamily: fontFamily.bodyBold, fontSize: 12.5 },
+  redo: { minHeight: 32, borderRadius: 10, paddingHorizontal: 9, flexDirection: 'row', alignItems: 'center', gap: 4 },
+  redoLabel: { fontFamily: fontFamily.bodyBold, fontSize: 12 },
   mealShareRow: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 16, paddingBottom: 9 },
   mealShareTrack: { flex: 1, height: 4, borderRadius: 3, overflow: 'hidden' },
   mealShareFill: { height: '100%', borderRadius: 3 },
   mealSharePct: { fontFamily: fontFamily.mono, fontSize: 10.5, width: 34, textAlign: 'right' },
+  planned: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginLeft: 48,
+    marginRight: 12,
+    marginBottom: 12,
+    paddingVertical: 10,
+    paddingLeft: 12,
+    paddingRight: 10,
+    borderRadius: 14,
+    borderWidth: 1.5,
+    borderStyle: 'dashed',
+  },
+  plannedTexts: { flex: 1, gap: 2 },
+  plannedEyebrow: { fontFamily: fontFamily.monoBold, fontSize: 9.5, letterSpacing: 1 },
+  plannedName: { fontFamily: fontFamily.bodyBold, fontSize: 13.5 },
+  plannedMeta: { fontFamily: fontFamily.body, fontSize: 12 },
+  eat: { minHeight: 44, borderRadius: 12, paddingHorizontal: 12, alignItems: 'center', justifyContent: 'center' },
+  eatLabel: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
   entry: {
     flexDirection: 'row',
     alignItems: 'center',

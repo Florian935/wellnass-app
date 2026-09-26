@@ -151,7 +151,8 @@ describe('cible de l’action principale', () => {
   it.each([
     ['strength', '/(tabs)/strength'],
     ['running', '/(tabs)/running'],
-    ['nutrition', '/(tabs)/nutrition'],
+    // US NUTRI-UX03 (D14) — noter un repas : l'onglet Aujourd'hui, quel que soit le dernier choisi.
+    ['nutrition', '/(tabs)/nutrition?section=today'],
   ] as const)('un jour pilier %s mène à son onglet', async (p, route) => {
     await afficher('wide', { day: 1, theme: pilier(p) });
 

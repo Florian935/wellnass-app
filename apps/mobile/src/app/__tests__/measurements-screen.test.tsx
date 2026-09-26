@@ -405,7 +405,9 @@ describe('courbe de poids', () => {
     await taper(screen.getByText('measurements.seeWeightCurve'));
 
     // Elle existe côté Stats nutrition (roadmap 4.30) : en maintenir deux les ferait diverger.
-    expect(push).toHaveBeenCalledWith('/nutrition-stats');
+    // US NUTRI-UX03 (D13) — sur l'onglet Poids, où sont la courbe et la pesée : Stats s'ouvrait sur
+    // Régularité.
+    expect(push).toHaveBeenCalledWith('/nutrition-stats?tab=weight');
   });
 
   it('le renvoi n’apparaît pas sur un écran vide', async () => {

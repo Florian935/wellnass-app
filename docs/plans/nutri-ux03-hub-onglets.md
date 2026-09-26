@@ -95,8 +95,8 @@ Tests Jest :
 
 ## Ordre des commits
 
-1. `docs(nutrition)` — cadrage : spec, plan, maquette, roadmap 4.47 (⬜ → 🟡).
-2. `feat(nutrition)` — le socle : briques pures, requêtes, store.
-3. `refactor(nutrition)` — le journal sort de l'écran.
-4. `feat(nutrition)` — les trois onglets, la page d'un jour, la Bibliothèque, « Me peser » ; RECETTES
+1. `docs(nutrition)` — cadrage : spec, plan, maquette, roadmap 4.47 (⬜).
+2. `feat(nutrition)` — le socle : briques pures, requêtes, store, **et** le journal sorti de l'écran
+   (étapes 1 à 3 en un commit ; l'extraction vérifiée par les tests existants, inchangés). 4.47 → 🟡.
+3. `feat(nutrition)` — les trois onglets, la page d'un jour, la Bibliothèque, « Me peser » ; RECETTES
    §88 ; `etape: recette` ; roadmap 4.47 ✅.

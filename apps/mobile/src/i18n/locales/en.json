@@ -704,8 +704,6 @@
     },
     "week": {
       "eyebrow": "THIS WEEK'S VERDICT",
-      "tabToday": "Today",
-      "tabWeek": "This week",
       "allStats": "See all statistics",
       "headline": {
         "onTrack": "You're holding your course.",
@@ -789,7 +787,6 @@
     "longPressEdit": "Long-press to edit or delete"
   },
   "journal": {
-    "today": "Today",
     "remaining": "remaining",
     "over": "over",
     "setTarget": "Set a calorie target",
@@ -829,10 +826,7 @@
     "noTemplate": "No meal template. Save a meal from the journal.",
     "saveMeal": "Save as meal template",
     "templateSaved": "Meal template saved ✓",
-    "copyYesterday": "Copy from yesterday",
-    "nothingYesterday": "Nothing to copy for this meal yesterday.",
     "copyDayYesterday": "Copy all of yesterday",
-    "nothingYesterdayFull": "Nothing to copy: yesterday is empty.",
     "trainingDayBadge": "+{{kcal}} kcal · training day",
     "runDayBadge": "+{{kcal}} kcal · run",
     "detail": {
@@ -878,8 +872,7 @@
       "a11yCell": "{{label}}: {{value}} {{unit}}, {{pct}} % of the reference intake."
     },
     "emptyDay": {
-      "title": "Nothing logged yet",
-      "body": "Log your first meal, or start from what you ate yesterday."
+      "title": "Nothing logged yet"
     },
     "mealMenu": "{{meal}} meal actions",
     "addSheet": {
@@ -909,24 +902,11 @@
       "addA11y": "Add {{name}}"
     },
     "calendar": {
-      "title": "Jump to a day",
-      "previousMonth": "Previous month",
-      "nextMonth": "Next month",
-      "legend": {
-        "complete": "Full day",
-        "partial": "Partial",
-        "empty": "Nothing logged"
-      },
-      "shortcuts": {
-        "yesterday": "Yesterday",
-        "today": "Today"
-      },
       "dayA11y": {
         "complete": "{{day}} — full day",
         "partial": "{{day}} — partial day",
         "empty": "{{day}} — nothing logged"
-      },
-      "open": "Pick a day"
+      }
     },
     "quantity": {
       "per100": "{{kcal}} kcal per 100 g",
@@ -3566,7 +3546,6 @@
   "mealPlan": {
     "title": "Meal plan",
     "subtitle": "Plan your week, then your shopping.",
-    "hubTeaser": "Plan your meals and generate your shopping list.",
     "week": {
       "range": "{{from}} – {{to}}",
       "current": "This week",
@@ -4008,6 +3987,137 @@
       "title": "Your progress starts with your first workout.",
       "body": "Loads, records, body balance: it will all show up here as you train.",
       "cta": "Get started"
+    }
+  },
+  "nutritionHub": {
+    "title": "Nutrition",
+    "sections": {
+      "today": "Today",
+      "history": "History",
+      "progress": "Progress"
+    },
+    "icons": {
+      "planning": "Meal plan",
+      "library": "Library",
+      "settings": "Target and settings"
+    },
+    "eyebrow": "Today · {{date}}",
+    "repeat": {
+      "title": {
+        "breakfast": "Repeat a breakfast",
+        "lunch": "Repeat a lunch",
+        "dinner": "Repeat a dinner",
+        "snack": "Repeat a snack"
+      },
+      "action": "Repeat",
+      "done": "Added",
+      "meta_one": "{{kcal}} kcal · once",
+      "meta_other": "{{kcal}} kcal · {{count}} times in 2 months",
+      "a11y": "Repeat: {{meal}} from {{date}}",
+      "openA11y": "Open {{date}}",
+      "allHabits": "All your usual meals"
+    },
+    "likeYesterday": "Same as yesterday",
+    "likeYesterdayA11y": "Same as yesterday: {{meal}}, {{kcal}} kcal",
+    "emptyDay": {
+      "body": "Log what you eat as the day goes."
+    },
+    "planned": {
+      "eyebrow": "PLANNED",
+      "eat": "I ate this",
+      "eatA11y": "I ate this: {{name}}, {{meal}}",
+      "meta": "{{kcal}} kcal"
+    },
+    "template": {
+      "title": "Name this meal template",
+      "subtitle_one": "{{meal}} · {{count}} food · {{kcal}} kcal",
+      "subtitle_other": "{{meal}} · {{count}} foods · {{kcal}} kcal",
+      "label": "Template name",
+      "placeholder": "e.g. Morning breakfast",
+      "hint": "You'll find it under this name when searching.",
+      "save": "Save"
+    },
+    "library": {
+      "title": "Your library",
+      "recipesHint": "Your dishes, by the serving",
+      "templatesHint": "Your saved meals, added in one tap",
+      "favoritesHint": "The foods you set aside",
+      "mealsHint": "How many, their names, their order"
+    },
+    "calendar": {
+      "previous": "Previous month",
+      "next": "Next month",
+      "loggedDays_one": "{{count}} day logged",
+      "loggedDays_other": "{{count}} days logged",
+      "average": "{{kcal}} kcal on average",
+      "split": "on target: {{inTarget}} · above: {{over}} · below: {{under}}",
+      "empty": "No day logged this month.",
+      "legend": {
+        "in": "on target",
+        "over": "above",
+        "under": "below",
+        "noTarget": "no target",
+        "none": "nothing logged"
+      },
+      "status": {
+        "in": "{{kcal}} kcal, on target",
+        "over": "{{kcal}} kcal, above your target",
+        "under": "{{kcal}} kcal, below your target",
+        "logged": "{{kcal}} kcal",
+        "none": "nothing logged",
+        "today": "today, in progress",
+        "future": "upcoming"
+      },
+      "dayA11y": "{{date}}: {{status}}"
+    },
+    "historyTabs": {
+      "days": "Days",
+      "habits": "Usual meals"
+    },
+    "days": {
+      "in": "on target",
+      "over": "+{{kcal}} kcal",
+      "under": "−{{kcal}} kcal",
+      "today": "in progress",
+      "nothing": "Nothing logged",
+      "complete": "Fill in this day",
+      "todayPill": "TODAY",
+      "kcal": "{{kcal}} kcal",
+      "a11y": "{{date}}: {{summary}}"
+    },
+    "habits": {
+      "meta_one": "{{kcal}} kcal · once · last: {{date}}",
+      "meta_other": "{{kcal}} kcal · {{count}} times · last: {{date}}",
+      "a11y": "Add to today, {{meal}}: {{name}}",
+      "yesterday": "yesterday",
+      "empty": "Your usual meals will show up here once you've logged the same meal twice.",
+      "note": "A usual meal: the same foods, logged at least twice. It's added with last time's quantities, to today's meal of the same name."
+    },
+    "day": {
+      "status": {
+        "in": "{{kcal}} kcal · on target",
+        "over": "{{kcal}} kcal · {{delta}} kcal above your target",
+        "under": "{{kcal}} kcal · {{delta}} kcal below your target",
+        "noTarget": "{{kcal}} kcal",
+        "none": "Nothing logged that day"
+      },
+      "macros": "P {{p}} g · C {{g}} g · F {{l}} g",
+      "redoMeal": "Today",
+      "redoMealA11y": "Add to today: {{meal}} from {{date}}",
+      "redoneA11y": "{{meal}} from {{date}}: added to today",
+      "redoAll": "Repeat the whole day today",
+      "redoAllMeta_one": "{{count}} meal · {{kcal}} kcal",
+      "redoAllMeta_other": "{{count}} meals · {{kcal}} kcal",
+      "confirmTitle": "Today isn't empty",
+      "confirmBody_one": "You've already logged {{count}} food today. Add the meals from {{date}} on top?",
+      "confirmBody_other": "You've already logged {{count}} foods today. Add the meals from {{date}} on top?",
+      "confirmAdd": "Add",
+      "empty": "Nothing logged that day. Add what you remember with the “+” buttons: your consistency and averages will be more accurate."
+    },
+    "progressEmpty": {
+      "title": "Your progress starts with your first logged meal.",
+      "body": "Target, protein, weight, consistency: it will all show up here over time.",
+      "cta": "Log a meal"
     }
   },
   "hydration": {
@@ -4562,7 +4672,6 @@
       "remaining": "{{kcal}} kcal left",
       "reached": "Target reached",
       "over": "{{kcal}} kcal over",
-      "ofTarget": "of {{kcal}} kcal targeted",
       "noTarget": "No calorie target",
       "trainingBonus": "+{{kcal}} kcal — training day",
       "macroP": "P",
@@ -4578,8 +4687,7 @@
       "detail": "{{consumed}} of {{target}} kcal",
       "detailWithBonus": "{{consumed}} of {{target}} · +{{bonus}} training day",
       "remainingA11y": "{{kcal}} kcal still available today",
-      "macroGrams": "{{value}}/{{goal}}",
-      "backToToday": "Back to today"
+      "macroGrams": "{{value}}/{{goal}}"
     }
   },
   "workoutMode": {

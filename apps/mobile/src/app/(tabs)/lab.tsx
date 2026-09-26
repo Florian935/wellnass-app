@@ -75,7 +75,9 @@ type LabTab = (typeof TABS)[number];
 /** Où mène chaque geste « ouvrir » d'une proposition. */
 const ROUTES = {
   planning: '/planning',
-  foodSuggestion: '/nutrition',
+  // US NUTRI-UX03 (D14) — un lien « noter un repas » ouvre Aujourd'hui, quel que soit le dernier
+  // onglet choisi dans le hub.
+  foodSuggestion: '/nutrition?section=today',
   nutritionProfile: '/nutrition-profile',
   nutritionStats: '/nutrition-stats',
 } as const;

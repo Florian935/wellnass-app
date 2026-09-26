@@ -11,9 +11,9 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **26/09/2026** — **85 sections**, recomptées (§87 CARDIO-UX03 ajoutée ;
-> §86 MUSCU-UX07 le même jour ; le 23/09/2026 : §84 MUSCU-FIX02 et §85 MUSCU-UX06 recettées et
-> clôturées, sections purgées).
+> Dernière mise à jour : **26/09/2026** — **86 sections**, recomptées (§88 NUTRI-UX03 et §87
+> CARDIO-UX03 ajoutées ; §86 MUSCU-UX07 le 25/09/2026 ; le 23/09/2026 : §84 MUSCU-FIX02 et §85
+> MUSCU-UX06 recettées et clôturées, sections purgées).
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -5337,3 +5337,102 @@ sortie **GPS** et une sortie **sans GPS**.
   perd son repère au calendrier.
 - ⚠️ **Deux séances de course le même jour** : une fois la première faite, la seconde passe en
   « séance du jour » et l'arrivée de la première n'est plus montrée (comportement existant).
+
+## 88. NUTRI-UX03 — Le hub Nutrition en trois onglets (`feature/nutri-ux03-hub-onglets` → `dev`)
+
+Spec : [nutri-ux03-hub-onglets.md](docs/specs/functional/us/nutri-ux03-hub-onglets.md) ·
+plan : [nutri-ux03-hub-onglets.md](docs/plans/nutri-ux03-hub-onglets.md) ·
+maquette : [design/nutri-ux03-hub-onglets/](design/nutri-ux03-hub-onglets/)
+(toile https://claude.ai/artifact/2nD3MciUjRVAxQX6ud5D3i)
+
+Suite de MUSCU-UX07 : variante **B** (Aujourd'hui · Historique · Progrès) choisie par Florian le
+25/09/2026, avec ses réponses Q1 à Q8. Lot en une vague. Aucune migration : un build de `dev` suffit.
+Téléphone de recette de Florian, **police système par défaut**, thème clair **puis** sombre. Il faut un
+compte avec au moins une semaine de journal, **le même déjeuner noté deux fois** (items 5 et 17), un
+**jour oublié** dans les six derniers (item 3), et un **repas prévu aujourd'hui** au planning (item 9).
+
+### A — Aujourd'hui
+
+- [ ] 1. En-tête vert « **Alimentation** », trois icônes (Planning repas, Bibliothèque, Objectif et
+      réglages), puis les trois onglets **visibles sans défiler**. Plus d'icône Statistiques ni de flèches
+      ◀ ▶, plus de trame des sept verres, plus de « Revenir à aujourd'hui ».
+- [ ] 2. Le remplissage est inchangé : le grand chiffre dit ce qu'il reste, les tiges P/G/L leurs
+      grammes, les trois ajouts rapides ajoutent au repas de l'heure. **Scanner** est juste à droite de
+      « Chercher un aliment », qui n'est pas plus loin qu'avant.
+- [ ] 3. La ligne « dimanche … n'a rien de saisi » ouvre **la page de ce jour** (le hub ne bascule plus).
+- [ ] 4. À l'heure d'un repas **vide**, « Reprendre un déjeuner » montre les trois derniers déjeuners
+      **différents** (le même déjeuner deux fois = une ligne, « 2 fois en 2 mois »). Reprendre ajoute ce
+      repas, **avec ses quantités**, au déjeuner d'aujourd'hui ; le bloc disparaît alors. Une ligne ouvre
+      la page du jour ; « Tous tes repas habituels » ouvre Historique › Repas habituels sur le déjeuner.
+- [ ] 5. Un double appui rapide sur Reprendre, « Comme hier » ou « J'ai mangé ça » n'ajoute **qu'une**
+      fois.
+- [ ] 6. Chaque repas **vide** dont la veille a un repas du même nom porte « **Comme hier** » ; il reprend
+      le repas d'hier. Jamais sur un repas déjà rempli.
+- [ ] 7. Le ⋯ d'un repas rempli ne propose plus « Copier d'hier », seulement « Enregistrer comme repas
+      type ».
+- [ ] 8. « Enregistrer comme repas type » demande un **nom** : « Enregistrer » reste grisé tant qu'il est
+      vide (des espaces ne suffisent pas) ; le repas type se retrouve ensuite **sous ce nom** dans la
+      recherche de la feuille d'ajout.
+- [ ] 9. Le repas prévu du jour apparaît sous son repas, « PRÉVU AU PLANNING » ; « J'ai mangé ça » le porte
+      au journal et la ligne prévue disparaît. Le + du repas reste utilisable à côté.
+- [ ] 10. Journée vide, veille remplie : les repas s'affichent (avec « Comme hier ») et « Copier toute la
+      journée d'hier » au pied. Journée vide, veille vide, rien de prévu (compte neuf) : l'état « Journée
+      encore vide », « + Ajouter un aliment » **et la ligne d'eau**.
+- [ ] 11. La carte Planning repas et « Gérer les repas » ne sont plus en bas de l'onglet ; le planning
+      s'ouvre par l'icône d'en-tête. Le Réservoir, la carte de décision, l'énergie, les micros et la
+      qualité sont toujours là.
+- [ ] 12. La **Bibliothèque** ouvre Recettes, Repas types et Favoris sur le bon onglet du sélecteur, et
+      Repas de la journée sur « Gérer les repas ».
+
+### B — Historique
+
+- [ ] 13. Le calendrier du mois montre chaque jour passé en **verre rempli selon la cible** de ce jour :
+      plein dans la cible, « + » au-dessus, « − » en dessous, pointillé sans rien de noté, aujourd'hui
+      cerclé. Les jours à venir ne réagissent pas.
+- [ ] 14. Le résumé du mois (jours notés, moyenne, dans / au-dessus / en dessous) exclut aujourd'hui et
+      colle au calendrier ; les flèches s'arrêtent au mois de la **première entrée** et au mois courant.
+- [ ] 15. « Jours » liste les jours notés du mois du plus récent au plus ancien, plus les trous des six
+      derniers jours (« Rien de noté · Compléter ce jour ») ; chaque ligne résume ses repas. Aujourd'hui
+      renvoie à l'onglet Aujourd'hui.
+- [ ] 16. Revenir d'une page de jour, ou d'un autre onglet, retrouve **le même mois et le même
+      sous-onglet**.
+- [ ] 17. « Repas habituels » : seuls les repas notés **au moins deux fois à l'identique** ; Reprendre les
+      ajoute au repas du même nom aujourd'hui et le bouton passe à « Ajouté », **sans changer d'onglet**.
+
+### C — La page d'un jour
+
+- [ ] 18. Titre « Jeudi 24 septembre », total et statut face à la cible **de ce jour** (le même que le
+      calendrier), grammes P/G/L. Flèches jour précédent / suivant ; le suivant s'arrête à la veille.
+- [ ] 19. Le + d'un repas ajoute **sur ce jour** (la feuille n'affiche pas « Il te reste ») ; modifier,
+      supprimer, déplacer une entrée fonctionnent comme dans le hub ; l'eau se note pour ce jour.
+- [ ] 20. « Aujourd'hui » sur un repas le reprend sur aujourd'hui (« Ajouté ») ; jamais sur « Autres ».
+- [ ] 21. « Reprendre toute la journée aujourd'hui » : sans alerte sur un aujourd'hui vide, sinon
+      l'alerte « Aujourd'hui n'est pas vide » (Annuler n'écrit rien, Ajouter ajoute **en plus**) ; puis
+      retour sur l'onglet Aujourd'hui. « Autres » n'est pas repris.
+- [ ] 22. L'énergie, les micronutriments et la qualité **de ce jour** sont en bas de la page.
+
+### D — Progrès, liens et navigation
+
+- [ ] 23. Progrès = l'ancienne « La semaine » : verdict, protéines par kilo, poids, régularité, « Voir
+      toutes les statistiques ». Un compte sans repas ni pesée voit un seul message et « Noter un repas ».
+- [ ] 24. « **Me peser** » (action rapide, carte du moment, carte Poids de l'accueil), « Voir la courbe de
+      poids » (mensurations, bien-être) ouvrent Stats **sur l'onglet Poids**.
+- [ ] 25. La suggestion d'aliment du Labo et la carte d'activation (jour Nutrition) ouvrent **Aujourd'hui**,
+      même si le dernier onglet choisi était Progrès.
+- [ ] 26. Revenir sur Alim depuis un autre pilier rouvre le **dernier onglet choisi** ; relancer l'app
+      rouvre Aujourd'hui ; le lendemain matin, l'onglet choisi la veille reste affiché (Q5).
+- [ ] 27. Un **nouvel appui sur l'onglet Alim** de la barre du bas ramène en haut du hub.
+
+### E — Transverse
+
+- [ ] 28. Tout fonctionne en **mode avion**.
+- [ ] 29. En **anglais**, aucun libellé français ne subsiste (« Nutrition », « History », « Progress »,
+      « Same as yesterday », « I ate this »…) ; les milliers sont séparés à l'anglaise.
+- [ ] 30. **TalkBack** annonce les onglets et leur état, les jours du calendrier avec leur total et leur
+      statut, les flèches, et les boutons Reprendre, Comme hier, J'ai mangé ça et Aujourd'hui avec leur
+      repas.
+- [ ] 31. Toutes les cibles font au moins 44 px ; le calendrier reste lisible en thème sombre.
+
+⚠️ **Ce qui n'a pas été fait** : pas d'écran de gestion des repas types (la Bibliothèque ouvre le
+sélecteur existant) ; « J'ai mangé ça » n'existe que pour aujourd'hui ; la cible d'Historique ne compte pas
+les « autres activités » (écart existant entre deux hooks, spec D9). Voir le §11 de la spec.

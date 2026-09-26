@@ -91,7 +91,7 @@ export function QuickActions({
     key: 'weigh-in',
     label: t('home.quick.weighIn'),
     icon: 'speedometer-outline',
-    onPress: () => router.push('/nutrition-stats'),
+    onPress: () => router.push('/nutrition-stats?tab=weight'),
   });
   actions.push({
     key: 'wellbeing',
