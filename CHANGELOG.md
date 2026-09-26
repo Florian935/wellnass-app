@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 26/09/2026 — CARDIO-UX03, passe 1 de recette : « Choisir un programme » tient sur une ligne (`fix/cardio-ux03-bouton-programme`)
+
+> Retour de Florian sur device, capture à l'appui : en premiers pas, le bouton « Choisir un
+> programme » passait sur deux lignes, collé à gauche. L'US reste en recette (§87).
+> Commit précédent sur `dev` : `1cf7ef23`.
+
+### Corrigé
+- **Les boutons de la carte du moment** (`RunMomentCard`) se partageaient la largeur à parts égales
+  (`flex: 1` chacun), en police 17, sans limite de lignes ni marge intérieure : un libellé long
+  revenait à la ligne, et le texte, sans `textAlign`, se collait à gauche. Réalignés sur la maquette
+  (`design/cardio-ux03-hub-onglets/Main.dc.html`) : le secondaire prend la place de son libellé
+  (`flexShrink: 0`, marge 16, police 14,5), le principal tout le reste (`flexGrow: 1`, marge 16,
+  police 16, centré). Les deux libellés tiennent sur **une ligne** (`numberOfLines={1}`), et le
+  principal resserre sa police (`adjustsFontSizeToFit`) sur un écran très étroit plutôt que de couper.
+  Vaut pour les cinq états (reprendre, séance du jour, arrivée, repos, premiers pas) ; écart entre
+  les boutons 10 → 8, comme la maquette.
+
+### Technique / Notes
+- Test-garde : `run-hub-ux03-cards.test.tsx` (+5, un par état) — libellés sur une ligne, principal
+  en `flexGrow`, secondaire sans `flex: 1`. Vu **rouge** avant la correction (5 échecs).
+- `RECETTES.md` §87, critère 14 complété (le nombre de critères ne change pas) ; spec §11,
+  « Retours de recette » ; roadmap 5.44, passe 1, statut inchangé.
+- Aucune chaîne i18n, aucune migration, aucune sync rule.
+
 ## 26/09/2026 — NUTRI-UX03 livrée : le hub Nutrition en trois onglets — Aujourd'hui, Historique, Progrès (`feature/nutri-ux03-hub-onglets`)
 
 > Troisième et dernier commit de l'US (plan, étapes 4 et 5). Variante B choisie par Florian le

@@ -5270,7 +5270,10 @@ sortie **GPS** et une sortie **sans GPS**.
       l'**estimation du jour** — sans couleur ni commentaire. Sans date de course : l'avancement seul.
       Un appui ouvre la fiche du programme.
 - [ ] 14. Premiers pas **sans allure de référence** : « Ton allure de référence · La donner » ouvre le
-      profil coureur ; « Choisir un programme » ouvre les programmes.
+      profil coureur ; « Choisir un programme » ouvre les programmes. *(Retour du 26/09, corrigé :)*
+      « Choisir un programme » tient sur **une seule ligne**, centré, à côté d'un « Course libre » plus
+      étroit — comme les boutons des autres états de la carte (« Voir l'analyse · Partager », « Course
+      libre · Planning »), en FR comme en EN.
 - [ ] 15. Une course **en cours** : Courir ne montre que la carte « Reprendre » (distance, ou durée
       pour une course **sans GPS** — jamais « 0,00 km »).
 - [ ] 16. Le hub n'a plus de grande scène, ni « Voir le détail », ni « Ma semaine » sous l'arrivée,

@@ -487,3 +487,13 @@ au moins une séance de fractionné déjà courue, une sortie GPS et une sortie 
   selon le contexte : les tests le trouvent par repère).
 - **Non fait, signalé** : les écrans empilés `run/active` et `run/summary` n'ont pas été retouchés ;
   la comparaison de l'arrivée avec la dernière fois (§9) ; la virtualisation de l'historique filtré.
+
+### Retours de recette
+
+- **26/09/2026 — « Choisir un programme » sur deux lignes** (premiers pas, capture de Florian). Les
+  deux boutons de la carte du moment se partageaient la largeur à parts égales, en police 17, sans
+  limite de lignes : le libellé principal revenait à la ligne, collé à gauche. Réaligné sur la
+  maquette (`Main.dc.html`) : le secondaire prend la place de son libellé (police 14,5, marge 16),
+  le principal tout le reste (police 16) ; les deux libellés tiennent sur **une ligne**, et le
+  principal resserre sa police sur un écran très étroit plutôt que de couper. Vaut pour les cinq
+  états de la carte. Garde : `run-hub-ux03-cards.test.tsx`.

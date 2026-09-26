@@ -235,6 +235,9 @@ export function RunMomentCard(props: Props) {
       {body}
 
       <View style={styles.actions}>
+        {/* Comme la maquette : le secondaire prend la place de son libellé, le principal tout le
+            reste. À parts égales, « Choisir un programme » passait sur deux lignes (recette du
+            26/09/2026) ; sur un écran très étroit, sa police se resserre plutôt que de couper. */}
         <PressableScale
           testID="run-moment-primary"
           haptic={moment.kind === 'today' || moment.kind === 'resume' ? 'milestone' : 'confirm'}
@@ -244,7 +247,9 @@ export function RunMomentCard(props: Props) {
           style={[styles.primary, { backgroundColor: colors.accent }]}
         >
           {primary.icon ? <Ionicons name={primary.icon} size={17} color={colors.accentText} /> : null}
-          <Text style={[styles.primaryLabel, { color: colors.accentText }]}>{primary.label}</Text>
+          <Text numberOfLines={1} adjustsFontSizeToFit style={[styles.primaryLabel, { color: colors.accentText }]}>
+            {primary.label}
+          </Text>
         </PressableScale>
         {secondary ? (
           <PressableScale
@@ -254,7 +259,9 @@ export function RunMomentCard(props: Props) {
             accessibilityLabel={secondary.label}
             style={[styles.secondary, { borderColor: colors.borderStrong }]}
           >
-            <Text style={[styles.secondaryLabel, { color: colors.text }]}>{secondary.label}</Text>
+            <Text numberOfLines={1} style={[styles.secondaryLabel, { color: colors.text }]}>
+              {secondary.label}
+            </Text>
           </PressableScale>
         ) : null}
       </View>
@@ -292,17 +299,27 @@ const styles = StyleSheet.create({
   refPaceBody: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 17 },
   refPaceCta: { minHeight: 44, paddingHorizontal: 12, borderRadius: 22, borderWidth: 1.5, justifyContent: 'center' },
   refPaceCtaLabel: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
-  actions: { flexDirection: 'row', gap: 10 },
+  actions: { flexDirection: 'row', gap: 8 },
   primary: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 1,
     minHeight: 54,
+    paddingHorizontal: 16,
     borderRadius: 16,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
   },
-  primaryLabel: { fontFamily: fontFamily.bodyBold, fontSize: 17 },
-  secondary: { flex: 1, minHeight: 54, borderRadius: 16, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
-  secondaryLabel: { fontFamily: fontFamily.bodyBold, fontSize: 16 },
+  primaryLabel: { flexShrink: 1, fontFamily: fontFamily.bodyBold, fontSize: 16, textAlign: 'center' },
+  secondary: {
+    flexShrink: 0,
+    minHeight: 54,
+    paddingHorizontal: 16,
+    borderRadius: 16,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  secondaryLabel: { fontFamily: fontFamily.bodyBold, fontSize: 14.5 },
 });

@@ -1,12 +1,15 @@
 /**
- * US CARDIO-UX03 — deux cartes de Courir, testées à part : « Ton programme » (D8, R11, Q9) et
- * « La dernière fois » quand la séance n'a pas de fractions (§4.2.1).
+ * US CARDIO-UX03 — des cartes de Courir, testées à part : « Ton programme » (D8, R11, Q9),
+ * « La dernière fois » quand la séance n'a pas de fractions (§4.2.1), et les boutons de la carte du
+ * moment (retour de recette du 26/09/2026).
  */
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { render, screen } from '@testing-library/react-native';
 
 import { RunProgramCard } from '../RunProgramCard';
 import { RunLastTime } from '../RunLastTime';
+import { RunMomentCard, type RunMoment } from '../RunMomentCard';
 import { useRunIntervals } from '@/data/repositories/run-repository';
 
 jest.mock('@/data/repositories/run-repository', () => ({
@@ -125,4 +128,81 @@ describe('La dernière fois, sans fraction (§4.2.1)', () => {
     expect(screen.getByText('11.4 km · 1 h 7 min 30 s · 355 s/km · workout.summary.feeling.solid')).toBeTruthy();
     expect(screen.queryByTestId('last-time-rep-1')).toBeNull();
   });
+});
+
+describe('La carte du moment : des boutons sur une ligne (retour de recette du 26/09/2026)', () => {
+  // « Choisir un programme » passait sur deux lignes, collé à gauche : les deux boutons se
+  // partageaient la largeur à parts égales et le libellé pouvait revenir à la ligne. La maquette
+  // (design/cardio-ux03-hub-onglets, Main) donne au secondaire la place de son libellé et au
+  // principal tout le reste.
+  const MOMENTS: [RunMoment, string, string | null][] = [
+    [{ kind: 'resume', typeLabel: 'Course libre', distanceLabel: '3,20 km', durationLabel: '18 min' }, 'runningHub.moment.primary.resume', null],
+    [
+      {
+        kind: 'today',
+        typeLabel: 'Fractionné',
+        scheduledTime: null,
+        countdownLabel: null,
+        segments: [],
+        volumeLabel: null,
+        estimatedLabel: null,
+        paceLabel: null,
+        instructions: null,
+      },
+      'runningHub.moment.primary.today',
+      null,
+    ],
+    [
+      {
+        kind: 'arrival',
+        typeLabel: 'Course libre',
+        distanceKm: 9,
+        distanceUnit: 'km',
+        metaLabel: '51 min 9 s',
+        validated: false,
+        inRange: null,
+        predictionLabel: null,
+      },
+      'runningHub.moment.primary.arrival',
+      'runningHub.moment.share',
+    ],
+    [{ kind: 'rest', doneToday: false, nextLabel: null }, 'runningHub.moment.primary.rest', 'runningHub.moment.planning'],
+    [{ kind: 'onboarding', needsRefPace: false }, 'runningHub.moment.primary.onboarding', 'runningHub.moment.freeRun'],
+  ];
+
+  it.each(MOMENTS.map(([moment, primary, secondary]) => [moment.kind, moment, primary, secondary] as const))(
+    '%s : aucun libellé de bouton ne passe à la ligne',
+    async (_kind, moment, primary, secondary) => {
+      await render(
+        <RunMomentCard
+          moment={moment}
+          weekLabel={null}
+          onResume={jest.fn()}
+          onStart={jest.fn()}
+          onAnalysis={jest.fn()}
+          onShare={jest.fn()}
+          onFreeRun={jest.fn()}
+          onPlanning={jest.fn()}
+          onPrograms={jest.fn()}
+          onProfile={jest.fn()}
+        />,
+      );
+
+      // Le principal : une seule ligne, et sa police se resserre plutôt que de couper le mot.
+      const primaryLabel = screen.getByText(primary);
+      expect(primaryLabel.props.numberOfLines).toBe(1);
+      expect(primaryLabel.props.adjustsFontSizeToFit).toBe(true);
+      expect(StyleSheet.flatten(screen.getByTestId('run-moment-primary').props.style)).toMatchObject({ flexGrow: 1 });
+
+      if (secondary === null) {
+        expect(screen.queryByTestId('run-moment-secondary')).toBeNull();
+        return;
+      }
+      expect(screen.getByText(secondary).props.numberOfLines).toBe(1);
+      // Le secondaire prend la place de son libellé, pas la moitié de la carte.
+      const secondaryStyle = StyleSheet.flatten(screen.getByTestId('run-moment-secondary').props.style);
+      expect(secondaryStyle.flex).toBeUndefined();
+      expect(secondaryStyle.flexShrink).toBe(0);
+    },
+  );
 });

@@ -129,8 +129,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `HEAD` (modifications non commitées) |
-| Commits | 1346 · `main` a **1343** commits de retard sur `dev` |
+| Branche courante | `fix/cardio-ux03-bouton-programme` (modifications non commitées) |
+| Commits | 1347 · `main` a **1344** commits de retard sur `dev` |
 | Specs d'US | 176 au total — 89 clôturées, 87 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -141,11 +141,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `1cf7ef2`  feat(nutrition): NUTRI-UX03, le hub Nutrition en trois onglets — Aujourd'hui, Historique, Progrès
 - `fbf078d`  feat(cardio): CARDIO-UX03, le hub Course en trois onglets — Courir, Historique, Progrès
 - `20a4055`  feat(nutrition): NUTRI-UX03, le socle du hub en trois onglets — briques, requêtes, journal sorti de l'écran
 - `1584e8d`  docs(nutrition): NUTRI-UX03 cadrée — le hub Nutrition en trois onglets
 - `daef357`  feat(cardio): CARDIO-UX03, l'écran de départ nommé et le vrai détail d'une sortie
-- `fb4946d`  feat(cardio): CARDIO-UX03, le socle du hub Course en trois onglets — briques, requêtes, préférences
 
 ---
 
