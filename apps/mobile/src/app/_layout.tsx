@@ -626,6 +626,8 @@ function RootNavigator() {
             headerShown: false,
           }}
         />
+        {/* US CARDIO-UX03 — « Toutes tes stats » : les analyses de l'ancien historique ; celui-ci redirige vers Course › Historique. */}
+        <Stack.Screen name="running-stats" options={{ headerShown: false }} />
         <Stack.Screen name="history" options={{ headerShown: false }} />
         {/* US CYCLE-01 — suivi du cycle (détail + insights). Route **oubliée jusqu'au 14/08/2026** :
             ses deux écrans n'avaient donc ni en-tête de navigation ni zone sûre, et leur titre se

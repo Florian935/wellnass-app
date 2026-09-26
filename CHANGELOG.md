@@ -10,6 +10,65 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 26/09/2026 — CARDIO-UX03, le hub Course en trois onglets — Courir, Historique, Progrès (`feature/cardio-ux03-hub-onglets`)
+
+> Étape 4 et dernière du plan. Le hub répondait à « est-ce que je cours plus vite ? » et mal aux
+> questions d'avant et d'après la sortie. Proposition A validée par Florian (Q1–Q10), livrée en une
+> vague. Commit précédent sur la branche : `daef357b` (départ et détail) ; rebasé sur les deux commits
+> NUTRI-UX03 poussés entre-temps (`1584e8dd`, `20a4055a`). **US passée à `etape: recette`**.
+
+### Ajouté
+- **En-tête compact** `RunHeader` : dégradé bleu du pilier, la trace animée **en filigrane** (Q3),
+  « Course », trois icônes (planning, profil coureur, programmes), onglets Courir · Historique ·
+  Progrès (`tablist`). Défile avec la page ; un nouvel appui sur l'onglet Course remonte en haut
+  (`useScrollToTop`). Onglet : paramètre `section` lu puis effacé, sinon mémoire, sinon Courir.
+- **Courir** (`sections/RunSection`) : la carte du moment `RunMomentCard` (cinq états), la carte
+  d'adaptation, **tes trois dernières sorties** (`RecentRuns`, `RunRow`) avec **Recourir**, « Autre
+  chose · Course libre » (jours de séance et après une sortie), `RunWeekCard`, **Ton programme**
+  (`RunProgramCard` : semaine X sur N, J-N, objectif face au record ou à l'estimation, sans alerte).
+- **La dernière fois** (`RunLastTime`) : pastilles de fractions du corps de séance, ou « distance ·
+  durée · allure · ressenti » ; « Première fois pour cette séance. »
+- **Historique** (`sections/RunHistorySection`, `RunHistoryCalendar`) : calendrier du mois (sorties,
+  records détenus, séances prévues, aujourd'hui), résumé, **Sorties · Par type**, filtre sur tout
+  l'historique, jour à deux sorties, « Tout le mois ».
+- **Progrès** (`sections/RunProgressSection`) : les huit cartes de CARDIO-UX02 dans leur ordre, puis
+  « Toutes tes stats » ; un seul message sans sortie. Ligne `RunResumeLine` pendant une course.
+- **`/running-stats`** — « Toutes tes stats » : l'ancien historique **moins sa liste** (`git mv`).
+- `RECETTES.md` §87 (35 critères) ; §59 et §79 : critères « hub » marqués remplacés (Q10) ; en-tête
+  recompté (85 sections).
+- `BACKLOG.md` : **CARDIO-08** (l'analyse compte l'échauffement dans « X sur Y dans la plage »).
+
+### Modifié
+- `app/(tabs)/running.tsx` réécrit ; `/running-history` devient une **redirection** vers Course ›
+  Historique (et déclare son pilier, pour le test-garde d'identité).
+- Liens vers l'ancien historique : la carte « Record récent » de l'accueil (record de course) et le
+  widget « Ma semaine » retiré de l'accueil (`widget-destinations.ts`) mènent à « Toutes tes stats ».
+- Un record de « Toutes tes stats » ouvre l'**analyse** de sa sortie, plus l'écran d'arrivée.
+- `app/_layout.tsx` déclare `running-stats` ; `pillar-identity.test.ts` le contrôle.
+- i18n FR + EN : `runningHub.{sections,resumeLine,moment,lastTime,recent,other,program,history,progressLink,progressEmpty}`, `runningStats.title`.
+
+### Corrigé
+- 🔴 **« Ta semaine » rangeait une sortie finie après minuit la veille** : la date ISO était découpée
+  en UTC (`slice(0, 10)`), le calendrier la rangeait au jour local. Les deux lisent `runDayKey`.
+- Une course **sans GPS** en cours n'affiche plus « 0,00 km » : la carte dit sa durée.
+
+### Supprimé
+- `RunStage` (+ son test, 13 tests) et `RunDirectorySheet` ; les clés i18n qu'ils étaient seuls à lire
+  (`stage.running.{eyebrow,primary,secondary,weekLine,arrivalA11y}`, `runningHub.{directory,directorySheet}`,
+  `runningHub.week.program`, `running.history.{title,empty,runsSectionTitle}`), chacune vérifiée par
+  recherche dans `apps/` et `packages/`.
+
+### Technique / Notes
+- Tests : `running-screen.test.tsx` réécrit (26), `RunHistorySection.test.tsx` (10, dont les quatre
+  tests de l'ancienne liste), `run-hub-ux03-cards.test.tsx` (5), `running-stats-screen.test.tsx`
+  adapté (27), `RecordRecentCard.test.tsx` (route). La garde de CARDIO-UX02 sur le dénominateur de la
+  semaine est **conservée**.
+- `buildMonthGrid`, `monthRange` (muscu) importés sans modification ; aucun fichier de la muscu ni de
+  la nutrition touché. Factorisation des trois hubs notée au §11 de la spec.
+- Parité i18n : aucune clé manquante ; restent les 4 valeurs vides préexistantes
+  (`coach.*.verdict.warmup`), identiques avant et après.
+- Roadmap 5.44 🟡 → ✅ (253 → 254 livrés, 5 → 4 partiels ; ligne « Hors cadrage » : 61 ✅, 1 🟡).
+
 ## 26/09/2026 — NUTRI-UX03, le socle : briques, requêtes, et le journal sort de l'écran (`feature/nutri-ux03-hub-onglets`)
 
 > Deuxième commit de l'US (plan, étapes 1 à 3), en TDD. Aucun changement visible : le hub a

@@ -240,7 +240,7 @@ describe('navigation', () => {
     expect(push).toHaveBeenCalledWith('/progress');
   });
 
-  it('🔴 un record de COURSE mène à l’historique de course', async () => {
+  it('🔴 un record de COURSE mène aux records de course (« Toutes tes stats », CARDIO-UX03)', async () => {
     mockLast.mockReturnValue({
       record: { pillar: 'running', distanceKey: '5k', bestTimeSeconds: 1252, achievedAt: ilYA(1) },
       isLoading: false,
@@ -249,8 +249,10 @@ describe('navigation', () => {
     await render(<RecordRecentCard size="wide" />);
     await taper(screen.getByLabelText('home.record.title'));
 
-    // Ouvrir l'écran de progression muscu sur un record de course ne montrerait pas le record.
-    expect(push).toHaveBeenCalledWith('/running-history');
+    // Ouvrir l'écran de progression muscu sur un record de course ne montrerait pas le record. Depuis
+    // CARDIO-UX03, `/running-history` ne fait plus que rediriger vers la liste des sorties : les
+    // records sont dans « Toutes tes stats ».
+    expect(push).toHaveBeenCalledWith('/running-stats');
   });
 
   it('🔴 sans aucun record, la carte n’est PAS cliquable', async () => {

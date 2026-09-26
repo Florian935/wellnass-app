@@ -2651,10 +2651,7 @@
       "empty": "Aucun programme ne correspond."
     },
     "history": {
-      "title": "Historique & progression",
-      "empty": "Aucune course enregistrée.",
       "statsTitle": "Statistiques",
-      "runsSectionTitle": "Courses",
       "week": "Semaine",
       "month": "Mois",
       "all": "Depuis le début",
@@ -4531,30 +4528,8 @@
       }
     },
     "running": {
-      "eyebrow": {
-        "resume": "Course en cours",
-        "arrival": "Sortie terminée",
-        "today": "Ta séance du jour",
-        "rest": "Ton pilier course",
-        "onboarding": "Ton pilier course"
-      },
-      "primary": {
-        "resume": "Reprendre",
-        "arrival": "Voir l'analyse",
-        "today": "Démarrer",
-        "rest": "Course libre",
-        "onboarding": "Choisir un programme"
-      },
-      "secondary": {
-        "resume": "Historique",
-        "arrival": "Ma semaine",
-        "today": "Voir le détail",
-        "rest": "Planning",
-        "onboarding": "Course libre"
-      },
       "inProgress": "{{duration}} déjà courues",
       "arrivalMeta": "{{duration}} · {{pace}}",
-      "arrivalA11y": "{{distance}} {{unit}} à {{pace}}",
       "predictionNew": "Nouveau record 5 km — 10 km estimé : {{time}}",
       "prediction": "10 km estimé : {{time}}",
       "countdownNow": "C'est l'heure",
@@ -4562,7 +4537,6 @@
       "countdownIn_other": "Dans {{count}} heures environ",
       "countdownPast_one": "Prévue il y a une heure",
       "countdownPast_other": "Prévue il y a {{count}} heures",
-      "weekLine": "Cette semaine : {{distance}} · {{sessions}}",
       "splits": {
         "title": "Km par km",
         "meta": "{{count}} km pleins",
@@ -5593,7 +5567,6 @@
     }
   },
   "runningHub": {
-    "directory": "Programmes, planning, historique",
     "pace": {
       "title": {
         "onboarding": "Ta meilleure allure",
@@ -5617,8 +5590,7 @@
     "week": {
       "hint": "Ouvre le planning",
       "doneOnly_one": "{{count}} sortie",
-      "doneOnly_other": "{{count}} sorties",
-      "program": "Programme : {{name}}"
+      "doneOnly_other": "{{count}} sorties"
     },
     "engine": {
       "title": "Ton moteur",
@@ -5637,17 +5609,105 @@
       "line_one": "{{distance}} depuis le début, en {{duration}} et {{count}} sortie",
       "line_other": "{{distance}} depuis le début, en {{duration}} et {{count}} sorties"
     },
-    "directorySheet": {
-      "title": "Le pilier Course",
-      "subtitle": "Tout ce qui organise ta course, au même endroit.",
-      "programs": "Programmes",
-      "programsDesc": "Suivre un plan, ou en créer un.",
+    "sections": {
+      "run": "Courir",
+      "history": "Historique",
+      "progress": "Progrès"
+    },
+    "resumeLine": {
+      "title": "Course en cours",
+      "action": "Reprendre"
+    },
+    "moment": {
+      "eyebrow": {
+        "resume": "Course en cours",
+        "today": "Aujourd'hui",
+        "arrival": "Sortie terminée",
+        "rest": "Repos",
+        "onboarding": "Ton pilier course"
+      },
+      "primary": {
+        "resume": "Reprendre",
+        "today": "Partir",
+        "arrival": "Voir l'analyse",
+        "rest": "Course libre",
+        "onboarding": "Choisir un programme"
+      },
+      "share": "Partager",
       "planning": "Planning",
-      "planningDesc": "Tes séances, semaine par semaine.",
-      "history": "Historique & stats",
-      "historyDesc": "Tes sorties, tes courbes, tes records.",
-      "profile": "Profil coureur",
-      "profileDesc": "Allure de référence, fréquence visée, voix."
+      "freeRun": "Course libre",
+      "week": "semaine {{week}} sur {{total}}",
+      "validated": "Séance validée dans ton programme",
+      "inRange": "Fractions : {{done}} sur {{total}} dans la plage",
+      "refPace": {
+        "title": "Ton allure de référence",
+        "body": "Pas encore donnée : sans elle, aucune allure cible.",
+        "cta": "La donner"
+      }
+    },
+    "lastTime": {
+      "titleOn": "La dernière fois · {{date}}",
+      "sameSession": "même séance",
+      "sameType": "même type",
+      "firstTime": "Première fois pour cette séance.",
+      "inRange": "{{done}} sur {{total}} dans la plage",
+      "more": "+{{count}}",
+      "open": "Revoir cette sortie",
+      "repA11y": "Répétition {{rep}} : {{value}}, {{state}}",
+      "state": {
+        "in": "dans la plage",
+        "out": "hors plage",
+        "none": "sans plage"
+      }
+    },
+    "recent": {
+      "title": "Tes dernières sorties",
+      "allHistory": "Tout l'historique",
+      "again": "Recourir",
+      "againA11y": "Recourir ta sortie du {{date}}"
+    },
+    "other": {
+      "title": "Autre chose",
+      "freeHint": "sans séance, tout est enregistré"
+    },
+    "program": {
+      "title": "Ton programme",
+      "progress": "Semaine {{week}} sur {{total}} · {{done}} séances sur {{count}}",
+      "objective": "Objectif",
+      "estimate": "Estimé aujourd'hui",
+      "record": "Ton record"
+    },
+    "history": {
+      "previous": "Mois précédent",
+      "next": "Mois suivant",
+      "dayA11y": "{{date}} : {{runs}}",
+      "runs_one": "{{count}} sortie",
+      "runs_other": "{{count}} sorties",
+      "records_one": "{{count}} record",
+      "records_other": "{{count}} records",
+      "empty": "Aucune sortie ce mois-ci.",
+      "emptyMonth": "Aucune sortie ce mois-ci.",
+      "legend": {
+        "run": "sortie",
+        "record": "record",
+        "planned": "prévue"
+      },
+      "tabs": {
+        "runs": "Sorties",
+        "byType": "Par type"
+      },
+      "wholeMonth": "Tout le mois",
+      "filterAll": "{{type}} · tout l'historique",
+      "typesIntro": "Chaque type de séance couru, et ce que tu y as fait la dernière fois. Touche un type pour ne voir que ses sorties.",
+      "typeCount_one": "{{count}} sortie",
+      "typeCount_other": "{{count}} sorties",
+      "typeLast": "La dernière : {{date}} · {{summary}}"
+    },
+    "progressLink": "Toutes tes stats",
+    "progressEmpty": {
+      "title": "Ta progression démarre à ta première sortie.",
+      "body": "Allure, records, estimations de chrono : tout s'affichera ici.",
+      "cta": "Commencer"
     }
   },
   "sessionPreview": {
@@ -5657,5 +5717,8 @@
     "targetSets_one": "{{count}} série",
     "targetSets_other": "{{count}} séries",
     "plannedLoad": "{{weight}} prévus"
+  },
+  "runningStats": {
+    "title": "Toutes tes stats"
   }
 }

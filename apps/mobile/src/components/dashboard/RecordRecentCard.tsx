@@ -65,7 +65,7 @@ export function RecordRecentCard({ size = 'wide' }: { size?: WidgetSize }) {
   // Libellé + valeur + route du dernier record (small/wide).
   let name: string | null = null;
   let value = '';
-  let route: '/progress' | '/running-history' = '/progress';
+  let route: '/progress' | '/running-stats' = '/progress';
   if (record != null) {
     if (record.pillar === 'strength') {
       name = record.exerciseName;
@@ -74,7 +74,9 @@ export function RecordRecentCard({ size = 'wide' }: { size?: WidgetSize }) {
     } else {
       name = t(RECORD_DISTANCE_I18N_KEY[record.distanceKey]);
       value = formatPaceMMSS(record.bestTimeSeconds, '—');
-      route = '/running-history';
+      // US CARDIO-UX03 (D7) — les records de course vivent dans « Toutes tes stats », comme ceux
+      // de muscu dans `/progress` ; `/running-history` n'est plus qu'une redirection vers la liste.
+      route = '/running-stats';
     }
   }
   const open = () => router.push(route);

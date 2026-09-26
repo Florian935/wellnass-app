@@ -3,9 +3,9 @@ id: CARDIO-UX03
 titre: "Hub Course en trois onglets — Courir, Historique, Progrès"
 roadmap: [5.44]
 catalogue: []
-etape: code
+etape: recette
 branche: feature/cardio-ux03-hub-onglets
-maj: 25/09/2026
+maj: 26/09/2026
 ---
 
 # US CARDIO-UX03 — Hub Course en trois onglets
@@ -459,4 +459,31 @@ au moins une séance de fractionné déjà courue, une sortie GPS et une sortie 
   `RunHistoryCalendar`). Ici, ils sont **dupliqués exprès** pour ne toucher aucun fichier des deux
   autres chantiers. Les fonctions pures de `history-calendar.ts` et `resolveProgramProgress` sont,
   elles, **réutilisées sans modification** : elles étaient déjà agnostiques du pilier.
-- Les notes d'écart apparues pendant le code sont ajoutées ci-dessous au fil des commits.
+- **Livrée les 25 et 26/09/2026 en quatre commits** : cadrage (`a941cd2a`), socle (`fb4946d8`),
+  départ et détail (`daef357b`), hub (26/09, rebasé sur le socle de NUTRI-UX03). En recette : [RECETTES.md](../../../../RECETTES.md) §87 (35 critères).
+
+### Notes d'implémentation (25/09/2026)
+
+Écarts et précisions par rapport au texte ci-dessus, pour la recette et la maintenance :
+
+- **La carte d'arrivée** dit sa durée avec `formatDurationHms` (« 43 min 52 s »), comme les listes ;
+  la scène disait « 0h 43 ». « Partager » ouvre l'analyse avec `share=1`, qui ouvre la carte à
+  partager une fois la course chargée : la carte n'est pas reconstruite dans le hub (même choix que
+  MUSCU-UX07).
+- **« X sur Y dans la plage »** (dernière fois et arrivée) se calcule sur `lastTimeReps` (segment
+  `work` seul). Le tableau « fraction par fraction » de l'analyse, lui, garde
+  `summarizeIntervalSeries`, qui compte aussi l'échauffement : écart **connu, non corrigé** ici
+  (l'analyse n'est pas dans le périmètre), à porter au backlog.
+- **Une séance du jour sans type** (programme ancien) prend son **nom** comme titre, à défaut « Course
+  libre » ; l'écran de départ dit alors « Séance du jour ».
+- **Suppressions** : `RunStage` (+ test, 13 tests), `RunDirectorySheet`, et les clés i18n qu'ils étaient
+  seuls à lire — `stage.running.{eyebrow,primary,secondary,weekLine,arrivalA11y}`,
+  `runningHub.{directory,directorySheet}`, `runningHub.week.program`,
+  `running.history.{title,empty,runsSectionTitle}` —, chacune vérifiée par recherche dans `apps/` et
+  `packages/`. Restent, parce que lues ailleurs : `stage.running.{inProgress,arrivalMeta,prediction*,countdown*,splits,predictions,load}`.
+- **Déplacé** : `app/running-history/index.tsx` → `app/running-stats/index.tsx` (`git mv`, sans la
+  liste), son test avec lui ; les quatre tests de la liste ont rejoint `RunHistorySection.test.tsx`.
+- **`components/Button.tsx`** gagne un `testID` facultatif (le bouton de départ change de libellé
+  selon le contexte : les tests le trouvent par repère).
+- **Non fait, signalé** : les écrans empilés `run/active` et `run/summary` n'ont pas été retouchés ;
+  la comparaison de l'arrivée avec la dernière fois (§9) ; la virtualisation de l'historique filtré.

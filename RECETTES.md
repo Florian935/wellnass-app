@@ -11,8 +11,9 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **25/09/2026** — **84 sections** (§86 MUSCU-UX07 ajoutée ; le 23/09/2026 :
-> §84 MUSCU-FIX02 et §85 MUSCU-UX06 recettées et clôturées, sections purgées).
+> Dernière mise à jour : **26/09/2026** — **85 sections**, recomptées (§87 CARDIO-UX03 ajoutée ;
+> §86 MUSCU-UX07 le même jour ; le 23/09/2026 : §84 MUSCU-FIX02 et §85 MUSCU-UX06 recettées et
+> clôturées, sections purgées).
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -2999,6 +3000,11 @@ n'étaient pas les siens**.
 
 ### Le hub course
 
+> ⚠️ **Critères 22 à 28 remplacés par §87 (CARDIO-UX03, 25/09/2026 — réponse Q10) : ne pas les
+> recetter ici.** Le hub a été refait deux fois depuis (CARDIO-UX02 puis CARDIO-UX03) ; leurs règles
+> vivent dans §87 : états de la carte du moment (A1, A6, A14, A15), contenu de la séance du jour
+> (A1), profil coureur en en-tête (D31), « Ta semaine » (A12).
+
 - [ ] 22. **Quatre états, jamais deux cartes.** Vérifier les quatre, dans l'ordre de priorité :
       (a) une course **en cours** → « Reprendre » ; (b) une séance **aujourd'hui** → la carte de
       séance ; (c) un **programme actif sans séance aujourd'hui** → « Rien de prévu aujourd'hui »
@@ -4669,7 +4675,14 @@ Spec : [cardio-ux02-refonte-hub-course.md](docs/specs/functional/us/cardio-ux02-
 
 ### B — Le dashboard
 
-- [ ] **9. 🔴 Le compteur de la semaine est le MÊME en haut et en bas.** C'était le défaut le plus
+> ⚠️ **Le dashboard a été refait par CARDIO-UX03 (§87, 25/09/2026 — réponse Q10).** Les critères
+> **9, 17, 23 et 24** décrivent un hub qui n'existe plus (la scène et son compteur, le nom du
+> programme dans « Ma semaine », l'annuaire, la scène seule sur un compte neuf) : **ne pas les
+> recetter** — §87 les remplace. Les cartes des critères 11 à 16 et 18 à 25 sont **les mêmes**, mais
+> vivent désormais dans l'onglet **Progrès** ; « Historique & stats » (critère 5) s'appelle
+> « Toutes tes stats ».
+
+- [ ] ~~remplacé par §87~~ **9. 🔴 Le compteur de la semaine est le MÊME en haut et en bas.** C'était le défaut le plus
       visible : le héros disait « 2 / 0 faites », la carte « 2 / 3 faites ». Vérifier avec **et**
       sans programme actif.
 - [ ] **10. Sans programme ni fréquence visée déclarée**, on lit « 2 sorties » — pas « 2 / 0 ».
@@ -4685,7 +4698,7 @@ Spec : [cardio-ux02-refonte-hub-course.md](docs/specs/functional/us/cardio-ux02-
       allure » et le cumul parcouru, **pas** un écart.
 - [ ] **16. Un écart de moins de 3 s/km** se dit « au même niveau », sans flèche — on n'annonce pas
       un progrès qu'on ne distingue pas du bruit GPS.
-- [ ] **17. « Ma semaine »** porte les 7 jours **et** la prochaine séance datée **et** le nom du
+- [ ] ~~remplacé par §87~~ **17. « Ma semaine »** porte les 7 jours **et** la prochaine séance datée **et** le nom du
       programme — les widgets Planning et Programmes ont disparu dans cette carte.
 - [ ] **18. « Ton moteur »** montre la répartition endurance / intensité en une barre à deux parts,
       avec le repère ~80 % **cité, jamais présenté comme un objectif**.
@@ -4694,9 +4707,9 @@ Spec : [cardio-ux02-refonte-hub-course.md](docs/specs/functional/us/cardio-ux02-
       (« 24 min 10 s », jamais « 1450 ») et date du record.
 - [ ] **21. « Ta charge »** est **descendue** sous les records : c'est un garde-fou, pas un progrès.
 - [ ] **22. « Ton total »** est une **ligne**, pas une carte, et se tait à zéro course.
-- [ ] **23. L'annuaire** en pied d'écran ouvre une feuille à **quatre** destinations : Programmes,
+- [ ] ~~remplacé par §87~~ **23. L'annuaire** en pied d'écran ouvre une feuille à **quatre** destinations : Programmes,
       Planning, Historique & stats, Profil coureur. Les quatre routent correctement.
-- [ ] **24. Sur un compte neuf (0 course)** : tout le corps se tait, seule la scène reste. Aucune
+- [ ] ~~remplacé par §87~~ **24. Sur un compte neuf (0 course)** : tout le corps se tait, seule la scène reste. Aucune
       carte ne s'excuse, aucun « — » ni « aucune donnée ».
 - [ ] **25. Sortie manuelle (sans GPS)** : « Ton allure » fonctionne, « Ton moteur », « Tes records »
       et « Km par km » se taisent.
@@ -5200,3 +5213,127 @@ libre, et deux séances le même jour pour l'item 14).
       converties (le tonnage reste en tonnes).
 - [ ] 29. **TalkBack** annonce les onglets et leur état, les jours du calendrier, les flèches de mois et
       les boutons Refaire.
+
+## 87. CARDIO-UX03 — Le hub Course en trois onglets (`feature/cardio-ux03-hub-onglets` → `dev`)
+
+Spec : [cardio-ux03-hub-onglets.md](docs/specs/functional/us/cardio-ux03-hub-onglets.md) ·
+plan : [cardio-ux03-hub-onglets.md](docs/plans/cardio-ux03-hub-onglets.md) ·
+maquette : [design/cardio-ux03-hub-onglets/](design/cardio-ux03-hub-onglets/)
+(toile https://claude.ai/artifact/JjUraxv9AYkC6vyVUsfzHW) · exploration : https://claude.ai/artifact/PxNU7GfyTcEZz1Ba7t9RhD
+
+Le chantier de MUSCU-UX07 (§86) transposé à la course : proposition **A** « Partir, puis se souvenir »,
+validée le 25/09/2026 avec tes réponses Q1–Q10, **livrée en une seule vague** — spec, plan et
+maquette n'ont pas été relus séparément, c'est ici que tes retours comptent. Aucune migration : un
+build de `dev` suffit. Téléphone de recette, **police système par défaut**, thème clair **puis**
+sombre. Il faut un compte avec un **programme de course actif** (idéalement avec une date de course
+et un objectif chrono), au moins **une séance de fractionné déjà courue** avec le guidage, une
+sortie **GPS** et une sortie **sans GPS**.
+
+> ⚠️ **§59 et §79 : leurs critères « hub » sont remplacés par cette section** (ta réponse Q10). Ils
+> sont marqués sur place ; les autres critères de ces deux sections restent à recetter.
+
+### A — Courir
+
+- [ ] 1. Un jour de séance prévue, on lit **sans défiler** : le type de la séance, l'heure, la
+      structure en pastilles, volume · durée · allure cible, « la dernière fois » et **Partir**.
+- [ ] 2. 🔴 **La dernière fois de la même séance** : un fractionné déjà couru montre une pastille par
+      répétition (temps au 400, ou allure pour une répétition en durée), **pleine** dans la plage,
+      **cerclée** hors plage, puis « X sur Y dans la plage ». L'échauffement et le retour au calme
+      **ne sont pas** comptés. En-tête « LA DERNIÈRE FOIS · VEN. 18/09 », « même séance » ou
+      « même type ».
+- [ ] 3. Une sortie longue ou une endurance déjà courue se dit « distance · durée · allure ·
+      ressenti » ; une séance jamais courue dit « Première fois pour cette séance. »
+- [ ] 4. « Revoir cette sortie » ouvre le détail **de cette sortie-là**.
+- [ ] 5. 🔴 **Partir** ouvre l'écran de départ **titré du type de la séance** (« Fractionné (VMA) »,
+      « Séance du jour »), avec ses segments et le bouton « Démarrer la séance » — plus « Course
+      libre ». La course lancée coche bien la séance au planning.
+- [ ] 6. Après une sortie : distance, « durée · allure », « Séance validée dans ton programme »
+      (course de programme), « Fractions : X sur Y dans la plage » (fractionné), 10 km estimé ;
+      **Voir l'analyse** ouvre l'analyse, **Partager** ouvre la carte à partager.
+- [ ] 7. **Tes dernières sorties** : les trois plus récentes, avec type, chiffres, terrain et
+      ressenti ; une pastille trophée sur celles qui détiennent un record ; un appui ouvre l'analyse ;
+      « Tout l'historique » ouvre l'onglet Historique.
+- [ ] 8. 🔴 **Recourir** n'apparaît que sur les sorties **GPS de 500 m et plus**. Il ouvre l'écran
+      de départ « Recourir ta sortie du … », « 11,4 km en … », **en GPS**, la sortie **présélectionnée
+      en fantôme** — même si elle est partie d'ailleurs. La course lancée affiche l'écart au fantôme.
+- [ ] 9. 🔴 Recourir, puis basculer sur **« Sans GPS »** : la course démarre **sans fantôme**
+      (c'était un défaut : le fantôme était posé quel que soit le mode).
+- [ ] 10. 🔴 **Le mode est retenu** : démarrer une course sans GPS, la terminer ; la suivante propose
+      « Sans GPS » d'emblée, **y compris après avoir relancé l'app**. Refuser la permission GPS puis
+      « continuer sans GPS » retient aussi « sans GPS ».
+- [ ] 11. **Autre chose · Course libre** apparaît un jour de séance et après une sortie ; un jour de
+      repos et en premiers pas, la carte la propose déjà (pas de doublon).
+- [ ] 12. **Ta semaine** : le compte sur ta fréquence visée (jamais « 2 / 0 »), les sept jours, ce qu'il
+      reste ; une sortie finie **après minuit** compte bien au jour où elle a fini.
+- [ ] 13. **Ton programme** : « semaine X sur N · D séances sur T », la barre, **J-N** avec la date
+      (et le nom de l'événement), l'**objectif** face à **ton record** sur la distance, sinon à
+      l'**estimation du jour** — sans couleur ni commentaire. Sans date de course : l'avancement seul.
+      Un appui ouvre la fiche du programme.
+- [ ] 14. Premiers pas **sans allure de référence** : « Ton allure de référence · La donner » ouvre le
+      profil coureur ; « Choisir un programme » ouvre les programmes.
+- [ ] 15. Une course **en cours** : Courir ne montre que la carte « Reprendre » (distance, ou durée
+      pour une course **sans GPS** — jamais « 0,00 km »).
+- [ ] 16. Le hub n'a plus de grande scène, ni « Voir le détail », ni « Ma semaine » sous l'arrivée,
+      ni d'annuaire ; la trace défile **en filigrane** dans l'en-tête.
+
+### B — Historique
+
+- [ ] 17. Le calendrier marque les jours de sortie (plein), les sorties qui **détiennent encore** un
+      record (repère), les séances prévues **à venir** (pointillé) et aujourd'hui ; les jours des mois
+      voisins sont vides.
+- [ ] 18. Le résumé du mois est juste (sorties, distance, durée, records) et bien accordé au
+      singulier ; les flèches s'arrêtent au mois de la **première sortie** et au **mois courant** ; un
+      mois vide dit « Aucune sortie ce mois-ci. »
+- [ ] 19. Un jour à **une** sortie ouvre son détail ; à **deux**, restreint la liste, et « Tout le
+      mois » la rétablit.
+- [ ] 20. **Par type** : chaque type couru (course libre comprise), du plus récent au plus ancien, avec
+      le nombre et la dernière sortie ; un appui filtre les sorties sur **tout l'historique** (mois
+      précédents compris) ; la puce retire le filtre. ⚠️ Sur ton compte le plus chargé, noter si la
+      liste filtrée met du temps à s'afficher (elle n'est pas virtualisée).
+- [ ] 21. 🔴 Le détail d'une sortie s'ouvre sur l'**analyse** — type, « Séance du programme », heure,
+      terrain, quatre chiffres, **Recourir cette sortie** — **plus jamais** sur « C'est fait ».
+- [ ] 22. Supprimer une sortie depuis son détail la retire du calendrier, des listes, de « la dernière
+      fois » et des dernières sorties.
+
+### C — Progrès et « Toutes tes stats »
+
+- [ ] 23. Progrès montre les cartes de CARDIO-UX02 dans leur ordre (fil, Ton allure, Si tu courais
+      demain, Ton moteur, Tes records, Ta charge, Km par km, le cumul), puis **Toutes tes stats**.
+- [ ] 24. « Toutes tes stats » : statistiques par période, courbe d'allure, records, objectifs estimés,
+      charge, polarisation — **sans** liste de courses ; un record ouvre l'**analyse** de sa sortie.
+- [ ] 25. Un compte **sans sortie** voit un seul message et « Commencer », qui ramène à Courir.
+
+### D — Navigation
+
+- [ ] 26. Les trois onglets changent le contenu **sans changer d'écran**, et **ne restent pas collés**
+      en haut au défilement.
+- [ ] 27. Un **nouvel appui sur l'onglet Course** de la barre du bas ramène en haut du hub.
+- [ ] 28. Revenir sur Course depuis un autre pilier rouvre le **dernier onglet** ; relancer l'app
+      rouvre Courir.
+- [ ] 29. Pendant une course, Historique et Progrès affichent « Course en cours · Reprendre » en tête ;
+      revenir d'un détail **ne change pas** d'onglet.
+- [ ] 30. Un lien vers l'ancien historique (`/running-history`) mène à **Course › Historique** ; la
+      carte « Record récent » de l'accueil (record de course) ouvre **Toutes tes stats**.
+- [ ] 31. Les icônes de l'en-tête ouvrent le planning, le profil coureur et les programmes.
+
+### E — Transverse
+
+- [ ] 32. L'**accueil** est inchangé (carte du moment, quatre actions rapides).
+- [ ] 33. Tout fonctionne en **mode avion**.
+- [ ] 34. En **anglais**, aucun libellé français ne subsiste ; en **unités impériales**, distances et
+      allures converties.
+- [ ] 35. **TalkBack** annonce les onglets et leur état, les jours du calendrier, les flèches de mois,
+      les pastilles de fractions (« Répétition 2 : 1:34, dans la plage ») et les boutons Recourir ;
+      toutes les cibles font au moins 44 px.
+
+### F — Ce qui n'a pas été fait, et qu'il faut savoir
+
+- ⚠️ **Hors périmètre, décidé** : la saisie d'une sortie passée (Q6, reste CARDIO-03), les autres
+  activités dans le pilier (Q7), le décompte et l'attente du fix GPS au départ (CARDIO-03).
+- ⚠️ **Recourir ne recopie pas la structure** d'une séance : c'est une course libre contre le fantôme.
+- ⚠️ **La carte d'arrivée ne compare pas à la dernière fois** (« vendredi dernier, 5 sur 6 ») : montré
+  sur l'exploration, écarté pour garder la carte courte.
+- ⚠️ **Les records n'ont pas d'historique** (palmarès) : une sortie dont le record a été battu depuis
+  perd son repère au calendrier.
+- ⚠️ **Deux séances de course le même jour** : une fois la première faite, la seconde passe en
+  « séance du jour » et l'arrivée de la première n'est plus montrée (comportement existant).

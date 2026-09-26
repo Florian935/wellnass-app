@@ -1,7 +1,12 @@
 /**
- * Historique & progression de course (`app/running-history/index.tsx`) — le **vrai** écran, monté.
+ * « Toutes tes stats » (`app/running-stats/index.tsx`) — le **vrai** écran, monté.
  *
- * Six sections empilées, toutes en lecture seule, toutes alimentées par des hooks différents. Ce
+ * ── Déménagé le 25/09/2026 (US CARDIO-UX03, D7) ─────────────────────────────────────────────────
+ * C'était l'écran « Historique & progression » (`/running-history`). Sa liste des courses a rejoint
+ * l'onglet Historique du hub Course (ses tests l'ont suivie : `RunHistorySection.test.tsx`), et
+ * `/running-history` n'est plus qu'une redirection. Restent ici les analyses, et leurs gardes.
+ *
+ * Cinq sections empilées (et la polarisation), toutes en lecture seule, toutes alimentées par des hooks différents. Ce
  * qui rend cet écran risqué n'est pas son calcul — il est délégué à `@wellness/shared`, testé là-bas
  * — mais ses **états vides** et ses **gardes** : chaque section peut légitimement n'avoir rien à
  * montrer, et la confusion entre « pas encore chargé » et « rien à montrer » y produit des
@@ -21,7 +26,7 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
-import RunningHistoryScreen from '../index';
+import RunningStatsScreen from '../index';
 import {
   usePaceTrend,
   usePolarisation,
@@ -219,7 +224,7 @@ describe('garde de chargement', () => {
   it('🔴 pendant le chargement, n’affiche AUCUNE section', async () => {
     mockUseRunHistory.mockReturnValue({ runs: [], isLoading: true });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     // `runs = []` est l'état transitoire normal de PowerSync au démarrage. Sans cette garde,
     // quelqu'un qui a couru 400 km voit « 0 course, aucune donnée » puis l'écran se corrige.
@@ -230,24 +235,34 @@ describe('garde de chargement', () => {
   it('le titre de l’écran reste affiché pendant le chargement', async () => {
     mockUseRunHistory.mockReturnValue({ runs: [], isLoading: true });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
-    expect(screen.getByText('running.history.title')).toBeTruthy();
+    expect(screen.getByText('runningStats.title')).toBeTruthy();
   });
 
-  it('une fois chargé, les six sections sont montées', async () => {
-    await render(<RunningHistoryScreen />);
+  it('une fois chargé, les cinq sections sont montées — sans la liste des courses (D7)', async () => {
+    await render(<RunningStatsScreen />);
 
     for (const titre of [
       'running.history.statsTitle',
       'running.history.paceTitle',
-      'running.history.runsSectionTitle',
       'running.records.sectionTitle',
       'running.predictions.title',
       'running.trainingLoad.title',
     ]) {
       expect(screen.getByText(titre)).toBeTruthy();
     }
+  });
+});
+
+describe('la liste des courses a déménagé (CARDIO-UX03, D7)', () => {
+  it('🔴 aucune course n’est listée ici : elle vit dans Course › Historique', async () => {
+    mockUseRunHistory.mockReturnValue({ runs: [course({ id: 'run-42' })], isLoading: false });
+
+    await render(<RunningStatsScreen />);
+
+    // L'ancienne liste datait chaque course (« 05/08/2026 ») et ouvrait l'écran d'arrivée au tap.
+    expect(screen.queryByText('05/08/2026')).toBeNull();
   });
 });
 
@@ -268,7 +283,7 @@ describe('statistiques', () => {
       isLoading: false,
     });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     expect(screen.getByText('42.20 km')).toBeTruthy();
     expect(screen.getByText('7')).toBeTruthy();
@@ -278,13 +293,13 @@ describe('statistiques', () => {
   });
 
   it('compare à la période précédente par défaut (semaine)', async () => {
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     expect(screen.getAllByTestId('delta')).toHaveLength(3);
   });
 
   it('🔴 « depuis le début » n’affiche AUCUN badge de comparaison', async () => {
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
     // `act` obligatoire : un `fireEvent.press` nu ne rafraîchit pas l'écran (§3.7).
     await act(async () => {
       fireEvent.press(screen.getByText('running.history.all'));
@@ -305,7 +320,7 @@ describe('statistiques', () => {
       return { stats: statsVides(), isLoading: appel % 2 === 0 };
     });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     // Comparer à un total encore vide afficherait un « -100 % » qui n'a jamais existé.
     expect(screen.queryAllByTestId('delta')).toHaveLength(0);
@@ -318,7 +333,7 @@ describe('statistiques', () => {
 
 describe('courbe d’allure', () => {
   it('🔴 sans point, affiche une note et PAS un graphique vide', async () => {
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     expect(screen.getByText('running.history.paceEmpty')).toBeTruthy();
     expect(screen.queryByTestId('courbe')).toBeNull();
@@ -333,7 +348,7 @@ describe('courbe d’allure', () => {
       trend: 'improving',
     });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     expect(screen.getByTestId('courbe').props.children).toBe('2');
     expect(screen.getByText('running.history.trendImproving')).toBeTruthy();
@@ -342,7 +357,7 @@ describe('courbe d’allure', () => {
   it('change de fenêtre au tap — 90 jours par défaut, 30 sur demande', async () => {
     mockUsePaceTrend.mockReturnValue({ points: [], trend: 'stable' });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
     expect(mockUsePaceTrend).toHaveBeenLastCalledWith(90);
 
     await act(async () => {
@@ -354,51 +369,12 @@ describe('courbe d’allure', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Liste des courses
-// ---------------------------------------------------------------------------
-
-describe('liste des courses', () => {
-  it('sans course, affiche un état vide rédigé', async () => {
-    await render(<RunningHistoryScreen />);
-
-    expect(screen.getByText('running.history.empty')).toBeTruthy();
-  });
-
-  it('affiche la date de chaque course terminée', async () => {
-    mockUseRunHistory.mockReturnValue({ runs: [course()], isLoading: false });
-
-    await render(<RunningHistoryScreen />);
-
-    expect(screen.getByText('05/08/2026')).toBeTruthy();
-  });
-
-  it('🔴 une course sans date de fin n’affiche pas « Invalid Date »', async () => {
-    mockUseRunHistory.mockReturnValue({ runs: [course({ finishedAt: null })], isLoading: false });
-
-    await render(<RunningHistoryScreen />);
-
-    expect(screen.getByText('running.active.noData')).toBeTruthy();
-  });
-
-  it('ouvre le détail au tap', async () => {
-    mockUseRunHistory.mockReturnValue({ runs: [course({ id: 'run-42' })], isLoading: false });
-
-    await render(<RunningHistoryScreen />);
-    await act(async () => {
-      fireEvent.press(screen.getByText('05/08/2026'));
-    });
-
-    expect(push).toHaveBeenCalledWith({ pathname: '/run/summary', params: { id: 'run-42' } });
-  });
-});
-
-// ---------------------------------------------------------------------------
 // Records — et le backfill
 // ---------------------------------------------------------------------------
 
 describe('records d’allure', () => {
   it('liste les cinq distances canoniques, même sans aucun record', async () => {
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     // Montrer les cases vides dit à l'utilisateur ce qu'il peut atteindre ; masquer les distances
     // sans record ne laisserait qu'une section vide et muette.
@@ -422,7 +398,7 @@ describe('records d’allure', () => {
       isLoading: false,
     });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     // 1500 s sur 5 km = 300 s/km.
     expect(screen.getByText('300 s/km')).toBeTruthy();
@@ -442,17 +418,18 @@ describe('records d’allure', () => {
       isLoading: false,
     });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
     await act(async () => {
       fireEvent.press(screen.getByText('running.records.distance10k'));
     });
 
-    expect(push).toHaveBeenCalledWith({ pathname: '/run/summary', params: { id: 'run-10k' } });
+    // US CARDIO-UX03 (D6) — le détail d'une sortie est son analyse, plus l'écran d'arrivée.
+    expect(push).toHaveBeenCalledWith({ pathname: '/run/analysis', params: { id: 'run-10k' } });
   });
 
   describe('rattrapage des records manquants', () => {
     it('se déclenche quand la requête est résolue et qu’aucun record n’existe', async () => {
-      await render(<RunningHistoryScreen />);
+      await render(<RunningStatsScreen />);
 
       expect(mockBackfill).toHaveBeenCalledTimes(1);
     });
@@ -460,7 +437,7 @@ describe('records d’allure', () => {
     it('🔴 ne se déclenche PAS pendant le chargement', async () => {
       mockUseRunningRecords.mockReturnValue({ records: [], isLoading: true });
 
-      await render(<RunningHistoryScreen />);
+      await render(<RunningStatsScreen />);
 
       // `[]` en cours de chargement n'est pas « aucun record » : rejouer la détection sur tout
       // l'historique GPS à chaque montage serait un coût pur, pour rien.
@@ -480,7 +457,7 @@ describe('records d’allure', () => {
         isLoading: false,
       });
 
-      await render(<RunningHistoryScreen />);
+      await render(<RunningStatsScreen />);
 
       expect(mockBackfill).not.toHaveBeenCalled();
     });
@@ -489,7 +466,7 @@ describe('records d’allure', () => {
       mockBackfill.mockRejectedValue(new Error('lecture GPS impossible'));
       jest.spyOn(console, 'warn').mockImplementation(() => {});
 
-      await render(<RunningHistoryScreen />);
+      await render(<RunningStatsScreen />);
 
       // Offline-first : un enrichissement optionnel ne doit jamais empêcher de consulter ses stats.
       expect(screen.getByText('running.records.sectionTitle')).toBeTruthy();
@@ -504,7 +481,7 @@ describe('records d’allure', () => {
 
 describe('objectifs estimés', () => {
   it('sans record de 5 km, affiche une note plutôt qu’une section vide', async () => {
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     expect(screen.getByText('running.predictions.empty')).toBeTruthy();
   });
@@ -518,7 +495,7 @@ describe('objectifs estimés', () => {
       isLoading: false,
     });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     // Une estimation affichée à côté d'un temps réellement couru serait au mieux redondante, au
     // pire contradictoire. La règle vit dans `resolveRacePredictions` ; on vérifie le branchement.
@@ -538,7 +515,7 @@ describe('polarisation', () => {
   it('🔴 disparaît ENTIÈREMENT, titre compris, quand elle n’a rien à dire', async () => {
     mockUsePolarisation.mockReturnValue({ polarisation: null, isLoading: false });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     // Cette section rend son propre titre, précisément pour pouvoir s'effacer en entier : un
     // titre suivi du vide serait pire qu'une absence.
@@ -548,7 +525,7 @@ describe('polarisation', () => {
   it('reste absente pendant le chargement', async () => {
     mockUsePolarisation.mockReturnValue({ polarisation: null, isLoading: true });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     expect(screen.queryByText('running.polarisation.title')).toBeNull();
   });
@@ -559,7 +536,7 @@ describe('polarisation', () => {
       isLoading: false,
     });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     expect(screen.getByText('73 %')).toBeTruthy();
     expect(screen.getByText('27 %')).toBeTruthy();
@@ -574,7 +551,7 @@ describe('polarisation', () => {
       isLoading: false,
     });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     // US CONF-07 : sans ce regroupement, TalkBack annoncerait « 73 pour cent », « 27 pour cent »
     // sans dire de quoi.
@@ -589,7 +566,7 @@ describe('polarisation', () => {
 
 describe('charge d’entraînement', () => {
   it('sans historique exploitable, affiche une note', async () => {
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     expect(screen.getByText('running.trainingLoad.empty')).toBeTruthy();
   });
@@ -604,7 +581,7 @@ describe('charge d’entraînement', () => {
     ];
     mockUseRunHistory.mockReturnValue({ runs, isLoading: false });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     // Écran de stats consulté à la demande, pas une alerte : la zone est toujours affichée,
     // contrairement au widget du dashboard qui se replie hors zone de risque (spec §1/R3).
@@ -618,7 +595,7 @@ describe('charge d’entraînement', () => {
       isLoading: false,
     });
 
-    await render(<RunningHistoryScreen />);
+    await render(<RunningStatsScreen />);
 
     // Une course de l'an dernier gonflerait la charge chronique et écraserait le ratio.
     expect(screen.getByText('running.trainingLoad.empty')).toBeTruthy();

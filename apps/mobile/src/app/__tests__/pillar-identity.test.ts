@@ -41,6 +41,8 @@ const APP_DIR = join(__dirname, '..');
 const PILIERS: readonly { chemin: string[]; pilier: string }[] = [
   { chemin: ['run'], pilier: 'running' },
   { chemin: ['running-history'], pilier: 'running' },
+  // US CARDIO-UX03 — « Toutes tes stats » ; `running-history` n'est plus qu'une redirection.
+  { chemin: ['running-stats'], pilier: 'running' },
   { chemin: ['running-programs'], pilier: 'running' },
 ];
 

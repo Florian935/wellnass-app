@@ -1,105 +1,99 @@
 /**
- * Hub Course — **un écran qui sait où en est le coureur** (US CARDIO-UX02, 19/09/2026).
+ * Hub Course — **trois onglets : Courir, Historique, Progrès** (US CARDIO-UX03, 25/09/2026).
  *
- * ── Ce que cet écran était ───────────────────────────────────────────────────────────────────────
- * Une scène à cinq états, puis quatre cartes qui se taisaient presque toujours, puis un bouton
- * « Personnaliser » et une grille de quatre widgets. Sur le compte de recette, l'écran se réduisait
- * à : la scène, « Ta charge », « Ma semaine », et deux tuiles. L'audit du 19/09 a relevé six
- * défauts, et une cause sous les six :
+ * ── Pourquoi ─────────────────────────────────────────────────────────────────────────────────────
+ * Le hub de CARDIO-UX02 (19/09) répondait très bien à la question du dimanche soir, « est-ce que je
+ * cours plus vite ? » (sept cartes d'analyse), et mal à celles d'avant et d'après la sortie :
+ *  - « Démarrer » ouvrait un écran titré « Course libre », et « Voir le détail » le planning ;
+ *  - la dernière fois de la séance du jour (les fractions sont enregistrées) n'était montrée nulle
+ *    part avant le départ ;
+ *  - les sorties passées vivaient sous deux sections de statistiques, et ouvraient l'écran d'arrivée ;
+ *  - le fantôme et le compte à rebours de la course étaient loin du hub.
+ * C'est le diagnostic de MUSCU-UX07 sur le pilier voisin, livrée le même jour.
  *
- *  1. **Le hub et sa propre carte se contredisaient.** La scène affichait « 2 / 0 faites » pendant
- *     que « Ma semaine », deux blocs plus bas, affichait « 2 / 3 faites » — le repli sur la
- *     fréquence visée vivait dans le composant, donc ne valait que pour lui.
- *  2. **La question du coureur n'avait aucune surface.** *Est-ce que je cours plus vite ?* RUN-05
- *     est livrée depuis le 29/07 et ne vivait que dans `/running-history`, à deux écrans d'ici.
- *  3. **Le plus gros chiffre de l'écran mesurait le passé, pas le progrès** : la distance de la
- *     dernière sortie, en 34 px, dans un widget.
- *  4. **Le bas de l'écran était de l'administration** : un nom de plan, un mini-calendrier, une
- *     distance — trois raccourcis déguisés en indicateurs.
- *  5. **L'identité du pilier s'arrêtait à la scène.** Le bleu ne réapparaissait nulle part en
- *     dessous (voir `theme/pillar.ts` et `components/stage/PillarPanel.tsx` : c'était mesurable).
- *  6. **Le haut changeait cinq fois, le bas jamais.**
+ * ── Ce qu'il est ─────────────────────────────────────────────────────────────────────────────────
+ * Proposition A validée par Florian (réponses Q1–Q10 : spec §2) :
+ *   · **Courir** — la carte du moment (la dernière fois un jour de séance), tes trois dernières
+ *     sorties avec Recourir, la course libre, ta semaine, ton programme et son échéance ;
+ *   · **Historique** — le calendrier du mois, les sorties, « par type » ;
+ *   · **Progrès** — les cartes de CARDIO-UX02, déplacées telles quelles, puis « Toutes tes stats ».
  *
- * **La cause, sous les six** : sur **25 analyses course** au catalogue, **15 sont livrées** — le hub
- * en montrait **4**. ALLURE-01 en avait livré quatre d'un coup le 07/08 ; aucune n'était remontée.
- * Et `selectInsights` (INSIGHTS-01) n'était appelé nulle part côté course. Exactement le diagnostic
- * de MUSCU-UX05 sur le pilier voisin, onze jours plus tôt.
- *
- * ── La contrainte qui tient la refonte ──────────────────────────────────────────────────────────
- * CARDIO-UX01 avait déjà resserré ce hub le 10/09. « Plus utile » ne pouvait donc pas vouloir dire
- * « plus de blocs ». **Le budget ne bouge pas : dix surfaces deviennent sept cartes et trois
- * lignes** — et chaque carte **se tait quand elle n'a rien à dire**.
- *
- * Sortent : le bouton « Personnaliser », la grille et ses quatre widgets (Historique, Programmes,
- * Planning, Temps d'entraînement), la bande `RunWeekBand`.
- * Entrent : le fil du jour, « Ton allure », « Ton moteur », « Tes records », la ligne de toujours,
- * la ligne d'annuaire — et `RunWeekCard`, qui absorbe la bande, le planning et le programme.
- *
- * ── L'ordre, et pourquoi ────────────────────────────────────────────────────────────────────────
- *   1 · `RunStage`           — la scène (US DASH-01), cinq états, la trace
- *   2 · `SessionAdaptationCard` — elle propose de MODIFIER ce que la scène vient d'annoncer (F36)
- *   3 · `RunThread`          — **la seule chose qui change tous les jours** (défaut 6)
- *   4 · `PaceProgressCard`   — la carte dominante : « est-ce que je cours plus vite ? » (défauts 2, 3, 5)
- *   5 · `RunWeekCard`        — « où j'en suis, et ce qu'il me reste » (défauts 1, 4)
- *   6 · `RunPredictionsCard` — la projection : ce que ça vaudrait sur 10 km
- *   7 · `RunEngineCard`      — la polarisation, jamais remontée depuis ALLURE-01
- *   8 · `RunRecordWall`      — le trophée, pas seulement la carotte — en bande horizontale
- *   9 · `RunLoadCard`        — le garde-fou descend : c'est une limite, pas un progrès
- *  10 · `RunSplitsCard`      — le km par km de la dernière sortie
- *  11 · `RunLifetimeLine`    — une ligne, pas une carte
- *  12 · l'annuaire           — ce que la grille de widgets faisait, sans les faux indicateurs
+ * L'onglet affiché (D1) : un paramètre `section` (lu une fois, puis effacé), sinon le dernier choisi
+ * pendant la vie de l'app, sinon Courir. Rien ne change d'onglet de force : pendant une course,
+ * Historique et Progrès portent une ligne « Reprendre ». Les onglets défilent avec la page ; un
+ * nouvel appui sur l'onglet Course de la barre du bas ramène en haut.
  */
 
-import { useRouter } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { useLocalSearchParams, useRouter, useScrollToTop } from 'expo-router';
+import { useEffect, useMemo, useRef } from 'react';
+import { ScrollView, StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Ionicons } from '@expo/vector-icons';
 import {
   countdownToSession,
   estimateRunMinutes,
   formatDurationHms,
   formatHoursMinutes,
+  lastTimeReps,
   localDayKey,
+  pickRunLastTime,
+  recordCountsByRun,
+  repsInRange,
   resolveRacePredictions,
+  resolveRunHubSection,
   resolveRunHubState,
   resolveRunWeek,
+  runDayKey,
   startOfWeek,
+  type RunHubSection,
   type RunHubTodaySession,
 } from '@wellness/shared';
-import { PressableScale } from '@/components/motion/PressableScale';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import {
   useActiveRun,
   useIntervalBlocksForRun,
   useRunHistory,
+  useRunIntervals,
   useTodayRunSession,
 } from '@/data/repositories/run-repository';
 import { useActiveProgram } from '@/data/repositories/program-repository';
 import { useWeekPlan } from '@/data/repositories/planned-session-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
 import { useSessionAdaptation } from '@/data/repositories/session-adaptation-repository';
-import { SessionAdaptationCard } from '@/components/running/SessionAdaptationCard';
-import { PaceProgressCard } from '@/components/running/PaceProgressCard';
-import { RunDirectorySheet } from '@/components/running/RunDirectorySheet';
-import { RunEngineCard } from '@/components/running/RunEngineCard';
-import { RunLifetimeLine } from '@/components/running/RunLifetimeLine';
-import { RunRecordWall } from '@/components/running/RunRecordWall';
-import { RunThread } from '@/components/running/RunThread';
-import { RunWeekCard } from '@/components/running/RunWeekCard';
-import { RunStage, type RunScene } from '@/components/running/RunStage';
-import { RunSplitsCard } from '@/components/running/RunSplitsCard';
-import { RunPredictionsCard } from '@/components/running/RunPredictionsCard';
-import { RunLoadCard } from '@/components/running/RunLoadCard';
-import { StageScrollView } from '@/components/stage/StageScrollView';
+import { useRunProgram } from '@/data/repositories/run-hub-repository';
 import { useRunningRecords } from '@/data/repositories/running-record-repository';
+import { SessionAdaptationCard } from '@/components/running/SessionAdaptationCard';
+import { RunHeader } from '@/components/running/RunHeader';
+import { RunLastTime } from '@/components/running/RunLastTime';
+import { RunMomentCard, type RunMoment } from '@/components/running/RunMomentCard';
+import { RunProgramCard } from '@/components/running/RunProgramCard';
+import { RunWeekCard } from '@/components/running/RunWeekCard';
+import { RunHistorySection } from '@/components/running/sections/RunHistorySection';
+import { RunProgressSection } from '@/components/running/sections/RunProgressSection';
+import { RunSection } from '@/components/running/sections/RunSection';
+import { StageScrollView } from '@/components/stage/StageScrollView';
 import { formatIntervalBlockSummary } from '@/running/interval-summary';
 import { sessionPaceLabelText } from '@/running/session-pace-label';
 import { useAuthStore } from '@/stores/auth-store';
+import { useRunSection } from '@/stores/run-section-store';
 import { useCurrentHour, useTodayDate, useTodayKey } from '@/hooks/useTodayKey';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+
+/** `AAAA-MM-JJ` + n jours → `AAAA-MM-JJ`, en calendrier local (jamais `new Date('AAAA-MM-JJ')`). */
+function addDaysToKey(key: string, days: number): string {
+  const [y, m, d] = key.split('-').map(Number);
+  const date = new Date(y!, m! - 1, d! + days);
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const dd = String(date.getDate()).padStart(2, '0');
+  return `${date.getFullYear()}-${mm}-${dd}`;
+}
+
+/** `AAAA-MM-JJ` → `JJ/MM` (découpage direct, format FR). */
+function formatDayKeyShort(key: string): string {
+  const [, mm, dd] = key.split('-');
+  return `${dd}/${mm}`;
+}
 
 export default function RunningScreen() {
   useMenuFocus('running');
@@ -108,74 +102,74 @@ export default function RunningScreen() {
   const router = useRouter();
   const units = useUnits();
   const todayKey = useTodayKey();
+  const params = useLocalSearchParams<{ section?: string }>();
+
+  // ── L'onglet affiché (D1) ──────────────────────────────────────────────────────────────────────
+  const remembered = useRunSection((s) => s.section);
+  const setSection = useRunSection((s) => s.setSection);
+  const section: RunHubSection = resolveRunHubSection({ param: params.section, remembered });
+  useEffect(() => {
+    // Un paramètre de route est lu **une fois** : laissé en place, il s'appliquerait de nouveau à
+    // chaque retour sur l'onglet et écraserait le choix du coureur.
+    if (params.section === undefined) return;
+    setSection(section);
+    router.setParams({ section: undefined });
+  }, [params.section, section, setSection, router]);
+
+  // D1 — un nouvel appui sur l'onglet Course ramène en haut.
+  const scrollRef = useRef<ScrollView>(null);
+  useScrollToTop(scrollRef);
 
   const { run: active } = useActiveRun();
   const { session: todaySession } = useTodayRunSession();
   const { runnerProfile } = useRunnerProfile();
   const userId = useAuthStore((st) => st.session?.user.id ?? null);
   const { program: activeProgram } = useActiveProgram('running');
+  const programData = useRunProgram(
+    activeProgram ? { id: activeProgram.id, durationWeeks: activeProgram.durationWeeks } : null,
+  );
+  const { runs } = useRunHistory();
+  const { records } = useRunningRecords();
+  const recordCounts = useMemo(() => recordCountsByRun(records.map((r) => r.runId)), [records]);
 
-  // L'annuaire remplace la grille de widgets : voir `RunDirectorySheet`.
-  const [directoryOpen, setDirectoryOpen] = useState(false);
-
-  // ── Ma semaine (F37) ──────────────────────────────────────────────────────────────────────
-  // ⚠️ `useTodayDate()` et **jamais** `new Date()` : cet écran lit partout ailleurs l'horloge du
-  // hook (`todayKey` juste en dessous). Mélanger les deux sources fait diverger le début de semaine
-  // du reste de la page — et le `useMemo(…, [])` figeait en plus la valeur au montage, donc l'écran
-  // ne changeait pas de semaine au passage de minuit. Défaut latent trouvé le 21/09/2026 : la suite
-  // `running-screen` est passée au rouge **toute seule** au changement de jour, le dimanche 20
-  // étant la fin d'une semaine et le lundi 21 le début de la suivante.
+  // ── Ta semaine (F37) ───────────────────────────────────────────────────────────────────────────
+  // ⚠️ `useTodayDate()` et jamais `new Date()` : voir la note du 21/09/2026 (CARDIO-UX02), la
+  // semaine doit suivre l'horloge du hook, et changer au passage de minuit.
   const today = useTodayDate();
   const weekStartKey = useMemo(() => localDayKey(startOfWeek(today)), [today]);
   const { items: weekItems } = useWeekPlan(weekStartKey);
-  const { runs } = useRunHistory();
-
-  const runningPlanned = useMemo(
-    () => weekItems.filter((item) => item.pillar === 'running'),
-    [weekItems],
-  );
+  const runningPlanned = useMemo(() => weekItems.filter((item) => item.pillar === 'running'), [weekItems]);
 
   const week = useMemo(() => {
     const weekEnd = addDaysToKey(weekStartKey, 6);
+    // US CARDIO-UX03 (R8) — le jour **local** d'une sortie (`runDayKey`), comme le calendrier. Le
+    // hub découpait jusqu'ici la date ISO en UTC (`slice(0, 10)`) : une sortie finie entre minuit
+    // et deux heures tombait la veille dans la semaine et le jour même dans le calendrier.
+    const inWeek = runs
+      .map((r) => ({ run: r, dayKey: runDayKey(r) }))
+      .filter(({ dayKey }) => dayKey >= weekStartKey && dayKey <= weekEnd);
     return resolveRunWeek({
       weekStartKey,
       todayKey,
-      // `useRunHistory` n'a aucune borne de date (elle alimente aussi les stats et l'accueil) :
-      // on filtre ici plutôt que d'ajouter une requête pour sept jours.
-      runs: runs
-        .filter((r) => {
-          const key = (r.finishedAt ?? r.startedAt).slice(0, 10);
-          return key >= weekStartKey && key <= weekEnd;
-        })
-        .map((r) => ({
-          dayKey: (r.finishedAt ?? r.startedAt).slice(0, 10),
-          distanceM: r.distanceM,
-          durationSeconds: r.durationSeconds,
-          elevationGainM: r.elevationGainM,
-        })),
-      planned: runningPlanned.map((item) => ({
-        dayKey: item.scheduledDate,
-        done: item.status === 'done',
+      runs: inWeek.map(({ run, dayKey }) => ({
+        dayKey,
+        distanceM: run.distanceM,
+        durationSeconds: run.durationSeconds,
+        elevationGainM: run.elevationGainM,
       })),
+      planned: runningPlanned.map((item) => ({ dayKey: item.scheduledDate, done: item.status === 'done' })),
       targetFrequency: runnerProfile?.weeklyFrequency ?? null,
     });
   }, [weekStartKey, todayKey, runs, runningPlanned, runnerProfile?.weeklyFrequency]);
 
-  // ── Contenu de la séance du jour ─────────────────────────────────────────────────────────
+  // ── La séance du jour ──────────────────────────────────────────────────────────────────────────
   const { blocks: todayBlocks } = useIntervalBlocksForRun(todaySession?.id ?? null);
-
   const segmentSummaries = useMemo(
     () => todayBlocks.map((block) => formatIntervalBlockSummary(t, block)),
     [todayBlocks, t],
   );
 
-  /**
-   * Volume total de la séance : la structure d'abord, la cible en repli.
-   *
-   * La structure est plus juste — une séance « 6 × 400 » couvre l'échauffement, les fractions,
-   * les récupérations et le retour au calme, là où `target_distance_m` ne porte souvent que le
-   * corps de séance. Quand il n'y a pas de structure, la cible est tout ce qu'on a.
-   */
+  /** Volume de la séance : la structure d'abord, la cible en repli (voir CARDIO-UX02). */
   const totalDistanceM = useMemo(() => {
     if (todayBlocks.length === 0) return todaySession?.targetDistanceM ?? null;
     let total = 0;
@@ -206,11 +200,8 @@ export default function RunningScreen() {
     };
   }, [todaySession, segmentSummaries, totalDistanceM, runnerProfile?.ref5kPaceSPerKm]);
 
-  // Séance de course faite aujourd'hui, et prochaine à venir — les deux nuances de l'état C.
   const doneToday = useMemo(() => {
-    const item = runningPlanned.find(
-      (i) => i.scheduledDate === todayKey && i.status === 'done',
-    );
+    const item = runningPlanned.find((i) => i.scheduledDate === todayKey && i.status === 'done');
     return item ? { sessionType: item.sessionType } : null;
   }, [runningPlanned, todayKey]);
 
@@ -222,19 +213,16 @@ export default function RunningScreen() {
     return first ? { scheduledDate: first.scheduledDate, sessionType: first.sessionType } : null;
   }, [runningPlanned, todayKey]);
 
-  /** « Prochaine le 21/09 · Fractionné » — la même phrase pour la scène et pour la carte. */
-  const nextLabel = useMemo(
-    () =>
-      nextUpcoming
-        ? t('running.hub.nextOn', {
-            date: formatDayKeyShort(nextUpcoming.scheduledDate),
-            type: nextUpcoming.sessionType
-              ? t(`running.sessionType.${nextUpcoming.sessionType}`)
-              : t('running.hub.freeRun'),
-          })
-        : null,
-    [nextUpcoming, t],
-  );
+  const typeLabel = (sessionType: string | null | undefined) =>
+    sessionType ? t(`running.sessionType.${sessionType}`) : t('running.hub.freeRun');
+
+  /** « Prochaine séance le 27/09 — Sortie longue. » — pour la carte de repos et « Ta semaine ». */
+  const nextLabel = nextUpcoming
+    ? t('running.hub.nextOn', {
+        date: formatDayKeyShort(nextUpcoming.scheduledDate),
+        type: typeLabel(nextUpcoming.sessionType),
+      })
+    : null;
 
   const hubState = resolveRunHubState({
     activeRun: active
@@ -250,7 +238,6 @@ export default function RunningScreen() {
     nextUpcoming,
   });
 
-  // Allure cible de la séance du jour, saisie ou dérivée (US RUN-F4, lot A).
   const todayPaceLabel = todaySession
     ? sessionPaceLabelText(
         t,
@@ -267,242 +254,208 @@ export default function RunningScreen() {
     : null;
 
   const adaptation = useSessionAdaptation(todaySession?.sessionType ?? null, userId);
-
-  // ── La scène (US DASH-01, §4.3) ───────────────────────────────────────────────────────────
   const hour = useCurrentHour();
-  const { records } = useRunningRecords();
 
-  /**
-   * Une sortie terminée **aujourd'hui** : le moment « arrivée », le cinquième état de la scène.
-   * L'ancien hub le rangeait avec les jours de repos — on venait de courir une heure et l'écran
-   * répondait « rien de prévu ».
-   */
+  // ── La course en cours : son type, par sa séance planifiée ────────────────────────────────────
+  const { sessionType: activeType } = useIntervalBlocksForRun(active?.plannedSessionId ?? null);
+
+  // ── L'arrivée : une sortie terminée aujourd'hui, en jour local (R8) ───────────────────────────
   const arrivalRun = useMemo(
-    () =>
-      runs.find((r) => r.finishedAt != null && localDayKey(new Date(r.finishedAt)) === todayKey) ??
-      null,
+    () => runs.find((r) => r.finishedAt != null && runDayKey(r) === todayKey) ?? null,
     [runs, todayKey],
   );
-
-  const lastFinishedRun = useMemo(() => runs.find((r) => r.finishedAt != null) ?? null, [runs]);
-
+  const { intervals: arrivalIntervals } = useRunIntervals(arrivalRun?.id);
+  const lastFinishedRun = runs.find((r) => r.finishedAt != null) ?? null;
   const prediction10k = useMemo(
     () => resolveRacePredictions(records).find((p) => p.distanceKey === '10k') ?? null,
     [records],
   );
 
-  const scene: RunScene = useMemo(() => {
-    if (hubState.kind === 'resume') {
-      return {
-        kind: 'resume',
-        distanceLabel: units.formatDistance((hubState.run.distanceM ?? 0) / 1000),
-        durationLabel: formatHoursMinutes(hubState.run.durationSeconds ?? 0),
-      };
-    }
-    // L'arrivée prime sur le repos : elle n'a de sens que le jour même.
-    if (hubState.kind !== 'today' && arrivalRun) {
-      return {
-        kind: 'arrival',
-        distanceKm: (arrivalRun.distanceM ?? 0) / 1000,
-        distanceUnit: units.distanceSymbol,
-        paceLabel: units.formatPace(arrivalRun.avgPaceSPerKm),
-        durationLabel: formatHoursMinutes(arrivalRun.durationSeconds ?? 0),
-        prediction10kLabel: prediction10k ? formatDurationHms(prediction10k.predictedSeconds) : null,
-        // Le record de 5 km qui porte l'estimation vient-il de cette sortie ?
-        prediction10kIsNew:
-          records.find((r) => r.distanceKey === '5k')?.runId === arrivalRun.id,
-      };
-    }
-    if (hubState.kind === 'today') {
-      const session = hubState.session;
-      return {
-        kind: 'today',
-        typeLabel: session.sessionType
-          ? t(`running.sessionType.${session.sessionType}`)
-          : t('running.hub.freeRun'),
-        segments: session.segmentSummaries,
-        volumeLabel:
-          session.totalDistanceM != null
-            ? units.formatDistance(session.totalDistanceM / 1000)
-            : null,
-        estimatedMinutes: session.estimatedMinutes,
-        paceLabel: todayPaceLabel,
-        scheduledTime: todaySession?.scheduledTime ?? null,
-        countdown: countdownToSession(hour, todaySession?.scheduledTime ?? null),
-        instructions: session.instructions,
-      };
-    }
-    if (hubState.kind === 'rest') {
-      return { kind: 'rest', doneToday: !!hubState.doneToday, nextLabel };
-    }
-    return { kind: 'onboarding' };
-  }, [hubState, arrivalRun, prediction10k, records, units, t, todayPaceLabel, todaySession?.scheduledTime, hour, nextLabel]);
+  // ── La dernière fois de la séance du jour (D3, R3) ─────────────────────────────────────────────
+  const lastTime =
+    hubState.kind === 'today' && todaySession
+      ? pickRunLastTime(runs, { sessionId: todaySession.sessionId, sessionType: todaySession.sessionType })
+      : null;
+  const lastTimeRun = lastTime ? (runs.find((r) => r.id === lastTime.runId) ?? null) : null;
 
-  /** Le geste principal de la scène, un par état — c'est là que le hub agit. */
-  const onPrimary = () => {
-    switch (scene.kind) {
-      case 'resume':
-        return router.push('/run/active');
-      case 'arrival':
-        return arrivalRun ? router.push(`/run/analysis?id=${arrivalRun.id}`) : undefined;
-      case 'today':
-        return router.push({
-          pathname: '/run',
-          params: { plannedSessionId: hubToday?.plannedSessionId ?? '' },
-        });
-      case 'rest':
-        return router.push('/run');
-      default:
-        return router.push('/running-programs');
-    }
-  };
+  // ── Les gestes ─────────────────────────────────────────────────────────────────────────────────
+  const openRun = (id: string) => router.push({ pathname: '/run/analysis', params: { id } });
+  const runAgain = (id: string) => router.push({ pathname: '/run', params: { ghostRunId: id } });
+  const openFreeRun = () => router.push('/run');
+  const resume = () => router.push('/run/active');
 
-  const onSecondary = () => {
-    switch (scene.kind) {
-      case 'resume':
-        return router.push('/running-history');
-      case 'arrival':
-        return router.push('/running-history');
-      case 'today':
-        return router.push('/planning');
-      case 'rest':
-        return router.push('/planning');
-      default:
-        return router.push('/run');
-    }
-  };
+  // ── La carte du moment (§4.2-1) ────────────────────────────────────────────────────────────────
+  let moment: RunMoment;
+  if (hubState.kind === 'resume') {
+    moment = {
+      kind: 'resume',
+      typeLabel: typeLabel(activeType),
+      distanceLabel:
+        hubState.run.source === 'manual' ? null : units.formatDistance((hubState.run.distanceM ?? 0) / 1000),
+      durationLabel: formatHoursMinutes(hubState.run.durationSeconds ?? 0),
+    };
+  } else if (hubState.kind !== 'today' && arrivalRun) {
+    const rated = repsInRange(lastTimeReps(arrivalIntervals));
+    moment = {
+      kind: 'arrival',
+      typeLabel: typeLabel(arrivalRun.sessionType),
+      distanceKm: (arrivalRun.distanceM ?? 0) / 1000,
+      distanceUnit: units.distanceSymbol,
+      metaLabel: t('stage.running.arrivalMeta', {
+        duration: formatDurationHms(arrivalRun.durationSeconds),
+        pace: units.formatPace(arrivalRun.avgPaceSPerKm),
+      }),
+      validated: arrivalRun.plannedSessionId != null,
+      inRange: rated,
+      predictionLabel: prediction10k
+        ? t(
+            records.find((r) => r.distanceKey === '5k')?.runId === arrivalRun.id
+              ? 'stage.running.predictionNew'
+              : 'stage.running.prediction',
+            { time: formatDurationHms(prediction10k.predictedSeconds) },
+          )
+        : null,
+    };
+  } else if (hubState.kind === 'today') {
+    const countdown = countdownToSession(hour, todaySession?.scheduledTime ?? null);
+    moment = {
+      kind: 'today',
+      typeLabel: hubState.session.sessionType
+        ? typeLabel(hubState.session.sessionType)
+        : (todaySession?.name ?? t('running.hub.freeRun')),
+      scheduledTime: todaySession?.scheduledTime ?? null,
+      countdownLabel: countdown
+        ? countdown.kind === 'now'
+          ? t('stage.running.countdownNow')
+          : countdown.kind === 'in'
+            ? t('stage.running.countdownIn', { count: countdown.hours })
+            : t('stage.running.countdownPast', { count: countdown.hours })
+        : null,
+      segments: hubState.session.segmentSummaries,
+      volumeLabel:
+        hubState.session.totalDistanceM != null ? units.formatDistance(hubState.session.totalDistanceM / 1000) : null,
+      estimatedLabel:
+        hubState.session.estimatedMinutes != null
+          ? t('running.hub.minutes', { count: hubState.session.estimatedMinutes })
+          : null,
+      paceLabel: todayPaceLabel,
+      instructions: hubState.session.instructions,
+    };
+  } else if (hubState.kind === 'rest') {
+    moment = { kind: 'rest', doneToday: !!hubState.doneToday, nextLabel };
+  } else {
+    moment = { kind: 'onboarding', needsRefPace: runnerProfile?.ref5kPaceSPerKm == null };
+  }
+
+  const progress = programData.progress;
+  const weekLabel = progress ? t('runningHub.moment.week', { week: progress.week, total: progress.totalWeeks }) : null;
+
+  /** Ce que dit la ligne « Reprendre » d'Historique et de Progrès pendant une course. */
+  const resumeDetail =
+    hubState.kind === 'resume'
+      ? hubState.run.source === 'manual' || hubState.run.distanceM == null
+        ? formatHoursMinutes(hubState.run.durationSeconds ?? 0)
+        : units.formatDistance(hubState.run.distanceM / 1000)
+      : null;
+
+  const momentCard = (
+    <RunMomentCard
+      moment={moment}
+      weekLabel={weekLabel}
+      lastTime={
+        moment.kind !== 'today' ? null : lastTime && lastTimeRun ? (
+          <RunLastTime run={lastTimeRun} match={lastTime.match} onOpen={() => openRun(lastTimeRun.id)} />
+        ) : (
+          <Text testID="run-last-time-first" style={[styles.firstTime, { color: colors.textMuted }]}>
+            {t('runningHub.lastTime.firstTime')}
+          </Text>
+        )
+      }
+      onResume={resume}
+      onStart={() =>
+        router.push({ pathname: '/run', params: { plannedSessionId: hubToday?.plannedSessionId ?? '' } })
+      }
+      onAnalysis={() => (arrivalRun ? openRun(arrivalRun.id) : undefined)}
+      onShare={() =>
+        arrivalRun ? router.push({ pathname: '/run/analysis', params: { id: arrivalRun.id, share: '1' } }) : undefined
+      }
+      onFreeRun={openFreeRun}
+      onPlanning={() => router.push('/planning')}
+      onPrograms={() => router.push('/running-programs')}
+      onProfile={() => router.push('/running-profile')}
+    />
+  );
 
   return (
     <StageScrollView
       pillar="running"
       testID="running-screen"
+      scrollRef={scrollRef}
       stage={
-        <RunStage
-          scene={scene}
-          weekDistanceLabel={units.formatDistance(week.distanceM / 1000)}
-          // 🔴 `goalCount`, jamais `plannedCount` : c'est le défaut 1 de l'audit, corrigé à la
-          // source (`resolveRunWeek`). La scène disait « 2 / 0 » là où la carte disait « 2 / 3 ».
-          weekSessionsLabel={
-            week.goalCount > 0
-              ? t('running.week.count', { done: week.doneCount, total: week.goalCount })
-              : t('runningHub.week.doneOnly', { count: week.doneCount })
-          }
-          onPrimary={onPrimary}
-          onSecondary={onSecondary}
+        <RunHeader
+          section={section}
+          onSection={setSection}
+          onPlanning={() => router.push('/planning')}
           onProfile={() => router.push('/running-profile')}
-          onHistory={() => router.push('/running-history')}
+          onPrograms={() => router.push('/running-programs')}
         />
       }
     >
-      {/* La carte d'adaptation garde sa place en tête du corps : elle propose de MODIFIER la
-          séance que la scène vient d'annoncer (F36). */}
-      <SessionAdaptationCard proposal={adaptation} plannedSessionId={todaySession?.id ?? null} />
-
-      {/* La seule chose qui change tous les jours. Se tait s'il n'y a rien à dire. */}
-      <RunThread onPress={() => router.push('/insights')} />
-
-      {/* La carte dominante : « est-ce que je cours plus vite ? » — et le bleu du pilier, dans le
-          corps de la page. */}
-      <PaceProgressCard onPress={() => router.push('/running-history')} />
-
-      {/* Où j'en suis cette semaine, ET ce qu'il me reste. Absorbe la bande, le planning, le plan. */}
-      <RunWeekCard
-        week={week}
-        nextLabel={nextLabel}
-        programLabel={
-          activeProgram
-            ? t('runningHub.week.program', { name: activeProgram.name })
-            : null
-        }
-        onOpenPlanning={() => router.push('/planning')}
-      />
-
-      {/* La projection — ce que la forme du moment vaudrait sur une distance jamais courue. */}
-      <RunPredictionsCard onOpen={() => router.push('/running-history')} />
-
-      {/* La polarisation : livrée par ALLURE-01 le 07/08, jamais remontée jusqu'ici. */}
-      <RunEngineCard onOpen={() => router.push('/running-history')} />
-
-      {/* Le trophée, pas seulement la carotte — et le seul bloc qui ne se lit pas de haut en bas. */}
-      <RunRecordWall onOpen={() => router.push('/running-history')} />
-
-      {/* Le garde-fou descend sous le progrès : c'est une limite, pas un accomplissement. */}
-      <RunLoadCard onOpen={() => router.push('/running-history')} />
-
-      {/* §4.3 — le km par km de la dernière sortie, jusqu'ici enterré dans l'analyse d'une course. */}
-      <RunSplitsCard
-        runId={lastFinishedRun?.id ?? null}
-        plannedSessionId={lastFinishedRun?.plannedSessionId ?? null}
-        onOpen={() =>
-          lastFinishedRun ? router.push(`/run/analysis?id=${lastFinishedRun.id}`) : undefined
-        }
-      />
-
-      {/* Une ligne, pas une carte — elle ferme la page sans ajouter une boîte de plus. */}
-      <RunLifetimeLine onPress={() => router.push('/running-history')} />
-
-      {/* L'annuaire, en pied : la grille de widgets et son bouton « Personnaliser » ont disparu
-          avec les trois tuiles d'administration qu'elle portait. */}
-      <PressableScale
-        haptic="select"
-        onPress={() => setDirectoryOpen(true)}
-        accessibilityRole="button"
-        testID="running-directory-link"
-        style={[styles.directory, { backgroundColor: colors.surface, borderColor: colors.border }]}
-      >
-        <Ionicons name="library-outline" size={20} color={colors.accent} />
-        <Text style={[styles.directoryLabel, { color: colors.text }]} numberOfLines={1}>
-          {t('runningHub.directory')}
-        </Text>
-        <Ionicons name="chevron-forward" size={15} color={colors.textMuted} />
-      </PressableScale>
-
-      <RunDirectorySheet
-        visible={directoryOpen}
-        onClose={() => setDirectoryOpen(false)}
-        onPick={(target) => {
-          setDirectoryOpen(false);
-          switch (target) {
-            case 'programs':
-              return router.push('/running-programs');
-            case 'planning':
-              return router.push('/planning');
-            case 'history':
-              return router.push('/running-history');
-            default:
-              return router.push('/running-profile');
+      {section === 'run' ? (
+        <RunSection
+          inProgress={hubState.kind === 'resume'}
+          moment={momentCard}
+          adaptation={<SessionAdaptationCard proposal={adaptation} plannedSessionId={todaySession?.id ?? null} />}
+          runs={runs}
+          todayKey={todayKey}
+          recordCounts={recordCounts}
+          onOpenRun={openRun}
+          onAgain={runAgain}
+          onAllHistory={() => setSection('history')}
+          showFreeRun={moment.kind === 'today' || moment.kind === 'arrival'}
+          onFreeRun={openFreeRun}
+          week={
+            // Le nom du programme n'y est plus : « Ton programme » le porte juste en dessous.
+            <RunWeekCard week={week} nextLabel={nextLabel} programLabel={null} onOpenPlanning={() => router.push('/planning')} />
           }
-        }}
-        colors={colors}
-      />
+          program={
+            activeProgram ? (
+              <RunProgramCard
+                programName={activeProgram.name}
+                data={programData}
+                records={records}
+                todayKey={todayKey}
+                onPress={() => router.push(`/running-programs/${activeProgram.id}`)}
+              />
+            ) : null
+          }
+        />
+      ) : section === 'history' ? (
+        <RunHistorySection
+          runs={runs}
+          todayKey={todayKey}
+          recordCounts={recordCounts}
+          resumeDetail={resumeDetail}
+          onResume={resume}
+          onOpenRun={openRun}
+          onAgain={runAgain}
+        />
+      ) : (
+        <RunProgressSection
+          hasRuns={runs.length > 0}
+          resumeDetail={resumeDetail}
+          onResume={resume}
+          onInsights={() => router.push('/insights')}
+          onStats={() => router.push('/running-stats')}
+          lastRun={lastFinishedRun ? { id: lastFinishedRun.id, plannedSessionId: lastFinishedRun.plannedSessionId } : null}
+          onOpenRun={openRun}
+          onStart={() => setSection('run')}
+        />
+      )}
     </StageScrollView>
   );
 }
 
-/** `AAAA-MM-JJ` + n jours → `AAAA-MM-JJ`, en calendrier local (jamais `new Date('AAAA-MM-JJ')`). */
-function addDaysToKey(key: string, days: number): string {
-  const [y, m, d] = key.split('-').map(Number);
-  const date = new Date(y!, m! - 1, d! + days);
-  const mm = String(date.getMonth() + 1).padStart(2, '0');
-  const dd = String(date.getDate()).padStart(2, '0');
-  return `${date.getFullYear()}-${mm}-${dd}`;
-}
-
-/** `AAAA-MM-JJ` → `JJ/MM` (découpage direct, format FR). */
-function formatDayKeyShort(key: string): string {
-  const [, mm, dd] = key.split('-');
-  return `${dd}/${mm}`;
-}
-
 const styles = StyleSheet.create({
-  directory: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 11,
-    borderWidth: 1,
-    borderRadius: 16,
-    padding: 13,
-    minHeight: 48,
-  },
-  directoryLabel: { flex: 1, fontFamily: fontFamily.bodyBold, fontSize: 13 },
+  firstTime: { fontFamily: fontFamily.body, fontSize: 13 },
 });

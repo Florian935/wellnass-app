@@ -150,9 +150,10 @@ export const WIDGET_DESTINATIONS: Record<HomeWidgetIdWithDestination, WidgetDest
   },
   'running-week': {
     kind: 'screen',
-    route: '/running-history',
-    // Et non le hub course, qui montre la *dernière course*.
-    path: 'Course › Historique › Stats (période « semaine » par défaut)',
+    // US CARDIO-UX03 (D7) : les statistiques par période ont quitté l'historique pour « Toutes tes
+    // stats » ; `/running-history` ne fait plus que rediriger vers la liste des sorties.
+    route: '/running-stats',
+    path: 'Course › Progrès › Toutes tes stats (période « semaine » par défaut)',
   },
   // ── Revenu sur l'accueil (US ACCUEIL-04, 09/09/2026) ──────────────────────
   // INSIGHTS-02 l'avait rangé dans « Muscu › Progression › Mensurations ». Cette destination était
