@@ -5,7 +5,7 @@ roadmap: [4.47]
 catalogue: []
 etape: code
 branche: feature/nutri-ux03-hub-onglets
-maj: 25/09/2026
+maj: 26/09/2026
 ---
 
 # US NUTRI-UX03 — Hub Nutrition en trois onglets

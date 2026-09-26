@@ -124,6 +124,9 @@ export * from './load-progress';
 export * from './last-performance';
 export * from './history-calendar';
 export * from './hub-section';
+export * from './nutrition-section';
+export * from './meal-history';
+export * from './nutrition-calendar';
 export * from './session-target';
 // US CARDIO-UX02 — « Ton allure », la carte dominante du hub Course.
 export * from './pace-progress';

@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 253 livré · 5 partiel · 3 à faire (sur 267)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 253 livré · 6 partiel · 2 à faire (sur 267)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -129,8 +129,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `HEAD` (modifications non commitées) |
-| Commits | 1343 · `main` a **1340** commits de retard sur `dev` |
+| Branche courante | `feature/nutri-ux03-hub-onglets` (modifications non commitées) |
+| Commits | 1344 · `main` a **1341** commits de retard sur `dev` |
 | Specs d'US | 176 au total — 89 clôturées, 87 en cours |
 | Migrations | 110/110 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -141,11 +141,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `1584e8d`  docs(nutrition): NUTRI-UX03 cadrée — le hub Nutrition en trois onglets
 - `daef357`  feat(cardio): CARDIO-UX03, l'écran de départ nommé et le vrai détail d'une sortie
 - `fb4946d`  feat(cardio): CARDIO-UX03, le socle du hub Course en trois onglets — briques, requêtes, préférences
 - `a941cd2`  docs(cardio): CARDIO-UX03, cadrage du hub Course en trois onglets — Courir, Historique, Progrès
 - `9af937c`  chore(outillage): intégrer la compatibilité Claude Code / Codex, workflow commit remis à jour
-- `2de531b`  docs(muscu): MUSCU-UX06 clôturée — recette validée par Florian, §85 purgée
 
 ---
 

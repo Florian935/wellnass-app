@@ -10,6 +10,42 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 26/09/2026 — NUTRI-UX03, le socle : briques, requêtes, et le journal sort de l'écran (`feature/nutri-ux03-hub-onglets`)
+
+> Deuxième commit de l'US (plan, étapes 1 à 3), en TDD. Aucun changement visible : le hub a
+> toujours ses deux onglets. Commit précédent sur `dev` : `1584e8dd`.
+
+### Ajouté
+- `packages/shared` (Vitest, 53 tests) :
+  - `nutrition-section.ts` — l'onglet affiché (D3 : paramètre > mémoire > Aujourd'hui) et le
+    sous-onglet de Stats (`resolveStatsTab`, R12) ;
+  - `meal-history.ts` — « le même repas » = le même ensemble d'aliments (`food_id`, sinon nom sans
+    casse ni accents ; quantités et ordre ignorés) ; occurrences par jour et repas ; les trois
+    derniers repas différents (R3) ; les repas habituels, au moins deux fois (R9) ; le résumé d'une
+    journée (R8) ;
+  - `nutrition-calendar.ts` — statut d'un jour avec la marge de l'utilisateur (règle de
+    `computeGoalAdherence`), remplissage du verre (Q2), grille du mois, résumé (aujourd'hui exclu,
+    règle de NUTR-17), jours de la liste (jours notés + trous des six derniers jours du mois affiché).
+- `journal-repository.ts` : `SELECT_ENTRIES_BETWEEN` + `useEntriesBetween`, `useFirstLogDate`
+  (la requête existait, interne à `useJournalCompletion`). Test SQLite réel
+  `__tests__/nutri-ux03-sql.test.ts` (bornes incluses, suppression douce, ordre).
+- `stores/nutrition-section-store.ts` (onglet + état d'Historique, en mémoire),
+  `hooks/useKcalFormat.ts` (nombres groupés selon la langue), `hooks/useMealList.ts`,
+  `hooks/useDayNutritionTargets.ts`.
+
+### Modifié
+- `app/(tabs)/nutrition.tsx` : 1 533 → 652 lignes. `MealSection`, `EntryDetailModal`,
+  `TrackedMicrosRecap` et `DayQualitySection` partent dans `components/nutrition/journal/` ; la
+  cible du jour et la liste des repas passent par les deux hooks. Le mode « carte autonome » de
+  `MealSection` (`dense = false`) n'avait plus d'appelant depuis NUTRI-UX02 : il n'a pas suivi.
+- Roadmap : **4.47** ⬜ → 🟡, journal.
+
+### Notes
+- **Refactor vérifié sans toucher aux tests** : les 151 tests du hub et des composants Nutrition
+  passent tels quels après l'extraction.
+- `history-calendar.ts` (muscu) n'est pas modifié : la grille nutrition a son propre module, noté
+  pour la factorisation (§11 de la spec).
+
 ## 25/09/2026 — NUTRI-UX03 cadrée : le hub Nutrition en trois onglets (`feature/nutri-ux03-hub-onglets`)
 
 > Florian demande « le même travail que MUSCU-UX07 sur le pilier Nutrition ». Analyse du hub

@@ -6,8 +6,9 @@
  * Le journal fonctionne 100 % hors-ligne (base locale PowerSync).
  */
 
+import { useMemo } from 'react';
 import { useQuery } from '@powersync/react';
-import type { Micronutrients } from '@wellness/shared';
+import type { MealHistoryRow, Micronutrients } from '@wellness/shared';
 import { computeJournalCompletion, localDayKey, parseMicronutrients } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
@@ -528,4 +529,57 @@ export function useJournalCompletion(windowDays: number): {
     today: new Date(),
   });
   return { loggedDays, effectiveWindow, pct, isLoading: totalsLoading || firstLoading };
+}
+
+/**
+ * US NUTRI-UX03 — la date de la première entrée du journal, ou `null` sans aucune entrée.
+ *
+ * Borne la navigation du calendrier d'Historique (R7) et distingue le compte « sans aucun repas
+ * noté » de Progrès (R11). La requête existait, interne à `useJournalCompletion`.
+ */
+export function useFirstLogDate(): { first: string | null; isLoading: boolean } {
+  const { data, isLoading } = useQuery<{ first: string | null }>(SELECT_FIRST_LOG_DATE);
+  return { first: data[0]?.first ?? null, isLoading };
+}
+
+/**
+ * US NUTRI-UX03 — les entrées d'une fenêtre de jours, bornes incluses : jour, repas, aliment, nom,
+ * calories, ordre. Nourrit « Reprendre un repas » (R3) et les repas habituels (R9) sur les 60 jours
+ * précédant aujourd'hui, et la liste des jours d'Historique (R8) sur le mois affiché.
+ *
+ * Ordre : jour décroissant, puis repas, puis ordre des entrées dans le repas — celui dans lequel on
+ * relit une journée. Le regroupement en repas se fait en mémoire (`groupMealOccurrences`, partagé).
+ */
+export const SELECT_ENTRIES_BETWEEN = `
+  SELECT log_date, meal_type, food_id, name, kcal, order_index
+  FROM food_entries
+  WHERE log_date >= ? AND log_date <= ? AND deleted_at IS NULL
+  ORDER BY log_date DESC, meal_type, order_index, created_at
+`;
+
+export function useEntriesBetween(
+  fromKey: string,
+  toKey: string,
+): { rows: MealHistoryRow[]; isLoading: boolean } {
+  const { data, isLoading } = useQuery<{
+    log_date: string;
+    meal_type: string;
+    food_id: string | null;
+    name: string;
+    kcal: number;
+    order_index: number;
+  }>(SELECT_ENTRIES_BETWEEN, [fromKey, toKey]);
+  const rows = useMemo(
+    () =>
+      data.map((r) => ({
+        logDate: r.log_date,
+        mealType: r.meal_type,
+        foodId: r.food_id,
+        name: r.name,
+        kcal: r.kcal,
+        orderIndex: r.order_index,
+      })),
+    [data],
+  );
+  return { rows, isLoading };
 }

@@ -1,50 +1,18 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import ReanimatedSwipeable from 'react-native-gesture-handler/ReanimatedSwipeable';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import {
-  DEFAULT_MEAL_KEYS,
-  computeAge,
-  countReportedMicros,
-  explainCalorieTarget,
-  effectiveActivityLevel,
-  mealForHour,
-  effectiveNutritionObjective,
-  isRealLifeDay,
-  objectiveFromGoal,
-  rescaleEntryNutrition,
-  resolveMealConfig,
-  saltFromSodiumMg,
-  sumMicronutrients,
-  sumNutrients,
-  targetCalories,
-  tdee,
-  trainingDayMacroGrams,
-  type MicronutrientKey,
-} from '@wellness/shared';
-import { Button } from '@/components/Button';
-import { TextField } from '@/components/TextField';
-import { MicronutrientDetails } from '@/components/MicronutrientDetails';
-import { useTrackedMicros } from '@/stores/tracked-micros';
-import { useProfile } from '@/data/repositories/profile-repository';
-import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
-import { useDayCalorieTarget } from '@/data/repositories/dashboard-repository';
-import { useRealLifePeriods } from '@/data/repositories/real-life-repository';
+import { explainCalorieTarget, mealForHour, sumNutrients } from '@wellness/shared';
 import {
   addFoodEntry,
-  copyMeal,
   duplicateDay,
   moveEntry,
   reassignEntryMeal,
   removeEntry,
-  updateEntry,
   useDayEntries,
-  useDayQuality,
   type JournalEntry,
 } from '@/data/repositories/journal-repository';
-import { saveMealAsTemplate } from '@/data/repositories/meal-template-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
@@ -60,19 +28,18 @@ import { FuelTankCard } from '@/components/nutrition/FuelTankCard';
 import { NutritionStage, type QuickFood } from '@/components/nutrition/NutritionStage';
 import { StageScrollView } from '@/components/stage/StageScrollView';
 import type { MacroKey } from '@/components/nutrition/MacroTriple';
-import { MicroCoverageGrid, type MicroCell } from '@/components/nutrition/MicroCoverageGrid';
-import {
-  useDenseFoodCandidates,
-  useLibraryPresence,
-  useRecentFoods,
-} from '@/data/repositories/food-repository';
+import { useDenseFoodCandidates, useRecentFoods } from '@/data/repositories/food-repository';
 import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
+import { useDayNutritionTargets } from '@/hooks/useDayNutritionTargets';
+import { useMealList } from '@/hooks/useMealList';
 import { AddFoodSheet } from '@/components/nutrition/AddFoodSheet';
 import { DayCalendarSheet } from '@/components/nutrition/DayCalendarSheet';
 import { DayEnergyCard } from '@/components/energy/DayEnergyCard';
 import { HydrationCard } from '@/components/nutrition/HydrationCard';
-import { QualityCard } from '@/components/nutrition/QualityCard';
-import { MealGlyph } from '@/components/nutrition/CategoryGlyph';
+// US NUTRI-UX03 — le journal sort de l'écran : la page d'un jour passé en a besoin aussi.
+import { EntryDetailModal } from '@/components/nutrition/journal/EntryDetailModal';
+import { MealSection } from '@/components/nutrition/journal/MealSection';
+import { DayQualitySection, TrackedMicrosRecap } from '@/components/nutrition/journal/TrackedMicrosRecap';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const isoDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -82,24 +49,11 @@ const addDays = (iso: string, n: number) => {
   return isoDay(date);
 };
 
-/** Unité d'un micronutriment déduite du suffixe de sa clé (`_mg` / `_ug`). */
-const microUnit = (key: MicronutrientKey): 'mg' | 'ug' => (key.endsWith('_ug') ? 'ug' : 'mg');
-
-/** Format micro : entier ≥ 10, sinon 1 décimale ; virgule décimale en FR (cf. MicronutrientDetails). */
-function fmtMicro(n: number, lang: 'fr' | 'en', decimals?: number): string {
-  const d = decimals ?? (n >= 10 ? 0 : 1);
-  const s = n.toFixed(d);
-  return lang === 'fr' ? s.replace('.', ',') : s;
-}
-
 export default function NutritionScreen() {
   useMenuFocus('nutrition');
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-
-  const { profile } = useProfile();
-  const { nutritionProfile } = useNutritionProfile();
   const todayKey = useTodayKey();
   const [day, setDay] = useState(todayKey);
   // Suit le jour courant **uniquement** si l'utilisateur était sur « aujourd'hui » : sinon on
@@ -139,56 +93,18 @@ export default function NutritionScreen() {
     setDetailEditing(false);
   };
 
-  // Objectif calorique + macros cibles (même logique que le profil nutritionnel).
-  const { periods: realLifePeriods } = useRealLifePeriods();
-  const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
-  const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : null;
-  const tdeeValue = tdee({
-    sex: profile?.sex ?? 'unspecified',
-    weightKg: profile?.weightKg ?? undefined,
-    heightCm: profile?.heightCm ?? undefined,
-    age: age ?? undefined,
-      activityLevel: effectiveActivityLevel(nutritionProfile),
-  });
-  // US VIE-01 (R4) : objectif au maintien pendant une période « vie réelle ». Évalué sur le jour
-  // **sélectionné** (`day`), pas sur aujourd'hui : cet écran navigue dans l'historique, et une cible
-  // rétroactive doit refléter ce qui était demandé ce jour-là.
-  const inRealLifePeriod = isRealLifeDay(realLifePeriods, day);
-  const target =
-    tdeeValue != null
-      ? targetCalories(
-          tdeeValue,
-          effectiveNutritionObjective(objective, inRealLifePeriod),
-          nutritionProfile?.manualCalories ?? null,
-        )
-      : null;
-
-  // Objectif effectif + bonus du jour SÉLECTIONNÉ : centralisés dans useDayCalorieTarget
-  // (RN-02, mode forfait/auto + dépense des courses). Paramétré par `day` → la navigation
-  // par jour reste correcte. Les macros cibles redirigent ce bonus vers les glucides
-  // (US MN-04, `trainingDayMacroGrams`) — il n'est plus invisible dans le détail comme avant.
-  // `bonusSource` pilote le libellé du badge ci-dessous (course vs jour de séance forfait) ;
-  // `isLoading` évite un badge transitoire pendant le chargement.
+  // Objectif calorique, cible effective du jour affiché (bonus compris) et macros cibles. La
+  // navigation par jour reste correcte : tout est paramétré par `day`.
   const {
+    tdeeValue,
+    target,
     effectiveTarget,
     trainingBonus,
-    isTrainingDay: trainingApplies,
-    isLoading: targetLoading,
-  } = useDayCalorieTarget(day);
-
-  const manualSet =
-    nutritionProfile?.manualProteinG != null ||
-    nutritionProfile?.manualCarbsG != null ||
-    nutritionProfile?.manualFatG != null;
-  const targetMacros = manualSet
-    ? {
-        protein: nutritionProfile?.manualProteinG ?? 0,
-        carbs: nutritionProfile?.manualCarbsG ?? 0,
-        fat: nutritionProfile?.manualFatG ?? 0,
-      }
-    : target != null && effectiveTarget != null
-      ? trainingDayMacroGrams({ targetBase: target, effectiveTarget, objective })
-      : null;
+    trainingApplies,
+    targetLoading,
+    targetMacros,
+    profileComplete,
+  } = useDayNutritionTargets(day);
 
   const totals = sumNutrients(entries);
   const remaining = effectiveTarget != null ? effectiveTarget - totals.kcal : null;
@@ -289,20 +205,9 @@ export default function NutritionScreen() {
       .catch(() => undefined);
   };
 
-  // Repas configurés résolus (clé + libellé d'affichage). Un repas custom sans nom
-  // retombe sur « Repas N » (et non sur sa clé technique `custom-…`, cf. bug corrigé).
-  const mealList = useMemo(
-    () =>
-      resolveMealConfig(nutritionProfile?.meals).map((m, i) => ({
-        key: m.key,
-        label:
-          m.label ??
-          (DEFAULT_MEAL_KEYS.includes(m.key as never)
-            ? t(`journal.meals.${m.key}`)
-            : t('meals.mealN', { n: i + 1 })),
-      })),
-    [nutritionProfile?.meals, t],
-  );
+  // Repas configurés résolus (clé + libellé d'affichage) — un repas custom sans nom retombe sur
+  // « Repas N ».
+  const mealList = useMealList();
   const configuredKeys = useMemo(() => new Set(mealList.map((m) => m.key)), [mealList]);
   // Entrées « orphelines » : leur repas n'existe plus dans la config (repas supprimé /
   // renommé avec nouvelle clé). Surfacées dans une section « Autres » pour ne rien perdre.
@@ -511,7 +416,6 @@ export default function NutritionScreen() {
                 mealKey={m.key}
                 mealLabel={m.label}
                 day={day}
-                dense
                 dayKcal={totals.kcal}
                 entries={entries.filter((e) => e.mealType === m.key)}
                 onAdd={() => setAddTarget({ mealKey: m.key })}
@@ -530,7 +434,6 @@ export default function NutritionScreen() {
                 mealKey="__orphan__"
                 mealLabel={t('journal.meals.other')}
                 day={day}
-                dense
                 dayKcal={totals.kcal}
                 entries={orphanEntries}
                 onDeleteEntry={onDeleteEntry}
@@ -634,7 +537,7 @@ export default function NutritionScreen() {
                 objectiveDeltaKcal: target - tdeeValue,
                 trainingDayBonusKcal: trainingApplies && !targetLoading ? trainingBonus : 0,
                 target: effectiveTarget,
-                profileComplete: profile?.weightKg != null && profile?.heightCm != null && age != null,
+                profileComplete,
               })
             : null
         }
@@ -677,681 +580,7 @@ export default function NutritionScreen() {
   );
 }
 
-/**
- * Repères de qualité du jour (R3.5).
- *
- * Se tait tant que rien n'est calculable : sans aliment identifié, les trois valeurs seraient
- * des zéros trompeurs plutôt qu'une information (les sous-macros vivent sur `foods`, pas sur
- * l'entrée de journal — voir `useDayQuality`).
- */
-function DayQualitySection({ day, targetKcal }: { day: string; targetKcal: number | null }) {
-  const { quality } = useDayQuality(day);
-  if (quality.coverageRatio === 0) return null;
-  return (
-    <QualityCard
-      compact
-      targetKcal={targetKcal}
-      values={{
-        fiber: quality.fiber,
-        sugars: quality.sugars,
-        saturatedFat: quality.saturatedFat,
-      }}
-    />
-  );
-}
-
-/** Micronutriments suivis du jour, en grille de couverture (4.35). */
-function TrackedMicrosRecap({ entries }: { entries: JournalEntry[] }) {
-  const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
-  // F6 — la cause réelle de l'absence de micros : une base vide n'est pas une saisie imparfaite.
-  const library = useLibraryPresence();
-  const tracked = useTrackedMicros((s) => s.tracked);
-  const dayMicros = useMemo(
-    () => sumMicronutrients(entries.map((e) => e.micronutrients)),
-    [entries],
-  );
-  const lang = i18n.language === 'en' ? 'en' : 'fr';
-
-  const cells = useMemo<MicroCell[]>(() => {
-    const list: MicroCell[] = tracked.map((key) => ({
-      key,
-      label: t(`nutrition.micros.labels.${key}`),
-      value: fmtMicro(dayMicros[key] ?? 0, lang),
-      unit: t(`nutrition.micros.units.${microUnit(key)}`),
-      amount: dayMicros[key] ?? 0,
-    }));
-    // Le sel est dérivé du sodium et n'a pas de VNR : il reste affiché, sans anneau.
-    if (tracked.includes('sodium_mg')) {
-      list.push({
-        key: 'salt',
-        label: t('nutrition.micros.labels.salt'),
-        value: fmtMicro(saltFromSodiumMg(dayMicros.sodium_mg ?? 0), lang, 2),
-        unit: t('nutrition.micros.units.g'),
-        amount: null,
-      });
-    }
-    return list;
-  }, [tracked, dayMicros, lang, t]);
-
-  /**
-   * US NUTRI-UX02 — six pastilles à « 0,0 mg » valent moins que rien.
-   *
-   * `sumMicronutrients` respecte la règle de NUTR-07 (« une clé n'apparaît que si renseignée,
-   * jamais forcée à 0 ») ; c'est la lecture `dayMicros[key] ?? 0` juste au-dessus qui fabriquait
-   * les zéros. Sur une journée saisie en texte libre ou en ajout rapide — c'est-à-dire toute
-   * journée d'un appareil où la bibliothèque n'est pas descendue — l'écran affirmait « 0,0 mg de
-   * fer » là où la vérité est « je n'en sais rien ». Un zéro faux coûte la confiance dans tous
-   * les autres chiffres de l'écran.
-   *
-   * 🔴 Le seuil est **aucun**, pas « peu » : si trois micros sur six sont connus, les trois autres
-   * à zéro sont une information juste (« tu n'as pas eu de vitamine D aujourd'hui ») et la grille
-   * reste. Seul le cas « rien n'est connu » ment, et lui seul est remplacé par son explication.
-   */
-  const reported = countReportedMicros(dayMicros, tracked);
-
-  if (tracked.length === 0) return null;
-  if (reported === 0) {
-    /*
-     * Passe 2 — F6 : ne pas donner un conseil impossible à suivre.
-     *
-     * Le message disait « cherche l'aliment dans la base pour les suivre ». Juste dans l'absolu —
-     * et faux sur un appareil où la bibliothèque n'est pas descendue, c'est-à-dire précisément
-     * celui où le cas se produit le plus souvent. On envoyait l'utilisateur dans un mur, en lui
-     * laissant croire que le problème venait de sa saisie.
-     */
-    const cause = library.isEmpty
-      ? 'unknownNoLibrary'
-      : entries.length === 0
-        ? 'unknownEmptyDay'
-        : 'unknownFreeText';
-    return (
-      <View style={[styles.microsUnknown, { borderColor: colors.border }]} testID="micros-unknown">
-        <Ionicons name="help-circle-outline" size={17} color={colors.textMuted} />
-        <Text style={[styles.microsUnknownText, { color: colors.textMuted }]}>
-          {t(`nutrition.micros.${cause}`)}
-        </Text>
-      </View>
-    );
-  }
-  return <MicroCoverageGrid cells={cells} />;
-}
-
-/** Modal de détail d'une entrée : macros + micronutriments figés pour la quantité (4.34). */
-type MealOption = { key: string; label: string };
-
-function EntryDetailModal({
-  entry,
-  startEditing,
-  onClose,
-  onMoveUp,
-  onMoveDown,
-  meals,
-  onReassign,
-}: {
-  entry: JournalEntry | null;
-  startEditing?: boolean;
-  onClose: () => void;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
-  meals: MealOption[];
-  onReassign: (entryId: string, mealKey: string) => void;
-}) {
-  if (entry == null) return null;
-  // Remonté à chaque ouverture (key) : l'état d'édition repart propre pour chaque entrée.
-  return (
-    <EntryDetailContent
-      key={entry.id}
-      entry={entry}
-      startEditing={startEditing}
-      onClose={onClose}
-      onMoveUp={onMoveUp}
-      onMoveDown={onMoveDown}
-      meals={meals}
-      onReassign={onReassign}
-    />
-  );
-}
-
-function EntryDetailContent({
-  entry,
-  startEditing,
-  onClose,
-  onMoveUp,
-  onMoveDown,
-  meals,
-  onReassign,
-}: {
-  entry: JournalEntry;
-  startEditing?: boolean;
-  onClose: () => void;
-  onMoveUp?: () => void;
-  onMoveDown?: () => void;
-  meals: MealOption[];
-  onReassign: (entryId: string, mealKey: string) => void;
-}) {
-  const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
-
-  // Distinction de type d'entrée :
-  // - AVEC quantité (grammes) → édition par les grammes (règle de trois).
-  // - SANS quantité (quick add / recette) → édition directe de kcal/macros/nom.
-  const hasQuantity = entry.quantityG != null && entry.quantityG > 0;
-  const oldQty = entry.quantityG ?? 0;
-  const [editing, setEditing] = useState(startEditing ?? false);
-  const [grams, setGrams] = useState(String(entry.quantityG ?? ''));
-  const [saving, setSaving] = useState(false);
-  const [name, setName] = useState(entry.name);
-  const [kcal, setKcal] = useState(String(entry.kcal));
-  const [protein, setProtein] = useState(String(entry.proteinG));
-  const [carbs, setCarbs] = useState(String(entry.carbsG));
-  const [fat, setFat] = useState(String(entry.fatG));
-  const num = (s: string) => Math.max(0, Math.round(Number(s.replace(',', '.')) || 0));
-
-  const g = Math.round(Number(grams.replace(',', '.')) || 0);
-
-  // Recalcul du snapshot pour la nouvelle quantité (règle de trois, un seul arrondi — shared).
-  const preview = editing && hasQuantity ? rescaleEntryNutrition(entry, oldQty, g) : entry;
-  const canSave = hasQuantity ? g > 0 : num(kcal) > 0;
-  const previewMicros = preview.micronutrients;
-
-  const macros: { key: MacroKey; value: number }[] = [
-    { key: 'protein', value: preview.proteinG },
-    { key: 'carbs', value: preview.carbsG },
-    { key: 'fat', value: preview.fatG },
-  ];
-
-  // Heure de journalisation (horodatage), format local court.
-  const loggedTime = new Date(entry.createdAt).toLocaleTimeString(i18n.language, {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
-  const onSave = async () => {
-    if (!canSave) return;
-    setSaving(true);
-    if (hasQuantity) {
-      const n = rescaleEntryNutrition(entry, oldQty, g);
-      await updateEntry(entry.id, {
-        quantityG: g,
-        kcal: n.kcal,
-        proteinG: n.proteinG,
-        carbsG: n.carbsG,
-        fatG: n.fatG,
-        micronutrients: n.micronutrients,
-      });
-    } else {
-      await updateEntry(entry.id, {
-        quantityG: null,
-        name: name.trim() || entry.name,
-        kcal: num(kcal),
-        proteinG: num(protein),
-        carbsG: num(carbs),
-        fatG: num(fat),
-        // pas de micronutrients → micros existants inchangés
-      });
-    }
-    onClose();
-  };
-
-  const onDelete = () => {
-    Alert.alert(entry.name, t('journal.deleteConfirm'), [
-      { text: t('common.cancel'), style: 'cancel' },
-      {
-        text: t('journal.delete'),
-        style: 'destructive',
-        onPress: () => {
-          void removeEntry(entry.id);
-          onClose();
-        },
-      },
-    ]);
-  };
-
-  const canReorder = !editing && (onMoveUp != null || onMoveDown != null);
-
-  return (
-    <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.modalBackdrop} onPress={onClose}>
-        <Pressable style={[styles.modalSheet, { backgroundColor: colors.background }]} onPress={() => {}}>
-          <View style={styles.modalHead}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.modalTitle, { color: colors.text }]} numberOfLines={2}>{entry.name}</Text>
-              {!editing ? (
-                <Text style={[styles.modalSub, { color: colors.textMuted }]}>
-                  {entry.quantityG != null ? `${t('journal.detail.quantity', { grams: entry.quantityG })} · ` : ''}
-                  {t('journal.detail.loggedAt', { time: loggedTime })}
-                </Text>
-              ) : null}
-            </View>
-            {canReorder ? (
-              <View style={styles.reorderRow}>
-                <Pressable
-                  onPress={onMoveUp}
-                  disabled={onMoveUp == null}
-                  hitSlop={8}
-                  accessibilityLabel={t('journal.detail.moveUp')}
-                >
-                  <Ionicons name="chevron-up" size={22} color={onMoveUp ? colors.text : colors.border} />
-                </Pressable>
-                <Pressable
-                  onPress={onMoveDown}
-                  disabled={onMoveDown == null}
-                  hitSlop={8}
-                  accessibilityLabel={t('journal.detail.moveDown')}
-                >
-                  <Ionicons name="chevron-down" size={22} color={onMoveDown ? colors.text : colors.border} />
-                </Pressable>
-              </View>
-            ) : null}
-            <Pressable onPress={onClose} hitSlop={10} accessibilityLabel={t('journal.detail.close')}>
-              <Ionicons name="close" size={26} color={colors.textMuted} />
-            </Pressable>
-          </View>
-
-          <ScrollView
-            contentContainerStyle={styles.modalBody}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Champs en mode édition — grammes (règle de trois) ou saisie directe (quick add) */}
-            {editing ? (
-              hasQuantity ? (
-                <TextField
-                  label={t('journal.grams')}
-                  value={grams}
-                  onChangeText={setGrams}
-                  keyboardType="decimal-pad"
-                  autoFocus
-                />
-              ) : (
-                <>
-                  <TextField label={t('journal.name')} value={name} onChangeText={setName} autoFocus />
-                  <TextField
-                    label={t('journal.detail.calories')}
-                    value={kcal}
-                    onChangeText={setKcal}
-                    keyboardType="decimal-pad"
-                  />
-                  <TextField
-                    label={`${t('nutrition.macros.protein')} (g)`}
-                    value={protein}
-                    onChangeText={setProtein}
-                    keyboardType="decimal-pad"
-                  />
-                  <TextField
-                    label={`${t('nutrition.macros.carbs')} (g)`}
-                    value={carbs}
-                    onChangeText={setCarbs}
-                    keyboardType="decimal-pad"
-                  />
-                  <TextField
-                    label={`${t('nutrition.macros.fat')} (g)`}
-                    value={fat}
-                    onChangeText={setFat}
-                    keyboardType="decimal-pad"
-                  />
-                </>
-              )
-            ) : null}
-
-            {/* Macros de la quantité (aperçu live en édition ; masqué en édition quick add) */}
-            {!editing || hasQuantity ? (
-            <View style={[styles.detailMacros, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-              <View style={styles.detailKcalRow}>
-                <Text style={[styles.detailKcal, { color: colors.text }]}>{preview.kcal}</Text>
-                <Text style={[styles.kcalUnit, { color: colors.textMuted }]}>{t('nutrition.kcal')}</Text>
-              </View>
-              <View style={styles.detailMacroRow}>
-                {macros.map((mm) => (
-                  <View key={mm.key} style={styles.detailMacro}>
-                    <Text style={[styles.macroName, { color: colors.textMuted }]}>{t(`nutrition.macros.${mm.key}`)}</Text>
-                    <Text style={[styles.detailMacroVal, { color: colors.text }]}>{mm.value} g</Text>
-                  </View>
-                ))}
-              </View>
-            </View>
-            ) : null}
-
-            {/* Micronutriments de la quantité (snapshot déjà mis à l'échelle) */}
-            <MicronutrientDetails
-              micronutrients={previewMicros}
-              grams={100}
-              showPer100={false}
-              defaultOpen
-            />
-
-            {/* Déplacer l'entrée vers un autre repas (récupération des orphelines incluse). */}
-            {!editing && meals.length > 0 ? (
-              <View style={styles.moveBlock}>
-                <Text style={[styles.moveLabel, { color: colors.textMuted }]}>
-                  {t('journal.detail.moveTo')}
-                </Text>
-                <View style={styles.moveChips}>
-                  {meals
-                    .filter((m) => m.key !== entry.mealType)
-                    .map((m) => (
-                      <Pressable
-                        key={m.key}
-                        onPress={() => onReassign(entry.id, m.key)}
-                        style={[styles.moveChip, { borderColor: colors.border, backgroundColor: colors.surface }]}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('journal.detail.moveToMeal', { meal: m.label })}
-                      >
-                        <Text style={[styles.moveChipLabel, { color: colors.text }]} numberOfLines={1}>
-                          {m.label}
-                        </Text>
-                      </Pressable>
-                    ))}
-                </View>
-              </View>
-            ) : null}
-
-            {/* Actions : modifier la quantité / supprimer (4.34) */}
-            {editing ? (
-              <View style={styles.detailActions}>
-                <Button label={t('common.cancel')} variant="ghost" onPress={() => setEditing(false)} />
-                <Button label={t('journal.detail.save')} onPress={() => void onSave()} loading={saving} disabled={!canSave} />
-              </View>
-            ) : (
-              <View style={styles.detailActions}>
-                <Pressable
-                  onPress={onDelete}
-                  style={styles.deleteAction}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('journal.delete')}
-                >
-                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
-                  <Text style={[styles.deleteLabel, { color: colors.danger }]}>{t('journal.delete')}</Text>
-                </Pressable>
-                <Button
-                  label={hasQuantity ? t('journal.detail.edit') : t('journal.swipeEdit')}
-                  onPress={() => setEditing(true)}
-                />
-              </View>
-            )}
-          </ScrollView>
-        </Pressable>
-      </Pressable>
-    </Modal>
-  );
-}
-
-/**
- * US NUTRI-UX02 — `dense` : le repas devient une **section** d'une carte unique, au lieu d'être une
- * carte à lui seul.
- *
- * ── Ce que coûtait une carte par repas ───────────────────────────────────────────────────────────
- * Cinq cartes de ~150 px pour quatre lignes d'aliments — soit ~750 px de défilement, deux écrans de
- * pouce, dont l'essentiel est du contenant. Et la même phrase « + Ajouter un aliment » répétée cinq
- * fois, qui n'apprend rien la cinquième fois.
- *
- * En `dense`, la section perd son fond, sa bordure et son bouton texte ; elle garde son en-tête, son
- * menu, et **tout** le comportement des lignes (swipe éditer/supprimer, tap détail). Le parent porte
- * la carte, le bouton d'ajout principal et le total.
- *
- * 🔴 Le `+` par repas est **conservé**, en icône dans l'en-tête. Le supprimer aurait forcé à passer
- * par la feuille, qui déduit le repas de l'heure courante (R2.6 de NUTRI-UX01) : noter son
- * petit-déjeuner à 20 h serait redevenu un parcours à corriger, exactement le défaut que R2.6 avait
- * réglé. On supprime la répétition, pas le raccourci.
- */
-function MealSection({
-  mealKey,
-  mealLabel,
-  day,
-  entries,
-  dense = false,
-  dayKcal = 0,
-  onAdd,
-  onDeleteEntry,
-  onSelectEntry,
-  onEditEntry,
-}: {
-  mealKey: string;
-  mealLabel: string;
-  day: string;
-  entries: JournalEntry[];
-  /** Section d'une carte unique (US NUTRI-UX02) plutôt que carte autonome. */
-  dense?: boolean;
-  /** Total calorique du jour, pour la part que ce repas représente. 0 = pas de barre. */
-  dayKcal?: number;
-  /** Ajout d'un aliment. Absent pour la section « Autres » (récupération seule). */
-  onAdd?: () => void;
-  onDeleteEntry: (e: JournalEntry) => void;
-  onSelectEntry: (e: JournalEntry) => void;
-  onEditEntry: (e: JournalEntry) => void;
-}) {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
-  const mealKcal = entries.reduce((s, e) => s + e.kcal, 0);
-  // Menu du repas (copier / enregistrer comme modèle) : replié par défaut. Deux actions
-  // secondaires n'ont pas à occuper l'en-tête de chacun des 3 à 6 repas de la journée.
-  const [menuOpen, setMenuOpen] = useState(false);
-
-  const copyFromYesterday = () => {
-    void copyMeal(addDays(day, -1), mealKey, day)
-      .then((n) => {
-        if (n === 0) Alert.alert(mealLabel, t('journal.nothingYesterday'));
-      })
-      .catch(() => undefined);
-  };
-
-  const saveAsTemplate = () => {
-    const items = entries.map((e) => ({
-      foodId: e.foodId,
-      name: e.name,
-      quantityG: e.quantityG,
-      kcal: e.kcal,
-      proteinG: e.proteinG,
-      carbsG: e.carbsG,
-      fatG: e.fatG,
-    }));
-    void saveMealAsTemplate(mealLabel, items)
-      .then(() => Alert.alert(t('journal.templateSaved'), mealLabel))
-      // 🔴 Ici l'alerte est une CONFIRMATION : la taire sur échec est le comportement voulu —
-      // annoncer « modèle enregistré » alors que l'écriture a échoué serait pire que se taire.
-      .catch(() => undefined);
-  };
-
-  /*
-   * Passe 2 — en `dense`, un repas vide est une **section discrète**, pas un cadre pointillé.
-   *
-   * Le cadre pointillé a été conçu pour une liste de cartes, où il se lit comme « une carte encore
-   * vide ». Posé au milieu d'une carte unique, entre des repas pleins, il coupe la lecture et se lit
-   * comme un bouton d'action — c'est le « Snack » relevé en recette du 20/09.
-   */
-  if (entries.length === 0 && onAdd && dense) {
-    return (
-      <Pressable
-        onPress={onAdd}
-        accessibilityRole="button"
-        accessibilityLabel={`${mealLabel} · ${t('journal.addFood')}`}
-        style={[styles.mealHeadDense, styles.mealSection, { borderTopColor: colors.border }]}
-      >
-        <MealGlyph mealKey={mealKey} />
-        <Text style={[styles.mealName, { color: colors.textMuted }]} numberOfLines={1}>
-          {mealLabel}
-        </Text>
-        <Text style={[styles.mealEmptyAdd, { color: colors.accent }]}>+ {t('journal.add')}</Text>
-      </Pressable>
-    );
-  }
-
-  // Repas vide et ajoutable → carte pointillée, sans en-tête ni total : il n'y a rien à totaliser,
-  // et l'écran reste lisible quand 3 repas sur 5 sont vides en début de journée.
-  if (entries.length === 0 && onAdd) {
-    return (
-      <Pressable
-        onPress={onAdd}
-        accessibilityRole="button"
-        accessibilityLabel={`${mealLabel} · ${t('journal.addFood')}`}
-        style={[styles.mealEmpty, { backgroundColor: colors.surface, borderColor: colors.borderStrong }]}
-      >
-        <View style={styles.mealEmptyLeft}>
-          <MealGlyph mealKey={mealKey} />
-          <Text style={[styles.mealEmptyName, { color: colors.textMuted }]} numberOfLines={1}>
-            {mealLabel}
-          </Text>
-        </View>
-        <Text style={[styles.mealEmptyAdd, { color: colors.accent }]}>+ {t('journal.add')}</Text>
-      </Pressable>
-    );
-  }
-
-  // US NUTRI-UX02 — la part du jour que pèse ce repas. C'est NUTR-16 (« répartition par repas »,
-  // livrée mais rangée dans l'écran Stats) rendue là où la décision se prend, sans nouvel écran :
-  // « mon dîner pèse un tiers de ma journée » se lit d'un coup d'œil, pas dans un rapport hebdo.
-  const mealShare = dayKcal > 0 ? Math.round((mealKcal / dayKcal) * 100) : null;
-
-  return (
-    <View
-      style={
-        dense
-          ? [styles.mealSection, { borderTopColor: colors.border }]
-          : [styles.mealCard, { backgroundColor: colors.surface, borderColor: colors.border }]
-      }
-    >
-      <View
-        style={[
-          dense ? styles.mealHeadDense : styles.mealHead,
-          dense ? null : { borderBottomColor: colors.border },
-        ]}
-      >
-        <MealGlyph mealKey={mealKey} />
-        <Text style={[styles.mealName, { color: colors.text }]} numberOfLines={1}>{mealLabel}</Text>
-        <Text style={[styles.mealKcal, { color: colors.textMuted }]}>
-          {mealKcal}
-          <Text style={styles.mealKcalUnit}> {t('nutrition.kcal')}</Text>
-        </Text>
-        {dense && onAdd ? (
-          <Pressable
-            onPress={onAdd}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityLabel={`${mealLabel} · ${t('journal.addFood')}`}
-            style={[styles.mealMenuBtn, { backgroundColor: colors.track }]}
-          >
-            <Ionicons name="add" size={16} color={colors.accent} />
-          </Pressable>
-        ) : null}
-        {entries.length > 0 ? (
-          <Pressable
-            onPress={() => setMenuOpen((v) => !v)}
-            hitSlop={8}
-            accessibilityRole="button"
-            accessibilityState={{ expanded: menuOpen }}
-            accessibilityLabel={t('journal.mealMenu', { meal: mealLabel })}
-            style={[styles.mealMenuBtn, { backgroundColor: colors.track }]}
-          >
-            <Ionicons name="ellipsis-horizontal" size={16} color={colors.text} />
-          </Pressable>
-        ) : null}
-      </View>
-
-      {dense && mealShare != null && entries.length > 0 ? (
-        <View
-          style={styles.mealShareRow}
-          accessible
-          accessibilityLabel={t('journal.mealShareA11y', { meal: mealLabel, pct: mealShare })}
-        >
-          <View style={[styles.mealShareTrack, { backgroundColor: colors.track }]}>
-            <View
-              style={[
-                styles.mealShareFill,
-                { backgroundColor: colors.accent, width: `${Math.min(100, mealShare)}%` },
-              ]}
-            />
-          </View>
-          <Text style={[styles.mealSharePct, { color: colors.textMuted }]}>{mealShare} %</Text>
-        </View>
-      ) : null}
-
-      {menuOpen ? (
-        <View style={[styles.mealMenu, { backgroundColor: colors.track, borderBottomColor: colors.border }]}>
-          <Pressable
-            onPress={() => {
-              setMenuOpen(false);
-              copyFromYesterday();
-            }}
-            style={[styles.mealMenuChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            accessibilityRole="button"
-          >
-            <Text style={[styles.mealMenuLabel, { color: colors.text }]}>{t('journal.copyYesterday')}</Text>
-          </Pressable>
-          <Pressable
-            onPress={() => {
-              setMenuOpen(false);
-              saveAsTemplate();
-            }}
-            style={[styles.mealMenuChip, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            accessibilityRole="button"
-          >
-            <Text style={[styles.mealMenuLabel, { color: colors.text }]}>{t('journal.saveMeal')}</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      <View style={styles.mealItems}>
-        {entries.map((e) => (
-          <ReanimatedSwipeable
-            key={e.id}
-            friction={2}
-            rightThreshold={40}
-            renderRightActions={() => (
-              <View style={styles.swipeActions}>
-                <Pressable
-                  onPress={() => onEditEntry(e)}
-                  style={[styles.swipeAction, { backgroundColor: colors.accent }]}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('journal.swipeEdit')}
-                >
-                  <Ionicons name="create-outline" size={20} color="#fff" />
-                  <Text style={styles.swipeActionLabel}>{t('journal.swipeEdit')}</Text>
-                </Pressable>
-                <Pressable
-                  onPress={() => onDeleteEntry(e)}
-                  style={[styles.swipeAction, { backgroundColor: colors.danger }]}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('journal.delete')}
-                >
-                  <Ionicons name="trash-outline" size={20} color="#fff" />
-                  <Text style={styles.swipeActionLabel}>{t('journal.delete')}</Text>
-                </Pressable>
-              </View>
-            )}
-          >
-            <Pressable
-              onPress={() => onSelectEntry(e)}
-              style={[styles.entry, { backgroundColor: colors.surface }]}
-              accessibilityHint={t('journal.swipeHint')}
-            >
-              <View style={styles.entryMain}>
-                <Text style={[styles.entryName, { color: colors.text }]} numberOfLines={1}>{e.name}</Text>
-                {e.quantityG != null ? (
-                  <Text style={[styles.entryQty, { color: colors.textMuted }]}>{e.quantityG} g</Text>
-                ) : null}
-              </View>
-              <Text style={[styles.entryKcal, { color: colors.textMuted }]}>{e.kcal} {t('nutrition.kcal')}</Text>
-            </Pressable>
-          </ReanimatedSwipeable>
-        ))}
-        {/* En `dense`, le `+` vit dans l'en-tête et le bouton principal au pied de la carte : la
-            même phrase répétée cinq fois n'apprenait rien la cinquième fois. */}
-        {onAdd && !dense ? (
-          <Pressable onPress={onAdd} style={styles.addRow} accessibilityRole="button">
-            <View style={[styles.addGlyph, { backgroundColor: colors.track }]}>
-              <Ionicons name="add" size={15} color={colors.accent} />
-            </View>
-            <Text style={[styles.addLabel, { color: colors.accent }]}>{t('journal.addFood')}</Text>
-          </Pressable>
-        ) : null}
-      </View>
-    </View>
-  );
-}
-
-const styles = StyleSheet.create({
-  emptyDay: { borderRadius: 20, borderWidth: 1, paddingVertical: 34, paddingHorizontal: 24, alignItems: 'center' },
+const styles = StyleSheet.create({  emptyDay: { borderRadius: 20, borderWidth: 1, paddingVertical: 34, paddingHorizontal: 24, alignItems: 'center' },
   emptyIcon: { width: 62, height: 62, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 14 },
   emptyIconGlyph: { fontSize: 28 },
   emptyTitle: { fontFamily: fontFamily.displayBold, fontSize: 18, marginBottom: 5, textAlign: 'center' },
@@ -1375,94 +604,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
-  modalSheet: { maxHeight: '85%', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8 },
-  modalHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 20, paddingVertical: 12 },
-  modalTitle: { fontFamily: fontFamily.displayBold, fontSize: 20 },
-  modalSub: { fontFamily: fontFamily.mono, fontSize: 13, marginTop: 2 },
-  modalBody: { paddingHorizontal: 20, paddingBottom: 32, gap: 16 },
-  detailMacros: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 12 },
-  detailKcalRow: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
-  detailKcal: { fontFamily: fontFamily.displayBold, fontSize: 32 },
   // Conservés pour le détail d'entrée (modal), qui garde sa mise en page en lignes.
-  kcalUnit: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
-  macroName: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
-  detailMacroRow: { flexDirection: 'row', gap: 10 },
-  detailMacro: { flex: 1, gap: 2 },
-  detailMacroVal: { fontFamily: fontFamily.monoBold, fontSize: 16 },
-  reorderRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  detailActions: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, marginTop: 4 },
-  deleteAction: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 10, paddingHorizontal: 4 },
-  deleteLabel: { fontFamily: fontFamily.bodySemi, fontSize: 15 },
-  moveBlock: { gap: 8 },
-  moveLabel: {
-    fontFamily: fontFamily.bodySemi,
-    fontSize: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.4,
-  },
-  moveChips: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  moveChip: { borderWidth: 1, borderRadius: 999, paddingVertical: 7, paddingHorizontal: 14 },
-  moveChipLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
-  mealCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden' },
-  mealHead: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 11,
-    paddingLeft: 15,
-    paddingRight: 12,
-    paddingTop: 13,
-    paddingBottom: 11,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  mealName: { fontFamily: fontFamily.bodyBold, fontSize: 15, flex: 1 },
-  mealKcal: { fontFamily: fontFamily.monoBold, fontSize: 13 },
-  mealKcalUnit: { fontFamily: fontFamily.mono, fontSize: 10 },
-  mealMenuBtn: { width: 28, height: 28, borderRadius: 9, alignItems: 'center', justifyContent: 'center' },
-  mealMenu: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-  },
-  mealMenuChip: { borderWidth: 1, borderRadius: 999, paddingVertical: 6, paddingHorizontal: 11 },
-  mealMenuLabel: { fontFamily: fontFamily.bodySemi, fontSize: 12 },
-  mealItems: { paddingVertical: 4, paddingHorizontal: 4 },
-  mealEmpty: {
-    borderRadius: 18,
-    borderWidth: 1.5,
-    borderStyle: 'dashed',
-    paddingVertical: 15,
-    paddingHorizontal: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 12,
-  },
-  mealEmptyLeft: { flexDirection: 'row', alignItems: 'center', gap: 11, flexShrink: 1 },
-  mealEmptyName: { fontFamily: fontFamily.bodyBold, fontSize: 15, flexShrink: 1 },
-  mealEmptyAdd: { fontFamily: fontFamily.bodyBold, fontSize: 14 },
-  entry: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: 12,
-    paddingHorizontal: 11,
-    paddingVertical: 9,
-    gap: 12,
-  },
-  swipeActions: { flexDirection: 'row', alignItems: 'stretch' },
-  swipeAction: { justifyContent: 'center', alignItems: 'center', gap: 2, width: 76 },
-  swipeActionLabel: { fontFamily: fontFamily.bodySemi, fontSize: 11, color: '#fff' },
-  entryMain: { flex: 1, flexDirection: 'row', alignItems: 'baseline', gap: 8 },
-  entryName: { fontFamily: fontFamily.body, fontSize: 13.5, flexShrink: 1 },
-  entryQty: { fontFamily: fontFamily.mono, fontSize: 12 },
-  entryKcal: { fontFamily: fontFamily.monoBold, fontSize: 12.5 },
-  addRow: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 11, paddingVertical: 9 },
-  addGlyph: { width: 20, height: 20, borderRadius: 7, alignItems: 'center', justifyContent: 'center' },
-  addLabel: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
   manageMeals: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 8 },
   tabs: { flexDirection: 'row', gap: 8 },
   // US NUTRI-UX02 — la carte unique « Ta journée » qui remplace les cartes par repas.
@@ -1478,20 +620,6 @@ const styles = StyleSheet.create({
   dayCardTitle: { flex: 1, fontFamily: fontFamily.displayBold, fontSize: 17 },
   dayCardMeta: { fontFamily: fontFamily.mono, fontSize: 11.5 },
   dayCardHydration: { borderTopWidth: 1 },
-  dayCardAdd: {
-    minHeight: 48,
-    borderTopWidth: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  mealSection: { borderTopWidth: 1 },
-  mealHeadDense: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 16, paddingVertical: 11 },
-  mealShareRow: { flexDirection: 'row', alignItems: 'center', gap: 9, paddingHorizontal: 16, paddingBottom: 9 },
-  mealShareTrack: { flex: 1, height: 4, borderRadius: 3, overflow: 'hidden' },
-  mealShareFill: { height: '100%', borderRadius: 3 },
-  mealSharePct: { fontFamily: fontFamily.mono, fontSize: 10.5, width: 34, textAlign: 'right' },
   // 44 px de haut : la cible tactile minimale de CONF-07, qu'un onglet de 36 px manquait.
   tab: {
     flex: 1,
@@ -1504,17 +632,6 @@ const styles = StyleSheet.create({
   tabLabel: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   // US NUTRI-UX02 — l'explication qui remplace les pastilles à zéro. Contour pointillé et non
   // carte pleine : ce n'est pas une donnée de plus, c'est l'absence de donnée, dite.
-  microsUnknown: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    borderWidth: 1,
-    borderStyle: 'dashed',
-    borderRadius: 14,
-    paddingVertical: 13,
-    paddingHorizontal: 15,
-  },
-  microsUnknownText: { flex: 1, fontFamily: fontFamily.body, fontSize: 13, lineHeight: 19 },
   manageMealsLabel: { fontFamily: fontFamily.bodySemi, fontSize: 13 },
   // US REPAS-01 — carte d'accès au planning repas (P1).
   mealPlanCard: {
@@ -1530,4 +647,5 @@ const styles = StyleSheet.create({
   mealPlanTexts: { flex: 1, gap: 2 },
   mealPlanTitle: { fontFamily: fontFamily.displayBold, fontSize: 15 },
   mealPlanSubtitle: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 17 },
+
 });
