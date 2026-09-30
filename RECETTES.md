@@ -11,9 +11,10 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **26/09/2026** — **86 sections**, recomptées (§88 NUTRI-UX03 et §87
-> CARDIO-UX03 ajoutées ; §86 MUSCU-UX07 le 25/09/2026 ; le 23/09/2026 : §84 MUSCU-FIX02 et §85
-> MUSCU-UX06 recettées et clôturées, sections purgées).
+> Dernière mise à jour : **30/09/2026** — **87 sections** (§89 « le Labo, carrefour des piliers »
+> ajoutée : cinq US, une recette ; le 26/09/2026 : §88 NUTRI-UX03 et §87 CARDIO-UX03 ; §86 MUSCU-UX07 le
+> 25/09/2026 ; le 23/09/2026 : §84 MUSCU-FIX02 et §85 MUSCU-UX06 recettées et clôturées, sections
+> purgées).
 >
 > ### 📦 L'APK de cette campagne — un seul pour §68, §69 et §70
 >
@@ -5439,3 +5440,201 @@ compte avec au moins une semaine de journal, **le même déjeuner noté deux foi
 ⚠️ **Ce qui n'a pas été fait** : pas d'écran de gestion des repas types (la Bibliothèque ouvre le
 sélecteur existant) ; « J'ai mangé ça » n'existe que pour aujourd'hui ; la cible d'Historique ne compte pas
 les « autres activités » (écart existant entre deux hooks, spec D9). Voir le §11 de la spec.
+
+## 89. Le Labo, carrefour des piliers — LIENS-01, LABO-02, LABO-03, ECHO-01, LABO-04 (`feature/labo-carrefour` → `dev`)
+
+Specs : [LIENS-01](docs/specs/functional/us/liens01-registre-liens.md) ·
+[LABO-02](docs/specs/functional/us/labo02-croiser.md) · [LABO-03](docs/specs/functional/us/labo03-fiche-lien.md) ·
+[ECHO-01](docs/specs/functional/us/echo01-echos-liens.md) · [LABO-04](docs/specs/functional/us/labo04-apprendre.md) ·
+plans dans [docs/plans/](docs/plans/) · toile [design/labo-carrefour-2026-09/](design/labo-carrefour-2026-09/)
+(https://claude.ai/artifact/JGyxPAdghwAxwHTyBZWwgz) · roadmap **7.37 à 7.41**
+
+Cinq US livrées **en une vague** le 30/09/2026, une recette unique. Le Labo devient la maison de tous
+les liens entre piliers : trois onglets (Croiser · Composer · Apprendre), une fiche par lien, des échos
+dans les piliers. Décisions de Florian du 30/09/2026 : Q1 « Croiser », Q2 Insights garde l'intra-pilier,
+Q3 les cartes croisées de Stats nutrition déménagent, Q4 une ligne masquable pour les piliers inactifs,
+Q5 histoire figée, Q6 vue du dessus de la même scène, Q7 fiche cycle si le suivi est activé, Q8 tout
+avant le Play Store.
+
+> 🔴 **Prérequis — sync rule à déployer À LA MAIN** avant de commencer : coller
+> [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le dashboard PowerSync
+> et déployer (nouvelle ligne `cross_link_weeks`). Sans elle, tout **semble** marcher sur un seul
+> téléphone, mais l'histoire des liens disparaît à la première resynchro (item 33). La migration, elle,
+> est poussée (30/09/2026) et cochée au [registre](supabase/MIGRATIONS.md).
+>
+> 📦 **Aucune dépendance native nouvelle** : un dev client + Metro suffit ; pour un APK, en reconstruire
+> un depuis `dev` (le JS de la scène est cuit dedans).
+>
+> 🔵 **Données** : [supabase/scripts/labo-dataset.sql](supabase/scripts/labo-dataset.sql) fabrique une
+> semaine et huit semaines d'historique sur les trois piliers (⚠️ il efface les données personnelles du
+> compte visé — voir §66). Pour les états « à régler », il faut en plus : une **séance de jambes la
+> veille d'une sortie longue** au planning (collision), **moins de 1,6 g/kg de protéines** sur au moins
+> 4 jours saisis, et pour un garde-fou, **9 jours d'entraînement d'affilée**. Pour « à découvrir » : un
+> **compte neuf**.
+
+### A — Croiser (LABO-02)
+
+- [ ] 1. Le Labo ouvre sur **Croiser**. Titre et trois onglets (**Croiser · Composer · Apprendre**) sont
+      **dans** la scène, en haut et en bas ; les onglets Semaine, Pourquoi ? et Acquis n'existent plus.
+- [ ] 2. Sous la scène : une phrase de tête qui dit l'essentiel (« Un garde-fou d'abord. » /
+      « 2 liens à régler cette semaine. » / « Tes piliers se tiennent. »), puis des **pastilles** par état
+      (point + mot, jamais la couleur seule).
+- [ ] 3. Les liens sont rangés **garde-fou, à régler, ça tient, à découvrir** ; un garde-fou est
+      toujours en tête et jamais replié.
+- [ ] 4. Une carte **à régler** montre la paire (« MUSCU × COURSE »), l'état, la question, le verdict,
+      **deux chiffres** et le geste ; une carte **ça tient** tient sur une ligne ; une carte **à
+      découvrir** est en pointillé, dit ce qui manque et montre une jauge (« 2 sur 4 jours »), **jamais
+      un zéro**.
+- [ ] 5. Toucher une carte ouvre **la fiche** du lien (section C).
+- [ ] 6. 🔴 **Rien ne s'écrit sans la feuille** : sur la collision, le geste « Décaler » passe la carte à
+      « Prêt » **sans rien écrire** ; un second appui la retire. « Appliquer ce changement à mon plan »
+      ouvre la feuille, qui nomme le changement, le pilier, les écrans où ça se verra, et **le jour en
+      toutes lettres** (« dimanche », jamais « 2026-10-04 »). Confirmer déplace la séance ; la carte dit
+      « Appliqué ».
+- [ ] 7. Un geste qui **n'écrit rien** (« Des aliments pour combler », « Compléter mon journal »…) ouvre son
+      écran **tout de suite**, sans feuille.
+- [ ] 8. Couper le réseau puis confirmer une feuille : ça **s'écrit quand même** (hors ligne). Si une
+      erreur survient, elle **se voit** dans la feuille, qui reste ouverte.
+- [ ] 9. En bas : la **semaine réelle** (progression par pilier, grille des 7 jours), puis « Des liens
+      trouvés dans tes données, pas des preuves… ».
+- [ ] 10. Le lien des objectifs (« Tes objectifs tirent-ils dans le même sens ? »), avec une prise de
+      masse et une sèche déclarées : son geste ouvre le **Conseil des trois** ; choisir une issue l'écrit
+      comme depuis l'accueil.
+
+### B — La carte des disques, vue du dessus (Q6)
+
+- [ ] 11. Sur Croiser, la scène 3D est vue **du dessus** ; chaque zone où deux piliers se croisent porte
+      une **médaille** de l'état le plus pressant de ses liens.
+- [ ] 12. Toucher une médaille (ou sa zone) **filtre la liste** : bandeau « Muscu × Nutrition » et
+      « Tout voir », qui rend la liste entière. La zone touchée est mise en avant dans la scène.
+- [ ] 13. Passer sur **Composer** remet la scène **en perspective** (leviers, inchangés depuis LABO-01) ;
+      revenir sur Croiser la remet du dessus, sans filtre.
+- [ ] 14. Sur un appareil **sans WebGL** (ou en forçant le repli), le **repli 2D** montre les mêmes
+      médailles et le même filtre au toucher.
+
+### C — La fiche d'un lien (LABO-03)
+
+- [ ] 15. Haut de fiche : paire, **question**, état ; puis le verdict (deux phrases au plus, sans « tu
+      devrais ») et deux chiffres.
+- [ ] 16. Le **graphique sur huit semaines** a la forme de son lien : protéines × force en **deux
+      panneaux alignés** (jamais un double axe), ACWR avec la **zone saine** nommée, poids, jours actifs
+      par pilier, glucides jours durs / faciles, allure après jambes lourdes.
+- [ ] 17. Toucher une colonne **lit la semaine** au-dessus du dessin ; une semaine sans donnée dit
+      « pas de donnée », jamais « 0 ».
+- [ ] 18. « Ce que tes données croisent » : une ligne par mesure, avec valeur, note et état en mots.
+      **Aucune clé brute** (`lab.links…`) nulle part.
+- [ ] 19. « Manges-tu assez pour ta muscu ? » montre en plus, **entières**, les cartes venues de Stats
+      nutrition : « Manges-tu comme tu t'entraînes ? » (énergie et adhérence par type de jour, jours à
+      faible carburant, répartition des protéines) et le tableau charge ↔ apports sur 8 semaines (Q3).
+- [ ] 20. Les gestes disent chacun s'ils **écrivent** ou **ouvrent** ; celui qui écrit passe par la même
+      feuille qu'au point 6.
+- [ ] 21. **L'histoire du lien** : huit pastilles ; les semaines d'avant le 30/09/2026 sont des
+      **trous**, la semaine en cours porte l'état du jour. Revenir une semaine plus tard : la semaine
+      passée a **gardé** son état, même si les données ont changé depuis (Q5).
+- [ ] 22. Un lien **à découvrir** : ce qui manque et la jauge, **ni graphique ni histoire**.
+- [ ] 23. Retour : « Croiser » (ou « Apprendre » si l'on vient d'un suspect) ; sans écran précédent, le
+      retour mène au Labo.
+- [ ] 24. Suivi du cycle activé : l'écran Cycle ouvre la fiche « Ton cycle et tes piliers » (moyennes par
+      phase dès 3 cycles) ; l'ancien écran « Croisement » n'existe plus. Suivi désactivé : ni fiche ni
+      bouton (Q7).
+
+### D — Les échos (ECHO-01)
+
+- [ ] 25. Avec un lien **à régler** qui les concerne, une ligne « LIEN · … » apparaît dans Musculation ›
+      Progrès, Course › Courir et Nutrition › Aujourd'hui ; la toucher ouvre **la fiche de ce lien**.
+      Quand tout tient : **aucune ligne**.
+- [ ] 26. **Stats nutrition › Qualité** : les deux cartes croisées ont disparu ; à leur place, l'écho
+      d'un lien à régler, ou la ligne « Les analyses qui croisent tes piliers ont déménagé au Labo »
+      qui ouvre « Manges-tu assez pour ta muscu ? ».
+- [ ] 27. **Planning** : le bandeau de collision est **inchangé** (le garde-fou reste où l'on agit) et
+      gagne « Voir le lien au Labo ».
+- [ ] 28. **Accueil** : avec un lien à régler, le widget Insights dit « **Tes liens** », « Un garde-fou
+      d'abord » ou « N liens à régler cette semaine », « Le plus pressant : … » ; il ouvre le Labo. Sans
+      rien à régler, il montre les signaux d'Insights comme avant. Aucun widget de plus.
+- [ ] 29. **Insights** ne montre plus les alertes croisées (charge, surentraînement, forme du jour,
+      interférence, niveau d'activité, déficit × volume) : elles sont au Labo. Records, objectifs
+      atteints et intra-pilier sont toujours là (Q2).
+
+### E — Apprendre (LABO-04)
+
+- [ ] 30. Apprendre réunit, sous « Ton Labo apprend de toi. », les enquêtes (ex-Pourquoi ?) puis ce que
+      le Labo sait de toi et les expériences (ex-Acquis).
+- [ ] 31. Un suspect porte « Voir le lien : <question> » qui ouvre la fiche (retour « Apprendre ») ; avec
+      un pilier désactivé, le bouton n'apparaît pas pour un lien qui n'existe pas.
+- [ ] 32. Lancer une expérience : elle démarre **le lundi suivant** ; l'arrêter depuis Apprendre. 🔴 Une
+      expérience **terminée** (antidater son lundi de départ de 5 semaines dans le SQL Editor) est
+      close **automatiquement** à l'ouverture de l'app, avec son verdict ; ce verdict ne change plus
+      les jours suivants.
+
+### F — Le registre, la synchro et la décision H (LIENS-01)
+
+- [ ] 33. 🔴 Sur un **second appareil** (ou après réinstallation) connecté au même compte, l'histoire
+      des liens (item 21) est **la même** — c'est ce que la sync rule déployée garantit.
+- [ ] 34. **La même phrase partout** : la phrase courte d'un lien est identique sur sa carte, dans
+      l'écho du pilier et dans le widget ; le verdict de la carte est celui de la fiche.
+- [ ] 35. Protéines : **3 jours** saisis → « à découvrir » (« Tu en as 3 ») ; **4 jours** → jugé (le
+      même seuil que le verdict de la semaine en nutrition).
+- [ ] 36. Collision **aujourd'hui** (jambes hier, sortie de qualité ce jour) : le lien renvoie à
+      **Course › Courir** (l'adaptation de la séance du jour), pas au planning. Une séance **déjà
+      adaptée** n'est plus proposée à l'allègement.
+- [ ] 37. Période **« vie réelle »** active : le déficit × volume et le niveau d'activité ne sont **pas**
+      signalés.
+- [ ] 38. **Muscu seule** : seulement « Récupères-tu assez ? » et « Ta force suit-elle ton poids ? », et
+      **une** ligne « Avec d'autres piliers… » masquable d'une croix — masquée, elle ne revient plus,
+      même après relance. **Muscu + course** : la ligne parle de la nutrition. **Trois piliers** : pas de
+      ligne.
+- [ ] 39. **Compte neuf** : « Le Labo apprend à te connaître », tout est à découvrir sauf les objectifs,
+      chaque carte dit ce qui manque.
+
+### G — i18n et accessibilité
+
+- [ ] 40. En **anglais**, aucun libellé français ne subsiste (onglets, cartes, fiches, échos, widget,
+      feuilles) ; les jours et les nombres sont à l'anglaise.
+- [ ] 41. **TalkBack** annonce les onglets et leur état, chaque carte (question, état, phrase), les
+      médailles de zone, la lecture d'une semaine du graphique, et chaque pastille d'histoire
+      (« Semaine du 07/09 : garde-fou »).
+- [ ] 42. **Thème sombre** et **grandes polices** : cartes, fiche, graphique et échos restent lisibles ;
+      toutes les cibles font au moins 44 px.
+
+### H — Ce que la revue de code a corrigé (à vérifier sur téléphone)
+
+- [ ] 43. **Deux collisions** dans la semaine : régler la première, puis la seconde reste applicable
+      **sans redémarrer** l'app (elle ne s'affiche pas « Dans ton plan »). Même chose depuis la fiche.
+- [ ] 44. Forme du jour **« repos conseillé »** (au moins deux signaux au rouge) : « Récupères-tu assez ? »
+      passe **à régler**, avec « Ouvrir le planning » et « Noter ma nuit » ; il fait écho dans Course ›
+      Courir et Musculation › Progrès.
+- [ ] 45. **Muscu seule**, six jours d'entraînement d'affilée : le garde-fou de récupération apparaît
+      aussi dans **Musculation › Progrès**.
+- [ ] 46. **DOTS** sans record d'il y a 8 à 10 semaines : « Ta force suit-elle ton poids ? » dit qu'il
+      faut attendre, **jamais « 0 en huit semaines »**. Avec un record et une pesée de cette époque,
+      l'écart tient compte du poids d'alors.
+- [ ] 47. Les pastilles de l'histoire et des mesures croisées portent un **signe** (« ! », « ~ », « ✓ ») ;
+      la légende le dit.
+- [ ] 48. **Fiche du cycle** : une mesure pas encore lisible dit ce qui lui manque ; en **impérial**,
+      l'allure est au mile ; les calories disent « kcal ».
+- [ ] 49. **Supprimer toutes les données de cycle** (Réglages) : l'histoire du lien cycle disparaît aussi
+      (plus de fiche, rien sur le second appareil après synchro).
+- [ ] 50. **Course désactivée** mais objectif « marathon » resté dans le profil coureur : aucun conflit
+      d'objectifs, ni sur l'accueil ni au Labo (décision H).
+- [ ] 51. 🔴 **Appareil neuf ou réinstallation** : se connecter, et **avant** la fin de la première synchro,
+      ouvrir le Labo. Après synchro, l'histoire des liens est **la même** que sur l'autre appareil — elle
+      n'a pas été écrasée par des « à découvrir ».
+- [ ] 52. 🔴 **Performance** : pendant une séance de musculation, valider une dizaine de séries et laisser
+      tourner le repos. **Aucune latence perceptible** (le registre des liens se recalcule à chaque
+      série, à la racine de l'app). Si une latence se voit, le noter ici : la piste est de suspendre le
+      calcul pendant l'écran de séance.
+- [ ] 53. **Réglages SBD** : une ligne `user_settings.sbd_lifts` stockée en chaîne a été réparée sur le
+      cloud (migration `20260930201419`) — vérifier sur les deux comptes de recette que les mouvements
+      du total SBD sont toujours les bons dans Musculation › Progrès.
+
+⚠️ **Ce qui n'a pas été fait** (détail au dernier § de chaque spec) : aucune notification ne lit le
+registre ; « prévu vs fait » de la semaine passée n'est pas calculé (fiche du rythme) ; RN-17 (volume de
+course × déficit) reste non construit ; le planning n'a pas d'écho générique (seul le bandeau de
+collision mène au Labo) ; la ligne glucides de « Macros par kg » reste dans Nutrition ; les constats
+LABO-01 §4 bis n° 3 (assiette pleine sans protéines) et n° 5 (`loadRisk` muet en mono-pilier) restent
+ouverts ; **la scène n'a pas été essayée sur téléphone** pendant l'implémentation. À juger en recette :
+quand un lien est à régler, le widget de l'accueil montre « Tes liens » **à la place** des signaux
+d'Insights (records, objectifs atteints), et un conflit d'objectifs peut apparaître à la fois sur sa carte
+d'accueil et dans « Tes liens » ; un changement de compte **sans** purge de la base locale peut faire
+calculer un premier état sur les données du compte précédent (défaut antérieur, réduit par les gardes
+d'écriture).

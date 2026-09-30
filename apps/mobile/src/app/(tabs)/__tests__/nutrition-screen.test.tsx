@@ -206,6 +206,9 @@ jest.mock('@/components/nutrition/sections/ProgressSection', () => ({
   },
 }));
 
+// US ECHO-01 — l'écho du Labo tire le registre des liens (toute la chaîne des dépôts) : hors sujet
+// ici, il est couvert par `cross-link-echo.test.tsx`.
+jest.mock('@/components/lab/CrossLinkEcho', () => ({ CrossLinkEcho: () => null }));
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
   useLocalSearchParams: jest.fn(() => ({})),

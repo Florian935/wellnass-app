@@ -201,4 +201,18 @@ describe('deleteAllCycleData (R17)', () => {
     expect(rowsOf('menstrual_periods', true)).toHaveLength(1);
     expect(rowsOf('menstrual_daily_logs', true)).toHaveLength(1);
   });
+
+  it('🔴 emporte aussi l’histoire du lien « cycle » du Labo, et rien d’autre', async () => {
+    seed('cross_link_weeks', [
+      { user_id: 'user-1', link_id: 'cycle', week_start: dayKey(-7), state: 'holds' },
+      { user_id: 'user-1', link_id: 'sports', week_start: dayKey(-7), state: 'adjust' },
+    ]);
+
+    await deleteAllCycleData();
+
+    // Une semaine « cycle : ça tient » dit qu'un cycle était suivi — c'est la même donnée de santé.
+    const left = rowsOf<{ link_id: string }>('cross_link_weeks');
+    expect(left.map((r) => r.link_id)).toEqual(['sports']);
+    expect(rowsOf('cross_link_weeks', true)).toHaveLength(2);
+  });
 });

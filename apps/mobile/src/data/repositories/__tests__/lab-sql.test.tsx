@@ -31,10 +31,9 @@ import {
   hardDayCarbTarget,
   nextMondayKey,
   useLabComposer,
-  useLabKnowledge,
+  useLabCore,
   useLabObjective,
   useLabPillars,
-  useLabQuestions,
   useLabWeek,
 } from '../lab-repository';
 import { resetTestDb, seed, testPowerSync } from '@/test-utils/sqlite-harness';
@@ -459,48 +458,71 @@ describe('useLabPillars', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Les onglets « Pourquoi ? » et « Acquis »
+// Le cœur partagé (LABO-02) : semaine, enquêtes, acquis — une seule lecture
 // ---------------------------------------------------------------------------
 
-describe('useLabQuestions', () => {
+/**
+ * Avant LABO-02, l'écran montait `useLabQuestions` ET `useLabKnowledge`, qui lisaient chacun
+ * l'historique de 56 jours : deux fois les mêmes dix requêtes. `useLabCore` les lit une fois, et
+ * `CrossLinksProvider` le partage avec l'écran, les fiches et les échos.
+ */
+describe('useLabCore', () => {
   it('ne rend aucune question tant que l’historique charge — pas une liste vide trompeuse', async () => {
     m.strength.mockReturnValue({ lifts: [], history: [], isLoading: true });
 
-    const { result } = await renderHook(() => useLabQuestions());
+    const { result } = await renderHook(() => useLabCore());
 
-    expect(result.current).toEqual({ questions: [], isLoading: true });
+    expect(result.current.questions).toEqual([]);
+    expect(result.current.isLoading).toBe(true);
   });
 
-  it('rend une liste de questions une fois chargé', async () => {
-    const { result } = await renderHook(() => useLabQuestions());
+  it('ne rend aucune carte tant que les expériences chargent', async () => {
+    m.experiments.mockReturnValue({ experiments: [], isLoading: true });
+
+    const { result } = await renderHook(() => useLabCore());
+
+    expect(result.current.cards).toEqual([]);
+    expect(result.current.isLoading).toBe(true);
+  });
+
+  it('rend semaine, questions, cartes et expériences une fois chargé', async () => {
+    const { result } = await renderHook(() => useLabCore());
 
     expect(result.current.isLoading).toBe(false);
+    expect(result.current.weekStartKey).toBe(WEEK_START);
     expect(Array.isArray(result.current.questions)).toBe(true);
+    expect(Array.isArray(result.current.cards)).toBe(true);
+    expect(result.current.experiments).toEqual([]);
   });
 
   it('lit l’historique sur la fenêtre annoncée de huit semaines', async () => {
-    await renderHook(() => useLabQuestions());
+    await renderHook(() => useLabCore());
 
     expect(LAB_HISTORY_DAYS).toBe(56);
     expect(m.totals).toHaveBeenCalledWith('2026-07-22');
   });
-});
 
-describe('useLabKnowledge', () => {
-  it('ne rend aucune carte tant que ça charge', async () => {
-    m.experiments.mockReturnValue({ experiments: [], isLoading: true });
+  it('🔴 une expérience terminée porte son verdict FIGÉ, pas un verdict recalculé (LABO-04)', async () => {
+    const frozen = { status: 'effect', delta: -6, better: true, testCount: 2, usualCount: 2 };
+    m.experiments.mockReturnValue({
+      experiments: [
+        {
+          id: 'e-1',
+          kind: 'legs48h',
+          startKey: '2026-06-01',
+          schedule: ['test', 'usual', 'usual', 'test'],
+          status: 'finished',
+          frozenVerdict: frozen,
+        },
+      ],
+      isLoading: false,
+    });
 
-    const { result } = await renderHook(() => useLabKnowledge());
+    const { result } = await renderHook(() => useLabCore());
 
-    expect(result.current).toMatchObject({ cards: [], isLoading: true });
-  });
-
-  it('rend cartes et expériences une fois chargé', async () => {
-    const { result } = await renderHook(() => useLabKnowledge());
-
-    expect(result.current.isLoading).toBe(false);
-    expect(Array.isArray(result.current.cards)).toBe(true);
-    expect(result.current.experiments).toEqual([]);
+    // Recalculé aujourd'hui, le verdict d'une expérience de juin n'aurait plus aucune observation
+    // dans la fenêtre de 56 jours : il basculerait en « pas assez de données ».
+    expect(result.current.experiments[0]!.verdict).toEqual(frozen);
   });
 });
 

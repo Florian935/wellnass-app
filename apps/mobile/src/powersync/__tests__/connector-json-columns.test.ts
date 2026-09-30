@@ -103,4 +103,30 @@ describe('decodeJsonColumns', () => {
       }),
     ).toEqual({ body_training_state: { version: 1, priorities: ['arms'] } });
   });
+
+  // Revue du chantier Labo (30/09/2026) : quatre tables écrivaient du jsonb en TEXT sans être
+  // déclarées ici — le verdict figé d'une expérience (LABO-04) aurait été stocké en chaîne.
+  it('déplie le protocole et le verdict figé d’une expérience du Labo', () => {
+    expect(
+      decodeJsonColumns('lab_experiments', {
+        schedule: '["test","usual","usual","test"]',
+        verdict: '{"status":"effect","delta":-4,"better":true,"testCount":4,"usualCount":5}',
+        status: 'finished',
+      }),
+    ).toEqual({
+      schedule: ['test', 'usual', 'usual', 'test'],
+      verdict: { status: 'effect', delta: -4, better: true, testCount: 4, usualCount: 5 },
+      status: 'finished',
+    });
+  });
+
+  it('laisse un verdict figé à null (expérience close sans verdict)', () => {
+    expect(decodeJsonColumns('lab_experiments', { status: 'finished', verdict: null })).toEqual({ status: 'finished', verdict: null });
+  });
+
+  it('déplie le plan d’allure d’une séance, les charges SBD et les entrées d’un repas prévu', () => {
+    expect(decodeJsonColumns('sessions', { pacing_plan: '{"kind":"even"}' })).toEqual({ pacing_plan: { kind: 'even' } });
+    expect(decodeJsonColumns('user_settings', { sbd_lifts: '{"squat":"e-1"}' })).toEqual({ sbd_lifts: { squat: 'e-1' } });
+    expect(decodeJsonColumns('meal_plan_entries', { consumed_entry_ids: '["a","b"]' })).toEqual({ consumed_entry_ids: ['a', 'b'] });
+  });
 });

@@ -209,18 +209,27 @@ La revue de code d'avant commit a sorti 3 bloquants et 8 importants ; les bloqua
 importants sont corrigés (détail au [CHANGELOG](../../../../CHANGELOG.md)). Restent, à traiter
 après la recette :
 
-1. 🔴 **Un acquis peut se désapprendre.** Le verdict d'une expérience est recalculé à chaque rendu
-   depuis une fenêtre **glissante** de 56 jours ; une expérience en dure 28, donc 28 jours après son
-   verdict ses premières semaines sortent de la fenêtre et « vérifié » redevient « pas assez de
-   mesures ». Le corriger demande de **figer le verdict à la clôture** — ça touche le modèle.
-2. `useLabHistory()` est monté **deux fois** (questions + acquis) : ~24 abonnements SQL live au lieu
-   de ~12, sur l'écran qui porte aussi la WebView.
+1. ✅ ~~🔴 **Un acquis peut se désapprendre.**~~ Le verdict d'une expérience était recalculé à chaque
+   rendu depuis une fenêtre **glissante** de 56 jours ; une expérience en dure 28, donc 28 jours après
+   son verdict ses premières semaines sortaient de la fenêtre et « vérifié » redevenait « pas assez de
+   mesures ». **Soldé le 30/09/2026 par [LABO-04](labo04-apprendre.md)** : verdict figé à la clôture
+   (`lab_experiments.verdict`), clôture automatique dès la fin de la fenêtre.
+2. ✅ ~~`useLabHistory()` est monté **deux fois**~~ (questions + acquis). **Soldé le 30/09/2026 par
+   [LABO-02](labo02-croiser.md)** : `useLabCore()` lit l'historique une fois, et `CrossLinksProvider`
+   le partage avec l'écran, les fiches et les échos.
 3. Sans protéines saisies, l'assiette de la scène est servie **à 100 %** : « aucune donnée » et
    « cible atteinte » donnent la même image.
-4. L'allègement du Labo **écrase** un ralentissement d'allure déjà posé par CARDIO-UX01, sans que la
-   feuille l'annonce.
+4. ✅ ~~L'allègement du Labo **écrase** un ralentissement d'allure déjà posé par CARDIO-UX01~~, sans
+   que la feuille l'annonce. **Soldé le 30/09/2026 par [LIENS-01](liens01-registre-liens.md)** (R4) :
+   une séance déjà adaptée n'est plus proposée à l'allègement (`adapted`).
 5. La famille `loadRisk` est **morte pour un mono-pilier** : sa source n'émet un ratio que si muscu
    **et** course sont actifs, alors que R3 la présente comme générale.
+
+> **30/09/2026** — les onglets Semaine, Pourquoi ? et Acquis ont été remplacés par **Croiser** et
+> **Apprendre** (chantier « le Labo, carrefour des piliers » : [LIENS-01](liens01-registre-liens.md),
+> [LABO-02](labo02-croiser.md), [LABO-03](labo03-fiche-lien.md), [ECHO-01](echo01-echos-liens.md),
+> [LABO-04](labo04-apprendre.md)). Composer est inchangé. Les règles R1 à R9 de cette spec restent
+> valables ; la recette §66 se lit désormais sur ces onglets.
 
 ## 5. Ce que l'US ne livre pas
 

@@ -14,6 +14,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'expo-router';
+import { linkHref } from '@/components/lab/link-routes';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -173,10 +174,12 @@ function CycleScreenContent() {
             variant="ghost"
             onPress={() => void openDaySheet(todayKey)}
           />
+          {/* US ECHO-01 (décision Q7 du 30/09/2026) — le croisement du cycle avec les piliers vit
+              désormais au Labo, dans sa fiche : un seul endroit pour tous les liens. */}
           <Button
-            label={t('cycle.actions.insights')}
+            label={t('cycle.crossLab')}
             variant="ghost"
-            onPress={() => router.push('/cycle/insights')}
+            onPress={() => router.push(linkHref('cycle'))}
           />
         </View>
 

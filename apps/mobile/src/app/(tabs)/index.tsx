@@ -67,6 +67,7 @@ import { useGoals } from '@/data/repositories/goal-repository';
 import { saveWellbeing } from '@/data/repositories/daily-wellbeing-repository';
 import { useActivationPath } from '@/data/repositories/activation-path-repository';
 import { useInsights } from '@/data/repositories/insights-repository';
+import { usePressingLink } from '@/data/repositories/cross-links-repository';
 import { InsightsProvider } from '@/data/repositories/insights-context';
 import { startRealLifePeriod, useRealLifeState } from '@/data/repositories/real-life-repository';
 import { useSyncRefresh } from '@/hooks/useSyncRefresh';
@@ -101,7 +102,9 @@ export default function HomeScreen() {
   // US INSIGHTS-01 : la porte d'entrée de l'écran « Insights ». Calculée **une seule fois** ici,
   // puis diffusée au widget via `InsightsProvider` (voir `insights-context.tsx`).
   const insightsValue = useInsights();
-  const insightsActive = insightsValue.insights.length > 0;
+  // US ECHO-01 — le widget dit aussi « Tes liens » : un lien à régler suffit à l'afficher.
+  const pressingLink = usePressingLink();
+  const insightsActive = insightsValue.insights.length > 0 || pressingLink.link !== null;
   const isWidgetActive = (id: WidgetId) => {
     if (id === 'activation-path') return activationPathActive;
     if (id === 'insights') return insightsActive;

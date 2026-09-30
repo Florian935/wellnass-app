@@ -18,7 +18,7 @@ import { useEffect, useRef } from 'react';
 import type { DOMProps } from 'expo/dom';
 
 import { createLabScene } from './engine';
-import type { LabSceneState, ScenePillar } from './scene-state';
+import { sceneZonePair, type LabSceneState, type ScenePillar, type SceneZone } from './scene-state';
 
 export type LabScene3DStatus = { ok: boolean; reason?: string; quality?: string };
 
@@ -27,6 +27,8 @@ type Props = {
   /** Fond de la scène : le dégradé des piliers, poussé par l'app (thème). */
   background: string;
   onPick: (pillar: ScenePillar | null) => Promise<void>;
+  /** US LABO-02 — une médaille de zone touchée (vue du dessus), ou le vide (`null`). */
+  onPickZone?: (zone: SceneZone | null) => Promise<void>;
   onStatus: (status: LabScene3DStatus) => Promise<void>;
   onLand: () => Promise<void>;
   dom?: DOMProps;
@@ -41,12 +43,14 @@ type SceneHandle = {
   setLabels: (labels: Record<string, unknown>) => void;
   select: (pillar: string | null) => void;
   focus: (pillars: string[] | null) => void;
+  setView: (view: 'orbit' | 'top') => void;
+  setZones: (zones: { zone: SceneZone; kind: 'syn' | 'tension' | 'guard'; pair: [ScenePillar, ScenePillar] }[], selected: SceneZone | null) => void;
   setReducedMotion: (reduced: boolean) => void;
   quality: () => string;
   dispose: () => void;
 };
 
-export default function LabScene3D({ state, background, onPick, onStatus, onLand }: Props) {
+export default function LabScene3D({ state, background, onPick, onPickZone, onStatus, onLand }: Props) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const sceneRef = useRef<SceneHandle | null>(null);
 
@@ -74,6 +78,7 @@ export default function LabScene3D({ state, background, onPick, onStatus, onLand
         reducedMotion: state.reducedMotion,
         labels: state.labels,
         onPick: (pillar: ScenePillar | null) => { void onPick(pillar); },
+        onPickZone: (zone: SceneZone | null) => { if (onPickZone) void onPickZone(zone); },
         onEvent: (type: string, info: { ghost: boolean }) => { if (type === 'land' && !info.ghost) void onLand(); },
         onLost: () => { void onStatus({ ok: false, reason: 'lost' }); },
       }) as SceneHandle & { ok: boolean; reason?: string };
@@ -114,7 +119,16 @@ export default function LabScene3D({ state, background, onPick, onStatus, onLand
     scene.setMode(state.mode);
     scene.setValues(state.values);
     if (state.reality !== null) scene.setReality(state.reality);
+    // Les médailles de paires d'abord, celles des zones ensuite : en vue du dessus, les premières
+    // sont vides et les secondes prennent leur place (LABO-02).
+    scene.setView(state.view);
     scene.setCrossings(state.crossings);
+    scene.setZones(
+      state.zones
+        .filter((z): z is typeof z & { kind: 'syn' | 'tension' | 'guard' } => z.kind !== 'discover')
+        .map((z) => ({ zone: z.zone, kind: z.kind, pair: sceneZonePair(z.zone, state.pillars) })),
+      state.zoneSelected,
+    );
     scene.select(state.selected);
     scene.focus(state.focus);
     scene.setReducedMotion(state.reducedMotion);

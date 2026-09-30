@@ -191,6 +191,22 @@ describe('buildLabWeek — les propositions', () => {
     expect(kinds(input({ conflicts: [conflict()], activePillars: ['strength', 'nutrition'] }))).toEqual([]);
   });
 
+  it('LIENS-01 — une collision dont la course est aujourd’hui renvoie à la séance du jour, sans la déplacer', () => {
+    // Un seul remède par situation : ce matin, c'est l'adaptation du jour (RUN-F4) qui règle la
+    // course d'après des jambes lourdes. Le Labo ne propose plus en même temps de la déplacer.
+    const [p] = buildLabWeek(input({ conflicts: [conflict({ runSessionId: 'today', runDayKey: TUE, strengthDayKey: MON })] })).proposals;
+    expect(p).toMatchObject({ kind: 'collision', action: { type: 'open', target: 'runningToday' } });
+  });
+
+  it('LIENS-01 — une séance déjà adaptée ne reçoit pas une seconde adaptation', () => {
+    const adapted = session({ id: 'run-tue', dayKey: TUE, pillar: 'running', sessionType: 'fractionne', adapted: true });
+    const load = buildLabWeek(input({ sessions: [adapted], acwr: { ratio: 1.42, zone: 'risk', showAlert: true } })).proposals;
+    // Le garde-fou reste (jamais masqué) ; son geste renvoie à la séance du jour.
+    expect(load[0]).toMatchObject({ kind: 'loadRisk', safety: true, action: { type: 'open', target: 'runningToday' } });
+    // La nuit courte ne propose pas d'alléger une séance déjà allégée.
+    expect(kinds(input({ sessions: [adapted], nights: [{ dayKey: TUE, sleepMinutes: 300 }] }))).toEqual([]);
+  });
+
   it('nuit courte + séance intense aujourd’hui : allège la séance', () => {
     const intense = session({ id: 'run-tue', dayKey: TUE, pillar: 'running', sessionType: 'fractionne', name: '6×800 m' });
     const short = [{ dayKey: TUE, sleepMinutes: SHORT_NIGHT_MINUTES - 10 }];
@@ -205,8 +221,15 @@ describe('buildLabWeek — les propositions', () => {
     expect(kinds(input({ sessions: [intense], nights: [{ dayKey: TUE, sleepMinutes: SHORT_NIGHT_MINUTES }] }))).toEqual([]);
   });
 
-  it('MN-06 : protéines sous la cible sur au moins deux jours, avec l’écart en grammes', () => {
-    const low = [{ dayKey: MON, proteinG: 124.2 }, { dayKey: TUE, proteinG: 108.6 }];
+  it('MN-06 : protéines sous la cible sur au moins quatre jours (LIENS-01), avec l’écart en grammes', () => {
+    // LIENS-01 : le seuil est celui du verdict nutrition (`MIN_LOGGED_DAYS`, 4), plus 2.
+    expect(LAB_MIN_PROTEIN_DAYS).toBe(4);
+    const low = [
+      { dayKey: MON, proteinG: 124.2 },
+      { dayKey: TUE, proteinG: 108.6 },
+      { dayKey: WED, proteinG: 116.4 },
+      { dayKey: THU, proteinG: 116.4 },
+    ];
     const [p] = buildLabWeek(input({ proteinByDay: low })).proposals;
     expect(p).toMatchObject({ kind: 'protein', pair: ['nutrition', 'strength'], values: { gPerKg: 1.5, targetMin: 1.8, missingG: 23 }, action: { type: 'open', target: 'foodSuggestion' } });
     expect(buildLabWeek(input({ proteinByDay: low, activePillars: ['running', 'nutrition'] })).proposals[0]!.pair).toEqual(['nutrition', 'running']);
@@ -222,7 +245,8 @@ describe('buildLabWeek — les propositions', () => {
     const carbs = { gPerKg: 3.1, target: { min: 5, max: 7 }, status: 'low' as const };
     const hard = session({ id: 'long', dayKey: SAT, pillar: 'running', sessionType: 'sortie_longue' });
     const [p] = buildLabWeek(input({ carbs, sessions: [hard, session({ id: 'past', dayKey: MON, pillar: 'running', sessionType: 'fractionne' })] })).proposals;
-    expect(p).toMatchObject({ kind: 'carbs', tone: 'info', values: { gPerKg: 3.1, targetMin: 5, hardSessions: 1 }, action: { type: 'open', target: 'nutritionStats' } });
+    // LIENS-01 : le geste mène au réservoir de glucides (Nutrition › Aujourd'hui), plus aux Stats.
+    expect(p).toMatchObject({ kind: 'carbs', tone: 'info', values: { gPerKg: 3.1, targetMin: 5, hardSessions: 1 }, action: { type: 'open', target: 'nutritionToday' } });
     expect(kinds(input({ carbs }))).toEqual([]);
     expect(kinds(input({ carbs: { ...carbs, status: 'in' }, sessions: [hard] }))).toEqual([]);
     expect(kinds(input({ carbs: null, sessions: [hard] }))).toEqual([]);

@@ -26,6 +26,26 @@ export type ScenePillar = 'muscu' | 'course' | 'nutrition' | 'socle';
 
 export type SceneCrossing = { kind: 'syn' | 'tension' | 'guard'; pair: [ScenePillar, ScenePillar] };
 
+/**
+ * Les zones de croisement, vues du dessus (onglet Croiser) : là où deux disques se chevauchent, et
+ * le centre — les trois piliers ensemble, ou « tes piliers × tes nuits » quand moins de trois
+ * piliers sont actifs.
+ */
+export type SceneZone = 'mc' | 'mn' | 'cn' | 'centre';
+
+/** `orbit` : la scène qu'on fait tourner (semaine, formule, enquête, acquis). `top` : vue du dessus. */
+export type SceneView = 'orbit' | 'top';
+
+/** L'état d'un lien, tel que le registre des liens le donne. */
+export type SceneLinkState = 'guard' | 'adjust' | 'holds' | 'discover';
+
+/**
+ * La médaille d'une zone. `discover` n'a pas de médaille en 3D (rien n'est encore établi : poser un
+ * métal ferait croire à un verdict) ; le repli 2D la dessine en pointillé.
+ * `label` : libellé d'accessibilité **déjà traduit** par l'appelant — la scène ne traduit rien.
+ */
+export type SceneZoneMedal = { zone: SceneZone; kind: SceneCrossing['kind'] | 'discover'; label: string };
+
 export type SceneLabels = {
   brand: string;
   plate: string;
@@ -54,6 +74,10 @@ export type LabSceneState = {
   selected: ScenePillar | null;
   labels: SceneLabels;
   reducedMotion: boolean;
+  view: SceneView;
+  /** Les médailles par zone de la vue du dessus ; vide en orbite. */
+  zones: SceneZoneMedal[];
+  zoneSelected: SceneZone | null;
 };
 
 const PILLAR_TO_SCENE: Record<LabPillar, ScenePillar> = {
@@ -81,6 +105,11 @@ const pillarsOf = (active: readonly Pillar[]) => ({
   course: active.includes('running'),
   nutrition: active.includes('nutrition'),
 });
+
+/** La vue par défaut : on tourne autour, sans zones. Un objet neuf à chaque appel (pas de tableau partagé). */
+function orbitView(): Pick<LabSceneState, 'view' | 'zones' | 'zoneSelected'> {
+  return { view: 'orbit', zones: [], zoneSelected: null };
+}
 
 /** Les doses « nutrition » de la scène : elles dessinent l'assiette et la portion. */
 function dishValues(objective: NutritionObjective, proteinGPerKg: number) {
@@ -149,6 +178,7 @@ export function labSceneFromWeek(input: {
     selected: input.selected,
     labels: input.labels,
     reducedMotion: input.reducedMotion,
+    ...orbitView(),
   };
 }
 
@@ -180,6 +210,7 @@ export function labSceneFromComposer(input: {
     selected: input.selected,
     labels: input.labels,
     reducedMotion: input.reducedMotion,
+    ...orbitView(),
   };
 }
 
@@ -197,4 +228,59 @@ export function labSceneWithQuestion(base: LabSceneState, question: LabQuestion 
 export function labSceneWithKnowledge(base: LabSceneState, cards: readonly LabKnowledgeCard[]): LabSceneState {
   const known = cards.filter((c) => c.status === 'verified' || c.status === 'solid' || c.status === 'probable');
   return { ...base, crossings: crossingsOf(known.map((c) => ({ kind: 'syn' as const, pair: c.pair }))), focus: null };
+}
+
+/** L'état d'un lien → la médaille qui le dit. « À régler » est une tension, « ça tient » une synergie. */
+const LINK_TO_MEDAL: Record<SceneLinkState, SceneZoneMedal['kind']> = {
+  guard: 'guard',
+  adjust: 'tension',
+  holds: 'syn',
+  discover: 'discover',
+};
+
+/** Du plus grave au plus neutre : c'est le pire état d'une zone qui porte sa médaille. */
+const LINK_RANK: Record<SceneLinkState, number> = { guard: 0, adjust: 1, holds: 2, discover: 3 };
+
+/**
+ * L'onglet Croiser : la même scène, **vue du dessus**, où chaque zone de croisement porte une
+ * médaille à l'état de son lien.
+ *
+ * Les médailles par paire de l'orbite (`crossings`) sont vidées : les zones les remplacent, et deux
+ * jeux de médailles superposés ne se liraient plus. Le focus aussi : c'est la vue du dessus qui cadre.
+ *
+ * Une zone reçue deux fois ne pose qu'**une** médaille, celle de son pire état — deux médailles au
+ * même endroit se chevaucheraient, et un garde-fou ne doit jamais disparaître sous un « ça tient ».
+ */
+export function labSceneWithZones(
+  base: LabSceneState,
+  zones: readonly { zone: SceneZone; state: SceneLinkState; label: string }[],
+  selected: SceneZone | null,
+): LabSceneState {
+  const worst = new Map<SceneZone, { zone: SceneZone; state: SceneLinkState; label: string }>();
+  for (const z of zones) {
+    const current = worst.get(z.zone);
+    if (current === undefined || LINK_RANK[z.state] < LINK_RANK[current.state]) worst.set(z.zone, z);
+  }
+  return {
+    ...base,
+    view: 'top',
+    zones: [...worst.values()].map((z) => ({ zone: z.zone, kind: LINK_TO_MEDAL[z.state], label: z.label })),
+    zoneSelected: selected,
+    crossings: [],
+    focus: null,
+  };
+}
+
+/**
+ * Les couleurs du ruban d'une médaille de zone : les deux piliers qui s'y croisent.
+ * Le centre porte l'or du socle quand les trois piliers sont là (« tes trois piliers ensemble ») ;
+ * sinon ce sont tes piliers actifs, ou ton pilier et tes nuits s'il n'en reste qu'un.
+ */
+export function sceneZonePair(zone: SceneZone, pillars: LabSceneState['pillars']): [ScenePillar, ScenePillar] {
+  if (zone === 'mc') return ['muscu', 'course'];
+  if (zone === 'mn') return ['muscu', 'nutrition'];
+  if (zone === 'cn') return ['course', 'nutrition'];
+  const on = (['muscu', 'course', 'nutrition'] as const).filter((p) => pillars[p]);
+  if (on.length === 3 || on.length === 0) return ['socle', 'socle'];
+  return on.length === 2 ? [on[0]!, on[1]!] : [on[0]!, 'socle'];
 }

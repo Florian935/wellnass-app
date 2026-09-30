@@ -1,4 +1,4 @@
-# État du projet — 26/09/2026
+# État du projet — 30/09/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 255 livré · 4 partiel · 2 à faire (sur 267)
+**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 260 livré · 4 partiel · 2 à faire (sur 272)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -37,6 +37,7 @@ avant de pouvoir publier.
 | **DEPENSE-00** — La cible calorique qui suit les dépenses réelles (fin du double comptage) | `recette` | `dev` | [4.43] |
 | **DEPENSE-01** — Le moteur de dépense énergétique (muscu, course, activité) | `recette` | `dev` | [4.41] |
 | **DOUL-01** — Journal des zones douloureuses — déclaration, historique et signal factuel | `recette` | `feature/doul01-journal-zones-douloureuses` | [1.29] |
+| **ECHO-01** — Les échos des liens — ce que les piliers gardent d'un croisement | `recette` | `feature/labo-carrefour` | [7.40] |
 | **EFFORT-01** — Les meilleurs efforts d'une sortie, et les médailles posées sur la carte | `recette` | `dev` | [5.43] |
 | **EXEC-01** — Écart entre le prévu et le réalisé — lot d'analyses d'exécution muscu | `recette` | `feature/exec01-prevu-vs-realise` | [3.58] |
 | **FANT-01** — Le Fantôme — courir contre soi-même sur le même parcours | `recette` | `dev` | [5.41] |
@@ -48,8 +49,12 @@ avant de pouvoir publier.
 | **INSIGHTS-01** — Écran « Insights » — moteur de sélection des analyses pertinentes (Tier 3) | `recette` | `feature/insights01-ecran-insights` | [7.20] |
 | **INSIGHTS-02** — Dégonflage du Tier 0 — ramener l'accueil au plafond d'ADR-007 | `recette` | `feature/insights02-degonflage-tier0` | [7.21] |
 | **LABO-01** — Le Labo — là où tes piliers se croisent | `recette` | `dev` | [7.30] |
+| **LABO-02** — Le Labo › Croiser — tous tes liens, à un seul endroit | `recette` | `feature/labo-carrefour` | [7.38] |
+| **LABO-03** — La fiche d'un lien — tout ce que le Labo sait d'une question | `recette` | `feature/labo-carrefour` | [7.39] |
+| **LABO-04** — Le Labo › Apprendre — enquêtes, expériences, et un verdict qui ne se désapprend pas | `recette` | `feature/labo-carrefour` | [7.41] |
 | **LAUNCHER-01** — Widget écran d'accueil Android | `recette` | `feature/launcher01-widget-ecran-accueil` | [7.19] |
 | **LETTRE-01** — Lettre à ton futur toi — un message écrit en fixant un objectif, rouvert à l'échéance | `recette` | `dev` | [7.32] |
+| **LIENS-01** — Le registre des liens — un lien, une question, un calcul, une phrase | `recette` | `feature/labo-carrefour` | [7.37] |
 | **MESUR-01** — Mensurations corporelles | `recette` | `feature/mesur01-mensurations` | [3.51] |
 | **META-19** — Garde-fou surentraînement (ACWR combiné) | `recette` | `feature/meta19-acwr-garde-fou` | — |
 | **MN-04** — Macros ajustées jours muscu (glucides péri-séance) | `recette` | `feature/mn04-glucides-peri-seance` | — |
@@ -107,7 +112,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **86 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, CARDIO-UX02, CARDIO-UX03, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LAUNCHER-01, LETTRE-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX07, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, NUTRI-UX03, OBJ-01, PARTAGE-01, PARTAGE-02, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **91 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, CARDIO-UX02, CARDIO-UX03, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, ECHO-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LABO-02, LABO-03, LABO-04, LAUNCHER-01, LETTRE-01, LIENS-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX07, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, NUTRI-UX03, OBJ-01, PARTAGE-01, PARTAGE-02, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -129,10 +134,10 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `fix/cardio-ux03-bouton-programme` (modifications non commitées) |
-| Commits | 1347 · `main` a **1344** commits de retard sur `dev` |
-| Specs d'US | 176 au total — 89 clôturées, 87 en cours |
-| Migrations | 110/110 poussées sur le cloud |
+| Branche courante | `feature/labo-carrefour` (modifications non commitées) |
+| Commits | 1348 · `main` a **1345** commits de retard sur `dev` |
+| Specs d'US | 181 au total — 89 clôturées, 92 en cours |
+| Migrations | 112/112 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -141,11 +146,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `dd388cc`  fix(cardio): CARDIO-UX03, « Choisir un programme » tient sur une ligne
 - `1cf7ef2`  feat(nutrition): NUTRI-UX03, le hub Nutrition en trois onglets — Aujourd'hui, Historique, Progrès
 - `fbf078d`  feat(cardio): CARDIO-UX03, le hub Course en trois onglets — Courir, Historique, Progrès
 - `20a4055`  feat(nutrition): NUTRI-UX03, le socle du hub en trois onglets — briques, requêtes, journal sorti de l'écran
 - `1584e8d`  docs(nutrition): NUTRI-UX03 cadrée — le hub Nutrition en trois onglets
-- `daef357`  feat(cardio): CARDIO-UX03, l'écran de départ nommé et le vrai détail d'une sortie
 
 ---
 

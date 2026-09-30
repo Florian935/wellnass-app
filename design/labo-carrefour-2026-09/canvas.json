@@ -1,0 +1,320 @@
+{
+ "v": 3,
+ "createdOnFiles": {
+  "v": 1,
+  "at": "2026-09-26T20:30:00Z"
+ },
+ "title": "Labo — le carrefour des piliers",
+ "launch": {
+  "view": "canvas"
+ },
+ "pages": [],
+ "boards": {
+  "Constat.dc.html": {
+   "x": 0,
+   "y": 0,
+   "w": 1440,
+   "h": 2330,
+   "title": "Le constat : ce que l’app croise déjà, et où"
+  },
+  "P1Carte.dc.html": {
+   "x": 0,
+   "y": 2730,
+   "w": 390,
+   "h": 844,
+   "title": "Piste A · La carte des disques"
+  },
+  "P2Fil.dc.html": {
+   "x": 470,
+   "y": 2730,
+   "w": 390,
+   "h": 844,
+   "title": "Piste B · Le fil des liens"
+  },
+  "P3Tableau.dc.html": {
+   "x": 940,
+   "y": 2730,
+   "w": 390,
+   "h": 844,
+   "title": "Piste C · Le tableau croisé"
+  },
+  "P4Semaine.dc.html": {
+   "x": 1410,
+   "y": 2730,
+   "w": 390,
+   "h": 844,
+   "title": "Piste D · La semaine tressée"
+  },
+  "P5Questions.dc.html": {
+   "x": 1880,
+   "y": 2730,
+   "w": 390,
+   "h": 844,
+   "title": "Piste E · Les grandes questions"
+  },
+  "Tour1Grille.dc.html": {
+   "x": 2350,
+   "y": 2730,
+   "w": 1400,
+   "h": 1180,
+   "title": "Tour 1 · la grille des cinq pistes"
+  },
+  "Tour2Archi.dc.html": {
+   "x": 0,
+   "y": 4310,
+   "w": 1440,
+   "h": 1330,
+   "title": "Tour 2 · trois découpages du Labo"
+  },
+  "Anatomie.dc.html": {
+   "x": 1520,
+   "y": 4310,
+   "w": 1300,
+   "h": 1010,
+   "title": "Tour 2 · la carte d’un lien, pièce par pièce"
+  },
+  "Main.dc.html": {
+   "x": 0,
+   "y": 6040,
+   "w": 390,
+   "h": 928,
+   "title": "Prototype jouable · le Labo, carrefour des piliers",
+   "is_interactive": true
+  },
+  "L1Croiser.dc.html": {
+   "x": 470,
+   "y": 6040,
+   "w": 390,
+   "h": 2900,
+   "title": "Croiser · tout l’onglet, 3 piliers, semaine chargée",
+   "is_interactive": true
+  },
+  "L2Zone.dc.html": {
+   "x": 940,
+   "y": 6040,
+   "w": 390,
+   "h": 1300,
+   "title": "Croiser · une zone touchée : Muscu × Nutrition",
+   "is_interactive": true
+  },
+  "L3FicheMN.dc.html": {
+   "x": 1410,
+   "y": 6040,
+   "w": 390,
+   "h": 2080,
+   "title": "Fiche · Manges-tu assez pour ta muscu ?",
+   "is_interactive": true
+  },
+  "L4FicheMC.dc.html": {
+   "x": 1880,
+   "y": 6040,
+   "w": 390,
+   "h": 1980,
+   "title": "Fiche · Tes deux sports se gênent-ils ?",
+   "is_interactive": true
+  },
+  "L5FicheRec.dc.html": {
+   "x": 2350,
+   "y": 6040,
+   "w": 390,
+   "h": 1980,
+   "title": "Fiche · Récupères-tu assez ? (garde-fou)",
+   "is_interactive": true
+  },
+  "L12FicheReg.dc.html": {
+   "x": 2820,
+   "y": 6040,
+   "w": 390,
+   "h": 1750,
+   "title": "Fiche · Tiens-tu le rythme partout ?",
+   "is_interactive": true
+  },
+  "L6Feuille.dc.html": {
+   "x": 3290,
+   "y": 6040,
+   "w": 390,
+   "h": 844,
+   "title": "La feuille « ce qui change dans ton plan »",
+   "is_interactive": true
+  },
+  "L7GardeFou.dc.html": {
+   "x": 3760,
+   "y": 6040,
+   "w": 390,
+   "h": 1000,
+   "title": "Croiser · un garde-fou passe devant",
+   "is_interactive": true
+  },
+  "L8DeuxPiliers.dc.html": {
+   "x": 4230,
+   "y": 6040,
+   "w": 390,
+   "h": 1940,
+   "title": "Croiser · Muscu + Course, sans nutrition",
+   "is_interactive": true
+  },
+  "L9Mono.dc.html": {
+   "x": 4700,
+   "y": 6040,
+   "w": 390,
+   "h": 1480,
+   "title": "Croiser · Muscu seule",
+   "is_interactive": true
+  },
+  "L10Neuf.dc.html": {
+   "x": 5170,
+   "y": 6040,
+   "w": 390,
+   "h": 2360,
+   "title": "Croiser · compte neuf, les liens à découvrir",
+   "is_interactive": true
+  },
+  "L11Apprendre.dc.html": {
+   "x": 5640,
+   "y": 6040,
+   "w": 390,
+   "h": 1860,
+   "title": "Apprendre · enquêtes, expérience, acquis",
+   "is_interactive": true
+  },
+  "E1Muscu.dc.html": {
+   "x": 0,
+   "y": 9340,
+   "w": 390,
+   "h": 844,
+   "title": "Écho · hub Musculation › Progrès"
+  },
+  "E2Nutrition.dc.html": {
+   "x": 470,
+   "y": 9340,
+   "w": 390,
+   "h": 844,
+   "title": "Écho · hub Nutrition › Aujourd’hui (la mécanique reste)"
+  },
+  "E3Accueil.dc.html": {
+   "x": 940,
+   "y": 9340,
+   "w": 390,
+   "h": 844,
+   "title": "Accueil · le widget « Tes liens »"
+  },
+  "E4Planning.dc.html": {
+   "x": 1410,
+   "y": 9340,
+   "w": 390,
+   "h": 844,
+   "title": "Planning · le garde-fou reste en place"
+  },
+  "Doctrine.dc.html": {
+   "x": 0,
+   "y": 10584,
+   "w": 1440,
+   "h": 3500,
+   "title": "Tour 3 · doctrine, feuille de route, décisions"
+  }
+ },
+ "order": [
+  "Constat.dc.html",
+  "P1Carte.dc.html",
+  "P2Fil.dc.html",
+  "P3Tableau.dc.html",
+  "P4Semaine.dc.html",
+  "P5Questions.dc.html",
+  "Tour1Grille.dc.html",
+  "Tour2Archi.dc.html",
+  "Anatomie.dc.html",
+  "Main.dc.html",
+  "L1Croiser.dc.html",
+  "L2Zone.dc.html",
+  "L3FicheMN.dc.html",
+  "L4FicheMC.dc.html",
+  "L5FicheRec.dc.html",
+  "L12FicheReg.dc.html",
+  "L6Feuille.dc.html",
+  "L7GardeFou.dc.html",
+  "L8DeuxPiliers.dc.html",
+  "L9Mono.dc.html",
+  "L10Neuf.dc.html",
+  "L11Apprendre.dc.html",
+  "E1Muscu.dc.html",
+  "E2Nutrition.dc.html",
+  "E3Accueil.dc.html",
+  "E4Planning.dc.html",
+  "Doctrine.dc.html"
+ ],
+ "notes": {
+  "t1": {
+   "x": 0,
+   "y": -260,
+   "text": "1 · Le constat",
+   "kind": "title1",
+   "maxW": 1440
+  },
+  "t2": {
+   "x": 0,
+   "y": 2470,
+   "text": "2 · Tour 1 — cinq façons de tout montrer au même endroit",
+   "kind": "title1",
+   "maxW": 3750
+  },
+  "t3": {
+   "x": 0,
+   "y": 4050,
+   "text": "3 · Tour 2 — où le mettre dans le Labo, et comment le lire",
+   "kind": "title1",
+   "maxW": 2820
+  },
+  "t4": {
+   "x": 0,
+   "y": 5780,
+   "text": "4 · Tour 3 — la proposition, jouable",
+   "kind": "title1",
+   "maxW": 6030
+  },
+  "t5": {
+   "x": 0,
+   "y": 9080,
+   "text": "5 · Ce qui reste dans les piliers : les échos",
+   "kind": "title1",
+   "maxW": 2280
+  },
+  "t6": {
+   "x": 0,
+   "y": 10324,
+   "text": "6 · Doctrine, feuille de route, décisions",
+   "kind": "title1",
+   "maxW": 1440
+  },
+  "lire": {
+   "x": 1520,
+   "y": 0,
+   "w": 440,
+   "fill": "orange",
+   "size": "l",
+   "text": "À LIRE D’ABORD\n\nLa proposition en une phrase : le Labo devient la maison de tous les croisements. Trois onglets, Croiser · Composer · Apprendre. Chaque lien a une fiche, et les piliers n’en gardent qu’un écho.\n\nLa toile raconte les trois tours : le constat, cinq pistes notées, la convergence, puis la proposition jouable.\n\nPour jouer : rangée 4, le premier écran (bouton Jouer). Les décisions à prendre sont en bas, rangée 6 (Q1 à Q8)."
+  },
+  "jouer": {
+   "x": 0,
+   "y": 7028,
+   "w": 390,
+   "fill": "blue",
+   "text": "MODE D’EMPLOI\n\n· En haut, la bande SIMULER : les piliers actifs (3, 2 ou 1) et la situation (semaine chargée, garde-fou, tout tient, compte neuf).\n· Touche une médaille sur la carte : la liste se filtre sur cette zone.\n· Ouvre un lien : ses deux chiffres, son graphique (touche une semaine), ses mesures, son geste.\n· Prépare un ou deux gestes, puis « Appliquer » : la feuille dit ce qui change avant d’écrire.\n· Onglet Apprendre : chaque suspect ouvre la fiche de son lien."
+  },
+  "echos": {
+   "x": 1880,
+   "y": 9340,
+   "w": 420,
+   "fill": "green",
+   "text": "LA RÈGLE DES ÉCHOS\n\nDeux piliers pour exister ? L’analyse vit au Labo. Le pilier n’en garde qu’une ligne, et seulement s’il est concerné.\n\nDeux exceptions, qui ne bougent pas :\n· les mécaniques qui changent un chiffre du jour (bonus de séance, dépense comptée dans la cible, réservoir) ;\n· les garde-fous, qui restent entiers là où l’on agit."
+  },
+  "suite": {
+   "x": 1520,
+   "y": 10584,
+   "w": 440,
+   "fill": "green",
+   "size": "l",
+   "text": "CE QUE J’ATTENDS DE TOI\n\nTes réponses aux huit questions Q1 à Q8 (une recommandation sous chacune).\n\nEnsuite : ouvrir LIENS-01 avec /us, le registre des liens, avant le Play Store. Il corrige des contradictions déjà visibles (6 seuils de déficit, 2 remèdes aux jambes lourdes), quelle que soit la forme finale du Labo."
+  }
+ },
+ "designSystems": []
+}

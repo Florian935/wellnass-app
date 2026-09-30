@@ -93,6 +93,16 @@ export type LabExperimentRecord = {
    * garderait son modèle réservé à vie et on ne pourrait refaire un essai qu'une seule fois.
    */
   status: 'running' | 'finished' | 'stopped';
+  /**
+   * US LABO-04 — le verdict **figé à la clôture**, `null` tant que l'expérience n'est pas close (ou
+   * pour une ligne close avant LABO-04).
+   *
+   * 🔴 Sans lui, le verdict était recalculé à chaque rendu depuis une fenêtre glissante de 56 jours ;
+   * une expérience en dure 28 : vingt-huit jours après son verdict, ses premières semaines sortaient
+   * de la fenêtre et « vérifié » redevenait « pas assez de mesures » (constat LABO-01 §4 bis-1).
+   * Un acquis ne se désapprend pas parce que le temps passe.
+   */
+  frozenVerdict?: LabVerdict | null;
 };
 
 export type LabExperimentProgress = {
@@ -144,6 +154,8 @@ export function experimentVerdict(input: {
 }): LabVerdict {
   const { record } = input;
   if (record.status === 'stopped') return { status: 'stopped' };
+  // LABO-04 : une expérience close rend le verdict figé à sa clôture, plus jamais recalculé.
+  if (record.status === 'finished' && record.frozenVerdict) return record.frozenVerdict;
   const progress = experimentProgress(record, input.todayKey);
   if (!progress.finished) return { status: 'sealed', endKey: progress.endKey };
 
@@ -171,6 +183,15 @@ export function experimentVerdict(input: {
     testCount: test.length,
     usualCount: usual.length,
   };
+}
+
+/**
+ * US LABO-04 — faut-il clore l'expérience et figer son verdict ? Oui dès que ses quatre semaines
+ * sont passées alors que la ligne est encore `running` : l'écran la clôt en écrivant le verdict du
+ * moment, et c'est celui-là qui restera.
+ */
+export function shouldFreezeExperiment(record: LabExperimentRecord, todayKey: string): boolean {
+  return record.status === 'running' && experimentProgress(record, todayKey).finished;
 }
 
 /**

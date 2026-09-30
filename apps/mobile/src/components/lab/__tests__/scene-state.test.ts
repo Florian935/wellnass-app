@@ -31,7 +31,9 @@ import {
   labSceneFromWeek,
   labSceneWithKnowledge,
   labSceneWithQuestion,
+  labSceneWithZones,
   nightMark,
+  sceneZonePair,
   sceneCrossing,
   scenePillar,
   type SceneLabels,
@@ -71,6 +73,8 @@ const semaine = (over: Partial<LabWeek> = {}): LabWeek => ({
   },
   proposals: [],
   ...over,
+  // La liste entière suit la liste affichée, sauf si le test en fournit une autre.
+  allProposals: over.allProposals ?? over.proposals ?? [],
 });
 
 const depuisSemaine = (week: LabWeek, resolved: string[] = []) =>
@@ -347,5 +351,61 @@ describe('frontière du composant DOM', () => {
     // Une fonction ou un `undefined` traverse la frontière WebView sans erreur… et sans valeur :
     // la scène afficherait alors un état muet, impossible à diagnostiquer.
     expect(JSON.parse(JSON.stringify(state))).toEqual(state);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// LABO-02 — la vue du dessus de l'onglet Croiser
+// ---------------------------------------------------------------------------
+
+describe('vue du dessus (onglet Croiser)', () => {
+  it('les scènes d’orbite restent en orbite, sans zone', () => {
+    const scene = depuisSemaine(semaine());
+    expect(scene.view).toBe('orbit');
+    expect(scene.zones).toEqual([]);
+    expect(scene.zoneSelected).toBeNull();
+  });
+
+  it('pose une médaille par zone à l’état de son lien, et vide les médailles de paires', () => {
+    const base = depuisSemaine(semaine({ proposals: [proposition()] }));
+    const scene = labSceneWithZones(
+      base,
+      [
+        { zone: 'mc', state: 'adjust', label: 'Muscu × Course : à régler' },
+        { zone: 'mn', state: 'guard', label: 'Muscu × Nutrition : garde-fou' },
+        { zone: 'cn', state: 'holds', label: 'Course × Nutrition : ça tient' },
+        { zone: 'centre', state: 'discover', label: 'Tes piliers : à découvrir' },
+      ],
+      'mn',
+    );
+    expect(scene.view).toBe('top');
+    expect(scene.crossings).toEqual([]);
+    expect(scene.focus).toBeNull();
+    expect(scene.zoneSelected).toBe('mn');
+    expect(scene.zones.map((z) => [z.zone, z.kind])).toEqual([
+      ['mc', 'tension'],
+      ['mn', 'guard'],
+      ['cn', 'syn'],
+      ['centre', 'discover'],
+    ]);
+  });
+
+  it('une zone reçue deux fois garde son pire état : un garde-fou ne disparaît pas sous un « ça tient »', () => {
+    const scene = labSceneWithZones(
+      depuisSemaine(semaine()),
+      [
+        { zone: 'centre', state: 'holds', label: 'a' },
+        { zone: 'centre', state: 'guard', label: 'b' },
+      ],
+      null,
+    );
+    expect(scene.zones).toEqual([{ zone: 'centre', kind: 'guard', label: 'b' }]);
+  });
+
+  it('le ruban du centre prend l’or du socle avec trois piliers, sinon les piliers présents', () => {
+    expect(sceneZonePair('mc', { muscu: true, course: true, nutrition: true })).toEqual(['muscu', 'course']);
+    expect(sceneZonePair('centre', { muscu: true, course: true, nutrition: true })).toEqual(['socle', 'socle']);
+    expect(sceneZonePair('centre', { muscu: true, course: true, nutrition: false })).toEqual(['muscu', 'course']);
+    expect(sceneZonePair('centre', { muscu: true, course: false, nutrition: false })).toEqual(['muscu', 'socle']);
   });
 });

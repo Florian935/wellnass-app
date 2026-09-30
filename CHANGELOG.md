@@ -10,6 +10,117 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 30/09/2026 — Le Labo, carrefour des piliers : registre des liens, Croiser, fiche d'un lien, échos, Apprendre (`feature/labo-carrefour`)
+
+> Cinq US livrées **en une vague** sur demande explicite de Florian (« GO tu fais TOUT d'une seule
+> vague d'implémentation ») : **LIENS-01** (7.37), **LABO-02** (7.38), **LABO-03** (7.39), **ECHO-01**
+> (7.40), **LABO-04** (7.41). Point de départ : l'idée de Florian du 26/09 (« avoir à un seul endroit
+> le visuel de toutes les données croisées — le Labo serait propice »), explorée sur une toile Design
+> en trois tours (https://claude.ai/artifact/JGyxPAdghwAxwHTyBZWwgz, `design/labo-carrefour-2026-09/`),
+> puis tranchée par ses décisions **Q1 à Q8** le 30/09. Les cinq US passent en recette : RECETTES §89
+> (53 critères). Commit précédent sur `dev` : `dd388ccd`.
+
+### Ajouté
+- **Registre des liens** (`packages/shared/src/cross-links.ts`, LIENS-01) : neuf liens formulés comme
+  des questions (`sports`, `fuelStrength`, `fuelRunning`, `recovery`, `weight`, `goals`, `rhythm`,
+  `strengthWeight`, `cycle`), quatre états rangés par priorité (garde-fou, à régler, ça tient, à
+  découvrir), un seuil par question (le plus prudent : protéines jugées à 4 jours saisis partout), une
+  phrase (clés + valeurs brutes), des gestes (proposition du Labo, ouverture d'écran, Conseil des
+  trois), les écrans d'écho, un graphique sur huit semaines. Il **n'invente aucune analyse** : il lit
+  COLLIS-01, MN-02/06, FUEL-01, META-19, GARDE-01, APPORT-01, GUID-01, BILAN-01, MUSC-27, CYCLE-01…
+  Décision H : un pilier désactivé ne produit aucun lien. Séries sur huit fenêtres
+  (`buildCrossLinkSeries`), `SUSPECT_LINK`, `learningAssociations`, `dotsEightWeekDelta`.
+- **Histoire figée des liens** (décision Q5) : table `cross_link_weeks`, un état par lien et par
+  semaine, écrit pour la semaine **en cours** seulement ; identifiant **déterministe**
+  (`stableUuid`, cyrb128 v8), **ni index unique ni CHECK** — deux appareils écrivent la même ligne,
+  jamais un rejet d'upload.
+- **Onglet Croiser** (LABO-02, Q1) : le Labo passe à Croiser · Composer · Apprendre ; titre et onglets
+  dans la scène ; `?section=` résolu pendant le rendu ; liens rangés par état (`LabCrossPanel`,
+  `CrossLinkCard`, `LinkLens`), semaine réelle (`LabWeekOverview`), ligne masquable des piliers
+  inactifs (Q4, `lab-other-pillars-store`). **Vue du dessus** de la même scène 3D, médailles de zone,
+  sélection par projection écran, repli 2D avec le même geste (Q6 : `scene-state.ts`, `engine.js`,
+  `LabScene3D.dom.tsx`, `LabScene2D.tsx`, `LabStage.tsx`).
+- **Fiche d'un lien** `app/lab-link.tsx` (LABO-03) : verdict, deux chiffres, graphique
+  `CrossLinkChart` (sept formes, jamais de double axe, repère nommé, trou ≠ zéro, lecture au toucher),
+  mesures croisées, gestes (feuille « ce qui change » pour ce qui écrit), histoire figée avec un signe
+  par état, échos, source ; détail APPORT-01 / MN-03 sur « Manges-tu assez pour ta muscu ? » ; détail
+  par phase sur la fiche du cycle (Q7).
+- **Échos** (ECHO-01) : `CrossLinkEcho` dans Musculation › Progrès, Course › Courir, Nutrition ›
+  Aujourd'hui, Stats nutrition (ligne « déménagé ») ; « Voir le lien au Labo » sur le bandeau de
+  collision du planning ; widget Insights de l'accueil qui dit d'abord « Tes liens ».
+- **Apprendre** (LABO-04) : Pourquoi ? et Acquis réunis ; chaque suspect ouvre sa fiche
+  (`from=learn`) ; **verdict d'expérience figé** à la clôture (`lab_experiments.verdict`), clôture
+  automatique dès la fin de la fenêtre.
+- `data/goal-conflict-resolution.ts` : les deux issues du Conseil, partagées par l'accueil, le Labo et
+  la fiche. `link-format.ts` (mise en mots unique : une clé de jour n'est jamais affichée brute),
+  `link-routes.ts`.
+- **Migrations poussées** : `20260930135304_labo_carrefour_liens` (table + colonne), et
+  `20260930201419_reparer_jsonb_en_chaine` (voir Corrigé). Types régénérés, schéma PowerSync, export
+  RGPD, sync rule documentée.
+
+### Modifié
+- `lab-week.ts` : une collision **du jour** renvoie à Course › Courir (un seul remède) ; une séance
+  déjà adaptée n'est plus ré-allégée (`adapted`, lu dans `planned-session-repository`) ; glucides →
+  Nutrition › Aujourd'hui ; `LabWeek.allProposals` (liste non plafonnée, lue par le registre).
+- `lab-repository.ts` : `useLabCore` lit l'historique **une fois** (il était monté deux fois) ;
+  `CrossLinksProvider` le partage à la racine (`_layout.tsx`).
+- Insights garde l'intra-pilier et les célébrations (Q2) : `useInsights` ne monte plus les six hooks
+  croisés ; `LAB_OWNED_INSIGHTS`, destinations `lab-link` (`widget-destinations.ts`).
+- Stats nutrition › Qualité : les deux cartes croisées déménagent dans la fiche (Q3).
+- Écran Cycle : le croisement ouvre la fiche du Labo.
+- **ADR-007 amendé** : niveau « Labo », la maison des lectures croisées (une fiche par question, neuf
+  au plus, un écho ailleurs, garde-fous et mécaniques restent où l'on agit).
+- **Catalogue** : 9 statuts réconciliés (5 ✅, 4 🟡), méthode et restes listés en tête.
+- LABO-01 : constats §4 bis n° 1, 2 et 4 soldés.
+
+### Corrigé — la revue de code avant commit (1 bloquant, 14 importants)
+- 🔴 **Bloquant — cinq colonnes jsonb partaient en chaînes vers Postgres** : `lab_experiments.verdict`
+  (neuve) et quatre colonnes **antérieures au chantier** (`lab_experiments.schedule`,
+  `sessions.pacing_plan`, `user_settings.sbd_lifts`, `meal_plan_entries.consumed_entry_ids`),
+  absentes de `JSON_COLUMNS` du connecteur. Connecteur corrigé + tests ; migration de réparation
+  (déballe les chaînes, tolère l'illisible, idempotente) : **1 ligne réelle réparée**
+  (`user_settings.sbd_lifts`).
+- **Écritures de fond** (`useCrossLinksWrites`) : rien avant la première synchro (`hasSynced`) ni avant
+  le chargement complet (`writeReady` : profils, vie réelle, cycle, activités, règles rejetées,
+  réglages présents) ; **déclenchement par front** (`crossLinkWeekWrites(…, previous)`) contre le
+  ping-pong entre deux appareils ; ligne existante mise à jour quel que soit son identifiant ; échec
+  tracé (`console.warn`).
+- 🔴 Régression : « Prêt » / « Dans ton plan » mémorisés **par proposition** (et non par lien) — la 2ᵉ
+  collision de la semaine restait bloquée jusqu'au redémarrage.
+- Propositions tronquées à cinq qui faussaient l'état du carburant ; forme du jour « repos » qui ne
+  remontait plus nulle part ; écart DOTS « 0 » inventé et calculé au poids du jour ; décision H non
+  tenue sur le conflit d'objectifs (Labo **et** carte d'accueil) ; échecs du Conseil avalés ; garde-fou
+  de récupération sans écho côté muscu ; échos déclarés sur des écrans où ils n'existent pas ;
+  « supprimer mes données de cycle » qui laissait l'histoire du lien cycle ; fiche cycle qui perdait
+  « ce qui manque » et les unités ; états dits par la couleur seule ; trous affichés comme « ça
+  tient » ou « 0 + 0 min » ; « Tout voir » à 36 pt ; toucher du vide perdu en repli 2D.
+
+### Supprimé
+- `LabWeekPanel.tsx` (devenu `LabWeekOverview`), `app/cycle/insights.tsx` (+ smoke), `DayBalanceCard`
+  et `WhatIfCard` (+ test) — codées, montées nulle part ; 28 clés i18n orphelines par langue.
+
+### Technique / Notes
+- **Vérifié** : typecheck 3 workspaces à 0, lint à 0, `agents:check` OK, **8 926 tests verts** (587
+  admin + 4 715 mobile + 3 624 shared). Nouveaux tests : `cross-links.test.ts` (48),
+  `cross-links-writes.test.tsx` (11), `link-texts-coverage.test.ts` (🔴 chaque texte que le registre
+  peut produire existe en FR **et** EN — plus de 150 clés dynamiques qu'aucun test de parité ne voyait),
+  `lab-link-screen.test.tsx` (18), `cross-link-chart.test.tsx` (11), `cross-link-echo.test.tsx` (5),
+  `lab-screen.test.tsx` réécrit (35), `connector-json-columns` (+3), `menstrual-cycle-sql` (+1),
+  `lab-experiment-write` (+2), `lab-sql` (`useLabCore`, verdict figé).
+- ⚠️ **Sync rule à déployer À LA MAIN** (`cross_link_weeks`) avant la recette — prérequis de §89.
+- ⚠️ **À mesurer sur téléphone** (§89, item 52) : le fournisseur de liens est monté à la racine et se
+  recalcule à chaque donnée saisie, séance comprise. Piste si latence : suspendre le calcul pendant
+  l'écran de séance.
+- ⚠️ **Restent ouverts, assumés** : aucune notification ne lit le registre ; « prévu vs fait » de la
+  semaine passée non calculé ; RN-17 (volume réel × déficit) non construit ; pas d'écho générique au
+  planning ; la ligne glucides de « Macros par kg » reste dans Nutrition ; graphique « jambes →
+  allure » en min/km ; le widget d'accueil montre « Tes liens » **à la place** des signaux d'Insights
+  quand un lien est à régler ; un changement de compte sans purge peut faire calculer un premier état
+  sur les données du compte précédent (défaut antérieur, réduit par les gardes) ; constats LABO-01
+  §4 bis n° 3 et 5.
+- Fins de ligne : des fichiers réécrits en CRLF sous Windows cassaient la lecture du front-matter par
+  `scripts/etat.mjs` ; tous remis en LF (`.gitattributes` impose LF dans le dépôt).
+
 ## 26/09/2026 — CARDIO-UX03, passe 1 de recette : « Choisir un programme » tient sur une ligne (`fix/cardio-ux03-bouton-programme`)
 
 > Retour de Florian sur device, capture à l'appui : en premiers pas, le bouton « Choisir un

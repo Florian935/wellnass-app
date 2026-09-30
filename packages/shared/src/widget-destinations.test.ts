@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { INSIGHT_ORDER } from './insights';
+import { CROSS_LINK_IDS, CROSS_LINKS } from './cross-links';
+import { INSIGHT_ORDER, LAB_OWNED_INSIGHTS } from './insights';
 import {
   CONDITIONAL_BY_NATURE,
   HOME_WIDGET_IDS_V1,
@@ -80,7 +81,42 @@ describe('cartes d’insight — réservées aux signaux conditionnels par natur
     const permanents = HOME_WIDGET_IDS_V1.filter((id) => !CONDITIONAL_BY_NATURE.includes(id));
     for (const id of permanents) {
       expect(WIDGET_DESTINATIONS[id].kind).not.toBe('alert-insight');
+      expect(WIDGET_DESTINATIONS[id].kind).not.toBe('lab-link');
     }
+  });
+});
+
+describe('fiches du Labo — US LIENS-01, les alertes croisées cédées par Insights', () => {
+  const labLinks = HOME_WIDGET_IDS_V1.flatMap((id) => {
+    const dest = WIDGET_DESTINATIONS[id];
+    return dest.kind === 'lab-link' ? [{ widget: id, ...dest }] : [];
+  });
+
+  it('range les six alertes conditionnelles dans une fiche du Labo', () => {
+    expect(labLinks.map((l) => l.widget).sort()).toEqual([...CONDITIONAL_BY_NATURE].sort());
+  });
+
+  it('pointe des fiches qui existent dans le registre des liens', () => {
+    for (const l of labLinks) expect(CROSS_LINK_IDS as readonly string[]).toContain(l.id);
+  });
+
+  it('garde la trace de la carte d’insight d’avant, et c’est exactement ce qu’Insights a cédé', () => {
+    for (const l of labLinks) expect(INSIGHT_ORDER as readonly string[]).toContain(l.insight);
+    expect(labLinks.map((l) => l.insight).sort()).toEqual([...LAB_OWNED_INSIGHTS].sort());
+  });
+
+  it('n’envoie aucune alerte vers une fiche qui ne dit pas l’accueillir', () => {
+    // Le lien doit déclarer l'analyse d'origine dans sa liste : une fiche qui reçoit une alerte sans
+    // la connaître la perdrait à la prochaine réécriture.
+    const analysesOf: Record<string, string> = {
+      'deficit-volume': 'MN-02',
+      'training-load': 'META-19',
+      'overtraining-guard': 'GARDE-01',
+      'activity-level-suggestion': 'RN-03',
+      'concurrent-training-interference': 'MR-08',
+      readiness: 'TRI-03',
+    };
+    for (const l of labLinks) expect(CROSS_LINKS[l.id].analyses).toContain(analysesOf[l.widget]);
   });
 });
 

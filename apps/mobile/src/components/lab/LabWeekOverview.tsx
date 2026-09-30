@@ -1,32 +1,20 @@
 /**
- * US LABO-01 — onglet « Semaine » : où tu en es, ta semaine jour par jour, et ce que le Labo propose.
+ * US LABO-02 — la semaine réelle, pilier par pilier : où tu en es, et les sept jours.
  *
- * Chaque proposition porte **le chiffre qui la justifie** et **un geste**. Un geste qui touche le
- * plan ne s'applique pas au tap : il se met « prêt », et la feuille « ce qui change dans ton plan »
- * demande confirmation (R4 — rien n'est appliqué sans toi). Un geste qui ouvre un écran n'écrit
- * rien, donc il part tout de suite.
+ * Extraite de l'ancien onglet « Semaine » (LABO-01) quand l'onglet Croiser l'a absorbé : ses
+ * propositions sont devenues les gestes des liens (une proposition = un lien à régler), la semaine
+ * elle-même reste — c'est le réel sur lequel tout le reste s'appuie (LABO-01 R2).
  */
 
-import { Ionicons } from '@expo/vector-icons';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { GOOD_NIGHT_MINUTES, type LabProposal, type LabWeek } from '@wellness/shared';
+import { GOOD_NIGHT_MINUTES, type LabWeek } from '@wellness/shared';
 
-import { Lens } from './Lens';
 import { dayMonth, formatDecimal, formatMinutes, weekdayInitial, weekdayName } from './lab-format';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-type Props = {
-  week: LabWeek;
-  /** Propositions mises « prêtes », en attente de la feuille. */
-  staged: readonly string[];
-  /** Propositions déjà appliquées au plan. */
-  applied: readonly string[];
-  onStage: (proposal: LabProposal) => void;
-  onUnstage: (id: string) => void;
-  onOpen: (proposal: LabProposal) => void;
-};
+type Props = { week: LabWeek };
 
 /** Une barre de progression sobre : la part faite, sur la part prévue. */
 function Bar({ value, tone }: { value: number; tone: string }) {
@@ -38,24 +26,14 @@ function Bar({ value, tone }: { value: number; tone: string }) {
   );
 }
 
-export function LabWeekPanel({ week, staged, applied, onStage, onUnstage, onOpen }: Props) {
+export function LabWeekOverview({ week }: Props) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const locale = i18n.language;
-
-  const open = week.proposals.filter((p) => !staged.includes(p.id) && !applied.includes(p.id));
-  const lead =
-    open.length > 0
-      ? t('lab.week.lead', { count: open.length })
-      : staged.length > 0
-        ? t('lab.week.leadReady')
-        : t('lab.week.leadClear');
-
   const { strength, running, nutrition, sleep } = week.progress;
 
   return (
-    <View style={styles.panel}>
-      <Text style={[styles.lead, { color: colors.text }]}>{lead}</Text>
+    <View style={styles.panel} testID="lab-week-overview">
 
       {/* Où tu en es */}
       <View style={styles.section}>
@@ -179,75 +157,12 @@ export function LabWeekPanel({ week, staged, applied, onStage, onUnstage, onOpen
         </View>
       </View>
 
-      {/* Ce que le Labo propose */}
-      <View style={styles.section}>
-        <View style={styles.sectionHead}>
-          <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>{t('lab.week.proposals')}</Text>
-          <Text style={[styles.sectionMeta, { color: colors.textMuted }]}>
-            {open.length > 0 ? t('lab.week.toFix', { count: open.length }) : t('lab.week.allClear')}
-          </Text>
-        </View>
-
-        {week.proposals.length === 0 ? (
-          <Text style={[styles.empty, { color: colors.textMuted }]}>{t('lab.week.empty')}</Text>
-        ) : (
-          week.proposals.map((proposal) => {
-            const isStaged = staged.includes(proposal.id);
-            const isApplied = applied.includes(proposal.id);
-            const tone = proposal.tone === 'guard' ? colors.danger : proposal.tone === 'warn' ? colors.warnText : colors.textMuted;
-            return (
-              <View
-                key={proposal.id}
-                testID={`lab-proposal-${proposal.kind}`}
-                style={[styles.proposal, { backgroundColor: colors.surface, borderColor: isStaged ? colors.success : colors.border }]}
-              >
-                <View style={styles.proposalHead}>
-                  <Lens pair={proposal.pair} />
-                  <Text style={[styles.proposalTitle, { color: colors.text }]}>
-                    {t(`lab.proposals.${proposal.kind}.title`, proposal.values)}
-                  </Text>
-                  <Text style={[styles.proposalKind, { color: tone }]}>{t(`lab.proposals.${proposal.kind}.kind`)}</Text>
-                </View>
-                <Text style={[styles.proposalText, { color: colors.textMuted }]}>
-                  {isStaged || isApplied
-                    ? t(`lab.proposals.${proposal.kind}.done`, proposal.values)
-                    : t(`lab.proposals.${proposal.kind}.text`, proposal.values)}
-                </Text>
-
-                {isApplied ? (
-                  <View style={styles.proposalFoot}>
-                    <Ionicons name="checkmark" size={16} color={colors.success} />
-                    <Text style={[styles.state, { color: colors.success }]}>{t('lab.week.applied')}</Text>
-                  </View>
-                ) : isStaged ? (
-                  <View style={styles.proposalFoot}>
-                    <Ionicons name="checkmark" size={16} color={colors.success} />
-                    <Text style={[styles.state, { color: colors.success }]}>{t('lab.week.staged')}</Text>
-                    <Pressable accessibilityRole="button" onPress={() => onUnstage(proposal.id)} hitSlop={8}>
-                      <Text style={[styles.link, { color: colors.textMuted }]}>{t('lab.week.remove')}</Text>
-                    </Pressable>
-                  </View>
-                ) : (
-                  <Pressable
-                    accessibilityRole="button"
-                    onPress={() => (proposal.action.type === 'open' ? onOpen(proposal) : onStage(proposal))}
-                    style={[styles.action, { borderColor: colors.text }]}
-                  >
-                    <Text style={[styles.actionLabel, { color: colors.text }]}>{t(`lab.proposals.${proposal.kind}.action`, proposal.values)}</Text>
-                  </Pressable>
-                )}
-              </View>
-            );
-          })
-        )}
-      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   panel: { gap: 20 },
-  lead: { fontFamily: fontFamily.displayBold, fontSize: 19, lineHeight: 24 },
   section: { gap: 10 },
   sectionHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 },
   sectionTitle: { fontFamily: fontFamily.mono, fontSize: 10.5, letterSpacing: 1.2, textTransform: 'uppercase' },
@@ -267,15 +182,4 @@ const styles = StyleSheet.create({
   cell: { minHeight: 26, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2 },
   cellText: { fontFamily: fontFamily.monoBold, fontSize: 8.5 },
   gridNight: { fontFamily: fontFamily.mono, fontSize: 8.5, textAlign: 'center' },
-  empty: { fontFamily: fontFamily.body, fontSize: 13 },
-  proposal: { borderRadius: 18, borderWidth: 1, padding: 14, gap: 6 },
-  proposalHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 10 },
-  proposalTitle: { flex: 1, fontFamily: fontFamily.bodyBold, fontSize: 14.5, lineHeight: 19 },
-  proposalKind: { fontFamily: fontFamily.mono, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase' },
-  proposalText: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
-  proposalFoot: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  state: { fontFamily: fontFamily.bodySemi, fontSize: 12.5 },
-  link: { fontFamily: fontFamily.body, fontSize: 12.5, textDecorationLine: 'underline' },
-  action: { alignSelf: 'flex-start', minHeight: 40, justifyContent: 'center', paddingHorizontal: 14, borderRadius: 12, borderWidth: 1.5 },
-  actionLabel: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
 });

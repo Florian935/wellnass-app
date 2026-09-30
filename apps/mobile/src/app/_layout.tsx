@@ -35,6 +35,7 @@ import { useHomeWidgetRefresh } from '@/widgets/useHomeWidgetRefresh';
 import { useHealthConnectImports } from '@/hooks/useHealthConnectImports';
 import { useAuthDeepLink } from '@/hooks/useAuthDeepLink';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
+import { CrossLinksProvider } from '@/data/repositories/cross-links-repository';
 import { useAuthStore } from '@/stores/auth-store';
 import { useMenuAccent } from '@/stores/menu-accent-store';
 import { useMotionPreference } from '@/stores/motion-store';
@@ -275,6 +276,9 @@ function RootNavigator() {
   return (
     <ThemeProvider value={theme}>
       <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+      {/* US LIENS-01 — le registre des liens, calculé une fois pour toute l'app (Labo, fiches, échos
+          des piliers, widget de l'accueil). À la racine : les fiches et le planning sont hors onglets. */}
+      <CrossLinksProvider>
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(onboarding)" />
@@ -504,7 +508,7 @@ function RootNavigator() {
         {/* US INSIGHTS-01 — écran « Insights » (Tier 3, ADR-007). Ouvert depuis le widget
             d'accueil. ⚠️ Sans cette déclaration, l'écran s'afficherait sans en-tête et son titre
             se dessinerait sous la barre d'état — défaut invisible au typecheck comme aux tests
-            (leçon PAS-01, corrigée le 30/07/2026). Distinct de `cycle/insights` (CYCLE-01). */}
+            (leçon PAS-01, corrigée le 30/07/2026). L'ancien `cycle/insights` (CYCLE-01) est devenu une fiche du Labo (ECHO-01). */}
         <Stack.Screen
           name="insights"
           options={{
@@ -638,6 +642,8 @@ function RootNavigator() {
             dans ce fichier — d'où le test `route-declarations.test.ts`, qui compare désormais le
             contenu de `src/app` à cette liste. */}
         <Stack.Screen name="cycle" options={{ headerShown: false }} />
+        {/* US LABO-03 — la fiche d'un lien du Labo (`/lab-link?id=…`), son propre en-tête (scène). */}
+        <Stack.Screen name="lab-link" options={{ headerShown: false }} />
         {/* Modèles de séance libre : pile propre (`templates/_layout.tsx`), déclarée ici pour que
             l'invariant « une route = une ligne » reste vérifiable. */}
         <Stack.Screen name="templates" options={{ headerShown: false }} />
@@ -659,6 +665,7 @@ function RootNavigator() {
         <Stack.Screen name="workout" options={{ headerShown: false, gestureEnabled: false }} />
         <Stack.Screen name="workout-summary" options={{ headerShown: false, gestureEnabled: false }} />
       </Stack>
+      </CrossLinksProvider>
     </ThemeProvider>
   );
 }

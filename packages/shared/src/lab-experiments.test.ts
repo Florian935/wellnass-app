@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { addDays, localDateFromDayKey, localDayKey } from './date';
 import {
+  shouldFreezeExperiment,
   LAB_ASSOCIATION_MIN_CASES,
   LAB_EXPERIMENT_TEMPLATES,
   LAB_MIN_OBSERVATIONS_PER_ARM,
@@ -179,5 +180,32 @@ describe('buildLabKnowledge', () => {
     expect(knowledge({ activePillars: ['running', 'nutrition'], carbsHardMinGPerKg: null }).map((c) => c.kind)).toEqual(['shortNightPace']);
     expect(knowledge({ activePillars: ['running', 'nutrition'], weightKg: null }).map((c) => c.kind)).toEqual(['shortNightPace']);
     expect(knowledge({ activePillars: ['strength', 'nutrition'] })).toEqual([]);
+  });
+});
+
+describe('LABO-04 — le verdict figé à la clôture', () => {
+  const frozen = { status: 'effect' as const, delta: -4, better: true, testCount: 4, usualCount: 5 };
+
+  it('une expérience close rend son verdict figé, même quand la fenêtre a glissé', () => {
+    // Plus aucune observation dans la fenêtre : sans verdict figé, on retomberait sur « pas assez ».
+    const verdict = experimentVerdict({
+      record: record({ status: 'finished', frozenVerdict: frozen }),
+      todayKey: day(90),
+      observations: [],
+      adherence: [true, true, true, true],
+    });
+    expect(verdict).toEqual(frozen);
+  });
+
+  it('sans verdict figé (ligne close avant LABO-04), on recalcule comme avant', () => {
+    const verdict = experimentVerdict({ record: record({ status: 'finished' }), todayKey: day(90), observations: [], adherence: [true, true, true, true] });
+    expect(verdict.status).toBe('insufficient');
+  });
+
+  it('il faut figer dès que les quatre semaines sont passées, pas avant, et une seule fois', () => {
+    expect(shouldFreezeExperiment(record(), day(10))).toBe(false);
+    expect(shouldFreezeExperiment(record(), day(28))).toBe(true);
+    expect(shouldFreezeExperiment(record({ status: 'finished' }), day(28))).toBe(false);
+    expect(shouldFreezeExperiment(record({ status: 'stopped' }), day(28))).toBe(false);
   });
 });

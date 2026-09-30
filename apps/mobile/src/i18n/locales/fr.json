@@ -1510,6 +1510,14 @@
       "planning": "Voir mon planning",
       "empty": "Rien de prévu cette semaine.",
       "nothingElse": "Rien d’autre cette semaine."
+    },
+    "links": {
+      "overline": "Tes liens",
+      "titleGuard": "Un garde-fou d’abord",
+      "title_one": "Un lien à régler cette semaine",
+      "title_other": "{{count}} liens à régler cette semaine",
+      "lead": "Le plus pressant : {{short}}",
+      "cta": "Ouvrir le Labo"
     }
   },
   "activationPath": {
@@ -2995,7 +3003,8 @@
     "increaseMinute": "Cinq minutes de plus",
     "startToday": "Aujourd’hui",
     "startNextMonday": "Lundi prochain",
-    "startsOn": "Début le {{date}}"
+    "startsOn": "Début le {{date}}",
+    "seeLink": "Voir le lien au Labo"
   },
   "notifications": {
     "streakDanger": {
@@ -3480,8 +3489,7 @@
     "actions": {
       "startPeriod": "Début des règles aujourd'hui",
       "endPeriod": "Fin des règles aujourd'hui",
-      "logDay": "Noter le jour",
-      "insights": "Croisement avec mes piliers"
+      "logDay": "Noter le jour"
     },
     "history": {
       "title": "Périodes enregistrées",
@@ -3523,12 +3531,6 @@
       "deleteMessage": "Toutes tes périodes et tes journaux quotidiens seront supprimés. Cette action est définitive."
     },
     "insights": {
-      "title": "Croisement",
-      "subtitle": "Ta phase × tes données Wellness",
-      "lead": "Des observations, pas des conseils. Moyennes par phase, avec le nombre de cycles réellement observés.",
-      "pending": "en attente",
-      "availableCycles_one": "disponible · {{count}} cycle",
-      "availableCycles_other": "disponible · {{count}} cycles",
       "missingSamples_one": "Encore {{count}} jour à enregistrer en phase {{phase}}.",
       "missingSamples_other": "Encore {{count}} jours à enregistrer en phase {{phase}}.",
       "missingCycles_one": "Encore {{count}} cycle complet.",
@@ -3541,7 +3543,8 @@
         "calories": "Apport calorique",
         "pace": "Allure de course"
       }
-    }
+    },
+    "crossLab": "Croiser avec mes piliers, au Labo"
   },
   "mealPlan": {
     "title": "Planning repas",
@@ -5195,23 +5198,23 @@
     "title": "Le Labo",
     "subtitle": "Là où tes piliers se croisent.",
     "tabs": {
-      "week": "Semaine",
       "composer": "Composer",
-      "why": "Pourquoi ?",
-      "known": "Acquis"
+      "cross": "Croiser",
+      "learn": "Apprendre"
     },
     "pillars": {
       "sleep": "Sommeil"
     },
     "stage": {
-      "week": "Ta semaine, en vrai",
       "composer": "Ta formule, en projet",
-      "why": "L’enquête",
-      "known": "Ce que tu sais de toi",
       "hint": "Glisse pour tourner autour · touche un disque pour t’en approcher",
       "hintFocus": "Touche le vide pour revenir à l’ensemble",
       "fallback": "La 3D n’a pas démarré : voici les mêmes disques, en 2D.",
-      "loading": "La scène se monte…"
+      "loading": "La scène se monte…",
+      "cross": "Tes liens, vus d’en haut",
+      "learn": "Ce que tu apprends de toi",
+      "hintTop": "Touche une médaille : ce qui s’y croise apparaît dessous",
+      "hintZone": "Touche le vide pour tout revoir"
     },
     "scene": {
       "brand": "FITTRIO",
@@ -5220,10 +5223,6 @@
       "kmOf": "SUR {{total}} KM"
     },
     "week": {
-      "lead_one": "Une chose à régler cette semaine.",
-      "lead_other": "{{count}} choses à régler cette semaine.",
-      "leadReady": "Tout est prêt à appliquer.",
-      "leadClear": "Ta semaine est calée.",
       "where": "Où tu en es",
       "grid": "Ta semaine",
       "gridLegend": "plein = fait · pointillé = prévu",
@@ -5242,16 +5241,6 @@
       "noNext": "plus rien de prévu d’ici dimanche",
       "session": "séance",
       "run": "course",
-      "proposals": "Le Labo te propose",
-      "toFix_one": "1 à régler",
-      "toFix_other": "{{count}} à régler",
-      "allClear": "tout est réglé",
-      "empty": "Rien à signaler : tes piliers se tiennent.",
-      "apply_one": "Appliquer ce changement à mon plan",
-      "apply_other": "Appliquer {{count}} changements à mon plan",
-      "staged": "Prêt",
-      "applied": "Dans ton plan",
-      "remove": "retirer",
       "km": "{{value}} km"
     },
     "proposals": {
@@ -5298,7 +5287,7 @@
       "shortNight": {
         "kind": "nuit courte",
         "title": "Nuit courte avant une séance intense",
-        "text": "Tu as dormi moins de 6 h. Garde la séance, mais allège-la : c’est ce que l’app propose déjà après une nuit courte.",
+        "text": "Tu as dormi moins de 6 h. Garde la séance, mais allège-la aujourd’hui.",
         "done": "Séance allégée de 25 % de répétitions, aujourd’hui seulement.",
         "action": "Alléger aujourd’hui",
         "changeTitle": "Séance du jour",
@@ -5456,7 +5445,6 @@
       },
       "cleared": "Écarté : {{list}}.",
       "missing": "Pas jugeable faute de données : {{list}}.",
-      "fixInWeek": "Le régler dans ta semaine →",
       "toSettle": "Pour trancher",
       "measureFirstTitle": "D’abord mesurer, pas restreindre",
       "measureFirstBody": "Pas d’expérience sur les calories. Saisis aussi tes week-ends pendant deux semaines : c’est l’écart le plus fréquent entre le journal et la réalité.",
@@ -5614,6 +5602,658 @@
       "formulaSubtitle_one": "1 réglage, appliqué tout de suite",
       "formulaSubtitle_other": "{{count}} réglages, appliqués tout de suite",
       "error": "Impossible d’appliquer : réessaie dans un instant."
+    },
+    "links": {
+      "states": {
+        "guard": "garde-fou",
+        "adjust": "à régler",
+        "holds": "ça tient",
+        "discover": "à découvrir"
+      },
+      "sports": {
+        "question": "Tes deux sports se gênent-ils ?",
+        "pair": "MUSCU × COURSE",
+        "verdict": {
+          "collision": "{{legSets}} séries de jambes {{strengthDay}}, puis {{runTypeLabel}} {{runDay}} : moins de 24 h entre les deux. Dans tes données, une séance de qualité après des jambes lourdes est plus lente.",
+          "collisionToday": "Des jambes lourdes hier, et {{runTypeLabel}} aujourd’hui. C’est la séance du jour qui s’en occupe : elle propose de l’adapter.",
+          "interference": {
+            "runningUpStrengthDown": "Ta course accélère pendant que ta musculation ralentit (ratios {{run}} et {{strength}}).",
+            "strengthUpRunningDown": "Ta musculation accélère pendant que ta course ralentit (ratios {{strength}} et {{run}})."
+          },
+          "holds": "Tes jambes et tes séances de qualité ne se marchent pas dessus cette semaine.",
+          "holdsKnown": "Rien ne se gêne cette semaine. Et tu sais désormais que des jambes la veille te coûtent environ {{delta}} s/km.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        },
+        "short": {
+          "collision": "Jambes {{strengthDay}}, {{runTypeLabel}} {{runDay}}.",
+          "interference": "Un sport monte, l’autre descend.",
+          "holds": "Rien ne se gêne cette semaine.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        }
+      },
+      "fuelStrength": {
+        "question": "Manges-tu assez pour ta muscu ?",
+        "pair": "MUSCU × NUTRITION",
+        "verdict": {
+          "deficitVolume": "Tu es à {{pct}} % sous ta cible sur {{days}} jours saisis, avec un gros volume de musculation.",
+          "proteinLow": "Tes protéines sont à {{gPerKg}} g/kg, sous ta fourchette ({{min}} à {{max}}).",
+          "proteinLowPlateau": "Tes protéines sont à {{gPerKg}} g/kg, sous ta fourchette, et {{exerciseName}} ne monte plus depuis {{weeksFlat}} semaines. Dans tes données, les deux vont ensemble.",
+          "holds": "Tes protéines sont dans ta fourchette ({{gPerKg}} g/kg), et ton assiette suit tes séances.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        },
+        "short": {
+          "deficitVolume": "{{pct}} % sous ta cible, avec un gros volume.",
+          "proteinLow": "Protéines à {{gPerKg}} g/kg, sous ta fourchette.",
+          "holds": "Protéines dans ta fourchette.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        }
+      },
+      "fuelRunning": {
+        "question": "Ton carburant suit-il tes kilomètres ?",
+        "pair": "COURSE × NUTRITION",
+        "verdict": {
+          "carbsLowHard": "Tes glucides sont à {{gPerKg}} g/kg, sous le repère de ton volume ({{min}} à {{max}}), et il reste des séances dures cette semaine.",
+          "activityLevel": "Tu cours {{runningDays}} jours sur 14 : le niveau d’activité de ton profil ne suit plus, et ta cible calorique repose dessus.",
+          "holds": "Tes glucides suivent ton volume de course ({{gPerKg}} g/kg, repère {{min}} à {{max}}).",
+          "holdsLowEasyWeek": "Tes glucides sont bas ({{gPerKg}} g/kg), mais il ne reste rien de dur cette semaine.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        },
+        "short": {
+          "carbsLowHard": "Glucides bas avant une séance dure.",
+          "activityLevel": "Niveau d’activité à revoir.",
+          "holds": "Tes glucides suivent tes kilomètres.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        }
+      },
+      "recovery": {
+        "question": "Récupères-tu assez ?",
+        "pair": "TES PILIERS × TES NUITS",
+        "verdict": {
+          "loadRisk": "Ta charge a bondi : ratio {{ratio}}, au-dessus du seuil de 1,3.",
+          "overtraining": "{{days}} jours d’affilée avec au moins une séance. Un jour de repos protège tes deux piliers.",
+          "guardBoth": "Ta charge a bondi (ratio {{ratio}}) et tu enchaînes {{days}} jours sans repos.",
+          "shortNight": "Tu as dormi {{sleep}} avant une séance intense aujourd’hui.",
+          "holdsRatio": "Ta charge reste dans la zone saine (ratio {{ratio}}).",
+          "holdsShortNights": "Ta charge reste dans la zone saine (ratio {{ratio}}), mais la plupart de tes nuits notées sont courtes.",
+          "holds": "Rien ne signale un manque de récupération.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données.",
+          "readinessRest": "Ta forme du jour conseille le repos : {{negative}} signaux sur {{available}} sont au rouge (charge, assiette, ressenti). Un jour léger aujourd’hui protège la suite de la semaine."
+        },
+        "short": {
+          "loadRisk": "Charge au-dessus du seuil ({{ratio}}).",
+          "overtraining": "{{days}} jours sans repos.",
+          "shortNight": "Nuit courte avant une séance intense.",
+          "holdsShortNights": "Charge saine, nuits un peu courtes.",
+          "holds": "Charge saine.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données.",
+          "readinessRest": "Forme du jour : repos conseillé.",
+          "holdsNoLoad": "Pas de signal de fatigue.",
+          "shortNightsNoLoad": "Nuits un peu courtes."
+        }
+      },
+      "weight": {
+        "question": "Ton poids suit-il ton assiette ?",
+        "pair": "ASSIETTE × POIDS",
+        "verdict": {
+          "plateau": "Ton poids ne bouge plus ({{kgPerWeek}} kg par semaine). Avant de conclure quoi que ce soit, il faut un journal complet : {{days}} jours saisis sur 7.",
+          "holds": "Ton poids évolue de {{kgPerWeek}} kg par semaine, avec un journal bien tenu.",
+          "holdsGaps": "Ton poids évolue de {{kgPerWeek}} kg par semaine. {{days}} jours saisis sur 7 : la balance reste approximative.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        },
+        "short": {
+          "plateau": "Poids stable, journal à compléter.",
+          "holds": "{{kgPerWeek}} kg par semaine.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        }
+      },
+      "goals": {
+        "question": "Tes objectifs tirent-ils dans le même sens ?",
+        "pair": "TES OBJECTIFS",
+        "verdict": {
+          "conflict": {
+            "bulkVsCut": "Ton objectif principal vise la prise de muscle, et ta nutrition est en déficit. Sur plusieurs semaines, l’un freine l’autre.",
+            "enduranceVsMass": "Tu vises la prise de masse et tu prépares une course longue. Sur douze semaines, l’un freine l’autre."
+          },
+          "holds": "Rien ne se contredit entre tes objectifs.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        },
+        "short": {
+          "conflict": "Deux objectifs se contredisent.",
+          "holds": "Rien ne se contredit.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        }
+      },
+      "rhythm": {
+        "question": "Tiens-tu le rythme partout ?",
+        "pair": "RÉGULARITÉ",
+        "verdict": {
+          "holds": "{{days}} jours d’affilée actifs, et {{active}} jours actifs la semaine dernière.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        },
+        "short": {
+          "holds": "{{days}} jours de série.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        }
+      },
+      "strengthWeight": {
+        "question": "Ta force suit-elle ton poids ?",
+        "pair": "FORCE × POIDS",
+        "verdict": {
+          "holds": "Ton score DOTS est de {{score}} ({{delta}} en huit semaines) : ta force rapportée à ton poids.",
+          "holdsDown": "Ton score DOTS est de {{score}}, soit {{delta}} en huit semaines.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données.",
+          "holdsNoDelta": "Ton score DOTS est de {{score}} : ta force rapportée à ton poids. Il faut des records d’il y a huit semaines pour dire s’il bouge."
+        },
+        "short": {
+          "holds": "DOTS {{score}}.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        }
+      },
+      "cycle": {
+        "question": "Que montre ton cycle dans tes piliers ?",
+        "pair": "CYCLE × PILIERS",
+        "verdict": {
+          "observed": "{{cycles}} cycles observés : le Labo compare tes mesures d’une phase à l’autre, dès qu’il en a assez. Des observations, pas des conseils.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        },
+        "short": {
+          "observed": "{{cycles}} cycles observés.",
+          "discover": "Le Labo ne peut pas encore répondre : il lui manque des données."
+        }
+      },
+      "figures": {
+        "collisions": {
+          "value": "{{count}}",
+          "label_one": "collision cette semaine",
+          "label_other": "collisions cette semaine"
+        },
+        "legsPace": {
+          "value": "{{delta}} s/km",
+          "label": "sur tes séances de qualité après des jambes · {{exposed}} cas contre {{other}}"
+        },
+        "trainingTime": {
+          "value": "{{strength}} + {{running}} min",
+          "label": "muscu + course, 7 derniers jours"
+        },
+        "protein": {
+          "value": "{{gPerKg}} g/kg",
+          "label": "protéines, {{days}} jours saisis · fourchette {{min}} à {{max}}"
+        },
+        "liftPlateau": {
+          "value": "{{valueKg}} kg",
+          "label": "{{exerciseName}}, à plat depuis {{weeksFlat}} semaines"
+        },
+        "lift": {
+          "value": "{{kg}} kg",
+          "label": "{{name}}, max estimé"
+        },
+        "carbs": {
+          "value": "{{gPerKg}} g/kg",
+          "label": "glucides, 7 jours · repère {{min}} à {{max}}"
+        },
+        "carbsHardEasy": {
+          "value": "{{hard}} · {{easy}}",
+          "label": "g/kg jours durs · jours faciles"
+        },
+        "activityLevel": {
+          "value": "{{runningDays}} j",
+          "label": "de course sur 14"
+        },
+        "acwr": {
+          "value": "{{ratio}}",
+          "label": "ratio de charge, 7 j sur 28 · seuil 1,3"
+        },
+        "streak": {
+          "value": "{{days}} j",
+          "label": "d’affilée avec au moins une séance"
+        },
+        "nights": {
+          "value": "{{good}} sur {{logged}}",
+          "label": "nuits au-dessus de 7 h cette semaine"
+        },
+        "nightsNone": {
+          "value": "—",
+          "label": "aucune nuit notée cette semaine"
+        },
+        "weight": {
+          "value": "{{kg}} kg",
+          "label": "{{kgPerWeek}} kg par semaine sur 8 semaines"
+        },
+        "loggedDays7": {
+          "value": "{{count}} sur 7",
+          "label": "jours de repas saisis cette semaine"
+        },
+        "streakDays": {
+          "value": "{{days}} j",
+          "label": "de série, tous piliers confondus"
+        },
+        "activeDays": {
+          "value": "{{days}} sur 7",
+          "label": "jours actifs la semaine dernière"
+        },
+        "dots": {
+          "value": "{{score}}",
+          "label": "score DOTS · {{delta}} en 8 semaines"
+        },
+        "weightNow": {
+          "value": "{{kg}} kg",
+          "label": "ton poids"
+        },
+        "cycles": {
+          "value": "{{count}}",
+          "label": "cycles observés"
+        },
+        "dotsNoDelta": {
+          "value": "{{score}}",
+          "label": "score DOTS"
+        }
+      },
+      "rows": {
+        "collisions": {
+          "label": "Collisions cette semaine",
+          "value": "{{count}}",
+          "note": "jambes lourdes la veille d’une séance de qualité"
+        },
+        "legsPaceLearning": {
+          "label": "Tes séances de qualité après des jambes",
+          "value": "{{cases}} cas sur {{needed}}",
+          "note": "il faut {{needed}} cas de chaque côté pour comparer"
+        },
+        "legsPaceNoLink": {
+          "label": "Tes séances de qualité après des jambes",
+          "value": "pas d’écart",
+          "note": "{{exposed}} cas contre {{other}}"
+        },
+        "legsPace": {
+          "label": "Tes séances de qualité après des jambes",
+          "value": "{{delta}} s/km",
+          "note": "une association · {{exposed}} cas contre {{other}}"
+        },
+        "interference": {
+          "runningUpStrengthDown": {
+            "label": "Interférence force / endurance",
+            "value": "course {{run}} · muscu {{strength}}",
+            "note": "ta course monte pendant que ta muscu baisse"
+          },
+          "strengthUpRunningDown": {
+            "label": "Interférence force / endurance",
+            "value": "muscu {{strength}} · course {{run}}",
+            "note": "ta muscu monte pendant que ta course baisse"
+          }
+        },
+        "interferenceNone": {
+          "label": "Interférence force / endurance",
+          "value": "aucune",
+          "note": "tes deux sports évoluent ensemble"
+        },
+        "trainingTime": {
+          "label": "Temps d’entraînement",
+          "value": "{{strength}} + {{running}} min",
+          "note": "muscu + course, 7 derniers jours"
+        },
+        "protein": {
+          "label": "Protéines par kilo",
+          "value": "{{gPerKg}} g/kg",
+          "note": "moyenne de {{days}} jours saisis · fourchette {{min}} à {{max}}"
+        },
+        "proteinServings": {
+          "label": "Prises au-dessus du repère",
+          "value": "{{count}}",
+          "note": "repère : {{grams}} g par prise"
+        },
+        "energyByDayType": {
+          "label": "Jours de séance, jours de repos",
+          "value": "{{delta}} kcal",
+          "note": "{{training}} kcal les jours de séance, {{rest}} les jours de repos"
+        },
+        "adherenceByDayType": {
+          "label": "Dans ta cible",
+          "value": "{{training}} % · {{rest}} %",
+          "note": "jours de séance · jours de repos"
+        },
+        "lowFuelDays": {
+          "label": "Grosses séances sous-alimentées",
+          "value": "{{count}}",
+          "note": "4 dernières semaines"
+        },
+        "deficitVolume": {
+          "label": "Déficit et volume",
+          "value": "{{pct}} %",
+          "note": "sous ta cible, avec un gros volume"
+        },
+        "deficitVolumeNone": {
+          "label": "Déficit et volume",
+          "value": "pas d’alerte",
+          "note": "déficit modéré ou volume habituel"
+        },
+        "carbs": {
+          "label": "Glucides par kilo",
+          "value": "{{gPerKg}} g/kg",
+          "note": "7 jours · repère {{min}} à {{max}}"
+        },
+        "carbsHardEasy": {
+          "label": "Jours durs · jours faciles",
+          "value": "{{hard}} · {{easy}} g/kg",
+          "note": "{{hardDays}} jours durs, {{easyDays}} faciles, 4 semaines"
+        },
+        "carbsPaceLearning": {
+          "label": "Ton allure et tes glucides",
+          "value": "{{cases}} cas sur {{needed}}",
+          "note": "il faut {{needed}} cas de chaque côté pour comparer"
+        },
+        "carbsPaceNoLink": {
+          "label": "Ton allure et tes glucides",
+          "value": "pas d’écart",
+          "note": "{{exposed}} cas contre {{other}}"
+        },
+        "carbsPace": {
+          "label": "Ton allure et tes glucides",
+          "value": "{{delta}} s/km",
+          "note": "glucides bas contre repère atteint · {{exposed}} cas contre {{other}}"
+        },
+        "activityLevel": {
+          "label": "Niveau d’activité du profil",
+          "value": "à revoir",
+          "note": "{{runningDays}} jours de course sur 14"
+        },
+        "acwr": {
+          "label": "Ratio de charge",
+          "value": "{{ratio}}",
+          "note": "muscu + course + activités, 7 j sur 28"
+        },
+        "streak": {
+          "label": "Jours d’affilée avec séance",
+          "value": "{{days}}",
+          "note": "depuis ton dernier repos"
+        },
+        "readiness": {
+          "rest": {
+            "label": "Forme du jour",
+            "value": "repos conseillé",
+            "note": "{{negative}} signaux sur {{available}} au rouge"
+          },
+          "ok": {
+            "label": "Forme du jour",
+            "value": "correcte",
+            "note": "{{negative}} signaux sur {{available}} au rouge"
+          },
+          "push": {
+            "label": "Forme du jour",
+            "value": "prête à pousser",
+            "note": "{{negative}} signaux sur {{available}} au rouge"
+          }
+        },
+        "nights": {
+          "label": "Nuits au-dessus de 7 h",
+          "value": "{{good}} sur {{logged}}",
+          "note": "dernière nuit : {{last}}"
+        },
+        "nightsNone": {
+          "label": "Nuits",
+          "value": "—",
+          "note": "aucune nuit notée cette semaine"
+        },
+        "weightTrend": {
+          "label": "Tendance du poids",
+          "value": "{{kgPerWeek}} kg/sem",
+          "note": "{{weighIns}} pesées sur 8 semaines"
+        },
+        "loggedDays7": {
+          "label": "Jours saisis",
+          "value": "{{count}} sur 7",
+          "note": "7 derniers jours"
+        },
+        "goalConflicts": {
+          "label": "Contradictions entre objectifs",
+          "value": "{{count}}",
+          "note": "masse, sèche, préparation de course"
+        },
+        "streakDays": {
+          "label": "Série active",
+          "value": "{{days}} j",
+          "note": "tous piliers confondus"
+        },
+        "activeDays": {
+          "label": "Jours actifs",
+          "value": "{{days}} sur 7",
+          "note": "semaine dernière"
+        },
+        "plannedDone": {
+          "label": "Prévu puis fait",
+          "value": "{{done}} sur {{planned}}",
+          "note": "semaine dernière"
+        },
+        "dots": {
+          "label": "Score DOTS",
+          "value": "{{score}}",
+          "note": "{{delta}} en 8 semaines"
+        },
+        "sbdTotal": {
+          "label": "Total des trois mouvements",
+          "value": "{{kg}} kg",
+          "note": "squat, développé couché, soulevé de terre"
+        },
+        "weightNow": {
+          "label": "Poids",
+          "value": "{{kg}} kg",
+          "note": "dernière pesée"
+        },
+        "dotsNoDelta": {
+          "label": "Score DOTS",
+          "value": "{{score}}",
+          "note": "pas encore d’écart sur 8 semaines"
+        }
+      },
+      "source": {
+        "sports": "Calculé sur {{quality}} séances de qualité des 8 dernières semaines. Une association, pas une preuve.",
+        "fuelStrength": "Calculé sur {{days}} jours de repas saisis cette semaine et tes séances des 8 dernières semaines. Des associations, pas des preuves.",
+        "fuelRunning": "Glucides de {{hardDays}} jours durs et de {{easyDays}} jours faciles, sur 4 semaines. Des repères, pas une prescription.",
+        "recovery": "Charge = ressenti × durée de chaque séance, sur 28 jours. Nuits : ce que tu notes au check-in ({{nights}} cette semaine).",
+        "weight": "{{weighIns}} pesées sur 8 semaines, et ton journal des 7 derniers jours.",
+        "goals": "Règles de cohérence entre objectifs. Si l’un contredit l’autre, le Conseil des trois chiffre les deux issues.",
+        "rhythm": "Séances, sorties et repas notés des 8 dernières semaines.",
+        "strengthWeight": "Tes records des trois mouvements et tes pesées.",
+        "cycle": "Moyennes par phase sur {{cycles}} cycles. Des observations, pas des conseils.",
+        "discover": "Un lien ne s’affiche qu’avec assez de données : jamais un zéro à la place d’un trou."
+      },
+      "missing": {
+        "bothSports": {
+          "text": "Il faut {{need}} semaines avec tes deux sports pour parler de gêne. Tu en as {{have}}.",
+          "meter": "{{have}} sur {{need}} semaines"
+        },
+        "proteinDays": {
+          "text": "Il faut {{need}} jours de repas notés sur 7 pour juger tes protéines. Tu en as {{have}}.",
+          "meter": "{{have}} sur {{need}} jours"
+        },
+        "weighIn": {
+          "text": "Il faut une pesée pour rapporter tes repas à ton poids.",
+          "meter": "aucune pesée"
+        },
+        "carbs": {
+          "text": "Il faut des repas notés et au moins une course pour croiser ton carburant et tes kilomètres.",
+          "meter": "pas encore de données"
+        },
+        "load": {
+          "text": "Encore rien à croiser : note tes nuits dans le check-in, ou enchaîne quelques séances.",
+          "meter": "pas encore de données"
+        },
+        "weighIns": {
+          "text": "Il faut {{need}} pesées sur 8 semaines pour parler d’une tendance. Tu en as {{have}}.",
+          "meter": "{{have}} sur {{need}} pesées"
+        },
+        "firstWeek": {
+          "text": "Une première semaine complète, et le Labo raconte ton rythme.",
+          "meter": "semaine en cours"
+        },
+        "dots": {
+          "text": "Il faut un record sur chacun des trois mouvements, une pesée et ton sexe renseigné pour calculer ta force relative.",
+          "meter": "données manquantes"
+        },
+        "cycles": {
+          "text": "Il faut {{need}} cycles complets pour comparer tes phases. Tu en as {{have}}.",
+          "meter": "{{have}} sur {{need}} cycles"
+        }
+      },
+      "routes": {
+        "planning": "Ouvrir le planning",
+        "foodSuggestion": "Des aliments pour combler",
+        "nutritionProfile": "Revoir mon profil nutrition",
+        "nutritionStats": "Voir mes stats nutrition",
+        "nutritionToday": "Voir ma journée nutrition",
+        "nutritionHistory": "Compléter mon journal",
+        "runningToday": "Voir la séance du jour",
+        "review": "Ouvrir le bilan de la semaine",
+        "checkin": "Noter ma nuit",
+        "progress": "Voir mes records",
+        "cycle": "Ouvrir mon cycle",
+        "learn": "Comprendre dans Apprendre",
+        "council": "Ouvrir le Conseil des trois"
+      },
+      "surfaces": {
+        "strengthProgress": "Muscu › Progrès",
+        "runningToday": "Course › Courir",
+        "nutritionToday": "Nutrition › Aujourd’hui",
+        "nutritionStats": "Nutrition › Stats",
+        "planning": "Planning",
+        "progress": "Muscu › Progression",
+        "cycle": "Mon cycle"
+      },
+      "learning": {
+        "shortNightPace": "Une nuit courte te ralentit-elle ?",
+        "heavyLegsPace": "Des jambes la veille te ralentissent-elles ?",
+        "carbsPace": "Tes glucides changent-ils ton allure ?",
+        "missing": "Il faut {{needed}} cas de chaque côté pour comparer. Tu en as {{cases}}.",
+        "meter": "{{cases}} cas sur {{needed}}",
+        "action": "Voir dans Apprendre"
+      }
+    },
+    "cross": {
+      "leadGuard": "Un garde-fou d’abord.",
+      "leadAdjust_one": "Un lien à régler cette semaine.",
+      "leadAdjust_other": "{{count}} liens à régler cette semaine.",
+      "leadHolds": "Tes piliers se tiennent.",
+      "leadDiscover": "Le Labo apprend à te connaître.",
+      "sub_one": "Un lien lu entre tes piliers, cette semaine et sur les huit dernières.",
+      "sub_other": "{{count}} liens lus entre tes piliers, cette semaine et sur les huit dernières.",
+      "subDiscover": "Tes liens apparaissent au fil de tes saisies. Voici ce qu’il manque à chacun.",
+      "chips": {
+        "guard_one": "{{count}} garde-fou",
+        "guard_other": "{{count}} garde-fous",
+        "adjust": "{{count}} à régler",
+        "holds_one": "{{count}} qui tient",
+        "holds_other": "{{count}} qui tiennent",
+        "discover": "{{count}} à découvrir"
+      },
+      "sections": {
+        "guard": "Garde-fou",
+        "adjust": "À régler",
+        "holds": "Ça tient",
+        "discover": "À découvrir"
+      },
+      "meta": {
+        "guard": "jamais masqué",
+        "adjust": "un geste chacun",
+        "ready_one": "{{count}} prêt à appliquer",
+        "ready_other": "{{count}} prêts à appliquer",
+        "discover": "il leur manque des données"
+      },
+      "zone": {
+        "mc": "Muscu × Course",
+        "mn": "Muscu × Nutrition",
+        "cn": "Course × Nutrition",
+        "centre": "Tes piliers ensemble",
+        "centreFew": "Tes piliers × tes nuits"
+      },
+      "zoneLabel_one": "{{zone}} : {{state}}, un lien",
+      "zoneLabel_other": "{{zone}} : {{state}}, {{count}} liens",
+      "showAll": "Tout voir",
+      "open": "Ouvrir le lien : {{question}}",
+      "otherPillarsMc": "Avec la nutrition, le Labo croiserait aussi ton assiette avec tes deux sports. Ça s’active dans Réglages › Piliers, si tu en as envie.",
+      "otherPillarsFew": "Avec d’autres piliers, le Labo aurait d’autres liens à croiser. Ça s’active dans Réglages › Piliers, si tu en as envie.",
+      "hideOther": "Masquer cette ligne",
+      "honest": "Des liens trouvés dans tes données, pas des preuves. Un jour sans saisie est un trou, jamais un zéro. Rien ne change dans ton plan sans ton accord.",
+      "staged": "✓ Prêt · retirer",
+      "applied": "✓ Dans ton plan",
+      "apply_one": "Appliquer ce changement à mon plan",
+      "apply_other": "Appliquer {{count}} changements à mon plan"
+    },
+    "fiche": {
+      "back": "Croiser",
+      "backLearn": "Apprendre",
+      "crossings": "Ce que tes données croisent",
+      "measures_one": "{{count}} mesure",
+      "measures_other": "{{count}} mesures",
+      "actions": "Ce que tu peux faire",
+      "writes": "S’écrit dans ton plan après la feuille « ce qui change », jamais avant.",
+      "opens": "Ouvre l’écran concerné. N’écrit rien dans ton plan.",
+      "history": "L’histoire de ce lien",
+      "historyMeta": "8 semaines",
+      "historyNow": "cette semaine",
+      "historyLegend": "✓ ça tient · ~ à régler · ! garde-fou · pointillé : à découvrir · vide : pas de trace",
+      "historyEmpty": "Le Labo garde l’histoire de ce lien depuis cette semaine : chaque semaine passée reste telle qu’elle a été vue.",
+      "historyWeek": "Semaine du {{date}} : {{state}}",
+      "historyWeekNone": "Semaine du {{date}} : pas de trace",
+      "echoes": "Tu le retrouves aussi",
+      "notFound": "Ce lien n’est pas disponible avec tes piliers actuels.",
+      "missingTitle": "Ce qu’il manque",
+      "chart": {
+        "overline": "Ce que tes données montrent",
+        "hintWeek": "touche une semaine",
+        "weekA11y": "Semaine du {{week}}",
+        "proteinTitle": "Protéines, g/kg par semaine",
+        "liftTitle": "{{name}}, max estimé (kg)",
+        "band": "ta fourchette : {{min}} à {{max}}",
+        "plateau": "à plat",
+        "pairReadout": "Semaine du {{week}} · {{protein}} g/kg · {{lift}} kg",
+        "pairNote": "Deux mesures, deux échelles : deux graphiques alignés sur les mêmes semaines, pas un double axe.",
+        "splitTitle": "Allure de tes séances de qualité",
+        "splitHint": "min/km · un point = une séance",
+        "splitExposed": "Après des jambes, moins de 24 h",
+        "splitOther": "Sans jambes la veille",
+        "splitMean": "moyenne {{pace}}",
+        "splitReadout": "Écart moyen : {{delta}} s/km · {{exposed}} cas contre {{other}}",
+        "splitNote": "Un trait = la moyenne de la ligne. Plus à droite = plus lent.",
+        "groupsTitle": "Glucides selon le jour · 4 semaines",
+        "groupsHint": "g/kg de poids de corps",
+        "groupsHard": "Jours durs",
+        "groupsEasy": "Jours faciles",
+        "groupsDays_one": "{{count}} jour",
+        "groupsDays_other": "{{count}} jours",
+        "groupsBand": "repère : {{min}} à {{max}} g/kg",
+        "groupsReadout": "Jours durs : {{hard}} g/kg · jours faciles : {{easy}} g/kg",
+        "bandTitle": "Ratio de charge par semaine",
+        "bandZone": "zone saine",
+        "bandLimit": "seuil 1,3",
+        "bandReadout": "Semaine du {{week}} · ratio {{value}}",
+        "weightTitle": "Poids, moyenne par semaine (kg)",
+        "sbdTitle": "Total des trois mouvements (kg)",
+        "lineReadout": "Semaine du {{week}} · {{value}}",
+        "gridTitle": "Jours actifs par semaine",
+        "gridHint": "jours sur 7",
+        "gridRow": {
+          "strength": "Muscu",
+          "running": "Course",
+          "nutrition": "Repas"
+        },
+        "gridReadout": "Semaine du {{week}} · {{summary}}",
+        "phasesTitle": "Moyennes par phase",
+        "phasesHint": "des observations, pas des conseils",
+        "noValue": "—"
+      },
+      "cycleMissingTitle": "Pas encore assez de relevés"
+    },
+    "learn": {
+      "lead": "Ton Labo apprend de toi.",
+      "sub": "Quand une courbe cale, il cherche la cause dans tous tes piliers. Ce qu’il apprend remplace une règle générale par tes propres chiffres.",
+      "stalls": "Une courbe cale",
+      "seeLink": "Voir le lien : {{question}}"
+    },
+    "echo": {
+      "overline": "LIEN · {{pair}}",
+      "cta": "Voir le lien au Labo",
+      "a11y": "Lien {{pair}} : {{short}}. Voir au Labo.",
+      "moved": "Les analyses qui croisent tes piliers ont déménagé au Labo.",
+      "movedCta": "Ouvrir « {{question}} »"
     }
   },
   "aiLab": {

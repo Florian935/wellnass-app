@@ -13,6 +13,7 @@
  * « record » pendant des semaines — ce n'est donc pas un endroit où *ranger* les records.
  */
 
+import type { CrossLinkId } from './cross-links';
 import type { InsightId } from './insights';
 
 // ---------------------------------------------------------------------------
@@ -100,6 +101,13 @@ export type WidgetDestination =
    */
   | { kind: 'alert-insight'; id: InsightId }
   /**
+   * US LIENS-01 — **Rangé dans une fiche du Labo.** Depuis la décision Q2 du 30/09/2026, les
+   * alertes qui lisent deux piliers ont quitté l'écran Insights pour la fiche de leur lien, et
+   * remontent sur l'accueil par le widget quand elles demandent quelque chose. Même garantie
+   * qu'`alert-insight` (réservé aux signaux conditionnels par nature), autre maison.
+   */
+  | { kind: 'lab-link'; id: CrossLinkId; insight: InsightId }
+  /**
    * Rangé sur un écran atteignable. `path` décrit le chemin **réel** depuis l'accueil, en clair :
    * c'est ce que la recette suit, geste par geste (critère 4). Un « oui, c'est quelque part » ne
    * vaut rien — la première rédaction de la spec en a classé deux « déjà atteignable » à tort.
@@ -132,13 +140,15 @@ export const WIDGET_DESTINATIONS: Record<HomeWidgetIdWithDestination, WidgetDest
   // semaine » au moment où la vie déborde, pas en parcourant les réglages.
   'real-life': { kind: 'home' },
 
-  // ── Devenus des cartes d'insight (6) ──────────────────────────────────────
-  'deficit-volume': { kind: 'alert-insight', id: 'deficit_volume' },
-  'training-load': { kind: 'alert-insight', id: 'training_load' },
-  'overtraining-guard': { kind: 'alert-insight', id: 'overtraining_guard' },
-  'activity-level-suggestion': { kind: 'alert-insight', id: 'activity_level' },
-  'concurrent-training-interference': { kind: 'alert-insight', id: 'concurrent_interference' },
-  readiness: { kind: 'alert-insight', id: 'readiness' },
+  // ── Devenus des cartes d'insight (6), puis des lignes d'une fiche du Labo ─
+  // US LIENS-01 (30/09/2026) : ces six alertes lisent deux piliers. Elles ont quitté l'écran
+  // Insights pour la fiche de leur lien ; `insight` garde la trace de leur carte d'avant.
+  'deficit-volume': { kind: 'lab-link', id: 'fuelStrength', insight: 'deficit_volume' },
+  'training-load': { kind: 'lab-link', id: 'recovery', insight: 'training_load' },
+  'overtraining-guard': { kind: 'lab-link', id: 'recovery', insight: 'overtraining_guard' },
+  'activity-level-suggestion': { kind: 'lab-link', id: 'fuelRunning', insight: 'activity_level' },
+  'concurrent-training-interference': { kind: 'lab-link', id: 'sports', insight: 'concurrent_interference' },
+  readiness: { kind: 'lab-link', id: 'recovery', insight: 'readiness' },
 
   // ── Rangés sur un écran (8) ───────────────────────────────────────────────
   'muscle-volume': {
@@ -202,7 +212,8 @@ export const KEPT_ON_HOME: HomeWidgetIdWithDestination[] =
 
 /**
  * Les signaux dont la présence est **conditionnelle par nature** et qui peuvent donc légitimement
- * vivre en carte d'insight. Toute autre entrée `alert-insight` est un abus, et le test le refuse.
+ * vivre en carte d'insight — ou, depuis LIENS-01, dans une fiche du Labo. Toute autre entrée
+ * `alert-insight` ou `lab-link` est un abus, et le test le refuse.
  */
 export const CONDITIONAL_BY_NATURE: ReadonlyArray<HomeWidgetIdV1> = [
   'deficit-volume',

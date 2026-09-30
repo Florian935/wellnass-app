@@ -20,7 +20,7 @@
  */
 
 import { addDays, localDateFromDayKey, localDayKey } from './date';
-import type { DeficitVolumeAlert } from './bodyweight';
+import { MIN_LOGGED_DAYS, type DeficitVolumeAlert } from './bodyweight';
 import type { CarbsPerKg } from './carb-target';
 import type { Pillar } from './pillar';
 import type { ProteinTarget } from './protein-target';
@@ -43,8 +43,14 @@ export const SHORT_NIGHT_MINUTES = 6 * 60;
 /** Au-dessus, une « bonne » nuit : la borne basse des 7-9 h recommandées à l'adulte. */
 export const GOOD_NIGHT_MINUTES = 7 * 60;
 
-/** Sous ce nombre de jours saisis, une moyenne de protéines ne dit rien de la semaine. */
-export const LAB_MIN_PROTEIN_DAYS = 2;
+/**
+ * Sous ce nombre de jours saisis, une moyenne de protéines ne dit rien de la semaine.
+ *
+ * US LIENS-01 — **2 → 4, aligné sur `MIN_LOGGED_DAYS`** (MN-02, verdict de la semaine). Avant, le
+ * Labo jugeait les protéines dès 2 jours pendant que le verdict nutrition en exigeait 4 : la même
+ * question recevait deux réponses selon l'écran. On garde le seuil le plus prudent.
+ */
+export const LAB_MIN_PROTEIN_DAYS = MIN_LOGGED_DAYS;
 
 /** Au-delà, l'écran devient une liste de reproches : on garde les plus importantes. */
 export const LAB_MAX_PROPOSALS = 5;
@@ -84,6 +90,12 @@ export type LabSessionInput = {
   name: string | null;
   sessionType: ProgramSessionType | null;
   targetDistanceM: number | null;
+  /**
+   * US LIENS-01 — la séance porte déjà une adaptation du jour (allègement ou ralentissement posé par
+   * CARDIO-UX01 ou par le Labo). **Une seule adaptation par séance** : le Labo n'en propose pas une
+   * seconde qui écraserait la première sans le dire (constat LABO-01 §4 bis-4).
+   */
+  adapted?: boolean;
 };
 
 export type LabWeekInput = {
@@ -145,7 +157,13 @@ export type LabAction =
   /** Alléger la séance du jour : même écriture que l'adaptation de CARDIO-UX01. */
   | { type: 'lighten'; plannedSessionId: string; dayKey: string; repsReductionPct: number }
   /** Ouvrir l'écran où ça se règle. Ne modifie rien. */
-  | { type: 'open'; target: 'planning' | 'foodSuggestion' | 'nutritionProfile' | 'nutritionStats' };
+  | { type: 'open'; target: LabOpenTarget };
+
+/**
+ * US LIENS-01 — `runningToday` (Course › Courir, là où vit l'adaptation du jour) et `nutritionToday`
+ * (Nutrition › Aujourd'hui, là où vit le réservoir de glucides) rejoignent les destinations.
+ */
+export type LabOpenTarget = 'planning' | 'foodSuggestion' | 'nutritionProfile' | 'nutritionStats' | 'runningToday' | 'nutritionToday';
 
 export type LabProposal = {
   /** Stable d'un rendu à l'autre : sert à mémoriser « prêt » / « appliqué ». */
@@ -160,7 +178,19 @@ export type LabProposal = {
   action: LabAction;
 };
 
-export type LabWeek = { days: LabDay[]; progress: LabWeekProgress; proposals: LabProposal[] };
+export type LabWeek = {
+  days: LabDay[];
+  progress: LabWeekProgress;
+  /** Les propositions **affichées** : plafonnées à `LAB_MAX_PROPOSALS`, dans l'ordre de priorité. */
+  proposals: LabProposal[];
+  /**
+   * Revue du 30/09/2026 — **toutes** les propositions, sans plafond. Le registre des liens les lit :
+   * tronquées, une semaine chargée perdait sa proposition « glucides » et le lien du carburant
+   * affirmait qu'il ne restait « rien de dur cette semaine » — alors que la proposition existait
+   * justement parce qu'il en restait.
+   */
+  allProposals: LabProposal[];
+};
 
 // ---------------------------------------------------------------------------
 // Semaine
@@ -245,7 +275,8 @@ export function buildLabWeek(input: LabWeekInput): LabWeek {
     },
   };
 
-  return { days, progress, proposals: buildProposals(input, progress, runningSessions) };
+  const allProposals = buildProposals(input, progress, runningSessions);
+  return { days, progress, proposals: allProposals.slice(0, LAB_MAX_PROPOSALS), allProposals };
 }
 
 // ---------------------------------------------------------------------------
@@ -264,6 +295,9 @@ function buildProposals(
   const todayIntenseRun = runningSessions.find(
     (s) => s.dayKey === todayKey && s.status === 'planned' && isIntenseSessionType(s.sessionType),
   );
+  // US LIENS-01 — une séance déjà adaptée aujourd'hui ne reçoit pas une seconde adaptation : le
+  // geste renvoie à la séance du jour, où l'adaptation posée se lit (et se retire).
+  const lightenable = todayIntenseRun !== undefined && todayIntenseRun.adapted !== true ? todayIntenseRun : undefined;
 
   // GARDE-01 — des jours d'affilée sans repos. On ouvre le planning : c'est à l'utilisateur de
   // choisir le jour off, le Labo ne supprime pas une séance à sa place.
@@ -289,9 +323,11 @@ function buildProposals(
       pair: ['strength', 'running'],
       safety: true,
       values: { ratio: Math.round(input.acwr.ratio * 100) / 100 },
-      action: todayIntenseRun
-        ? { type: 'lighten', plannedSessionId: todayIntenseRun.id, dayKey: todayKey, repsReductionPct: REPS_REDUCTION_PCT }
-        : { type: 'open', target: 'planning' },
+      action: lightenable
+        ? { type: 'lighten', plannedSessionId: lightenable.id, dayKey: todayKey, repsReductionPct: REPS_REDUCTION_PCT }
+        : todayIntenseRun
+          ? { type: 'open', target: 'runningToday' }
+          : { type: 'open', target: 'planning' },
     });
   }
 
@@ -319,24 +355,32 @@ function buildProposals(
         pair: ['strength', 'running'],
         safety: false,
         values: { legSets: c.legSets, runDayKey: c.runDayKey, strengthDayKey: c.strengthDayKey, runType: c.runType, toDayKey: c.suggestedDayKey ?? '' },
-        action: c.suggestedDayKey
-          ? { type: 'reschedule', plannedSessionId: c.runSessionId, fromDayKey: c.runDayKey, toDayKey: c.suggestedDayKey }
-          : { type: 'open', target: 'planning' },
+        // US LIENS-01 — **un seul remède par situation.** La course est aujourd'hui : c'est
+        // l'adaptation de la séance du jour (RUN-F4, « tu as fait une grosse séance de jambes hier »)
+        // qui la règle, et le Labo y renvoie. Avant, le planning proposait de déplacer pendant que la
+        // séance du jour proposait de ralentir : deux conseils contraires le même matin.
+        action:
+          c.runDayKey === todayKey
+            ? { type: 'open', target: 'runningToday' }
+            : c.suggestedDayKey
+              ? { type: 'reschedule', plannedSessionId: c.runSessionId, fromDayKey: c.runDayKey, toDayKey: c.suggestedDayKey }
+              : { type: 'open', target: 'planning' },
       });
     }
   }
 
   // Nuit courte + séance intense aujourd'hui : on allège, on ne supprime pas.
   const lastNight = input.nights.find((n) => n.dayKey === todayKey)?.sleepMinutes ?? null;
-  if (todayIntenseRun && lastNight !== null && lastNight < SHORT_NIGHT_MINUTES) {
+  // Une séance déjà adaptée aujourd'hui n'est pas re-proposée : elle est déjà allégée (LIENS-01).
+  if (lightenable && lastNight !== null && lastNight < SHORT_NIGHT_MINUTES) {
     out.push({
-      id: `shortNight:${todayIntenseRun.id}`,
+      id: `shortNight:${lightenable.id}`,
       kind: 'shortNight',
       tone: 'warn',
       pair: ['sleep', 'running'],
       safety: false,
-      values: { sleepMinutes: lastNight, sessionName: todayIntenseRun.name ?? '' },
-      action: { type: 'lighten', plannedSessionId: todayIntenseRun.id, dayKey: todayKey, repsReductionPct: REPS_REDUCTION_PCT },
+      values: { sleepMinutes: lastNight, sessionName: lightenable.name ?? '' },
+      action: { type: 'lighten', plannedSessionId: lightenable.id, dayKey: todayKey, repsReductionPct: REPS_REDUCTION_PCT },
     });
   }
 
@@ -376,11 +420,14 @@ function buildProposals(
       pair: ['nutrition', 'running'],
       safety: false,
       values: { gPerKg: input.carbs.gPerKg, targetMin: input.carbs.target.min, hardSessions: hardAhead },
-      action: { type: 'open', target: 'nutritionStats' },
+      // US LIENS-01 — vers le réservoir de glucides (RESERV-01, Nutrition › Aujourd'hui) : c'est là
+      // que se prépare une séance dure. La ligne « glucides » des Stats a déménagé au Labo.
+      action: { type: 'open', target: 'nutritionToday' },
     });
   }
 
   // Les blocs ci-dessus sont écrits dans l'ordre de `LAB_PROPOSAL_KINDS` : l'ordre d'insertion EST
   // l'ordre d'affichage. Le test « ordre » le fige, pour qu'un bloc ajouté au mauvais endroit se voie.
-  return out.slice(0, LAB_MAX_PROPOSALS);
+  // Le plafond d'affichage est posé par `buildLabWeek`, pas ici : le registre lit la liste entière.
+  return out;
 }

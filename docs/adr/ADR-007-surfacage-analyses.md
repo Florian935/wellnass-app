@@ -115,6 +115,43 @@ On adopte l'**option C**. Principes normatifs :
   > Ce qui reste vrai de la décision d'origine : les **analyses poussées** (corrélations, moteur
   > causal) ne sont **pas** dans INSIGHTS-01 — elles restent au catalogue, et c'est là que la
   > frontière payante d'ADR-003 gardera tout son sens.
+- **Niveau « Labo » — la maison des lectures croisées.**
+
+  > 📌 **Amendement du 30/09/2026 — un cinquième niveau, pour tout ce qui lit deux piliers ou plus**
+  > (US LIENS-01, LABO-02, LABO-03, ECHO-01, LABO-04 — décisions Q1 à Q8 de Florian, toile
+  > [design/labo-carrefour-2026-09/](../../design/labo-carrefour-2026-09/)).
+  >
+  > **Le constat.** Les quatre niveaux ci-dessus rangent une analyse selon **l'urgence** (le jour,
+  > le fond, l'alerte, la sélection). Aucun ne la rangeait selon **ce qu'elle croise**. Résultat au
+  > 26/09/2026 : une vingtaine d'écrans portaient chacun un morceau des croisements, **six seuils
+  > différents** disaient « déficit + entraînement », et deux remèdes **opposés** répondaient aux
+  > jambes lourdes (décaler la séance au planning, ralentir la sortie dans Course).
+  >
+  > **La règle.** Une analyse qui a besoin de **deux piliers pour exister** vit au Labo, dans la
+  > **fiche** de la question à laquelle elle répond (« Manges-tu assez pour ta muscu ? »). Une analyse
+  > qui n'en lit qu'un reste dans son pilier. Une nouvelle analyse croisée ajoute **une ligne à une
+  > fiche**, jamais une carte à un écran.
+  >
+  > **Plafonds.** Une fiche par question — **neuf au plus** (le registre `cross-links.ts` en tient la
+  > liste) ; une ligne par analyse dans sa fiche ; **cinq gestes « à régler » au plus**. Ordre des
+  > sections : garde-fou, à régler, ça tient, à découvrir — toujours un point **et** un mot.
+  >
+  > **Ce que les niveaux 0 à 2 gardent.** Un **écho** d'un lien : une ligne, un chiffre, un lien vers
+  > la fiche — et seulement si le lien demande quelque chose (garde-fou, à régler). Deux exceptions :
+  > les **garde-fous** restent **entiers** là où l'on agit (planning, séance du jour), et les
+  > **mécaniques** — ce qui change un chiffre du jour : bonus de séance, dépense comptée dans la
+  > cible, réservoir de glucides — ne déménagent pas ; la fiche les explique.
+  >
+  > **Conséquence sur le niveau 3.** L'écran « Insights » garde l'intra-pilier et les célébrations
+  > (décision Q2) ; les **six alertes croisées** qu'il portait (garde-fou de surentraînement, charge
+  > ACWR, forme du jour, interférence muscu × course, déficit × volume, niveau d'activité) partent au
+  > Labo — `LAB_OWNED_INSIGHTS` dans `insights.ts`, destination `lab-link` (vers la fiche du lien)
+  > dans `widget-destinations.ts`. Le widget « Insights » de
+  > l'accueil dit d'abord **« Tes liens »** (le lien le plus pressant) : le registre de l'accueil
+  > reste à 8, aucun widget ajouté.
+  >
+  > **Décision H inchangée.** Un pilier désactivé ne produit **ni lien ni reproche** ; la seule
+  > concession est une ligne discrète, masquable une fois pour toutes (Q4).
 
 ### 3. Construire des **briques**, pas 180 variantes
 Beaucoup d'analyses sont des déclinaisons d'un même patron. On mutualise en **~15-20 composants
@@ -128,7 +165,8 @@ inter-piliers**, **action concrète** pour l'utilisateur. Sinon elle **reste au 
 produit, pas seulement code.)
 
 ### 5. Règle de spec : chaque US d'analyse **déclare son surfaçage**
-Toute nouvelle US d'analyse précise dans sa spec : **le tier** (0/1/2/3) et **la condition d'affichage**
+Toute nouvelle US d'analyse précise dans sa spec : **le tier** (0/1/2/3, ou **Labo** pour une analyse
+qui croise deux piliers — elle nomme alors sa fiche) et **la condition d'affichage**
 (**conditionnel par défaut** ; permanent = exception justifiée). Pas de nouvelle analyse « permanente »
 sans arbitrage explicite.
 

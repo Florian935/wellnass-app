@@ -1010,6 +1010,22 @@ const lab_experiments = new Table({
   start_date: column.text,
   schedule: column.text,
   status: column.text,
+  // US LABO-04 (20260930135304_labo_carrefour_liens.sql) : le verdict figé à la clôture, en JSON.
+  // `null` tant que l'expérience court, et pour une ligne close avant LABO-04.
+  verdict: column.text,
+  created_at: column.text,
+  updated_at: column.text,
+  deleted_at: column.text,
+});
+
+// US LIENS-01 — l'histoire des liens du Labo, figée semaine par semaine (décision Q5 du 30/09/2026).
+// Migration : 20260930135304_labo_carrefour_liens.sql. Une ligne = un lien × une semaine (lundi) ;
+// l'id est DÉTERMINISTE (`stableUuid`), jamais aléatoire : deux appareils figent la même ligne.
+const cross_link_weeks = new Table({
+  user_id: column.text,
+  week_start: column.text,
+  link_id: column.text,
+  state: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -1067,4 +1083,5 @@ export const AppSchema = new Schema({
   workout_templates,
   workout_template_exercises,
   lab_experiments,
+  cross_link_weeks,
 });

@@ -45,6 +45,7 @@ import { ExplainSheet } from '@/components/explain/ExplainSheet';
 import { DayEnergyCard } from '@/components/energy/DayEnergyCard';
 import { AddFoodSheet } from '@/components/nutrition/AddFoodSheet';
 import { FuelTankCard } from '@/components/nutrition/FuelTankCard';
+import { CrossLinkEcho } from '@/components/lab/CrossLinkEcho';
 import { HydrationCard } from '@/components/nutrition/HydrationCard';
 import { LibrarySheet, type LibraryTarget } from '@/components/nutrition/LibrarySheet';
 import { MacroSuggestionCard } from '@/components/nutrition/MacroSuggestionCard';
@@ -301,6 +302,10 @@ export default function NutritionScreen() {
 
             {/* US RESERV-01 — le Réservoir : « est-ce que j'ai de quoi tenir ma séance ? ». */}
             <FuelTankCard dayKey={todayKey} atHour={hour} />
+
+            {/* US ECHO-01 — le lien du Labo le plus pressant qui touche l'assiette. La mécanique (bonus,
+                réservoir, dépense comptée) reste ici ; la lecture croisée vit au Labo. */}
+            <CrossLinkEcho surface="nutritionToday" />
 
             {showEmptyState ? (
               <View

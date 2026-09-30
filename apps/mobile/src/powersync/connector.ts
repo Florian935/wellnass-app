@@ -35,11 +35,18 @@ const JSON_COLUMNS: Record<string, readonly string[]> = {
   exercises: ['muscles_secondary', 'muscles_fine'],
   food_entries: ['micronutrients'],
   foods: ['micronutrients', 'portions'],
+  // US LABO-04 (30/09/2026) — `verdict` est neuve ; `schedule` manquait depuis LABO-01 (15/09/2026).
+  lab_experiments: ['schedule', 'verdict'],
+  // Revue du chantier Labo (30/09/2026) : trois colonnes jsonb absentes de cette table depuis leur
+  // création, donc stockées en **chaînes** dans Postgres (réparées par la migration 20260930180000).
+  meal_plan_entries: ['consumed_entry_ids'],
   menstrual_daily_logs: ['symptoms'],
   nutrition_profiles: ['allergens', 'meals', 'restrictions'],
   profiles: ['strength_equipment'],
+  sessions: ['pacing_plan'],
   user_settings: [
     'active_pillars', 'dashboard_layout', 'notifications', 'body_visual_state', 'body_training_state',
+    'sbd_lifts',
   ],
 };
 

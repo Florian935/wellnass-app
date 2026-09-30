@@ -62,6 +62,10 @@ bucket_definitions:
       # US LABO-01 : les expériences sur soi du Labo (4 semaines tirées au sort, verdict calculé).
       # 🔴 SYNC RULE NEUVE À DÉPLOYER À LA MAIN — table créée le 15/09/2026.
       - select * from lab_experiments       where user_id = bucket.user_id and deleted_at is null
+      # US LIENS-01 : l'histoire des liens du Labo, figée semaine par semaine (Q5, 30/09/2026).
+      # 🔴 SYNC RULE NEUVE À DÉPLOYER À LA MAIN — table créée le 30/09/2026. Sans elle, l'histoire
+      # d'un lien reste sur l'appareil qui l'a figée et disparaît à la première resynchro.
+      - select * from cross_link_weeks      where user_id = bucket.user_id and deleted_at is null
       # US CYCLE-01 : suivi du cycle menstruel. Deux tables indépendantes (aucune FK entre elles) —
       # un jour de flux peut exister sans période déclarée. `ended_on` null = période en cours.
       # ⚠️ Donnée de santé SENSIBLE : elle ne quitte l'appareil que si l'utilisatrice a activé le

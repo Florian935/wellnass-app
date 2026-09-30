@@ -9,9 +9,13 @@
  *     perdu, bibliothèque en échec) et l'écran bascule en 2D, sans deviner à sa place.
  *  3. **Mouvement réduit respecté** : l'état est poussé avec `reducedMotion`, la scène fige alors
  *     ses transitions (et le repli 2D est statique de toute façon).
+ *
+ * US LABO-02 — la scène porte désormais le titre (`header`) et les onglets en verre (`footer`),
+ * comme l'en-tête des hubs, et relaie le toucher d'une médaille de zone (`onPickZone`) en 3D comme
+ * en 2D. L'habillage laisse passer le toucher au centre : c'est la scène qu'on touche là.
  */
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -19,7 +23,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { LabScene2D } from './scene/LabScene2D';
 import LabScene3D, { type LabScene3DStatus } from './scene/LabScene3D.dom';
-import type { LabSceneState, ScenePillar } from './scene/scene-state';
+import type { LabSceneState, ScenePillar, SceneZone } from './scene/scene-state';
 import { useStageTheme } from '@/components/stage/PillarStage';
 import { fontFamily } from '@/theme/fonts';
 
@@ -32,9 +36,17 @@ type Props = {
   caption: string;
   onPick: (pillar: ScenePillar | null) => void;
   onLand: () => void;
+  /** US LABO-02 — une médaille de zone touchée, ou le vide (`null`). */
+  onPickZone?: (zone: SceneZone | null) => void;
+  /** Remplace la légende en haut à gauche (le titre de l'écran). */
+  header?: ReactNode;
+  /** En bas de la scène, touchable (les onglets en verre). */
+  footer?: ReactNode;
+  /** Hauteur utile, hors zone sûre. */
+  height?: number;
 };
 
-export function LabStage({ state, caption, onPick, onLand }: Props) {
+export function LabStage({ state, caption, onPick, onLand, onPickZone, header, footer, height = LAB_STAGE_HEIGHT }: Props) {
   const { t } = useTranslation();
   const stage = useStageTheme('lab');
   const insets = useSafeAreaInsets();
@@ -59,10 +71,17 @@ export function LabStage({ state, caption, onPick, onLand }: Props) {
 
   /** Tant que la scène n'a pas répondu, elle est en train de se monter : on le montre. */
   const loading = !answered && status.ok;
-  const hint = state.focus === null ? t('lab.stage.hint') : t('lab.stage.hintFocus');
+  const hint =
+    state.view === 'top'
+      ? state.zoneSelected === null
+        ? t('lab.stage.hintTop')
+        : t('lab.stage.hintZone')
+      : state.focus === null
+        ? t('lab.stage.hint')
+        : t('lab.stage.hintFocus');
 
   return (
-    <View style={[styles.stage, { height: LAB_STAGE_HEIGHT + insets.top, backgroundColor: stage.surfaces[1] }]}>
+    <View style={[styles.stage, { height: height + insets.top, backgroundColor: stage.surfaces[1] }]}>
       <LinearGradient colors={stage.gradient} start={{ x: 0.1, y: 0 }} end={{ x: 0.9, y: 1 }} style={StyleSheet.absoluteFill} />
 
       {status.ok ? (
@@ -70,6 +89,7 @@ export function LabStage({ state, caption, onPick, onLand }: Props) {
           state={state}
           background={stage.surfaces[1]!}
           onPick={async (pillar) => onPick(pillar)}
+          onPickZone={async (zone) => onPickZone?.(zone)}
           onStatus={async (next) => {
             setAnswered(true);
             setStatus(next);
@@ -78,9 +98,18 @@ export function LabStage({ state, caption, onPick, onLand }: Props) {
           dom={{ style: styles.fill, matchContents: false, scrollEnabled: false }}
         />
       ) : (
-        <Pressable style={StyleSheet.absoluteFill} onPress={() => onPick(null)} accessibilityRole="image" accessibilityLabel={caption}>
-          <LabScene2D state={state} />
-        </Pressable>
+        <View style={StyleSheet.absoluteFill}>
+          <Pressable
+            style={StyleSheet.absoluteFill}
+            onPress={() => {
+              onPick(null);
+              onPickZone?.(null);
+            }}
+            accessibilityRole="image"
+            accessibilityLabel={caption}
+          />
+          <LabScene2D state={state} onPickZone={onPickZone} />
+        </View>
       )}
 
       {/* La scène met 3-4 s à démarrer (WebView + three + textures dessinées au canvas). Sans rien
@@ -93,12 +122,22 @@ export function LabStage({ state, caption, onPick, onLand }: Props) {
         </View>
       ) : null}
 
-      <View style={[styles.overlay, { paddingTop: insets.top + 10 }]} pointerEvents="none">
-        <Text style={[styles.caption, { color: stage.inkMuted }]}>{caption.toUpperCase()}</Text>
-        <View style={styles.spacer} />
-        <Text style={[styles.hint, { color: stage.inkMuted }]}>
+      {/* `box-none` : l'habillage (titre, onglets) prend ses touches, le centre les laisse à la scène. */}
+      <View style={[styles.overlay, { paddingTop: insets.top + 10 }]} pointerEvents="box-none">
+        {header ?? (
+          <Text style={[styles.caption, { color: stage.inkMuted }]} pointerEvents="none">
+            {caption.toUpperCase()}
+          </Text>
+        )}
+        <View style={styles.spacer} pointerEvents="none" />
+        <Text style={[styles.hint, { color: stage.inkMuted }]} pointerEvents="none">
           {loading ? '' : status.ok ? hint : t('lab.stage.fallback')}
         </Text>
+        {footer ? (
+          <View pointerEvents="box-none" style={styles.footer}>
+            {footer}
+          </View>
+        ) : null}
       </View>
     </View>
   );
@@ -113,4 +152,5 @@ const styles = StyleSheet.create({
   spacer: { flex: 1 },
   caption: { fontFamily: fontFamily.mono, fontSize: 10.5, letterSpacing: 1.1 },
   hint: { fontFamily: fontFamily.body, fontSize: 12 },
+  footer: { marginTop: 10 },
 });

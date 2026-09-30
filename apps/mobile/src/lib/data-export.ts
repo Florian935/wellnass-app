@@ -110,6 +110,10 @@ export const EXPORT_TABLES: { table: string; col: 'user_id' | 'owner_id' }[] = [
   // l'archive contiendrait les mesures sans le protocole — donc des chiffres qu'on ne peut plus
   // interpréter. C'est ce même raisonnement qui a fait entrer `real_life_periods` plus haut.
   { table: 'lab_experiments', col: 'user_id' },
+  // US LIENS-01 — l'histoire des liens du Labo. Dérivée des données, mais **figée** : une fois la
+  // semaine passée, elle n'est plus reconstituable (les données sous-jacentes ont pu changer). C'est
+  // donc une trace propre à l'utilisateur, au même titre que le verdict d'une expérience.
+  { table: 'cross_link_weeks', col: 'user_id' },
 ];
 
 /**

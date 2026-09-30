@@ -20,6 +20,7 @@ import { NearRecordsCard } from '@/components/strength/NearRecordsCard';
 import { RecordWall } from '@/components/strength/RecordWall';
 import { ResumeLine } from '@/components/strength/ResumeLine';
 import { fontFamily } from '@/theme/fonts';
+import { CrossLinkEcho } from '@/components/lab/CrossLinkEcho';
 import { useTheme } from '@/theme/useTheme';
 
 type Props = {
@@ -44,6 +45,8 @@ export function ProgressSection(props: Props) {
       {props.hasWorkouts ? (
         <>
           <DayThread onPress={props.onInsights} />
+          {/* US ECHO-01 — le lien du Labo le plus pressant qui touche la muscu (protéines, collision…). */}
+          <CrossLinkEcho surface="strengthProgress" />
           <LoadProgressCard onPress={props.onProgress} />
           <NearRecordsCard onOpenExercise={props.onOpenExercise} />
           <BodyBalanceCard onPress={props.onBody} />

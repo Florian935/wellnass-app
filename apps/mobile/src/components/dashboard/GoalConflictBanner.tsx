@@ -17,27 +17,28 @@
  */
 
 import { useEffect, useState } from 'react';
+import { Alert } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import {
   detectGoalConflicts,
   dispositionFor,
   effectiveRegime,
   firstVisibleConflict,
+  resolveActivePillars,
 } from '@wellness/shared';
 import { CouncilSheet } from '@/components/dashboard/CouncilSheet';
 import { GoalConflictCard } from '@/components/dashboard/GoalConflictCard';
 import { guidanceSourceOf } from '@/data/guidance';
-import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
-import {
-  upsertNutritionProfile,
-  useNutritionProfile,
-} from '@/data/repositories/nutrition-repository';
-import {
-  upsertRunnerProfile,
-  useRunnerProfile,
-} from '@/data/repositories/running-profile-repository';
+import { keepMainGoal as resolveKeepMainGoal, keepPillarGoal as resolveKeepPillarGoal } from '@/data/goal-conflict-resolution';
+import { useProfile } from '@/data/repositories/profile-repository';
+import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
+import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
+import { useSettings } from '@/data/repositories/settings-repository';
 import { useDismissedRules } from '@/stores/dismissed-rules-store';
 
 export function GoalConflictBanner() {
+  const { t } = useTranslation();
+  const { settings } = useSettings();
   const { profile } = useProfile();
   const { nutritionProfile } = useNutritionProfile();
   const { runnerProfile } = useRunnerProfile();
@@ -61,34 +62,26 @@ export function GoalConflictBanner() {
   // une fraction de seconde, revient à ignorer le rejet.
   if (!hydrated) return null;
 
+  // Décision H (revue du 30/09/2026) : l'objectif d'un pilier désactivé ne se reproche pas — même
+  // règle que le lien « objectifs » du Labo.
+  const activePillars = resolveActivePillars(settings?.activePillars);
   const conflicts = detectGoalConflicts({
     mainGoal: profile?.mainGoal ?? null,
-    nutritionObjective: nutritionProfile?.objective ?? null,
-    runnerObjective: runnerProfile?.objective ?? null,
+    nutritionObjective: activePillars.includes('nutrition') ? (nutritionProfile?.objective ?? null) : null,
+    runnerObjective: activePillars.includes('running') ? (runnerProfile?.objective ?? null) : null,
   });
   const conflict = firstVisibleConflict(conflicts, dismissed);
   if (!conflict) return null;
 
+  // Les deux issues vivent dans `goal-conflict-resolution` (LIENS-01) : la fiche du Labo propose les
+  // mêmes, et un même choix doit écrire la même chose partout.
+  // Leçon CONF-06 (revue du 30/09/2026) : un choix qui ne s'écrit pas doit se voir.
+  const failed = () => Alert.alert(t('lab.apply.error'));
   const keepMainGoal = () => {
-    if (conflict.rule === 'bulkVsCut') {
-      // L'objectif global gagne : la nutrition passe en surplus.
-      void upsertNutritionProfile({ objective: 'bulk' });
-    } else {
-      // L'objectif global gagne : la course redevient de l'endurance d'entretien, sans échéance
-      // de course longue qui imposerait son volume.
-      void upsertRunnerProfile({ objective: 'endurance' });
-    }
+    void resolveKeepMainGoal(conflict).catch(failed);
   };
-
   const keepPillarGoal = () => {
-    if (conflict.rule === 'bulkVsCut') {
-      // Le réglage du pilier gagne : l'objectif principal s'aligne sur le déficit déclaré.
-      void upsertProfile({ mainGoal: 'weightloss' });
-    } else {
-      // Le réglage du pilier gagne : l'objectif principal devient la performance, en endurance —
-      // ce que la préparation longue distance dit déjà.
-      void upsertProfile({ mainGoal: 'performance', trainingFocus: 'endurance' });
-    }
+    void resolveKeepPillarGoal(conflict).catch(failed);
   };
 
   return (

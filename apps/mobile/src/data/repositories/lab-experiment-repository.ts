@@ -18,6 +18,7 @@ import {
   type LabExperimentArm,
   type LabExperimentKind,
   type LabExperimentRecord,
+  type LabVerdict,
 } from '@wellness/shared';
 
 import { useAuthStore } from '@/stores/auth-store';
@@ -59,10 +60,12 @@ type LabExperimentDbRow = {
   start_date: string;
   schedule: string | null;
   status: string;
+  /** US LABO-04 — le verdict figé à la clôture (JSON), `null` avant. */
+  verdict: string | null;
 };
 
 const SELECT_EXPERIMENTS = `
-  SELECT id, kind, start_date, schedule, status
+  SELECT id, kind, start_date, schedule, status, verdict
   FROM lab_experiments
   WHERE deleted_at IS NULL
   ORDER BY start_date DESC
@@ -77,6 +80,20 @@ function isSchedule(value: unknown): value is LabExperimentArm[] {
   );
 }
 
+/**
+ * Un verdict figé lisible (US LABO-04). Un JSON d'une forme inconnue — écrit par un client plus
+ * récent, ou abîmé — est **ignoré** : l'app recalcule alors comme avant, elle ne devine pas.
+ */
+function isFrozenVerdict(value: unknown): value is LabVerdict {
+  if (value === null || typeof value !== 'object') return false;
+  const v = value as Record<string, unknown>;
+  if (v.status === 'insufficient') return typeof v.testCount === 'number' && typeof v.usualCount === 'number' && typeof v.needed === 'number';
+  if (v.status === 'effect' || v.status === 'noEffect') {
+    return typeof v.delta === 'number' && typeof v.better === 'boolean' && typeof v.testCount === 'number' && typeof v.usualCount === 'number';
+  }
+  return false;
+}
+
 /** Une ligne dont le modèle ou l'ordre est inconnu est ignorée plutôt que devinée. */
 function toRecord(row: LabExperimentDbRow): LabExperimentRecord | null {
   const kind = LAB_EXPERIMENT_KINDS.find((k) => k === row.kind);
@@ -88,6 +105,7 @@ function toRecord(row: LabExperimentDbRow): LabExperimentRecord | null {
     startKey: row.start_date,
     schedule,
     status: row.status === 'stopped' ? 'stopped' : row.status === 'finished' ? 'finished' : 'running',
+    frozenVerdict: parseJsonColumn<LabVerdict | null>(row.verdict, null, (v): v is LabVerdict => isFrozenVerdict(v)),
   };
 }
 
@@ -131,8 +149,11 @@ export async function stopLabExperiment(id: string): Promise<void> {
  * vivante à vie : le bouton « lancer l'expérience » resterait bloqué sur « déjà en cours », et une
  * relance depuis un autre appareil serait rejetée à l'upload — donc toute la file PowerSync avec.
  */
-export async function finishLabExperiment(id: string): Promise<void> {
-  await patch('lab_experiments', id, { status: 'finished' });
+export async function finishLabExperiment(id: string, verdict: LabVerdict | null = null): Promise<void> {
+  // US LABO-04 : le verdict du jour de la clôture est écrit avec elle, et c'est lui qui restera.
+  // Un verdict encore « scellé » ou « arrêté » ne se fige pas : il n'y a rien à retenir.
+  const frozen = verdict !== null && isFrozenVerdict(verdict) ? JSON.stringify(verdict) : null;
+  await patch('lab_experiments', id, { status: 'finished', verdict: frozen });
 }
 
 /** Supprime une expérience (soft delete) — sert au ménage, pas au parcours normal. */

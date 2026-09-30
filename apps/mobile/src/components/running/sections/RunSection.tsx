@@ -18,6 +18,7 @@ import type { RunHistoryItem } from '@/data/repositories/run-repository';
 import { PressableScale } from '@/components/motion/PressableScale';
 import { RecentRuns } from '@/components/running/RecentRuns';
 import { fontFamily } from '@/theme/fonts';
+import { CrossLinkEcho } from '@/components/lab/CrossLinkEcho';
 import { useTheme } from '@/theme/useTheme';
 
 type Props = {
@@ -50,6 +51,8 @@ export function RunSection(props: Props) {
       {props.inProgress ? null : (
         <>
           {props.adaptation}
+          {/* US ECHO-01 — le lien du Labo le plus pressant qui touche la course (charge, carburant…). */}
+          <CrossLinkEcho surface="runningToday" />
           <RecentRuns
             runs={props.runs}
             todayKey={props.todayKey}

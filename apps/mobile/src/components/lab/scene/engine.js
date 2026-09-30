@@ -14,6 +14,11 @@
  * (les médailles), setLabels (tous les textes, traduits par l'app), setPillars (piliers activés),
  * focus, select. Aucune règle métier ici.
  *
+ * US LABO-02 (30/09/2026) — deux ajouts pour l'onglet Croiser : `setView('top')`, la même scène vue
+ * du dessus (la « carte des disques »), et `setZones`, une médaille par zone de croisement à l'état
+ * de son lien. Toucher une médaille appelle `opts.onPickZone(zone)` ; toucher le vide en vue du
+ * dessus, `opts.onPickZone(null)`.
+ *
  * Original :
  * Le Labo — les disques en 3D (three.js r128), rendu réaliste.
  * Un podium de salle porte la triade, qui flotte au-dessus et y projette son ombre :
@@ -669,9 +674,9 @@ export function createLabScene(canvas, opts) {
         var z = zones[zk]; z.n += 1;
         if (c.kind === 'guard' || (c.kind === 'tension' && z.kind === 'syn')) z.kind = c.kind;
       });
-      state.guard = list.some(function (c) { return c.kind === 'guard'; });
+      if (view !== 'top') state.guard = list.some(function (c) { return c.kind === 'guard'; });
       // Une médaille garde sa zone tant que le croisement existe : elle ne glisse pas vers une autre.
-      medals.forEach(function (mm) { var u = mm.userData; if (u.zone && !zones[u.zone]) { u.key = ''; u.zone = ''; } });
+      medals.forEach(function (mm) { var u = mm.userData; if (u.zone && u.zone.indexOf('z:') !== 0 && !zones[u.zone]) { u.key = ''; u.zone = ''; } });
       order.forEach(function (zk) {
         if (!POS[zk]) return;
         var free = function (mm) { return !mm.userData.zone; };
@@ -690,6 +695,43 @@ export function createLabScene(canvas, opts) {
         u.kind = z.kind;
       });
     }
+    // LABO-02 — les médailles de zone portent une clé `z:<zone>` : elles vivent dans le même lot de
+    // cinq médailles que celles des paires, sans jamais se voler la place (une vue n'a que l'un ou
+    // l'autre jeu).
+    var POS_FRONT = new THREE.Vector3(0, 0.95, 1.95);
+    var view = 'orbit', viewT = 0, zoneSel = null;
+    function zonePos(zone) {
+      if (zone === 'mc') return POS['course|muscu'];
+      if (zone === 'mn') return POS['muscu|nutrition'];
+      if (zone === 'cn') return POS['course|nutrition'];
+      return pillarsOn.muscu && pillarsOn.course && pillarsOn.nutrition ? POS.tri : POS_FRONT;
+    }
+    function setZones(list, selected) {
+      var wanted = {};
+      (list || []).forEach(function (z) { wanted['z:' + z.zone] = z; });
+      zoneSel = selected || null;
+      medals.forEach(function (mm) { var u = mm.userData; if (u.zone && u.zone.indexOf('z:') === 0 && !wanted[u.zone]) { u.key = ''; u.zone = ''; u.zoneId = ''; } });
+      Object.keys(wanted).forEach(function (zk) {
+        var z = wanted[zk];
+        var free = function (mm) { return !mm.userData.zone; };
+        var mm = medals.filter(function (x) { return x.userData.zone === zk; })[0] || medals.filter(function (x) { return free(x) && x.userData.s < 0.05; })[0] || medals.filter(free)[0];
+        if (!mm) return;
+        var u = mm.userData, sig = zk + z.kind, pos = zonePos(z.zone);
+        if (u.zone !== zk) { u.zone = zk; mm.position.copy(pos).add(new THREE.Vector3(0, -0.6, 0)); }
+        if (u.key !== sig) u.pop = 1;
+        u.key = sig;
+        u.zoneId = z.zone;
+        u.target.copy(pos);
+        u.coin.material = medalMats[z.kind]; u.loop.material = medalMats[z.kind];
+        u.faceF.material = faceMat(1, z.kind); u.faceB.material = faceMat(1, z.kind);
+        var pair = z.pair && z.pair.length === 2 ? z.pair : ['socle', 'socle'];
+        u.ribA.material = ribbonMat(PILLAR_HEX[pair[0]] || PILLAR_HEX.socle); u.ribB.material = ribbonMat(PILLAR_HEX[pair[1]] || PILLAR_HEX.socle);
+        u.halo.material.color.set(z.kind === 'guard' ? 0xff6a55 : z.kind === 'tension' ? 0xd99a45 : 0xf2d28a);
+        u.kind = z.kind;
+      });
+      if (view === 'top') state.guard = (list || []).some(function (z) { return z.kind === 'guard'; });
+    }
+    function setView(v) { view = v === 'top' ? 'top' : 'orbit'; if (view === 'top') { yawT = 0; pitchT = 0; } }
     function pulse(p) { if (p in pulses) pulses[p] = 1; }
     function select(p) { state.selected = p; }
     function setStage(s) { state.stage = s; if (s === 'compose') { state.week = 0; state.bilan = 0; } }
@@ -700,11 +742,28 @@ export function createLabScene(canvas, opts) {
     var down = null, yaw = 0, yawT = 0, pitch = 0, pitchT = 0, tilt = 0, ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
     var onDown = function (e) { down = { x: e.clientX, y: e.clientY, yaw: yawT, pitch: pitchT, moved: false }; };
     canvas.addEventListener('pointerdown', onDown);
-    var onMove = function (e) { if (!down) return; var dx = e.clientX - down.x, dy = e.clientY - down.y; if (Math.abs(dx) + Math.abs(dy) > 6) down.moved = true; yawT = Math.max(-0.9, Math.min(0.9, down.yaw - dx * 0.005)); pitchT = Math.max(-0.25, Math.min(0.3, down.pitch + dy * 0.003)); };
+    var onMove = function (e) {
+      if (!down) return; var dx = e.clientX - down.x, dy = e.clientY - down.y; if (Math.abs(dx) + Math.abs(dy) > 6) down.moved = true;
+      // Vue du dessus : la carte ne tourne pas sous le doigt — on la touche, on ne la fait pas pivoter.
+      if (view === 'top') return;
+      yawT = Math.max(-0.9, Math.min(0.9, down.yaw - dx * 0.005)); pitchT = Math.max(-0.25, Math.min(0.3, down.pitch + dy * 0.003));
+    };
     window.addEventListener('pointermove', onMove);
     var onUp = function (e) {
       if (!down) return; var click = !down.moved; down = null; if (!click) return;
       var rect = canvas.getBoundingClientRect(); ndc.set(((e.clientX - rect.left) / rect.width) * 2 - 1, -((e.clientY - rect.top) / rect.height) * 2 + 1);
+      // LABO-02 — une médaille de zone se touche au plus près, à l'écran : un rayon sur un objet de
+      // quelques pixels raterait la moitié des doigts. Rayon de prise ~34 px, la plus proche gagne.
+      var pickZone = null, pickD = 34;
+      medals.forEach(function (mm) {
+        var u = mm.userData; if (!mm.visible || !u.zoneId || u.s < 0.3) return;
+        var pv = mm.getWorldPosition(new THREE.Vector3()).project(camera);
+        var px = ((pv.x + 1) / 2) * rect.width + rect.left, py = ((1 - pv.y) / 2) * rect.height + rect.top;
+        var d = Math.hypot(px - e.clientX, py - e.clientY);
+        if (d < pickD) { pickD = d; pickZone = u.zoneId; }
+      });
+      if (pickZone) { if (opts.onPickZone) opts.onPickZone(pickZone); return; }
+      if (view === 'top') { if (opts.onPickZone) opts.onPickZone(null); return; }
       ray.setFromCamera(ndc, camera);
       var best = null;
       [[stack, 'muscu'], [track, 'course'], [dish, 'nutrition'], [ring, 'socle'], [lampGroup, 'socle']].forEach(function (t) { var hit = ray.intersectObject(t[0], true)[0]; if (hit && (!best || hit.distance < best.d)) best = { d: hit.distance, p: t[1] }; });
@@ -820,9 +879,12 @@ export function createLabScene(canvas, opts) {
       }
       focusV.x += (fx - focusV.x) * kf; focusV.y += (fy - focusV.y) * kf; focusV.z += (fz - focusV.z) * kf; distMul += (fd - distMul) * kf;
       var sway = Math.sin(time * 0.2) * 0.06 * m;
-      var dist = Math.max(9.6, 9.4 / camera.aspect) * distMul * (1 + ie * 0.9);
-      var polarA = 0.98 - pitch - ie * 0.42, yawI = yaw + sway + ie * 0.9;
-      look.set(focusV.x, focusV.y + state.bilan * 0.7, focusV.z);
+      // LABO-02 — vue du dessus : l'angle polaire descend vers ~0,2 rad (quasi zénithal), le lacet
+      // revient à zéro, et le cadrage se recentre sur les trois disques.
+      viewT += ((view === 'top' ? 1 : 0) - viewT) * (reduced ? 1 : 1 - Math.pow(0.04, dt));
+      var dist = Math.max(9.6, 9.4 / camera.aspect) * (distMul * (1 - viewT) + 0.96 * viewT) * (1 + ie * 0.9);
+      var polarA = (0.98 - pitch - ie * 0.42) * (1 - viewT) + 0.2 * viewT, yawI = (yaw + sway + ie * 0.9) * (1 - viewT);
+      look.set(focusV.x * (1 - viewT), (focusV.y + state.bilan * 0.7) * (1 - viewT) + 0.62 * viewT, focusV.z * (1 - viewT) + 0.34 * viewT);
       camera.position.set(look.x + Math.sin(yawI) * Math.sin(polarA) * dist, look.y + Math.cos(polarA) * dist, look.z + Math.cos(yawI) * Math.sin(polarA) * dist);
       camera.lookAt(look);
 
@@ -943,14 +1005,18 @@ export function createLabScene(canvas, opts) {
         if (on) mm.visible = true;
         u.s += ((on ? 1 : 0) - u.s) * Math.min(1, k * 1.4);
         u.pop = Math.max(0, u.pop - dt * 2.5);
-        mm.scale.setScalar(Math.max(0.001, u.s * 0.85 * (1 + u.pop * 0.3)));
+        // LABO-02 — la zone touchée grossit, les autres s'effacent un peu (jamais complètement).
+        var selK = u.zoneId && zoneSel ? (u.zoneId === zoneSel ? 1.25 : 0.82) : 1;
+        mm.scale.setScalar(Math.max(0.001, u.s * 0.85 * (1 + u.pop * 0.3) * selK));
         if (u.s < 0.02 && !on) mm.visible = false;
         mm.position.lerp(state.bilan > 0 ? v3.copy(discovery.position) : u.target, k);
         mm.position.y += Math.sin(time * 1.4 + u.phase) * 0.0015 * m;
         var shake = u.kind === 'tension' && !reduced ? Math.sin(time * 38 + i) * 0.04 : 0;
-        u.spin.rotation.y = Math.sin(time * 0.7 + u.phase) * 0.5 * m + yaw * 0.6 + shake + (reduced ? (i % 2 ? -0.35 : 0.35) : 0);
+        u.spin.rotation.y = (Math.sin(time * 0.7 + u.phase) * 0.5 * m + yaw * 0.6 + shake + (reduced ? (i % 2 ? -0.35 : 0.35) : 0)) * (1 - viewT);
         u.spin.rotation.z = Math.sin(time * 1.2 + u.phase) * 0.05 * m;
-        u.halo.material.opacity = u.kind === 'guard' ? 0.3 + guardPulse * 0.3 : 0.16;
+        // Vue du dessus : la face se couche vers le ciel, sinon on ne verrait que la tranche.
+        u.spin.rotation.x = (-Math.PI / 2) * viewT * 0.92;
+        u.halo.material.opacity = (u.kind === 'guard' ? 0.3 + guardPulse * 0.3 : 0.16) * (u.zoneId && zoneSel && u.zoneId !== zoneSel ? 0.4 : 1);
       });
       discovery.scale.setScalar(Math.max(0.001, discovery.scale.x + ((state.bilan > 0.55 ? 1 : 0.001) - discovery.scale.x) * k));
       discovery.rotation.y = Math.sin(time * 0.8) * 0.5 * m + yaw;
@@ -1006,6 +1072,7 @@ export function createLabScene(canvas, opts) {
 
     return {
       ok: true, setPillars: setPillars, setValues: setValues, setCrossings: setCrossings, pulse: pulse, select: select, setStage: setStage, setWeek: setWeek, setBilan: setBilan,
+      setView: setView, setZones: setZones,
       setMode: setMode, setReality: setReality, focus: focus, setLabels: setLabels, dispose: dispose,
       quality: function () { return post ? 'post' : 'direct'; },
       setReducedMotion: function (b) { reduced = b; },

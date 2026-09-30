@@ -1,58 +1,52 @@
 /**
- * US LABO-01 — l'écran du Labo (`app/(tabs)/lab.tsx`), monté pour de vrai.
+ * US LABO-01 → LABO-02 / LABO-04 — l'écran du Labo (`app/(tabs)/lab.tsx`), monté pour de vrai.
  *
  * Toutes les **règles** vivent dans `@wellness/shared` (couvertes sous Vitest) et toutes les
- * **lectures** dans `lab-repository`. Ce qui est testé ici est ce que l'écran **décide**, et
- * d'abord la promesse sur laquelle repose la confiance dans cet écran :
+ * **lectures** dans `cross-links-repository` / `lab-repository`. Ce qui est testé ici est ce que
+ * l'écran **décide**, et d'abord la promesse sur laquelle repose la confiance dans cet écran :
  *
- *  1. **rien n'est écrit sans la feuille** (R4) — un appui sur une proposition la met « prête »,
+ *  1. **rien n'est écrit sans la feuille** (R4) — un appui sur le geste d'un lien le met « prêt »,
  *     l'écriture n'a lieu qu'à la confirmation. Un Labo qui modifierait le plan au tap serait
  *     exactement le « joujou » qu'on ne veut pas : on cesserait d'y toucher ;
- *  2. **une proposition qui n'écrit rien part tout de suite** — la faire passer par une feuille
- *     « ce qui change dans ton plan » alors que rien ne change serait mensonger ;
- *  3. **le geste écrit ce que la proposition annonce**, au bon identifiant et au bon jour ;
- *  4. **l'expérience démarre le lundi suivant**, jamais aujourd'hui : une semaine commencée un
- *     jeudi ne se compare à rien.
+ *  2. **un geste qui n'écrit rien part tout de suite** — le faire passer par une feuille « ce qui
+ *     change dans ton plan » alors que rien ne change serait mensonger ;
+ *  3. **le geste écrit ce que le lien annonce**, au bon identifiant et au bon jour ;
+ *  4. **l'expérience démarre le lundi suivant**, jamais aujourd'hui ; une expérience terminée est
+ *     close **avec son verdict figé** (LABO-04) ;
+ *  5. **décision H** : un pilier désactivé ne produit rien — une seule ligne discrète, masquable.
  *
  * La scène 3D est remplacée par un double : elle vit dans une WebView (WebGL), que jest-expo ne
- * sait pas monter — et ce qu'elle décide a été sorti dans `scene-state.ts`, testé à part.
+ * sait pas monter — et ce qu'elle décide a été sorti dans `scene-state.ts`, testé à part. Le double
+ * expose un bouton par zone, pour vérifier que toucher la carte filtre la liste.
  */
 
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import type { LabKnowledgeCard, LabProposal, LabQuestion, LabWeek } from '@wellness/shared';
+import type { CrossLink, CrossLinkAction, CrossLinkState, LabProposal, LabQuestion, LabWeek } from '@wellness/shared';
 
 import LabScreen from '../lab';
 import type { LabExperimentView } from '@/data/repositories/lab-repository';
-import {
-  nextMondayKey,
-  useLabComposer,
-  useLabKnowledge,
-  useLabObjective,
-  useLabPillars,
-  useLabQuestions,
-  useLabWeek,
-} from '@/data/repositories/lab-repository';
+import { nextMondayKey, useLabComposer, useLabObjective, useLabPillars } from '@/data/repositories/lab-repository';
+import { useCrossLinks } from '@/data/repositories/cross-links-repository';
 import { finishLabExperiment, startLabExperiment, stopLabExperiment } from '@/data/repositories/lab-experiment-repository';
 import { applyAdaptationForToday, reschedulePlannedSession } from '@/data/repositories/planned-session-repository';
 import { upsertNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { upsertRunnerProfile } from '@/data/repositories/running-profile-repository';
-import { useRouter } from 'expo-router';
+import { useLabOtherPillars } from '@/stores/lab-other-pillars-store';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
 jest.mock('@/data/repositories/lab-repository', () => ({
-  useLabWeek: jest.fn(),
-  useLabQuestions: jest.fn(() => ({ questions: [] })),
-  useLabKnowledge: jest.fn(() => ({ cards: [], experiments: [] })),
   useLabComposer: jest.fn(),
   useLabObjective: jest.fn(() => 'maintain'),
   useLabPillars: jest.fn(() => ['strength', 'running', 'nutrition']),
   // La vraie fonction lit une clé de jour, jamais l'horloge : on la reproduit telle quelle.
   nextMondayKey: jest.fn(() => '2026-09-21'),
 }));
+jest.mock('@/data/repositories/cross-links-repository', () => ({ useCrossLinks: jest.fn() }));
 jest.mock('@/data/repositories/lab-experiment-repository', () => ({
   startLabExperiment: jest.fn(async () => 'exp-1'),
   stopLabExperiment: jest.fn(async () => undefined),
@@ -64,22 +58,41 @@ jest.mock('@/data/repositories/planned-session-repository', () => ({
   applyAdaptationForToday: jest.fn(async () => undefined),
 }));
 // US NARR-01 : l'écran lit les réglages pour savoir si le consentement IA est donné. Non bouchonné,
-// l'import tire i18n et fait tomber toute la suite. `settings: null` = pas de consentement, donc
-// le panneau « Pourquoi ? » reste exactement celui d'avant l'US — ce que ces tests vérifient.
+// l'import tire i18n et fait tomber toute la suite. `settings: null` = pas de consentement.
 jest.mock('@/data/repositories/settings-repository', () => ({
   useSettings: () => ({ settings: null, isLoading: false }),
 }));
 jest.mock('@/data/repositories/nutrition-repository', () => ({ upsertNutritionProfile: jest.fn(async () => undefined) }));
 jest.mock('@/data/repositories/running-profile-repository', () => ({ upsertRunnerProfile: jest.fn(async () => undefined) }));
-
-/** La scène vit dans une WebView : on la remplace par sa légende, qui suffit à vérifier le mode. */
-jest.mock('@/components/lab/LabStage', () => {
+jest.mock('@/data/goal-conflict-resolution', () => ({
+  keepMainGoal: jest.fn(async () => undefined),
+  keepPillarGoal: jest.fn(async () => undefined),
+}));
+jest.mock('@/components/dashboard/CouncilSheet', () => {
   const { Text } = require('react-native');
+  return { CouncilSheet: () => <Text testID="council-sheet">council</Text> };
+});
+jest.mock('@/lib/secure-storage', () => ({
+  secureStorage: { getItem: jest.fn(async () => null), setItem: jest.fn(async () => undefined) },
+}));
+
+/** La scène vit dans une WebView : on la remplace par sa légende, et un bouton par zone. */
+jest.mock('@/components/lab/LabStage', () => {
+  const { Pressable, Text, View } = require('react-native');
   return {
     LAB_STAGE_HEIGHT: 300,
-    LabStage: ({ caption }: { caption: string }) => <Text testID="lab-stage">{caption}</Text>,
+    LabStage: ({ caption, footer, onPickZone }: { caption: string; footer?: React.ReactNode; onPickZone?: (z: string) => void }) => (
+      <View>
+        <Text testID="lab-stage">{caption}</Text>
+        <Pressable testID="pick-zone-mn" onPress={() => onPickZone?.('mn')} />
+        {footer}
+      </View>
+    ),
   };
 });
+jest.mock('@/components/stage/PillarStage', () => ({
+  useStageTheme: () => ({ ink: '#fff', inkMuted: '#ccc', glass: '#0003', glassBorder: '#fff3', solid: '#7a5714', onSolid: '#fff' }),
+}));
 
 jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: jest.fn(() => '2026-09-16') }));
 jest.mock('@/hooks/useMenuFocus', () => ({ useMenuFocus: jest.fn() }));
@@ -89,7 +102,7 @@ jest.mock('@/hooks/useActionLock', () => ({
 }));
 jest.mock('@/lib/haptics', () => ({ hapticConfirm: jest.fn(), hapticSelect: jest.fn() }));
 
-jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
+jest.mock('expo-router', () => ({ useRouter: jest.fn(), useLocalSearchParams: jest.fn(() => ({})) }));
 jest.mock('expo-status-bar', () => ({ StatusBar: () => null }));
 jest.mock('@expo/vector-icons', () => {
   const { Text } = require('react-native');
@@ -122,11 +135,14 @@ jest.mock('@/theme/useTheme', () => ({
       textMuted: '#96856f',
       background: '#fffaf2',
       surface: '#fffaf2',
+      surfaceAlt: '#f5ecdd',
       border: '#ece0cd',
       accent: '#c0562f',
       accentText: '#ffffff',
+      amber: '#d99a2b',
       success: '#3f7d4f',
       warnText: '#8a5a12',
+      warnBorder: '#e6c98f',
       danger: '#b23b2e',
       pillarStrength: '#8a3d2a',
       pillarRunning: '#2f6b6b',
@@ -140,19 +156,18 @@ jest.mock('@/theme/useTheme', () => ({
 // Fixtures
 // ---------------------------------------------------------------------------
 
-const mockWeek = useLabWeek as jest.Mock;
-const mockQuestions = useLabQuestions as jest.Mock;
-const mockKnowledge = useLabKnowledge as jest.Mock;
+const mockCrossLinks = useCrossLinks as jest.Mock;
 const mockComposer = useLabComposer as jest.Mock;
 const mockPillars = useLabPillars as jest.Mock;
 const mockObjective = useLabObjective as jest.Mock;
 const mockRouter = useRouter as jest.Mock;
+const mockParams = useLocalSearchParams as jest.Mock;
 
 const push = jest.fn();
 
 const DAYS = ['2026-09-14', '2026-09-15', '2026-09-16', '2026-09-17', '2026-09-18', '2026-09-19', '2026-09-20'];
 
-const semaine = (proposals: LabProposal[] = []): LabWeek => ({
+const semaine = (): LabWeek => ({
   days: DAYS.map((dayKey) => ({
     dayKey,
     isToday: dayKey === '2026-09-16',
@@ -168,7 +183,8 @@ const semaine = (proposals: LabProposal[] = []): LabWeek => ({
     nutrition: { gPerKg: 1.4, target: { min: 1.6, max: 2.2 }, loggedDays: 5 },
     sleep: { goodNights: 3, loggedNights: 5, lastMinutes: 430 },
   },
-  proposals,
+  proposals: [],
+  allProposals: [],
 });
 
 const COLLISION: LabProposal = {
@@ -201,6 +217,34 @@ const PROTEINES: LabProposal = {
   action: { type: 'open', target: 'foodSuggestion' },
 };
 
+const ZONE_OF: Record<CrossLink['id'], CrossLink['zone']> = {
+  sports: 'mc',
+  fuelStrength: 'mn',
+  fuelRunning: 'cn',
+  recovery: 'centre',
+  weight: 'mn',
+  goals: 'centre',
+  rhythm: 'centre',
+  strengthWeight: 'mn',
+  cycle: 'centre',
+};
+
+const lien = (id: CrossLink['id'], state: CrossLinkState, actions: CrossLinkAction[] = []): CrossLink => ({
+  id,
+  zone: ZONE_OF[id],
+  lens: ['strength', 'running'],
+  state,
+  verdict: { key: 'v', values: {} },
+  short: { key: 's', values: {} },
+  figures: [],
+  rows: [],
+  actions,
+  missing: state === 'discover' ? { key: 'weeks', values: { have: 1, need: 3 }, have: 1, need: 3 } : null,
+  chart: null,
+  source: { key: 'src', values: {} },
+  echoes: [],
+});
+
 const contexteComposer = (over: Record<string, unknown> = {}) => ({
   context: {
     activePillars: ['strength', 'running', 'nutrition'],
@@ -215,16 +259,23 @@ const contexteComposer = (over: Record<string, unknown> = {}) => ({
 });
 
 type Affichage = {
-  week?: LabWeek;
+  links?: CrossLink[];
   questions?: LabQuestion[];
-  knowledge?: { cards: LabKnowledgeCard[]; experiments: LabExperimentView[] };
+  experiments?: LabExperimentView[];
+  composer?: ReturnType<typeof contexteComposer>;
 };
 
-const afficher = async ({ week = semaine(), questions = [], knowledge = { cards: [], experiments: [] } }: Affichage = {}) => {
-  mockWeek.mockReturnValue({ week });
-  mockQuestions.mockReturnValue({ questions });
-  mockKnowledge.mockReturnValue(knowledge);
-  mockComposer.mockReturnValue(contexteComposer());
+const afficher = async ({ links = [], questions = [], experiments = [], composer = contexteComposer() }: Affichage = {}) => {
+  mockCrossLinks.mockReturnValue({
+    links,
+    learning: [],
+    core: { week: semaine(), questions, cards: [], experiments },
+    weeks: [],
+    goalConflict: null,
+    cycleTrackingEnabled: false,
+    isLoading: false,
+  });
+  mockComposer.mockReturnValue(composer);
   await render(<LabScreen />);
 };
 
@@ -234,16 +285,18 @@ const taper = async (element: Parameters<typeof fireEvent.press>[0]) => {
   });
 };
 
-const allerA = async (onglet: 'week' | 'composer' | 'why' | 'known') => {
-  await taper(screen.getByLabelText(`lab.tabs.${onglet}`));
+const allerA = async (onglet: 'cross' | 'composer' | 'learn') => {
+  await taper(screen.getByTestId(`lab-tab-${onglet}`));
 };
 
 beforeEach(() => {
   jest.clearAllMocks();
   mockRouter.mockReturnValue({ push });
+  mockParams.mockReturnValue({});
   mockPillars.mockReturnValue(['strength', 'running', 'nutrition']);
   mockObjective.mockReturnValue('maintain');
   (nextMondayKey as jest.Mock).mockReturnValue('2026-09-21');
+  useLabOtherPillars.setState({ hidden: false, hydrated: false });
 });
 
 // ---------------------------------------------------------------------------
@@ -251,11 +304,27 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('navigation entre onglets', () => {
-  it('ouvre sur la semaine, et la scène annonce le mode', async () => {
+  it('ouvre sur Croiser : la scène l’annonce, la semaine réelle reste en bas', async () => {
+    await afficher({ links: [lien('recovery', 'holds')] });
+
+    expect(screen.getByTestId('lab-stage')).toHaveTextContent('lab.stage.cross');
+    expect(screen.getByTestId('lab-cross-panel')).toBeTruthy();
+    expect(screen.getByTestId('lab-progress-sleep')).toBeTruthy();
+  });
+
+  it('un lien entrant `?section=learn` ouvre directement Apprendre', async () => {
+    mockParams.mockReturnValue({ section: 'learn' });
     await afficher();
 
-    expect(screen.getByTestId('lab-stage')).toHaveTextContent('lab.stage.week');
-    expect(screen.getByTestId('lab-progress-sleep')).toBeTruthy();
+    expect(screen.getByTestId('lab-stage')).toHaveTextContent('lab.stage.learn');
+    expect(screen.getByTestId('lab-learn-panel')).toBeTruthy();
+  });
+
+  it('une section inconnue retombe sur Croiser', async () => {
+    mockParams.mockReturnValue({ section: 'week' });
+    await afficher();
+
+    expect(screen.getByTestId('lab-stage')).toHaveTextContent('lab.stage.cross');
   });
 
   it('chaque onglet change la scène ET le corps', async () => {
@@ -265,8 +334,8 @@ describe('navigation entre onglets', () => {
     expect(screen.getByTestId('lab-stage')).toHaveTextContent('lab.stage.composer');
     expect(screen.getByTestId('lab-lever-proteinGPerKg')).toBeTruthy();
 
-    await allerA('why');
-    expect(screen.getByTestId('lab-stage')).toHaveTextContent('lab.stage.why');
+    await allerA('learn');
+    expect(screen.getByTestId('lab-stage')).toHaveTextContent('lab.stage.learn');
     expect(screen.getByText('lab.why.emptyTitle')).toBeTruthy();
   });
 
@@ -284,78 +353,224 @@ describe('navigation entre onglets', () => {
 });
 
 // ---------------------------------------------------------------------------
+// Croiser — la liste des liens
+// ---------------------------------------------------------------------------
+
+describe('Croiser', () => {
+  it('range les liens par état : le garde-fou d’abord, et le dit en tête', async () => {
+    await afficher({ links: [lien('recovery', 'guard'), lien('fuelStrength', 'adjust'), lien('rhythm', 'holds'), lien('cycle', 'discover')] });
+
+    expect(screen.getByText('lab.cross.leadGuard')).toBeTruthy();
+    for (const state of ['guard', 'adjust', 'holds', 'discover']) {
+      expect(screen.getByTestId(`lab-section-${state}`)).toBeTruthy();
+    }
+  });
+
+  it('toucher une carte ouvre la fiche du lien', async () => {
+    await afficher({ links: [lien('rhythm', 'holds')] });
+
+    await taper(screen.getByTestId('lab-link-rhythm'));
+
+    expect(push).toHaveBeenCalledWith('/lab-link?id=rhythm');
+  });
+
+  it('toucher une zone de la carte filtre la liste — « Tout voir » la rend entière', async () => {
+    await afficher({ links: [lien('sports', 'holds'), lien('fuelStrength', 'holds')] });
+
+    await taper(screen.getByTestId('pick-zone-mn'));
+
+    expect(screen.getByTestId('lab-zone-filter')).toBeTruthy();
+    expect(screen.getByTestId('lab-link-fuelStrength')).toBeTruthy();
+    expect(screen.queryByTestId('lab-link-sports')).toBeNull();
+
+    await taper(screen.getByText('lab.cross.showAll'));
+    expect(screen.getByTestId('lab-link-sports')).toBeTruthy();
+  });
+
+  it('le Conseil des trois s’ouvre depuis le lien des objectifs', async () => {
+    const conflict = { rule: 'bulkVsLean' } as unknown as Extract<CrossLinkAction, { type: 'council' }>['conflict'];
+    await afficher({ links: [lien('goals', 'adjust', [{ type: 'council', conflict }])] });
+
+    await taper(screen.getByTestId('lab-link-goals-action'));
+
+    expect(screen.getByTestId('council-sheet')).toBeTruthy();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Décision H — les piliers non activés
+// ---------------------------------------------------------------------------
+
+describe('piliers non activés (décision H, Q4)', () => {
+  it('avec deux piliers, une seule ligne discrète dit ce que le Labo croiserait', async () => {
+    mockPillars.mockReturnValue(['strength', 'running']);
+    await afficher({ links: [lien('sports', 'holds')] });
+
+    expect(screen.getByTestId('lab-other-pillars')).toBeTruthy();
+    expect(screen.getByText('lab.cross.otherPillarsMc')).toBeTruthy();
+  });
+
+  it('🔴 masquée, elle ne revient pas', async () => {
+    mockPillars.mockReturnValue(['strength', 'running']);
+    await afficher({ links: [lien('sports', 'holds')] });
+
+    await taper(screen.getByLabelText('lab.cross.hideOther'));
+
+    // Un reproche qui revient à chaque ouverture ferait du pilier désactivé une dette — l'inverse
+    // de la décision H.
+    expect(screen.queryByTestId('lab-other-pillars')).toBeNull();
+    expect(useLabOtherPillars.getState().hidden).toBe(true);
+  });
+
+  it('avec les trois piliers, rien à dire', async () => {
+    await afficher({ links: [lien('sports', 'holds')] });
+
+    expect(screen.queryByTestId('lab-other-pillars')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
 // R4 — rien ne s'écrit sans la feuille
 // ---------------------------------------------------------------------------
 
-describe('appliquer une proposition', () => {
-  it('🔴 le premier appui met « prêt » et n’écrit RIEN', async () => {
-    await afficher({ week: semaine([COLLISION]) });
+describe('appliquer le geste d’un lien', () => {
+  const collision = () => lien('sports', 'adjust', [{ type: 'proposal', proposal: COLLISION }]);
 
-    await taper(screen.getByText('lab.proposals.collision.action:{"legSets":12,"toDayKey":"2026-09-19"}'));
+  it('🔴 le premier appui met « prêt » et n’écrit RIEN', async () => {
+    await afficher({ links: [collision()] });
+
+    await taper(screen.getByTestId('lab-link-sports-action'));
 
     // C'est toute la promesse de l'écran : le Labo propose, l'utilisateur dispose. Écrire au tap
     // ferait du plan un terrain glissant, et on cesserait d'explorer.
     expect(reschedulePlannedSession).not.toHaveBeenCalled();
-    expect(screen.getByText('lab.week.staged')).toBeTruthy();
+    expect(screen.getByText('lab.cross.staged')).toBeTruthy();
   });
 
-  it('la feuille nomme le changement, le pilier et les écrans où ça se verra', async () => {
-    await afficher({ week: semaine([COLLISION]) });
+  it('la feuille nomme le changement, et les écrans où ça se verra', async () => {
+    await afficher({ links: [collision()] });
 
-    await taper(screen.getByText('lab.proposals.collision.action:{"legSets":12,"toDayKey":"2026-09-19"}'));
-    await taper(screen.getByLabelText('lab.week.apply:{"count":1}'));
+    await taper(screen.getByTestId('lab-link-sports-action'));
+    await taper(screen.getByLabelText('lab.cross.apply:{"count":1}'));
 
     expect(screen.getByTestId('lab-change-collision:2026-09-17')).toBeTruthy();
     expect(screen.getByText('lab.apply.where:{"list":"lab.proposals.collision.changeWhere"}')).toBeTruthy();
   });
 
-  it('confirmer DÉPLACE la séance au jour annoncé', async () => {
-    await afficher({ week: semaine([COLLISION]) });
+  it('🔴 la feuille dit le JOUR en toutes lettres, jamais la clé brute', async () => {
+    await afficher({ links: [collision()] });
 
-    await taper(screen.getByText('lab.proposals.collision.action:{"legSets":12,"toDayKey":"2026-09-19"}'));
-    await taper(screen.getByLabelText('lab.week.apply:{"count":1}'));
+    await taper(screen.getByTestId('lab-link-sports-action'));
+    await taper(screen.getByLabelText('lab.cross.apply:{"count":1}'));
+
+    // Avant LIENS-01, la feuille affichait « Séance déplacée au 2026-09-19 ».
+    const detail = screen.getByTestId('lab-change-collision:2026-09-17');
+    expect(detail).toHaveTextContent(/"toDay":"samedi"/);
+  });
+
+  it('confirmer DÉPLACE la séance au jour annoncé', async () => {
+    await afficher({ links: [collision()] });
+
+    await taper(screen.getByTestId('lab-link-sports-action'));
+    await taper(screen.getByLabelText('lab.cross.apply:{"count":1}'));
     await taper(screen.getByLabelText('lab.apply.confirm'));
 
     expect(reschedulePlannedSession).toHaveBeenCalledWith('ps-1', '2026-09-19');
-    expect(screen.getByText('lab.week.applied')).toBeTruthy();
+    expect(screen.getByText('lab.cross.applied')).toBeTruthy();
+  });
+
+  it('🔴 la collision suivante du même lien reste applicable (mémorisé par proposition, pas par lien)', async () => {
+    await afficher({ links: [collision()] });
+    await taper(screen.getByTestId('lab-link-sports-action'));
+    await taper(screen.getByLabelText('lab.cross.apply:{"count":1}'));
+    await taper(screen.getByLabelText('lab.apply.confirm'));
+
+    // Le registre se recalcule : la première collision est réglée, le lien porte la seconde.
+    const SECONDE: LabProposal = {
+      ...COLLISION,
+      id: 'collision:2026-09-24',
+      values: { legSets: 10, toDayKey: '2026-09-26' },
+      action: { type: 'reschedule', plannedSessionId: 'ps-9', fromDayKey: '2026-09-24', toDayKey: '2026-09-26' },
+    };
+    mockCrossLinks.mockReturnValue({
+      links: [lien('sports', 'adjust', [{ type: 'proposal', proposal: SECONDE }])],
+      learning: [],
+      core: { week: semaine(), questions: [], cards: [], experiments: [] },
+      weeks: [],
+      goalConflict: null,
+      cycleTrackingEnabled: false,
+      isLoading: false,
+    });
+    await act(async () => {
+      await screen.rerender(<LabScreen />);
+    });
+
+    // Avant : mémorisé par lien, le bouton restait « Dans ton plan », désactivé, jusqu'au redémarrage.
+    expect(screen.queryByText('lab.cross.applied')).toBeNull();
+    await taper(screen.getByTestId('lab-link-sports-action'));
+    await taper(screen.getByLabelText('lab.cross.apply:{"count":1}'));
+    await taper(screen.getByLabelText('lab.apply.confirm'));
+    expect(reschedulePlannedSession).toHaveBeenLastCalledWith('ps-9', '2026-09-26');
   });
 
   it('un allègement passe par l’adaptation du jour, sans toucher l’allure', async () => {
-    await afficher({ week: semaine([NUIT_COURTE]) });
+    await afficher({ links: [lien('recovery', 'guard', [{ type: 'proposal', proposal: NUIT_COURTE }])] });
 
-    await taper(screen.getByText('lab.proposals.shortNight.action:{}'));
-    await taper(screen.getByLabelText('lab.week.apply:{"count":1}'));
+    await taper(screen.getByTestId('lab-link-recovery-action'));
+    await taper(screen.getByLabelText('lab.cross.apply:{"count":1}'));
     await taper(screen.getByLabelText('lab.apply.confirm'));
 
     // Même écriture que l'adaptation de CARDIO-UX01 : une seule journée, pas le programme.
     expect(applyAdaptationForToday).toHaveBeenCalledWith('ps-2', { repsReductionPct: 25, paceSlowdownSPerKm: null });
   });
 
-  it('🔴 une proposition qui n’écrit rien NAVIGUE, sans passer par la feuille', async () => {
-    await afficher({ week: semaine([PROTEINES]) });
+  it('🔴 un geste qui n’écrit rien NAVIGUE, sans passer par la feuille', async () => {
+    await afficher({ links: [lien('fuelStrength', 'adjust', [{ type: 'proposal', proposal: PROTEINES }])] });
 
-    await taper(screen.getByText('lab.proposals.protein.action:{"gPerKg":1.4,"targetMin":1.6,"missingG":14}'));
+    await taper(screen.getByTestId('lab-link-fuelStrength-action'));
 
     // Une feuille « ce qui change dans ton plan » devant un changement qui n'existe pas apprendrait
     // à la confirmer sans lire — et c'est la seule protection de cet écran.
     // US NUTRI-UX03 (D14) — noter un repas : l'onglet Aujourd'hui, quel que soit le dernier choisi.
     expect(push).toHaveBeenCalledWith('/nutrition?section=today');
-    expect(screen.queryByLabelText('lab.apply.confirm')).toBeNull();
+    expect(screen.queryByLabelText(/lab\.cross\.apply/)).toBeNull();
   });
 
-  it('« retirer » annule une proposition mise prête', async () => {
-    await afficher({ week: semaine([COLLISION]) });
+  it('un geste « ouvrir » part vers son écran', async () => {
+    await afficher({ links: [lien('weight', 'adjust', [{ type: 'open', route: 'nutritionHistory' }])] });
 
-    await taper(screen.getByText('lab.proposals.collision.action:{"legSets":12,"toDayKey":"2026-09-19"}'));
-    await taper(screen.getByText('lab.week.remove'));
+    await taper(screen.getByTestId('lab-link-weight-action'));
 
-    expect(screen.queryByLabelText(/lab\.week\.apply/)).toBeNull();
+    expect(push).toHaveBeenCalledWith('/nutrition?section=history');
+  });
+
+  it('un second appui retire le geste mis prêt', async () => {
+    await afficher({ links: [collision()] });
+
+    await taper(screen.getByTestId('lab-link-sports-action'));
+    await taper(screen.getByTestId('lab-link-sports-action'));
+
+    expect(screen.queryByLabelText(/lab\.cross\.apply/)).toBeNull();
   });
 
   it('🔴 sans rien de prêt, aucun bouton d’application n’est offert', async () => {
-    await afficher({ week: semaine([COLLISION]) });
+    await afficher({ links: [collision()] });
 
-    expect(screen.queryByLabelText(/lab\.week\.apply/)).toBeNull();
+    expect(screen.queryByLabelText(/lab\.cross\.apply/)).toBeNull();
+  });
+
+  it('🔴 un échec d’écriture SE VOIT, au lieu de laisser croire que c’est fait', async () => {
+    (reschedulePlannedSession as jest.Mock).mockRejectedValueOnce(new Error('hors ligne'));
+    await afficher({ links: [collision()] });
+
+    await taper(screen.getByTestId('lab-link-sports-action'));
+    await taper(screen.getByLabelText('lab.cross.apply:{"count":1}'));
+    await taper(screen.getByLabelText('lab.apply.confirm'));
+
+    // Leçon CONF-06 : une rejection avalée laisse l'utilisateur croire son plan modifié. La feuille
+    // reste ouverte, avec le message — et le geste n'est PAS marqué appliqué.
+    expect(screen.getByText('lab.apply.error')).toBeTruthy();
+    expect(screen.queryByText('lab.cross.applied')).toBeNull();
   });
 });
 
@@ -364,8 +579,8 @@ describe('appliquer une proposition', () => {
 // ---------------------------------------------------------------------------
 
 describe('composer une formule', () => {
-  const monter = async () => {
-    await afficher();
+  const monter = async (composer = contexteComposer()) => {
+    await afficher({ composer });
     await allerA('composer');
   };
 
@@ -401,12 +616,7 @@ describe('composer une formule', () => {
   });
 
   it('🔴 sans poids connu, la cible de protéines n’est PAS écrite', async () => {
-    mockWeek.mockReturnValue({ week: semaine() });
-    mockQuestions.mockReturnValue({ questions: [] });
-    mockKnowledge.mockReturnValue({ cards: [], experiments: [] });
-    mockComposer.mockReturnValue(contexteComposer({ weightKg: null }));
-    await render(<LabScreen />);
-    await allerA('composer');
+    await monter(contexteComposer({ weightKg: null }));
 
     await taper(screen.getAllByLabelText('lab.composer.increase:{"lever":"lab.composer.lever.proteinGPerKg"}')[0]!);
 
@@ -440,10 +650,10 @@ describe('composer une formule', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Expériences
+// Apprendre — enquêtes et expériences
 // ---------------------------------------------------------------------------
 
-describe('expériences', () => {
+describe('Apprendre', () => {
   const question: LabQuestion = {
     id: 'q-paceFade',
     kind: 'paceFade',
@@ -467,9 +677,14 @@ describe('expériences', () => {
     experiment: 'legs48h',
   };
 
+  const enCours: LabExperimentView = {
+    record: { id: 'e-1', kind: 'legs48h', startKey: '2026-09-14', schedule: ['test', 'usual', 'usual', 'test'], status: 'running' },
+    verdict: { status: 'sealed', endKey: '2026-10-11' },
+  };
+
   it('🔴 l’expérience démarre le LUNDI SUIVANT, pas aujourd’hui', async () => {
     await afficher({ questions: [question] });
-    await allerA('why');
+    await allerA('learn');
 
     await taper(screen.getByTestId('lab-start-experiment'));
 
@@ -479,24 +694,26 @@ describe('expériences', () => {
     expect(startLabExperiment).toHaveBeenCalledWith('legs48h', '2026-09-21');
   });
 
-  it('lancer une expérience bascule sur les acquis, où elle se suit', async () => {
-    await afficher({ questions: [question] });
-    await allerA('why');
+  it('un suspect ouvre la fiche de son lien, en se souvenant d’où l’on vient', async () => {
+    await afficher({ questions: [question], links: [lien('sports', 'holds')] });
+    await allerA('learn');
 
-    await taper(screen.getByTestId('lab-start-experiment'));
+    await taper(screen.getByTestId('lab-suspect-legsBeforeQuality-link'));
 
-    expect(screen.getByTestId('lab-stage')).toHaveTextContent('lab.stage.known');
+    expect(push).toHaveBeenCalledWith('/lab-link?id=sports&from=learn');
+  });
+
+  it('🔴 un suspect dont le lien n’existe pas (pilier désactivé) n’offre pas de fiche', async () => {
+    await afficher({ questions: [question], links: [] });
+    await allerA('learn');
+
+    // Une fiche vide derrière un bouton serait une impasse : le lien n'est pas calculé.
+    expect(screen.queryByTestId('lab-suspect-legsBeforeQuality-link')).toBeNull();
   });
 
   it('une expérience déjà en cours ne se relance pas', async () => {
-    await afficher({
-      questions: [question],
-      knowledge: {
-        cards: [],
-        experiments: [{ record: { id: 'e-1', kind: 'legs48h', startKey: '2026-09-14', schedule: ['test', 'usual', 'usual', 'test'], status: 'running' }, verdict: { status: 'sealed', endKey: '2026-10-11' } }],
-      },
-    });
-    await allerA('why');
+    await afficher({ questions: [question], experiments: [enCours] });
+    await allerA('learn');
 
     // Deux protocoles simultanés sur la même question se contamineraient : la semaine « habitude »
     // de l'un serait la semaine « essai » de l'autre.
@@ -504,54 +721,31 @@ describe('expériences', () => {
     expect(screen.getByText('lab.why.alreadyRunning')).toBeTruthy();
   });
 
-  it('🔴 une expérience TERMINÉE ne bloque plus son modèle — et est clôturée à la relance', async () => {
+  it('🔴 une expérience TERMINÉE est close à la relance — AVEC son verdict figé (LABO-04)', async () => {
+    const verdict = { status: 'noEffect', delta: 0.4, better: false, testCount: 3, usualCount: 3 } as const;
     await afficher({
       questions: [question],
-      knowledge: {
-        cards: [],
-        experiments: [
-          {
-            record: { id: 'e-vieille', kind: 'legs48h', startKey: '2026-07-06', schedule: ['test', 'usual', 'usual', 'test'], status: 'running' },
-            // Fenêtre close : le verdict n'est plus scellé.
-            verdict: { status: 'noEffect', delta: 0.4, better: false, testCount: 3, usualCount: 3 },
-          },
-        ],
-      },
+      experiments: [
+        {
+          record: { id: 'e-vieille', kind: 'legs48h', startKey: '2026-07-06', schedule: ['test', 'usual', 'usual', 'test'], status: 'running' },
+          // Fenêtre close : le verdict n'est plus scellé.
+          verdict,
+        },
+      ],
     });
-    await allerA('why');
+    await allerA('learn');
 
-    // Avant correctif, `status` restait à `running` à vie : le bouton était remplacé pour toujours
-    // par « déjà en cours », et l'utilisateur n'avait AUCUN chemin pour refaire l'essai.
     await taper(screen.getByTestId('lab-start-experiment'));
 
-    // La ligne terminée est clôturée d'abord : l'index unique de la base ne tolère qu'une seule
-    // ligne `running` par modèle, et un rejet à l'upload figerait toute la file de synchro.
-    expect(finishLabExperiment).toHaveBeenCalledWith('e-vieille');
+    // La ligne terminée est clôturée d'abord (l'index unique ne tolère qu'une ligne `running` par
+    // modèle), et son verdict est écrit : recalculé plus tard, il bougerait avec les données.
+    expect(finishLabExperiment).toHaveBeenCalledWith('e-vieille', verdict);
     expect(startLabExperiment).toHaveBeenCalledWith('legs48h', '2026-09-21');
   });
 
-  it('🔴 un échec d’écriture SE VOIT, au lieu de laisser croire que c’est fait', async () => {
-    (reschedulePlannedSession as jest.Mock).mockRejectedValueOnce(new Error('hors ligne'));
-    await afficher({ week: semaine([COLLISION]) });
-
-    await taper(screen.getByText('lab.proposals.collision.action:{"legSets":12,"toDayKey":"2026-09-19"}'));
-    await taper(screen.getByLabelText('lab.week.apply:{"count":1}'));
-    await taper(screen.getByLabelText('lab.apply.confirm'));
-
-    // Leçon CONF-06 : une rejection avalée laisse l'utilisateur croire son plan modifié. La feuille
-    // reste ouverte, avec le message — et la proposition n'est PAS marquée appliquée.
-    expect(screen.getByText('lab.apply.error')).toBeTruthy();
-    expect(screen.queryByText('lab.week.applied')).toBeNull();
-  });
-
-  it('on peut arrêter une expérience depuis les acquis', async () => {
-    await afficher({
-      knowledge: {
-        cards: [],
-        experiments: [{ record: { id: 'e-1', kind: 'legs48h', startKey: '2026-09-14', schedule: ['test', 'usual', 'usual', 'test'], status: 'running' }, verdict: { status: 'sealed', endKey: '2026-10-11' } }],
-      },
-    });
-    await allerA('known');
+  it('on peut arrêter une expérience depuis Apprendre', async () => {
+    await afficher({ experiments: [enCours] });
+    await allerA('learn');
 
     await taper(screen.getByText('lab.known.stop'));
 

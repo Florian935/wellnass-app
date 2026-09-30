@@ -24,15 +24,7 @@ import {
   type SelectedInsight,
 } from '@wellness/shared';
 
-import {
-  useActivityLevelSuggestion,
-  useConcurrentTrainingInterference,
-  useDeficitVolumeAlert,
-  useOvertrainingGuardAlert,
-  useReadiness,
-  useRecentStrengthRecords,
-  useTrainingLoadAlert,
-} from '@/data/repositories/dashboard-repository';
+import { useRecentStrengthRecords } from '@/data/repositories/dashboard-repository';
 import { useGoals } from '@/data/repositories/goal-repository';
 import { useMuscleBalance } from '@/data/repositories/records-repository';
 import { useRealLifeState } from '@/data/repositories/real-life-repository';
@@ -71,14 +63,11 @@ export function useInsights(): { insights: SelectedInsight[]; isLoading: boolean
   const todayKey = useTodayKey();
 
   // Tous les hooks sont appelés **inconditionnellement** (règle des hooks + React Compiler).
-  const overtrainingGuard = useOvertrainingGuardAlert();
-  const trainingLoad = useTrainingLoadAlert();
-  // US INSIGHTS-02 : ces trois signaux avaient leur propre widget d'accueil jusqu'au 05/08/2026.
-  // Ils vivent désormais ici — c'est ce qui a permis de ramener le registre de 21 à 7.
-  const readiness = useReadiness();
-  const interference = useConcurrentTrainingInterference();
-  const activityLevel = useActivityLevelSuggestion();
-  const deficitVolume = useDeficitVolumeAlert();
+  //
+  // US LIENS-01 (décision Q2 du 30/09/2026) — les six alertes **croisées** (garde-fou, charge, forme
+  // du jour, interférence, niveau d'activité, déficit × volume) ne passent plus par cet écran : elles
+  // vivent au Labo, dans la fiche de leur lien, et remontent sur l'accueil par le widget. Leurs hooks
+  // ne sont donc plus montés ici — Insights garde l'intra-pilier et les célébrations.
   const { records, isLoading: recordsLoading } = useRecentStrengthRecords(4);
   const { finished, isLoading: goalsLoading } = useGoals();
   const { review, isLoading: reviewLoading } = useWeeklyReview();
@@ -111,12 +100,6 @@ export function useInsights(): { insights: SelectedInsight[]; isLoading: boolean
     }));
 
     const candidates = buildInsightCandidates({
-      overtrainingGuard,
-      trainingLoad,
-      readiness,
-      interference,
-      activityLevel,
-      deficitVolume,
       records: recordInputs,
       goals: goalInputs,
       weeklyReview: review,
@@ -137,12 +120,6 @@ export function useInsights(): { insights: SelectedInsight[]; isLoading: boolean
     // — le mémo se recalcule de lui-même. L'ajouter serait une dépendance morte que le lint signale.
   }, [
     isLoading,
-    overtrainingGuard,
-    trainingLoad,
-    readiness,
-    interference,
-    activityLevel,
-    deficitVolume,
     records,
     finished,
     review,

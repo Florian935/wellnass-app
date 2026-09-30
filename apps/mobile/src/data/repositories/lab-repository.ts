@@ -139,7 +139,15 @@ export function useLabObjective(): NutritionObjective {
 // Onglet « Semaine »
 // ---------------------------------------------------------------------------
 
-export function useLabWeek(): { week: LabWeek; weekStartKey: string; isLoading: boolean } {
+/** Les signaux déjà lus par l'onglet Semaine, rendus pour que le registre des liens ne les relise pas. */
+export type LabWeekSignals = {
+  overtraining: ReturnType<typeof useOvertrainingGuardAlert>;
+  acwr: AcwrResult | null;
+  deficitVolume: ReturnType<typeof useDeficitVolumeAlert>;
+  carbs: ReturnType<typeof useCarbsPerKg>['result'];
+};
+
+export function useLabWeek(): { week: LabWeek; weekStartKey: string; signals: LabWeekSignals; isLoading: boolean } {
   const todayKey = useTodayKey();
   const weekStartKey = localDayKey(startOfWeek(localDateFromDayKey(todayKey)));
   const weekEndKey = localDayKey(addDays(localDateFromDayKey(weekStartKey), 6));
@@ -165,6 +173,8 @@ export function useLabWeek(): { week: LabWeek; weekStartKey: string; isLoading: 
     name: item.sessionName,
     sessionType: item.sessionType,
     targetDistanceM: item.targetDistanceM,
+    // US LIENS-01 — une séance déjà adaptée aujourd'hui ne reçoit pas une seconde adaptation.
+    adapted: item.adapted === true,
   }));
 
   const week = buildLabWeek({
@@ -189,6 +199,7 @@ export function useLabWeek(): { week: LabWeek; weekStartKey: string; isLoading: 
   return {
     week,
     weekStartKey,
+    signals: { overtraining, acwr: toAcwr(load), deficitVolume, carbs },
     isLoading: settingsLoading || planLoading || conflictsLoading || runsLoading || totalsLoading || nightsLoading || weightLoading || carbsLoading,
   };
 }
@@ -197,8 +208,13 @@ export function useLabWeek(): { week: LabWeek; weekStartKey: string; isLoading: 
 // Historique commun aux onglets « Pourquoi ? » et « Acquis »
 // ---------------------------------------------------------------------------
 
-type LabHistory = {
+export type LabHistory = {
   input: LabHistoryInput;
+  /** US LIENS-01 — ce que les séries des fiches lisent, sans rouvrir les mêmes requêtes. */
+  runDays: { dayKey: string; hard: boolean }[];
+  strengthDays: string[];
+  loadSessions: { dayKey: string; rpe: number | null; durationSeconds: number | null }[];
+  lifts: { name: string; weeks: (number | null)[] }[];
   /** Jours de séance à jambes lourdes, pour l'adhérence des expériences. */
   heavyLegDays: string[];
   qualityRunDays: string[];
@@ -207,7 +223,12 @@ type LabHistory = {
   isLoading: boolean;
 };
 
-function useLabHistory(): LabHistory {
+/**
+ * L'historique de huit semaines du Labo. 🔴 **Un seul appel par écran** : `useLabCore` le monte une
+ * fois et le partage — LABO-01 le montait deux fois (questions + acquis), soit ~24 abonnements SQL au
+ * lieu de ~12 sur l'écran qui porte aussi la WebView (constat §4 bis-2, corrigé par LIENS-01).
+ */
+export function useLabHistory(): LabHistory {
   const todayKey = useTodayKey();
   const sinceKey = useWindowStartKey(LAB_HISTORY_DAYS);
   const sinceUtc = localDateFromDayKey(sinceKey).toISOString();
@@ -292,7 +313,22 @@ function useLabHistory(): LabHistory {
     .filter((n): n is typeof n & { sleepMinutes: number } => n.sleepMinutes !== null)
     .map((n) => ({ dayKey: n.logDate, sleepMinutes: n.sleepMinutes }));
 
+  const runDays = runs
+    .map((run) => ({ dayKey: dayKeyOf(run.finishedAt), hard: run.sessionType === 'fractionne' || run.sessionType === 'sortie_longue' }))
+    .filter((r): r is { dayKey: string; hard: boolean } => r.dayKey !== null && r.dayKey >= sinceKey);
+  const strengthDayKeys = workouts
+    .map((w) => dayKeyOf(w.finishedAt))
+    .filter((d): d is string => d !== null && d >= sinceKey);
+  const loadSessions = [
+    ...workouts.map((w) => ({ dayKey: dayKeyOf(w.finishedAt), rpe: w.rpe, durationSeconds: w.durationSeconds })),
+    ...runs.map((r) => ({ dayKey: dayKeyOf(r.finishedAt), rpe: r.rpe, durationSeconds: r.durationSeconds })),
+  ].filter((s): s is { dayKey: string; rpe: number | null; durationSeconds: number | null } => s.dayKey !== null);
+
   return {
+    runDays,
+    strengthDays: strengthDayKeys,
+    loadSessions,
+    lifts: labLifts.map((l) => ({ name: l.name, weeks: l.weeks })),
     input: {
       todayKey,
       activePillars: resolveActivePillars(settings?.activePillars),
@@ -322,16 +358,7 @@ function useLabHistory(): LabHistory {
 }
 
 // ---------------------------------------------------------------------------
-// Onglet « Pourquoi ? »
-// ---------------------------------------------------------------------------
-
-export function useLabQuestions(): { questions: LabQuestion[]; isLoading: boolean } {
-  const history = useLabHistory();
-  return { questions: history.isLoading ? [] : buildLabQuestions(history.input), isLoading: history.isLoading };
-}
-
-// ---------------------------------------------------------------------------
-// Onglet « Acquis »
+// Le cœur du Labo : semaine, enquêtes, expériences, acquis — une seule lecture
 // ---------------------------------------------------------------------------
 
 export type LabExperimentView = {
@@ -339,15 +366,28 @@ export type LabExperimentView = {
   verdict: ReturnType<typeof experimentVerdict>;
 };
 
-export function useLabKnowledge(): {
-  cards: LabKnowledgeCard[];
+export type LabCore = {
+  week: LabWeek;
+  weekStartKey: string;
+  signals: LabWeekSignals;
+  history: LabHistory;
+  questions: LabQuestion[];
   experiments: LabExperimentView[];
+  cards: LabKnowledgeCard[];
   isLoading: boolean;
-} {
+};
+
+/**
+ * Tout ce que le Labo lit, **une fois** : la semaine (onglet Croiser), les enquêtes et les acquis
+ * (onglet Apprendre), et ce que le registre des liens consomme. Monté par `CrossLinksProvider`,
+ * qui le partage avec l'écran du Labo, les fiches et les échos.
+ */
+export function useLabCore(): LabCore {
   const todayKey = useTodayKey();
+  const { week, weekStartKey, signals, isLoading: weekLoading } = useLabWeek();
   const history = useLabHistory();
   const { experiments: records, isLoading: experimentsLoading } = useLabExperiments();
-  const isLoading = history.isLoading || experimentsLoading;
+  const isLoading = weekLoading || history.isLoading || experimentsLoading;
 
   const experiments: LabExperimentView[] = records.map((record) => {
     const metric = LAB_EXPERIMENT_TEMPLATES[record.kind].metric;
@@ -366,6 +406,7 @@ export function useLabKnowledge(): {
     return { record, verdict: experimentVerdict({ record, todayKey, observations, adherence }) };
   });
 
+  const questions = history.isLoading ? [] : buildLabQuestions(history.input);
   const cards = isLoading
     ? []
     : buildLabKnowledge({
@@ -379,7 +420,7 @@ export function useLabKnowledge(): {
         experiments,
       });
 
-  return { cards, experiments, isLoading };
+  return { week, weekStartKey, signals, history, questions, experiments, cards, isLoading };
 }
 
 // ---------------------------------------------------------------------------

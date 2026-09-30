@@ -321,6 +321,13 @@ export async function deleteAllCycleData(): Promise<void> {
       'UPDATE menstrual_daily_logs SET deleted_at = ?, updated_at = ? WHERE deleted_at IS NULL',
       [now, now],
     );
+    // Revue du chantier Labo (30/09/2026) — l'histoire figée du lien « Ton cycle et tes piliers »
+    // (LIENS-01) date, semaine par semaine, le fait qu'un cycle était suivi : c'est une trace de la
+    // même donnée de santé. « Tout supprimer » l'emporte aussi, dans la même transaction.
+    await tx.execute(
+      "UPDATE cross_link_weeks SET deleted_at = ?, updated_at = ? WHERE link_id = 'cycle' AND deleted_at IS NULL",
+      [now, now],
+    );
   });
 }
 

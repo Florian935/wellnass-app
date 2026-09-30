@@ -9,7 +9,10 @@
 
 import { drawExperimentSchedule, LAB_EXPERIMENT_WEEKS } from '@wellness/shared';
 
-import { deleteLabExperiment, startLabExperiment, stopLabExperiment } from '../lab-experiment-repository';
+import { renderHook } from '@testing-library/react-native';
+import { useQuery } from '@powersync/react';
+
+import { deleteLabExperiment, finishLabExperiment, startLabExperiment, stopLabExperiment, useLabExperiments } from '../lab-experiment-repository';
 import { insertWithSyncFields, patch, softDelete } from '../_sql';
 
 jest.mock('@powersync/react', () => ({ useQuery: jest.fn(() => ({ data: [], isLoading: false })) }));
@@ -80,5 +83,53 @@ describe('arrêt et suppression', () => {
     await deleteLabExperiment('exp-9');
 
     expect(softDelete).toHaveBeenCalledWith('lab_experiments', 'exp-9');
+  });
+});
+
+describe('LABO-04 — la clôture fige le verdict', () => {
+  it('écrit le verdict du jour de la clôture avec le statut « finished »', async () => {
+    const verdict = { status: 'effect' as const, delta: -4, better: true, testCount: 4, usualCount: 5 };
+    await finishLabExperiment('exp-9', verdict);
+
+    // C'est ce verdict-là qui restera : la fenêtre glissante ne pourra plus le défaire.
+    expect(patch).toHaveBeenCalledWith('lab_experiments', 'exp-9', { status: 'finished', verdict: JSON.stringify(verdict) });
+  });
+
+  it('ne fige pas un verdict encore scellé : il n’y a rien à retenir', async () => {
+    await finishLabExperiment('exp-9', { status: 'sealed', endKey: '2026-10-18' });
+
+    expect(patch).toHaveBeenCalledWith('lab_experiments', 'exp-9', { status: 'finished', verdict: null });
+  });
+});
+
+describe('LABO-04 — la lecture du verdict figé', () => {
+  const ligne = (verdict: string | null) => ({
+    id: 'exp-9',
+    kind: 'legs48h',
+    start_date: '2026-06-01',
+    schedule: JSON.stringify(['test', 'usual', 'usual', 'test']),
+    status: 'finished',
+    verdict,
+  });
+
+  it('rend le verdict figé tel qu’il a été écrit', async () => {
+    const verdict = { status: 'noEffect', delta: 1, better: false, testCount: 3, usualCount: 3 };
+    (useQuery as jest.Mock).mockReturnValueOnce({ data: [ligne(JSON.stringify(verdict))], isLoading: false });
+
+    const { result } = await renderHook(() => useLabExperiments());
+
+    expect(result.current.experiments[0]!.frozenVerdict).toEqual(verdict);
+  });
+
+  it('🔴 un verdict illisible (client plus récent, JSON abîmé) est ignoré, pas deviné', async () => {
+    (useQuery as jest.Mock).mockReturnValueOnce({
+      data: [ligne('{"status":"effect","delta":"beaucoup"}'), { ...ligne('pas du json'), id: 'exp-10' }, { ...ligne(null), id: 'exp-11' }],
+      isLoading: false,
+    });
+
+    const { result } = await renderHook(() => useLabExperiments());
+
+    // L'expérience reste lisible : seul son verdict figé retombe à `null`, et l'app recalcule.
+    expect(result.current.experiments.map((e) => e.frozenVerdict)).toEqual([null, null, null]);
   });
 });

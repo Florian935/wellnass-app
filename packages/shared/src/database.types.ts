@@ -324,6 +324,47 @@ export type Database = {
           },
         ]
       }
+      cross_link_weeks: {
+        Row: {
+          created_at: string
+          deleted_at: string | null
+          id: string
+          link_id: string
+          state: string
+          updated_at: string
+          user_id: string
+          week_start: string
+        }
+        Insert: {
+          created_at?: string
+          deleted_at?: string | null
+          id: string
+          link_id: string
+          state: string
+          updated_at?: string
+          user_id: string
+          week_start: string
+        }
+        Update: {
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          link_id?: string
+          state?: string
+          updated_at?: string
+          user_id?: string
+          week_start?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cross_link_weeks_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_steps: {
         Row: {
           created_at: string
@@ -972,6 +1013,7 @@ export type Database = {
           status: string
           updated_at: string
           user_id: string
+          verdict: Json | null
         }
         Insert: {
           created_at?: string
@@ -983,6 +1025,7 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id: string
+          verdict?: Json | null
         }
         Update: {
           created_at?: string
@@ -994,6 +1037,7 @@ export type Database = {
           status?: string
           updated_at?: string
           user_id?: string
+          verdict?: Json | null
         }
         Relationships: [
           {

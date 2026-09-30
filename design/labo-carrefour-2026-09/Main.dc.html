@@ -1,0 +1,1387 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Le Labo, carrefour des piliers — prototype</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body{margin:0}
+button{font-family:inherit;cursor:pointer}
+.nosb::-webkit-scrollbar{display:none}
+@keyframes pulse{0%{transform:scale(.8);opacity:.85}100%{transform:scale(1.7);opacity:0}}
+.pulse{transform-box:fill-box;transform-origin:center;animation:pulse 2.2s ease-out infinite}
+@keyframes breathe{0%,100%{opacity:.55}50%{opacity:1}}
+.breathe{animation:breathe 3.2s ease-in-out infinite}
+@keyframes toastin{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+@keyframes sheetup{from{opacity:.3;transform:translateY(60px)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.rise{animation:rise .32s ease-out both}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div style="width: 390px; height: {{rootH}}px; display: flex; flex-direction: column; background: #fbeed4; color: #33291f; font-family: 'Hanken Grotesk', sans-serif; overflow: hidden;">
+
+  <!-- ═════════════ BANDE DE SIMULATION ═════════════ -->
+  <sc-if value="{{chrome}}" hint-placeholder-val="{{ true }}">
+    <div style="height: 84px; box-sizing: border-box; flex-shrink: 0; display: flex; flex-direction: column; justify-content: center; gap: 6px; padding: 0 8px; background: #ebdcc4; border-bottom: 2px dashed #b9a88c;">
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <span style="width: 64px; flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 1px; color: #5e5244;">PILIERS</span>
+        <sc-for list="{{simPil}}" as="v" hint-placeholder-count="3">
+          <button onClick="{{v.pick}}" aria-pressed="{{v.pressed}}" style="height: 30px; padding: 0 10px; border-radius: 15px; border: 1px solid {{v.border}}; background: {{v.bg}}; color: {{v.color}}; font-size: 12px; font-weight: 700; white-space: nowrap;">{{v.label}}</button>
+        </sc-for>
+      </div>
+      <div style="display: flex; align-items: center; gap: 5px;">
+        <span style="width: 64px; flex-shrink: 0; font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: 1px; color: #5e5244;">SITUATION</span>
+        <sc-for list="{{simSit}}" as="v" hint-placeholder-count="4">
+          <button onClick="{{v.pick}}" aria-pressed="{{v.pressed}}" style="height: 30px; padding: 0 8px; border-radius: 15px; border: 1px solid {{v.border}}; background: {{v.bg}}; color: {{v.color}}; font-size: 12px; font-weight: 700; white-space: nowrap;">{{v.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+  </sc-if>
+
+  <!-- ═════════════ LE TÉLÉPHONE ═════════════ -->
+  <div style="position: relative; width: 390px; height: {{vh}}px; flex-shrink: 0; overflow: hidden; background: #fbeed4;">
+    <div class="nosb" ref="{{setScroll}}" style="position: absolute; top: 0; left: 0; right: 0; bottom: {{scrollBottom}}px; overflow-y: auto; scrollbar-width: none;">
+
+      <!-- ═══════════════════ LE LABO (onglets) ═══════════════════ -->
+      <sc-if value="{{isHub}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column;">
+
+          <!-- Scène : titre, carte des disques, onglets -->
+          <div style="position: relative; overflow: hidden; background: linear-gradient(165deg, #3b0f0c 0%, #0f0a06 55%, #10233f 100%); border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 8px; color: #ffffff;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+              <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -0.8px;">Le Labo</span>
+              <button aria-label="Comment lire le Labo" onClick="{{help}}" style="width: 44px; height: 44px; margin-right: -10px; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M9.6 9.4a2.5 2.5 0 0 1 4.8 1c0 1.8-2.4 2.1-2.4 3.6"></path><path d="M12 17.4v.1"></path></svg>
+              </button>
+            </div>
+
+            <!-- La carte des disques : chevauchement = croisement -->
+            <div style="position: relative; width: 358px; height: {{map.h}}px;">
+              <svg width="358" height="{{map.h}}" viewBox="0 0 358 {{map.vbH}}" style="display: block; overflow: visible;" aria-hidden="true">
+                <defs>
+                  <radialGradient id="gRub" cx=".36" cy=".3" r=".8"><stop offset="0" stop-color="#d9544a"></stop><stop offset=".4" stop-color="#a8261d"></stop><stop offset=".8" stop-color="#6a1410"></stop><stop offset="1" stop-color="#3d0a08"></stop></radialGradient>
+                  <linearGradient id="gSteel" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f2ea"></stop><stop offset=".45" stop-color="#a39c90"></stop><stop offset=".55" stop-color="#d9d3c8"></stop><stop offset="1" stop-color="#7a7368"></stop></linearGradient>
+                  <radialGradient id="gTrk" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#5a97e0"></stop><stop offset=".6" stop-color="#2a64ad"></stop><stop offset="1" stop-color="#173a70"></stop></radialGradient>
+                  <radialGradient id="gGrass" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#8db35c"></stop><stop offset="1" stop-color="#4a6c2e"></stop></radialGradient>
+                  <radialGradient id="gCer" cx=".38" cy=".32" r=".85"><stop offset="0" stop-color="#fffdf8"></stop><stop offset=".7" stop-color="#efe6d6"></stop><stop offset="1" stop-color="#d6c8b0"></stop></radialGradient>
+                  <radialGradient id="gSpot" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff4e0" stop-opacity=".16"></stop><stop offset="1" stop-color="#fff4e0" stop-opacity="0"></stop></radialGradient>
+                  <clipPath id="cpM"><circle cx="{{map.cM.x}}" cy="{{map.cM.y}}" r="{{map.cM.r}}"></circle></clipPath>
+                  <clipPath id="cpC"><circle cx="{{map.cC.x}}" cy="{{map.cC.y}}" r="{{map.cC.r}}"></circle></clipPath>
+                  <clipPath id="cpPE"><path d="{{map.secP}}"></path></clipPath>
+                  <clipPath id="cpGE"><path d="{{map.secG}}"></path></clipPath>
+                  <clipPath id="cpLE"><path d="{{map.secL}}"></path></clipPath>
+                  <path id="ringM" d="M-58,0 A58,58 0 1,1 58,0 A58,58 0 1,1 -58,0" fill="none"></path>
+                </defs>
+                <circle cx="{{map.ring.x}}" cy="{{map.ring.y}}" r="{{map.spotR}}" fill="url(#gSpot)"></circle>
+                <circle cx="{{map.ring.x}}" cy="{{map.ring.y}}" r="{{map.ring.r}}" fill="none" stroke="#e0b155" stroke-width="1.1" stroke-dasharray="1.5 6" opacity=".55"></circle>
+
+                <!-- Disque de fonte : la musculation -->
+                <sc-if value="{{map.hasM}}" hint-placeholder-val="{{ true }}">
+                  <g style="transform: {{map.tM}}; opacity: {{map.opM}}; transition: opacity .3s;">
+                    <circle r="70" fill="url(#gRub)" stroke="#2a0806" stroke-width="1.5"></circle>
+                    <circle r="66" fill="none" stroke="rgba(255,255,255,.16)" stroke-width="2"></circle>
+                    <circle r="50" fill="none" stroke="rgba(0,0,0,.28)" stroke-width="1.2"></circle>
+                    <text font-family="Space Mono, monospace" font-size="6.2" font-weight="700" letter-spacing="2" fill="rgba(255,255,255,.66)"><textPath href="#ringM" startOffset="3%">MUSCULATION · SÉANCES DE LA SEMAINE · FITTRIO ·</textPath></text>
+                    <path d="M10.3,39.6 A41,41 0 0,1 -10.3,39.6" fill="none" stroke="#240806" stroke-width="9" stroke-linecap="round"></path>
+                    <path d="M-39.6,-10.3 A41,41 0 0,1 -29,-29" fill="none" stroke="#240806" stroke-width="9" stroke-linecap="round"></path>
+                    <path d="M29,-29 A41,41 0 0,1 39.6,-10.3" fill="none" stroke="#240806" stroke-width="9" stroke-linecap="round"></path>
+                    <sc-for list="{{map.mPips}}" as="pp" hint-placeholder-count="3">
+                      <circle cx="{{pp.x}}" cy="{{pp.y}}" r="4.2" fill="{{pp.fill}}" stroke="{{pp.stroke}}" stroke-width="1.3"></circle>
+                    </sc-for>
+                    <circle r="20" fill="url(#gSteel)" stroke="#5c554b" stroke-width="1"></circle>
+                    <circle cx="13" cy="0" r="1.7" fill="#d9d2c7" stroke="#5c554b" stroke-width=".5"></circle><circle cx="-13" cy="0" r="1.7" fill="#d9d2c7" stroke="#5c554b" stroke-width=".5"></circle><circle cx="0" cy="13" r="1.7" fill="#d9d2c7" stroke="#5c554b" stroke-width=".5"></circle><circle cx="0" cy="-13" r="1.7" fill="#d9d2c7" stroke="#5c554b" stroke-width=".5"></circle>
+                    <circle r="7.5" fill="#140a07"></circle>
+                    <path d="M-52,-28 A59,59 0 0,1 -14,-57" fill="none" stroke="rgba(255,255,255,.28)" stroke-width="3" stroke-linecap="round"></path>
+                  </g>
+                </sc-if>
+
+                <!-- Piste : la course -->
+                <sc-if value="{{map.hasC}}" hint-placeholder-val="{{ true }}">
+                  <g style="transform: {{map.tC}}; opacity: {{map.opC}}; transition: opacity .3s;">
+                    <circle r="70" fill="url(#gTrk)" stroke="#0f2547" stroke-width="1.5"></circle>
+                    <circle r="64" fill="none" stroke="rgba(255,255,255,.6)" stroke-width=".8"></circle><circle r="58" fill="none" stroke="rgba(255,255,255,.6)" stroke-width=".8"></circle><circle r="52" fill="none" stroke="rgba(255,255,255,.6)" stroke-width=".8"></circle><circle r="46" fill="none" stroke="rgba(255,255,255,.6)" stroke-width=".8"></circle>
+                    <circle r="40" fill="url(#gGrass)" stroke="rgba(255,255,255,.7)" stroke-width="1"></circle>
+                    <line x1="-40" y1="0" x2="40" y2="0" stroke="rgba(255,255,255,.28)" stroke-width=".8"></line>
+                    <circle r="10" fill="none" stroke="rgba(255,255,255,.28)" stroke-width=".8"></circle>
+                    <line x1="0" y1="-70" x2="0" y2="-40" stroke="#ffffff" stroke-width="2.4"></line>
+                    <sc-for list="{{map.cLights}}" as="lt" hint-placeholder-count="24">
+                      <circle cx="{{lt.x}}" cy="{{lt.y}}" r="2.3" fill="#dcebff" opacity="{{lt.op}}"></circle>
+                    </sc-for>
+                  </g>
+                </sc-if>
+
+                <!-- Assiette : la nutrition -->
+                <sc-if value="{{map.hasN}}" hint-placeholder-val="{{ true }}">
+                  <g style="transform: {{map.tN}}; opacity: {{map.opN}}; transition: opacity .3s;">
+                    <circle r="70" fill="url(#gCer)" stroke="rgba(51,41,31,.35)" stroke-width="1"></circle>
+                    <circle r="57" fill="#efe4d1" stroke="rgba(51,41,31,.14)" stroke-width="3"></circle>
+                    <g clip-path="url(#cpPE)">
+                      <circle r="{{map.protR}}" fill="#e9825c"></circle>
+                      <rect x="-60" y="-40" width="120" height="12" rx="6" fill="#f39a74" transform="rotate(-28)"></rect>
+                      <rect x="-60" y="-22" width="120" height="12" rx="6" fill="#f39a74" transform="rotate(-28)"></rect>
+                    </g>
+                    <sc-if value="{{map.protEmpty}}" hint-placeholder-val="{{ false }}">
+                      <path d="{{map.secPOutline}}" fill="none" stroke="#b9a88c" stroke-width="1.2" stroke-dasharray="3 3"></path>
+                    </sc-if>
+                    <g clip-path="url(#cpGE)">
+                      <circle r="53" fill="#f4ebda"></circle>
+                      <ellipse cx="18" cy="16" rx="2.3" ry="1.05" fill="#fffdf6" stroke="#e1d4bb" stroke-width=".35" transform="rotate(30 18 16)"></ellipse><ellipse cx="6" cy="30" rx="2.3" ry="1.05" fill="#fffdf6" stroke="#e1d4bb" stroke-width=".35" transform="rotate(100 6 30)"></ellipse><ellipse cx="-8" cy="38" rx="2.3" ry="1.05" fill="#fffdf6" stroke="#e1d4bb" stroke-width=".35" transform="rotate(60 -8 38)"></ellipse><ellipse cx="14" cy="40" rx="2.3" ry="1.05" fill="#fffdf6" stroke="#e1d4bb" stroke-width=".35" transform="rotate(150 14 40)"></ellipse><ellipse cx="28" cy="28" rx="2.3" ry="1.05" fill="#fffdf6" stroke="#e1d4bb" stroke-width=".35" transform="rotate(10 28 28)"></ellipse><ellipse cx="0" cy="20" rx="2.3" ry="1.05" fill="#fffdf6" stroke="#e1d4bb" stroke-width=".35" transform="rotate(80 0 20)"></ellipse>
+                    </g>
+                    <g clip-path="url(#cpLE)">
+                      <circle r="53" fill="#6f9a3a"></circle>
+                      <circle cx="-30" cy="-6" r="7" fill="#4e7a26"></circle><circle cx="-22" cy="12" r="6" fill="#5c8a2e"></circle><circle cx="-38" cy="10" r="5.5" fill="#4e7a26"></circle><circle cx="-16" cy="-4" r="4.5" fill="#86ad4c"></circle><circle cx="-30" cy="24" r="4.5" fill="#86ad4c"></circle>
+                    </g>
+                    <line x1="0" y1="0" x2="0" y2="-57" stroke="#e2d6bf" stroke-width="2.5"></line>
+                    <line x1="0" y1="0" x2="49.4" y2="28.5" stroke="#e2d6bf" stroke-width="2.5"></line>
+                    <line x1="0" y1="0" x2="-49.4" y2="28.5" stroke="#e2d6bf" stroke-width="2.5"></line>
+                  </g>
+                </sc-if>
+
+                <!-- Zones de croisement : là où les disques se chevauchent -->
+                <sc-for list="{{map.lenses}}" as="ln" hint-placeholder-count="3">
+                  <g clip-path="{{ln.clip}}">
+                    <circle cx="{{ln.cx}}" cy="{{ln.cy}}" r="{{ln.r}}" fill="{{ln.fill}}" stroke="{{ln.stroke}}" stroke-width="{{ln.sw}}" style="transition: fill .3s;"></circle>
+                  </g>
+                </sc-for>
+                <sc-if value="{{map.hasTri}}" hint-placeholder-val="{{ true }}">
+                  <g clip-path="url(#cpC)"><g clip-path="url(#cpM)">
+                    <circle cx="{{map.cN.x}}" cy="{{map.cN.y}}" r="{{map.cN.r}}" fill="{{map.tri.fill}}" stroke="{{map.tri.stroke}}" stroke-width="{{map.tri.sw}}"></circle>
+                  </g></g>
+                </sc-if>
+
+                <!-- Les nuits : sept lampes sur l’anneau -->
+                <sc-for list="{{map.lamps}}" as="lp" hint-placeholder-count="7">
+                  <circle cx="{{lp.x}}" cy="{{lp.y}}" r="{{lp.r}}" fill="{{lp.fill}}" stroke="{{lp.stroke}}" stroke-width="1.2" opacity="{{lp.op}}"></circle>
+                </sc-for>
+
+                <!-- Les médailles : l’état de chaque zone -->
+                <sc-for list="{{map.medals}}" as="md" hint-placeholder-count="4">
+                  <g style="transform: translate({{md.x}}px, {{md.y}}px);">
+                    <sc-if value="{{md.pulse}}" hint-placeholder-val="{{ false }}">
+                      <circle r="14" fill="none" stroke="{{md.fill}}" stroke-width="2" class="pulse"></circle>
+                    </sc-if>
+                    <rect x="-7" y="-26" width="6" height="15" fill="{{md.ribA}}"></rect>
+                    <rect x="1" y="-26" width="6" height="15" fill="{{md.ribB}}"></rect>
+                    <circle r="11.5" fill="{{md.fill}}" stroke="{{md.stroke}}" stroke-width="{{md.sw}}" stroke-dasharray="{{md.dash}}"></circle>
+                    <circle r="6.5" fill="none" stroke="rgba(0,0,0,.22)" stroke-width="1"></circle>
+                  </g>
+                </sc-for>
+              </svg>
+              <sc-for list="{{map.buttons}}" as="zb" hint-placeholder-count="4">
+                <button onClick="{{zb.pick}}" aria-label="{{zb.label}}" aria-pressed="{{zb.on}}" style="position: absolute; left: {{zb.left}}px; top: {{zb.top}}px; width: 42px; height: 42px; border-radius: 21px; background: transparent; border: none; padding: 0;"></button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{isCroiser}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 12px;">
+                <sc-for list="{{pilChips}}" as="pc" hint-placeholder-count="3">
+                  <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; color: #f4ecdd;"><span style="width: 9px; height: 9px; border-radius: 5px; background: {{pc.dot}};"></span>{{pc.label}}</span>
+                </sc-for>
+              </div>
+              <div style="display: flex; justify-content: center; gap: 12px; font-family: 'Space Mono', monospace; font-size: 9.5px; letter-spacing: .4px; color: #e6d8c4;">
+                <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 4px; background: #e0524a;"></span>GARDE-FOU</span>
+                <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 4px; background: #c9803c;"></span>À RÉGLER</span>
+                <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 4px; background: #e0b155;"></span>ÇA TIENT</span>
+                <span style="display: inline-flex; align-items: center; gap: 4px;"><span style="width: 8px; height: 8px; border-radius: 4px; border: 1px dashed #e6d8c4; box-sizing: border-box;"></span>À DÉCOUVRIR</span>
+              </div>
+            </sc-if>
+
+            <div role="tablist" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; margin-top: 4px; border-radius: 16px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22);">
+              <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+                <button role="tab" aria-selected="{{t.on}}" onClick="{{t.pick}}" style="height: 42px; border-radius: 12px; border: none; background: {{t.bg}}; color: {{t.color}}; font-size: 14.5px; font-weight: 700; white-space: nowrap;">{{t.label}}</button>
+              </sc-for>
+            </div>
+          </div>
+
+          <!-- ─────────── ONGLET CROISER ─────────── -->
+          <sc-if value="{{isCroiser}}" hint-placeholder-val="{{ true }}">
+            <div style="padding: 20px 16px 28px; display: flex; flex-direction: column; gap: 18px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.4px; line-height: 1.15;">{{sum.lead}}</span>
+                <span style="font-size: 14px; line-height: 20px; color: #6f604e;">{{sum.sub}}</span>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 6px;">
+                <sc-for list="{{sum.chips}}" as="c" hint-placeholder-count="3">
+                  <span style="display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 14px; background: #fffce1; border: 1px solid #ead2aa; font-size: 12.5px; font-weight: 600; color: #4d4135;"><span style="width: 10px; height: 10px; border-radius: 5px; background: {{c.dot}}; border: {{c.ring}}; box-sizing: border-box;"></span>{{c.label}}</span>
+                </sc-for>
+              </div>
+
+              <sc-if value="{{zoneOn}}" hint-placeholder-val="{{ false }}">
+                <div class="rise" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 14px; background: #f9dcbe;">
+                  <span style="font-size: 14px; font-weight: 700; color: #5a3f0e;">{{zoneLabel}}</span>
+                  <button onClick="{{clearZone}}" style="height: 36px; padding: 0 12px; border-radius: 10px; border: 1px solid #7a5714; background: transparent; color: #7a5714; font-weight: 700; font-size: 13px;">Tout voir</button>
+                </div>
+              </sc-if>
+
+              <sc-for list="{{sections}}" as="sec" hint-placeholder-count="3">
+                <div style="display: flex; flex-direction: column; gap: 10px;">
+                  <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px;">
+                    <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #7a5714;">{{sec.title}}</span>
+                    <span style="font-size: 12px; color: #786a59;">{{sec.meta}}</span>
+                  </div>
+                  <sc-for list="{{sec.items}}" as="f" hint-placeholder-count="2">
+
+                    <!-- Carte d’un lien qui demande un geste (garde-fou, à régler) -->
+                    <sc-if value="{{f.isBig}}" hint-placeholder-val="{{ true }}">
+                      <div class="rise" style="background: #fffce1; border: 1px solid {{f.border}}; border-radius: 22px; overflow: hidden;">
+                        <button onClick="{{f.open}}" aria-label="Ouvrir le lien : {{f.q}}" style="display: flex; flex-direction: column; gap: 10px; width: 100%; text-align: left; background: transparent; border: none; padding: 16px 16px 12px; color: inherit;">
+                          <span style="display: flex; align-items: center; gap: 8px; width: 100%;">
+                            <svg width="32" height="24" viewBox="0 0 32 24" aria-hidden="true"><sc-for list="{{f.lens}}" as="l" hint-placeholder-count="2"><circle cx="{{l.cx}}" cy="{{l.cy}}" r="{{l.r}}" fill="{{l.fill}}" fill-opacity="0.82"></circle></sc-for></svg>
+                            <span style="flex: 1; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.1px; color: #786a59;">{{f.pair}}</span>
+                            <span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 13px; background: {{f.chipBg}}; color: {{f.chipTx}}; font-size: 12px; font-weight: 700;"><span style="width: 8px; height: 8px; border-radius: 4px; background: {{f.dot}};"></span>{{f.stLabel}}</span>
+                          </span>
+                          <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 19px; letter-spacing: -0.3px; line-height: 23px;">{{f.q}}</span>
+                          <span style="font-size: 14px; line-height: 20px; color: #4d4135;">{{f.verdict}}</span>
+                          <span style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; width: 100%;">
+                            <sc-for list="{{f.figs}}" as="g" hint-placeholder-count="2">
+                              <span style="display: flex; flex-direction: column; gap: 3px; padding: 10px 10px 11px; border-radius: 14px; background: #fbeed4;">
+                                <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 16px; color: #33291f;">{{g.v}}</span>
+                                <span style="font-size: 12px; line-height: 16px; color: #6f604e;">{{g.l}}</span>
+                              </span>
+                            </sc-for>
+                          </span>
+                        </button>
+                        <sc-if value="{{f.hasGeste}}" hint-placeholder-val="{{ true }}">
+                          <div style="display: flex; padding: 0 16px 16px;">
+                            <button onClick="{{f.toggle}}" aria-pressed="{{f.readyB}}" style="flex: 1; min-height: 46px; padding: 8px 12px; border-radius: 13px; border: 1.5px solid {{f.gBorder}}; background: {{f.gBg}}; color: {{f.gColor}}; font-size: 14.5px; font-weight: 700; line-height: 18px;">{{f.gLabel}}</button>
+                          </div>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+
+                    <!-- Carte d’un lien qui tient -->
+                    <sc-if value="{{f.isCompact}}" hint-placeholder-val="{{ false }}">
+                      <button class="rise" onClick="{{f.open}}" style="display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; background: #fffce1; border: 1px solid #ead2aa; border-radius: 20px; padding: 14px 12px 14px 14px; color: inherit;">
+                        <svg width="32" height="24" viewBox="0 0 32 24" aria-hidden="true" style="flex-shrink: 0;"><sc-for list="{{f.lens}}" as="l" hint-placeholder-count="2"><circle cx="{{l.cx}}" cy="{{l.cy}}" r="{{l.r}}" fill="{{l.fill}}" fill-opacity="0.82"></circle></sc-for></svg>
+                        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                          <span style="font-size: 15px; font-weight: 700; line-height: 19px;">{{f.q}}</span>
+                          <span style="font-size: 13px; line-height: 18px; color: #6f604e;">{{f.short}}</span>
+                        </span>
+                        <span style="display: inline-flex; align-items: center; gap: 5px; flex-shrink: 0; font-size: 11.5px; font-weight: 700; color: {{f.chipTx}};"><span style="width: 8px; height: 8px; border-radius: 4px; background: {{f.dot}};"></span>{{f.stLabel}}</span>
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a8a74" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex-shrink: 0;"><path d="M9 5l7 7-7 7"></path></svg>
+                      </button>
+                    </sc-if>
+
+                    <!-- Carte d’un lien encore à découvrir -->
+                    <sc-if value="{{f.isDashed}}" hint-placeholder-val="{{ false }}">
+                      <div class="rise" style="display: flex; flex-direction: column; gap: 10px; border: 1.5px dashed #c9b89a; border-radius: 20px; padding: 14px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                          <svg width="32" height="24" viewBox="0 0 32 24" aria-hidden="true" style="flex-shrink: 0;"><sc-for list="{{f.lens}}" as="l" hint-placeholder-count="2"><circle cx="{{l.cx}}" cy="{{l.cy}}" r="{{l.r}}" fill="none" stroke="{{l.fill}}" stroke-width="1.4" stroke-dasharray="2.5 2"></circle></sc-for></svg>
+                          <span style="flex: 1; font-size: 15px; font-weight: 700; line-height: 19px;">{{f.q}}</span>
+                        </div>
+                        <span style="font-size: 13px; line-height: 18px; color: #6f604e;">{{f.missing}}</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                          <div style="flex: 1; height: 6px; border-radius: 3px; background: #ead2aa; overflow: hidden;"><div style="width: {{f.meterW}}; height: 6px; border-radius: 3px; background: #7a5714;"></div></div>
+                          <span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #6b5e4e; white-space: nowrap;">{{f.meterLabel}}</span>
+                        </div>
+                        <sc-if value="{{f.hasAction}}" hint-placeholder-val="{{ false }}">
+                          <button onClick="{{f.act}}" style="align-self: flex-start; height: 40px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #7a5714; background: transparent; color: #7a5714; font-size: 13.5px; font-weight: 700;">{{f.actLabel}}</button>
+                        </sc-if>
+                      </div>
+                    </sc-if>
+
+                  </sc-for>
+                </div>
+              </sc-for>
+
+              <sc-if value="{{showOther}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; gap: 8px; align-items: flex-start; padding: 12px 6px 12px 14px; border-radius: 16px; border: 1px dashed #c9b89a;">
+                  <span style="flex: 1; font-size: 13px; line-height: 18px; color: #6f604e;">{{otherTxt}}</span>
+                  <button aria-label="Masquer cette ligne" onClick="{{hideOther}}" style="width: 36px; height: 36px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: transparent; border: none; padding: 0;">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6f604e" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg>
+                  </button>
+                </div>
+              </sc-if>
+
+              <!-- La semaine, pilier par pilier -->
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px;">
+                  <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #7a5714;">TA SEMAINE</span>
+                  <span style="font-size: 12px; color: #786a59;">plein = fait · pointillé = prévu</span>
+                </div>
+                <div style="background: #fffce1; border: 1px solid #ead2aa; border-radius: 22px; padding: 12px 10px; display: flex; flex-direction: column; gap: 5px;">
+                  <div style="display: grid; grid-template-columns: 50px repeat(7, minmax(0, 1fr)); gap: 3px;">
+                    <span></span>
+                    <sc-for list="{{week.days}}" as="d" hint-placeholder-count="7">
+                      <span style="display: flex; flex-direction: column; align-items: center; padding: 3px 0; border-radius: 8px; background: {{d.bg}}; color: {{d.color}}; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 10px; line-height: 12px;"><span>{{d.l}}</span><span style="font-weight: 400; font-size: 9px;">{{d.n}}</span></span>
+                    </sc-for>
+                  </div>
+                  <sc-for list="{{week.lanes}}" as="wl" hint-placeholder-count="4">
+                    <div style="display: grid; grid-template-columns: 50px repeat(7, minmax(0, 1fr)); gap: 3px;">
+                      <span style="display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: #4d4135;"><span style="width: 8px; height: 8px; border-radius: 4px; flex-shrink: 0; background: {{wl.color}};"></span>{{wl.label}}</span>
+                      <sc-for list="{{wl.cells}}" as="wc" hint-placeholder-count="7">
+                        <span style="min-height: 30px; display: flex; align-items: center; justify-content: center; text-align: center; border-radius: 8px; font-size: 9.5px; font-weight: 700; line-height: 11px; padding: 2px 1px; box-sizing: border-box; background: {{wc.bg}}; border: {{wc.border}}; color: {{wc.color}};">{{wc.t}}</span>
+                      </sc-for>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+
+              <span style="font-size: 12.5px; line-height: 18px; color: #786a59; font-style: italic;">Des liens trouvés dans tes données, pas des preuves. Un jour sans saisie est un trou, jamais un zéro. Rien ne change dans ton plan sans ton accord.</span>
+            </div>
+          </sc-if>
+
+          <!-- ─────────── ONGLET COMPOSER (inchangé, rappel) ─────────── -->
+          <sc-if value="{{isComposer}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 20px 16px 28px; display: flex; flex-direction: column; gap: 16px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.4px; line-height: 1.15;">Dose tes piliers ensemble.</span>
+                <span style="font-size: 14px; line-height: 20px; color: #6f604e;">Chaque cran est chiffré sur tes objectifs, avec ce qu’il croise.</span>
+              </div>
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+                <sc-for list="{{comp.cards}}" as="cc" hint-placeholder-count="4">
+                  <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 16px; background: #fffce1; border: 1px solid #ead2aa;">
+                    <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 9.5px; letter-spacing: 1px; color: #786a59;">{{cc.k}}</span>
+                    <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.4px;">{{cc.v}}</span>
+                    <span style="font-size: 12px; line-height: 16px; color: #6f604e;">{{cc.n}}</span>
+                  </div>
+                </sc-for>
+              </div>
+              <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #7a5714;">LEVIERS</span>
+              <div style="background: #fffce1; border: 1px solid #ead2aa; border-radius: 22px; padding: 4px 14px;">
+                <sc-for list="{{comp.levers}}" as="lv" hint-placeholder-count="4">
+                  <div style="display: flex; align-items: center; gap: 10px; padding: 10px 0; border-top: {{lv.bt}};">
+                    <span style="flex: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14px; font-weight: 600;">{{lv.label}}</span><span style="font-size: 12px; color: #786a59;">{{lv.note}}</span></span>
+                    <button aria-label="Un cran de moins : {{lv.label}}" style="width: 40px; height: 40px; border-radius: 20px; border: 1.5px solid #c9b89a; background: transparent; color: #4d4135; font-size: 18px; font-weight: 700;">−</button>
+                    <span style="width: 58px; text-align: center; font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px;">{{lv.v}}</span>
+                    <button aria-label="Un cran de plus : {{lv.label}}" style="width: 40px; height: 40px; border-radius: 20px; border: 1.5px solid #c9b89a; background: transparent; color: #4d4135; font-size: 18px; font-weight: 700;">+</button>
+                  </div>
+                </sc-for>
+              </div>
+              <span style="font-size: 12.5px; line-height: 18px; color: #786a59; font-style: italic;">Aucune projection d’allure ni de chrono : aucun calcul validé de l’app ne relie une dose à un temps de course.</span>
+            </div>
+          </sc-if>
+
+          <!-- ─────────── ONGLET APPRENDRE ─────────── -->
+          <sc-if value="{{isApprendre}}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 20px 16px 28px; display: flex; flex-direction: column; gap: 18px;">
+              <div style="display: flex; flex-direction: column; gap: 6px;">
+                <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -0.4px; line-height: 1.15;">Ton Labo apprend de toi.</span>
+                <span style="font-size: 14px; line-height: 20px; color: #6f604e;">Quand une courbe cale, il cherche la cause dans tous tes piliers. Ce qu’il apprend remplace une règle générale par tes propres chiffres.</span>
+              </div>
+
+              <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #7a5714;">UNE COURBE CALE</span>
+              <sc-if value="{{lrn.hasCurves}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                  <sc-for list="{{lrn.curves}}" as="cv" hint-placeholder-count="2">
+                    <button onClick="{{cv.pick}}" aria-pressed="{{cv.on}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 10px 12px; border-radius: 14px; border: 1.5px solid {{cv.border}}; background: {{cv.bg}}; color: #33291f; text-align: left;"><span style="font-size: 14px; font-weight: 700;">{{cv.title}}</span><span style="font-size: 12px; color: #6f604e;">{{cv.fact}}</span></button>
+                  </sc-for>
+                </div>
+                <div style="background: #fffce1; border: 1px solid #ead2aa; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+                  <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                    <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1.2px; color: #786a59;">CE QUI PÈSE, DANS TES DONNÉES</span>
+                    <span style="font-size: 11.5px; color: #786a59;">du plus au moins probable</span>
+                  </div>
+                  <sc-for list="{{lrn.suspects}}" as="sp" hint-placeholder-count="3">
+                    <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 10px; border-top: {{sp.bt}};">
+                      <div style="display: flex; align-items: center; gap: 8px;">
+                        <svg width="32" height="24" viewBox="0 0 32 24" aria-hidden="true" style="flex-shrink: 0;"><sc-for list="{{sp.lens}}" as="l" hint-placeholder-count="2"><circle cx="{{l.cx}}" cy="{{l.cy}}" r="{{l.r}}" fill="{{l.fill}}" fill-opacity="0.82"></circle></sc-for></svg>
+                        <span style="flex: 1; font-size: 14.5px; font-weight: 700;">{{sp.t}}</span>
+                        <span style="font-family: 'Space Mono', monospace; font-size: 10.5px; font-weight: 700; color: #6b5e4e;">{{sp.lvl}}</span>
+                      </div>
+                      <span style="font-size: 12.5px; line-height: 17px; color: #6f604e;">{{sp.proof}}</span>
+                      <div style="height: 5px; border-radius: 3px; background: #ead2aa;"><div style="width: {{sp.w}}; height: 5px; border-radius: 3px; background: #7a5714;"></div></div>
+                      <button onClick="{{sp.go}}" style="align-self: flex-start; height: 36px; padding: 0; background: transparent; border: none; color: #7a5714; font-size: 13.5px; font-weight: 700;">Voir le lien {{sp.pairShort}} →</button>
+                    </div>
+                  </sc-for>
+                  <span style="font-size: 12.5px; line-height: 17px; color: #786a59;">{{lrn.ecarte}}</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{lrn.noCurves}}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 16px; border-radius: 20px; border: 1.5px dashed #c9b89a; font-size: 13.5px; line-height: 19px; color: #6f604e;">Rien ne cale en ce moment. Le Labo surveille ta force, ton allure et ton poids, et cherchera dans tous tes piliers le jour où une courbe s’arrête.</div>
+              </sc-if>
+
+              <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #7a5714;">EXPÉRIENCE EN COURS</span>
+              <sc-if value="{{lrn.hasExp}}" hint-placeholder-val="{{ true }}">
+                <div style="background: #fffce1; border: 1px solid #ead2aa; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+                  <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;"><span style="font-size: 16px; font-weight: 700;">Glucides des jours durs</span><span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; color: #6b5e4e;">J12 / 28</span></div>
+                  <div style="height: 6px; border-radius: 3px; background: #ead2aa;"><div style="width: 43%; height: 6px; border-radius: 3px; background: #7a5714;"></div></div>
+                  <span style="font-size: 13.5px; line-height: 19px; color: #4d4135;">Cette semaine : on essaie. Vise le haut de ta fourchette les jours de fractionné et de sortie longue.</span>
+                  <span style="font-size: 12.5px; color: #786a59;">Verdict scellé jusqu’au 12/10 : voir un résultat partiel changerait ta façon de faire pendant la mesure.</span>
+                </div>
+              </sc-if>
+              <sc-if value="{{lrn.noExp}}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 16px; border-radius: 20px; border: 1.5px dashed #c9b89a; font-size: 13.5px; line-height: 19px; color: #6f604e;">Aucune expérience en cours. Le Labo t’en proposera une quand un lien mérite d’être tranché.</div>
+              </sc-if>
+
+              <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #7a5714;">CE QUE LE LABO SAIT DE TOI</span>
+              <sc-for list="{{lrn.known}}" as="kn" hint-placeholder-count="2">
+                <div style="background: #fffce1; border: 1px solid #ead2aa; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+                  <span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 12px; background: {{kn.chipBg}}; color: {{kn.chipTx}}; font-size: 11.5px; font-weight: 700;">{{kn.st}}</span>
+                  <span style="font-size: 15.5px; font-weight: 700; line-height: 21px;">{{kn.t}}</span>
+                  <span style="font-size: 12.5px; line-height: 17px; color: #786a59;">{{kn.src}}</span>
+                  <span style="font-size: 13px; line-height: 18px; color: #4d4135;">{{kn.use}}</span>
+                </div>
+              </sc-for>
+              <sc-if value="{{lrn.noKnown}}" hint-placeholder-val="{{ false }}">
+                <div style="padding: 16px; border-radius: 20px; border: 1.5px dashed #c9b89a; font-size: 13.5px; line-height: 19px; color: #6f604e;">Rien d’acquis pour l’instant : il faut quelques semaines de données, et au moins trois cas de chaque côté.</div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+        </div>
+      </sc-if>
+
+      <!-- ═══════════════════ LA FICHE D’UN LIEN ═══════════════════ -->
+      <sc-if value="{{isFiche}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column;">
+          <div style="position: relative; overflow: hidden; background: linear-gradient(165deg, #3b0f0c 0%, #0f0a06 58%, #10233f 100%); border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; padding: 8px 16px 22px; display: flex; flex-direction: column; gap: 10px; color: #ffffff;">
+            <div style="position: absolute; right: -60px; top: -40px; width: 230px; height: 230px; border-radius: 115px; background: {{fd.glowA}}; opacity: .35; filter: blur(30px);"></div>
+            <div style="position: absolute; right: 30px; top: 60px; width: 170px; height: 170px; border-radius: 85px; background: {{fd.glowB}}; opacity: .3; filter: blur(30px);"></div>
+            <button onClick="{{back}}" style="position: relative; align-self: flex-start; height: 44px; display: flex; align-items: center; gap: 4px; background: transparent; border: none; color: #ffffff; font-size: 14.5px; font-weight: 600; padding: 0 8px 0 0; margin-left: -6px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg>{{backLabel}}
+            </button>
+            <div style="position: relative; display: flex; align-items: center; gap: 10px;">
+              <svg width="48" height="36" viewBox="0 0 32 24" aria-hidden="true"><sc-for list="{{fd.lensLight}}" as="l" hint-placeholder-count="2"><circle cx="{{l.cx}}" cy="{{l.cy}}" r="{{l.r}}" fill="{{l.fill}}" fill-opacity="0.85"></circle></sc-for></svg>
+              <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #e6d8c4;">{{fd.pair}}</span>
+            </div>
+            <span style="position: relative; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 27px; letter-spacing: -0.8px; line-height: 1.08;">{{fd.q}}</span>
+            <span style="position: relative; align-self: flex-start; display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px; border-radius: 15px; background: rgba(255,255,255,0.12); border: 1px solid rgba(255,255,255,0.22); font-size: 13px; font-weight: 700;"><span style="width: 10px; height: 10px; border-radius: 5px; background: {{fd.medal}}; border: {{fd.medalRing}}; box-sizing: border-box;"></span>{{fd.stLabel}}</span>
+          </div>
+
+          <div style="padding: 20px 16px 28px; display: flex; flex-direction: column; gap: 18px;">
+            <span style="font-size: 16px; line-height: 23px; color: #33291f;">{{fd.verdict}}</span>
+
+            <sc-if value="{{fd.isKnown}}" hint-placeholder-val="{{ true }}">
+              <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+                <sc-for list="{{fd.figs}}" as="g" hint-placeholder-count="2">
+                  <div style="display: flex; flex-direction: column; gap: 4px; padding: 12px; border-radius: 16px; background: #fffce1; border: 1px solid #ead2aa;">
+                    <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 18px;">{{g.v}}</span>
+                    <span style="font-size: 12.5px; line-height: 17px; color: #6f604e;">{{g.l}}</span>
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{fd.isDecouvrir}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 10px; border: 1.5px dashed #c9b89a; border-radius: 20px; padding: 16px;">
+                <span style="font-size: 14px; line-height: 20px; color: #4d4135;">{{fd.missing}}</span>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <div style="flex: 1; height: 6px; border-radius: 3px; background: #ead2aa;"><div style="width: {{fd.meterW}}; height: 6px; border-radius: 3px; background: #7a5714;"></div></div>
+                  <span style="font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700; color: #6b5e4e;">{{fd.meterLabel}}</span>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- Le graphique croisé -->
+            <sc-if value="{{ch.show}}" hint-placeholder-val="{{ true }}">
+              <div style="background: #fffce1; border: 1px solid #ead2aa; border-radius: 22px; padding: 16px; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 8px;">
+                  <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #7a5714;">{{ch.overline}}</span>
+                  <span style="font-size: 11.5px; color: #786a59;">{{ch.hint}}</span>
+                </div>
+                <span style="font-size: 13.5px; font-weight: 600; color: #33291f; min-height: 19px;">{{ch.readout}}</span>
+                <div style="position: relative; width: 326px; height: {{ch.h}}px;">
+                  <svg width="326" height="{{ch.h}}" viewBox="0 0 326 {{ch.h}}" style="display: block;" aria-hidden="true">
+
+                    <!-- deux panneaux alignés, un seul axe chacun -->
+                    <sc-if value="{{ch.isPair}}" hint-placeholder-val="{{ true }}">
+                      <circle cx="33" cy="10" r="4" fill="{{ch.aColor}}"></circle>
+                      <text x="41" y="13.5" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" fill="#6f604e">{{ch.aTitle}}</text>
+                      <rect x="30" y="{{ch.bandY}}" width="288" height="{{ch.bandH}}" fill="rgba(63,107,28,0.12)"></rect>
+                      <text x="316" y="{{ch.bandTY}}" text-anchor="end" font-family="Hanken Grotesk, sans-serif" font-size="9.5" font-weight="600" fill="#3f5a22">{{ch.bandLabel}}</text>
+                      <sc-for list="{{ch.aTicks}}" as="t" hint-placeholder-count="3"><text x="25" y="{{t.y}}" text-anchor="end" font-family="Space Mono, monospace" font-size="9" fill="#786a59">{{t.label}}</text></sc-for>
+                      <line x1="30" y1="110" x2="318" y2="110" stroke="#e3d3ba" stroke-width="1"></line>
+                      <sc-for list="{{ch.aBars}}" as="b" hint-placeholder-count="8"><path d="{{b.d}}" fill="{{ch.aColor}}" opacity="{{b.op}}"></path></sc-for>
+                      <circle cx="33" cy="134" r="4" fill="{{ch.bColor}}"></circle>
+                      <text x="41" y="137.5" font-family="Space Mono, monospace" font-size="9.5" font-weight="700" fill="#6f604e">{{ch.bTitle}}</text>
+                      <rect x="{{ch.platX}}" y="146" width="{{ch.platW}}" height="80" fill="rgba(192,117,47,0.13)"></rect>
+                      <text x="316" y="158" text-anchor="end" font-family="Hanken Grotesk, sans-serif" font-size="9.5" font-weight="600" fill="#7a4210">{{ch.platLabel}}</text>
+                      <sc-for list="{{ch.bGrid}}" as="gr" hint-placeholder-count="2"><line x1="30" y1="{{gr.y}}" x2="318" y2="{{gr.y}}" stroke="#efe2c8" stroke-width="1"></line><text x="25" y="{{gr.ty}}" text-anchor="end" font-family="Space Mono, monospace" font-size="9" fill="#786a59">{{gr.label}}</text></sc-for>
+                      <path d="{{ch.bPath}}" fill="none" stroke="{{ch.bColor}}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                      <sc-for list="{{ch.bDots}}" as="dt" hint-placeholder-count="8"><circle cx="{{dt.x}}" cy="{{dt.y}}" r="{{dt.r}}" fill="{{ch.bColor}}" stroke="#fffce1" stroke-width="2"></circle></sc-for>
+                      <line x1="{{ch.selX}}" y1="20" x2="{{ch.selX}}" y2="228" stroke="#33291f" stroke-opacity="0.28" stroke-width="1"></line>
+                    </sc-if>
+
+                    <!-- nuage de points : deux situations, une seule mesure -->
+                    <sc-if value="{{ch.isDots}}" hint-placeholder-val="{{ false }}">
+                      <sc-for list="{{ch.rows}}" as="rw" hint-placeholder-count="2">
+                        <text x="24" y="{{rw.ly}}" font-family="Hanken Grotesk, sans-serif" font-size="11.5" font-weight="700" fill="#4d4135">{{rw.label}}</text>
+                        <text x="310" y="{{rw.ly}}" text-anchor="end" font-family="Space Mono, monospace" font-size="10" font-weight="700" fill="#4d4135">{{rw.meanLabel}}</text>
+                        <line x1="24" y1="{{rw.y}}" x2="310" y2="{{rw.y}}" stroke="#efe2c8" stroke-width="1"></line>
+                        <sc-for list="{{rw.dots}}" as="dt" hint-placeholder-count="6"><circle cx="{{dt.x}}" cy="{{dt.y}}" r="5" fill="#2a64ad" fill-opacity="0.85" stroke="#fffce1" stroke-width="2"></circle></sc-for>
+                        <line x1="{{rw.mx}}" y1="{{rw.m1}}" x2="{{rw.mx}}" y2="{{rw.m2}}" stroke="#33291f" stroke-width="2" stroke-linecap="round"></line>
+                      </sc-for>
+                      <line x1="24" y1="156" x2="310" y2="156" stroke="#e3d3ba" stroke-width="1"></line>
+                      <sc-for list="{{ch.xTicks}}" as="xt" hint-placeholder-count="5"><text x="{{xt.x}}" y="170" text-anchor="middle" font-family="Space Mono, monospace" font-size="9" fill="#786a59">{{xt.label}}</text></sc-for>
+                    </sc-if>
+
+                    <!-- deux barres face au repère -->
+                    <sc-if value="{{ch.isGroups}}" hint-placeholder-val="{{ false }}">
+                      <rect x="40" y="{{ch.bandY}}" width="278" height="{{ch.bandH}}" fill="rgba(63,107,28,0.12)"></rect>
+                      <text x="316" y="{{ch.bandTY}}" text-anchor="end" font-family="Hanken Grotesk, sans-serif" font-size="9.5" font-weight="600" fill="#3f5a22">{{ch.bandLabel}}</text>
+                      <sc-for list="{{ch.yTicks}}" as="t" hint-placeholder-count="3"><text x="34" y="{{t.y}}" text-anchor="end" font-family="Space Mono, monospace" font-size="9" fill="#786a59">{{t.label}}</text></sc-for>
+                      <line x1="40" y1="140" x2="318" y2="140" stroke="#e3d3ba" stroke-width="1"></line>
+                      <sc-for list="{{ch.gBars}}" as="gb" hint-placeholder-count="2">
+                        <path d="{{gb.d}}" fill="#3f6b1c"></path>
+                        <text x="{{gb.cx}}" y="{{gb.vy}}" text-anchor="middle" font-family="Space Mono, monospace" font-size="12" font-weight="700" fill="#33291f">{{gb.v}}</text>
+                        <text x="{{gb.cx}}" y="156" text-anchor="middle" font-family="Hanken Grotesk, sans-serif" font-size="11.5" font-weight="700" fill="#4d4135">{{gb.label}}</text>
+                        <text x="{{gb.cx}}" y="170" text-anchor="middle" font-family="Hanken Grotesk, sans-serif" font-size="10.5" fill="#786a59">{{gb.n}}</text>
+                      </sc-for>
+                    </sc-if>
+
+                    <!-- une courbe dans sa zone saine -->
+                    <sc-if value="{{ch.isBand}}" hint-placeholder-val="{{ false }}">
+                      <rect x="30" y="{{ch.bandY}}" width="288" height="{{ch.bandH}}" fill="rgba(122,87,20,0.10)"></rect>
+                      <text x="36" y="{{ch.bandTY}}" font-family="Hanken Grotesk, sans-serif" font-size="9.5" font-weight="600" fill="#6b5010">{{ch.bandLabel}}</text>
+                      <line x1="30" y1="{{ch.limY}}" x2="318" y2="{{ch.limY}}" stroke="#b23b2e" stroke-width="1.2" stroke-dasharray="4 3"></line>
+                      <text x="316" y="{{ch.limTY}}" text-anchor="end" font-family="Hanken Grotesk, sans-serif" font-size="9.5" font-weight="600" fill="#8f2a1f">seuil 1,3</text>
+                      <sc-for list="{{ch.yTicks}}" as="t" hint-placeholder-count="3"><text x="25" y="{{t.y}}" text-anchor="end" font-family="Space Mono, monospace" font-size="9" fill="#786a59">{{t.label}}</text></sc-for>
+                      <path d="{{ch.lPath}}" fill="none" stroke="{{ch.lColor}}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                      <sc-for list="{{ch.lDots}}" as="dt" hint-placeholder-count="8"><circle cx="{{dt.x}}" cy="{{dt.y}}" r="{{dt.r}}" fill="{{ch.lColor}}" stroke="#fffce1" stroke-width="2"></circle></sc-for>
+                      <line x1="{{ch.selX}}" y1="16" x2="{{ch.selX}}" y2="152" stroke="#33291f" stroke-opacity="0.28" stroke-width="1"></line>
+                    </sc-if>
+
+                    <!-- une courbe seule -->
+                    <sc-if value="{{ch.isLine}}" hint-placeholder-val="{{ false }}">
+                      <sc-for list="{{ch.lGrid}}" as="gr" hint-placeholder-count="2"><line x1="30" y1="{{gr.y}}" x2="318" y2="{{gr.y}}" stroke="#efe2c8" stroke-width="1"></line><text x="25" y="{{gr.ty}}" text-anchor="end" font-family="Space Mono, monospace" font-size="9" fill="#786a59">{{gr.label}}</text></sc-for>
+                      <path d="{{ch.lPath}}" fill="none" stroke="{{ch.lColor}}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"></path>
+                      <sc-for list="{{ch.lDots}}" as="dt" hint-placeholder-count="8"><circle cx="{{dt.x}}" cy="{{dt.y}}" r="{{dt.r}}" fill="{{ch.lColor}}" stroke="#fffce1" stroke-width="2"></circle></sc-for>
+                      <line x1="{{ch.selX}}" y1="16" x2="{{ch.selX}}" y2="136" stroke="#33291f" stroke-opacity="0.28" stroke-width="1"></line>
+                    </sc-if>
+
+                    <!-- la grille des semaines, un pilier par ligne -->
+                    <sc-if value="{{ch.isGrid}}" hint-placeholder-val="{{ false }}">
+                      <sc-for list="{{ch.gRows}}" as="gr" hint-placeholder-count="3">
+                        <text x="0" y="{{gr.ty}}" font-family="Hanken Grotesk, sans-serif" font-size="11.5" font-weight="700" fill="#4d4135">{{gr.label}}</text>
+                        <sc-for list="{{gr.cells}}" as="gc" hint-placeholder-count="8">
+                          <rect x="{{gc.x}}" y="{{gr.y}}" width="28" height="26" rx="6" fill="{{gr.color}}" fill-opacity="{{gc.op}}"></rect>
+                          <text x="{{gc.tx}}" y="{{gr.vy}}" text-anchor="middle" font-family="Space Mono, monospace" font-size="10" font-weight="700" fill="{{gc.tc}}">{{gc.v}}</text>
+                        </sc-for>
+                      </sc-for>
+                    </sc-if>
+
+                    <!-- axe des semaines commun -->
+                    <sc-for list="{{ch.xLabels}}" as="xl" hint-placeholder-count="5"><text x="{{xl.x}}" y="{{ch.xY}}" text-anchor="middle" font-family="Space Mono, monospace" font-size="9" fill="#786a59">{{xl.label}}</text></sc-for>
+                  </svg>
+                  <sc-for list="{{ch.cols}}" as="k" hint-placeholder-count="8">
+                    <button onClick="{{k.pick}}" aria-label="{{k.label}}" style="position: absolute; top: 0; left: {{k.x}}px; width: {{k.w}}px; height: {{ch.h}}px; background: transparent; border: none; padding: 0;"></button>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ch.hasNote}}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 12px; line-height: 17px; color: #786a59;">{{ch.note}}</span>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <!-- Ce que tes données croisent -->
+            <sc-if value="{{fd.hasRows}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                  <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #7a5714;">CE QUE TES DONNÉES CROISENT</span>
+                  <span style="font-size: 12px; color: #786a59;">{{fd.rowsMeta}}</span>
+                </div>
+                <div style="background: #fffce1; border: 1px solid #ead2aa; border-radius: 22px; padding: 2px 16px;">
+                  <sc-for list="{{fd.rows}}" as="r" hint-placeholder-count="5">
+                    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-top: {{r.bt}};">
+                      <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                        <span style="font-size: 14px; font-weight: 600; line-height: 18px;">{{r.label}}</span>
+                        <span style="font-size: 12px; line-height: 16px; color: #786a59;">{{r.note}}</span>
+                      </span>
+                      <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 13px; white-space: nowrap;">{{r.value}}</span>
+                      <span style="position: relative; width: 10px; height: 10px; border-radius: 5px; flex-shrink: 0; background: {{r.dot}}; border: {{r.ring}}; box-sizing: border-box;"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;">{{r.stLabel}}</span></span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- Ce que tu peux faire -->
+            <sc-if value="{{fd.hasActs}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #7a5714;">CE QUE TU PEUX FAIRE</span>
+                <sc-if value="{{fd.hasGeste}}" hint-placeholder-val="{{ true }}">
+                  <div style="background: #fffce1; border: 1px solid #ead2aa; border-radius: 22px; padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px;">
+                    <span style="font-size: 12.5px; line-height: 17px; color: #6f604e;">{{fd.gNote}}</span>
+                    <button onClick="{{fd.toggle}}" aria-pressed="{{fd.readyB}}" style="min-height: 48px; padding: 8px 12px; border-radius: 14px; border: 1.5px solid {{fd.gBorder}}; background: {{fd.gBg}}; color: {{fd.gColor}}; font-size: 15px; font-weight: 700;">{{fd.gLabel}}</button>
+                  </div>
+                </sc-if>
+                <sc-for list="{{fd.more}}" as="m" hint-placeholder-count="1">
+                  <button onClick="{{m.go}}" style="display: flex; align-items: center; gap: 12px; width: 100%; text-align: left; padding: 14px 14px 14px 16px; border-radius: 18px; border: 1px solid #ead2aa; background: transparent; color: inherit;">
+                    <span style="flex: 1; display: flex; flex-direction: column; gap: 2px;"><span style="font-size: 14.5px; font-weight: 700; line-height: 19px;">{{m.label}}</span><span style="font-size: 12.5px; line-height: 17px; color: #786a59;">{{m.note}}</span></span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9a8a74" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M9 5l7 7-7 7"></path></svg>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <!-- L’histoire du lien -->
+            <sc-if value="{{fd.isKnown}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                  <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #7a5714;">L’HISTOIRE DE CE LIEN</span>
+                  <span style="font-size: 12px; color: #786a59;">8 semaines</span>
+                </div>
+                <div style="background: #fffce1; border: 1px solid #ead2aa; border-radius: 22px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <sc-for list="{{fd.hist}}" as="h" hint-placeholder-count="8"><span style="width: 26px; height: 26px; border-radius: 13px; background: {{h.fill}}; border: {{h.ring}}; box-sizing: border-box;"></span></sc-for>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; font-family: 'Space Mono', monospace; font-size: 9.5px; color: #786a59;"><span>03/08</span><span>cette semaine</span></div>
+                  <span style="font-size: 13.5px; line-height: 19px; color: #4d4135;">{{fd.histTxt}}</span>
+                  <span style="font-size: 11.5px; color: #786a59;">or : ça tient · bronze : à régler · corail : garde-fou</span>
+                </div>
+              </div>
+            </sc-if>
+
+            <!-- Les échos -->
+            <sc-if value="{{fd.hasEchoes}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 10px;">
+                <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; color: #7a5714;">TU LE RETROUVES AUSSI</span>
+                <div style="background: #fffce1; border: 1px solid #ead2aa; border-radius: 22px; padding: 4px 16px;">
+                  <sc-for list="{{fd.echoes}}" as="e" hint-placeholder-count="2">
+                    <div style="display: flex; align-items: center; gap: 10px; padding: 11px 0; border-top: {{e.bt}};">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a5714" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="12" r="6"></circle><circle cx="15" cy="12" r="6"></circle></svg>
+                      <span style="flex: 1; font-size: 13.5px; line-height: 18px; color: #4d4135;">{{e.t}}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </div>
+            </sc-if>
+
+            <span style="font-size: 12.5px; line-height: 18px; color: #786a59; font-style: italic;">{{fd.src}}</span>
+          </div>
+        </div>
+      </sc-if>
+    </div>
+
+    <!-- Barre « appliquer » -->
+    <sc-if value="{{showApplyBar}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; left: 0; right: 0; bottom: 64px; padding: 10px 16px 12px; background: linear-gradient(180deg, rgba(251,238,212,0) 0%, #fbeed4 30%);">
+        <button onClick="{{openSheet}}" style="width: 100%; height: 52px; border-radius: 16px; border: none; background: #7a5714; color: #ffffff; font-size: 15.5px; font-weight: 700;">{{applyLabel}}</button>
+      </div>
+    </sc-if>
+
+    <!-- Barre d’onglets de l’app -->
+    <nav aria-label="Navigation principale" style="position: absolute; left: 0; right: 0; bottom: 0; height: 64px; display: flex; background: #fffce1; border-top: 1px solid #ead2aa;">
+      <sc-for list="{{nav}}" as="nv" hint-placeholder-count="5">
+        <a href="#" aria-current="{{nv.current}}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; text-decoration: none; color: {{nv.color}}; font-size: 11px; font-weight: 600;">
+          <svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="{{nv.color}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{nv.icon}}"></path></svg>
+          <span>{{nv.label}}</span>
+        </a>
+      </sc-for>
+    </nav>
+
+    <!-- Feuille « ce qui change dans ton plan » -->
+    <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(20,12,6,0.52); animation: fadein .2s both;"></div>
+      <div role="dialog" aria-label="Ce qui change dans ton plan" style="position: absolute; left: 0; right: 0; bottom: 0; background: #fbeed4; border-top-left-radius: 26px; border-top-right-radius: 26px; padding: 10px 16px 20px; display: flex; flex-direction: column; gap: 14px; animation: sheetup .28s both;">
+        <div style="align-self: center; width: 40px; height: 4px; border-radius: 2px; background: #c9b89a;"></div>
+        <span style="font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 21px; letter-spacing: -0.3px;">Ce qui change dans ton plan</span>
+        <sc-for list="{{sheetLines}}" as="sl" hint-placeholder-count="2">
+          <div style="display: flex; gap: 12px; align-items: flex-start; padding: 12px; border-radius: 16px; background: #fffce1; border: 1px solid #ead2aa;">
+            <span style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 10px; background: {{sl.bg}}; display: flex; align-items: center; justify-content: center;"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="{{sl.color}}" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{sl.icon}}"></path></svg></span>
+            <span style="flex: 1; display: flex; flex-direction: column; gap: 3px;">
+              <span style="font-size: 14.5px; font-weight: 700; line-height: 19px;">{{sl.title}}</span>
+              <span style="font-size: 12.5px; line-height: 17px; color: #6f604e;">{{sl.detail}}</span>
+              <span style="font-size: 12px; line-height: 16px; color: #7a5714; font-weight: 600;">Visible dans : {{sl.visible}}</span>
+            </span>
+          </div>
+        </sc-for>
+        <span style="font-size: 12.5px; line-height: 17px; color: #786a59;">Rien d’autre ne bouge dans ton plan.</span>
+        <button onClick="{{apply}}" style="height: 52px; border-radius: 16px; border: none; background: #7a5714; color: #ffffff; font-size: 15.5px; font-weight: 700;">Appliquer à mon plan</button>
+        <button onClick="{{closeSheet}}" style="height: 46px; border-radius: 14px; border: none; background: transparent; color: #7a5714; font-size: 15px; font-weight: 700;">Pas maintenant</button>
+      </div>
+    </sc-if>
+
+    <!-- Message éphémère -->
+    <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="position: absolute; top: 14px; left: 16px; right: 16px; padding: 12px 14px; border-radius: 14px; background: #33291f; color: #f4ecdd; font-size: 13.5px; font-weight: 600; line-height: 18px; animation: toastin .25s both;">{{toast}}</div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"piliers":{"editor":"enum","options":["mcn","mc","m"],"default":"mcn"},"situation":{"editor":"enum","options":["charge","gardefou","tient","neuf"],"default":"charge"},"vue":{"editor":"enum","options":["croiser","composer","apprendre","fiche","feuille"],"default":"croiser"},"fiche":{"editor":null},"zone":{"editor":null},"ready":{"editor":null},"chrome":{"editor":"boolean","default":true},"vh":{"editor":"int","default":844},"$preview":{"width":390,"height":928}}'>
+class Component extends DCLogic {
+  state = { piliers: null, situation: null, tab: null, screen: null, fiche: null, zone: undefined, ready: null, sheet: null, applied: {}, toast: null, sel: null, curve: null, hideOther: false };
+
+  componentDidUpdate(pp, ps) {
+    const s = this.state;
+    if (this.scrollEl && (ps.screen !== s.screen || ps.fiche !== s.fiche || ps.tab !== s.tab)) this.scrollEl.scrollTop = 0;
+  }
+
+  componentWillUnmount() { clearTimeout(this.tt); }
+
+  flash(msg) {
+    clearTimeout(this.tt);
+    this.setState({ toast: msg });
+    this.tt = setTimeout(() => this.setState({ toast: null }), 2800);
+  }
+
+  reset(patch) {
+    this.setState(Object.assign({ tab: 'croiser', screen: 'hub', fiche: null, zone: null, ready: {}, sheet: false, applied: {}, sel: null, curve: null, toast: null, hideOther: false }, patch));
+  }
+
+  fr(n, d) { return n.toFixed(d).replace('.', ','); }
+
+  sector(r, a0, a1) {
+    const k = Math.PI / 180;
+    const x0 = (r * Math.cos(a0 * k)).toFixed(2), y0 = (r * Math.sin(a0 * k)).toFixed(2);
+    const x1 = (r * Math.cos(a1 * k)).toFixed(2), y1 = (r * Math.sin(a1 * k)).toFixed(2);
+    return 'M0,0 L' + x0 + ',' + y0 + ' A' + r + ',' + r + ' 0 0,1 ' + x1 + ',' + y1 + ' Z';
+  }
+
+  colTop(x, w, y, base) {
+    const r = Math.min(4, (base - y) / 2);
+    if (base - y < 0.5) return '';
+    return 'M' + x + ',' + base + ' V' + (y + r) + ' Q' + x + ',' + y + ' ' + (x + r) + ',' + y + ' H' + (x + w - r) + ' Q' + (x + w) + ',' + y + ' ' + (x + w) + ',' + (y + r) + ' V' + base + ' Z';
+  }
+
+  // ─────────────────────────── LES DONNÉES ───────────────────────────
+  // Un personnage fictif : jeudi 24/09/2026, 72,4 kg, un 10 km le 15/11,
+  // force à garder, cible de maintien. Chaque chiffre vient d’un moteur qui
+  // existe déjà dans l’app (voir la planche « Doctrine »).
+  base() {
+    return {
+      mc: { id: 'mc', zone: 'mc', lens: ['M', 'C'], pair: 'MUSCU × COURSE', short: 'Muscu × Course', q: 'Tes deux sports se gênent-ils ?', state: 'regler',
+        verdict: 'Jambes vendredi, sortie longue samedi : moins de 24 h entre les deux. Et dans tes données, tes fractions sont plus lentes quand elles suivent des jambes.',
+        sum: 'Jambes vendredi, sortie longue samedi.',
+        figs: [['< 24 h', 'entre tes jambes (ven.) et ta sortie longue (sam.)'], ['+4 s/km', 'sur tes fractions après des jambes · 6 cas contre 9']],
+        geste: { label: 'Décaler la sortie longue à dimanche', writes: true, line: { icon: 'run', title: 'Sortie longue 16 km : samedi → dimanche', detail: 'Même distance, même allure. 48 h après ta séance jambes.', visible: 'Planning · Course · Accueil' } },
+        more: [{ label: 'Tester sur moi : 48 h entre jambes et qualité', note: 'Quatre semaines, ordre tiré au sort, verdict scellé jusqu’au bout.', toast: 'Ouvrirait l’expérience « 48 h entre jambes et qualité »' }],
+        rows: [['Collision cette semaine', 'jambes lourdes la veille d’une séance de qualité', '1', 'regler'], ['Tes fractions après des jambes', 'association · 6 cas contre 9', '+4 s/km', 'regler'], ['Interférence force / endurance', 'ton tonnage et tes kilomètres montent ensemble', 'aucune', 'tient'], ['Deux séances le même jour', '4 dernières semaines', '0', 'tient'], ['Temps d’entraînement', 'muscu + course, cette semaine', '4 h 50', '']],
+        chart: { type: 'dots', title: 'ALLURE DE TES FRACTIONS', rows: [{ label: 'Après des jambes, moins de 24 h', vals: [252, 249, 255, 250, 253, 247] }, { label: 'Sans jambes la veille', vals: [246, 248, 244, 249, 247, 245, 250, 246, 248] }], dom: [240, 260] },
+        hist: ['tient', 'tient', 'regler', 'tient', 'regler', 'tient', 'tient', 'regler'],
+        histTxt: 'Ce lien coince une semaine sur trois, toujours de la même façon : des jambes juste avant une séance de qualité.',
+        echoes: ['Planning · le bandeau sur la sortie longue', 'Course › Courir · la séance du jour'],
+        src: 'Calculé sur tes 9 séances de jambes et tes 15 séances de qualité des 8 dernières semaines. Une association, pas une preuve.' },
+
+      mn: { id: 'mn', zone: 'mn', lens: ['M', 'N'], pair: 'MUSCU × NUTRITION', short: 'Muscu × Nutrition', q: 'Manges-tu assez pour ta muscu ?', state: 'regler',
+        verdict: 'Tes protéines baissent depuis un mois et ton squat ne monte plus depuis trois semaines. Dans tes données, les deux vont ensemble.',
+        sum: 'Protéines en baisse, squat à l’arrêt.',
+        figs: [['1,4 g/kg', 'protéines, 7 derniers jours (4 saisis) · ta fourchette : 1,6 à 2,2'], ['120 kg', 'squat, max estimé · stable depuis 3 semaines']],
+        geste: { label: 'Viser 1,6 g/kg de protéines', writes: true, line: { icon: 'nutri', title: 'Cible de protéines : 101 → 116 g par jour', detail: '1,6 g/kg pour 72,4 kg : le bas de ta fourchette.', visible: 'Nutrition › Aujourd’hui · Progrès' } },
+        more: [{ label: 'Des aliments pour combler', note: 'Ouvre les suggestions de ton journal.', toast: 'Ouvrirait Nutrition › des aliments pour combler tes protéines' }],
+        rows: [['Protéines par kilo', 'moyenne des jours saisis', '1,4 g/kg', 'regler'], ['Protéines par prise', 'prises au-dessus du repère de 22 g', '1,6 / jour', 'regler'], ['Jours de séance', 'kcal des jours de séance, contre les jours de repos', '+140 kcal', 'tient'], ['Grosses séances sous-alimentées', '4 dernières semaines', '1 sur 6', 'tient'], ['Déficit et volume', '6 % sous ta cible, volume habituel', 'pas d’alerte', 'tient'], ['Bonus du jour de séance', 'versé en glucides', '+55 g', '']],
+        chart: { type: 'pair', a: { title: 'PROTÉINES, G/KG PAR SEMAINE', vals: [1.8, 1.8, 1.7, 1.7, 1.6, 1.5, 1.4, 1.4], dom: [0, 2.4], band: [1.6, 2.2], bandLabel: 'ta fourchette' }, b: { title: 'SQUAT, MAX ESTIMÉ (KG)', vals: [108, 111, 113, 116, 119, 120, 120, 120], dom: [100, 125], grid: [110, 120], plateau: 5, plateauLabel: '3 semaines sans hausse' } },
+        hist: ['tient', 'tient', 'tient', 'tient', 'tient', 'regler', 'regler', 'regler'],
+        histTxt: 'En tension depuis trois semaines : depuis que tes protéines sont passées sous 1,6 g/kg.',
+        echoes: ['Muscu › Progrès · sous la courbe du squat', 'Nutrition › Aujourd’hui · la ligne des protéines'],
+        src: 'Calculé sur 22 jours saisis, 8 pesées et 11 séances des 8 dernières semaines. Des associations trouvées dans tes données, pas des preuves.' },
+
+      cn: { id: 'cn', zone: 'cn', lens: ['C', 'N'], pair: 'COURSE × NUTRITION', short: 'Course × Nutrition', q: 'Ton carburant suit-il tes kilomètres ?', state: 'regler',
+        verdict: 'Ta cible monte bien avec tes kilomètres. Mais les jours durs, tes glucides restent au niveau des jours faciles, et samedi tu as 16 km.',
+        sum: 'Glucides bas les jours durs.',
+        figs: [['3,2 g/kg', 'glucides des jours durs · repère 5 à 7 pour ton volume'], ['+420 kcal', 'ajoutées à ta cible aujourd’hui pour ta course']],
+        geste: { label: 'Préparer samedi : voir mon réservoir', writes: false, toast: 'Ouvrirait Nutrition › Aujourd’hui, le réservoir avant samedi' },
+        more: [{ label: 'Expérience en cours : glucides des jours durs', note: 'Jour 12 sur 28 · verdict scellé jusqu’au 12/10.', toast: 'Ouvrirait Apprendre › l’expérience en cours' }],
+        rows: [['Glucides des jours durs', 'fractionné et sortie longue, 4 semaines', '3,2 g/kg', 'regler'], ['Glucides des jours faciles', '4 semaines', '3,4 g/kg', ''], ['Ta fourchette', '3 à 6 h de course par semaine', '5 à 7 g/kg', ''], ['Dépense de tes courses', 'cette semaine, comptée dans ta cible', '1 640 kcal', 'tient'], ['Niveau d’activité', '3 jours de course sur 14', 'à jour', 'tient']],
+        chart: { type: 'groups', title: 'GLUCIDES SELON LE JOUR · 4 SEMAINES', bars: [{ label: 'Jours durs', v: 3.2, n: '4 jours' }, { label: 'Jours faciles', v: 3.4, n: '10 jours' }], dom: [0, 8], band: [5, 7], bandLabel: 'repère pour ton volume : 5 à 7 g/kg' },
+        hist: ['tient', 'tient', 'tient', 'regler', 'tient', 'regler', 'regler', 'regler'],
+        histTxt: 'À régler trois semaines sur quatre, depuis que tu as ajouté une sortie longue.',
+        echoes: ['Nutrition › Aujourd’hui · le réservoir', 'Course › Courir · la sortie de samedi'],
+        src: 'Calculé sur 14 jours saisis et 12 courses des 4 dernières semaines. Des repères, pas une prescription.' },
+
+      rec: { id: 'rec', zone: 'centre', lens: ['M', 'C', 'S'], pair: 'TES PILIERS × TES NUITS', short: 'Récupération', q: 'Récupères-tu assez ?', state: 'tient',
+        verdict: 'Ta charge reste dans la zone saine et tu as pris un vrai repos dimanche. Deux nuits notées sur trois sont courtes, dont la dernière : rien d’intense n’est prévu aujourd’hui.',
+        sum: 'Charge saine, nuits un peu courtes.',
+        figs: [['1,12', 'ratio de charge, 7 j sur 28 j · zone saine jusqu’à 1,3'], ['1 sur 3', 'nuits au-dessus de 7 h cette semaine · 3 notées']],
+        geste: null,
+        more: [{ label: 'Noter ma nuit', note: 'Au check-in du matin, en un geste.', toast: 'Ouvrirait le check-in bien-être' }],
+        rows: [['Ratio de charge', 'muscu + course + activités', '1,12', 'tient'], ['Jours d’affilée avec séance', 'depuis ton dernier repos', '3', 'tient'], ['Forme du jour', 'charge, apports, bien-être', 'correcte', 'tient'], ['Nuits au-dessus de 7 h', 'dernière nuit : 6 h 10', '1 sur 3', ''], ['Énergie au check-in', 'moyenne sur 7 jours', '3,4 / 5', '']],
+        chart: { type: 'band', title: 'RATIO DE CHARGE PAR SEMAINE', vals: [0.95, 1.02, 1.08, 1.10, 1.05, 1.12, 1.15, 1.12], dom: [0.6, 1.6], band: [0.8, 1.3], bandLabel: 'zone saine' },
+        hist: ['tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient'],
+        histTxt: 'Ce lien tient depuis deux mois. Les nuits courtes sont le seul point à suivre.',
+        echoes: ['Accueil · ta forme du jour', 'Course › Courir · l’adaptation de la séance'],
+        src: 'Charge = ressenti × durée de chaque séance, sur les 28 derniers jours. Nuits : ce que tu notes au check-in.' },
+
+      poids: { id: 'poids', zone: 'centre', lens: ['N', 'M', 'C'], pair: 'ASSIETTE × DÉPENSE × POIDS', short: 'Poids', q: 'Ton poids suit-il ton assiette ?', state: 'tient',
+        verdict: 'Ton poids est stable, comme le prévoit ta cible de maintien, dépenses de sport comprises. Trois jours sans saisie sur les sept derniers : la balance reste approximative.',
+        sum: 'Stable, comme prévu par ta cible.',
+        figs: [['72,4 kg', '−0,1 kg par semaine depuis 8 semaines'], ['−90 kcal', 'par jour : apports moins dépenses']],
+        geste: null,
+        more: [{ label: 'Compléter les jours sans saisie', note: 'Mardi, samedi et dimanche derniers n’ont rien de noté.', toast: 'Ouvrirait Nutrition › Historique, les jours à compléter' }],
+        rows: [['Tendance du poids', '8 pesées, 8 semaines', '−0,1 kg/sem', 'tient'], ['Apports moins dépenses', 'moyenne des jours saisis', '−90 kcal/j', 'tient'], ['Sport compté une seule fois', 'ta cible suit ce que tu fais', 'oui', 'tient'], ['Jours sans saisie', '7 derniers jours', '3 sur 7', '']],
+        chart: { type: 'line', title: 'POIDS, MOYENNE PAR SEMAINE (KG)', vals: [72.9, 72.8, 72.7, 72.7, 72.6, 72.5, 72.4, 72.4], dom: [71.8, 73.2], grid: [72, 73], color: '#5c4a35', fmt: 'kg' },
+        hist: ['tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient'],
+        histTxt: 'Stable depuis deux mois, au rythme que prévoit ta cible.',
+        echoes: ['Nutrition › Progrès · ta semaine', 'Accueil · ton poids'],
+        src: '8 pesées, 22 jours saisis, dépenses de 11 séances et de 12 courses.' },
+
+      obj: { id: 'obj', zone: 'centre', lens: ['M', 'C', 'N'], pair: 'TES TROIS OBJECTIFS', short: 'Objectifs', q: 'Tes objectifs tirent-ils dans le même sens ?', state: 'tient',
+        verdict: 'Préparer un 10 km pour le 15/11 en gardant ta force, avec une cible de maintien : rien ne se contredit.',
+        sum: 'Rien ne se contredit.',
+        figs: [['10 km', 'objectif course · le 15/11'], ['Maintien', 'objectif nutrition · force à garder']],
+        geste: null, more: [],
+        rows: [['Contradiction entre objectifs', 'prise de masse, sèche, préparation', 'aucune', 'tient'], ['Semaine type compatible', '3 séances et 3 sorties', 'oui', 'tient'], ['Cible et préparation', 'maintien, pas de déficit', 'oui', 'tient']],
+        chart: null,
+        hist: ['tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient'],
+        histTxt: 'Aucune contradiction depuis que tu as fixé tes objectifs, le 02/08.',
+        echoes: ['Accueil · la carte de tes objectifs'],
+        src: 'Règles de cohérence entre objectifs. Si l’un contredit l’autre, le Conseil des trois chiffre les deux issues.' },
+
+      reg: { id: 'reg', zone: 'centre', lens: ['M', 'C', 'N'], pair: 'RÉGULARITÉ · TES TROIS PILIERS', short: 'Régularité', q: 'Tiens-tu le rythme partout ?', state: 'tient',
+        verdict: 'Douze jours d’affilée actifs, et aucun pilier délaissé : la semaine dernière, 3 séances, 3 sorties et 6 jours de repas notés.',
+        sum: '12 jours de série, aucun pilier délaissé.',
+        figs: [['12 jours', 'de série, tous piliers confondus'], ['3 · 3 · 6', 'séances · sorties · jours notés, semaine dernière']],
+        geste: null,
+        more: [{ label: 'Ouvrir le bilan de la semaine', note: 'Le récit de ta semaine, pilier par pilier.', toast: 'Ouvrirait le bilan de la semaine' }],
+        rows: [['Série active', 'tous piliers confondus', '12 jours', 'tient'], ['Jours actifs', 'semaine dernière', '6 sur 7', 'tient'], ['Prévu puis fait', 'muscu + course, semaine dernière', '5 sur 6', 'tient'], ['Répartition du temps', 'muscu · course', '45 · 55 %', '']],
+        chart: { type: 'grid', title: 'JOURS ACTIFS PAR SEMAINE', rows: [{ k: 'M', label: 'Muscu', vals: [3, 3, 2, 3, 3, 3, 2, 3] }, { k: 'C', label: 'Course', vals: [2, 3, 3, 3, 2, 3, 3, 3] }, { k: 'N', label: 'Repas', vals: [5, 6, 6, 4, 6, 5, 6, 6] }] },
+        hist: ['tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient'],
+        histTxt: 'Huit semaines sans pilier délaissé.',
+        echoes: ['Accueil · ta série', 'Réglages › Bilan de la semaine'],
+        src: 'Séances, sorties et repas notés des 8 dernières semaines.' },
+
+      sa: { id: 'sa', zone: 'centre', lens: ['S', 'C'], pair: 'TES NUITS × TA COURSE', short: 'Nuits × course', q: 'Une nuit courte te ralentit-elle ?', state: 'decouvrir',
+        missing: 'Il faut 3 séances de qualité après une nuit de moins de 6 h pour comparer. Tu en as 2.', meter: [2, 3, '2 cas sur 3'],
+        action: { label: 'Noter ma nuit', toast: 'Ouvrirait le check-in bien-être' },
+        verdict: 'Le Labo ne peut pas encore répondre : il lui manque un cas.', src: 'Il faut au moins 3 cas de chaque côté pour parler d’un lien.' },
+
+      fp: { id: 'fp', zone: 'centre', lens: ['M', 'P'], pair: 'TA FORCE × TON POIDS', short: 'Force × poids', q: 'Ta force suit-elle ton poids ?', state: 'tient',
+        verdict: 'Ton poids ne bouge pas et ton total monte : ta force rapportée à ton poids progresse.',
+        sum: 'Force relative en hausse.',
+        figs: [['318', 'score DOTS · +6 en 8 semaines'], ['72,4 kg', 'poids stable']],
+        geste: null, more: [],
+        rows: [['Score DOTS', 'ta force rapportée à ton poids', '318', 'tient'], ['Total des trois mouvements', 'squat, développé couché, soulevé de terre', '372 kg', 'tient'], ['Poids', '8 pesées', '72,4 kg', '']],
+        chart: { type: 'line', title: 'SCORE DOTS PAR SEMAINE', vals: [312, 313, 313, 315, 316, 317, 318, 318], dom: [306, 322], grid: [310, 320], color: '#a8261d', fmt: 'int' },
+        hist: ['tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient'],
+        histTxt: 'Ta force relative monte depuis deux mois.',
+        echoes: ['Muscu › Progrès · tes records'],
+        src: 'Tes records et tes pesées des 8 dernières semaines.' },
+
+      en: { id: 'en', zone: 'm', lens: ['M', 'S'], pair: 'TA MUSCU × TON ÉNERGIE', short: 'Énergie', q: 'Te sens-tu mieux les jours de séance ?', state: 'decouvrir',
+        missing: 'Note ton énergie au check-in encore 3 jours pour comparer tes jours de séance et tes jours de repos.', meter: [4, 7, '4 jours sur 7'],
+        action: { label: 'Noter mon énergie', toast: 'Ouvrirait le check-in bien-être' },
+        verdict: 'Le Labo ne peut pas encore répondre : il lui manque trois jours.', src: 'Il faut au moins 3 jours de chaque côté pour comparer.' }
+    };
+  }
+
+  fiches(piliers, situation, applied) {
+    const B = this.base();
+    const order = piliers === 'mcn' ? ['mc', 'mn', 'cn', 'rec', 'poids', 'obj', 'reg', 'sa'] : piliers === 'mc' ? ['mc', 'rec', 'fp', 'sa'] : ['rec', 'fp', 'en'];
+    const list = order.map((id) => Object.assign({}, B[id]));
+    const get = (id) => list.find((f) => f.id === id);
+
+    if (piliers === 'm') {
+      Object.assign(get('rec'), { zone: 'm', lens: ['M', 'S'], pair: 'TA MUSCU × TES NUITS',
+        verdict: 'Deux jours de repos depuis lundi, mais deux nuits notées sur trois sont courtes, dont celle d’avant ta séance jambes.',
+        sum: 'Repos suffisant, nuits un peu courtes.',
+        figs: [['2 jours', 'de repos depuis lundi'], ['1 sur 3', 'nuits au-dessus de 7 h · 3 notées']],
+        rows: [['Jours d’affilée avec séance', 'depuis ton dernier repos', '1', 'tient'], ['Forme du jour', 'charge et bien-être', 'correcte', 'tient'], ['Nuits au-dessus de 7 h', 'dernière nuit : 6 h 10', '1 sur 3', ''], ['Énergie au check-in', 'moyenne sur 7 jours', '3,4 / 5', '']],
+        chart: null, echoes: ['Accueil · ta forme du jour'], src: 'Tes séances et ce que tu notes au check-in, 4 dernières semaines.' });
+      get('fp').zone = 'm';
+    }
+
+    if (situation === 'tient') {
+      if (get('mc')) Object.assign(get('mc'), { state: 'tient', geste: null, verdict: 'Tes jambes et tes séances de qualité sont espacées de 48 h cette semaine, comme ton acquis le conseille.', sum: '48 h entre tes jambes et ta qualité.',
+        figs: [['48 h', 'entre tes jambes et ta prochaine séance de qualité'], ['+4 s/km', 'ce que te coûtent des jambes la veille · lien solide']],
+        rows: [['Collision cette semaine', 'jambes lourdes la veille d’une séance de qualité', '0', 'tient']].concat(B.mc.rows.slice(1)), hist: ['tient', 'tient', 'regler', 'tient', 'regler', 'tient', 'tient', 'tient'], histTxt: 'Plus de collision depuis que tu espaces tes jambes et tes séances de qualité.' });
+      if (get('mn')) Object.assign(get('mn'), { state: 'tient', geste: null, verdict: 'Tes protéines restent dans ta fourchette et ton squat monte encore : ton assiette suit ta muscu.', sum: 'Protéines dans ta fourchette, squat en hausse.',
+        figs: [['1,8 g/kg', 'protéines, 7 derniers jours · fourchette 1,6 à 2,2'], ['+3 kg', 'squat, max estimé sur 3 semaines']],
+        rows: [['Protéines par kilo', 'moyenne des jours saisis', '1,8 g/kg', 'tient'], ['Protéines par prise', 'prises au-dessus du repère de 22 g', '3,2 / jour', 'tient']].concat(B.mn.rows.slice(2)),
+        chart: { type: 'pair', a: { title: 'PROTÉINES, G/KG PAR SEMAINE', vals: [1.7, 1.8, 1.8, 1.7, 1.8, 1.9, 1.8, 1.8], dom: [0, 2.4], band: [1.6, 2.2], bandLabel: 'ta fourchette' }, b: { title: 'SQUAT, MAX ESTIMÉ (KG)', vals: [108, 110, 112, 114, 116, 117, 119, 120], dom: [100, 125], grid: [110, 120], plateau: -1, plateauLabel: '' } },
+        hist: ['tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient'], histTxt: 'Tient depuis deux mois.' });
+      if (get('cn')) Object.assign(get('cn'), { state: 'tient', geste: null, more: [], verdict: 'Les jours durs, tes glucides montent dans ton repère, et ta cible suit tes kilomètres.', sum: 'Glucides dans ton repère les jours durs.',
+        figs: [['5,4 g/kg', 'glucides des jours durs · repère 5 à 7'], ['+420 kcal', 'ajoutées à ta cible aujourd’hui']],
+        rows: [['Glucides des jours durs', 'fractionné et sortie longue, 4 semaines', '5,4 g/kg', 'tient']].concat(B.cn.rows.slice(1)),
+        chart: { type: 'groups', title: 'GLUCIDES SELON LE JOUR · 4 SEMAINES', bars: [{ label: 'Jours durs', v: 5.4, n: '4 jours' }, { label: 'Jours faciles', v: 3.9, n: '10 jours' }], dom: [0, 8], band: [5, 7], bandLabel: 'repère pour ton volume : 5 à 7 g/kg' },
+        hist: ['tient', 'tient', 'tient', 'regler', 'tient', 'tient', 'tient', 'tient'], histTxt: 'Tient depuis que tu charges les veilles de sortie longue.' });
+      Object.assign(get('rec'), { verdict: 'Ta charge reste dans la zone saine, et tu dors plus de 7 h trois nuits sur quatre.', sum: 'Charge saine, nuits pleines.',
+        figs: [get('rec').figs[0], ['3 sur 4', 'nuits au-dessus de 7 h cette semaine']] });
+    }
+
+    if (situation === 'gardefou' && get('rec') && piliers !== 'm') {
+      Object.assign(get('rec'), { state: 'garde',
+        verdict: 'Ta charge a bondi : ratio 1,42, au-dessus du seuil de 1,3. Tu enchaînes six jours avec au moins une séance, et ta dernière nuit a fait 6 h 10.',
+        sum: 'Charge au-dessus du seuil.',
+        figs: [['1,42', 'ratio de charge, 7 j sur 28 j · seuil : 1,3'], ['6 jours', 'd’affilée avec au moins une séance']],
+        geste: { label: 'Alléger le fractionné du jour', writes: true, line: { icon: 'run', title: 'Fractionné du jour : 8 × 400 m → 6 × 400 m', detail: 'Aujourd’hui seulement : 25 % de répétitions en moins, échauffement gardé.', visible: 'Course › Courir · Accueil' } },
+        rows: [['Ratio de charge', 'muscu + course + activités', '1,42', 'garde'], ['Jours d’affilée avec séance', 'depuis ton dernier repos', '6', 'garde'], ['Forme du jour', 'charge, apports, bien-être', 'repos conseillé', 'garde'], ['Nuits au-dessus de 7 h', 'dernière nuit : 6 h 10', '1 sur 3', ''], ['Énergie au check-in', 'moyenne sur 7 jours', '2,8 / 5', '']],
+        chart: { type: 'band', title: 'RATIO DE CHARGE PAR SEMAINE', vals: [0.95, 1.02, 1.08, 1.10, 1.05, 1.12, 1.18, 1.42], dom: [0.6, 1.6], band: [0.8, 1.3], bandLabel: 'zone saine' },
+        hist: ['tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'tient', 'garde'],
+        histTxt: 'Premier garde-fou depuis deux mois : ta charge a sauté cette semaine.' });
+    }
+
+    if (situation === 'neuf') {
+      const N = {
+        mc: ['Il faut deux semaines de séances et de courses pour croiser tes deux sports. Tu en as trois jours.', 3, 14, '3 jours sur 14'],
+        mn: ['Il faut 4 jours de repas notés et une pesée. Tu as 1 jour, et pas encore de pesée.', 1, 4, '1 jour sur 4'],
+        cn: ['Il faut 4 jours de repas et 2 courses. Tu as 1 jour et 1 course.', 1, 4, '1 jour sur 4'],
+        rec: ['Il faut 28 jours de séances pour mesurer ta charge. Tu en as 3.', 3, 28, '3 jours sur 28'],
+        poids: ['Il faut 3 pesées et 7 jours de repas notés.', 0, 3, '0 pesée sur 3'],
+        reg: ['Une première semaine complète, et le Labo raconte ton rythme.', 3, 7, '3 jours sur 7'],
+        fp: ['Il faut un record et deux pesées.', 0, 2, '0 pesée sur 2']
+      };
+      list.forEach((f) => {
+        if (N[f.id]) Object.assign(f, { state: 'decouvrir', missing: N[f.id][0], meter: [N[f.id][1], N[f.id][2], N[f.id][3]], action: null, verdict: 'Le Labo ne peut pas encore répondre : ' + N[f.id][0].charAt(0).toLowerCase() + N[f.id][0].slice(1), src: 'Un lien ne s’affiche qu’avec assez de données : jamais un zéro à la place d’un trou.' });
+      });
+      if (get('obj')) Object.assign(get('obj'), { verdict: 'Tes trois objectifs ne se contredisent pas. C’est le premier lien que le Labo peut lire, dès ton inscription.', sum: 'Lisible dès ton inscription.', hist: ['vide', 'vide', 'vide', 'vide', 'vide', 'vide', 'vide', 'tient'], histTxt: 'Fixés cette semaine.' });
+    }
+
+    if (applied.mc && get('mc') && get('mc').state !== 'decouvrir') {
+      Object.assign(get('mc'), { state: 'tient', verdict: 'Ta sortie longue passe à dimanche, 48 h après tes jambes. Plus rien ne se gêne cette semaine.', sum: 'Sortie longue décalée : 48 h de marge.',
+        figs: [['48 h', 'entre tes jambes (ven.) et ta sortie longue (dim.)'], get('mc').figs[1]],
+        rows: [['Collision cette semaine', 'résolue : sortie longue décalée', '0', 'tient']].concat(get('mc').rows.slice(1)),
+        hist: get('mc').hist.slice(0, 7).concat(['tient']) });
+    }
+    if (applied.mn && get('mn') && get('mn').state === 'regler') {
+      Object.assign(get('mn'), { verdict: 'Ta cible passe à 1,6 g/kg, soit 116 g par jour. Le lien se réévalue avec tes repas des prochains jours.' });
+    }
+    if (applied.rec && get('rec') && get('rec').state === 'garde') {
+      Object.assign(get('rec'), { verdict: 'Fractionné du jour allégé. Le garde-fou reste affiché tant que ta charge n’est pas redescendue sous 1,3.' });
+    }
+    return list;
+  }
+
+  week(piliers, situation, applied) {
+    const lanes = [];
+    const cM = situation === 'neuf'
+      ? [null, null, ['Séance 1', 'done'], null, ['Séance 2', 'plan'], null, null]
+      : situation === 'tient'
+        ? [['Jambes', 'done'], null, ['Haut', 'done'], null, ['Haut B', 'plan'], null, null]
+        : [['Jambes', 'done'], null, ['Haut', 'done'], null, ['Jambes B', 'plan'], null, null];
+    let cC = situation === 'neuf'
+      ? [null, ['3 km', 'done'], null, null, null, ['4 km', 'plan'], null]
+      : [null, ['8,5 km', 'done'], null, [situation === 'gardefou' ? '8 × 400' : '8 km', 'plan'], null, ['16 km', 'plan'], null];
+    if (applied.mc && situation !== 'neuf') cC = [null, ['8,5 km', 'done'], null, [situation === 'gardefou' ? '8 × 400' : '8 km', 'plan'], null, null, ['16 km', 'plan']];
+    const cN = situation === 'neuf'
+      ? [['—', 'gap'], ['—', 'gap'], ['1,2', 'done'], ['en cours', 'now'], null, null, null]
+      : situation === 'tient'
+        ? [['1,8', 'done'], ['1,7', 'done'], ['1,9', 'done'], ['en cours', 'now'], null, null, null]
+        : [['1,5', 'done'], ['—', 'gap'], ['1,4', 'done'], ['en cours', 'now'], null, null, null];
+    const cS = situation === 'neuf'
+      ? [['—', 'gap'], ['—', 'gap'], ['—', 'gap'], ['—', 'gap'], null, null, null]
+      : situation === 'tient'
+        ? [['7 h 20', 'good'], ['7 h 05', 'good'], ['—', 'gap'], ['7 h 40', 'good'], null, null, null]
+        : [['7 h 20', 'good'], ['6 h 05', 'short'], ['—', 'gap'], ['6 h 10', 'short'], null, null, null];
+    const PAL = { M: ['#a8261d', '#f6d5cf', '#8e1b1b'], C: ['#2a64ad', '#d6e4f5', '#1d4586'], N: ['#3f6b1c', '#dbe8c8', '#2f5a12'], S: ['#7a5714', '#f1e2bb', '#6b5010'] };
+    const cell = (k, c) => {
+      const p = PAL[k];
+      if (!c) return { t: '', bg: 'transparent', border: 'none', color: '#786a59' };
+      const st = c[1];
+      if (st === 'done' || st === 'good') return { t: c[0], bg: p[1], border: 'none', color: p[2] };
+      if (st === 'plan') return { t: c[0], bg: 'transparent', border: '1.5px dashed ' + p[0], color: p[2] };
+      if (st === 'short') return { t: c[0], bg: '#f5dfc6', border: 'none', color: '#7a4210' };
+      if (st === 'now') return { t: c[0], bg: 'transparent', border: '1px dotted ' + p[0], color: '#6f604e' };
+      return { t: c[0], bg: 'transparent', border: '1px solid #ead2aa', color: '#9a8a74' };
+    };
+    if (piliers.includes('m')) lanes.push({ label: 'Muscu', color: PAL.M[0], cells: cM.map((c) => cell('M', c)) });
+    if (piliers.includes('c')) lanes.push({ label: 'Course', color: PAL.C[0], cells: cC.map((c) => cell('C', c)) });
+    if (piliers.includes('n')) lanes.push({ label: 'Prot.', color: PAL.N[0], cells: cN.map((c) => cell('N', c)) });
+    lanes.push({ label: 'Nuits', color: PAL.S[0], cells: cS.map((c) => cell('S', c)) });
+    const L = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
+    const days = L.map((l, i) => ({ l: l, n: String(21 + i), bg: i === 3 ? '#33291f' : 'transparent', color: i === 3 ? '#fbeed4' : '#6f604e' }));
+    return { lanes: lanes, days: days, nights: cS, cM: cM, cC: cC };
+  }
+
+  // ─────────────────────────── LA CARTE ───────────────────────────
+  buildMap(piliers, fiches, zone, week, small, situation) {
+    const R = 70;
+    const cfg = piliers === 'mcn'
+      ? { d: { M: [132, 106, 1], C: [226, 106, 1], N: [179, 187, 1] }, ring: [179, 133, 128], vbH: 266, medals: { mc: [179, 80], mn: [140, 156], cn: [218, 156], centre: [179, 133] } }
+      : piliers === 'mc'
+        ? { d: { M: [140, 128, 1], C: [218, 128, 1] }, ring: [179, 128, 122], vbH: 262, medals: { mc: [179, 128], centre: [179, 250] } }
+        : { d: { M: [179, 130, 1.143] }, ring: [179, 130, 116], vbH: 262, medals: { m: [179, 246] } };
+    const inZone = { mc: 'MC', mn: 'MN', cn: 'CN', centre: 'MCN', m: 'M' };
+    const lit = (k) => (!zone || inZone[zone].indexOf(k) >= 0) ? 1 : 0.4;
+    const tf = (k) => cfg.d[k] ? 'translate(' + cfg.d[k][0] + 'px, ' + cfg.d[k][1] + 'px) scale(' + cfg.d[k][2] + ')' : 'none';
+    const circ = (k) => cfg.d[k] ? { x: cfg.d[k][0], y: cfg.d[k][1], r: R * cfg.d[k][2] } : { x: -500, y: -500, r: 1 };
+
+    const lensStyle = (key) => {
+      if (!zone) return { fill: 'rgba(242,210,138,0.13)', stroke: 'rgba(242,210,138,0.5)', sw: 1 };
+      if (zone === key || (zone === 'centre' && key === 'tri')) return { fill: 'rgba(242,210,138,0.34)', stroke: '#ffffff', sw: 2 };
+      return { fill: 'rgba(15,10,6,0.28)', stroke: 'none', sw: 0 };
+    };
+    const lenses = [];
+    const addLens = (key, clipKey, onKey) => {
+      const c = circ(onKey), st = lensStyle(key);
+      lenses.push({ clip: 'url(#cp' + clipKey + ')', cx: c.x, cy: c.y, r: c.r, fill: st.fill, stroke: st.stroke, sw: st.sw });
+    };
+    if (cfg.d.M && cfg.d.C) addLens('mc', 'M', 'C');
+    if (cfg.d.M && cfg.d.N) addLens('mn', 'M', 'N');
+    if (cfg.d.C && cfg.d.N) addLens('cn', 'C', 'N');
+    const hasTri = !!(cfg.d.M && cfg.d.C && cfg.d.N);
+    const tri = lensStyle('tri');
+    if (hasTri && !zone) { tri.fill = 'rgba(242,210,138,0.22)'; }
+
+    // séances : un plot par séance de la semaine
+    const mPlan = week.cM.filter((c) => c);
+    const angles = mPlan.length === 3 ? [-125, -90, -55] : mPlan.length === 2 ? [-105, -75] : [-90];
+    const mPips = mPlan.map((c, i) => {
+      const a = angles[i] * Math.PI / 180;
+      return { x: (46 * Math.cos(a)).toFixed(1), y: (46 * Math.sin(a)).toFixed(1), fill: c[1] === 'done' ? '#ffd2cc' : 'rgba(255,255,255,0.05)', stroke: c[1] === 'done' ? '#ffd2cc' : 'rgba(255,255,255,0.7)' };
+    });
+    // kilomètres : les lumières de la lice
+    const kmDone = situation === 'neuf' ? 3 : 8.5, kmPlan = situation === 'neuf' ? 7 : 32.5;
+    const litN = Math.round(24 * kmDone / kmPlan);
+    const cLights = [];
+    for (let i = 0; i < 24; i++) {
+      const a = (-90 + i * 15) * Math.PI / 180;
+      cLights.push({ x: (61 * Math.cos(a)).toFixed(1), y: (61 * Math.sin(a)).toFixed(1), op: i < litN ? 1 : 0.2 });
+    }
+    // protéines : la part de saumon suit le ratio, vide sans saisie
+    const protRatio = situation === 'neuf' ? 0 : situation === 'tient' ? 1 : 1.4 / 1.6;
+    const protR = Math.max(0, 53 * protRatio);
+
+    // nuits
+    const ring = { x: cfg.ring[0], y: cfg.ring[1], r: cfg.ring[2] };
+    const lamps = week.nights.map((c, i) => {
+      const a = (-90 + i * 360 / 7) * Math.PI / 180;
+      const x = (ring.x + ring.r * Math.cos(a)).toFixed(1), y = (ring.y + ring.r * Math.sin(a)).toFixed(1);
+      if (!c) return { x: x, y: y, r: 4, fill: 'rgba(255,255,255,0.08)', stroke: 'rgba(255,255,255,0.18)', op: 1 };
+      if (c[1] === 'good') return { x: x, y: y, r: 5.5, fill: '#f2d28a', stroke: '#fff4d6', op: 1 };
+      if (c[1] === 'short') return { x: x, y: y, r: 5, fill: '#9a5a26', stroke: '#c9803c', op: 1 };
+      return { x: x, y: y, r: 4.5, fill: 'transparent', stroke: 'rgba(242,210,138,0.55)', op: 1 };
+    });
+
+    // médailles : le pire état de la zone
+    const RANK = { garde: 0, regler: 1, tient: 2, decouvrir: 3 };
+    const MED = { garde: '#e0524a', regler: '#c9803c', tient: '#e0b155' };
+    const LIGHT = { M: '#ff6b5e', C: '#6fa8ef', N: '#9ed16a', S: '#e0b155' };
+    const RIB = { mc: [LIGHT.M, LIGHT.C], mn: [LIGHT.M, LIGHT.N], cn: [LIGHT.C, LIGHT.N], centre: piliers === 'mcn' ? ['#e0b155', '#f2d28a'] : [LIGHT.M, LIGHT.C], m: [LIGHT.M, LIGHT.S] };
+    const ZLABEL = this.zoneLabels(piliers);
+    const k = small ? 176 / cfg.vbH : 1;
+    const ox = (358 - 358 * k) / 2;
+    const medals = [], buttons = [];
+    Object.keys(cfg.medals).forEach((z) => {
+      const inz = fiches.filter((f) => f.zone === z);
+      if (!inz.length) return;
+      let st = 'decouvrir';
+      inz.forEach((f) => { if (RANK[f.state] < RANK[st]) st = f.state; });
+      const on = zone === z;
+      const p = cfg.medals[z];
+      medals.push({ x: p[0], y: p[1], fill: st === 'decouvrir' ? 'rgba(255,255,255,0.06)' : MED[st], stroke: on ? '#ffffff' : (st === 'decouvrir' ? '#e6d8c4' : '#1c150e'), sw: on ? 2.5 : 1.5, dash: st === 'decouvrir' ? '3 3' : 'none', ribA: RIB[z][0], ribB: RIB[z][1], pulse: (st === 'garde' || st === 'regler') && !small });
+      const n = inz.length;
+      const stTxt = { garde: 'un garde-fou', regler: 'à régler', tient: 'ça tient', decouvrir: 'à découvrir' }[st];
+      if (!small) buttons.push({ left: p[0] - 21, top: p[1] - 21, label: ZLABEL[z] + ' : ' + stTxt + ', ' + n + (n > 1 ? ' liens' : ' lien'), on: on, pick: () => this.setState({ zone: this.state.zone === z ? null : z, screen: 'hub' }) });
+    });
+
+    return {
+      h: small ? 176 : cfg.vbH, vbH: cfg.vbH, ring: ring, spotR: ring.r - 6,
+      hasM: !!cfg.d.M, hasC: !!cfg.d.C, hasN: !!cfg.d.N,
+      tM: tf('M'), tC: tf('C'), tN: tf('N'), opM: lit('M'), opC: lit('C'), opN: lit('N'),
+      cM: circ('M'), cC: circ('C'), cN: circ('N'),
+      lenses: lenses, hasTri: hasTri, tri: tri,
+      mPips: mPips, cLights: cLights,
+      secP: this.sector(56, -90, 30), secG: this.sector(56, 30, 150), secL: this.sector(56, 150, 270),
+      secPOutline: this.sector(52, -90, 30), protR: protR.toFixed(1), protEmpty: protRatio === 0,
+      lamps: lamps, medals: medals, buttons: buttons
+    };
+  }
+
+  zoneLabels(piliers) {
+    return { mc: 'Muscu × Course', mn: 'Muscu × Nutrition', cn: 'Course × Nutrition', centre: piliers === 'mcn' ? 'Tes trois piliers ensemble' : 'Tes deux sports × tes nuits', m: 'Ta muscu × ton quotidien' };
+  }
+
+  // ─────────────────────────── LES GRAPHIQUES ───────────────────────────
+  buildChart(chart, sel) {
+    const W8 = ['03/08', '10/08', '17/08', '24/08', '31/08', '07/09', '14/09', '21/09'];
+    const off = { show: false, cols: [], xLabels: [], hasNote: false };
+    if (!chart) return off;
+    const fr = (n, d) => this.fr(n, d);
+    const cw = 36, colX = (i) => 30 + cw * (i + 0.5);
+    const s = sel === null || sel === undefined ? 7 : sel;
+    const xLabels = [0, 2, 4, 6].map((i) => ({ x: colX(i), label: W8[i] })).concat([{ x: colX(7), label: W8[7] }]);
+    const cols = (lab) => W8.map((w, i) => ({ x: 30 + cw * i, w: cw, label: lab(i), pick: () => this.setState({ sel: i }) }));
+    const base = { show: true, isPair: false, isDots: false, isGroups: false, isBand: false, isLine: false, isGrid: false, cols: [], xLabels: [], xY: 0, hasNote: false, note: '', hint: '', readout: '' };
+
+    if (chart.type === 'pair') {
+      const a = chart.a, b = chart.b;
+      const yA = (v) => 110 - (v - a.dom[0]) / (a.dom[1] - a.dom[0]) * 80;
+      const yB = (v) => 224 - (v - b.dom[0]) / (b.dom[1] - b.dom[0]) * 74;
+      const aBars = a.vals.map((v, i) => ({ d: this.colTop(colX(i) - 9, 18, yA(v), 110), op: i === s ? 1 : 0.62 }));
+      const pts = b.vals.map((v, i) => [colX(i), yB(v)]);
+      const bPath = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+      const plat = b.plateau >= 0 ? b.plateau : -1;
+      return Object.assign(base, {
+        isPair: true, h: 250, overline: 'CE QUE TES DONNÉES MONTRENT', hint: 'touche une semaine',
+        aTitle: a.title, bTitle: b.title, aColor: '#3f6b1c', bColor: '#a8261d',
+        bandY: yA(a.band[1]), bandH: yA(a.band[0]) - yA(a.band[1]), bandTY: yA(a.band[1]) + 11, bandLabel: a.bandLabel + ' : ' + fr(a.band[0], 1) + ' à ' + fr(a.band[1], 1),
+        aTicks: [{ y: 113, label: '0' }, { y: yA(a.band[0]) + 3, label: fr(a.band[0], 1) }, { y: yA(a.band[1]) + 3, label: fr(a.band[1], 1) }],
+        aBars: aBars,
+        platX: plat >= 0 ? 30 + cw * plat : -100, platW: plat >= 0 ? 318 - (30 + cw * plat) : 0, platLabel: b.plateauLabel,
+        bGrid: b.grid.map((g) => ({ y: yB(g), ty: yB(g) + 3, label: String(g) })),
+        bPath: bPath, bDots: pts.map((p, i) => ({ x: p[0].toFixed(1), y: p[1].toFixed(1), r: i === s ? 5.5 : 4 })),
+        selX: colX(s), xLabels: xLabels, xY: 244,
+        readout: 'Semaine du ' + W8[s] + ' · ' + fr(a.vals[s], 1) + ' g/kg · ' + b.vals[s] + ' kg',
+        cols: cols((i) => 'Semaine du ' + W8[i] + ' : protéines ' + fr(a.vals[i], 1) + ' g/kg, squat ' + b.vals[i] + ' kg'),
+        hasNote: true, note: 'Deux mesures, deux échelles : deux graphiques alignés sur les mêmes semaines, pas un double axe.'
+      });
+    }
+
+    if (chart.type === 'dots') {
+      const xs = (v) => 24 + (v - chart.dom[0]) / (chart.dom[1] - chart.dom[0]) * 286;
+      const mmss = (v) => Math.floor(v / 60) + ':' + String(v % 60).padStart(2, '0');
+      const rows = chart.rows.map((r, ri) => {
+        const y = ri === 0 ? 58 : 122;
+        const mean = r.vals.reduce((t, v) => t + v, 0) / r.vals.length;
+        const seen = {};
+        const dots = r.vals.map((v) => { seen[v] = (seen[v] || 0) + 1; const n = seen[v] - 1; return { x: xs(v).toFixed(1), y: (y + (n % 2 ? 7 : -7) * (n ? 1 : 0)).toFixed(1) }; });
+        return { label: r.label, ly: y - 20, y: y, dots: dots, mx: xs(mean).toFixed(1), m1: y - 13, m2: y + 13, meanLabel: 'moyenne ' + mmss(Math.round(mean)) };
+      });
+      const m0 = chart.rows[0].vals.reduce((t, v) => t + v, 0) / chart.rows[0].vals.length;
+      const m1 = chart.rows[1].vals.reduce((t, v) => t + v, 0) / chart.rows[1].vals.length;
+      return Object.assign(base, {
+        isDots: true, h: 178, overline: chart.title, hint: 'min/km · un point = une séance',
+        rows: rows, xTicks: [240, 245, 250, 255, 260].map((v) => ({ x: xs(v).toFixed(1), label: mmss(v) })),
+        readout: 'Écart moyen : +' + Math.round(m0 - m1) + ' s/km · ' + chart.rows[0].vals.length + ' cas contre ' + chart.rows[1].vals.length,
+        hasNote: true, note: 'Un trait = la moyenne de la ligne. Plus à droite = plus lent.'
+      });
+    }
+
+    if (chart.type === 'groups') {
+      const ys = (v) => 140 - (v - chart.dom[0]) / (chart.dom[1] - chart.dom[0]) * 120;
+      const cxs = [125, 235];
+      return Object.assign(base, {
+        isGroups: true, h: 178, overline: chart.title, hint: 'g/kg de poids de corps',
+        bandY: ys(chart.band[1]), bandH: ys(chart.band[0]) - ys(chart.band[1]), bandTY: ys(chart.band[1]) - 4, bandLabel: chart.bandLabel,
+        yTicks: [{ y: 143, label: '0' }, { y: ys(chart.band[0]) + 3, label: String(chart.band[0]) }, { y: ys(chart.band[1]) + 3, label: String(chart.band[1]) }],
+        gBars: chart.bars.map((b, i) => ({ d: this.colTop(cxs[i] - 12, 24, ys(b.v), 140), cx: cxs[i], vy: ys(b.v) - 7, v: fr(b.v, 1), label: b.label, n: b.n })),
+        readout: chart.bars.map((b) => b.label + ' : ' + fr(b.v, 1) + ' g/kg').join(' · ')
+      });
+    }
+
+    if (chart.type === 'band') {
+      const ys = (v) => 150 - (v - chart.dom[0]) / (chart.dom[1] - chart.dom[0]) * 130;
+      const pts = chart.vals.map((v, i) => [colX(i), ys(v)]);
+      return Object.assign(base, {
+        isBand: true, h: 176, overline: chart.title, hint: 'touche une semaine',
+        bandY: ys(chart.band[1]), bandH: ys(chart.band[0]) - ys(chart.band[1]), bandTY: ys(chart.band[0]) - 5, bandLabel: chart.bandLabel,
+        limY: ys(1.3), limTY: ys(1.3) - 4,
+        yTicks: [{ y: ys(0.8) + 3, label: '0,8' }, { y: ys(1.0) + 3, label: '1,0' }, { y: ys(1.3) + 3, label: '1,3' }],
+        lColor: '#7a5714', lPath: pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '),
+        lDots: pts.map((p, i) => ({ x: p[0].toFixed(1), y: p[1].toFixed(1), r: i === s ? 5.5 : 4 })),
+        selX: colX(s), xLabels: xLabels, xY: 170,
+        readout: 'Semaine du ' + W8[s] + ' · ratio ' + fr(chart.vals[s], 2),
+        cols: cols((i) => 'Semaine du ' + W8[i] + ' : ratio de charge ' + fr(chart.vals[i], 2))
+      });
+    }
+
+    if (chart.type === 'line') {
+      const ys = (v) => 132 - (v - chart.dom[0]) / (chart.dom[1] - chart.dom[0]) * 112;
+      const pts = chart.vals.map((v, i) => [colX(i), ys(v)]);
+      const f = (v) => chart.fmt === 'kg' ? fr(v, 1) + ' kg' : String(v);
+      return Object.assign(base, {
+        isLine: true, h: 160, overline: chart.title, hint: 'touche une semaine',
+        lGrid: chart.grid.map((g) => ({ y: ys(g), ty: ys(g) + 3, label: String(g) })),
+        lColor: chart.color, lPath: pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' '),
+        lDots: pts.map((p, i) => ({ x: p[0].toFixed(1), y: p[1].toFixed(1), r: i === s ? 5.5 : 4 })),
+        selX: colX(s), xLabels: xLabels, xY: 154,
+        readout: 'Semaine du ' + W8[s] + ' · ' + f(chart.vals[s]),
+        cols: cols((i) => 'Semaine du ' + W8[i] + ' : ' + f(chart.vals[i]))
+      });
+    }
+
+    if (chart.type === 'grid') {
+      const COL = { M: '#a8261d', C: '#2a64ad', N: '#3f6b1c' };
+      const gRows = chart.rows.map((r, ri) => {
+        const y = 8 + ri * 34;
+        return { label: r.label, y: y, ty: y + 17, vy: y + 17, color: COL[r.k], cells: r.vals.map((v, i) => {
+          const op = 0.14 + 0.86 * (v / 7);
+          return { x: 62 + i * 32, tx: 76 + i * 32, v: String(v), op: op.toFixed(2), tc: op > 0.55 ? '#ffffff' : '#33291f' };
+        }) };
+      });
+      return Object.assign(base, {
+        isGrid: true, h: 128, overline: chart.title, hint: 'jours sur 7, par semaine',
+        gRows: gRows, xLabels: [0, 2, 4, 6].map((i) => ({ x: 76 + i * 32, label: W8[i] })).concat([{ x: 76 + 7 * 32, label: W8[7] }]), xY: 122,
+        readout: 'Semaine du 21/09 · ' + chart.rows.map((r) => r.label.toLowerCase() + ' ' + r.vals[7]).join(' · ')
+      });
+    }
+    return off;
+  }
+
+  // ─────────────────────────── L’ÉCRAN ───────────────────────────
+  renderVals() {
+    const p = this.props, s = this.state;
+    const piliers = s.piliers || p.piliers || 'mcn';
+    const situation = s.situation || p.situation || 'charge';
+    const vueP = p.vue || 'croiser';
+    const tab = s.tab || (vueP === 'composer' || vueP === 'apprendre' ? vueP : 'croiser');
+    const screen = s.screen || (vueP === 'fiche' ? 'fiche' : 'hub');
+    const ficheId = s.fiche || p.fiche || 'mn';
+    const zone = s.zone !== undefined ? s.zone : (p.zone || null);
+    const parse = (str) => { const o = {}; String(str || '').split(',').filter(Boolean).forEach((k) => { o[k.trim()] = true; }); return o; };
+    const ready = s.ready || parse(p.ready);
+    const applied = s.applied || {};
+    const chrome = p.chrome === undefined ? true : !!p.chrome;
+    const vh = Number(p.vh) || 844;
+
+    const fiches = this.fiches(piliers, situation, applied);
+    const wk = this.week(piliers, situation, applied);
+
+    const PC = { M: '#a8261d', C: '#2a64ad', N: '#3f6b1c', S: '#7a5714', P: '#5c4a35' };
+    const PL = { M: '#ff6b5e', C: '#6fa8ef', N: '#9ed16a', S: '#e0b155', P: '#d9c3a0' };
+    const ST = {
+      garde: { label: 'garde-fou', chipBg: '#f8d9d3', chipTx: '#8f2a1f', dot: '#d4493b', medal: '#e0524a', border: '#e9b3aa' },
+      regler: { label: 'à régler', chipBg: '#f5dfc6', chipTx: '#7a4210', dot: '#c0752f', medal: '#c9803c', border: '#e6c49c' },
+      tient: { label: 'ça tient', chipBg: '#f1e5bf', chipTx: '#65480c', dot: '#c9a13d', medal: '#e0b155', border: '#ead2aa' },
+      decouvrir: { label: 'à découvrir', chipBg: 'transparent', chipTx: '#6b5e4e', dot: 'transparent', medal: 'transparent', border: '#c9b89a' }
+    };
+    const lensOf = (keys, pal) => {
+      const pos = keys.length === 2 ? [[11, 12, 8], [21, 12, 8]] : [[11, 9, 7], [21, 9, 7], [16, 17, 7]];
+      return keys.map((k, i) => ({ cx: pos[i][0], cy: pos[i][1], r: pos[i][2], fill: pal[k] }));
+    };
+    const openFiche = (id) => () => this.setState({ screen: 'fiche', fiche: id, sel: null });
+    const toggle = (f) => () => {
+      if (applied[f.id]) return;
+      if (!f.geste.writes) { this.flash(f.geste.toast); return; }
+      const r = Object.assign({}, ready); r[f.id] = !r[f.id];
+      this.setState({ ready: r });
+    };
+    const gesteView = (f) => {
+      const done = !!applied[f.id], on = !!ready[f.id];
+      if (done) return { gLabel: '✓ Dans ton plan', gBg: '#e7ecd7', gColor: '#4b5a2a', gBorder: '#c3cfa0', readyB: true };
+      if (on) return { gLabel: '✓ Prêt · retirer', gBg: '#7a5714', gColor: '#ffffff', gBorder: '#7a5714', readyB: true };
+      return { gLabel: f.geste.label, gBg: 'transparent', gColor: '#7a5714', gBorder: '#7a5714', readyB: false };
+    };
+
+    // les cartes de l’onglet Croiser
+    const visible = zone ? fiches.filter((f) => f.zone === zone) : fiches;
+    const card = (f) => {
+      const st = ST[f.state];
+      const v = { id: f.id, q: f.q, pair: f.pair, verdict: f.verdict, short: f.sum || '', stLabel: st.label, chipBg: st.chipBg, chipTx: st.chipTx, dot: st.dot, border: st.border,
+        isBig: f.state === 'garde' || f.state === 'regler', isCompact: f.state === 'tient', isDashed: f.state === 'decouvrir',
+        lens: lensOf(f.lens, PC), figs: (f.figs || []).map((g) => ({ v: g[0], l: g[1] })), open: openFiche(f.id), hasGeste: !!f.geste };
+      if (f.geste) Object.assign(v, gesteView(f), { toggle: toggle(f) });
+      if (f.state === 'decouvrir') Object.assign(v, { missing: f.missing, meterW: Math.round(100 * f.meter[0] / f.meter[1]) + '%', meterLabel: f.meter[2], hasAction: !!f.action, actLabel: f.action ? f.action.label : '', act: () => f.action && this.flash(f.action.toast) });
+      return v;
+    };
+    const readyCount = fiches.filter((f) => f.geste && f.geste.writes && ready[f.id] && !applied[f.id]).length;
+    const SECS = [
+      ['garde', 'GARDE-FOU', 'jamais masqué'],
+      ['regler', 'À RÉGLER', readyCount ? readyCount + (readyCount > 1 ? ' prêts à appliquer' : ' prêt à appliquer') : 'un geste chacun'],
+      ['tient', 'ÇA TIENT', ''],
+      ['decouvrir', 'À DÉCOUVRIR', 'il leur manque des données']
+    ];
+    const sections = SECS.map((x) => ({ title: x[1], meta: x[2], items: visible.filter((f) => f.state === x[0]).map(card) })).filter((x) => x.items.length);
+
+    const count = (st) => fiches.filter((f) => f.state === st).length;
+    const nG = count('garde'), nR = count('regler'), nT = count('tient'), nD = count('decouvrir');
+    const pilTxt = piliers === 'mcn' ? 'tes trois piliers' : piliers === 'mc' ? 'tes deux sports' : 'ta muscu et ton quotidien';
+    const lead = situation === 'neuf' ? 'Le Labo apprend à te connaître.' : nG ? 'Un garde-fou d’abord.' : nR ? (nR === 1 ? 'Un lien à régler cette semaine.' : nR + ' liens à régler cette semaine.') : 'Tes piliers se tiennent.';
+    const sub = situation === 'neuf' ? 'Tes liens apparaissent au fil de tes saisies. Voici ce qu’il manque à chacun.' : fiches.length + ' liens lus entre ' + pilTxt + ', cette semaine et sur les 8 dernières.';
+    const chips = [];
+    if (nG) chips.push({ dot: '#d4493b', ring: 'none', label: nG + ' garde-fou' });
+    if (nR) chips.push({ dot: '#c0752f', ring: 'none', label: nR + ' à régler' });
+    if (nT) chips.push({ dot: '#c9a13d', ring: 'none', label: nT + (nT > 1 ? ' qui tiennent' : ' qui tient') });
+    if (nD) chips.push({ dot: 'transparent', ring: '1.5px dashed #9a8a74', label: nD + ' à découvrir' });
+
+    const small = tab !== 'croiser';
+    const map = this.buildMap(piliers, fiches, small ? null : zone, wk, small, situation);
+
+    const kmTxt = situation === 'neuf' ? '3 sur 7 km' : '8,5 sur 32,5 km';
+    const pilChips = [];
+    if (piliers.includes('m')) pilChips.push({ dot: PL.M, label: 'Muscu · ' + (situation === 'neuf' ? '1 sur 2 séances' : '2 sur 3 séances') });
+    if (piliers.includes('c')) pilChips.push({ dot: PL.C, label: 'Course · ' + kmTxt });
+    if (piliers.includes('n')) pilChips.push({ dot: PL.N, label: 'Nutrition · ' + (situation === 'neuf' ? '1 jour noté' : situation === 'tient' ? '1,8 g/kg' : '1,4 g/kg') });
+
+    const tabs = [['croiser', 'Croiser'], ['composer', 'Composer'], ['apprendre', 'Apprendre']].map((t) => ({ label: t[1], on: tab === t[0], bg: tab === t[0] ? '#ffffff' : 'transparent', color: tab === t[0] ? '#1c150e' : '#ffffff', pick: () => this.setState({ tab: t[0], screen: 'hub', zone: null }) }));
+
+    // la fiche
+    const f = fiches.find((x) => x.id === ficheId) || fiches[0];
+    const st = ST[f.state];
+    const fd = { q: f.q, pair: f.pair, verdict: f.verdict, stLabel: st.label, medal: f.state === 'decouvrir' ? 'transparent' : st.medal, medalRing: f.state === 'decouvrir' ? '1.5px dashed #e6d8c4' : 'none',
+      lensLight: lensOf(f.lens, PL), glowA: PC[f.lens[0]], glowB: PC[f.lens[1]],
+      isKnown: f.state !== 'decouvrir', isDecouvrir: f.state === 'decouvrir',
+      figs: (f.figs || []).map((g) => ({ v: g[0], l: g[1] })),
+      missing: f.missing || '', meterW: f.meter ? Math.round(100 * f.meter[0] / f.meter[1]) + '%' : '0%', meterLabel: f.meter ? f.meter[2] : '',
+      hasRows: !!(f.rows && f.rows.length) && f.state !== 'decouvrir', rowsMeta: f.rows ? f.rows.length + ' mesures' : '',
+      rows: (f.rows || []).map((r, i) => ({ label: r[0], note: r[1], value: r[2], dot: r[3] ? ST[r[3]].dot : 'transparent', ring: 'none', stLabel: r[3] ? ST[r[3]].label : '', bt: i ? '1px solid #f0e2c6' : 'none' })),
+      hasGeste: !!f.geste && f.state !== 'decouvrir', more: (f.state === 'decouvrir' ? (f.action ? [{ label: f.action.label, note: 'Le plus court chemin vers ce lien.', toast: f.action.toast }] : []) : (f.more || [])).map((m) => ({ label: m.label, note: m.note, go: () => this.flash(m.toast) })),
+      hist: (f.hist || []).map((h) => ({ fill: h === 'garde' ? '#e0524a' : h === 'regler' ? '#c9803c' : h === 'tient' ? '#e0b155' : 'transparent', ring: h === 'vide' ? '1.5px dashed #c9b89a' : '2px solid #fffce1' })),
+      histTxt: f.histTxt || '', hasEchoes: !!(f.echoes && f.echoes.length),
+      echoes: (f.echoes || []).map((e, i) => ({ t: e, bt: i ? '1px solid #f0e2c6' : 'none' })), src: f.src || '' };
+    if (f.geste) Object.assign(fd, gesteView(f), { toggle: toggle(f), gNote: f.geste.writes ? 'S’écrit dans ton plan après la feuille « ce qui change », jamais avant.' : 'Ouvre l’écran concerné. N’écrit rien dans ton plan.' });
+    fd.hasActs = fd.hasGeste || fd.more.length > 0;
+    const ch = screen === 'fiche' && f.state !== 'decouvrir' ? this.buildChart(f.chart, s.sel) : { show: false, cols: [], xLabels: [] };
+
+    // Composer (rappel de l’existant)
+    const levers = [];
+    if (piliers.includes('m')) levers.push({ label: 'Séances de musculation', note: 'se règlent dans ton programme', v: '3' });
+    if (piliers.includes('c')) levers.push({ label: 'Sorties de course', note: 'par semaine', v: '3' });
+    if (piliers.includes('n')) { levers.push({ label: 'Cible de protéines', note: 'g/kg de poids de corps', v: '1,4' }); levers.push({ label: 'Objectif nutritionnel', note: 'cible calorique', v: 'Maint.' }); }
+    levers.push({ label: 'Nuits', note: 'simulées, jamais écrites', v: '< 7 h' });
+    const comp = {
+      cards: [{ k: 'TOTAL FORCE À 8 SEM.', v: '372 kg', n: 'entre 361 et 383 kg' }, { k: 'CHARGE AIGUË / CHRONIQUE', v: '1,12', n: 'zone saine' }, { k: 'CIBLE DU JOUR', v: '2 480', n: 'kcal · −0,4 kg en 8 semaines' }, { k: 'PROTÉINES', v: '101 g', n: 'par jour · sous ta fourchette' }],
+      levers: levers.map((l, i) => Object.assign(l, { bt: i ? '1px solid #f0e2c6' : 'none' }))
+    };
+
+    // Apprendre
+    const have = (id) => fiches.some((x) => x.id === id && x.state !== 'decouvrir');
+    const CURVES = [
+      { id: 'force', title: 'Ma force stagne', fact: 'Squat : 120 kg depuis 3 semaines', need: 'm', suspects: [
+        { t: 'Protéines sous ta cible', proof: '1,4 g/kg ces 3 semaines, contre 1,8 les 3 d’avant.', lvl: 'FORT', w: '78%', fiche: 'mn', lens: ['M', 'N'] },
+        { t: 'Nuits plus courtes', proof: '6 h 25 en moyenne, contre 7 h 05.', lvl: 'MOYEN', w: '45%', fiche: 'rec', lens: ['M', 'S'] },
+        { t: 'Jambes et course rapprochées', proof: '2 collisions en 3 semaines.', lvl: 'FAIBLE', w: '24%', fiche: 'mc', lens: ['M', 'C'] }], ecarte: 'Écarté : ta charge, stable (+4 %).' },
+      { id: 'allure', title: 'Mes fractions ralentissent', fact: '+5 s/km en 3 semaines', need: 'c', suspects: [
+        { t: 'Des jambes la veille', proof: '+4 s/km quand une séance jambes précède, 6 cas contre 9.', lvl: 'FORT', w: '72%', fiche: 'mc', lens: ['M', 'C'] },
+        { t: 'Glucides bas les jours durs', proof: '3,2 g/kg, sous ton repère de 5 à 7.', lvl: 'MOYEN', w: '40%', fiche: 'cn', lens: ['C', 'N'] }], ecarte: 'Pas jugeable faute de données : tes nuits (2 cas sur 3).' }
+    ];
+    const curves = situation === 'neuf' || situation === 'tient' ? [] : CURVES.filter((c) => piliers.includes(c.need));
+    const curveId = s.curve && curves.some((c) => c.id === s.curve) ? s.curve : (curves[0] ? curves[0].id : null);
+    const cur = curves.find((c) => c.id === curveId);
+    const lrn = {
+      hasCurves: curves.length > 0, noCurves: curves.length === 0,
+      curves: curves.map((c) => ({ title: c.title, fact: c.fact, on: c.id === curveId, border: c.id === curveId ? '#7a5714' : '#ead2aa', bg: c.id === curveId ? '#fffce1' : 'transparent', pick: () => this.setState({ curve: c.id }) })),
+      suspects: cur ? cur.suspects.filter((x) => have(x.fiche)).map((x, i) => ({ t: x.t, proof: x.proof, lvl: x.lvl, w: x.w, lens: lensOf(x.lens, PC), bt: i ? '1px solid #f0e2c6' : 'none', pairShort: (fiches.find((y) => y.id === x.fiche) || {}).short || '', go: () => this.setState({ screen: 'fiche', fiche: x.fiche, sel: null }) })) : [],
+      ecarte: cur ? cur.ecarte : '',
+      hasExp: situation !== 'neuf' && piliers === 'mcn', noExp: !(situation !== 'neuf' && piliers === 'mcn'),
+      known: situation === 'neuf' ? [] : [
+        { st: 'Lien solide', chipBg: '#f1e5bf', chipTx: '#65480c', t: 'Des jambes la veille te coûtent environ 4 s/km sur tes fractions.', src: '6 cas contre 9 : une association, pas une preuve.', use: 'Sert à : repérer les collisions dans ton planning, et ouvrir le lien Muscu × Course quand il y en a une.', need: 'c' },
+        { st: 'Aucun effet net', chipBg: '#ece3d2', chipTx: '#5e5244', t: 'Te coucher 30 minutes plus tôt n’a pas changé ton énergie.', src: 'Mesuré par une expérience de 4 semaines, en juillet.', use: 'Sert à : ne plus te le proposer en priorité.', need: 'm' }
+      ].filter((k) => piliers.includes(k.need)),
+    };
+    lrn.noKnown = lrn.known.length === 0;
+
+    // la feuille
+    const sheetOpen = s.sheet !== null ? s.sheet : (vueP === 'feuille');
+    const ICON = { run: 'M13 4.5a1.8 1.8 0 1 0 0 .1M10 21l2-6 3 2v5M7 12l3-4 3 1 2 3 3 1M12 15l-2-4', nutri: 'M5 19c0-8 5-13 14-14-1 9-6 14-14 14zM5 19l7-7' };
+    const sheetLines = fiches.filter((x) => x.geste && x.geste.writes && ready[x.id] && !applied[x.id]).map((x) => ({
+      title: x.geste.line.title, detail: x.geste.line.detail, visible: x.geste.line.visible, icon: ICON[x.geste.line.icon],
+      bg: x.geste.line.icon === 'run' ? '#d6e4f5' : '#dbe8c8', color: x.geste.line.icon === 'run' ? '#1d4586' : '#2f5a12'
+    }));
+
+    const NAV = [['home', 'Accueil', 'M4 11l8-7 8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5z', true],
+      ['m', 'Muscu', 'M3 9v6M6 7v10M18 7v10M21 9v6M6 12h12', piliers.includes('m')],
+      ['c', 'Course', 'M13 4.5a1.8 1.8 0 1 0 0 .1M10 21l2-6 3 2v5M7 12l3-4 3 1 2 3 3 1M12 15l-2-4', piliers.includes('c')],
+      ['lab', 'Labo', 'M12 3.5a8.5 8.5 0 1 0 0 17a8.5 8.5 0 1 0 0-17M12 3.5l3.6 6.2M20.2 10.2h-7.1M17.8 18.2l-3.5-6.1M8.3 19.6l3.6-6.2M3.8 13.8h7.1M6.2 5.8l3.5 6.1', true],
+      ['n', 'Alim', 'M5 19c0-8 5-13 14-14-1 9-6 14-14 14zM5 19l7-7', piliers.includes('n')]];
+    const nav = NAV.filter((n) => n[3]).map((n) => ({ label: n[1], icon: n[2], color: n[0] === 'lab' ? '#7a5714' : '#786a59', current: n[0] === 'lab' ? 'page' : 'false' }));
+
+    const showApplyBar = readyCount > 0 && !sheetOpen;
+    const simBtn = (on) => ({ pressed: on, bg: on ? '#33291f' : '#fbeed4', color: on ? '#fbeed4' : '#33291f', border: on ? '#33291f' : '#b9a88c' });
+
+    return {
+      chrome: chrome, vh: vh, rootH: vh + (chrome ? 84 : 0),
+      simPil: [['mcn', '3 piliers'], ['mc', 'Muscu + Course'], ['m', 'Muscu seule']].map((x) => Object.assign(simBtn(piliers === x[0]), { label: x[1], pick: () => this.reset({ piliers: x[0], situation: situation }) })),
+      simSit: [['charge', 'Chargée'], ['gardefou', 'Garde-fou'], ['tient', 'Tout tient'], ['neuf', 'Neuf']].map((x) => Object.assign(simBtn(situation === x[0]), { label: x[1], pick: () => this.reset({ situation: x[0], piliers: piliers }) })),
+      setScroll: (el) => { this.scrollEl = el; },
+      scrollBottom: 64 + (showApplyBar ? 74 : 0),
+      isHub: screen === 'hub', isFiche: screen === 'fiche',
+      isCroiser: tab === 'croiser', isComposer: tab === 'composer', isApprendre: tab === 'apprendre',
+      tabs: tabs, map: map, pilChips: pilChips,
+      help: () => this.flash('Chaque disque est un pilier. Là où deux disques se chevauchent, leurs données se croisent ; la médaille dit l’état du lien.'),
+      sum: { lead: lead, sub: sub, chips: chips },
+      zoneOn: !!zone && !small, zoneLabel: zone ? this.zoneLabels(piliers)[zone] : '', clearZone: () => this.setState({ zone: null }),
+      sections: sections,
+      showOther: piliers !== 'mcn' && !s.hideOther,
+      otherTxt: piliers === 'mc' ? 'Avec la nutrition, le Labo croiserait aussi ton assiette avec tes deux sports. Ça s’active dans Réglages › Piliers, si tu en as envie.' : 'Avec la course ou la nutrition, le Labo aurait d’autres liens à croiser. Ça s’active dans Réglages › Piliers, si tu en as envie.',
+      hideOther: () => this.setState({ hideOther: true }),
+      week: wk, comp: comp, lrn: lrn,
+      fd: fd, ch: ch,
+      back: () => this.setState({ screen: 'hub', sel: null }), backLabel: tab === 'apprendre' ? 'Apprendre' : 'Croiser',
+      showApplyBar: showApplyBar, applyLabel: 'Appliquer ' + readyCount + (readyCount > 1 ? ' changements' : ' changement') + ' à mon plan',
+      openSheet: () => this.setState({ sheet: true, ready: ready }),
+      closeSheet: () => this.setState({ sheet: false, ready: ready }),
+      sheetOpen: sheetOpen, sheetLines: sheetLines,
+      apply: () => {
+        const a = Object.assign({}, applied); let n = 0;
+        fiches.forEach((x) => { if (x.geste && x.geste.writes && ready[x.id] && !applied[x.id]) { a[x.id] = true; n++; } });
+        this.setState({ applied: a, ready: {}, sheet: false });
+        this.flash('C’est dans ton plan · ' + n + (n > 1 ? ' changements' : ' changement') + '. Les liens se mettent à jour.');
+      },
+      nav: nav,
+      hasToast: !!s.toast, toast: s.toast || ''
+    };
+  }
+}
+</script>
+</body>
+</html>

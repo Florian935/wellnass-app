@@ -185,6 +185,8 @@ export * from './lab-week';
 export * from './lab-investigations';
 export * from './lab-experiments';
 export * from './lab-composer';
+// US LIENS-01 — le registre des liens entre piliers (maison : le Labo, onglet Croiser).
+export * from './cross-links';
 export * from './explain';
 export * from './morning-brief';
 export * from './data-confidence';

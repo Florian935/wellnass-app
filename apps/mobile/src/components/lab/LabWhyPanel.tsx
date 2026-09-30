@@ -13,7 +13,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Svg, { Circle, Path } from 'react-native-svg';
-import type { LabExperimentKind, LabQuestion } from '@wellness/shared';
+import { SUSPECT_LINK, type CrossLinkId, type LabExperimentKind, type LabQuestion } from '@wellness/shared';
 
 import { LabNarration } from './LabNarration';
 import { Lens } from './Lens';
@@ -33,7 +33,14 @@ type Props = {
   canNarrate?: boolean;
   onSelect: (id: string) => void;
   onStartExperiment: (kind: LabExperimentKind) => void;
-  onGoToWeek: () => void;
+  /**
+   * US LABO-04 — chaque suspect ouvre la fiche de son lien (`SUSPECT_LINK`). Avant, il renvoyait à
+   * l'onglet Semaine, qui a rejoint l'onglet Croiser : une enquête part d'une courbe qui cale, ses
+   * causes sont des liens entre piliers, et c'est là qu'on les règle.
+   */
+  onOpenLink: (link: CrossLinkId) => void;
+  /** Les liens disponibles (piliers activés) : un suspect ne renvoie pas vers une fiche absente. */
+  availableLinks: readonly CrossLinkId[];
 };
 
 /** La courbe du constat : huit points, le plateau surligné, le dernier point marqué. */
@@ -67,7 +74,7 @@ function Sparkline({ question, unitFormat }: { question: LabQuestion; unitFormat
   );
 }
 
-export function LabWhyPanel({ questions, selectedId, runningExperiments, canNarrate = false, onSelect, onStartExperiment, onGoToWeek }: Props) {
+export function LabWhyPanel({ questions, selectedId, runningExperiments, canNarrate = false, onSelect, onStartExperiment, onOpenLink, availableLinks }: Props) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const locale = i18n.language;
@@ -147,9 +154,17 @@ export function LabWhyPanel({ questions, selectedId, runningExperiments, canNarr
                   </View>
                   <Text style={[styles.forceLabel, { color: colors.textMuted }]}>{t(`lab.why.level.${suspect.level}`)}</Text>
                 </View>
-                {suspect.proposal !== null ? (
-                  <Pressable accessibilityRole="button" onPress={onGoToWeek} hitSlop={6}>
-                    <Text style={[styles.link, { color: colors.text }]}>{t('lab.why.fixInWeek')}</Text>
+                {availableLinks.includes(SUSPECT_LINK[suspect.kind]) ? (
+                  <Pressable
+                    testID={`lab-suspect-${suspect.kind}-link`}
+                    accessibilityRole="link"
+                    onPress={() => onOpenLink(SUSPECT_LINK[suspect.kind])}
+                    hitSlop={6}
+                    style={styles.suspectLink}
+                  >
+                    <Text style={[styles.link, { color: colors.pillarLab }]}>
+                      {t('lab.learn.seeLink', { question: t(`lab.links.${SUSPECT_LINK[suspect.kind]}.question`) })}
+                    </Text>
                   </Pressable>
                 ) : null}
               </View>
@@ -208,6 +223,7 @@ export function LabWhyPanel({ questions, selectedId, runningExperiments, canNarr
 }
 
 const styles = StyleSheet.create({
+  suspectLink: { minHeight: 32, justifyContent: 'center' },
   panel: { gap: 16 },
   lead: { fontFamily: fontFamily.displayBold, fontSize: 19, lineHeight: 24 },
   text: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },

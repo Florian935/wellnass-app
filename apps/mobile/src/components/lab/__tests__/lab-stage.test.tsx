@@ -11,7 +11,8 @@
  */
 
 import React from 'react';
-import { act, render, screen } from '@testing-library/react-native';
+import { Text } from 'react-native';
+import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import { LabStage } from '../LabStage';
 import type { LabSceneState } from '../scene/scene-state';
@@ -30,8 +31,14 @@ jest.mock('../scene/LabScene3D.dom', () => {
 });
 
 jest.mock('../scene/LabScene2D', () => {
-  const { Text } = require('react-native');
-  return { LabScene2D: () => <Text testID="scene-2d">2d</Text> };
+  const { Pressable, Text } = require('react-native');
+  return {
+    LabScene2D: ({ onPickZone }: { onPickZone?: (zone: string | null) => void }) => (
+      <Pressable testID="scene-2d" onPress={() => onPickZone?.('mn')}>
+        <Text>2d</Text>
+      </Pressable>
+    ),
+  };
 });
 
 jest.mock('react-native-safe-area-context', () => ({
@@ -121,5 +128,34 @@ describe('repli de la scène', () => {
     // pire que le mal.
     expect(screen.getByTestId('scene-3d')).toBeTruthy();
     expect(screen.queryByTestId('scene-2d')).toBeNull();
+  });
+});
+
+describe('LABO-02 — l’habillage de la scène et les zones', () => {
+  it('porte le titre à la place de la légende, et les onglets en bas', async () => {
+    await render(
+      <LabStage
+        state={ETAT}
+        caption="lab.stage.cross"
+        onPick={jest.fn()}
+        onLand={jest.fn()}
+        header={<Text>Le Labo</Text>}
+        footer={<Text>onglets</Text>}
+      />,
+    );
+
+    expect(screen.getByText('Le Labo')).toBeTruthy();
+    expect(screen.getByText('onglets')).toBeTruthy();
+    expect(screen.queryByText('LAB.STAGE.CROSS')).toBeNull();
+  });
+
+  it('en repli 2D, le toucher d’une médaille de zone remonte jusqu’à l’écran', async () => {
+    const onPickZone = jest.fn();
+    await render(<LabStage state={ETAT} caption="lab.stage.cross" onPick={jest.fn()} onLand={jest.fn()} onPickZone={onPickZone} />);
+    await act(async () => emettreStatut!({ ok: false, reason: 'webgl' }));
+
+    fireEvent.press(screen.getByTestId('scene-2d'));
+
+    expect(onPickZone).toHaveBeenCalledWith('mn');
   });
 });

@@ -6,10 +6,13 @@
  * le moteur lui donne, et son état vide quand il ne donne rien — zéro est une réponse valable
  * (spec R4), on n'invente jamais une carte pour remplir la page.
  *
- * ⚠️ **À ne pas confondre avec `app/cycle/insights.tsx`** (US CYCLE-01), qui s'affiche sous le
- * titre « Croisement » et porte les moyennes par phase du cycle menstruel. Les deux écrans
- * cohabitent volontairement (spec D4) : renommer un écran déjà en recette pour une question de
- * vocabulaire aurait été disproportionné.
+ * ⚠️ Le croisement du cycle (US CYCLE-01, moyennes par phase) avait son propre écran,
+ * `app/cycle/insights.tsx`, titré « Croisement ». Depuis ECHO-01 (30/09/2026, décision Q7) il vit dans
+ * la fiche « cycle » du Labo (`app/lab-link.tsx`) ; l'écran a été retiré.
+ *
+ * US ECHO-01 (décision Q2) — cet écran garde l'**intra-pilier** et les **célébrations**. Les six
+ * alertes qui croisent deux piliers (`LAB_OWNED_INSIGHTS`) ont déménagé au Labo : le moteur ne les
+ * sélectionne plus ici.
  */
 
 import { ScrollView, StyleSheet, Text, View } from 'react-native';

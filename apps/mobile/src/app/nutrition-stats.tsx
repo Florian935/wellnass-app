@@ -43,10 +43,9 @@ import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
 import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import { ProteinPerKgCard } from '@/components/ProteinPerKgCard';
-import { TrainingNutritionCrossCard } from '@/components/TrainingNutritionCrossCard';
 import { WeightGoalCard } from '@/components/WeightGoalCard';
 import { AdherenceChart, type AdherenceDay } from '@/components/nutrition/AdherenceChart';
-import { CrossTrainingSection } from '@/components/nutrition/CrossTrainingSection';
+import { CrossLinkEcho } from '@/components/lab/CrossLinkEcho';
 import { QualityCard } from '@/components/nutrition/QualityCard';
 import { RegularityCard } from '@/components/nutrition/RegularityCard';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
@@ -437,8 +436,10 @@ function QualityTab() {
       )}
 
       <ProteinPerKgCard />
-      <TrainingNutritionCrossCard />
-      <CrossTrainingSection />
+      {/* US ECHO-01 (décision Q3 du 30/09/2026) — les deux cartes croisées muscu × nutrition
+          (APPORT-01, MN-03) ont déménagé dans la fiche « Manges-tu assez pour ta muscu ? » du Labo :
+          elles ont besoin de la muscu pour exister. Il reste ici leur écho. */}
+      <CrossLinkEcho surface="nutritionStats" moved="fuelStrength" />
     </>
   );
 }

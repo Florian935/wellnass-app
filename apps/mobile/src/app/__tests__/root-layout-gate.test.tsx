@@ -72,6 +72,11 @@ jest.mock('@/powersync/PowerSyncProvider', () => {
   return { PowerSyncProvider: ({ children }: { children: React.ReactNode }) => <View>{children}</View> };
 });
 jest.mock('@powersync/react', () => ({ useStatus: jest.fn() }));
+// US LIENS-01 — le registre des liens est calculé à la racine ; ce test ne porte que sur la garde.
+jest.mock('@/data/repositories/cross-links-repository', () => {
+  const { View } = require('react-native');
+  return { CrossLinksProvider: ({ children }: { children: React.ReactNode }) => <View>{children}</View> };
+});
 
 jest.mock('@/data/repositories/profile-repository', () => ({ useProfile: jest.fn() }));
 jest.mock('@/data/repositories/settings-repository', () => ({

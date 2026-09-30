@@ -24,19 +24,91 @@ import { Eyebrow, WidgetFrame } from '@/components/widgets/WidgetFrame';
 import { RowLine } from '@/components/widgets/RowLine';
 import { InsightCard, resolveInsightSubject } from '@/components/insights/InsightCard';
 import { useSharedInsights } from '@/data/repositories/insights-context';
+import { usePressingLink } from '@/data/repositories/cross-links-repository';
+import { LinkLens } from '@/components/lab/LinkLens';
+import { linkTexts } from '@/components/lab/link-format';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+
+/**
+ * US ECHO-01 — « Tes liens » : le lien du Labo le plus pressant, en tête du widget.
+ *
+ * Le registre d'accueil est plafonné à 8 (`MAX_HOME_WIDGETS`, ADR-007) et il y est déjà : plutôt qu'un
+ * neuvième widget, le seul widget conditionnel « ce qui mérite d'être vu » dit d'abord **un lien à
+ * régler** (les alertes croisées ont quitté Insights pour le Labo, décision Q2 du 30/09/2026), et
+ * sinon un signal d'Insights. Un garde-fou de charge reste donc sur l'accueil, comme avant.
+ */
+function LinksContent({ size }: { size: WidgetSize }) {
+  const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
+  const router = useRouter();
+  const { link, pressing } = usePressingLink();
+  if (link === null) return null;
+  const texts = linkTexts(t, i18n.language, link);
+  const title = link.state === 'guard' ? t('home.links.titleGuard') : t('home.links.title', { count: pressing });
+  const lead = t('home.links.lead', { short: texts.short });
+  const open = () => router.push('/lab');
+  const a11yLabel = `${t('home.links.overline')}. ${title}. ${lead}`;
+
+  if (size === 'row') {
+    return (
+      <RowLine
+        eyebrow={t('home.links.overline')}
+        value={title}
+        trailing={t('home.links.cta')}
+        trailingTone="accent"
+        onPress={open}
+        accessibilityLabel={a11yLabel}
+      />
+    );
+  }
+  if (size === 'small') {
+    return (
+      <WidgetFrame pad={16} onPress={open} accessibilityLabel={a11yLabel}>
+        <View style={styles.head}>
+          <Eyebrow>{t('home.links.overline')}</Eyebrow>
+          <LinkLens lens={link.lens} size={26} />
+        </View>
+        <Text style={[styles.smallTitle, { color: colors.text }]} numberOfLines={3}>
+          {title}
+        </Text>
+      </WidgetFrame>
+    );
+  }
+  return (
+    <WidgetFrame pad={size === 'wide' ? 18 : 20} onPress={open} accessibilityLabel={a11yLabel} style={styles.col}>
+      <View style={styles.head}>
+        <Eyebrow>{t('home.links.overline')}</Eyebrow>
+        <Text style={[styles.seeAll, { color: colors.pillarLab }]}>{t('home.links.cta')}</Text>
+      </View>
+      <View style={styles.linkRow}>
+        <LinkLens lens={link.lens} size={36} />
+        <View style={styles.linkBody}>
+          <Text style={[styles.wideTitle, { color: colors.text }]} numberOfLines={2}>
+            {title}
+          </Text>
+          <Text style={[styles.more, { color: colors.textMuted }]} numberOfLines={2}>
+            {lead}
+          </Text>
+        </View>
+      </View>
+    </WidgetFrame>
+  );
+}
 
 export function InsightsCard({ size = 'wide' }: { size?: WidgetSize }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
+  const { link } = usePressingLink();
   // Lit la sélection **déjà calculée** par l'accueil (voir `insights-context.tsx`) plutôt que
   // d'appeler `useInsights()`, ce qui monterait une seconde fois l'union de huit hooks sur l'écran
   // le plus ouvert de l'app. `null` hors provider — le widget n'existe que dans la grille d'accueil.
   const shared = useSharedInsights();
   const insights = shared?.insights ?? [];
 
+  // Un lien à régler passe devant un signal d'Insights (ECHO-01).
+  if (link !== null) return <LinksContent size={size} />;
   if (shared === null || shared.isLoading || insights.length === 0) return null;
 
   const top = insights[0]!;
@@ -126,4 +198,6 @@ const styles = StyleSheet.create({
   smallTitle: { fontFamily: fontFamily.bodyBold, fontSize: 15, lineHeight: 19, marginTop: 'auto' },
   wideTitle: { fontFamily: fontFamily.bodyBold, fontSize: 16, lineHeight: 21 },
   more: { fontFamily: fontFamily.body, fontSize: 12.5 },
+  linkRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  linkBody: { flex: 1, gap: 3 },
 });

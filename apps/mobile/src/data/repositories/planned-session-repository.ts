@@ -85,6 +85,13 @@ export type PlannedSessionItem = {
   orderIndex: number;
   pillar: Pillar;
   exerciseCount: number;
+  /**
+   * US LIENS-01 — la séance porte déjà une adaptation du jour (`adapted_reps_pct` ou
+   * `adapted_pace_delta_s`). Le Labo s'en sert pour ne pas proposer une seconde adaptation qui
+   * écraserait la première (constat LABO-01 §4 bis-4). Absent des vues qui ne lisent pas ces
+   * colonnes : `undefined` y vaut « non adaptée ».
+   */
+  adapted?: boolean;
 };
 
 // Le type `PlanProgramInput` (+ son schéma Zod `planProgramInputSchema`)
@@ -110,6 +117,8 @@ type PlannedSessionDbRow = {
   order_index: number;
   pillar: string;
   exercise_count: number;
+  adapted_reps_pct?: number | null;
+  adapted_pace_delta_s?: number | null;
 };
 
 // ---------------------------------------------------------------------------
@@ -124,6 +133,7 @@ type PlannedSessionDbRow = {
  */
 const SELECT_PLANNED_BETWEEN = `
   SELECT ps.id, ps.program_id, ps.session_id, ps.scheduled_date, ps.scheduled_time, ps.status, ps.week_index,
+         ps.adapted_reps_pct, ps.adapted_pace_delta_s,
          s.name AS session_name, s.session_type, s.target_distance_m, s.target_duration_seconds, s.order_index,
          p.pillar AS pillar,
          (SELECT COUNT(*) FROM exercise_plans ep WHERE ep.session_id = ps.session_id AND ep.deleted_at IS NULL) AS exercise_count
@@ -174,6 +184,7 @@ function rowToItem(row: PlannedSessionDbRow): PlannedSessionItem {
     orderIndex: row.order_index,
     pillar: row.pillar as Pillar,
     exerciseCount: row.exercise_count,
+    adapted: row.adapted_reps_pct != null || row.adapted_pace_delta_s != null,
   };
 }
 

@@ -458,12 +458,18 @@ export function candidateFromPolarisation(
 
 /** Tout ce que le repository doit rassembler pour produire la liste de candidats. */
 export type InsightSources = {
-  overtrainingGuard: OvertrainingGuardResult;
-  trainingLoad: { show: boolean; ratio: number | null };
-  readiness: ReadinessResult;
-  interference: ConcurrentTrainingInterference;
-  activityLevel: ActivityLevelSuggestionInput;
-  deficitVolume: DeficitVolumeAlert;
+  /**
+   * US LIENS-01 — les six sources **croisées** sont devenues facultatives : depuis la décision Q2 du
+   * 30/09/2026, l'écran Insights garde l'intra-pilier et les célébrations, et ces alertes vivent au
+   * Labo (`LAB_OWNED_INSIGHTS`). Absentes, elles ne produisent aucun candidat. Elles restent
+   * acceptées pour que le moteur et ses tests gardent la table d'ordre complète.
+   */
+  overtrainingGuard?: OvertrainingGuardResult;
+  trainingLoad?: { show: boolean; ratio: number | null };
+  readiness?: ReadinessResult;
+  interference?: ConcurrentTrainingInterference;
+  activityLevel?: ActivityLevelSuggestionInput;
+  deficitVolume?: DeficitVolumeAlert;
   records: ReadonlyArray<RecordCandidateInput>;
   goals: ReadonlyArray<GoalCandidateInput>;
   weeklyReview: WeeklyReview | null;
@@ -483,12 +489,12 @@ export type InsightSources = {
  */
 export function buildInsightCandidates(sources: InsightSources): InsightCandidate[] {
   const candidates: Array<InsightCandidate | null> = [
-    candidateFromOvertrainingGuard(sources.overtrainingGuard),
-    candidateFromTrainingLoad(sources.trainingLoad),
-    candidateFromReadiness(sources.readiness),
-    candidateFromInterference(sources.interference),
-    candidateFromActivityLevel(sources.activityLevel),
-    candidateFromDeficitVolume(sources.deficitVolume),
+    sources.overtrainingGuard === undefined ? null : candidateFromOvertrainingGuard(sources.overtrainingGuard),
+    sources.trainingLoad === undefined ? null : candidateFromTrainingLoad(sources.trainingLoad),
+    sources.readiness === undefined ? null : candidateFromReadiness(sources.readiness),
+    sources.interference === undefined ? null : candidateFromInterference(sources.interference),
+    sources.activityLevel === undefined ? null : candidateFromActivityLevel(sources.activityLevel),
+    sources.deficitVolume === undefined ? null : candidateFromDeficitVolume(sources.deficitVolume),
     candidateFromRecentRecord(sources.records),
     candidateFromGoalAchieved(sources.goals),
     sources.weeklyReview === null ? null : candidateFromWeeklyDecision(sources.weeklyReview),

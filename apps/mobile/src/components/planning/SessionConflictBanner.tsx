@@ -43,12 +43,18 @@ export function SessionConflictBanner({
   onSwap,
   appliedToDayKey = null,
   onUndo,
+  onSeeLink,
 }: {
   conflict: SessionConflict;
   onSwap: (dayKey: string) => void;
   /** Régime guidé : le jour vers lequel la séance a DÉJÀ été déplacée. `null` = mode proposition. */
   appliedToDayKey?: string | null;
   onUndo?: () => void;
+  /**
+   * US ECHO-01 — ouvre la fiche « Tes deux sports se gênent-ils ? » du Labo. Le garde-fou reste ici,
+   * là où l'on agit ; le Labo l'explique (ce que te coûtent des jambes la veille, dans tes données).
+   */
+  onSeeLink?: () => void;
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -110,6 +116,11 @@ export function SessionConflictBanner({
           {t('planning.conflict.noSlot')}
         </Text>
       )}
+      {onSeeLink ? (
+        <Pressable accessibilityRole="link" onPress={onSeeLink} hitSlop={8} style={styles.seeLink}>
+          <Text style={[styles.seeLinkText, { color: colors.warnText }]}>{t('planning.seeLink')}</Text>
+        </Pressable>
+      ) : null}
     </View>
   );
 }
@@ -122,4 +133,6 @@ const styles = StyleSheet.create({
   button: { alignSelf: 'flex-start', borderRadius: 9, paddingHorizontal: 13, paddingVertical: 7, marginTop: 6 },
   buttonText: { fontFamily: fontFamily.bodyBold, fontSize: 12.5 },
   noSlot: { fontFamily: fontFamily.body, fontSize: 11.5, fontStyle: 'italic', marginTop: 4 },
+  seeLink: { alignSelf: 'flex-start', minHeight: 32, justifyContent: 'center', marginTop: 2 },
+  seeLinkText: { fontFamily: fontFamily.bodyBold, fontSize: 12.5, textDecorationLine: 'underline' },
 });

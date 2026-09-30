@@ -2,16 +2,15 @@
  * journal-cards-smoke.test.tsx — Smoke test des cartes de la refonte Nutrition (30/07/2026).
  *
  * Couvre ce que la maquette a introduit et que rien d'autre ne teste :
- *  1. `DayBalanceCard` affiche le restant, et bascule sur le libellé « au-delà » en dépassement ;
- *  2. sans objectif, elle propose le réglage au lieu d'un anneau vide ;
- *  3. `MacroTriple` rend les 3 macros, avec ou sans cibles ;
- *  4. `MicroCoverageGrid` affiche le % de couverture, et l'omet pour une clé sans VNR (sel).
+ *  1. `MacroTriple` rend les 3 macros, avec ou sans cibles ;
+ *  2. `MicroCoverageGrid` affiche le % de couverture, et l'omet pour une clé sans VNR (sel).
+ *
+ * `DayBalanceCard` en est sortie le 30/09/2026 (LIENS-01) : codée, montée nulle part, retirée.
  *
  * `react-native-svg` est natif → mocké, comme dans les autres smokes de l'app.
  */
 import React from 'react';
 import { render } from '@testing-library/react-native';
-import { DayBalanceCard } from '../DayBalanceCard';
 import { MacroTriple } from '../MacroTriple';
 import { MicroCoverageGrid } from '../MicroCoverageGrid';
 
@@ -41,68 +40,14 @@ jest.mock('react-native-svg', () => {
 });
 
 // `t` renvoie la clé : on assert donc sur les clés, pas sur la traduction (qui peut bouger).
-// `initReactI18next` doit rester exporté : `DayBalanceCard` tire `Button` → `useTheme` →
-// `settings-repository` → `src/i18n`, qui appelle `i18n.use(initReactI18next)` au chargement.
+// `initReactI18next` reste exporté : une carte qui tire `useTheme` → `settings-repository` →
+// `src/i18n` appelle `i18n.use(initReactI18next)` au chargement.
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: { language: 'fr' } }),
   initReactI18next: { type: '3rdParty', init: () => {} },
 }));
 
 jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
-
-const balanceProps = {
-  consumed: 1480,
-  target: 2150,
-  trainingBonus: 250,
-  bonusSource: 'forfait' as const,
-  isTrainingDay: false,
-  onSetTarget: jest.fn(),
-};
-
-describe('DayBalanceCard', () => {
-  it('affiche le restant et le détail consommé / objectif', async () => {
-    const { getByText, getAllByText, getByTestId } = await render(
-      <DayBalanceCard {...balanceProps} />,
-    );
-    // 2150 - 1480 = 670, écrit deux fois : au centre de l'anneau et sur la ligne « Restant ».
-    //
-    // Depuis MOTION-01 (N1), le chiffre central **transite** depuis sa valeur précédente au lieu
-    // d'être remplacé : il est rendu par `AnimatedNumber`, donc par un champ en lecture seule et
-    // non plus par un `Text` (seul composant du cœur de React Native dont le contenu est pilotable
-    // depuis le thread UI). Le garde-fou reste le même — la valeur apparaît bien aux deux endroits
-    // — mais il s'interroge en deux temps.
-    expect(getAllByText('670')).toHaveLength(1);
-    // `includeHiddenElements` : le chiffre central est délibérément masqué aux lecteurs d'écran
-    // (`announce={false}`), la carte portant déjà un nom accessible complet — sans quoi la valeur
-    // serait annoncée deux fois de suite.
-    expect(
-      getByTestId('balance-ring-value', { includeHiddenElements: true }).props.defaultValue,
-    ).toBe('670');
-    expect(getByText('journal.balance.kcalRemaining')).toBeTruthy();
-    expect(getByText('journal.balance.consumed')).toBeTruthy();
-    expect(getByText('journal.balance.target')).toBeTruthy();
-  });
-
-  it('bascule sur « au-delà » quand l’objectif est dépassé', async () => {
-    const { getByText, queryByText } = await render(<DayBalanceCard {...balanceProps} consumed={2400} />);
-    expect(getByText('journal.balance.kcalOver')).toBeTruthy();
-    expect(queryByText('journal.balance.kcalRemaining')).toBeNull();
-  });
-
-  it('propose de définir un objectif quand il n’y en a pas', async () => {
-    const { getByText, queryByText } = await render(<DayBalanceCard {...balanceProps} target={null} />);
-    expect(getByText('journal.balance.noTargetHint')).toBeTruthy();
-    expect(queryByText('journal.balance.kcalRemaining')).toBeNull();
-  });
-
-  it('n’affiche le badge de séance que les jours concernés', async () => {
-    const off = await render(<DayBalanceCard {...balanceProps} />);
-    expect(off.queryByText('journal.trainingDayBadge')).toBeNull();
-
-    const on = await render(<DayBalanceCard {...balanceProps} isTrainingDay />);
-    expect(on.getByText('journal.trainingDayBadge')).toBeTruthy();
-  });
-});
 
 describe('MacroTriple', () => {
   const consumed = { protein: 124, carbs: 180, fat: 52 };

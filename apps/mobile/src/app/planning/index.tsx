@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
+import { linkHref } from '@/components/lab/link-routes';
 import * as Haptics from 'expo-haptics';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
@@ -489,6 +490,7 @@ export default function PlanningScreen() {
                           key={c.runSessionId}
                           conflict={c}
                           onSwap={(target) => void reschedulePlannedSession(c.runSessionId, target)}
+                          onSeeLink={() => router.push(linkHref('sports'))}
                         />
                       ))}
 

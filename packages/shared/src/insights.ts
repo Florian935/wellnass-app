@@ -110,6 +110,32 @@ export const STALE_AFTER_DAYS = 14;
 export const NOTABLE_CHANGE_PCT = 15;
 
 // ---------------------------------------------------------------------------
+// US LIENS-01 — ce que l'écran Insights a cédé au Labo
+// ---------------------------------------------------------------------------
+
+/**
+ * Les six alertes **croisées** que l'écran Insights ne montre plus (décision Q2 du 30/09/2026) :
+ * chacune lit au moins deux piliers, donc elle vit au Labo, dans la fiche de son lien
+ * (`CROSS_LINKS`), et remonte sur l'accueil par le widget quand elle demande quelque chose.
+ * Insights garde l'intra-pilier et les célébrations.
+ *
+ * Elles restent dans `INSIGHT_ORDER` : la table d'ordre est une décision relue d'un coup d'œil, et
+ * les retirer effacerait l'historique de cet arbitrage. Le test de `widget-destinations` vérifie
+ * que chacune a bien une fiche au Labo — « aucun signal ne disparaît » tient toujours.
+ *
+ * ⚠️ Les garde-fous de charge (`overtraining_guard`, `training_load`) ne sont pas moins visibles
+ * pour autant : au Labo, un garde-fou passe devant tout, et le widget de l'accueil le montre.
+ */
+export const LAB_OWNED_INSIGHTS: ReadonlyArray<InsightId> = [
+  'overtraining_guard',
+  'training_load',
+  'readiness',
+  'concurrent_interference',
+  'deficit_volume',
+  'activity_level',
+];
+
+// ---------------------------------------------------------------------------
 // US VIE-01 — ce qui se tait pendant une période « vie réelle »
 // ---------------------------------------------------------------------------
 

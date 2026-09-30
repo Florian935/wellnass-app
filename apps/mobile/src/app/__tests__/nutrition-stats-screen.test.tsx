@@ -166,6 +166,9 @@ jest.mock('@/components/Segment', () => {
 });
 
 // US NUTRI-UX03 (R12) — l'écran s'ouvre sur un sous-onglet passé en paramètre.
+// US ECHO-01 — l'écho du Labo tire le registre des liens (toute la chaîne des dépôts) : hors sujet
+// ici, il est couvert par `cross-link-echo.test.tsx`.
+jest.mock('@/components/lab/CrossLinkEcho', () => ({ CrossLinkEcho: () => null }));
 jest.mock('expo-router', () => ({ useLocalSearchParams: jest.fn(() => ({})) }));
 
 jest.mock('react-i18next', () => ({
