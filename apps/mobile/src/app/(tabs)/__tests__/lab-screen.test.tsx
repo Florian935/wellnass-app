@@ -222,6 +222,7 @@ const ZONE_OF: Record<CrossLink['id'], CrossLink['zone']> = {
   fuelStrength: 'mn',
   fuelRunning: 'cn',
   recovery: 'centre',
+  wellbeing: 'centre',
   weight: 'mn',
   goals: 'centre',
   rhythm: 'centre',

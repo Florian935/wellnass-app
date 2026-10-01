@@ -31,6 +31,7 @@ import {
   classifyLoadComponent,
   classifyNutritionComponent,
   classifyWellbeingComponent,
+  isPoorNight,
   computeAcwr,
   computeAge,
   computeCaloricBalance,
@@ -1618,9 +1619,14 @@ export function useReadiness(): ReadinessResult {
 
   // R3/D5 — bien-être : transverse, jamais gardé par pilier (comme le widget lui-même).
   const wellbeingAvg = wellbeingAverages(wellbeingRows, READINESS_WELLBEING_WINDOW_DAYS, todayKey);
+  // US BIEN-04 — pilier Bien-être activé : la nuit de ce matin et « malade » entrent dans la
+  // composante. Pilier éteint, rien n'est passé : la règle est exactement celle de TRI-03.
+  const pillarOn = settings?.wellbeingPillarEnabled === true;
+  const todayRow = pillarOn ? (wellbeingRows.find((r) => r.logDate === todayKey && r.deletedAt == null) ?? null) : null;
   const wellbeing = classifyWellbeingComponent({
     energy: wellbeingAvg.energy,
     stress: wellbeingAvg.stress,
+    ...(pillarOn ? { poorNight: isPoorNight(todayRow), sick: todayRow?.sick === true } : {}),
   });
 
   return computeReadiness({ load, nutrition, wellbeing });

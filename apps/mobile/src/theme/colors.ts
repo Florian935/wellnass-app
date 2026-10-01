@@ -58,6 +58,8 @@ export type Palette = {
   pillarNutrition: string;
   /** US LABO-01 — la couleur du Labo : le doré du socle, assombri pour rester lisible en clair. */
   pillarLab: string;
+  /** US BIEN-02 — le pilier Bien-être : un violet de nuit, seul de la palette entre le bleu et le rouge. */
+  pillarWellbeing: string;
 };
 
 export const palettes: Record<ColorScheme, Palette> = {
@@ -108,6 +110,9 @@ export const palettes: Record<ColorScheme, Palette> = {
     // le contraste à 5,86 — la couleur gagnée ne coûte rien à la lisibilité.
     pillarNutrition: '#3f6b1c', // 5,86 / fond — #52703a d'avant : 5,22 · #5c7a3f de maquette : 4,23
     pillarLab: '#7a5714', // 5,0 / fond — le doré #8a6419 tombait à 4,33
+    // US BIEN-02 — violet de nuit : 6,04 / fond · 6,83 / surface · blanc dessus 7,1. Teinte 265°, la
+    // seule libre entre la course (213°) et le rouge fonte (4°) : aucun pilier ne s'y confond.
+    pillarWellbeing: '#6a3fb0',
   },
   dark: {
     // US MUSCU-UX06 (23/09/2026) — « les cartes ne se détachent pas » (Florian). Mesuré : carte /
@@ -159,5 +164,6 @@ export const palettes: Record<ColorScheme, Palette> = {
     // sémantiques distincts, qui ne suivent pas l'identité d'un pilier.
     pillarNutrition: '#9ed16a', // 8,21 / surface — #a9ba7e d'avant : 6,98
     pillarLab: '#e0b155', // doré du socle — 8,4 / fond
+    pillarWellbeing: '#c2a3ff', // US BIEN-02 — 6,95 / surface · 9,3 / fond
   },
 };

@@ -17,7 +17,7 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Svg, { Circle, G, Line, Path, Rect, Text as SvgText } from 'react-native-svg';
-import { CYCLE_PHASES, type CrossLinkChart as Chart } from '@wellness/shared';
+import { CYCLE_PHASES, WELLBEING_LINK_THRESHOLDS, type CrossLinkChart as Chart } from '@wellness/shared';
 
 import { dayMonth, formatDecimal, formatPace } from './lab-format';
 import { useUnits } from '@/hooks/useUnits';
@@ -26,6 +26,8 @@ import { useTheme } from '@/theme/useTheme';
 
 const W = 326;
 const COL = 36;
+/** US BIEN-05 — combien de fois le seuil de bruit remplit une barre d'écart. */
+const EFFECT_FULL_THRESHOLDS = 3;
 const X0 = 30;
 const colX = (i: number) => X0 + COL * (i + 0.5);
 
@@ -103,6 +105,64 @@ export function CrossLinkChart({ chart }: Props) {
             })}
           </View>
         ))}
+      </View>
+    );
+  }
+
+  // US BIEN-05 — les écarts des croisements Bien-être : une ligne par croisement, un axe zéro, l'écart
+  // signé de part et d'autre, les cas de chaque côté. Pas de semaines ici : un écart se lit sur la
+  // fenêtre entière (90 jours), une semaine n'a pas assez de nuits courtes pour en dire quoi que ce soit.
+  if (chart.type === 'effects') {
+    const unitText = (unit: string, delta: number) => {
+      const digits = unit === 'points' ? 1 : 0;
+      const abs = dec(Math.abs(delta), digits);
+      const signed = delta > 0 ? `+${abs}` : delta < 0 ? `−${abs}` : abs;
+      return t(`lab.fiche.chart.effectsUnit.${unit}`, { value: signed });
+    };
+    return (
+      <View style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]} testID="lab-chart-effects">
+        <View style={styles.head}>
+          <Text style={[styles.overline, { color: colors.pillarWellbeing }]}>{t('lab.fiche.chart.effectsTitle')}</Text>
+          <Text style={[styles.hint, { color: muted }]}>{t('lab.fiche.chart.effectsHint')}</Text>
+        </View>
+        {chart.items.map((item) => {
+          // Des unités différentes (%, s/km, kcal) n'ont pas d'échelle commune : chaque barre est
+          // rapportée au **seuil de bruit de son unité** (`WELLBEING_LINK_THRESHOLDS`). Un écart au seuil
+          // remplit un tiers de la demi-piste, trois fois le seuil la remplit. Les longueurs se comparent
+          // alors d'une ligne à l'autre : « combien au-dessus du bruit ».
+          const width = Math.max(4, Math.min(100, (Math.abs(item.delta) / (EFFECT_FULL_THRESHOLDS * WELLBEING_LINK_THRESHOLDS[item.unit])) * 100));
+          const tone = item.status === 'noLink' ? grid : item.adverse === true ? colors.amber : colors.pillarWellbeing;
+          return (
+            <View
+              key={item.id}
+              style={[styles.effectRow, { borderTopColor: grid }]}
+              accessible
+              accessibilityLabel={t('lab.fiche.chart.effectsA11y', {
+                label: t(`lab.fiche.chart.effects.${item.id}`),
+                value: unitText(item.unit, item.delta),
+                exposed: item.exposed,
+                other: item.other,
+              })}
+            >
+              <View style={styles.effectHead}>
+                <Text style={[styles.effectLabel, { color: colors.text }]}>{t(`lab.fiche.chart.effects.${item.id}`)}</Text>
+                <Text style={[styles.effectValue, { color: colors.text }]}>
+                  {item.status === 'noLink' ? t('lab.fiche.chart.effectsNone') : unitText(item.unit, item.delta)}
+                </Text>
+              </View>
+              <View style={styles.effectTrack}>
+                <View style={[styles.effectHalf, { alignItems: 'flex-end' }]}>
+                  {item.delta < 0 ? <View testID={`lab-effect-bar-${item.id}`} style={[styles.effectBar, { width: `${width}%`, backgroundColor: tone }]} /> : null}
+                </View>
+                <View style={[styles.effectAxis, { backgroundColor: colors.text }]} />
+                <View style={styles.effectHalf}>
+                  {item.delta > 0 ? <View testID={`lab-effect-bar-${item.id}`} style={[styles.effectBar, { width: `${width}%`, backgroundColor: tone }]} /> : null}
+                </View>
+              </View>
+              <Text style={[styles.hint, { color: muted }]}>{t('lab.fiche.chart.effectsCases', { exposed: item.exposed, other: item.other })}</Text>
+            </View>
+          );
+        })}
       </View>
     );
   }
@@ -413,6 +473,15 @@ const styles = StyleSheet.create({
   head: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', gap: 8 },
   overline: { fontFamily: fontFamily.monoBold, fontSize: 11, letterSpacing: 1.4 },
   hint: { fontFamily: fontFamily.body, fontSize: 11.5 },
+  // US BIEN-05 — le graphique des écarts.
+  effectRow: { borderTopWidth: 1, paddingTop: 10, marginTop: 10, gap: 6 },
+  effectHead: { flexDirection: 'row', justifyContent: 'space-between', gap: 8 },
+  effectLabel: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 13 },
+  effectValue: { fontFamily: fontFamily.bodyBold, fontSize: 13 },
+  effectTrack: { flexDirection: 'row', alignItems: 'center', height: 14 },
+  effectHalf: { flex: 1, height: 10, justifyContent: 'center' },
+  effectBar: { height: 10, borderRadius: 5 },
+  effectAxis: { width: 2, height: 14, opacity: 0.5 },
   readout: { fontFamily: fontFamily.bodySemi, fontSize: 13.5, minHeight: 19 },
   note: { fontFamily: fontFamily.body, fontSize: 12, lineHeight: 17 },
   col: { position: 'absolute', top: 0, bottom: 0 },

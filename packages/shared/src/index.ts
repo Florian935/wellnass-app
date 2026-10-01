@@ -29,6 +29,11 @@ export * from './activation-path';
 export * from './health-connect';
 export * from './steps';
 export * from './wellbeing';
+// US BIEN-02 → BIEN-07 — le pilier Bien-être.
+export * from './wellbeing-section';
+export * from './wellbeing-day';
+export * from './wellbeing-links';
+export * from './wellbeing-sleep';
 export * from './editorial-usage';
 export * from './measurements';
 export * from './macro-suggestion';

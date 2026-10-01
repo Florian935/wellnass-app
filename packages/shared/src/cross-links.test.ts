@@ -29,6 +29,7 @@ import { dotsScore } from './strength-dots';
 import type { LabKnowledgeCard } from './lab-experiments';
 import type { LabQuestion } from './lab-investigations';
 import type { SessionConflict } from './session-conflicts';
+import type { WellbeingLink } from './wellbeing-links';
 
 // Semaine du lundi 21 au dimanche 27 septembre 2026 ; aujourd'hui, jeudi 24.
 const MON = '2026-09-21';
@@ -568,5 +569,66 @@ describe('dotsEightWeekDelta — l’écart DOTS porte vraiment sur huit semaine
 
   it('sans score aujourd’hui, rien', () => {
     expect(dotsEightWeekDelta({ todayKey: TODAY, dotsNow: null, history: [], weights: [], sex: 'male' })).toBeNull();
+  });
+});
+
+describe('US BIEN-05 — le lien « Ton état du jour pèse-t-il sur tes séances ? »', () => {
+  const link = (over: Partial<WellbeingLink>): WellbeingLink => ({
+    id: 'nightStrength',
+    scope: 'cross',
+    unit: 'pct',
+    pillars: ['strength'],
+    status: 'learning',
+    delta: null,
+    exposed: 3,
+    other: 10,
+    need: 8,
+    adverse: null,
+    ...over,
+  });
+
+  it('n’existe que si le pilier Bien-être est activé, et qu’un pilier a de quoi croiser', () => {
+    expect(buildCrossLinks(input()).map((l) => l.id)).not.toContain('wellbeing');
+    expect(buildCrossLinks(input({ wellbeingEnabled: true })).map((l) => l.id)).toContain('wellbeing');
+    expect(buildCrossLinks(input({ wellbeingEnabled: true, activePillars: [] })).map((l) => l.id)).not.toContain('wellbeing');
+    expect(CROSS_LINKS.wellbeing.zone).toBe('centre');
+    expect(CROSS_LINKS.wellbeing.echoes).toEqual(['wellbeing']);
+  });
+
+  it('à découvrir tant qu’aucun croisement n’a assez de cas — la jauge prend le côté le plus maigre', () => {
+    const l = byId(buildCrossLinks(input({ wellbeingEnabled: true, wellbeing: { links: [link({})], recentPoorNights: 0 } })), 'wellbeing');
+    expect(l.state).toBe('discover');
+    expect(l.missing).toMatchObject({ key: 'wellbeingCases', have: 3, need: 8 });
+    expect(byId(buildCrossLinks(input({ wellbeingEnabled: true, wellbeing: null })), 'wellbeing').state).toBe('discover');
+  });
+
+  it('à régler : une piste défavorable sur la nuit ET des nuits courtes cette semaine', () => {
+    const known = link({ status: 'probable', delta: -9, exposed: 11, other: 38, adverse: true });
+    const l = byId(buildCrossLinks(input({ wellbeingEnabled: true, wellbeing: { links: [known], recentPoorNights: 3 } })), 'wellbeing');
+    expect(l.state).toBe('adjust');
+    expect(l.verdict.key).toBe('adjust.nightStrength');
+    expect(l.verdict.values).toMatchObject({ nights: 3, delta: -9 });
+    expect(l.actions[0]).toEqual({ type: 'open', route: 'wellbeing' });
+    expect(l.lens[0]).toBe('wellbeing');
+    expect(l.chart).toMatchObject({ type: 'effects', items: [{ id: 'nightStrength', delta: -9 }] });
+    expect(l.rows[0]).toMatchObject({ key: 'wellbeing.nightStrength.probable', state: 'adjust' });
+  });
+
+  it('ça tient : la piste existe mais la semaine ne la déclenche pas ; ou rien de visible', () => {
+    const known = link({ status: 'solid', delta: -9, exposed: 15, other: 38, adverse: true });
+    expect(byId(buildCrossLinks(input({ wellbeingEnabled: true, wellbeing: { links: [known], recentPoorNights: 1 } })), 'wellbeing')).toMatchObject({
+      state: 'holds',
+      verdict: { key: 'holdsKnown' },
+    });
+    const none = link({ status: 'noLink', delta: -2, exposed: 9, other: 20 });
+    const l = byId(buildCrossLinks(input({ wellbeingEnabled: true, wellbeing: { links: [none], recentPoorNights: 4 } })), 'wellbeing');
+    expect(l).toMatchObject({ state: 'holds', verdict: { key: 'holdsNone' } });
+    expect(l.figures).toEqual([]);
+    expect(l.rows[0]?.state).toBe('holds');
+  });
+
+  it('les croisements internes au pilier ne remontent pas au Labo', () => {
+    const intra = link({ id: 'caffeineNight', scope: 'intra', unit: 'minutes', pillars: [], status: 'solid', delta: -40, exposed: 20, other: 20, adverse: true });
+    expect(byId(buildCrossLinks(input({ wellbeingEnabled: true, wellbeing: { links: [intra], recentPoorNights: 5 } })), 'wellbeing').state).toBe('discover');
   });
 });

@@ -1,0 +1,517 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Prototype — un matin</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #e9e0d6; }
+a { color: #5a33a0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.lb { font-weight: 700; font-size: 15px; }
+.sl { font-size: 12.5px; font-weight: 600; color: #786a59; }
+.sc { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.lv { height: 56px; border-radius: 14px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 0; cursor: pointer; }
+.bars { display: flex; align-items: flex-end; gap: 2px; height: 16px; }
+.bars span { width: 4px; border-radius: 1px; display: block; }
+.stp { width: 44px; height: 44px; border-radius: 50%; border: none; background: #ffffff; display: flex; align-items: center; justify-content: center; padding: 0; cursor: pointer; }
+.tg { height: 36px; padding: 0 14px; border-radius: 999px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 13px; cursor: pointer; }
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #ece3ef; border-radius: 14px; padding: 4px; }
+.seg span { height: 34px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 13px; color: #5a33a0; }
+.vc { display: inline-flex; gap: 5px; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: rgba(255, 255, 255, .1); color: #f1ecfb; font-size: 12px; font-weight: 600; }
+.vc b { font-family: 'Space Mono', ui-monospace, monospace; }
+.pt { width: 22px; height: 22px; flex: none; border-radius: 6px; color: #ffffff; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+.bp { height: 38px; padding: 0 16px; border-radius: 12px; border: none; background: #6a3fb0; color: #ffffff; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 13.5px; cursor: pointer; }
+.bs { height: 38px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #cdbfd0; background: transparent; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 13.5px; cursor: pointer; }
+.tb { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-weight: 600; font-size: 11px; color: #786a59; }
+.pl { height: 40px; padding: 0 12px; border-radius: 12px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 13px; cursor: pointer; }
+.pr { min-height: 56px; padding: 8px 12px; border-radius: 14px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 13px; line-height: 17px; text-align: left; cursor: pointer; }
+.box { background: #fffaf2; border: 1px solid #dccdb6; border-radius: 18px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; }
+.rd { display: grid; grid-template-columns: 18px 104px minmax(0, 1fr); gap: 8px; align-items: baseline; font-size: 13.5px; }
+.rd b { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; }
+.rd span.k { color: #786a59; font-weight: 600; font-size: 12.5px; }
+.ru { display: flex; gap: 8px; font-size: 13px; line-height: 18px; color: #5b4d3e; }
+.ru i { font-style: normal; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; color: #6a3fb0; flex: none; }
+</style>
+</helmet>
+<div style="width: 1180px; height: 960px; box-sizing: border-box; background: #e9e0d6; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; gap: 48px; padding: 58px 48px 58px 40px; overflow: hidden;">
+
+  <div style="width: 390px; height: 844px; flex: none; border-radius: 36px; overflow: hidden; background: #fffaf5; box-shadow: 0 24px 60px rgba(51, 41, 31, .22); position: relative;">
+
+    <sc-if value="{{isCheckin}}" hint-placeholder-val="{{ true }}">
+      <div style="width: 390px; height: 844px; box-sizing: border-box; padding: 24px 20px 20px; display: flex; flex-direction: column; gap: 16px; background: #fffaf5;">
+        <div>
+          <div class="eb" style="color: #6a3fb0;">Sam. 26 sept. · ce matin</div>
+          <div class="disp" style="font-weight: 800; font-size: 27px; letter-spacing: -.8px; margin-top: 4px;">Comment tu te lèves&nbsp;?</div>
+          <div style="font-size: 13.5px; color: #786a59; margin-top: 2px;">Touche les niveaux&nbsp;: tout se recalcule.</div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+          <div class="lb">Ta nuit</div>
+          <div style="display: flex; align-items: center; justify-content: space-between; background: #f5eef8; border-radius: 18px; padding: 6px;">
+            <button type="button" class="stp" onClick="{{sleepMinus}}" aria-label="Quinze minutes de sommeil en moins"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="12" x2="18" y2="12"></line></svg></button>
+            <div class="disp" style="font-weight: 700; font-size: 30px; letter-spacing: -1px; line-height: 34px;">{{sleepLabel}}</div>
+            <button type="button" class="stp" onClick="{{sleepPlus}}" aria-label="Quinze minutes de sommeil en plus"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="12" x2="18" y2="12"></line><line x1="12" y1="6" x2="12" y2="18"></line></svg></button>
+          </div>
+          <div class="sl">Qualité</div>
+          <div class="sc">
+            <sc-for list="{{qualities}}" as="it" hint-placeholder-count="5">
+              <button type="button" class="lv" onClick="{{it.pick}}" aria-pressed="{{it.pressed}}" style="background: {{it.bg}}; color: {{it.fg}}; border: 1px solid {{it.bd}};"><span class="bars"><span style="height: 4px; background: {{it.b1}};"></span><span style="height: 7px; background: {{it.b2}};"></span><span style="height: 10px; background: {{it.b3}};"></span><span style="height: 13px; background: {{it.b4}};"></span><span style="height: 16px; background: {{it.b5}};"></span></span><span>{{it.label}}</span></button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="lb">Énergie</div>
+          <div class="sc">
+            <sc-for list="{{energies}}" as="it" hint-placeholder-count="5">
+              <button type="button" class="lv" onClick="{{it.pick}}" aria-pressed="{{it.pressed}}" style="background: {{it.bg}}; color: {{it.fg}}; border: 1px solid {{it.bd}};"><span class="bars"><span style="height: 4px; background: {{it.b1}};"></span><span style="height: 7px; background: {{it.b2}};"></span><span style="height: 10px; background: {{it.b3}};"></span><span style="height: 13px; background: {{it.b4}};"></span><span style="height: 16px; background: {{it.b5}};"></span></span><span>{{it.label}}</span></button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="lb">Envie de t'entraîner</div>
+          <div class="sc">
+            <sc-for list="{{motivations}}" as="it" hint-placeholder-count="5">
+              <button type="button" class="lv" onClick="{{it.pick}}" aria-pressed="{{it.pressed}}" style="background: {{it.bg}}; color: {{it.fg}}; border: 1px solid {{it.bd}};"><span class="bars"><span style="height: 4px; background: {{it.b1}};"></span><span style="height: 7px; background: {{it.b2}};"></span><span style="height: 10px; background: {{it.b3}};"></span><span style="height: 13px; background: {{it.b4}};"></span><span style="height: 16px; background: {{it.b5}};"></span></span><span>{{it.label}}</span></button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <div class="lb">Un truc particulier&nbsp;?</div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <sc-for list="{{morningTags}}" as="t" hint-placeholder-count="3">
+              <button type="button" class="tg" onClick="{{t.toggle}}" aria-pressed="{{t.pressed}}" style="background: {{t.bg}}; color: {{t.fg}}; border: 1px solid {{t.bd}};">{{t.label}}</button>
+            </sc-for>
+          </div>
+        </div>
+
+        <div style="flex: 1;"></div>
+        <button type="button" onClick="{{toToday}}" style="height: 52px; border-radius: 16px; border: none; background: #6a3fb0; color: #ffffff; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 16px; cursor: pointer;">C'est noté</button>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isToday}}" hint-placeholder-val="{{ false }}">
+      <div style="width: 390px; height: 844px; box-sizing: border-box; display: flex; flex-direction: column; background: #f5eee9;">
+        <div style="flex: 1; min-height: 0; padding: 18px 18px 0; display: flex; flex-direction: column; gap: 12px; overflow: hidden;">
+          <div>
+            <div class="eb" style="color: #6a3fb0;">Sam. 26 sept.</div>
+            <div class="disp" style="font-weight: 800; font-size: 30px; letter-spacing: -1px; line-height: 34px;">Bien-être</div>
+          </div>
+          <div class="seg"><span style="background: #6a3fb0; color: #ffffff;">Aujourd'hui</span><span>Journal</span><span>Ce qui compte</span></div>
+
+          <div style="background: #2b1d52; border-radius: 22px; padding: 16px 18px; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 10px;">
+            <div style="position: absolute; width: 180px; height: 180px; border-radius: 50%; background: {{glow}}; opacity: .5; filter: blur(40px); top: -90px; right: -50px;"></div>
+            <div style="position: relative;">
+              <div class="eb" style="color: #cfc2ec;">Ta forme du jour</div>
+              <div class="disp" style="font-weight: 700; font-size: 26px; letter-spacing: -.6px; color: #ffffff; line-height: 32px;">{{verdict}}</div>
+            </div>
+            <div style="position: relative; font-size: 13px; line-height: 18px; color: #d9cff0;">{{verdictSub}}</div>
+            <div style="position: relative; display: flex; flex-wrap: wrap; gap: 6px;">
+              <sc-for list="{{comps}}" as="c" hint-placeholder-count="4">
+                <span class="vc"><b style="color: {{c.color}};">{{c.arrow}}</b>{{c.label}}</span>
+              </sc-for>
+            </div>
+          </div>
+
+          <div style="background: #fffaf5; border: 1px solid #e7dad3; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+            <div style="font-weight: 700; font-size: 15.5px;">Ce que ça change aujourd'hui</div>
+            <div style="display: flex; gap: 10px;">
+              <span class="pt" style="background: {{planTagBg}};">{{planTag}}</span>
+              <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+                <div>
+                  <div style="font-weight: 700; font-size: 14px;">{{planName}}</div>
+                  <div style="font-weight: 700; font-size: 13.5px; color: #5a33a0; margin-top: 4px;">{{adTitle}}</div>
+                  <div style="font-size: 13px; line-height: 18px; color: #5b4d3e; margin-top: 2px;">{{adBody}}</div>
+                </div>
+                <sc-if value="{{showActions}}" hint-placeholder-val="{{ true }}">
+                  <div style="display: flex; gap: 8px;"><button type="button" class="bp" onClick="{{applyPrimary}}">{{adPrimary}}</button><button type="button" class="bs" onClick="{{applySecondary}}">{{adSecondary}}</button></div>
+                </sc-if>
+                <sc-if value="{{showApplied}}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size: 13px; line-height: 18px; color: #3f2178; background: #efe7f8; border-radius: 10px; padding: 8px 10px; font-weight: 600;">{{appliedText}}</div>
+                </sc-if>
+                <sc-if value="{{hasNote}}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size: 12.5px; line-height: 17px; color: #786a59;">{{adNote}}</div>
+                </sc-if>
+              </div>
+            </div>
+            <div style="height: 1px; background: #eadfe0;"></div>
+            <div style="display: flex; gap: 10px;">
+              <span class="pt" style="background: #3f6b1c;">N</span>
+              <div style="font-size: 13px; line-height: 18px; color: #5b4d3e;">{{nutri}}</div>
+            </div>
+          </div>
+
+          <button type="button" onClick="{{toCheckin}}" style="height: 44px; border-radius: 14px; border: 1.5px solid #cdbfd0; background: transparent; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 14px; color: #33291f; cursor: pointer;">Refaire le check-in</button>
+        </div>
+
+        <div style="height: 64px; flex: none; background: #fffaf5; border-top: 1px solid #e7dad3; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));">
+          <div class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg>Accueil</div>
+          <div class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect></svg>Muscu</div>
+          <div class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19l4-5 3 2 3-6 4 2"></path><circle cx="15" cy="5" r="2"></circle></svg>Course</div>
+          <div class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14z"></path><path d="M5 19l7-7"></path></svg>Nutrition</div>
+          <div class="tb" style="color: #6a3fb0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="#efe7f8" stroke="#6a3fb0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>Bien-être</div>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 20px;">
+    <div>
+      <div class="eb" style="color: #6a3fb0; font-size: 12px;">05 · Prototype jouable</div>
+      <div class="disp" style="font-weight: 800; font-size: 40px; line-height: 44px; letter-spacing: -1.4px; margin-top: 8px;">Un matin, et ce qu'il change</div>
+      <div style="font-size: 16px; line-height: 24px; color: #5b4d3e; margin-top: 8px;">Choisis un matin type, ou règle le check-in dans le téléphone&nbsp;: la forme du jour, la séance et l'assiette se recalculent avec les règles ci-dessous.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="eb">Un matin type</div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;">
+        <sc-for list="{{presets}}" as="p" hint-placeholder-count="4">
+          <button type="button" class="pr" onClick="{{p.pick}}" aria-pressed="{{p.pressed}}" style="background: {{p.bg}}; color: {{p.fg}}; border: 1px solid {{p.bd}};">{{p.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="eb">La séance prévue ce jour-là</div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <sc-for list="{{plans}}" as="p" hint-placeholder-count="4">
+          <button type="button" class="pl" onClick="{{p.pick}}" aria-pressed="{{p.pressed}}" style="background: {{p.bg}}; color: {{p.fg}}; border: 1px solid {{p.bd}};">{{p.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="eb">Hier soir · le check-in du soir</div>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+        <sc-for list="{{stresses}}" as="p" hint-placeholder-count="5">
+          <button type="button" class="pl" onClick="{{p.pick}}" aria-pressed="{{p.pressed}}" style="background: {{p.bg}}; color: {{p.fg}}; border: 1px solid {{p.bd}}; font-size: 12.5px;">{{p.label}}</button>
+        </sc-for>
+      </div>
+      <div style="display: flex; gap: 8px;">
+        <sc-for list="{{eveningTags}}" as="t" hint-placeholder-count="2">
+          <button type="button" class="tg" onClick="{{t.toggle}}" aria-pressed="{{t.pressed}}" style="background: {{t.bg}}; color: {{t.fg}}; border: 1px solid {{t.bd}};">{{t.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; align-items: start;">
+      <div class="box">
+        <div class="eb" style="color: #33291f;">Ce que le moteur a lu</div>
+        <sc-for list="{{reads}}" as="r" hint-placeholder-count="5">
+          <div class="rd"><b style="color: {{r.color}};">{{r.arrow}}</b><span class="k">{{r.k}}</span><span>{{r.v}}</span></div>
+        </sc-for>
+      </div>
+      <div class="box">
+        <div class="eb" style="color: #33291f;">Les règles appliquées</div>
+        <div class="ru"><i>1</i><span>Forme du jour&nbsp;: la règle de TRI-03 (énergie ≤ 2 ou stress ≥ 4), plus la nuit (moins de 6 h ou qualité ≤ 2) et « malade » — deux ajouts proposés.</span></div>
+        <div class="ru"><i>2</i><span>Un seul signal négatif suffit pour « Repos conseillé ».</span></div>
+        <div class="ru"><i>3</i><span>Séance intense et signal négatif&nbsp;: allègement, sur le patron de l'adaptation de séance déjà livrée.</span></div>
+        <div class="ru"><i>4</i><span>Envie ≤ 2&nbsp;: une version courte, proposée, jamais imposée.</span></div>
+        <div class="ru"><i>5</i><span>Rien d'automatique&nbsp;: chaque proposition se refuse d'un tap.</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1180,"height":960}}'>
+class Component extends DCLogic {
+  base() {
+    return {
+      screen: 'checkin', sleep: 340, quality: 2, energy: 2, motivation: 3, stress: 3,
+      malade: false, courbatures: false, voyage: false, soiree: false, chargee: false,
+      plan: 'legs', applied: null, preset: 'a'
+    };
+  }
+
+  st() {
+    return Object.assign(this.base(), this.state || {});
+  }
+
+  fmt(m) {
+    var h = Math.floor(m / 60);
+    var mm = m % 60;
+    return h + ' h ' + (mm < 10 ? '0' + mm : String(mm));
+  }
+
+  scale(key, labels, value) {
+    var self = this;
+    return labels.map(function (label, i) {
+      var lvl = i + 1;
+      var on = value === lvl;
+      var bar = function (k) {
+        if (k <= lvl) return on ? '#ffffff' : '#8a6cc6';
+        return on ? 'rgba(255,255,255,.35)' : '#e0d5ec';
+      };
+      return {
+        label: label,
+        bg: on ? '#6a3fb0' : '#fbf7fb',
+        fg: on ? '#ffffff' : '#5b4d3e',
+        bd: on ? '#6a3fb0' : '#e5d8e6',
+        b1: bar(1), b2: bar(2), b3: bar(3), b4: bar(4), b5: bar(5),
+        pressed: on ? 'true' : 'false',
+        pick: function () {
+          var patch = { applied: null, preset: null };
+          patch[key] = on ? null : lvl;
+          self.setState(patch);
+        }
+      };
+    });
+  }
+
+  toggle(key, label, on) {
+    var self = this;
+    return {
+      label: label,
+      pressed: on ? 'true' : 'false',
+      bg: on ? '#33291f' : '#fbf7fb',
+      fg: on ? '#ffffff' : '#5b4d3e',
+      bd: on ? '#33291f' : '#e5d8e6',
+      toggle: function () {
+        var patch = { applied: null, preset: null };
+        patch[key] = !on;
+        self.setState(patch);
+      }
+    };
+  }
+
+  pill(on) {
+    return {
+      bg: on ? '#33291f' : '#fffaf2',
+      fg: on ? '#ffffff' : '#33291f',
+      bd: on ? '#33291f' : '#d9cbb5',
+      pressed: on ? 'true' : 'false'
+    };
+  }
+
+  renderVals() {
+    var self = this;
+    var s = this.st();
+    var QUAL = ['Mauvaise', 'Agitée', 'Correcte', 'Bonne', 'Excellente'];
+    var EN = ['Épuisé', 'Basse', 'Moyenne', 'Bonne', 'Au top'];
+    var MOT = ['Aucune', 'Faible', 'Moyenne', 'Bonne', 'À fond'];
+    var ST = ['Très calme', 'Calme', 'Modéré', 'Élevé', 'Très élevé'];
+    var DOWN = { arrow: '↓', color: '#ffa596', side: '#b23b2e' };
+    var UP = { arrow: '↑', color: '#b9e58a', side: '#4c5a2e' };
+    var FLAT = { arrow: '=', color: '#cfc2ec', side: '#786a59' };
+
+    var sleep = s.sleep;
+    var q = s.quality;
+    var e = s.energy;
+    var mot = s.motivation;
+    var str = s.stress;
+    var sick = s.malade;
+
+    var shortSleep = sleep < 360;
+    var badQuality = q != null && q <= 2;
+    var shortNight = shortSleep || badQuality;
+    var lowEnergy = e != null && e <= 2;
+    var highStress = str != null && str >= 4;
+    var lowMot = mot != null && mot <= 2;
+
+    var neg = [];
+    if (sick) neg.push('malade');
+    if (lowEnergy) neg.push('ton énergie');
+    if (highStress) neg.push("ton stress d'hier");
+    if (shortNight) neg.push('ta nuit');
+    var pos = !sick && e != null && e >= 4 && str != null && str <= 2 && sleep >= 420 && (q == null || q >= 4);
+
+    var COUNT = ['', 'Un seul signal suffit', 'Deux signaux', 'Trois signaux', 'Quatre signaux'];
+    var joined = neg.length <= 1 ? neg.join('') : neg.slice(0, -1).join(', ') + ' et ' + neg[neg.length - 1];
+    var verdict, verdictSub, glow;
+    if (neg.length) {
+      verdict = 'Repos conseillé';
+      verdictSub = COUNT[neg.length] + ' : ' + joined + '. Une suggestion, pas une consigne.';
+      glow = '#6a3fb0';
+    } else if (pos) {
+      verdict = 'Prêt à pousser';
+      verdictSub = 'Nuit, énergie et stress sont au vert.';
+      glow = '#4f8a2e';
+    } else {
+      verdict = 'Forme correcte';
+      verdictSub = "Rien ne penche d'un côté ou de l'autre.";
+      glow = '#8a6cc6';
+    }
+
+    var nightTone = shortNight ? DOWN : (sleep >= 420 && q != null && q >= 4 ? UP : FLAT);
+    var energyTone = e == null ? FLAT : (e <= 2 ? DOWN : (e >= 4 ? UP : FLAT));
+    var stressTone = str == null ? FLAT : (str >= 4 ? DOWN : (str <= 2 ? UP : FLAT));
+    var motTone = mot == null ? FLAT : (mot <= 2 ? DOWN : (mot >= 4 ? UP : FLAT));
+
+    var nightLabel = 'Nuit ' + this.fmt(sleep) + (q != null ? ' · ' + QUAL[q - 1].toLowerCase() : '');
+    var comps = [
+      { arrow: nightTone.arrow, color: nightTone.color, label: nightLabel },
+      { arrow: energyTone.arrow, color: energyTone.color, label: e != null ? 'Énergie ' + EN[e - 1].toLowerCase() : 'Énergie non notée' },
+      { arrow: stressTone.arrow, color: stressTone.color, label: str != null ? 'Stress hier ' + ST[str - 1].toLowerCase() : 'Stress non noté' },
+      { arrow: FLAT.arrow, color: FLAT.color, label: 'Charge stable' }
+    ];
+    if (sick) comps.unshift({ arrow: DOWN.arrow, color: DOWN.color, label: 'Malade' });
+
+    var PLANS = {
+      legs: { tag: 'M', bg: '#a8261d', name: 'Jambes · 18 h 30', intense: true, pill: 'Jambes (muscu)' },
+      intervals: { tag: 'C', bg: '#2a64ad', name: 'Fractionné · 6 × 1000 m', intense: true, pill: 'Fractionné' },
+      easy: { tag: 'C', bg: '#2a64ad', name: 'Footing · 40 min', intense: false, pill: 'Footing' },
+      rest: { tag: 'R', bg: '#786a59', name: 'Repos prévu', intense: false, pill: 'Repos' }
+    };
+    var plan = PLANS[s.plan];
+    var legs = s.plan === 'legs';
+
+    var adTitle, adBody, adPrimary = null, adSecondary = null, primaryDone = '', note = '';
+    if (sick) {
+      adTitle = "Pas d'intensité aujourd'hui";
+      if (s.plan === 'rest') {
+        adBody = "Repos prévu : c'est exactement ce qu'il faut.";
+      } else {
+        adBody = 'Les symptômes passent avant le plan. On décale la séance à demain ?';
+        adPrimary = 'Décaler à demain';
+        adSecondary = 'Garder';
+        primaryDone = 'Séance décalée à demain, même heure. Rien à rattraper.';
+      }
+    } else if (plan.intense && neg.length) {
+      adTitle = 'On allège ?';
+      adBody = legs
+        ? "Garder l'échauffement, retirer 25 % des répétitions : 4 × 6 au lieu de 4 × 8."
+        : '4 × 1000 m au lieu de 6, à la même allure.';
+      adPrimary = 'Alléger';
+      adSecondary = 'Garder tel quel';
+      primaryDone = legs
+        ? 'Séance allégée : 4 × 6. Après la séance, tu diras si c’était juste.'
+        : 'Séance allégée : 4 × 1000 m. Tu diras ensuite si c’était juste.';
+      if (lowMot) note = "Envie faible, en plus : même allégée, t'arrêter après l'échauffement compte déjà.";
+    } else if (plan.intense && lowMot) {
+      adTitle = 'Une version courte ?';
+      adBody = legs
+        ? '30 minutes, les deux exercices clés, et tu décides sur place.'
+        : '3 × 1000 m, et tu décides sur place si tu continues.';
+      adPrimary = 'Version courte';
+      adSecondary = 'Garder';
+      primaryDone = 'Version courte prête. Si l’envie revient en route, tu peux continuer.';
+    } else if (plan.intense && pos) {
+      adTitle = 'Feu vert';
+      adBody = legs
+        ? 'Bon jour pour tenter la charge prévue au squat.'
+        : "Bonnes conditions pour tenir l'allure cible des 6 × 1000 m.";
+    } else if (s.plan === 'easy') {
+      adTitle = 'Rien à changer';
+      adBody = 'Un footing tranquille aide souvent à récupérer : garde-le.';
+    } else if (s.plan === 'rest') {
+      adTitle = 'Rien à changer';
+      adBody = "Repos prévu : c'est déjà ce qu'il te faut.";
+    } else {
+      adTitle = 'Rien à changer';
+      adBody = 'Ta forme est dans ta moyenne : la séance reste telle quelle.';
+    }
+    if (s.courbatures && legs && !sick) {
+      note = (note ? note + ' ' : '') + 'Courbatures notées comme « gêne » aux jambes dans ton journal des douleurs.';
+    }
+
+    var nutri;
+    if (sick) nutri = 'Malade : ta cible du jour passe en veille, rien à rattraper demain.';
+    else if (shortNight) nutri = 'Après une nuit ' + (shortSleep ? 'courte' : 'agitée') + ', tes envies de sucre montent souvent vers 16 h. Ta collation est prévue : rien à compenser.';
+    else if (s.soiree) nutri = "Soirée hier : pense à boire ce matin. Le journal d'hier se complète encore.";
+    else if (highStress || s.chargee) nutri = "Journée chargée hier : c'est souvent là que ton journal décroche. Un repas rapide à noter suffit.";
+    else nutri = "Rien de particulier côté assiette aujourd'hui.";
+
+    var appliedText = s.applied === 'primary' ? primaryDone
+      : (s.applied === 'secondary' ? "Séance gardée telle quelle. La proposition ne reviendra pas aujourd'hui." : '');
+
+    var tags = [];
+    if (sick) tags.push('malade');
+    if (s.courbatures) tags.push('courbatures');
+    if (s.voyage) tags.push('voyage');
+    if (s.soiree) tags.push('soirée');
+    if (s.chargee) tags.push('journée chargée');
+
+    var reads = [
+      { k: 'Nuit', v: this.fmt(sleep) + (q != null ? ' · ' + QUAL[q - 1].toLowerCase() : ''), arrow: nightTone.arrow, color: nightTone.side },
+      { k: 'Énergie', v: e != null ? EN[e - 1] : 'non notée', arrow: energyTone.arrow, color: energyTone.side },
+      { k: 'Envie', v: mot != null ? MOT[mot - 1] : 'non notée', arrow: motTone.arrow, color: motTone.side },
+      { k: "Stress d'hier", v: str != null ? ST[str - 1] : 'non noté', arrow: stressTone.arrow, color: stressTone.side },
+      { k: 'Étiquettes', v: tags.length ? tags.join(', ') : 'aucune', arrow: sick ? DOWN.arrow : FLAT.arrow, color: sick ? DOWN.side : FLAT.side }
+    ];
+
+    var PRESETS = [
+      { id: 'a', label: 'Nuit courte, jambes prévues', v: { sleep: 340, quality: 2, energy: 2, motivation: 3, stress: 3, malade: false, courbatures: false, voyage: false, soiree: false, chargee: false, plan: 'legs' } },
+      { id: 'b', label: "Journée chargée, peu d'envie", v: { sleep: 410, quality: 3, energy: 3, motivation: 1, stress: 4, malade: false, courbatures: false, voyage: false, soiree: false, chargee: true, plan: 'intervals' } },
+      { id: 'c', label: 'En forme, fractionné prévu', v: { sleep: 470, quality: 4, energy: 4, motivation: 5, stress: 2, malade: false, courbatures: false, voyage: false, soiree: false, chargee: false, plan: 'intervals' } },
+      { id: 'd', label: 'Un rhume qui arrive', v: { sleep: 420, quality: 2, energy: 2, motivation: 2, stress: 3, malade: true, courbatures: false, voyage: false, soiree: false, chargee: false, plan: 'legs' } }
+    ];
+    var presets = PRESETS.map(function (p) {
+      var look = self.pill(s.preset === p.id);
+      return Object.assign({ label: p.label, pick: function () {
+        self.setState(Object.assign({}, p.v, { screen: 'today', applied: null, preset: p.id }));
+      } }, look);
+    });
+
+    var plans = ['legs', 'intervals', 'easy', 'rest'].map(function (id) {
+      var look = self.pill(s.plan === id);
+      return Object.assign({ label: PLANS[id].pill, pick: function () {
+        self.setState({ plan: id, applied: null, preset: null });
+      } }, look);
+    });
+
+    var stresses = ST.map(function (label, i) {
+      var lvl = i + 1;
+      var look = self.pill(str === lvl);
+      return Object.assign({ label: label, pick: function () {
+        self.setState({ stress: lvl, applied: null, preset: null });
+      } }, look);
+    });
+
+    return {
+      isCheckin: s.screen === 'checkin',
+      isToday: s.screen === 'today',
+      sleepLabel: this.fmt(sleep),
+      sleepMinus: function () { self.setState({ sleep: Math.max(0, self.st().sleep - 15), applied: null, preset: null }); },
+      sleepPlus: function () { self.setState({ sleep: Math.min(840, self.st().sleep + 15), applied: null, preset: null }); },
+      qualities: this.scale('quality', QUAL, q),
+      energies: this.scale('energy', EN, e),
+      motivations: this.scale('motivation', MOT, mot),
+      morningTags: [
+        this.toggle('malade', 'Malade', s.malade),
+        this.toggle('courbatures', 'Courbatures', s.courbatures),
+        this.toggle('voyage', 'Voyage', s.voyage)
+      ],
+      eveningTags: [
+        this.toggle('soiree', 'Soirée', s.soiree),
+        this.toggle('chargee', 'Journée chargée', s.chargee)
+      ],
+      toToday: function () { self.setState({ screen: 'today' }); },
+      toCheckin: function () { self.setState({ screen: 'checkin' }); },
+      verdict: verdict,
+      verdictSub: verdictSub,
+      glow: glow,
+      comps: comps,
+      planTag: plan.tag,
+      planTagBg: plan.bg,
+      planName: plan.name,
+      adTitle: adTitle,
+      adBody: adBody,
+      adPrimary: adPrimary || '',
+      adSecondary: adSecondary || '',
+      showActions: !!adPrimary && !s.applied,
+      showApplied: !!s.applied && !!adPrimary,
+      appliedText: appliedText,
+      applyPrimary: function () { self.setState({ applied: 'primary' }); },
+      applySecondary: function () { self.setState({ applied: 'secondary' }); },
+      hasNote: !!note,
+      adNote: note,
+      nutri: nutri,
+      reads: reads,
+      presets: presets,
+      plans: plans,
+      stresses: stresses
+    };
+  }
+}
+</script>
+</body>
+</html>

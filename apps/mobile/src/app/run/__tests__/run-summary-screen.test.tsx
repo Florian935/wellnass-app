@@ -39,6 +39,10 @@ import { useRouter } from 'expo-router';
 // US CARDIO-UX02 — chaque écran du pilier déclare désormais sa couleur (`useMenuFocus`). Le hook
 // s'appuie sur `useFocusEffect`, absent des mocks d'`expo-router` de ces fichiers : on le neutralise
 // ici, comme le font déjà les quatre tests d'onglet.
+// US BIEN-04 — la ligne « contexte » du pilier Bien-être a ses propres tests ; ici, elle ne doit rien
+// charger (elle tire le registre des liens et les réglages).
+jest.mock('@/components/wellbeing/WellbeingContextLine', () => ({ WellbeingContextLine: () => null }));
+
 jest.mock('@/hooks/useMenuFocus', () => ({ useMenuFocus: jest.fn() }));
 
 jest.mock('@/data/repositories/run-repository', () => ({

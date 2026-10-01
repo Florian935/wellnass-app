@@ -5,6 +5,7 @@ import { PILLARS, resolveActivePillars, type Pillar } from '@wellness/shared';
 import { OnboardingScaffold } from '@/components/OnboardingScaffold';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { togglePillar, useSettings } from '@/data/repositories/settings-repository';
+import { toggleWellbeingPillar } from '@/components/wellbeing/wellbeing-consent';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -55,6 +56,21 @@ export default function OnboardingPillars() {
             />
           </View>
         ))}
+        {/* US BIEN-02 (D1) — le pilier Bien-être, éteint par défaut : l'activer demande un consentement. */}
+        <View style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+          <View style={styles.grow}>
+            <Text style={[styles.label, { color: colors.text }]}>{t('pillars.wellbeing')}</Text>
+            <Text style={[styles.hint, { color: colors.textMuted }]}>{t('onboarding.pillars.wellbeingHint')}</Text>
+          </View>
+          <Switch
+            testID="onboarding-wellbeing-pillar"
+            value={settings?.wellbeingPillarEnabled === true}
+            onValueChange={(next) => void toggleWellbeingPillar(t, next)}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('pillars.wellbeing')}
+          />
+        </View>
       </View>
     </OnboardingScaffold>
   );
@@ -70,4 +86,6 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
   },
   label: { fontFamily: fontFamily.bodySemi, fontSize: 16 },
+  grow: { flex: 1, minWidth: 0, paddingRight: 12 },
+  hint: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 17, marginTop: 2 },
 });

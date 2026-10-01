@@ -29,6 +29,7 @@ import {
 } from '@wellness/shared';
 import { Screen } from '@/components/Screen';
 import { DayEnergyCard } from '@/components/energy/DayEnergyCard';
+import { WellbeingContextLine } from '@/components/wellbeing/WellbeingContextLine';
 import { AddFoodSheet } from '@/components/nutrition/AddFoodSheet';
 import { DayJournal } from '@/components/nutrition/journal/DayJournal';
 import { DayQualitySection, TrackedMicrosRecap } from '@/components/nutrition/journal/TrackedMicrosRecap';
@@ -202,6 +203,8 @@ export default function NutritionDayScreen() {
         ) : null}
 
         <DayEnergyCard dayKey={day} consumedKcal={totals.kcal} />
+        {/* US BIEN-04 — l'état de ce jour-là (pilier Bien-être activé). */}
+        <WellbeingContextLine dayKey={day} pillar="nutrition" />
         <TrackedMicrosRecap entries={entries} />
         {entries.length > 0 ? <DayQualitySection day={day} targetKcal={dayTarget} /> : null}
       </ScrollView>

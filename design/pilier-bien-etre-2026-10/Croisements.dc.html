@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Les croisements</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #f7eede; }
+a { color: #6a3fb0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; letter-spacing: .8px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.h3 { margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 28px; letter-spacing: -.6px; }
+.mx { display: grid; grid-template-columns: 230px repeat(3, minmax(0, 1fr)); gap: 8px; }
+.hd { display: flex; align-items: center; gap: 8px; padding: 6px 4px; font-weight: 700; font-size: 15px; }
+.pt { width: 22px; height: 22px; flex: none; border-radius: 6px; color: #ffffff; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+.rh { padding: 10px 4px; display: flex; flex-direction: column; gap: 2px; border-top: 1px solid #e3d3ba; }
+.rh b { font-size: 15px; line-height: 20px; }
+.rh span { font-size: 12px; line-height: 16px; color: #786a59; }
+.cell { background: #fffaf2; border-radius: 12px; padding: 11px 14px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; font-size: 13.5px; line-height: 19px; color: #33291f; }
+.cell.nil { background: transparent; border: 1px dashed #e3d3ba; color: #786a59; }
+.d { display: flex; gap: 3px; flex: none; padding-top: 6px; }
+.d span { width: 8px; height: 8px; border-radius: 50%; background: #e3d3ba; display: block; }
+.d .on { background: #6a3fb0; }
+.rv { background: #2b1d52; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; gap: 8px; color: #ffffff; }
+.rv b { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 19px; line-height: 24px; }
+.rv span { font-size: 14px; line-height: 20px; color: #d9cff0; }
+.ex { background: #fffaf2; border: 1px solid #e3d3ba; border-radius: 20px; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
+.ex.no { border: 1.5px dashed #b9a7d6; background: transparent; }
+.lbl { display: flex; align-items: center; gap: 6px; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: #786a59; }
+.say { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 600; font-size: 18px; line-height: 24px; letter-spacing: -.2px; flex: 1; }
+.foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: #786a59; border-top: 1px solid #ece0cd; padding-top: 10px; }
+.bd { border-radius: 999px; padding: 3px 9px; font-weight: 700; font-size: 11px; white-space: nowrap; }
+.ru { display: flex; flex-direction: column; gap: 8px; }
+.ru i { font-style: normal; width: 30px; height: 30px; border-radius: 50%; background: #6a3fb0; color: #ffffff; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; display: flex; align-items: center; justify-content: center; }
+.ru b { font-size: 15.5px; line-height: 21px; }
+.ru span { font-size: 13.5px; line-height: 19px; color: #5b4d3e; }
+</style>
+</helmet>
+<div style="width: 1440px; height: 2400px; box-sizing: border-box; padding: 72px 80px; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; gap: 44px; overflow: hidden;">
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div class="eb" style="color: #6a3fb0;">03 · Les croisements</div>
+    <h2 class="disp" style="margin: 0; font-weight: 800; font-size: 50px; line-height: 56px; letter-spacing: -1.6px; max-width: 1180px;">Ce que ton état explique — et ce que tes piliers lui rendent</h2>
+    <p style="margin: 0; font-size: 17px; line-height: 26px; color: #5b4d3e; max-width: 1060px;">La force indiquée vient de la littérature et de ce qu'on sait mesurer en local. Rien n'est encore calculé&nbsp;: c'est la carte de ce que le moteur pourrait dire, et de ce qu'il dit déjà (« livré »).</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; align-items: baseline; justify-content: space-between;">
+      <h3 class="h3">Ton état → tes piliers</h3>
+      <div style="display: flex; align-items: center; gap: 16px; font-size: 13px; color: #786a59;">
+        <span style="display: flex; align-items: center; gap: 6px;"><span class="d" style="padding: 0;"><span class="on"></span><span class="on"></span><span class="on"></span></span>fort</span>
+        <span style="display: flex; align-items: center; gap: 6px;"><span class="d" style="padding: 0;"><span class="on"></span><span class="on"></span><span></span></span>moyen</span>
+        <span style="display: flex; align-items: center; gap: 6px;"><span class="d" style="padding: 0;"><span class="on"></span><span></span><span></span></span>faible</span>
+      </div>
+    </div>
+    <div class="mx">
+      <div class="hd" style="color: #786a59;">Ton état du jour</div>
+      <div class="hd"><span class="pt" style="background: #a8261d;">M</span>Musculation</div>
+      <div class="hd"><span class="pt" style="background: #2a64ad;">C</span>Course</div>
+      <div class="hd"><span class="pt" style="background: #3f6b1c;">N</span>Nutrition</div>
+
+      <div class="rh"><b>Nuit courte ou agitée</b><span>moins de 6 h, ou qualité ≤ 2</span></div>
+      <div class="cell"><span>Tonnage et répétitions du lendemain en baisse, effort perçu en hausse</span><span class="d"><span class="on"></span><span class="on"></span><span class="on"></span></span></div>
+      <div class="cell"><span>Allure plus lente à effort égal, fractionné moins bien tenu</span><span class="d"><span class="on"></span><span class="on"></span><span class="on"></span></span></div>
+      <div class="cell"><span>Plus de calories le lendemain, surtout sucrées</span><span class="d"><span class="on"></span><span class="on"></span><span class="on"></span></span></div>
+
+      <div class="rh"><b>Énergie basse</b><span>1 ou 2 sur 5</span></div>
+      <div class="cell"><span>Séance intense allégée — livré</span><span class="d"><span class="on"></span><span class="on"></span><span class="on"></span></span></div>
+      <div class="cell"><span>Garder l'échauffement, retirer des répétitions</span><span class="d"><span class="on"></span><span class="on"></span><span class="on"></span></span></div>
+      <div class="cell"><span>Signal d'un déficit trop creusé&nbsp;?</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+
+      <div class="rh"><b>Envie faible</b><span>nouvel indicateur du matin</span></div>
+      <div class="cell"><span>Séance sautée ou écourtée</span><span class="d"><span class="on"></span><span class="on"></span><span class="on"></span></span></div>
+      <div class="cell"><span>Sortie raccourcie</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+      <div class="cell"><span>Journal moins tenu</span><span class="d"><span class="on"></span><span></span><span></span></span></div>
+
+      <div class="rh"><b>Stress élevé</b><span>4 ou 5, sur plusieurs jours</span></div>
+      <div class="cell"><span>Récupération plus lente&nbsp;: deload plus tôt</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+      <div class="cell"><span>Effort perçu plus haut à allure égale</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+      <div class="cell"><span>Grignotage, journal abandonné</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+
+      <div class="rh"><b>Humeur basse</b><span>1 ou 2 sur 5</span></div>
+      <div class="cell"><span>Séances plus rares</span><span class="d"><span class="on"></span><span></span><span></span></span></div>
+      <div class="cell"><span>Sorties plus rares</span><span class="d"><span class="on"></span><span></span><span></span></span></div>
+      <div class="cell"><span>Repas-réconfort, journal plus flou</span><span class="d"><span class="on"></span><span></span><span></span></span></div>
+
+      <div class="rh"><b>Malade</b><span>étiquette</span></div>
+      <div class="cell"><span>Pause&nbsp;: aucune intensité</span><span class="d"><span class="on"></span><span class="on"></span><span class="on"></span></span></div>
+      <div class="cell"><span>Pas de fractionné, pas de sortie longue</span><span class="d"><span class="on"></span><span class="on"></span><span class="on"></span></span></div>
+      <div class="cell"><span>Objectif mis en veille, rien à « rattraper »</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+
+      <div class="rh"><b>Alcool la veille</b><span>module</span></div>
+      <div class="cell"><span>Récupération du lendemain</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+      <div class="cell"><span>Allure du lendemain</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+      <div class="cell"><span>Calories liquides, fringales</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+
+      <div class="rh"><b>Caféine tardive</b><span>module</span></div>
+      <div class="cell"><span>Indirect&nbsp;: passe par la nuit</span><span class="d"><span class="on"></span><span></span><span></span></span></div>
+      <div class="cell"><span>Indirect&nbsp;: passe par la nuit</span><span class="d"><span class="on"></span><span></span><span></span></span></div>
+      <div class="cell nil"><span>Rien d'utile</span><span class="d"><span></span><span></span><span></span></span></div>
+
+      <div class="rh"><b>Soirée, couché tard</b><span>étiquette</span></div>
+      <div class="cell"><span>Séance du lendemain</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+      <div class="cell"><span>Sortie du lendemain</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+      <div class="cell"><span>Journal du soir resté vide</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+
+      <div class="rh"><b>Cycle</b><span>CYCLE-01</span></div>
+      <div class="cell"><span>Tonnage par phase — livré</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+      <div class="cell"><span>Allure par phase — livré</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+      <div class="cell"><span>Calories par phase — livré</span><span class="d"><span class="on"></span><span class="on"></span><span></span></span></div>
+
+      <div class="rh"><b>Douleurs</b><span>DOUL-01</span></div>
+      <div class="cell"><span>Séance modifiée — livré</span><span class="d"><span class="on"></span><span class="on"></span><span class="on"></span></span></div>
+      <div class="cell"><span>Séance modifiée — livré</span><span class="d"><span class="on"></span><span class="on"></span><span class="on"></span></span></div>
+      <div class="cell nil"><span>Rien d'utile</span><span class="d"><span></span><span></span><span></span></span></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <h3 class="h3">Dans l'autre sens&nbsp;: ce que tes piliers rendent à ton état</h3>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+      <div class="rv"><div style="display: flex; gap: 4px;"><span class="pt" style="background: #a8261d;">M</span><span class="pt" style="background: #2a64ad;">C</span></div><b>S'entraîner remonte l'humeur</b><span>Humeur du soir, jours d'entraînement contre jours sans. L'effet le plus solide de la littérature, et le plus motivant à montrer.</span></div>
+      <div class="rv"><div style="display: flex; gap: 4px;"><span class="pt" style="background: #a8261d;">M</span><span class="pt" style="background: #2a64ad;">C</span></div><b>La charge monte, l'énergie baisse</b><span>Quand la charge passe en zone de risque (ACWR), l'énergie déclarée suit-elle&nbsp;? Le garde-fou y gagne un témoin.</span></div>
+      <div class="rv"><div style="display: flex; gap: 4px;"><span class="pt" style="background: #3f6b1c;">N</span></div><b>Le déficit qui dure</b><span>Plusieurs jours sous 85&nbsp;% de la cible&nbsp;: ton énergie, ta nuit et ton envie en pâtissent-elles&nbsp;?</span></div>
+      <div class="rv"><div style="display: flex; gap: 4px;"><span class="pt" style="background: #a8261d;">M</span><span class="pt" style="background: #2a64ad;">C</span></div><b>La séance tardive</b><span>Une séance intense après 20&nbsp;h raccourcit-elle ta nuit&nbsp;? Très variable d'une personne à l'autre&nbsp;: là, un calcul personnel vaut mieux qu'une règle.</span></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <div style="display: flex; align-items: baseline; gap: 14px;">
+      <h3 class="h3">Comme l'app le dirait</h3>
+      <span style="font-size: 14px; color: #786a59;">exemples de cartes — chiffres fictifs</span>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+      <div class="ex">
+        <div class="lbl"><span class="pt" style="background: #a8261d;">M</span>Nuit</div>
+        <div class="say">Après une nuit de moins de 6&nbsp;h, ton tonnage baisse de 9&nbsp;% en moyenne.</div>
+        <div class="foot"><span>11 nuits courtes, 38 normales</span><span class="bd" style="background: #6a3fb0; color: #ffffff;">solide</span></div>
+      </div>
+      <div class="ex">
+        <div class="lbl"><span class="pt" style="background: #2a64ad;">C</span>Alcool</div>
+        <div class="say">Le lendemain de deux verres ou plus, tu cours 12&nbsp;s/km plus lentement à effort égal.</div>
+        <div class="foot"><span>7 lendemains</span><span class="bd" style="border: 1.5px solid #6a3fb0; color: #6a3fb0;">à confirmer</span></div>
+      </div>
+      <div class="ex">
+        <div class="lbl"><span class="pt" style="background: #3f6b1c;">N</span>Nuit</div>
+        <div class="say">Après une nuit courte, tu manges 310&nbsp;kcal de plus, surtout après 16&nbsp;h.</div>
+        <div class="foot"><span>14 jours</span><span class="bd" style="background: #6a3fb0; color: #ffffff;">solide</span></div>
+      </div>
+      <div class="ex">
+        <div class="lbl"><span class="pt" style="background: #a8261d;">M</span>Envie</div>
+        <div class="say">Envie à 1 ou 2&nbsp;: 6 séances sur 10 écourtées. À 4 ou 5&nbsp;: 1 sur 10.</div>
+        <div class="foot"><span>→ proposer la version courte ces jours-là</span></div>
+      </div>
+      <div class="ex">
+        <div class="lbl"><span class="pt" style="background: #a8261d;">M</span><span class="pt" style="background: #2a64ad;">C</span>Humeur</div>
+        <div class="say">Les jours où tu t'entraînes, ton humeur du soir est plus haute de 0,7 point.</div>
+        <div class="foot"><span>42 jours contre 31</span><span class="bd" style="background: #6a3fb0; color: #ffffff;">solide</span></div>
+      </div>
+      <div class="ex">
+        <div class="lbl"><span class="pt" style="background: #3f6b1c;">N</span>Stress</div>
+        <div class="say">Stress à 4 ou 5&nbsp;: ton journal est complet 3 jours sur 10, contre 8 d'habitude.</div>
+        <div class="foot"><span>19 jours</span><span class="bd" style="border: 1.5px solid #6a3fb0; color: #6a3fb0;">à confirmer</span></div>
+      </div>
+      <div class="ex no">
+        <div class="lbl">Piste écartée</div>
+        <div class="say" style="color: #5b4d3e;">Café après 16&nbsp;h&nbsp;: aucun effet visible sur ta nuit.</div>
+        <div class="foot"><span>9 soirs · on le dit aussi</span><span class="bd" style="background: #ece3d3; color: #665a4a;">écartée</span></div>
+      </div>
+      <div class="ex">
+        <div class="lbl"><span class="pt" style="background: #a8261d;">M</span>Contexte</div>
+        <div class="say">Ta séance de jambes la plus faible du mois&nbsp;: veille « soirée », nuit de 5&nbsp;h&nbsp;10.</div>
+        <div class="foot"><span>explique, ne juge pas</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 class="h3">Pour le dire honnêtement</h3>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 20px;">
+      <div class="ru"><i>1</i><b>« Va souvent avec », jamais « parce que ».</b><span>Une corrélation observée sur une seule personne n'est pas une cause.</span></div>
+      <div class="ru"><i>2</i><b>Toujours le nombre de cas.</b><span>Et un seuil avant de parler&nbsp;: par exemple 8 jours de chaque côté, à calibrer.</span></div>
+      <div class="ru"><i>3</i><b>Les pistes écartées s'affichent.</b><span>Le principe de l'Enquête du Labo&nbsp;: dire aussi ce qui ne marche pas.</span></div>
+      <div class="ru"><i>4</i><b>Le moteur calcule, l'IA raconte.</b><span>Calcul local et testé&nbsp;; le modèle ne reçoit que des agrégats.</span></div>
+      <div class="ru"><i>5</i><b>Chaque conseil est contestable.</b><span>« Cette règle ne me correspond pas » baisse son poids (IDEAS, 25/07).</span></div>
+    </div>
+  </div>
+
+  <div style="font-size: 12.5px; line-height: 19px; color: #786a59; border-top: 1px solid #e3d3ba; padding-top: 14px;">Repères&nbsp;: privation partielle de sommeil → environ +385&nbsp;kcal par jour en moyenne (Al Khatib et al., 2017, méta-analyse) · 400&nbsp;mg de caféine pris 6&nbsp;h avant le coucher → plus d'une heure de sommeil en moins (Drake et al., 2013) · stress chronique → récupération de la force ralentie sur 96&nbsp;h (Stults-Kolehmainen et al., 2014).</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

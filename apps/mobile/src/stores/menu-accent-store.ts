@@ -12,8 +12,8 @@ import { secureStorage } from '@/lib/secure-storage';
  * (promotion possible vers `user_settings` plus tard).
  */
 
-export type MenuKey = 'home' | 'strength' | 'running' | 'nutrition' | 'lab';
-export const MENU_KEYS: readonly MenuKey[] = ['home', 'strength', 'running', 'nutrition', 'lab'];
+export type MenuKey = 'home' | 'strength' | 'running' | 'nutrition' | 'lab' | 'wellbeing';
+export const MENU_KEYS: readonly MenuKey[] = ['home', 'strength', 'running', 'nutrition', 'lab', 'wellbeing'];
 
 /**
  * Couleurs par défaut de la **préférence** — une par menu.
@@ -35,6 +35,7 @@ export const DEFAULT_MENU_COLORS: Record<MenuKey, string> = {
   running: '#6fa8ef', // = pillarRunning (sombre)
   nutrition: '#9ed16a', // = pillarNutrition (sombre) — US NUTRI-UX02, l'ancien #a9ba7e : chroma 60
   lab: '#e0b155', // = pillarLab (sombre)
+  wellbeing: '#c2a3ff', // = pillarWellbeing (sombre) — US BIEN-02
 };
 
 /** Palette de choix proposée dans les réglages. */

@@ -24,6 +24,9 @@ import { useCrossLinksWrites, type CrossLinksValue } from '../cross-links-reposi
 import { insertWithSyncFields, patch } from '../_sql';
 import { finishLabExperiment } from '../lab-experiment-repository';
 
+// US BIEN-05 — les croisements Bien-être ont leurs propres tests ; pilier éteint ici.
+jest.mock('../wellbeing-pillar-repository', () => ({ useWellbeingLinksSummary: () => ({ summary: null, isLoading: false }) }));
+
 jest.mock('@powersync/react', () => ({ useQuery: jest.fn(() => ({ data: [], isLoading: false })), useStatus: jest.fn() }));
 jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: jest.fn(() => '2026-09-24') }));
 

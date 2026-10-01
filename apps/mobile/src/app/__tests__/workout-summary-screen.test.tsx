@@ -31,6 +31,10 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 // Mocks
 // ---------------------------------------------------------------------------
 
+// US BIEN-04 — la ligne « contexte » du pilier Bien-être a ses propres tests ; ici, elle ne doit rien
+// charger (elle tire le registre des liens et les réglages).
+jest.mock('@/components/wellbeing/WellbeingContextLine', () => ({ WellbeingContextLine: () => null }));
+
 jest.mock('@/data/repositories/workout-repository', () => ({
   useWorkoutHistory: jest.fn(() => ({ workouts: [] })),
 }));

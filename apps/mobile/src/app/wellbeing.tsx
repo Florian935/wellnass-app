@@ -22,10 +22,12 @@ import {
   canEditDay,
   formatDayFull,
   isWellbeingLevel,
+  suggestCheckinMoment,
   wellbeingAverages,
+  wellbeingScaleAverage,
   wellbeingSeries,
-  type WellbeingIndicator,
   type WellbeingLevel,
+  type WellbeingScaleKey,
 } from '@wellness/shared';
 
 import { Button } from '@/components/Button';
@@ -34,14 +36,16 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ProgressLineChart } from '@/components/charts/ProgressLineChart';
 import { WELLBEING_GLYPHS, useLevelLabel } from '@/components/wellbeing/WellbeingScale';
+import { MomentCheckinSheet } from '@/components/wellbeing/MomentCheckinSheet';
 import { WellbeingCheckinSheet } from '@/components/wellbeing/WellbeingCheckinSheet';
+import { useWellbeingPillar } from '@/data/repositories/wellbeing-pillar-repository';
 import {
   useWellbeingEntries,
   type WellbeingEntry,
 } from '@/data/repositories/daily-wellbeing-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
-import { useTodayKey } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 
 /** Fenêtres proposées, alignées sur `/progress`. */
 const WINDOWS = [30, 90, 365] as const;
@@ -59,7 +63,12 @@ export default function WellbeingScreen() {
   const router = useRouter();
   const levelLabel = useLevelLabel();
 
-  const [indicator, setIndicator] = useState<WellbeingIndicator>('mood');
+  const [indicator, setIndicator] = useState<WellbeingScaleKey>('mood');
+  // US BIEN-02 — pilier activé : les deux échelles du matin ont aussi leur courbe, et le check-in
+  // s'ouvre sur le moment de l'heure (D4). Pilier éteint, l'écran est celui de BIEN-01.
+  const pillar = useWellbeingPillar();
+  const hour = useCurrentHour();
+  const indicators: readonly WellbeingScaleKey[] = pillar.enabled ? [...WELLBEING_INDICATORS, 'sleepQuality', 'motivation'] : WELLBEING_INDICATORS;
   const [window, setWindow] = useState<Window>(30);
   const [editing, setEditing] = useState<WellbeingEntry | null>(null);
   const [editingDay, setEditingDay] = useState<string | null>(null);
@@ -82,7 +91,10 @@ export default function WellbeingScreen() {
     value: point.value,
   }));
 
-  const average = averages[indicator];
+  const average =
+    indicator === 'mood' || indicator === 'energy' || indicator === 'stress'
+      ? averages[indicator]
+      : wellbeingScaleAverage(entries, indicator, window, todayKey);
 
   return (
     <Screen>
@@ -111,8 +123,11 @@ export default function WellbeingScreen() {
         ) : (
           <>
             {/* Sélecteur d'indicateur — une courbe à la fois */}
+            {pillar.enabled ? (
+              <Button label={t('wellbeingHub.history.openHub')} variant="ghost" onPress={() => router.push('/wellbeing-hub')} />
+            ) : null}
             <View style={styles.segs} accessibilityRole="tablist">
-              {WELLBEING_INDICATORS.map((id) => {
+              {indicators.map((id) => {
                 const active = id === indicator;
                 return (
                   <Pressable
@@ -258,6 +273,18 @@ export default function WellbeingScreen() {
         )}
       </ScrollView>
 
+      {pillar.enabled ? (
+        <MomentCheckinSheet
+          visible={editingDay !== null}
+          onClose={() => {
+            setEditingDay(null);
+            setEditing(null);
+          }}
+          logDate={editingDay ?? todayKey}
+          moment={editingDay === null || editingDay === todayKey ? suggestCheckinMoment(hour, editing) : 'morning'}
+          existing={editing}
+        />
+      ) : (
       <WellbeingCheckinSheet
         visible={editingDay !== null}
         onClose={() => {
@@ -267,6 +294,7 @@ export default function WellbeingScreen() {
         logDate={editingDay ?? todayKey}
         existing={editing}
       />
+      )}
     </Screen>
   );
 }

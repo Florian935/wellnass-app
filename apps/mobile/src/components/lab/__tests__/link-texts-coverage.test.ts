@@ -25,6 +25,8 @@ import {
   type LabQuestion,
   type LabWeekInput,
   type SessionConflict,
+  type WellbeingLink,
+  type WellbeingLinkId,
 } from '@wellness/shared';
 import type { TFunction } from 'i18next';
 
@@ -153,6 +155,20 @@ const association = (kind: 'heavyLegsPace' | 'carbsPace' | 'shortNightPace', sta
   values: status === 'learning' ? { cases: 2, needed: 3 } : { delta, exposed: 6, other: 9 },
   usedBy: 'collision',
 } as unknown as LabKnowledgeCard);
+/** Un croisement Bien-être (`wellbeing-links.ts`) déjà calculé, au stade voulu. */
+const wbLink = (id: WellbeingLinkId, status: WellbeingLink['status'], delta = 0, adverse: boolean | null = null): WellbeingLink => ({
+  id,
+  scope: 'cross',
+  unit: id === 'nightStrength' ? 'pct' : id === 'nightRunning' || id === 'alcoholRunning' ? 'secPerKm' : id === 'nightIntake' ? 'kcal' : id === 'trainingMood' ? 'points' : 'pctPoints',
+  pillars: [],
+  status,
+  delta: status === 'learning' ? null : delta,
+  exposed: status === 'learning' ? 5 : 11,
+  other: status === 'learning' ? 20 : 40,
+  need: 8,
+  adverse: status === 'learning' || status === 'noLink' ? null : adverse,
+});
+const wellbeingSituation = (links: WellbeingLink[], recentPoorNights: number) => input({ wellbeingEnabled: true, wellbeing: { links, recentPoorNights } });
 const low = { gPerKg: 1.4, target: { min: 1.6, max: 2.2 }, status: 'low' as const, loggedDays: 4 };
 const lowCarbs = { gPerKg: 3.2, target: { min: 5, max: 7 }, status: 'low' as const };
 const hardSat = { id: 'long', dayKey: SAT, pillar: 'running' as const, status: 'planned' as const, name: null, sessionType: 'sortie_longue' as const, targetDistanceM: 16000 };
@@ -224,6 +240,61 @@ const SITUATIONS: Record<string, CrossLinksInput> = {
   'cycle, pas encore de cycle': input({ cycleTrackingEnabled: true, cycle: null }),
   'cycle, un cycle': input({ cycleTrackingEnabled: true, cycle: { cyclesObserved: 1, byMetric: null } }),
   'cycle, lisible': input({ cycleTrackingEnabled: true, cycle: { cyclesObserved: 4, byMetric: null } }),
+  // US BIEN-05 — chaque croisement passe par ses quatre stades sur l'ensemble des situations.
+  'bien-être, pas encore calculé': input({ wellbeingEnabled: true, wellbeing: null }),
+  'bien-être, en apprentissage': wellbeingSituation([wbLink('nightStrength', 'learning'), wbLink('nightRunning', 'learning'), wbLink('stressJournal', 'learning')], 2),
+  'bien-être, à régler (muscu)': wellbeingSituation(
+    [
+      wbLink('nightStrength', 'probable', -9, true),
+      wbLink('nightRunning', 'solid', 2, false),
+      wbLink('nightIntake', 'noLink', 40),
+      wbLink('motivationTraining', 'learning'),
+      wbLink('stressJournal', 'probable', -22, true),
+      wbLink('trainingMood', 'solid', 0.6, false),
+      wbLink('alcoholRunning', 'noLink', 1),
+    ],
+    3,
+  ),
+  'bien-être, à régler (course)': wellbeingSituation(
+    [
+      wbLink('nightStrength', 'noLink', -2),
+      wbLink('nightRunning', 'solid', 9, true),
+      wbLink('nightIntake', 'learning'),
+      wbLink('motivationTraining', 'probable', -25, true),
+      wbLink('stressJournal', 'solid', -30, true),
+      wbLink('trainingMood', 'noLink', 0.1),
+      wbLink('alcoholRunning', 'learning'),
+    ],
+    2,
+  ),
+  'bien-être, à régler (assiette)': wellbeingSituation(
+    [
+      wbLink('nightStrength', 'solid', 3, false),
+      wbLink('nightRunning', 'learning'),
+      wbLink('nightIntake', 'solid', 320, true),
+      wbLink('motivationTraining', 'noLink', -4),
+      wbLink('stressJournal', 'learning'),
+      wbLink('trainingMood', 'probable', 0.7, false),
+      wbLink('alcoholRunning', 'probable', 12, true),
+    ],
+    4,
+  ),
+  'bien-être, ça tient (pistes connues)': wellbeingSituation(
+    [
+      wbLink('nightStrength', 'probable', -8, true),
+      wbLink('nightRunning', 'probable', 6, true),
+      wbLink('nightIntake', 'probable', 210, true),
+      wbLink('motivationTraining', 'solid', -40, true),
+      wbLink('stressJournal', 'noLink', -3),
+      wbLink('trainingMood', 'learning'),
+      wbLink('alcoholRunning', 'solid', 14, true),
+    ],
+    1,
+  ),
+  'bien-être, ça tient (rien de visible)': wellbeingSituation(
+    [wbLink('nightStrength', 'learning'), wbLink('nightRunning', 'noLink', 1), wbLink('nightIntake', 'noLink', 30), wbLink('trainingMood', 'noLink', 0.2)],
+    3,
+  ),
 };
 
 // ---------------------------------------------------------------------------
@@ -280,6 +351,7 @@ describe('LIENS-01 — chaque phrase du registre existe', () => {
       'rhythm:holds', 'rhythm:discover',
       'strengthWeight:holds', 'strengthWeight:discover',
       'cycle:holds', 'cycle:discover',
+      'wellbeing:adjust', 'wellbeing:holds', 'wellbeing:discover',
     ]) {
       expect(seen).toContain(expected);
     }
@@ -288,7 +360,14 @@ describe('LIENS-01 — chaque phrase du registre existe', () => {
   it('le relevé n’est pas vide : il voit les verdicts, les mesures, les notes et les feuilles', () => {
     // Un `t` mal branché rendrait le test vert sans rien vérifier.
     expect(produced.size).toBeGreaterThan(150);
-    for (const key of ['lab.links.recovery.verdict.loadRisk', 'lab.links.rows.acwr.note', 'lab.links.missing.proteinDays.meter', 'lab.proposals.collision.changeDetail']) {
+    for (const key of [
+      'lab.links.recovery.verdict.loadRisk',
+      'lab.links.rows.acwr.note',
+      'lab.links.missing.proteinDays.meter',
+      'lab.proposals.collision.changeDetail',
+      'lab.links.wellbeing.verdict.adjust.nightRunning',
+      'lab.links.wellbeing.verdict.holdsNone',
+    ]) {
       expect(produced.has(key)).toBe(true);
     }
   });

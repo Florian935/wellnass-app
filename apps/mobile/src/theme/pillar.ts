@@ -34,7 +34,7 @@
 import { tintPreservingLuminance } from '@wellness/shared';
 import { palettes, type ColorScheme, type Palette } from './colors';
 
-export const PILLAR_KEYS = ['home', 'strength', 'running', 'nutrition', 'lab'] as const;
+export const PILLAR_KEYS = ['home', 'strength', 'running', 'nutrition', 'lab', 'wellbeing'] as const;
 export type PillarKey = (typeof PILLAR_KEYS)[number];
 
 /**
@@ -57,6 +57,8 @@ const TINT: Record<PillarKey, string> = {
   // valeur était un olive (chroma 43), deux fois moins colorée que la plus terne des quatre autres.
   nutrition: '#2f6b12',
   lab: '#8a6419',
+  // US BIEN-02 — le violet de la scène du pilier Bien-être (chroma 87, dans la bande des autres).
+  wellbeing: '#3f2178',
 };
 
 /** L'accent du pilier — le token déjà mesuré lisible sur `surface` et `background`. */
@@ -66,6 +68,7 @@ const ACCENT: Record<PillarKey, keyof Palette> = {
   running: 'pillarRunning',
   nutrition: 'pillarNutrition',
   lab: 'pillarLab',
+  wellbeing: 'pillarWellbeing',
 };
 
 /**
@@ -144,6 +147,8 @@ const TINT_GAIN: Record<PillarKey, number> = {
   running: 1.5,
   nutrition: 1.5,
   lab: 1,
+  // US BIEN-02 — un violet pèse peu dans la luminance, comme le bleu : même gain que la course.
+  wellbeing: 1.5,
 };
 
 /**

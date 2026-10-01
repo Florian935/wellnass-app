@@ -47,6 +47,7 @@ import {
   type CrossLinkWeekRecord,
   type GoalConflict,
   type LabKnowledgeCard,
+  type WellbeingLinksSummary,
 } from '@wellness/shared';
 
 import { guidanceSourceOf } from '@/data/guidance';
@@ -73,6 +74,7 @@ import { useRunnerProfile } from './running-profile-repository';
 import { useSettings } from './settings-repository';
 import { useStrengthSection } from './strength-repository';
 import { useWeeklyReview } from './weekly-review-repository';
+import { useWellbeingLinksSummary } from './wellbeing-pillar-repository';
 
 // ---------------------------------------------------------------------------
 // L'histoire figée des liens (décision Q5)
@@ -129,6 +131,11 @@ export type CrossLinksValue = {
   /** Le conflit d'objectifs visible, pour ouvrir le Conseil des trois depuis la fiche. */
   goalConflict: GoalConflict | null;
   cycleTrackingEnabled: boolean;
+  /**
+   * US BIEN-05 — les croisements Bien-être × piliers (et internes au pilier), calculés une fois ici :
+   * l'onglet « Ce qui compte » et les bilans les relisent sans les recalculer. `null` pilier éteint.
+   */
+  wellbeing: WellbeingLinksSummary | null;
   isLoading: boolean;
   /**
    * Revue du 30/09/2026 — vrai quand **toutes** les lectures qui décident d'un état ont répondu
@@ -162,6 +169,8 @@ export function useComputeCrossLinks(): CrossLinksValue {
   const { periods, isLoading: periodsLoading } = useMenstrualPeriods();
   const { activities, isLoading: activitiesLoading } = useActivities();
   const { records: weeks, isLoading: weeksLoading } = useCrossLinkWeeks(todayKey);
+  // US BIEN-05 — le pilier Bien-être n'est pas un `Pillar` : il entre par un drapeau, comme le cycle.
+  const { summary: wellbeing, isLoading: wellbeingLoading } = useWellbeingLinksSummary();
   const dismissed = useDismissedRules((s) => s.dismissed);
   const dismissedHydrated = useDismissedRules((s) => s.hydrated);
 
@@ -171,6 +180,7 @@ export function useComputeCrossLinks(): CrossLinksValue {
 
   const activePillars = resolveActivePillars(settings?.activePillars);
   const cycleTrackingEnabled = settings?.cycleTrackingEnabled === true;
+  const wellbeingEnabled = settings?.wellbeingPillarEnabled === true;
   const history = core.history;
   const weightKg = history.input.weightKg;
 
@@ -199,6 +209,7 @@ export function useComputeCrossLinks(): CrossLinksValue {
     !realLifeLoading &&
     !periodsLoading &&
     !activitiesLoading &&
+    !wellbeingLoading &&
     dismissedHydrated;
 
   // Lus hors du `useMemo` : le compilateur React prend tout `.current` pour une ref, et refuserait
@@ -292,6 +303,8 @@ export function useComputeCrossLinks(): CrossLinksValue {
       // l'historique) : ici, seulement de quoi dire si le lien est lisible.
       cycle: cycleTrackingEnabled ? { cyclesObserved: usableCycleLengths(cycleLengths(periods)).usable.length, byMetric: null } : null,
       series,
+      wellbeingEnabled,
+      wellbeing,
     });
 
     return {
@@ -301,10 +314,13 @@ export function useComputeCrossLinks(): CrossLinksValue {
       weeks,
       goalConflict,
       cycleTrackingEnabled,
+      wellbeing,
       isLoading,
       writeReady,
     };
   }, [
+    wellbeingEnabled,
+    wellbeing,
     todayKey,
     core,
     history,

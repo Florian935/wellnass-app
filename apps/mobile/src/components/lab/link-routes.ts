@@ -23,6 +23,8 @@ export const LINK_ROUTES: Record<CrossLinkRoute | LabOpenTarget, Href> = {
   progress: '/progress',
   cycle: '/cycle',
   learn: '/lab?section=learn',
+  // US BIEN-05 — le hub Bien-être, sur « Ce qui compte » (là où vit l'écho du lien).
+  wellbeing: '/wellbeing-hub?section=insights',
 };
 
 /**

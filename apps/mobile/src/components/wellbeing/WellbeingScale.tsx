@@ -15,8 +15,8 @@ import { useTranslation } from 'react-i18next';
 import {
   WELLBEING_SCALE_MAX,
   WELLBEING_SCALE_MIN,
-  type WellbeingIndicator,
   type WellbeingLevel,
+  type WellbeingScaleKey,
 } from '@wellness/shared';
 
 import { fontFamily } from '@/theme/fonts';
@@ -32,20 +32,28 @@ export const WELLBEING_LEVELS: WellbeingLevel[] = [1, 2, 3, 4, 5];
  * l'agitation, à l'inverse des deux autres. Le sens est porté par le glyphe **et** le libellé i18n,
  * jamais par une teinte.
  */
-export const WELLBEING_GLYPHS: Record<WellbeingIndicator, Record<WellbeingLevel, string>> = {
+export const WELLBEING_GLYPHS: Record<WellbeingScaleKey, Record<WellbeingLevel, string>> = {
   mood: { 1: '😞', 2: '🙁', 3: '😐', 4: '🙂', 5: '😄' },
   energy: { 1: '▁', 2: '▃', 3: '▅', 4: '▆', 5: '█' },
   stress: { 1: '🌿', 2: '🍃', 3: '〜', 4: '⚡', 5: '🔥' },
+  // US BIEN-03 — même famille de barres que l'énergie : du texte, pas des emoji, donc une couleur
+  // explicite (voir la note du rendu). La faim monte vers le défavorable, comme le stress.
+  sleepQuality: { 1: '▁', 2: '▃', 3: '▅', 4: '▆', 5: '█' },
+  motivation: { 1: '▁', 2: '▃', 3: '▅', 4: '▆', 5: '█' },
+  cravings: { 1: '▁', 2: '▃', 3: '▅', 4: '▆', 5: '█' },
 };
 
+/** Les échelles qui montent vers le désagréable : on le dit au-dessus des niveaux. */
+const REVERSED: readonly WellbeingScaleKey[] = ['stress', 'cravings'];
+
 /** Libellé traduit d'un niveau (« Bonne », « Très élevé »…). */
-export function useLevelLabel(): (indicator: WellbeingIndicator, level: WellbeingLevel) => string {
+export function useLevelLabel(): (indicator: WellbeingScaleKey, level: WellbeingLevel) => string {
   const { t } = useTranslation();
   return (indicator, level) => t(`wellbeing.levels.${indicator}.${level}`);
 }
 
 type Props = {
-  indicator: WellbeingIndicator;
+  indicator: WellbeingScaleKey;
   value: number | null;
   onChange: (level: WellbeingLevel) => void;
 };
@@ -63,7 +71,7 @@ export function WellbeingScale({ indicator, value, onChange }: Props) {
           {t(`wellbeing.indicators.${indicator}`)}
         </Text>
         <Text style={[styles.note, { color: colors.textMuted }]}>
-          {t(indicator === 'stress' ? 'wellbeing.reversedScale' : 'wellbeing.optional')}
+          {t(REVERSED.includes(indicator) ? 'wellbeing.reversedScale' : 'wellbeing.optional')}
         </Text>
       </View>
 
@@ -128,7 +136,7 @@ export function WellbeingLevelSummary({
   indicator,
   level,
 }: {
-  indicator: WellbeingIndicator;
+  indicator: WellbeingScaleKey;
   level: WellbeingLevel;
 }) {
   const { t } = useTranslation();

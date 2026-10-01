@@ -6,7 +6,8 @@
 >
 > Rédigé le 26/07/2026. **Étendu le 28/07/2026 aux pas quotidiens** (US PAS-01) : 4ᵉ type de données
 > **et** changement de réponse en « Sécurité des données », les pas étant **synchronisés sur nos
-> serveurs**. Action humaine (Florian) — rien ici n'est automatisable.
+> serveurs**. **Étendu le 01/10/2026 au sommeil** (US BIEN-06, décision D3 du pilier Bien-être) :
+> **7ᵉ type**, §2 ter. Action humaine (Florian) — rien ici n'est automatisable.
 
 ## 1. Ce qui est bloqué, et ce qui ne l'est pas
 
@@ -53,8 +54,23 @@ de santé sensibles :
 - Les données sont **synchronisées sur nos serveurs** (comme les pas) → à déclarer en « Sécurité des
   données » comme **collectées ET transmises hors de l'appareil**, catégorie **sensible**.
 
-**Ne pas demander** (et donc ne pas déclarer) : **sommeil** (écarté le 28/07/2026 : aucune valeur
-produit avant les analyses croisées, post-V1), fréquence cardiaque, calories, VO2max,
+### 2 ter. Type ajouté par BIEN-06 (01/10/2026)
+
+> 🔴 **La déclaration passe à 7 types.** Si elle n'est pas encore déposée, la déposer **une seule fois
+> avec les 7** ; si elle l'est, il faut une **nouvelle déclaration** (le coût accepté le 01/10/2026 par
+> Florian : « Ok pour la nuit lue par Health Connect »).
+
+| Permission | Sens | Ce qu'on en fait | Justification à donner |
+|---|---|---|---|
+| `android.permission.health.READ_SLEEP` | lecture | Remplir la durée de la nuit (et ses heures de coucher et de lever) dans le check-in du matin du pilier Bien-être, à partir des sessions de sommeil déjà mesurées par la montre ou l'application de l'utilisateur | « L'application propose un check-in du matin où l'utilisateur note sa nuit. Quand une montre ou une application de sommeil l'a déjà mesurée, l'application lit cette session au lieu de la faire ressaisir. Elle n'en conserve qu'**une durée par nuit** et ses heures de début et de fin, jamais les phases détaillées ; la lecture se fait au premier plan, uniquement si l'utilisateur a activé le pilier Bien-être **et** la lecture de la nuit, toutes deux désactivées par défaut. » |
+
+⚠️ Points de vigilance : **opt-in double** (pilier + interrupteur), **permission demandée à part** des
+autres (jamais dans la demande générale), **une saisie manuelle n'est jamais remplacée**. La nuit est
+**synchronisée sur nos serveurs** (`daily_wellbeing`) → « Sécurité des données » : **collectée ET
+transmise**, catégorie santé, aucun partage à des tiers, suppression avec le compte.
+
+**Ne pas demander** (et donc ne pas déclarer) : ~~sommeil~~ (écarté le 28/07/2026, **demandé depuis le
+01/10/2026**, §2 ter), fréquence cardiaque, calories, VO2max,
 `READ_EXERCISE`, `WRITE_WEIGHT`, `WRITE_STEPS` (l'app ne produit pas de pas),
 `READ_HEALTH_DATA_IN_BACKGROUND` (lecture au premier plan uniquement). Toute extension future
 **impose une nouvelle déclaration** — c'est le coût accepté pour le sommeil.
@@ -83,6 +99,7 @@ produit avant les analyses croisées, post-V1), fréquence cardiaque, calories, 
    |---|---|---|
    | Séances, courses (écriture) · poids (lecture) | échange **local** appareil ↔ Health Connect | non transmis hors de l'appareil |
    | **Pas quotidiens** | lus dans Health Connect puis **enregistrés sur nos serveurs** (Supabase), un **total par jour** | **collectés ET transmis**, chiffrés en transit, finalité « fonctionnalité de l'app », **aucun partage à des tiers**, suppression avec le compte |
+   | **Sommeil** *(BIEN-06, 01/10/2026)* | lu dans Health Connect puis **enregistré sur nos serveurs** : une durée par nuit, heure de coucher et de lever | **collecté ET transmis**, mêmes réponses que les pas, catégorie santé |
 
    Une déclaration inexacte ici est un motif de rejet ; une déclaration *trop* prudente n'en est pas
    un. Vérifier aussi que la **politique de confidentialité publiée** couvre les pas (le texte in-app
@@ -110,6 +127,7 @@ produit avant les analyses croisées, post-V1), fréquence cardiaque, calories, 
 ```
 android.permission.health.WRITE_EXERCISE / WRITE_DISTANCE / READ_WEIGHT
 android.permission.health.READ_STEPS                                       ← app.json (android.permissions)
+android.permission.health.READ_SLEEP                                       ← app.json (BIEN-06, 01/10/2026)
 androidx.health.ACTION_SHOW_PERMISSIONS_RATIONALE                          ← plugins/withHealthConnect.js
 <activity-alias android:name="ViewPermissionUsageActivity">                ← plugins/withHealthConnect.js
 <queries> … com.google.android.apps.healthdata                             ← manifest de la bibliothèque (fusion auto)

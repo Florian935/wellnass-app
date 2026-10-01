@@ -408,38 +408,77 @@ export type Database = {
       }
       daily_wellbeing: {
         Row: {
+          alcohol_drinks: number | null
+          busy_day: boolean
+          cravings: number | null
           created_at: string
           deleted_at: string | null
           energy: number | null
           id: string
+          late_caffeine: boolean | null
+          late_night: boolean
           log_date: string
           mood: number | null
+          motivation: number | null
+          nap_minutes: number | null
+          sick: boolean
+          sleep_end_at: string | null
           sleep_minutes: number | null
+          sleep_quality: number | null
+          sleep_source: string | null
+          sleep_start_at: string | null
           stress: number | null
+          travel: boolean
           updated_at: string
           user_id: string
         }
         Insert: {
+          alcohol_drinks?: number | null
+          busy_day?: boolean
+          cravings?: number | null
           created_at?: string
           deleted_at?: string | null
           energy?: number | null
           id: string
+          late_caffeine?: boolean | null
+          late_night?: boolean
           log_date: string
           mood?: number | null
+          motivation?: number | null
+          nap_minutes?: number | null
+          sick?: boolean
+          sleep_end_at?: string | null
           sleep_minutes?: number | null
+          sleep_quality?: number | null
+          sleep_source?: string | null
+          sleep_start_at?: string | null
           stress?: number | null
+          travel?: boolean
           updated_at?: string
           user_id: string
         }
         Update: {
+          alcohol_drinks?: number | null
+          busy_day?: boolean
+          cravings?: number | null
           created_at?: string
           deleted_at?: string | null
           energy?: number | null
           id?: string
+          late_caffeine?: boolean | null
+          late_night?: boolean
           log_date?: string
           mood?: number | null
+          motivation?: number | null
+          nap_minutes?: number | null
+          sick?: boolean
+          sleep_end_at?: string | null
           sleep_minutes?: number | null
+          sleep_quality?: number | null
+          sleep_source?: string | null
+          sleep_start_at?: string | null
           stress?: number | null
+          travel?: boolean
           updated_at?: string
           user_id?: string
         }
@@ -2887,12 +2926,18 @@ export type Database = {
           sbd_lifts: Json | null
           session_conflicts_enabled: boolean
           show_energy_estimates: boolean
+          sleep_health_connect_enabled: boolean
           streak_unit: string | null
           theme: string
           units: string
           updated_at: string
           user_id: string
           weekly_activity_goal: number | null
+          wellbeing_alcohol_enabled: boolean
+          wellbeing_caffeine_enabled: boolean
+          wellbeing_cravings_enabled: boolean
+          wellbeing_nap_enabled: boolean
+          wellbeing_pillar_enabled: boolean
         }
         Insert: {
           active_pillars?: Json
@@ -2914,12 +2959,18 @@ export type Database = {
           sbd_lifts?: Json | null
           session_conflicts_enabled?: boolean
           show_energy_estimates?: boolean
+          sleep_health_connect_enabled?: boolean
           streak_unit?: string | null
           theme?: string
           units?: string
           updated_at?: string
           user_id: string
           weekly_activity_goal?: number | null
+          wellbeing_alcohol_enabled?: boolean
+          wellbeing_caffeine_enabled?: boolean
+          wellbeing_cravings_enabled?: boolean
+          wellbeing_nap_enabled?: boolean
+          wellbeing_pillar_enabled?: boolean
         }
         Update: {
           active_pillars?: Json
@@ -2941,12 +2992,18 @@ export type Database = {
           sbd_lifts?: Json | null
           session_conflicts_enabled?: boolean
           show_energy_estimates?: boolean
+          sleep_health_connect_enabled?: boolean
           streak_unit?: string | null
           theme?: string
           units?: string
           updated_at?: string
           user_id?: string
           weekly_activity_goal?: number | null
+          wellbeing_alcohol_enabled?: boolean
+          wellbeing_caffeine_enabled?: boolean
+          wellbeing_cravings_enabled?: boolean
+          wellbeing_nap_enabled?: boolean
+          wellbeing_pillar_enabled?: boolean
         }
         Relationships: [
           {

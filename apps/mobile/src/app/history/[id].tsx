@@ -22,10 +22,12 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
+import { localDayKey } from '@wellness/shared';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { PressableScale } from '@/components/motion/PressableScale';
 import { WorkoutReport } from '@/components/workout/report/WorkoutReport';
+import { WellbeingContextLine } from '@/components/wellbeing/WellbeingContextLine';
 import { useWorkoutReport } from '@/data/repositories/workout-report-repository';
 import { useRedo } from '@/hooks/useRedo';
 import { fontFamily } from '@/theme/fonts';
@@ -89,6 +91,8 @@ export default function WorkoutDetailScreen() {
       />
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <WorkoutReport report={report} context="history" />
+        {/* US BIEN-04 — ce que l'état du jour était (pilier Bien-être activé). */}
+        <WellbeingContextLine dayKey={localDayKey(new Date(report.startedAt))} pillar="strength" />
       </ScrollView>
       {report.totals.exercises > 0 ? (
         <View style={[styles.redoBar, { paddingBottom: insets.bottom + 12, backgroundColor: colors.background }]}>

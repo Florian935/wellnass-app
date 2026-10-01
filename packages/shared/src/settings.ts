@@ -162,6 +162,26 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
   cycleHealthConnectEnabled: z.boolean().default(false),
 
   /**
+   * US BIEN-02 — le pilier Bien-être (décision D1 du 01/10/2026). **Opt-in strict : false par
+   * défaut** — l'humeur, la nuit, le stress et la maladie sont des données de santé.
+   *
+   * Un pilier **activable** pour l'utilisateur (onboarding, réglages, onglet), mais **pas un
+   * `Pillar`** dans le code : il ne porte ni disque au Labo, ni paire, ni programme, ni guidage.
+   * Le check-in de base (humeur, énergie, stress, nuit) reste ouvert à tous, pilier éteint.
+   */
+  wellbeingPillarEnabled: z.boolean().default(false),
+  /** US BIEN-07 — les modules du pilier (décision D6), éteints par défaut. */
+  wellbeingAlcoholEnabled: z.boolean().default(false),
+  wellbeingCaffeineEnabled: z.boolean().default(false),
+  wellbeingNapEnabled: z.boolean().default(false),
+  wellbeingCravingsEnabled: z.boolean().default(false),
+  /**
+   * US BIEN-06 — lire la nuit dans Health Connect (décision D3). Un jeu de permissions à part
+   * (`READ_SLEEP`), comme le cycle : l'activer ne touche pas aux autres permissions.
+   */
+  sleepHealthConnectEnabled: z.boolean().default(false),
+
+  /**
    * Mouvements de force désignés par l'utilisateur (US MUSCPWR-01, décision D3) — la clé du module
    * force, et son **opt-in** : sans désignation, pas de total SBD.
    *

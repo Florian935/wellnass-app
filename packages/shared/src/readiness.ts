@@ -73,19 +73,32 @@ export function classifyNutritionComponent(input: {
   return deficitRatio >= DEFICIT_ALERT_RATIO ? { state: 'negative' } : { state: 'neutral' };
 }
 
-/** R3/D5 — énergie + stress seulement (pas l'humeur), stress lu à l'envers (BIEN-01). */
+/**
+ * R3/D5 — énergie + stress seulement (pas l'humeur), stress lu à l'envers (BIEN-01).
+ *
+ * US BIEN-04 — **deux signaux de plus, seulement quand le pilier Bien-être est activé** : la nuit de
+ * ce matin (courte ou agitée, `isPoorNight`) et l'étiquette « malade ». L'appelant ne les passe que
+ * pilier activé ; absents, la règle est **exactement** celle de TRI-03 (non-régression testée). Un
+ * seul signal défavorable rend la composante négative, comme le reste de TRI-03 (R4).
+ */
 export function classifyWellbeingComponent(averages: {
   energy: WellbeingAverage;
   stress: WellbeingAverage;
+  /** US BIEN-04 — nuit de ce matin courte ou agitée ; `null`/absent = inconnue ou pilier éteint. */
+  poorNight?: boolean | null;
+  /** US BIEN-04 — étiquette « malade » du jour. */
+  sick?: boolean;
 }): ReadinessComponent {
   const { energy, stress } = averages;
-  if (energy.average == null && stress.average == null) {
+  const poorNight = averages.poorNight ?? null;
+  const sick = averages.sick === true;
+  if (energy.average == null && stress.average == null && poorNight === null && !sick) {
     return { state: 'unavailable', reason: 'no-recent-checkin' };
   }
 
   const lowEnergy = energy.average != null && energy.average <= WELLBEING_LOW_ENERGY;
   const highStress = stress.average != null && stress.average >= WELLBEING_HIGH_STRESS;
-  if (lowEnergy || highStress) return { state: 'negative' };
+  if (lowEnergy || highStress || poorNight === true || sick) return { state: 'negative' };
 
   const highEnergy = energy.average != null && energy.average >= WELLBEING_HIGH_ENERGY;
   const lowStress = stress.average != null && stress.average <= WELLBEING_LOW_STRESS;

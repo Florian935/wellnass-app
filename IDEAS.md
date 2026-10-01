@@ -764,6 +764,14 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [10/07/2026] ❌ Intégration montres Garmin → hors périmètre V1, revoir en V2.
 -->
 
+- [01/10/2026] ✅ **Un pilier Bien-être** (idée de Florian du 26/09/2026, posée en conversation : « est-ce
+  que ce serait pas intéressant d'avoir un pilier bien-être ? ») → **promue et livrée en une vague**,
+  **BIEN-02 → BIEN-07** (roadmap **1.31 à 1.36**), après une toile d'analyse de 14 planches
+  ([design/pilier-bien-etre-2026-10/](design/pilier-bien-etre-2026-10/)) et les décisions D1 à D8 du
+  01/10/2026. Renverse deux arbitrages antérieurs : « dimension transverse, pas un 4ᵉ pilier » (BIEN-01,
+  catalogue) et « pas de sommeil Health Connect » (LABO-01, 28/07). Prolonge [[journal-bien-etre]].
+  En recette : RECETTES §90.
+
 - [25/07/2026] ✅ **Simulateur « What-If / Et si… »** → **promu et livré en deux temps** :
   d'abord le moteur (`projectWhatIf`, [DASH-01](docs/specs/functional/us/dash01-dashboards-immersifs.md),
   13/09/2026), puis l'écran qui le rend utilisable sur **tous les piliers à la fois** —

@@ -12,6 +12,11 @@ import { useTheme } from '@/theme/useTheme';
 
 type TabIcon = keyof typeof Ionicons.glyphMap;
 
+/** US LABO-01 (R9) : le Labo croise les piliers — sans aucun pilier actif, il n'a rien à croiser. */
+function isActiveAny(active: readonly Pillar[]): boolean {
+  return active.includes('strength') || active.includes('running') || active.includes('nutrition');
+}
+
 const PILLAR_ICON: Record<Pillar, TabIcon> = {
   strength: 'barbell',
   running: 'walk',
@@ -32,6 +37,13 @@ export default function TabsLayout() {
   const menuColors = useMenuAccent((s) => s.colors);
   // Tant que les réglages ne sont pas chargés, on affiche tous les piliers par défaut.
   const activePillars = resolveActivePillars(settings?.activePillars);
+  // US BIEN-02 — le pilier Bien-être : un drapeau à part (ce n'est pas un `Pillar`). Éteint tant que
+  // les réglages ne sont pas chargés : donnée de santé, l'absence ne vaut jamais consentement.
+  const wellbeingOn = settings?.wellbeingPillarEnabled === true;
+  // Décision D2 (01/10/2026) : le Labo garde son onglet même quand les quatre piliers sont activés —
+  // la barre monte alors à six destinations. Les libellés passent un cran plus petits pour tenir.
+  const labOn = isActiveAny(activePillars);
+  const visibleTabs = 1 + activePillars.length + (labOn ? 1 : 0) + (wellbeingOn ? 1 : 0);
 
   const isActive = (pillar: Pillar) => activePillars.includes(pillar);
   // Couleurs par menu si activé (réglages), sinon accent unique pour tous les onglets.
@@ -44,6 +56,7 @@ export default function TabsLayout() {
     running: colors.pillarRunning,
     nutrition: colors.pillarNutrition,
     lab: colors.pillarLab,
+    wellbeing: colors.pillarWellbeing,
   };
   const tabTint = (menu: MenuKey) => (menuColorsEnabled ? menuColors[menu] : PILLAR_TINT[menu]);
   // Les scènes muscu, course et nutrition sont sombres dans les deux thèmes : icônes de la barre d'état
@@ -60,7 +73,7 @@ export default function TabsLayout() {
           // Chaque onglet actif prend sa propre couleur de menu (surchargé par écran ci-dessous).
           tabBarInactiveTintColor: colors.textMuted,
           tabBarStyle: { backgroundColor: colors.surface, borderTopColor: colors.border },
-          tabBarLabelStyle: { fontFamily: fontFamily.bodySemi, fontSize: 11 },
+          tabBarLabelStyle: { fontFamily: fontFamily.bodySemi, fontSize: visibleTabs > 5 ? 10 : 11 },
         }}
       >
         <Tabs.Screen
@@ -101,7 +114,7 @@ export default function TabsLayout() {
             title: t('tabs.lab'),
             // US LABO-01 (R9) : le Labo croise les piliers — sans aucun pilier actif, il n'a rien à
             // croiser, et l'ouvrir ne montrerait qu'une scène coûteuse aux trois disques éteints.
-            href: isActive('strength') || isActive('running') || isActive('nutrition') ? undefined : null,
+            href: labOn ? undefined : null,
             tabBarActiveTintColor: tabTint('lab'),
             tabBarIcon: ({ color, size, focused }) => (
               <TabBarIcon name="aperture" color={color} size={size} focused={focused} />
@@ -121,6 +134,17 @@ export default function TabsLayout() {
                 size={size}
                 focused={focused}
               />
+            ),
+          }}
+        />
+        <Tabs.Screen
+          name="wellbeing-hub"
+          options={{
+            title: t('tabs.wellbeing'),
+            href: wellbeingOn ? undefined : null,
+            tabBarActiveTintColor: tabTint('wellbeing'),
+            tabBarIcon: ({ color, size, focused }) => (
+              <TabBarIcon name="moon" color={color} size={size} focused={focused} />
             ),
           }}
         />

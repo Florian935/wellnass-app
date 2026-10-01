@@ -126,6 +126,15 @@ const user_settings = new Table({
   // devoir être déclarée ici ; masquée, la cible s'ajuste quand même (on retire l'affichage, pas le
   // calcul).
   show_energy_estimates: column.integer, // 0/1
+  // US BIEN-02 → BIEN-07 — le pilier Bien-être, ses modules et la nuit lue dans Health Connect.
+  // Migration : supabase/migrations/20261001084709_bien02_pilier_bien_etre.sql. 🔴 Toutes ici, sinon
+  // l'interrupteur ne s'enregistre pas et rien ne le dit (panne de CYCLE-01).
+  wellbeing_pillar_enabled: column.integer, // 0/1
+  wellbeing_alcohol_enabled: column.integer, // 0/1
+  wellbeing_caffeine_enabled: column.integer, // 0/1
+  wellbeing_nap_enabled: column.integer, // 0/1
+  wellbeing_cravings_enabled: column.integer, // 0/1
+  sleep_health_connect_enabled: column.integer, // 0/1
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
@@ -817,6 +826,21 @@ const daily_wellbeing = new Table({
   // US LABO-01 : la nuit qui précède le check-in, en minutes (0-840), facultative.
   // Migration : supabase/migrations/20260915151307_labo01_sommeil_et_experiences.sql
   sleep_minutes: column.integer,
+  // US BIEN-03 → BIEN-07 — le check-in en deux temps, les étiquettes, les modules, la nuit lue.
+  // Migration : supabase/migrations/20261001084709_bien02_pilier_bien_etre.sql
+  sleep_quality: column.integer,
+  motivation: column.integer,
+  sick: column.integer, // 0/1
+  busy_day: column.integer, // 0/1
+  late_night: column.integer, // 0/1
+  travel: column.integer, // 0/1
+  alcohol_drinks: column.integer,
+  late_caffeine: column.integer, // 0/1, NULL = pas répondu
+  nap_minutes: column.integer,
+  cravings: column.integer,
+  sleep_source: column.text, // 'manual' | 'health_connect'
+  sleep_start_at: column.text,
+  sleep_end_at: column.text,
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,

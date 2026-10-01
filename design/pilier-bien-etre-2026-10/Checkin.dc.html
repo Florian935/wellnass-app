@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Check-in du matin</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #2d2530; }
+a { color: #6a3fb0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.lb { font-weight: 700; font-size: 15px; }
+.sl { font-size: 12.5px; font-weight: 600; color: #786a59; }
+.sc { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.lv { height: 56px; border-radius: 14px; border: 1px solid #e5d8e6; background: #fbf7fb; color: #5b4d3e; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 11px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 0; }
+.lv.on { background: #6a3fb0; border-color: #6a3fb0; color: #ffffff; }
+.bars { display: flex; align-items: flex-end; gap: 2px; height: 16px; }
+.bars span { width: 4px; border-radius: 1px; background: #e0d5ec; display: block; }
+.bars .f { background: #8a6cc6; }
+.lv.on .bars span { background: rgba(255, 255, 255, .35); }
+.lv.on .bars .f { background: #ffffff; }
+.stp { width: 44px; height: 44px; border-radius: 50%; border: none; background: #ffffff; display: flex; align-items: center; justify-content: center; padding: 0; }
+.chip { height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid #e5d8e6; background: #fbf7fb; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 13px; color: #5b4d3e; }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; position: relative; background: #2d2530; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+  <div class="disp" style="position: absolute; left: 20px; top: 8px; font-weight: 800; font-size: 22px; color: #6f6570;">Bien-être</div>
+
+  <div style="position: absolute; left: 0; right: 0; top: 40px; bottom: 0; background: #fffaf5; border-radius: 28px 28px 0 0; padding: 10px 20px 20px; display: flex; flex-direction: column; gap: 16px;">
+    <div style="align-self: center; width: 40px; height: 5px; border-radius: 3px; background: #dccfd6;"></div>
+
+    <div>
+      <div class="eb" style="color: #6a3fb0;">Sam. 26 sept. · ce matin</div>
+      <div class="disp" style="font-weight: 800; font-size: 27px; letter-spacing: -.8px; margin-top: 4px;">Comment tu te lèves&nbsp;?</div>
+      <div style="font-size: 13.5px; color: #786a59; margin-top: 2px;">Quatre gestes, aucun obligatoire.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; justify-content: space-between;">
+        <div class="lb">Ta nuit</div>
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; color: #5a33a0; background: #efe7f8; border-radius: 999px; padding: 3px 8px;">lue par Health Connect · si D3</div>
+      </div>
+      <div style="display: flex; align-items: center; justify-content: space-between; background: #f5eef8; border-radius: 18px; padding: 6px;">
+        <button type="button" class="stp" aria-label="Quinze minutes de sommeil en moins"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="12" x2="18" y2="12"></line></svg></button>
+        <div style="text-align: center;">
+          <div class="disp" style="font-weight: 700; font-size: 30px; letter-spacing: -1px; line-height: 34px;">5&nbsp;h&nbsp;40</div>
+          <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">0 h 55 → 6 h 35</div>
+        </div>
+        <button type="button" class="stp" aria-label="Quinze minutes de sommeil en plus"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round"><line x1="6" y1="12" x2="18" y2="12"></line><line x1="12" y1="6" x2="12" y2="18"></line></svg></button>
+      </div>
+      <div class="sl">Qualité</div>
+      <div class="sc">
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span style="height: 7px;"></span><span style="height: 10px;"></span><span style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Mauvaise</span></button>
+        <button type="button" class="lv on" aria-pressed="true"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span style="height: 10px;"></span><span style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Agitée</span></button>
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span class="f" style="height: 10px;"></span><span style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Correcte</span></button>
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span class="f" style="height: 10px;"></span><span class="f" style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Bonne</span></button>
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span class="f" style="height: 10px;"></span><span class="f" style="height: 13px;"></span><span class="f" style="height: 16px;"></span></span><span>Excellente</span></button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="lb">Énergie</div>
+      <div class="sc">
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span style="height: 7px;"></span><span style="height: 10px;"></span><span style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Épuisé</span></button>
+        <button type="button" class="lv on" aria-pressed="true"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span style="height: 10px;"></span><span style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Basse</span></button>
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span class="f" style="height: 10px;"></span><span style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Moyenne</span></button>
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span class="f" style="height: 10px;"></span><span class="f" style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Bonne</span></button>
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span class="f" style="height: 10px;"></span><span class="f" style="height: 13px;"></span><span class="f" style="height: 16px;"></span></span><span>Au top</span></button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="lb">Envie de t'entraîner</div>
+      <div class="sc">
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span style="height: 7px;"></span><span style="height: 10px;"></span><span style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Aucune</span></button>
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span style="height: 10px;"></span><span style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Faible</span></button>
+        <button type="button" class="lv on" aria-pressed="true"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span class="f" style="height: 10px;"></span><span style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Moyenne</span></button>
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span class="f" style="height: 10px;"></span><span class="f" style="height: 13px;"></span><span style="height: 16px;"></span></span><span>Bonne</span></button>
+        <button type="button" class="lv" aria-pressed="false"><span class="bars"><span class="f" style="height: 4px;"></span><span class="f" style="height: 7px;"></span><span class="f" style="height: 10px;"></span><span class="f" style="height: 13px;"></span><span class="f" style="height: 16px;"></span></span><span>À fond</span></button>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <div class="lb">Un truc particulier&nbsp;?</div>
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <button type="button" class="chip" aria-pressed="false">Malade</button>
+        <button type="button" class="chip" aria-pressed="false">Courbatures</button>
+        <button type="button" class="chip" aria-pressed="false">Voyage</button>
+        <button type="button" class="chip" aria-label="Autres étiquettes" style="width: 36px; padding: 0;">+</button>
+      </div>
+    </div>
+
+    <button type="button" style="height: 46px; border-radius: 14px; border: 1.5px dashed #cdbfd0; background: transparent; display: flex; align-items: center; justify-content: space-between; padding: 0 14px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 13px; color: #5b4d3e;">
+      <span><b style="color: #33291f;">Hier soir non noté</b> · humeur et stress en 2 taps</span>
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+    </button>
+
+    <button type="button" style="height: 52px; border-radius: 16px; border: none; background: #6a3fb0; color: #ffffff; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 16px;">C'est noté</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

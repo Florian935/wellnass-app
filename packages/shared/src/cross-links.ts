@@ -44,6 +44,16 @@ import type {
   EnergyByDayType,
   ProteinDistribution,
 } from './training-nutrition-cross';
+import {
+  WELLBEING_LINKS_WINDOW_DAYS,
+  WELLBEING_LINK_MIN_CASES,
+  isKnownLink,
+  linkProgress,
+  type WellbeingLink,
+  type WellbeingLinkId,
+  type WellbeingLinkStatus,
+  type WellbeingLinkUnit,
+} from './wellbeing-links';
 
 // ---------------------------------------------------------------------------
 // Le registre
@@ -59,6 +69,7 @@ export const CROSS_LINK_IDS = [
   'fuelStrength', // Manges-tu assez pour ta muscu ?
   'fuelRunning', // Ton carburant suit-il tes kilomètres ?
   'recovery', // Récupères-tu assez ?
+  'wellbeing', // Ton état du jour pèse-t-il sur tes séances ? (BIEN-05, si le pilier Bien-être est activé)
   'weight', // Ton poids suit-il ton assiette ?
   'goals', // Tes objectifs tirent-ils dans le même sens ?
   'rhythm', // Tiens-tu le rythme partout ?
@@ -77,7 +88,7 @@ export const CROSS_LINK_STATE_RANK: Record<CrossLinkState, number> = { guard: 0,
 export type CrossLinkZone = 'mc' | 'mn' | 'cn' | 'centre';
 
 /** Les pastilles de la lentille : les piliers, plus ce que le lien croise d'autre. */
-export type CrossLinkLens = Pillar | 'sleep' | 'weight' | 'cycle';
+export type CrossLinkLens = Pillar | 'sleep' | 'weight' | 'cycle' | 'wellbeing';
 
 /**
  * Les écrans où un lien peut faire **écho** (ECHO-01). L'accueil n'y est pas : son widget montre le
@@ -91,12 +102,18 @@ export const CROSS_LINK_SURFACES = [
   'planning',
   'progress',
   'cycle',
+  // US BIEN-05 — Bien-être › Ce qui compte.
+  'wellbeing',
 ] as const;
 export type CrossLinkSurface = (typeof CROSS_LINK_SURFACES)[number];
 
 export type CrossLinkDefinition = {
-  /** Présent seulement si les piliers (ou l'option) qu'il croise sont activés (décision H). */
-  available: (ctx: { activePillars: readonly Pillar[]; cycleTrackingEnabled: boolean }) => boolean;
+  /**
+   * Présent seulement si les piliers (ou l'option) qu'il croise sont activés (décision H).
+   * US BIEN-05 — le pilier Bien-être n'est pas un `Pillar` (il ne porte ni disque, ni paire, ni
+   * guidage) : il entre ici comme le cycle, par un drapeau.
+   */
+  available: (ctx: { activePillars: readonly Pillar[]; cycleTrackingEnabled: boolean; wellbeingEnabled: boolean }) => boolean;
   zone: CrossLinkZone;
   echoes: readonly CrossLinkSurface[];
   /**
@@ -135,6 +152,13 @@ export const CROSS_LINKS: Record<CrossLinkId, CrossLinkDefinition> = {
     // bandeaux (collision, douleur), et aucun écho générique n'y est monté.
     echoes: ['runningToday', 'strengthProgress'],
     analyses: ['META-19', 'GARDE-01', 'MR-09', 'MR-14', 'TRI-03', 'TRI-12'],
+  },
+  wellbeing: {
+    // Il faut quelque chose à croiser : un pilier au moins, en plus du Bien-être.
+    available: ({ activePillars: a, wellbeingEnabled }) => wellbeingEnabled && a.length >= 1,
+    zone: 'centre',
+    echoes: ['wellbeing'],
+    analyses: ['BW-01', 'BW-02', 'BW-03', 'BW-04', 'BW-05', 'BW-06', 'BW-07'],
   },
   weight: {
     available: ({ activePillars: a }) => has(a, 'nutrition'),
@@ -212,7 +236,9 @@ export type CrossLinkRoute =
   | 'checkin'
   | 'progress'
   | 'cycle'
-  | 'learn';
+  | 'learn'
+  // US BIEN-05 — le hub Bien-être.
+  | 'wellbeing';
 
 export type CrossLinkAction =
   /** Une proposition de l'onglet Semaine : elle écrit (feuille) ou elle ouvre, selon son action. */
@@ -235,7 +261,12 @@ export type CrossLinkChart =
   /** Les jours actifs par semaine, un pilier par ligne. */
   | { type: 'grid'; weeks: string[]; rows: { pillar: Pillar; values: (number | null)[] }[] }
   /** Les moyennes par phase du cycle, une ligne par mesure prête. */
-  | { type: 'phases'; metrics: { metric: CycleMetric; byPhase: Record<CyclePhase, number> }[] };
+  | { type: 'phases'; metrics: { metric: CycleMetric; byPhase: Record<CyclePhase, number> }[] }
+  /**
+   * US BIEN-05 — les écarts des croisements Bien-être qui ont assez de cas : une ligne par
+   * croisement, l'écart signé de part et d'autre d'un axe zéro, les cas de chaque côté.
+   */
+  | { type: 'effects'; items: { id: WellbeingLinkId; unit: WellbeingLinkUnit; delta: number; exposed: number; other: number; adverse: boolean | null; status: WellbeingLinkStatus }[] };
 
 export type CrossLink = {
   id: CrossLinkId;
@@ -316,6 +347,17 @@ export type CrossLinksInput = {
    */
   cycle: { cyclesObserved: number; byMetric: Partial<Record<CycleMetric, CrossPhaseResult>> | null } | null;
   series: CrossLinkSeries;
+  /** US BIEN-05 — le pilier Bien-être est activé. Absent = non (comme le cycle). */
+  wellbeingEnabled?: boolean;
+  /** US BIEN-05 — les croisements calculés par `buildWellbeingLinks` ; `null` = pas encore calculés. */
+  wellbeing?: WellbeingLinksSummary | null;
+};
+
+/** Ce que le lien Bien-être lit : les croisements, et les nuits de la semaine. */
+export type WellbeingLinksSummary = {
+  links: readonly WellbeingLink[];
+  /** Nuits courtes ou agitées sur les 7 derniers matins renseignés. */
+  recentPoorNights: number;
 };
 
 // ---------------------------------------------------------------------------
@@ -341,6 +383,8 @@ function lensFor(id: CrossLinkId, active: readonly Pillar[]): CrossLinkLens[] {
       return ['running', 'nutrition'];
     case 'recovery':
       return [...training, 'sleep'];
+    case 'wellbeing':
+      return ['wellbeing', ...active];
     case 'weight':
       return ['nutrition', 'weight'];
     case 'goals':
@@ -707,6 +751,69 @@ function recovery(input: CrossLinksInput): CrossLink {
   };
 }
 
+/** Les valeurs d'un croisement Bien-être, telles que les textes les interpolent. */
+function wellbeingValues(link: WellbeingLink): Record<string, number> {
+  const values: Record<string, number> = { exposed: link.exposed, other: link.other, have: linkProgress(link), need: link.need };
+  if (link.delta !== null) values.delta = link.delta;
+  return values;
+}
+
+/**
+ * US BIEN-05 — « Ton état du jour pèse-t-il sur tes séances ? ».
+ *
+ * Chaque croisement Bien-être × pilier (`wellbeing-links.ts`) est une **ligne** de ce lien. Le lien
+ * est « à régler » quand une piste **défavorable** sur la nuit tient ET que la semaine en contient
+ * (au moins deux nuits courtes ou agitées) : c'est là qu'il y a quelque chose à faire. Il « tient »
+ * sinon — y compris quand une piste existe mais que la semaine ne la déclenche pas.
+ */
+function wellbeing(input: CrossLinksInput): CrossLink {
+  const wb = input.wellbeing ?? null;
+  const cross = (wb?.links ?? []).filter((l) => l.scope === 'cross');
+  const seen = cross.filter((l) => l.status !== 'learning');
+  if (wb === null || seen.length === 0) {
+    const have = cross.reduce((m, l) => Math.max(m, linkProgress(l)), 0);
+    return discover('wellbeing', input, 'wellbeingCases', have, WELLBEING_LINK_MIN_CASES);
+  }
+  const known = cross.filter(isKnownLink);
+  const adverse = known.filter((l) => l.adverse === true);
+  const rows: CrossLinkRow[] = cross.map((l) =>
+    row(`wellbeing.${l.id}.${l.status}`, wellbeingValues(l), l.status === 'learning' ? 'discover' : l.adverse === true ? 'adjust' : 'holds'),
+  );
+  // Les deux chiffres : les pistes défavorables d'abord (ce qui se règle), puis les autres.
+  const figures = [...adverse, ...known.filter((l) => l.adverse !== true)].slice(0, 2).map((l) => text(`wellbeing.${l.id}`, wellbeingValues(l)));
+  const chart: CrossLinkChart = {
+    type: 'effects',
+    items: seen.map((l) => ({ id: l.id, unit: l.unit, delta: l.delta ?? 0, exposed: l.exposed, other: l.other, adverse: l.adverse, status: l.status })),
+  };
+  const source = text('wellbeing', { days: WELLBEING_LINKS_WINDOW_DAYS });
+  const nightAdverse = adverse.find((l) => l.id === 'nightStrength' || l.id === 'nightRunning' || l.id === 'nightIntake');
+  if (nightAdverse !== undefined && wb.recentPoorNights >= 2) {
+    const values = { nights: wb.recentPoorNights, ...wellbeingValues(nightAdverse) };
+    return {
+      ...base('wellbeing', input),
+      state: 'adjust',
+      verdict: text(`adjust.${nightAdverse.id}`, values),
+      short: text('adjust', { nights: wb.recentPoorNights }),
+      figures,
+      rows,
+      actions: [{ type: 'open', route: 'wellbeing' }, { type: 'open', route: 'learn' }],
+      chart,
+      source,
+    };
+  }
+  return {
+    ...base('wellbeing', input),
+    state: 'holds',
+    verdict: text(known.length > 0 ? 'holdsKnown' : 'holdsNone', { count: known.length, days: WELLBEING_LINKS_WINDOW_DAYS }),
+    short: text(known.length > 0 ? 'holdsKnown' : 'holdsNone', { count: known.length }),
+    figures,
+    rows,
+    actions: [{ type: 'open', route: 'wellbeing' }],
+    chart,
+    source,
+  };
+}
+
 function weight(input: CrossLinksInput): CrossLink {
   const w = input.weight;
   if (w.weighIns < CROSS_LINK_MIN_WEIGH_INS || w.latestKg === null) {
@@ -877,6 +984,7 @@ const BUILDERS: Record<CrossLinkId, (input: CrossLinksInput) => CrossLink> = {
   fuelStrength,
   fuelRunning,
   recovery,
+  wellbeing,
   weight,
   goals,
   rhythm,
@@ -889,7 +997,7 @@ const BUILDERS: Record<CrossLinkId, (input: CrossLinksInput) => CrossLink> = {
  * ce qui reste à découvrir. À état égal, l'ordre de `CROSS_LINK_IDS`.
  */
 export function buildCrossLinks(input: CrossLinksInput): CrossLink[] {
-  const ctx = { activePillars: input.activePillars, cycleTrackingEnabled: input.cycleTrackingEnabled };
+  const ctx = { activePillars: input.activePillars, cycleTrackingEnabled: input.cycleTrackingEnabled, wellbeingEnabled: input.wellbeingEnabled === true };
   return CROSS_LINK_IDS.filter((id) => CROSS_LINKS[id].available(ctx))
     .map((id) => BUILDERS[id](input))
     .sort((a, b) => CROSS_LINK_STATE_RANK[a.state] - CROSS_LINK_STATE_RANK[b.state] || CROSS_LINK_IDS.indexOf(a.id) - CROSS_LINK_IDS.indexOf(b.id));

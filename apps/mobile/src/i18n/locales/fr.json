@@ -501,12 +501,14 @@
     "strength": "Muscu",
     "running": "Course",
     "nutrition": "Alim",
-    "lab": "Labo"
+    "lab": "Labo",
+    "wellbeing": "Bien-être"
   },
   "pillars": {
     "strength": "Musculation",
     "running": "Course",
-    "nutrition": "Nutrition"
+    "nutrition": "Nutrition",
+    "wellbeing": "Bien-être"
   },
   "profile": {
     "title": "Profil",
@@ -1378,7 +1380,7 @@
       "wellbeing": {
         "positive": "bonne énergie, stress bas",
         "neutral": "neutre",
-        "negative": "fatigue ou stress élevé"
+        "negative": "fatigue, stress ou nuit courte"
       },
       "unavailable": "indisponible",
       "reason": {
@@ -1599,7 +1601,8 @@
     },
     "pillars": {
       "title": "Tes activités",
-      "subtitle": "Active les piliers que tu veux suivre. Les autres onglets restent masqués."
+      "subtitle": "Active les piliers que tu veux suivre. Les autres onglets restent masqués.",
+      "wellbeingHint": "Ta nuit, ton énergie, ton humeur : ce qui explique tes séances. Tu choisis ce que tu notes."
     },
     "goal": {
       "title": "Ton objectif",
@@ -1785,6 +1788,7 @@
         "Les données de santé et de localisation ne sont jamais partagées sans ton consentement explicite.",
         "Nous mesurons l'usage de l'application (écrans consultés, fonctionnalités utilisées) via des statistiques anonymes, uniquement pour l'améliorer ; ces mesures n'incluent jamais tes données de santé et tu peux les désactiver à tout moment depuis les paramètres.",
         "Si tu actives Health Connect, tes séances et tes courses sont écrites dans le hub santé d'Android et ton poids y est relu : cet échange a lieu uniquement sur ton téléphone. Tes pas quotidiens, en revanche, sont lus dans Health Connect puis **enregistrés sur ton compte** (un total par jour, jamais le détail de tes déplacements) afin d'alimenter ton objectif de pas, ton historique et ta série sur tous tes appareils. Ces données de santé sont conservées tant que ton compte existe, ne sont jamais partagées avec des tiers, sont incluses dans l'export de tes données et supprimées avec ton compte. Tu peux désactiver la synchronisation dans les paramètres, et révoquer l'accès à tout moment depuis Health Connect.",
+        "Le pilier Bien-être est désactivé par défaut et ne s’active qu’avec ton accord : il enregistre sur ton compte ce que tu notes (nuit et sa qualité, énergie, envie, humeur, stress, étiquettes comme « malade », et les modules que tu choisis : alcool, café tardif, sieste, fringales). Si tu actives aussi la lecture de ta nuit, la durée de chaque nuit et ses heures de coucher et de lever sont lues dans Health Connect puis enregistrées sur ton compte ; une nuit que tu as saisie toi-même n’est jamais remplacée. Désactiver le pilier n’efface rien ; la suppression de ton compte efface tout.",
         "Tu peux demander l'export ou la suppression de tes données à tout moment depuis les paramètres."
       ]
     }
@@ -2131,7 +2135,8 @@
     },
     "pillars": {
       "title": "Piliers actifs",
-      "hint": "Les onglets des piliers désactivés sont masqués. Tu peux les réactiver à tout moment."
+      "hint": "Les onglets des piliers désactivés sont masqués. Tu peux les réactiver à tout moment.",
+      "wellbeingSettings": "Réglages du pilier Bien-être"
     },
     "appearance": {
       "title": "Apparence",
@@ -2843,7 +2848,10 @@
         "low_energy": "ton énergie déclarée est basse",
         "load_risk": "ta charge récente est en zone de risque",
         "heavy_legs_yesterday": "tu as fait une grosse séance de jambes hier",
-        "heat": "il fait chaud"
+        "heat": "il fait chaud",
+        "sick": "tu as noté que tu es malade",
+        "short_night": "ta nuit a été courte ou agitée",
+        "low_motivation": "ton envie de t’entraîner est faible ce matin"
       },
       "advisory": "C'est une suggestion : la séance prévue n'est pas modifiée.",
       "repsHint": "{{from}} → {{to}} répétitions",
@@ -3087,7 +3095,10 @@
     "indicators": {
       "mood": "Humeur",
       "energy": "Énergie",
-      "stress": "Stress"
+      "stress": "Stress",
+      "sleepQuality": "Qualité de la nuit",
+      "motivation": "Envie de t’entraîner",
+      "cravings": "Fringales"
     },
     "levels": {
       "mood": {
@@ -3110,6 +3121,27 @@
         "3": "Modéré",
         "4": "Élevé",
         "5": "Très élevé"
+      },
+      "sleepQuality": {
+        "1": "Mauvaise",
+        "2": "Agitée",
+        "3": "Correcte",
+        "4": "Bonne",
+        "5": "Excellente"
+      },
+      "motivation": {
+        "1": "Aucune",
+        "2": "Faible",
+        "3": "Moyenne",
+        "4": "Bonne",
+        "5": "À fond"
+      },
+      "cravings": {
+        "1": "Aucune",
+        "2": "Légères",
+        "3": "Modérées",
+        "4": "Fortes",
+        "5": "Très fortes"
       }
     },
     "a11yLevel": "{{indicator}} : {{level}} sur 5, {{label}}",
@@ -3124,7 +3156,60 @@
     "sleepNone": "non renseignée",
     "sleepClear": "effacer",
     "sleepLess": "Quinze minutes de sommeil en moins",
-    "sleepMore": "Quinze minutes de sommeil en plus"
+    "sleepMore": "Quinze minutes de sommeil en plus",
+    "tags": {
+      "sick": "Malade",
+      "busyDay": "Journée chargée",
+      "lateNight": "Soirée, couché tard",
+      "travel": "En voyage"
+    },
+    "moments": {
+      "morning": {
+        "overline": "Le matin",
+        "title": "Comment tu te lèves ?"
+      },
+      "evening": {
+        "overline": "Le soir",
+        "title": "Comment s’est passée ta journée ?"
+      },
+      "fromHealthConnect": "lue par Health Connect",
+      "tagsTitle": "Un truc particulier ?",
+      "soreness": "Courbatures",
+      "sorenessHint": "Ouvre le journal des douleurs pour noter une gêne.",
+      "catchUp": "Hier soir non noté",
+      "catchUpHint": "Humeur et stress d’hier, en deux gestes.",
+      "save": "C’est noté"
+    },
+    "modules": {
+      "alcohol": {
+        "title": "Alcool",
+        "desc": "Le soir : combien de verres aujourd’hui. Sert à voir ce qui pèse sur ta nuit et ta sortie du lendemain.",
+        "question": "Des verres aujourd’hui ?",
+        "a11y_one": "{{count}} verre",
+        "a11y_other": "{{count}} verres",
+        "max": "3 et +",
+        "hint": "Noté, jamais jugé."
+      },
+      "caffeine": {
+        "title": "Café tardif",
+        "desc": "Le soir : un café après 16 h ? Sert à voir s’il raccourcit ta nuit.",
+        "question": "Un café après 16 h ?",
+        "yes": "Oui",
+        "no": "Non"
+      },
+      "nap": {
+        "title": "Sieste",
+        "desc": "Le soir : la durée de ta sieste, s’il y en a eu une.",
+        "question": "Une sieste aujourd’hui ?",
+        "less": "Dix minutes de sieste en moins",
+        "more": "Dix minutes de sieste en plus",
+        "none": "pas de sieste"
+      },
+      "cravings": {
+        "title": "Fringales",
+        "desc": "Le soir : des envies de grignoter ? Noté au journal, à côté de tes nuits et de ton stress."
+      }
+    }
   },
   "measurements": {
     "title": "Mensurations",
@@ -5846,6 +5931,36 @@
         "dotsNoDelta": {
           "value": "{{score}}",
           "label": "score DOTS"
+        },
+        "wellbeing": {
+          "nightStrength": {
+            "value": "{{delta}} %",
+            "label": "de tonnage après une nuit courte"
+          },
+          "nightRunning": {
+            "value": "{{delta}} s/km",
+            "label": "d’allure après une nuit courte"
+          },
+          "nightIntake": {
+            "value": "{{delta}} kcal",
+            "label": "le jour d’après une nuit courte"
+          },
+          "motivationTraining": {
+            "value": "{{delta}} pts",
+            "label": "de séances faites, envie faible"
+          },
+          "stressJournal": {
+            "value": "{{delta}} pts",
+            "label": "de journal tenu, journée stressée"
+          },
+          "trainingMood": {
+            "value": "{{delta}}",
+            "label": "d’humeur le soir d’un entraînement"
+          },
+          "alcoholRunning": {
+            "value": "{{delta}} s/km",
+            "label": "d’allure le lendemain de deux verres"
+          }
         }
       },
       "rows": {
@@ -6042,6 +6157,162 @@
           "label": "Score DOTS",
           "value": "{{score}}",
           "note": "pas encore d’écart sur 8 semaines"
+        },
+        "wellbeing": {
+          "nightStrength": {
+            "learning": {
+              "label": "Nuit courte → ta séance de muscu",
+              "value": "à apprendre",
+              "note": "{{have}} cas sur {{need}} du côté le plus maigre"
+            },
+            "noLink": {
+              "label": "Nuit courte → ta séance de muscu",
+              "value": "rien de visible",
+              "note": "{{exposed}} jours contre {{other}} : l’écart reste sous le seuil"
+            },
+            "probable": {
+              "label": "Nuit courte → ta séance de muscu",
+              "value": "{{delta}} % de tonnage",
+              "note": "{{exposed}} jours contre {{other}} · piste probable"
+            },
+            "solid": {
+              "label": "Nuit courte → ta séance de muscu",
+              "value": "{{delta}} % de tonnage",
+              "note": "{{exposed}} jours contre {{other}} · piste solide"
+            }
+          },
+          "nightRunning": {
+            "learning": {
+              "label": "Nuit courte → ton allure, à effort égal",
+              "value": "à apprendre",
+              "note": "{{have}} cas sur {{need}} du côté le plus maigre"
+            },
+            "noLink": {
+              "label": "Nuit courte → ton allure, à effort égal",
+              "value": "rien de visible",
+              "note": "{{exposed}} jours contre {{other}} : l’écart reste sous le seuil"
+            },
+            "probable": {
+              "label": "Nuit courte → ton allure, à effort égal",
+              "value": "{{delta}} s/km",
+              "note": "{{exposed}} jours contre {{other}} · piste probable"
+            },
+            "solid": {
+              "label": "Nuit courte → ton allure, à effort égal",
+              "value": "{{delta}} s/km",
+              "note": "{{exposed}} jours contre {{other}} · piste solide"
+            }
+          },
+          "nightIntake": {
+            "learning": {
+              "label": "Nuit courte → tes apports du jour",
+              "value": "à apprendre",
+              "note": "{{have}} cas sur {{need}} du côté le plus maigre"
+            },
+            "noLink": {
+              "label": "Nuit courte → tes apports du jour",
+              "value": "rien de visible",
+              "note": "{{exposed}} jours contre {{other}} : l’écart reste sous le seuil"
+            },
+            "probable": {
+              "label": "Nuit courte → tes apports du jour",
+              "value": "{{delta}} kcal",
+              "note": "{{exposed}} jours contre {{other}} · piste probable"
+            },
+            "solid": {
+              "label": "Nuit courte → tes apports du jour",
+              "value": "{{delta}} kcal",
+              "note": "{{exposed}} jours contre {{other}} · piste solide"
+            }
+          },
+          "motivationTraining": {
+            "learning": {
+              "label": "Envie faible le matin → séance faite ce jour-là",
+              "value": "à apprendre",
+              "note": "{{have}} cas sur {{need}} du côté le plus maigre"
+            },
+            "noLink": {
+              "label": "Envie faible le matin → séance faite ce jour-là",
+              "value": "rien de visible",
+              "note": "{{exposed}} jours contre {{other}} : l’écart reste sous le seuil"
+            },
+            "probable": {
+              "label": "Envie faible le matin → séance faite ce jour-là",
+              "value": "{{delta}} points",
+              "note": "{{exposed}} jours contre {{other}} · piste probable"
+            },
+            "solid": {
+              "label": "Envie faible le matin → séance faite ce jour-là",
+              "value": "{{delta}} points",
+              "note": "{{exposed}} jours contre {{other}} · piste solide"
+            }
+          },
+          "stressJournal": {
+            "learning": {
+              "label": "Journée stressée → journal tenu",
+              "value": "à apprendre",
+              "note": "{{have}} cas sur {{need}} du côté le plus maigre"
+            },
+            "noLink": {
+              "label": "Journée stressée → journal tenu",
+              "value": "rien de visible",
+              "note": "{{exposed}} jours contre {{other}} : l’écart reste sous le seuil"
+            },
+            "probable": {
+              "label": "Journée stressée → journal tenu",
+              "value": "{{delta}} points",
+              "note": "{{exposed}} jours contre {{other}} · piste probable"
+            },
+            "solid": {
+              "label": "Journée stressée → journal tenu",
+              "value": "{{delta}} points",
+              "note": "{{exposed}} jours contre {{other}} · piste solide"
+            }
+          },
+          "trainingMood": {
+            "learning": {
+              "label": "Jour d’entraînement → humeur du soir",
+              "value": "à apprendre",
+              "note": "{{have}} cas sur {{need}} du côté le plus maigre"
+            },
+            "noLink": {
+              "label": "Jour d’entraînement → humeur du soir",
+              "value": "rien de visible",
+              "note": "{{exposed}} jours contre {{other}} : l’écart reste sous le seuil"
+            },
+            "probable": {
+              "label": "Jour d’entraînement → humeur du soir",
+              "value": "{{delta}} point",
+              "note": "{{exposed}} jours contre {{other}} · piste probable"
+            },
+            "solid": {
+              "label": "Jour d’entraînement → humeur du soir",
+              "value": "{{delta}} point",
+              "note": "{{exposed}} jours contre {{other}} · piste solide"
+            }
+          },
+          "alcoholRunning": {
+            "learning": {
+              "label": "Deux verres ou plus la veille → ton allure",
+              "value": "à apprendre",
+              "note": "{{have}} cas sur {{need}} du côté le plus maigre"
+            },
+            "noLink": {
+              "label": "Deux verres ou plus la veille → ton allure",
+              "value": "rien de visible",
+              "note": "{{exposed}} jours contre {{other}} : l’écart reste sous le seuil"
+            },
+            "probable": {
+              "label": "Deux verres ou plus la veille → ton allure",
+              "value": "{{delta}} s/km",
+              "note": "{{exposed}} jours contre {{other}} · piste probable"
+            },
+            "solid": {
+              "label": "Deux verres ou plus la veille → ton allure",
+              "value": "{{delta}} s/km",
+              "note": "{{exposed}} jours contre {{other}} · piste solide"
+            }
+          }
         }
       },
       "source": {
@@ -6054,7 +6325,8 @@
         "rhythm": "Séances, sorties et repas notés des 8 dernières semaines.",
         "strengthWeight": "Tes records des trois mouvements et tes pesées.",
         "cycle": "Moyennes par phase sur {{cycles}} cycles. Des observations, pas des conseils.",
-        "discover": "Un lien ne s’affiche qu’avec assez de données : jamais un zéro à la place d’un trou."
+        "discover": "Un lien ne s’affiche qu’avec assez de données : jamais un zéro à la place d’un trou.",
+        "wellbeing": "Tes check-ins et tes séances des {{days}} derniers jours, comparés jour à jour. Des associations, pas des preuves."
       },
       "missing": {
         "bothSports": {
@@ -6092,6 +6364,10 @@
         "cycles": {
           "text": "Il faut {{need}} cycles complets pour comparer tes phases. Tu en as {{have}}.",
           "meter": "{{have}} sur {{need}} cycles"
+        },
+        "wellbeingCases": {
+          "text": "Il faut {{need}} jours de chaque côté pour comparer (par exemple {{need}} nuits courtes et {{need}} nuits normales). Tu en as {{have}}.",
+          "meter": "{{have}} sur {{need}} jours"
         }
       },
       "routes": {
@@ -6107,7 +6383,8 @@
         "progress": "Voir mes records",
         "cycle": "Ouvrir mon cycle",
         "learn": "Comprendre dans Apprendre",
-        "council": "Ouvrir le Conseil des trois"
+        "council": "Ouvrir le Conseil des trois",
+        "wellbeing": "Ouvrir le pilier Bien-être"
       },
       "surfaces": {
         "strengthProgress": "Muscu › Progrès",
@@ -6116,7 +6393,8 @@
         "nutritionStats": "Nutrition › Stats",
         "planning": "Planning",
         "progress": "Muscu › Progression",
-        "cycle": "Mon cycle"
+        "cycle": "Mon cycle",
+        "wellbeing": "Bien-être › Ce qui compte"
       },
       "learning": {
         "shortNightPace": "Une nuit courte te ralentit-elle ?",
@@ -6125,6 +6403,26 @@
         "missing": "Il faut {{needed}} cas de chaque côté pour comparer. Tu en as {{cases}}.",
         "meter": "{{cases}} cas sur {{needed}}",
         "action": "Voir dans Apprendre"
+      },
+      "wellbeing": {
+        "question": "Ton état du jour pèse-t-il sur tes séances ?",
+        "pair": "TON ÉTAT × TES PILIERS",
+        "verdict": {
+          "discover": "Le Labo ne peut pas encore répondre : il faut plus de jours notés pour comparer.",
+          "adjust": {
+            "nightStrength": "{{nights}} nuits courtes cette semaine. Après une nuit courte, ton tonnage est en moyenne de {{delta}} % ({{exposed}} nuits contre {{other}}).",
+            "nightRunning": "{{nights}} nuits courtes cette semaine. Après une nuit courte, tu cours en moyenne {{delta}} s/km à effort égal ({{exposed}} nuits contre {{other}}).",
+            "nightIntake": "{{nights}} nuits courtes cette semaine. Après une nuit courte, tu manges en moyenne {{delta}} kcal ({{exposed}} jours contre {{other}})."
+          },
+          "holdsKnown": "Tes données montrent des liens entre ton état et tes séances ; cette semaine, rien ne les déclenche.",
+          "holdsNone": "Rien de visible entre ton état et tes séances sur les {{days}} derniers jours."
+        },
+        "short": {
+          "discover": "Pas encore assez de jours notés.",
+          "adjust": "{{nights}} nuits courtes cette semaine.",
+          "holdsKnown": "Des liens connus, rien à régler cette semaine.",
+          "holdsNone": "Rien de visible pour l’instant."
+        }
       }
     },
     "cross": {
@@ -6238,7 +6536,31 @@
         "gridReadout": "Semaine du {{week}} · {{summary}}",
         "phasesTitle": "Moyennes par phase",
         "phasesHint": "des observations, pas des conseils",
-        "noValue": "—"
+        "noValue": "—",
+        "effectsTitle": "LES ÉCARTS",
+        "effectsHint": "sur 90 jours",
+        "effectsNone": "rien de visible",
+        "effectsCases": "{{exposed}} jours contre {{other}}",
+        "effectsA11y": "{{label}} : {{value}}, {{exposed}} jours contre {{other}}.",
+        "effectsUnit": {
+          "pct": "{{value}} %",
+          "secPerKm": "{{value}} s/km",
+          "kcal": "{{value}} kcal",
+          "points": "{{value}} pt",
+          "pctPoints": "{{value}} pts",
+          "minutes": "{{value}} min"
+        },
+        "effects": {
+          "nightStrength": "Nuit courte → tonnage",
+          "nightRunning": "Nuit courte → allure",
+          "nightIntake": "Nuit courte → apports",
+          "motivationTraining": "Envie faible → séances faites",
+          "stressJournal": "Stress → journal tenu",
+          "trainingMood": "Entraînement → humeur du soir",
+          "alcoholRunning": "Deux verres → allure du lendemain",
+          "alcoholNight": "Deux verres → nuit suivante",
+          "caffeineNight": "Café tardif → nuit"
+        }
       },
       "cycleMissingTitle": "Pas encore assez de relevés"
     },
@@ -6468,5 +6790,235 @@
   },
   "runningStats": {
     "title": "Toutes tes stats"
+  },
+  "wellbeingHub": {
+    "title": "Bien-être",
+    "icons": {
+      "history": "Mes courbes",
+      "settings": "Réglages du pilier"
+    },
+    "sections": {
+      "today": "Aujourd’hui",
+      "journal": "Journal",
+      "insights": "Ce qui compte"
+    },
+    "off": {
+      "title": "Le pilier Bien-être est éteint",
+      "body": "Active-le pour noter ta nuit, ton énergie, ton envie, ton humeur et ton stress, et voir ce qu’ils changent à tes séances.",
+      "cta": "Activer le pilier"
+    },
+    "stage": {
+      "noVerdict": "Pas encore de verdict",
+      "noVerdictHint": "Fais ton check-in, ou laisse le temps à tes séances de s’accumuler.",
+      "morningFirst": "Commence par ton check-in du matin : c’est lui qui décide de la journée.",
+      "suggestion": "Une suggestion, jamais une consigne."
+    },
+    "signals": {
+      "sick": "malade",
+      "poorNight": "nuit courte ou agitée",
+      "lowEnergy": "énergie basse",
+      "highStressYesterday": "stress élevé hier",
+      "lowMotivation": "peu d’envie",
+      "goodNight": "bonne nuit",
+      "highEnergy": "bonne énergie"
+    },
+    "lowMood": {
+      "title": "Ça ne va pas fort ces jours-ci",
+      "body": "Ton humeur est basse depuis plusieurs jours. Si tu as besoin d’en parler, des gens sont là pour ça : le {{phone}}, gratuit, jour et nuit.",
+      "call": "Appeler le {{phone}}",
+      "callA11y": "Appeler le {{phone}}, numéro national de prévention du suicide, gratuit, jour et nuit",
+      "dismiss": "Fermer",
+      "note": "Cette carte ne revient pas avant deux semaines. L’app ne pose aucun diagnostic."
+    },
+    "consent": {
+      "title": "Activer le pilier Bien-être ?",
+      "body": "Le pilier enregistre ta nuit, ton énergie, ton envie, ton humeur, ton stress et, si tu le notes, que tu es malade : ce sont des données de santé. Elles sont synchronisées sur ton compte, exportables et supprimées avec lui. Tu peux éteindre le pilier à tout moment.",
+      "confirm": "Activer"
+    },
+    "today": {
+      "checkinsTitle": "Tes deux check-ins",
+      "morning": {
+        "title": "Le matin",
+        "hint": "La nuit, l’énergie, l’envie",
+        "a11y": "Check-in du matin, {{state}}"
+      },
+      "evening": {
+        "title": "Le soir",
+        "hint": "L’humeur, le stress, ta journée",
+        "a11y": "Check-in du soir, {{state}}"
+      },
+      "done": "fait",
+      "todo": "à faire",
+      "now": "maintenant",
+      "changesTitle": "Ce que ça change aujourd’hui",
+      "pillarSession": {
+        "strength": "Séance de muscu",
+        "running": "Séance de course"
+      },
+      "advice": {
+        "postpone": {
+          "strength": "Pas d’intensité aujourd’hui : les symptômes passent avant le plan. On la décale à demain ?",
+          "running": "Pas d’intensité aujourd’hui : les symptômes passent avant le plan. On la décale à demain ?"
+        },
+        "lighten": {
+          "strength": "Garde l’échauffement et retire une série par exercice : ta forme du jour ne demande pas plus.",
+          "running": "Garde l’échauffement, retire {{pct}} % des répétitions, même allure."
+        },
+        "shorten": {
+          "strength": "Peu d’envie : une version courte, les deux exercices clés, et tu décides sur place.",
+          "running": "Peu d’envie : commence, et décide après l’échauffement si tu continues."
+        },
+        "go": {
+          "strength": "Feu vert : bon jour pour tenter la charge prévue.",
+          "running": "Feu vert : bonnes conditions pour tenir l’allure cible."
+        },
+        "keep": {
+          "strength": "Rien à changer : la séance reste telle quelle.",
+          "running": "Rien à changer : un footing tranquille aide souvent à récupérer."
+        }
+      },
+      "alreadyAdapted": "Cette séance est déjà allégée pour aujourd’hui.",
+      "applied": "C’est fait. Tu pourras dire après la séance si c’était juste.",
+      "postpone": "Décaler à demain",
+      "lighten": "Alléger aujourd’hui",
+      "seeSession": "Voir la séance",
+      "nutrition": {
+        "sick": "Malade : ta cible du jour passe au second plan, rien à rattraper demain.",
+        "poorNight": "Après une nuit courte, les envies de sucre montent souvent l’après-midi. Une collation prévue vaut mieux qu’une fringale.",
+        "lateNight": "Soirée hier : pense à boire ce matin. Le journal d’hier se complète encore.",
+        "stressed": "Journée chargée hier : c’est souvent là que le journal décroche. Un repas rapide à noter suffit."
+      },
+      "advisory": "Des suggestions : rien ne change sans ton accord.",
+      "nightsTitle": "Tes nuits cette semaine",
+      "nightsAverage": "moy. {{value}} · {{count}} nuits",
+      "nightsA11y": "Tes nuits de la semaine : {{count}} notées.",
+      "nightsHealthConnect": "Lire tes nuits dans Health Connect",
+      "followUps": {
+        "pain": "Douleurs",
+        "cycle": "Cycle",
+        "steps": "Pas",
+        "weight": "Poids",
+        "water": "Eau"
+      },
+      "applyError": "Le changement n’a pas pu être enregistré. Réessaie.",
+      "apply": {
+        "title": "Ce qui change dans ton plan",
+        "subtitle": "Seulement aujourd’hui. Ton programme reste intact.",
+        "confirm": "Confirmer",
+        "postponeDetail": "Séance déplacée à demain, même heure.",
+        "lightenDetail": "{{pct}} % de répétitions en moins, échauffement gardé.",
+        "where": {
+          "strength": "Muscu › S’entraîner, Planning",
+          "running": "Course › Courir, Planning"
+        }
+      }
+    },
+    "journal": {
+      "didStrength": "Muscu : {{name}}",
+      "didRun": "Course : {{km}} km",
+      "didEat": "Journal : {{kcal}} kcal",
+      "night": "nuit {{value}}",
+      "previousMonth": "Mois précédent",
+      "nextMonth": "Mois suivant",
+      "cellEmpty": "{{day}} : non renseigné",
+      "cellA11y": "{{day}} : {{value}}",
+      "legend": "Plus la case est foncée, plus le niveau est haut. Pointillé : non renseigné, pas zéro. Point : une étiquette ce jour-là.",
+      "legendSleep": "Plus la case est foncée, plus la nuit est longue (moins de 5 h → 8 h et plus). Pointillé : non renseignée.",
+      "legendStress": "Plus la case est foncée, plus le stress est élevé. Pointillé : non renseigné, pas zéro.",
+      "recent": "Les quinze derniers jours",
+      "empty": "non renseigné",
+      "edit": {
+        "morning": "Matin",
+        "evening": "Soir",
+        "morningA11y": "Modifier le matin du {{day}}",
+        "eveningA11y": "Modifier le soir du {{day}}"
+      },
+      "curves": "Voir mes courbes",
+      "alcoholNone": "pas d’alcool",
+      "alcohol_one": "{{count}} verre",
+      "alcohol_other": "{{count}} verres",
+      "alcoholMax": "{{max}} verres ou plus",
+      "lateCaffeine": "café après 16 h",
+      "nap": "sieste de {{value}}"
+    },
+    "insights": {
+      "intro": "Calculé sur ton téléphone, sur tes {{days}} derniers jours. On dit « va souvent avec », jamais « parce que ».",
+      "labOverline": "Au Labo",
+      "openLab": "Ouvrir la fiche au Labo",
+      "noPillarToCross": "Active un pilier (muscu, course ou nutrition) pour voir ce que ton état change à tes séances.",
+      "nightsTitle": "Ce qui pèse sur tes nuits",
+      "learning": "À apprendre : {{have}} cas sur {{need}} du côté le plus maigre.",
+      "intra": {
+        "alcoholNight": {
+          "label": "Deux verres ou plus → ta nuit suivante",
+          "noLink": "Rien de visible ({{exposed}} soirs contre {{other}}).",
+          "known": "Ta nuit suivante est {{direction}} de {{delta}} en moyenne ({{exposed}} soirs contre {{other}})."
+        },
+        "caffeineNight": {
+          "label": "Café après 16 h → ta nuit",
+          "noLink": "Rien de visible ({{exposed}} soirs contre {{other}}).",
+          "known": "Ta nuit est {{direction}} de {{delta}} en moyenne ({{exposed}} soirs contre {{other}})."
+        }
+      },
+      "shorter": "plus courte",
+      "longer": "plus longue",
+      "regularityTitle": "L’heure de ton coucher",
+      "regularity": "Tu te couches vers {{bedtime}}, à ± {{spread}} min près ({{count}} nuits lues).",
+      "regularityLearning": "Il faut cinq nuits lues dans Health Connect pour en parler.",
+      "regularityNeedsHealthConnect": "Se calcule seul à partir des nuits lues dans Health Connect (réglages du pilier).",
+      "averagesTitle": "Tes {{days}} derniers jours",
+      "averagesEmpty": "Rien de noté sur cette période.",
+      "averageNight": "{{value}} en moyenne sur {{count}} nuits",
+      "footnote": "Des liens trouvés dans tes données, pas des preuves. Un jour non noté est un trou, jamais un zéro."
+    },
+    "context": {
+      "overline": "Ce jour-là",
+      "night": "nuit de {{value}}",
+      "nightWithQuality": "nuit de {{value}} ({{quality}})",
+      "quality": "nuit {{quality}}",
+      "energy": "énergie {{level}}",
+      "motivation": "envie {{level}}",
+      "usual": {
+        "strength": "Après une nuit courte, ton tonnage est en moyenne de {{delta}} % ({{count}} nuits) : une séance plus faible ce jour-là reste dans ta norme.",
+        "running": "Après une nuit courte, tu cours en moyenne {{delta}} s/km à effort égal ({{count}} nuits).",
+        "nutrition": "Après une nuit courte, tu manges en moyenne {{delta}} kcal ({{count}} jours)."
+      },
+      "open": "Voir dans Bien-être"
+    },
+    "history": {
+      "openHub": "Ouvrir le pilier Bien-être"
+    }
+  },
+  "wellbeingSettings": {
+    "title": "Pilier Bien-être",
+    "pillar": {
+      "title": "Le pilier",
+      "desc": "Ta nuit, ton énergie, ton envie, ton humeur, ton stress, et ce qu’ils changent à tes séances.",
+      "hint": "L’éteindre garde tes données : elles restent dans ton historique et ton export. Le check-in de base (humeur, énergie, stress, nuit) reste disponible pilier éteint."
+    },
+    "modules": {
+      "title": "Les modules",
+      "hint": "Chaque module ajoute une question au check-in du soir. L’eau se suit dans Nutrition."
+    },
+    "sleep": {
+      "title": "Ta nuit, lue dans Health Connect",
+      "toggle": "Lire ma nuit",
+      "desc": "Remplit la durée de ta nuit chaque matin, quand une montre ou une app de sommeil l’écrit dans Health Connect.",
+      "unavailable": "Health Connect n’est pas disponible sur cet appareil.",
+      "permissionMissing": "La permission de lire le sommeil n’est pas accordée.",
+      "grant": "Autoriser la lecture du sommeil",
+      "neverImported": "Aucune nuit lue pour l’instant.",
+      "lastImport": "Dernière lecture : {{at}}",
+      "imported_one": "{{count}} nuit mise à jour.",
+      "imported_other": "{{count}} nuits mises à jour.",
+      "importNow": "Lire mes nuits maintenant",
+      "openHealthConnect": "Gérer les accès dans Health Connect",
+      "denied": "Permission refusée : la nuit reste à noter à la main dans le check-in du matin.",
+      "how": "Le téléphone ne mesure pas le sommeil : c’est une montre, une bague ou une app de sommeil qui l’écrit dans Health Connect. On ne lit que la session de la nuit (éveils retirés), sur les 7 derniers jours. Une nuit corrigée à la main n’est jamais écrasée."
+    },
+    "guard": {
+      "title": "Si ça ne va pas fort",
+      "body": "Si ton humeur reste basse plusieurs jours, l’app te le dit une fois, doucement, avec un numéro où parler à quelqu’un. Elle ne pose aucun diagnostic."
+    }
   }
 }

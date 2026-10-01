@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Ce qu'on a déjà</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #f7eede; }
+a { color: #6a3fb0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; letter-spacing: .8px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.card { background: #fffaf2; border: 1px solid #e3d3ba; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+.top { display: flex; align-items: center; gap: 14px; }
+.ico { width: 44px; height: 44px; flex: none; border-radius: 14px; background: #efe7f8; display: flex; align-items: center; justify-content: center; }
+.ttl { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 23px; letter-spacing: -.5px; }
+.ref { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; color: #786a59; margin-top: 2px; }
+.desc { font-size: 15.5px; line-height: 23px; color: #33291f; }
+.kv { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 10px; border-top: 1px solid #ece0cd; padding-top: 10px; }
+.k { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: #6a3fb0; padding-top: 2px; }
+.v { font-size: 14px; line-height: 20px; color: #5b4d3e; }
+.rd { display: flex; flex-direction: column; gap: 3px; padding: 10px 0; border-top: 1px solid rgba(255, 255, 255, .14); }
+.rd b { font-size: 15px; color: #ffffff; }
+.rd span { font-size: 13.5px; line-height: 19px; color: #d9cff0; }
+.gap { background: #fffaf2; border: 1.5px dashed #b9a7d6; border-radius: 20px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px; }
+.gap b { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 19px; }
+.gap span { font-size: 14px; line-height: 20px; color: #5b4d3e; }
+.plus { width: 28px; height: 28px; border-radius: 50%; background: #6a3fb0; color: #ffffff; display: flex; align-items: center; justify-content: center; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 16px; }
+</style>
+</helmet>
+<div style="width: 1440px; height: 1300px; box-sizing: border-box; padding: 72px 80px; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; gap: 40px; overflow: hidden;">
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div class="eb" style="color: #6a3fb0;">01 · L'existant</div>
+    <h2 class="disp" style="margin: 0; font-weight: 800; font-size: 50px; line-height: 56px; letter-spacing: -1.6px;">Cinq briques, quatre lecteurs, aucune maison</h2>
+    <p style="margin: 0; font-size: 18px; line-height: 27px; color: #5b4d3e; max-width: 1000px;">Tout ce qui suit est codé et en recette. Le pilier commence donc par rassembler, pas par construire&nbsp;: son premier lot ne crée aucune donnée.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px;">
+
+    <div class="card">
+      <div class="top">
+        <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2" stroke-linecap="round"><path d="M5 19v-6"></path><path d="M12 19V6"></path><path d="M19 19v-9"></path></svg></div>
+        <div><div class="ttl">Le check-in</div><div class="ref">BIEN-01 · roadmap 1.24</div></div>
+      </div>
+      <div class="desc">Humeur, énergie et stress de 1 à 5, chaque niveau avec son libellé. Saisie partielle acceptée, rattrapage jusqu'à J-6, une ligne par jour.</div>
+      <div class="kv"><div class="k">Où</div><div class="v">Feuille ouverte depuis l'accueil · historique dans /wellbeing</div></div>
+      <div class="kv"><div class="k">Lu par</div><div class="v">Forme du jour, adaptation de séance, croisement du cycle, contexte envoyé à l'IA</div></div>
+    </div>
+
+    <div class="card">
+      <div class="top">
+        <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg></div>
+        <div><div class="ttl">La nuit</div><div class="ref">LABO-01</div></div>
+      </div>
+      <div class="desc">La durée de la nuit qui vient de finir, au quart d'heure, saisie dans le même check-in. Déclarative seulement.</div>
+      <div class="kv"><div class="k">Où</div><div class="v">Dans la feuille du check-in</div></div>
+      <div class="kv"><div class="k">Lu par</div><div class="v">Enquête « nuit courte » du Labo&nbsp;: sous 7&nbsp;h de moyenne, il propose de se coucher plus tôt</div></div>
+    </div>
+
+    <div class="card">
+      <div class="top">
+        <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L6 13h5l-1 8 7-10h-5l1-8z"></path></svg></div>
+        <div><div class="ttl">Les douleurs</div><div class="ref">DOUL-01 · roadmap 1.29</div></div>
+      </div>
+      <div class="desc">Des zones sur le schéma du corps, trois niveaux&nbsp;: gêne, douleur, bloquant. Désactivé par défaut.</div>
+      <div class="kv"><div class="k">Où</div><div class="v">/pain</div></div>
+      <div class="kv"><div class="k">Lu par</div><div class="v">Adaptation de séance&nbsp;: une douleur modifie la séance intense du jour</div></div>
+    </div>
+
+    <div class="card">
+      <div class="top">
+        <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.7"></path><path d="M20 4v5h-5"></path></svg></div>
+        <div><div class="ttl">Le cycle</div><div class="ref">CYCLE-01 · roadmap 1.25–1.26</div></div>
+      </div>
+      <div class="desc">Journal des règles, prédiction des phases, lecture et écriture dans Health Connect. Désactivé par défaut.</div>
+      <div class="kv"><div class="k">Où</div><div class="v">/cycle</div></div>
+      <div class="kv"><div class="k">Lu par</div><div class="v">Énergie, humeur, stress, tonnage, calories et allure comparés d'une phase à l'autre</div></div>
+    </div>
+
+    <div class="card">
+      <div class="top">
+        <div class="ico"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2" stroke-linecap="round"><ellipse cx="8.5" cy="8.5" rx="2.6" ry="4"></ellipse><ellipse cx="15.5" cy="15.5" rx="2.6" ry="4"></ellipse></svg></div>
+        <div><div class="ttl">Les pas</div><div class="ref">PAS-01 · roadmap 9.15</div></div>
+      </div>
+      <div class="desc">Les pas quotidiens lus dans Health Connect, une ligne par jour.</div>
+      <div class="kv"><div class="k">Où</div><div class="v">Widget d'accueil · /steps</div></div>
+      <div class="kv"><div class="k">Lu par</div><div class="v">La série&nbsp;: marcher compte comme une activité</div></div>
+    </div>
+
+    <div class="card" style="background: #2b1d52; border-color: #2b1d52; color: #ffffff; gap: 6px;">
+      <div class="top" style="padding-bottom: 8px;">
+        <div class="ico" style="background: rgba(255, 255, 255, .12);"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#e7defa" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></div>
+        <div><div class="ttl" style="color: #ffffff;">Les lecteurs</div><div class="ref" style="color: #cfc2ec;">déjà branchés sur ces données</div></div>
+      </div>
+      <div class="rd"><b>Forme du jour · TRI-03</b><span>Énergie et stress sur 3 jours → Repos conseillé, Forme correcte ou Prêt à pousser</span></div>
+      <div class="rd"><b>Adaptation de séance</b><span>Énergie ≤ 2, douleur ou charge à risque → séance intense allégée</span></div>
+      <div class="rd"><b>Croisement du cycle</b><span>Six mesures comparées entre les phases</span></div>
+      <div class="rd"><b>Enquête du Labo</b><span>Nuit moyenne sous 7&nbsp;h → « se coucher plus tôt »</span></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 16px;">
+    <h3 class="disp" style="margin: 0; font-weight: 700; font-size: 28px; letter-spacing: -.6px;">Ce qui manque</h3>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px;">
+      <div class="gap"><div class="plus">+</div><b>Un lieu</b><span>Quatre écrans et une feuille&nbsp;: personne ne « va » dans son bien-être.</span></div>
+      <div class="gap"><div class="plus">+</div><b>Deux indicateurs</b><span>La qualité de la nuit et l'envie de s'entraîner. Et le contexte&nbsp;: malade, soirée, voyage.</span></div>
+      <div class="gap"><div class="plus">+</div><b>Une lecture d'ensemble</b><span>Chaque brique a sa courbe&nbsp;; aucune ne montre ce qui va avec quoi.</span></div>
+      <div class="gap"><div class="plus">+</div><b>La boucle</b><span>Le bilan d'une séance ne dit jamais « nuit de 5&nbsp;h&nbsp;40 la veille ».</span></div>
+      <div class="gap"><div class="plus">+</div><b>Un capteur</b><span>La nuit n'est que déclarative, alors que Health Connect la connaît souvent.</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1300}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

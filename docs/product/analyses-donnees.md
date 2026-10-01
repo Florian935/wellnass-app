@@ -14,6 +14,10 @@ chaque ligne est un candidat à cadrer (spec → plan → design → validation)
 > d'entrée) est fixée par [ADR-007 — Surfaçage des analyses](../adr/ADR-007-surfacage-analyses.md).
 > Chaque US d'analyse **déclare son tier + sa condition d'affichage**.
 
+> 🔄 **01/10/2026 — section « Pilier Bien-être » ajoutée** : 7 analyses **BW-01 à BW-07**, toutes ✅ (livrées
+> par BIEN-02 → BIEN-07, en recette). Le catalogue passe de 220 à **227** items. La note « pas un 4ᵉ pilier
+> activable » de la source transverse est renversée (décision D1 du 01/10/2026).
+
 > 🔄 **Réconciliation du 30/09/2026 — 9 lignes corrigées** (chantier « le Labo, carrefour des
 > piliers »). Méthode : chaque identifiant non marqué ✅ a été cherché dans le code, puis relu — une
 > mention en commentaire ne vaut pas livraison. **5 passent ✅** (NUTR-12, NUTR-15, MR-17, MR-18,
@@ -95,14 +99,31 @@ ils expliquent souvent ce que les chiffres seuls ne disent pas (contre-perf, pla
 - **Exemples d'analyses 🆕** : « corrélation sommeil ↔ performance », « stress/fatigue élevés sur N
   jours → recommander repos/deload », « motivation en baisse → nudge/rappel bienveillant »,
   « readiness = f(sommeil, fatigue, charge, RPE) ».
-- **Prérequis (🆕, non cadré)** : un **check-in quotidien léger** (~10 s le matin) + une table
-  historisée dédiée. Cf. idées `journal-bien-etre` et « check-in quotidien » dans
-  [IDEAS.md](../../IDEAS.md). C'est une **dimension transverse** (façon 4ᵉ dimension « wellness »),
-  pas un 4ᵉ pilier activable.
+- **Prérequis** : ~~un check-in quotidien léger + une table historisée dédiée~~ → posé par **BIEN-01**
+  (28/07/2026, `daily_wellbeing`). ~~C'est une dimension transverse, pas un 4ᵉ pilier activable~~ →
+  **renversé le 01/10/2026** (décision D1 de Florian) : le bien-être est un **pilier activable** pour
+  l'utilisateur (BIEN-02 → BIEN-07), tout en restant un drapeau à part dans le code (pas un `Pillar`).
+  Ses analyses ont leur section ci-dessous ; celles qui croisent un autre pilier vivent au Labo (lien
+  `wellbeing` du registre).
 - **Gating** : soumis à la règle des piliers actifs ci-dessus **et** au freemium (les analyses
   croisées poussées qui exploitent ces signaux sont payantes — voir
   [ia-integration-analyse.md](ia-integration-analyse.md) §6).
 
+## Pilier Bien-être (BIEN-02 → BIEN-07)
+
+_Ajoutée le **01/10/2026**, avec le pilier. Les croisements Bien-être × pilier sont les **lignes du lien
+`wellbeing`** du registre (`cross-links.ts`) ; le moteur est `packages/shared/src/wellbeing-links.ts`
+(90 jours, 8 cas de chaque côté, seuils de bruit nommés). Tier : Labo (fiche) + écho dans le pilier._
+
+| ID | Statut | Analyse | Description | Données sources | Sortie | Fenêtre | Intention | US liée |
+|---|---|---|---|---|---|---|---|---|
+| BW-01 | ✅ | Garde-fou « humeur basse » | 5 des 7 dernières humeurs notées à 1-2 (sur 14 jours civils) → une carte, le 3114, 14 jours de silence ensuite. Ne commente jamais un jour isolé. | `daily_wellbeing.mood` | carte | 14 j | Ne pas recueillir l'humeur sans savoir quoi dire quand elle reste basse (D7). ⚠️ Seuil à faire relire. | BIEN-02 |
+| BW-02 | ✅ | Forme du jour × nuit et maladie | La composante bien-être du score de forme devient défavorable sur une nuit courte ou agitée (< 6 h ou qualité 1-2) ou « malade ». | `daily_wellbeing` (nuit, qualité, `sick`) | verdict | jour | Que la nuit compte dans « est-ce un jour pour pousser ? » (enrichit TRI-03). | BIEN-04 |
+| BW-03 | ✅ | Adaptation de séance × état du jour | Malade → décaler ; nuit courte sur séance intense → retirer du volume ; envie ≤ 2 → version courte proposée. Rien d'automatique. | check-in du jour, séances prévues | proposition | jour | Fermer la boucle : l'état du jour change le plan (enrichit l'adaptation CARDIO-UX01). | BIEN-04 |
+| BW-04 | ✅ | Nuit → séance, sortie, assiette | Après une nuit courte : tonnage (vs médiane du même type de séance), allure (vs médiane au même effort perçu), apports du jour. | `daily_wellbeing`, `workout_sets`, `runs`, `food_entries` | écart + cas | 90 j | Chiffrer ce que coûte une nuit courte, en kg, s/km, kcal. | BIEN-05 |
+| BW-05 | ✅ | Envie, stress, séance ↔ humeur | Envie basse → séance faite ? ; stress élevé → journal tenu ? ; jour d'entraînement → humeur du soir. | `daily_wellbeing`, jours d'activité, journal | écart + cas | 90 j | Relier le ressenti aux habitudes, sans causalité affirmée. | BIEN-05 |
+| BW-06 | ✅ | Ce qui pèse sur les nuits, régularité du coucher | Alcool (≥ 2 verres) et café tardif → nuit suivante ; alcool → allure du lendemain ; écart des heures de coucher sur les nuits lues. | modules du soir, nuits lues (`sleep_start_at`) | écart + cas · stat | 90 j · 14 j | Montrer ce qui raccourcit les nuits ; la régularité sans rien demander. | BIEN-05, BIEN-06 |
+| BW-07 | ✅ | Journal mensuel et moyennes 30 jours | Le mois en couleurs, un indicateur à la fois (trou ≠ valeur) ; moyennes de nuit, qualité, énergie, envie, humeur, stress. | `daily_wellbeing` | calendrier · stat | mois · 30 j | Voir son état sur la durée, à côté de ce que les piliers ont fait. | BIEN-02 |
 ---
 
 ## Intra-Musculation

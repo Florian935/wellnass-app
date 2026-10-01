@@ -11,8 +11,9 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { computeSessionHeat, formatDayFull, type SetType } from '@wellness/shared';
+import { computeSessionHeat, formatDayFull, localDayKey, type SetType } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { WellbeingContextLine } from '@/components/wellbeing/WellbeingContextLine';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { ShareCardSheet } from '@/components/share/ShareCardSheet';
@@ -115,6 +116,9 @@ export default function WorkoutSummaryScreen() {
       <ScreenHeader title={t('workout.summary.title')} subtitle={t('workout.summary.subtitle')} />
 
       {report !== null ? <WorkoutReport report={report} context="post-session" /> : null}
+
+      {/* US BIEN-04 — ce que l'état du jour était (pilier Bien-être activé). */}
+      {workout !== null ? <WellbeingContextLine dayKey={localDayKey(new Date(workout.startedAt))} pillar="strength" /> : null}
 
       {/*
         US DEPENSE-02 — ce que la séance a coûté, et ce que ça change dans la journée.

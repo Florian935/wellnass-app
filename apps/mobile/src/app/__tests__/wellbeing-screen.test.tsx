@@ -28,10 +28,14 @@ import { useRouter } from 'expo-router';
 // Mocks
 // ---------------------------------------------------------------------------
 
+// US BIEN-02 — pilier Bien-être éteint : l'écran est celui de BIEN-01 (la feuille du pilier a ses tests).
+jest.mock('@/data/repositories/wellbeing-pillar-repository', () => ({ useWellbeingPillar: () => ({ enabled: false, modules: { alcohol: false, caffeine: false, nap: false, cravings: false }, sleepFromHealthConnect: false, activePillars: [], isLoading: false }) }));
+jest.mock('@/components/wellbeing/MomentCheckinSheet', () => ({ MomentCheckinSheet: () => null }));
+
 jest.mock('@/data/repositories/daily-wellbeing-repository', () => ({
   useWellbeingEntries: jest.fn(() => ({ entries: [] })),
 }));
-jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: jest.fn(() => '2026-08-14') }));
+jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: jest.fn(() => '2026-08-14'), useCurrentHour: jest.fn(() => 9) }));
 
 /** La feuille de check-in a ses propres tests : sonde qui expose le jour visé. */
 jest.mock('@/components/wellbeing/WellbeingCheckinSheet', () => {

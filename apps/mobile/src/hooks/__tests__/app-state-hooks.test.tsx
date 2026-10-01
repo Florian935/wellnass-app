@@ -38,6 +38,7 @@ jest.mock('@/lib/health-connect', () => ({
   importWeightIfDue: () => mockImportWeight(),
   importStepsIfDue: () => mockImportSteps(),
   importCycleDataIfDue: () => mockImportCycle(),
+  importSleepIfDue: () => Promise.resolve(0),
 }));
 
 import { useAppOpenedAnalytics } from '../useAppOpenedAnalytics';

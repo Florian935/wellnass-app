@@ -11,8 +11,8 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **30/09/2026** — **87 sections** (§89 « le Labo, carrefour des piliers »
-> ajoutée : cinq US, une recette ; le 26/09/2026 : §88 NUTRI-UX03 et §87 CARDIO-UX03 ; §86 MUSCU-UX07 le
+> Dernière mise à jour : **01/10/2026** — **88 sections** (§90 « le pilier Bien-être » ajoutée : six US,
+> une recette ; le 30/09/2026 : §89 « le Labo, carrefour des piliers », cinq US ; le 26/09/2026 : §88 NUTRI-UX03 et §87 CARDIO-UX03 ; §86 MUSCU-UX07 le
 > 25/09/2026 ; le 23/09/2026 : §84 MUSCU-FIX02 et §85 MUSCU-UX06 recettées et clôturées, sections
 > purgées).
 >
@@ -5638,3 +5638,171 @@ d'Insights (records, objectifs atteints), et un conflit d'objectifs peut appara�
 d'accueil et dans « Tes liens » ; un changement de compte **sans** purge de la base locale peut faire
 calculer un premier état sur les données du compte précédent (défaut antérieur, réduit par les gardes
 d'écriture).
+
+## 90. Le pilier Bien-être — BIEN-02 à BIEN-07 (`dev`)
+
+Specs : [BIEN-02](docs/specs/functional/us/bien02-pilier-bien-etre.md) (chapeau, décisions D1-D8) ·
+[BIEN-03](docs/specs/functional/us/bien03-checkin-deux-temps.md) · [BIEN-04](docs/specs/functional/us/bien04-boucle.md) ·
+[BIEN-05](docs/specs/functional/us/bien05-ce-qui-compte.md) · [BIEN-06](docs/specs/functional/us/bien06-nuit-health-connect.md) ·
+[BIEN-07](docs/specs/functional/us/bien07-modules.md) · plans dans [docs/plans/](docs/plans/) · toile
+[design/pilier-bien-etre-2026-10/](design/pilier-bien-etre-2026-10/) (https://claude.ai/artifact/Uj3su2fdPF9reGM62MFkeN) ·
+roadmap **1.31 à 1.36**
+
+Six US livrées **en une vague** le 01/10/2026, une recette unique, sur décision de Florian (« tu
+implémentes TOUT d'un seul lot et je ferai le recettage à la fin »). Décisions du 01/10/2026 : D1 pilier
+activable, D2 le Labo garde son onglet, D3 la nuit lue dans Health Connect, D4 matin et soir, D5 à D8
+selon la recommandation de la toile.
+
+> 🔴 **Prérequis 1 — un APK neuf.** La permission `READ_SLEEP` est ajoutée à `app.json` : un dev client ou
+> un APK construit avant le 01/10/2026 **ne la déclare pas**, et la demande de lecture de la nuit échoue
+> sans écran système. Tout le reste (sections A à D, F) marche avec dev client + Metro.
+>
+> 🔴 **Prérequis 2 — le garde-fou (D7) doit être relu** par une personne compétente **avant la sortie du
+> pilier** : seuil (5 humeurs à 1-2 sur les 7 dernières notées, 14 jours de silence) et texte de la carte
+> (« Ça ne va pas fort ces jours-ci… », 3114). Cocher ici quand c'est fait : [ ] relu le ___ par ___.
+>
+> ✅ **Migration poussée** (`20261001084709_bien02_pilier_bien_etre`, cochée au
+> [registre](supabase/MIGRATIONS.md)). ✅ **Aucune sync rule à déployer** : `user_settings` et
+> `daily_wellbeing` sont en `select *`.
+>
+> 🔵 **Données** : les croisements (section D) demandent **8 cas de chaque côté** sur 90 jours — un compte
+> neuf ne verra que « à découvrir ». Pour la nuit lue (section E), il faut une **app source** qui écrit le
+> sommeil dans Health Connect (Samsung Health, Fitbit, Garmin Connect, Sleep as Android…) et au moins une
+> nuit enregistrée par elle.
+
+### A — Le pilier, la barre, le hub (BIEN-02)
+
+- [ ] 1. **Compte neuf** : aucun onglet Bien-être ; l'onboarding propose le pilier, **éteint**.
+- [ ] 2. Allumer le pilier (onboarding, Réglages ou réglages du pilier) ouvre une **confirmation** qui dit
+      ce qui sera enregistré et comment le reprendre ; « Annuler » laisse l'interrupteur éteint.
+- [ ] 3. Confirmé : l'onglet **Bien-être** (lune, violet) apparaît après Nutrition. Les quatre piliers
+      allumés : **six onglets**, le Labo est toujours là (D2), les libellés tiennent sur un écran étroit.
+- [ ] 4. Éteindre le pilier : l'onglet disparaît **sans confirmation** ; le rallumer : tout est revenu
+      (check-ins, réglages des modules).
+- [ ] 5. Le hub ouvre sur **Aujourd'hui** ; titre et trois onglets (**Aujourd'hui · Journal · Ce qui
+      compte**) dans la scène violette ; deux icônes : historique en courbes, réglages du pilier.
+- [ ] 6. Changer d'onglet, aller ailleurs, revenir : le dernier onglet est rouvert. Relancer l'app :
+      Aujourd'hui.
+- [ ] 7. Pilier éteint, ouvrir un lien vers le hub (ligne « Ce jour-là » d'un bilan affichée avant
+      l'extinction, ou le Labo) : écran « pilier éteint » avec un bouton vers les réglages, **aucune
+      donnée**.
+- [ ] 8. **Journal** : le mois en cases violettes, un indicateur à la fois (nuit, qualité, énergie, envie,
+      humeur, stress) ; un jour sans check-in est **en pointillé**, jamais coloré ; aujourd'hui est
+      encadré ; mois précédent / suivant.
+- [ ] 9. Sous le mois, les **14 derniers jours** : valeurs en mots, étiquettes, et **ce que les piliers
+      ont fait** (séance, sortie en km, kcal mangées) ; « Matin » / « Soir » rouvrent le check-in du jour
+      dans la fenêtre de rattrapage (pas au-delà de J-6).
+- [ ] 10. **Garde-fou** : noter l'humeur à 1 ou 2 cinq jours sur sept → la carte « Ça ne va pas fort ces
+      jours-ci » apparaît **en tête** d'Aujourd'hui. « Appeler le 3114 » ouvre le composeur ; « Fermer » la
+      retire jusqu'au lendemain ; elle ne revient pas avant **14 jours**, même si l'humeur reste basse.
+- [ ] 11. Un seul mauvais jour, ou trois de suite sans les cinq : **aucune** carte.
+- [ ] 12. Réglages du pilier : quatre sections (le pilier, les modules, la nuit, « si ça ne va pas ») ;
+      le numéro est rappelé dans la dernière.
+- [ ] 13. Accueil › action rapide **Check-in** : ouvre le hub pilier allumé, l'historique de BIEN-01
+      sinon. Pilier éteint, la feuille du check-in de l'accueil est **celle d'avant** (inchangée).
+
+### B — Le check-in en deux temps (BIEN-03)
+
+- [ ] 14. Avant midi, **Matin** est mis en avant ; après 17 h, **Soir** ; entre les deux, celui qui
+      n'est pas fait. Les deux restent ouvrables.
+- [ ] 15. **Matin** : nuit (7 h au premier « + », quarts d'heure ensuite), qualité de la nuit, énergie,
+      envie de s'entraîner, « Malade », « En voyage », poids ; ⏱ **moins de 10 secondes** chronomètre en
+      main pour une saisie complète.
+- [ ] 16. **Soir** : humeur, stress, « Journée chargée », « Soirée, couché tard » ; ⏱ **moins de 10 secondes**.
+- [ ] 17. 🔴 Faire le matin, puis le soir : l'humeur du soir **n'efface pas** la nuit du matin, et
+      inversement (Journal : les deux sur la même journée).
+- [ ] 18. Le soir d'hier manque : le matin propose **« Hier soir non noté »**, qui ouvre la feuille du
+      soir sur la veille. ⚠️ À juger : ce qui était saisi dans la feuille du matin **sans être enregistré**
+      est abandonné au passage (enregistrer le matin d'abord, ou garder ce comportement).
+- [ ] 19. Nuit saisie par erreur : « effacer » la ramène à **non renseignée**.
+- [ ] 20. Rouvrir le matin et décocher « Malade » seul : c'est **enregistré** (le Journal ne le montre
+      plus).
+- [ ] 21. « Courbatures » (journal des douleurs activé) ouvre le journal des douleurs.
+- [ ] 22. **Mode avion** : les deux check-ins s'enregistrent ; ils remontent au retour du réseau
+      (vérifier sur un second appareil).
+
+### C — La boucle (BIEN-04)
+
+- [ ] 23. Matin avec une **nuit de 5 h 30** : la forme du jour (accueil et scène du pilier) en tient
+      compte ; dans la scène, une pastille « nuit courte ou agitée » avec sa flèche **et** son mot.
+- [ ] 24. Séance de **course intense** prévue + nuit courte : « Ce que ça change » propose **Alléger** ;
+      la feuille dit ce qui change **avant** d'écrire ; confirmé, la séance porte l'adaptation (Course ›
+      Courir) et la proposition n'est plus offerte.
+- [ ] 25. Séance de **muscu** prévue + nuit courte : le conseil d'alléger s'affiche, **sans** bouton
+      d'écriture ; le bouton ouvre le pilier.
+- [ ] 26. Cocher **Malade** : toute séance du jour est proposée **à demain** ; confirmé, elle est décalée
+      au planning.
+- [ ] 27. Envie à 1-2 sans autre signal : une **version courte** est proposée, rien n'est imposé ; tout au
+      vert : « bon jour pour tenter la charge prévue ».
+- [ ] 28. Une note pour l'assiette apparaît un jour malade / après une nuit courte / une soirée / une
+      journée stressée — la cible calorique, elle, ne bouge pas.
+- [ ] 29. **Ligne « Ce jour-là »** : sur le bilan d'une séance de muscu, d'une sortie, d'une journée
+      nutrition et sur le détail d'une séance passée — nuit, qualité, énergie, envie (pas en nutrition),
+      étiquettes. Rien si le pilier est éteint ou sans check-in ce jour-là.
+- [ ] 30. Avec un lien « probable » ou « solide » (section D) et une nuit courte ce jour-là, la ligne
+      ajoute **ce que ça fait d'habitude**, avec le nombre de cas ; jamais de « tu aurais dû ».
+- [ ] 31. 🔴 **Pilier éteint** : forme du jour, adaptation de séance, bilans **identiques à avant**.
+
+### D — Ce qui compte, et le lien du Labo (BIEN-05)
+
+- [ ] 32. Compte avec peu d'historique : au Labo › Croiser, le lien **« Ton état du jour pèse-t-il sur tes
+      séances ? »** est **à découvrir**, avec une jauge (« 5 sur 8 »), jamais un zéro.
+- [ ] 33. Avec assez de cas (≥ 8 nuits courtes et ≥ 8 autres sur 90 jours) : la fiche montre chaque
+      croisement à son stade, et le graphique **des écarts** : une ligne par croisement, l'écart signé
+      dans son unité (%, s/km, kcal…), les cas de chaque côté ; « rien de visible » pour une piste
+      écartée ; des barres de **longueurs différentes** (pas toutes pleines).
+- [ ] 34. Une piste défavorable sur la nuit **et** deux nuits courtes dans la semaine : le lien passe
+      **à régler** (« 2 nuits courtes cette semaine… »), avec « Ouvrir le pilier Bien-être » et « Comprendre dans Apprendre ».
+- [ ] 35. Pilier Course éteint : aucun croisement d'allure ; module alcool éteint : aucun croisement
+      alcool — ils n'apparaissent **nulle part**, même grisés.
+- [ ] 36. Onglet **Ce qui compte** : l'écho du lien (qui ouvre sa fiche), ce qui pèse sur les nuits
+      (modules allumés), la régularité du coucher (nuits lues), les moyennes des 30 derniers jours.
+- [ ] 37. Les phrases disent « va souvent avec », jamais « parce que » ; toujours le nombre de cas.
+
+### E — La nuit lue dans Health Connect (BIEN-06) — ⚠️ APK neuf
+
+- [ ] 38. Réglages du pilier › « Ta nuit, lue dans Health Connect » : l'allumer ouvre l'**écran système**
+      de permission (sommeil seul) ; refusée, un message le dit et l'interrupteur reste éteint.
+- [ ] 39. 🔴 Les permissions **générales** de Health Connect (séances, poids, pas) ne passent **pas** en
+      « manquantes » à cause du sommeil (Réglages › Health Connect inchangé).
+- [ ] 40. Accordée : « Importer maintenant » écrit les nuits des 7 derniers matins ; le check-in du matin
+      montre la nuit avec le badge **« lue par Health Connect »**. 🔴 Juste après l'écran système (deux
+      imports partent en même temps), le Journal montre **un seul** jour par matin, et un second appareil
+      reçoit bien les nuits (une ligne en double aurait figé la synchro — corrigé à la revue, à confirmer).
+- [ ] 41. Une sieste d'après-midi enregistrée par la montre **n'est pas** une nuit ; une nuit coupée en
+      deux (montre retirée) compte **une fois**, phases d'éveil retirées.
+- [ ] 42. 🔴 Une nuit **saisie à la main** n'est jamais remplacée par la lecture ; une nuit lue puis
+      corrigée avec − / + reste la correction.
+- [ ] 43. Revenir dans l'app plus d'une heure après : l'import se refait seul ; moins d'une heure : non.
+- [ ] 44. Sans app source : « aucune nuit », et le compte rendu de Réglages › Health Connect dit « aucune
+      session de sommeil lue », pas une panne.
+- [ ] 45. Cinq nuits lues ou plus sur 14 jours : « Ce qui compte » dit l'heure de coucher moyenne et son
+      écart.
+
+### F — Les modules (BIEN-07)
+
+- [ ] 46. Par défaut, le soir ne pose **aucune** question de module.
+- [ ] 47. Allumer Alcool, Café tardif, Sieste, Fringales : chaque question apparaît au **soir** (et
+      seulement là) ; « 3 et + » est le dernier choix d'alcool ; retaper une réponse la retire.
+- [ ] 48. Les réponses se relisent au **Journal** (« 2 verres · café après 16 h · sieste de 20 min ·
+      Fringales… ») ; « aucun verre » s'affiche, un « non » au café non.
+- [ ] 49. Éteindre un module : la question disparaît, les réponses passées **restent** au Journal.
+
+### G — Transverse
+
+- [ ] 50. En **anglais** : aucun libellé français dans le pilier, ses réglages, le check-in, le lien du Labo
+      et sa fiche, la ligne « Ce jour-là ». (Le numéro d'aide reste le 3114 : voir plus bas.)
+- [ ] 51. **TalkBack** : onglets et leur état, cases du mois (« jeudi 1 octobre : 6 h 40 » / « … : non renseigné »),
+      échelles, étiquettes (cases à cocher), boutons d'alcool (« 2 verres »), carte du garde-fou.
+- [ ] 52. **Thème sombre** et **grandes polices** : scène, cartes, mois, feuille et fiche restent lisibles ;
+      thème clair : le violet des surfaces est volontairement très pâle (exception de contraste
+      documentée) — le juger à l'œil.
+- [ ] 53. **Second appareil** : réglages du pilier, check-ins et nuits lues arrivent après synchro.
+
+⚠️ **Ce qui n'a pas été fait** (détail au dernier § de chaque spec) : la relecture du garde-fou (prérequis
+2) ; le **numéro d'aide hors de France** (le 3114 est aussi affiché en anglais) ; la **déclaration Play à
+7 types** et la mention du sommeil dans la politique de confidentialité (hors code, avant publication) ;
+la sieste lue dans Health Connect ; fréquence cardiaque au repos et VFC ; « cette règle ne me correspond
+pas » et la passerelle vers l'enquête du Labo ; l'historique figé du lien Bien-être ; une version courte
+**écrite** d'une séance de muscu (aujourd'hui un conseil) ; aucun croisement ne lit encore la sieste ni
+les fringales.

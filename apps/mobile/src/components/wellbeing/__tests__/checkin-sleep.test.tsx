@@ -141,7 +141,28 @@ describe('note de nuit', () => {
   });
 
   it('un check-in existant rouvre sur SA nuit', async () => {
-    await afficher({ id: 'w-1', logDate: JOUR, mood: 4, energy: 3, stress: 2, sleepMinutes: 450 });
+    await afficher({
+      id: 'w-1',
+      logDate: JOUR,
+      mood: 4,
+      energy: 3,
+      stress: 2,
+      sleepMinutes: 450,
+      // US BIEN-03 → BIEN-07 — les champs du pilier, vides : ce test ne parle que de la nuit.
+      sleepQuality: null,
+      motivation: null,
+      sick: false,
+      busyDay: false,
+      lateNight: false,
+      travel: false,
+      alcoholDrinks: null,
+      lateCaffeine: null,
+      napMinutes: null,
+      cravings: null,
+      sleepSource: 'manual',
+      sleepStartAt: null,
+      sleepEndAt: null,
+    });
 
     expect(valeurNuit()).toBe('7 h 30');
   });

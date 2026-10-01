@@ -1,0 +1,45 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-09-30T08:00:00Z" },
+  "title": "Pilier Bien-être",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 0, "w": 1440, "h": 1680, "title": "00 · Synthèse" },
+    "Existant.dc.html": { "x": 1520, "y": 0, "w": 1440, "h": 1300, "title": "01 · Ce qu'on a déjà" },
+    "Indicateurs.dc.html": { "x": 0, "y": 1800, "w": 1440, "h": 2080, "title": "02 · Les indicateurs" },
+    "Croisements.dc.html": { "x": 1520, "y": 1800, "w": 1440, "h": 2400, "title": "03 · Les croisements" },
+    "Checkin.dc.html": { "x": 0, "y": 4580, "w": 390, "h": 844, "title": "04a · Le check-in du matin" },
+    "Aujourdhui.dc.html": { "x": 470, "y": 4580, "w": 390, "h": 844, "title": "04b · Aujourd'hui" },
+    "Journal.dc.html": { "x": 940, "y": 4580, "w": 390, "h": 844, "title": "04c · Journal" },
+    "Liens.dc.html": { "x": 1410, "y": 4580, "w": 390, "h": 844, "title": "04d · Ce qui compte" },
+    "Contexte.dc.html": { "x": 1880, "y": 4580, "w": 390, "h": 844, "title": "04e · Le contexte dans une sortie" },
+    "Proto.dc.html": { "x": 2350, "y": 4580, "w": 1180, "h": 960, "title": "05 · Prototype — un matin", "is_interactive": true },
+    "Marche.dc.html": { "x": 0, "y": 5900, "w": 1440, "h": 1200, "title": "06 · Face au marché" },
+    "GardeFous.dc.html": { "x": 1520, "y": 5900, "w": 1440, "h": 1200, "title": "07 · Garde-fous" },
+    "Decisions.dc.html": { "x": 0, "y": 7220, "w": 1440, "h": 1500, "title": "08a · Décisions" },
+    "Decoupage.dc.html": { "x": 1520, "y": 7220, "w": 1440, "h": 1480, "title": "08b · Découpage" }
+  },
+  "order": [
+    "Main.dc.html",
+    "Existant.dc.html",
+    "Indicateurs.dc.html",
+    "Croisements.dc.html",
+    "Checkin.dc.html",
+    "Aujourdhui.dc.html",
+    "Journal.dc.html",
+    "Liens.dc.html",
+    "Contexte.dc.html",
+    "Proto.dc.html",
+    "Marche.dc.html",
+    "GardeFous.dc.html",
+    "Decisions.dc.html",
+    "Decoupage.dc.html"
+  ],
+  "notes": {
+    "t1": { "x": 0, "y": -300, "text": "Pilier Bien-être — le compte rendu", "kind": "title1", "maxW": 2960 },
+    "t2": { "x": 0, "y": 4320, "text": "Le pilier en écrans — et un prototype jouable", "kind": "title1", "maxW": 3530 },
+    "t3": { "x": 0, "y": 5640, "text": "Pour décider", "kind": "title1", "maxW": 2960 }
+  },
+  "designSystems": []
+}

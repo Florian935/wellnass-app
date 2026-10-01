@@ -15,6 +15,7 @@
  */
 
 import { daysBetween } from './date';
+import { SHORT_NIGHT_MINUTES } from './lab-week';
 
 /** Bornes de l'échelle subjective (décision D2 : 1-5, pas 1-10). */
 export const WELLBEING_SCALE_MIN = 1;
@@ -49,10 +50,68 @@ export const SLEEP_MINUTES_MIN = 0;
 export const SLEEP_MINUTES_MAX = 14 * 60;
 export const SLEEP_MINUTES_STEP = 15;
 
+/**
+ * US BIEN-03 — les échelles ajoutées par le pilier Bien-être (décision D5 du 01/10/2026), et la faim
+ * du soir (module, décision D6). Mêmes règles que les trois indicateurs de BIEN-01 : 1 à 5, un libellé
+ * par niveau, toutes facultatives, et un jour sans valeur est un trou.
+ *
+ * ⚠️ `sleepQuality` et `motivation` montent vers le **favorable** (5 = nuit réparatrice, très envie) ;
+ * `cravings` monte vers le **défavorable** (5 = fringales fortes), comme `stress`. C'est l'affichage
+ * (libellés) qui porte ce sens, jamais une couleur seule.
+ */
+export const WELLBEING_EXTRA_SCALES = ['sleepQuality', 'motivation', 'cravings'] as const;
+export type WellbeingExtraScale = (typeof WELLBEING_EXTRA_SCALES)[number];
+
+/** Toutes les échelles 1-5 du check-in, dans l'ordre de stockage. */
+export type WellbeingScaleKey = WellbeingIndicator | WellbeingExtraScale;
+export const WELLBEING_SCALE_KEYS: readonly WellbeingScaleKey[] = [...WELLBEING_INDICATORS, ...WELLBEING_EXTRA_SCALES];
+
+/**
+ * US BIEN-03 — les étiquettes du jour (décision D5) : une **liste fermée**, un tap, analysable. Le
+ * texte libre reste écarté (BIEN-01 §2) : il ne se croise avec rien et pose une question RGPD.
+ */
+export const WELLBEING_TAGS = ['sick', 'busyDay', 'lateNight', 'travel'] as const;
+export type WellbeingTag = (typeof WELLBEING_TAGS)[number];
+
+/** Les étiquettes proposées au réveil (ce qu'on sait le matin) et le soir (ce qu'on sait du jour). */
+export const MORNING_TAGS: readonly WellbeingTag[] = ['sick', 'travel'];
+export const EVENING_TAGS: readonly WellbeingTag[] = ['busyDay', 'lateNight'];
+
+/** US BIEN-07 — les modules du pilier, éteints par défaut (décision D6). */
+export const WELLBEING_MODULES = ['alcohol', 'caffeine', 'nap', 'cravings'] as const;
+export type WellbeingModule = (typeof WELLBEING_MODULES)[number];
+
+/** Verres d'alcool la veille au soir : 0, 1, 2, ou « 3 et plus » (stocké 3). Rien au-delà. */
+export const ALCOHOL_DRINKS_MAX = 3;
+
+/** Sieste du jour, en minutes. Au-delà de 3 h, ce n'est plus une sieste. Pas de saisie : 10 min. */
+export const NAP_MINUTES_MAX = 180;
+export const NAP_MINUTES_STEP = 10;
+
+/** Vrai si la valeur est un nombre de verres stockable (0 à 3, entier). */
+export function isAlcoholDrinks(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= ALCOHOL_DRINKS_MAX;
+}
+
+/** Vrai si la valeur est une durée de sieste stockable (entier, 0 à 3 h). */
+export function isNapMinutes(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0 && value <= NAP_MINUTES_MAX;
+}
+
 /** Ce que l'utilisateur a saisi — les champs sont indépendants et facultatifs (décision D3). */
-export type WellbeingCheckinInput = Partial<Record<WellbeingIndicator, number | null | undefined>> & {
-  sleepMinutes?: number | null;
-};
+export type WellbeingCheckinInput = Partial<Record<WellbeingScaleKey, number | null | undefined>> &
+  Partial<Record<WellbeingTag, boolean | null | undefined>> & {
+    sleepMinutes?: number | null;
+    /**
+     * US BIEN-07 — verres bus **ce jour-là**, saisis au check-in du soir (module « alcool »). Les liens
+     * lisent donc l'alcool d'un jour J contre la nuit et la course de J+1.
+     */
+    alcoholDrinks?: number | null;
+    /** US BIEN-07 — « un café après 16 h ? » (module « caféine »). `null` = pas répondu. */
+    lateCaffeine?: boolean | null;
+    /** US BIEN-07 — sieste du jour (module « sieste »). */
+    napMinutes?: number | null;
+  };
 
 /** Vrai si la durée est une nuit exploitable (entier, 0 à 14 h). */
 export function isSleepMinutes(value: unknown): value is number {
@@ -92,7 +151,16 @@ export function isWellbeingLevel(value: unknown): value is WellbeingLevel {
 export function isEmptyCheckin(input: WellbeingCheckinInput): boolean {
   // US LABO-01 : une nuit seule suffit à faire un check-in — c'est souvent la seule chose qu'on
   // retient au réveil.
-  return !WELLBEING_INDICATORS.some((indicator) => isWellbeingLevel(input[indicator])) && !isSleepMinutes(input.sleepMinutes);
+  // US BIEN-03 : une étiquette cochée (« malade ») ou une réponse d'un module en est un aussi. Une
+  // étiquette DÉCOCHÉE, elle, n'apporte rien : elle ne doit pas créer une ligne à elle seule.
+  return (
+    !WELLBEING_SCALE_KEYS.some((key) => isWellbeingLevel(input[key])) &&
+    !isSleepMinutes(input.sleepMinutes) &&
+    !WELLBEING_TAGS.some((tag) => input[tag] === true) &&
+    !isAlcoholDrinks(input.alcoholDrinks) &&
+    typeof input.lateCaffeine !== 'boolean' &&
+    !isNapMinutes(input.napMinutes)
+  );
 }
 
 /**
@@ -134,7 +202,7 @@ function livingRowsWithin(
  */
 export function wellbeingSeries(
   rows: ReadonlyArray<LocalWellbeing>,
-  indicator: WellbeingIndicator,
+  indicator: WellbeingScaleKey,
   days: number,
   todayKey: string,
 ): WellbeingPoint[] {
@@ -176,4 +244,139 @@ export function wellbeingAverages(
   }
 
   return result;
+}
+
+/**
+ * US BIEN-02 — moyenne d'une échelle quelconque (y compris celles du pilier), jours renseignés
+ * seulement — même règle 2 que `wellbeingAverages`.
+ */
+export function wellbeingScaleAverage(
+  rows: ReadonlyArray<LocalWellbeing>,
+  key: WellbeingScaleKey,
+  days: number,
+  todayKey: string,
+): WellbeingAverage {
+  const values = livingRowsWithin(rows, days, todayKey)
+    .map((row) => row[key])
+    .filter((value): value is WellbeingLevel => isWellbeingLevel(value));
+  if (values.length === 0) return { average: null, days: 0 };
+  return { average: values.reduce((sum, value) => sum + value, 0) / values.length, days: values.length };
+}
+
+// ---------------------------------------------------------------------------
+// US BIEN-03 — le check-in en deux temps (décision D4 du 01/10/2026)
+// ---------------------------------------------------------------------------
+
+/**
+ * Deux moments de dix secondes plutôt qu'un long : le **matin** répond à « que faire aujourd'hui ? »
+ * (la nuit, sa qualité, l'énergie, l'envie), le **soir** à « comment s'est passée la journée ? »
+ * (humeur, stress, étiquettes). Les deux écrivent la **même ligne** : celle du jour civil local.
+ */
+export type CheckinMoment = 'morning' | 'evening';
+
+/** Avant cette heure, on propose le matin quoi qu'il arrive. */
+export const CHECKIN_MORNING_UNTIL_HOUR = 12;
+/** À partir de cette heure, on propose le soir quoi qu'il arrive. */
+export const CHECKIN_EVENING_FROM_HOUR = 17;
+
+/** Le matin est fait dès qu'**un** de ses gestes l'est (saisie partielle, décision D3 de BIEN-01). */
+export function hasMorningCheckin(entry: WellbeingCheckinInput | null | undefined): boolean {
+  if (!entry) return false;
+  return (
+    isSleepMinutes(entry.sleepMinutes) ||
+    isWellbeingLevel(entry.sleepQuality) ||
+    isWellbeingLevel(entry.energy) ||
+    isWellbeingLevel(entry.motivation) ||
+    MORNING_TAGS.some((tag) => entry[tag] === true)
+  );
+}
+
+/** Le soir est fait dès qu'un de ses gestes l'est. */
+export function hasEveningCheckin(entry: WellbeingCheckinInput | null | undefined): boolean {
+  if (!entry) return false;
+  return (
+    isWellbeingLevel(entry.mood) ||
+    isWellbeingLevel(entry.stress) ||
+    isWellbeingLevel(entry.cravings) ||
+    EVENING_TAGS.some((tag) => entry[tag] === true) ||
+    isAlcoholDrinks(entry.alcoholDrinks) ||
+    typeof entry.lateCaffeine === 'boolean' ||
+    isNapMinutes(entry.napMinutes)
+  );
+}
+
+/**
+ * Le moment à proposer à cette heure. Entre midi et 17 h, c'est le matin tant qu'il n'est pas fait —
+ * un réveil tardif ou un oubli ne doit pas faire sauter la nuit, qui est la donnée la plus utile.
+ */
+export function suggestCheckinMoment(hour: number, entry: WellbeingCheckinInput | null | undefined): CheckinMoment {
+  if (hour < CHECKIN_MORNING_UNTIL_HOUR) return 'morning';
+  if (hour >= CHECKIN_EVENING_FROM_HOUR) return 'evening';
+  return hasMorningCheckin(entry) ? 'evening' : 'morning';
+}
+
+// ---------------------------------------------------------------------------
+// US BIEN-04 — la nuit « courte ou agitée »
+// ---------------------------------------------------------------------------
+
+/** Une qualité à ce niveau ou en dessous (« mauvaise », « agitée ») vaut une nuit courte. */
+export const POOR_SLEEP_QUALITY = 2;
+
+/**
+ * La nuit qui précède ce check-in était-elle **courte ou agitée** ? Moins de 6 h (le repère du Labo,
+ * `SHORT_NIGHT_MINUTES`, jamais un second chiffre), **ou** une qualité de 1 ou 2.
+ *
+ * `null` quand on n'en sait rien — ni durée ni qualité. Un « non » se prouve : une nuit inconnue
+ * n'est pas une bonne nuit.
+ */
+export function isPoorNight(entry: { sleepMinutes?: number | null; sleepQuality?: number | null } | null | undefined): boolean | null {
+  if (!entry) return null;
+  const minutesKnown = isSleepMinutes(entry.sleepMinutes);
+  const qualityKnown = isWellbeingLevel(entry.sleepQuality);
+  if (!minutesKnown && !qualityKnown) return null;
+  if (minutesKnown && (entry.sleepMinutes as number) < SHORT_NIGHT_MINUTES) return true;
+  if (qualityKnown && (entry.sleepQuality as number) <= POOR_SLEEP_QUALITY) return true;
+  return false;
+}
+
+// ---------------------------------------------------------------------------
+// US BIEN-02 — le garde-fou « humeur basse » (décision D7)
+// ---------------------------------------------------------------------------
+
+/** Une humeur à ce niveau ou en dessous (« très maussade », « maussade ») compte comme basse. */
+export const LOW_MOOD_LEVEL = 2;
+/** Combien des derniers jours renseignés doivent être bas. */
+export const LOW_MOOD_MIN_DAYS = 5;
+/** Sur combien des derniers jours **renseignés** on regarde. */
+export const LOW_MOOD_RECENT_ENTRIES = 7;
+/** On ne remonte pas plus loin : une humeur d'il y a trois semaines ne dit rien d'aujourd'hui. */
+export const LOW_MOOD_LOOKBACK_DAYS = 14;
+/** Entre deux apparitions de la carte : elle ne doit jamais devenir un rappel. */
+export const LOW_MOOD_COOLDOWN_DAYS = 14;
+
+/**
+ * Faut-il montrer la carte « ça ne va pas fort ces jours-ci » ?
+ *
+ * Règle (décision D7, seuil **à faire relire par une personne compétente** avant la sortie) :
+ * parmi les 7 derniers jours où l'humeur a été notée — dans les 14 derniers jours civils —, au
+ * moins 5 sont à 1 ou 2. Et la carte n'est pas apparue depuis 14 jours.
+ *
+ * Ce que la règle ne fait PAS, volontairement : commenter une journée isolée, compter un jour sans
+ * saisie comme un jour bas, ou se déclencher sur trois mauvais jours de suite.
+ */
+export function shouldShowLowMoodCard(
+  rows: ReadonlyArray<LocalWellbeing>,
+  todayKey: string,
+  lastShownKey: string | null,
+): boolean {
+  if (lastShownKey !== null && /^\d{4}-\d{2}-\d{2}$/.test(lastShownKey)) {
+    const since = daysBetween(lastShownKey, todayKey);
+    if (since >= 0 && since < LOW_MOOD_COOLDOWN_DAYS) return false;
+  }
+  const recent = livingRowsWithin(rows, LOW_MOOD_LOOKBACK_DAYS, todayKey)
+    .filter((row) => isWellbeingLevel(row.mood))
+    .slice(-LOW_MOOD_RECENT_ENTRIES);
+  if (recent.length < LOW_MOOD_MIN_DAYS) return false;
+  const low = recent.filter((row) => (row.mood as number) <= LOW_MOOD_LEVEL).length;
+  return low >= LOW_MOOD_MIN_DAYS;
 }

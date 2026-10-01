@@ -97,7 +97,8 @@ export function QuickActions({
     key: 'wellbeing',
     label: t('home.quick.wellbeing'),
     icon: 'heart-outline',
-    onPress: () => router.push('/wellbeing'),
+    // US BIEN-02 — pilier Bien-être activé : la pastille ouvre son hub (les deux check-ins y sont).
+    onPress: () => router.push(settings?.wellbeingPillarEnabled === true ? '/wellbeing-hub' : '/wellbeing'),
   });
 
   // Un utilisateur « musculation seule » n'a que deux transverses : la rangée reste utile, mais on

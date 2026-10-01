@@ -2,7 +2,7 @@
  * US LABO-03 — le graphique d'une fiche de lien.
  *
  * Ce qui est vérifié ici, et que le dessin ne dit pas à un test :
- *  1. **chaque forme se monte** (sept formes, une par nature de lien) — une forme qui plante emporte
+ *  1. **chaque forme se monte** (huit formes, une par nature de lien) — une forme qui plante emporte
  *     toute la fiche ;
  *  2. **un trou reste un trou** : la lecture d'une semaine sans donnée dit « pas de donnée », jamais
  *     « 0 » ;
@@ -66,7 +66,23 @@ const CHARTS: Chart[] = [
   { type: 'line', metric: 'weightKg', weeks: WEEKS, values: [72.9, 72.8, 72.7, 72.7, null, 72.5, 72.4, 72.4] },
   { type: 'grid', weeks: WEEKS, rows: [{ pillar: 'strength', values: [3, 3, 2, null, 3, 3, 4, 3] }, { pillar: 'running', values: [2, 3, 3, 2, 0, 3, 3, 2] }] },
   { type: 'phases', metrics: [{ metric: 'energy', byPhase: { menstrual: 2.6, follicular: 3.4, ovulatory: 3.6, luteal: 3.0 } }] },
+  // US BIEN-05 — les écarts des croisements Bien-être.
+  {
+    type: 'effects',
+    items: [
+      { id: 'nightStrength', unit: 'pct', delta: -9, exposed: 11, other: 40, adverse: true, status: 'probable' },
+      { id: 'nightRunning', unit: 'secPerKm', delta: 30, exposed: 15, other: 52, adverse: true, status: 'solid' },
+      { id: 'trainingMood', unit: 'points', delta: 0.6, exposed: 20, other: 30, adverse: false, status: 'probable' },
+      { id: 'nightIntake', unit: 'kcal', delta: 40, exposed: 9, other: 33, adverse: null, status: 'noLink' },
+    ],
+  },
 ];
+
+/** La largeur posée sur une barre d'écart, en pourcentage de sa demi-piste. */
+const largeur = (id: string): number => {
+  const style = [screen.getByTestId(`lab-effect-bar-${id}`).props.style].flat(3) as { width?: string }[];
+  return Number.parseFloat(style.find((s) => s?.width !== undefined)!.width!);
+};
 
 describe('CrossLinkChart', () => {
   it.each(CHARTS.map((c) => [c.type, c] as const))('la forme « %s » se monte', async (_type, chart) => {
@@ -120,5 +136,35 @@ describe('CrossLinkChart', () => {
     await render(<CrossLinkChart chart={CHARTS[0]!} />);
 
     expect(screen.getByText('lab.fiche.chart.pairNote')).toBeTruthy();
+  });
+
+  describe('US BIEN-05 — les écarts du Bien-être', () => {
+    const effects = CHARTS.find((c) => c.type === 'effects')!;
+
+    it('chaque écart est signé, dans son unité, avec les cas de chaque côté', async () => {
+      await render(<CrossLinkChart chart={effects} />);
+
+      expect(screen.getByText('lab.fiche.chart.effectsUnit.pct:{"value":"−9"}')).toBeTruthy();
+      expect(screen.getByText('lab.fiche.chart.effectsUnit.secPerKm:{"value":"+30"}')).toBeTruthy();
+      expect(screen.getByText(/lab\.fiche\.chart\.effectsUnit\.points:\{"value":"\+0,6"\}/)).toBeTruthy();
+      expect(screen.getByText('lab.fiche.chart.effectsCases:{"exposed":11,"other":40}')).toBeTruthy();
+    });
+
+    it('🔴 une piste sans lien dit « rien de visible », pas un chiffre qu’on lirait comme un effet', async () => {
+      await render(<CrossLinkChart chart={effects} />);
+
+      expect(screen.getByText('lab.fiche.chart.effectsNone')).toBeTruthy();
+      expect(screen.queryByText('lab.fiche.chart.effectsUnit.kcal:{"value":"+40"}')).toBeNull();
+    });
+
+    it('🔴 les barres se rapportent au seuil de bruit de leur unité — elles ne sont pas toutes pleines', async () => {
+      await render(<CrossLinkChart chart={effects} />);
+
+      // −9 % pour un seuil de 5 % : 9 / 15 → 60 %. +30 s/km pour un seuil de 5 s/km : plein (100 %).
+      // +0,6 point d'humeur pour un seuil de 0,4 : 0,6 / 1,2 → 50 %.
+      expect(largeur('nightStrength')).toBeCloseTo(60, 5);
+      expect(largeur('nightRunning')).toBe(100);
+      expect(largeur('trainingMood')).toBeCloseTo(50, 5);
+    });
   });
 });

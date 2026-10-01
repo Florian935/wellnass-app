@@ -178,3 +178,36 @@ describe('worstRunningPain — filtrage sur les zones qui concernent la course',
     expect(worstRunningPain([])).toBeNull();
   });
 });
+
+describe('proposeSessionAdaptation — US BIEN-04, signaux du pilier Bien-être', () => {
+  it('🔴 non-régression : sans les nouveaux signaux, rien ne change', () => {
+    expect(proposeSessionAdaptation('fractionne', {})).toEqual({ action: 'none', severity: 'info', reasons: [] });
+    expect(proposeSessionAdaptation('fractionne', { sick: false, poorNight: null, lowMotivation: false })).toEqual({ action: 'none', severity: 'info', reasons: [] });
+  });
+
+  it('malade : la séance est décalée, intense ou non', () => {
+    for (const type of ['fractionne', 'endurance'] as const) {
+      const p = proposeSessionAdaptation(type, { sick: true });
+      expect(p.action).toBe('postpone');
+      expect(p.severity).toBe('alert');
+    }
+  });
+
+  it('une douleur bloquante passe devant « malade »', () => {
+    expect(proposeSessionAdaptation('fractionne', { sick: true, worstPainLevel: 'blocking' }).action).toBe('stop');
+  });
+
+  it('nuit courte sur séance intense : le même allègement que l’énergie basse', () => {
+    const p = proposeSessionAdaptation('fractionne', { poorNight: true });
+    expect(p.action).toBe('reduce_reps');
+    expect(p.reasons.map((r) => r.code)).toEqual(['short_night']);
+    expect(proposeSessionAdaptation('endurance', { poorNight: true }).action).toBe('none');
+  });
+
+  it('envie faible : dite, sans rien changer — et la chaleur garde son geste', () => {
+    const p = proposeSessionAdaptation('fractionne', { lowMotivation: true });
+    expect(p.action).toBe('none');
+    expect(p.reasons.map((r) => r.code)).toEqual(['low_motivation']);
+    expect(proposeSessionAdaptation('fractionne', { lowMotivation: true, temperatureC: 31 }).action).toBe('effort_based');
+  });
+});

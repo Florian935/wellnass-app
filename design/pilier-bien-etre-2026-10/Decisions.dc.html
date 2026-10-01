@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Décisions</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #f7eede; }
+a { color: #6a3fb0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; letter-spacing: .8px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.dr { display: grid; grid-template-columns: 56px 240px minmax(0, 1.25fr) minmax(0, 1fr) 210px; gap: 20px; padding: 16px 4px; border-bottom: 1px solid #e3d3ba; align-items: start; }
+.dh { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: #786a59; border-bottom: 2px solid #33291f; padding-bottom: 10px; }
+.id { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #ffffff; background: #6a3fb0; border-radius: 10px; height: 30px; display: flex; align-items: center; justify-content: center; }
+.q { font-weight: 700; font-size: 16px; line-height: 22px; }
+.rc { font-size: 15px; line-height: 22px; color: #3f2178; font-weight: 600; }
+.wy { font-size: 14px; line-height: 21px; color: #5b4d3e; }
+.ro { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11.5px; line-height: 17px; color: #7a5714; }
+</style>
+</helmet>
+<div style="width: 1440px; height: 1500px; box-sizing: border-box; padding: 72px 80px; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; gap: 36px; overflow: hidden;">
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div class="eb" style="color: #6a3fb0;">08 · Décisions</div>
+    <h2 class="disp" style="margin: 0; font-weight: 800; font-size: 50px; line-height: 56px; letter-spacing: -1.6px;">Huit décisions, une recommandation chacune</h2>
+    <p style="margin: 0; font-size: 17px; line-height: 26px; color: #5b4d3e; max-width: 1060px;">À trancher par Florian ou Damien avant la première spec. D1 à D3 conditionnent tout le reste&nbsp;; la colonne de droite dit ce que chaque choix rouvre.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column;">
+    <div class="dr dh"><span>#</span><span>La question</span><span>Recommandation</span><span>Pourquoi</span><span>Rouvre</span></div>
+
+    <div class="dr"><div class="id">D1</div><div class="q">Pilier activable, ou dimension transverse&nbsp;?</div><div class="rc">Pilier activable, comme les trois autres. Le check-in de base (humeur, énergie, stress, nuit) reste au socle, ouvert à tous.</div><div class="wy">Un lieu où aller et une identité. La décision H tient&nbsp;: masqué s'il n'est pas activé, et personne ne perd ce qu'il a déjà.</div><div class="ro">BIEN-01 §3.3 · catalogue « pas un 4ᵉ pilier » · PILLARS passe de 3 à 4</div></div>
+
+    <div class="dr"><div class="id">D2</div><div class="q">Six onglets quand tout est activé&nbsp;?</div><div class="rc">Barre plafonnée à cinq&nbsp;: avec les quatre piliers actifs, le Labo quitte la barre et s'ouvre depuis l'Accueil.</div><div class="wy">La barre de navigation Android recommande trois à cinq destinations. Le Labo se visite à la semaine&nbsp;; le bien-être, chaque jour.</div><div class="ro">LABO-01 (son onglet)</div></div>
+
+    <div class="dr"><div class="id">D3</div><div class="q">La nuit lue par Health Connect&nbsp;?</div><div class="rc">Ne rien retarder. Si l'import est prêt avant le dépôt de la déclaration (LANCE-00), y ajouter la lecture du sommeil — 7 types au lieu de 6. Sinon, seconde déclaration après le lancement.</div><div class="wy">Google n'instruit que des accès justifiés par une fonction présente&nbsp;: on ne déclare pas « pour plus tard ». Le déclaratif existe déjà et suffit pour démarrer.</div><div class="ro">Arbitrage du 28/07 · déclaration Health Connect</div></div>
+
+    <div class="dr"><div class="id">D4</div><div class="q">Un check-in, ou deux&nbsp;?</div><div class="rc">Deux moments de dix secondes&nbsp;: le matin (nuit, qualité, énergie, envie), le soir (humeur, stress, étiquettes). Le matin rattrape la veille en deux taps.</div><div class="wy">Chaque moment répond à une question&nbsp;: « que faire aujourd'hui&nbsp;? », puis « comment s'est passée la journée&nbsp;? ». Le critère des 10 s de BIEN-01 tient par moment.</div><div class="ro">BIEN-01 (une feuille unique le matin)</div></div>
+
+    <div class="dr"><div class="id">D5</div><div class="q">Quels indicateurs ajouter&nbsp;?</div><div class="rc">Deux échelles — qualité de la nuit, envie de s'entraîner — et quatre étiquettes&nbsp;: malade, journée chargée, soirée, voyage.</div><div class="wy">Ce sont ceux qui changent une décision. Des colonnes vides par défaut&nbsp;: aucun historique cassé, aucune saisie imposée.</div><div class="ro">daily_wellbeing (ajout seul)</div></div>
+
+    <div class="dr"><div class="id">D6</div><div class="q">Et le reste de la liste&nbsp;?</div><div class="rc">En modules éteints par défaut&nbsp;: alcool, caféine tardive, sieste, fringales. L'hydratation est NUTR-12.</div><div class="wy">Chacun intéresse une partie des gens&nbsp;; imposés à tous, ils rallongent le rituel pour rien.</div><div class="ro">—</div></div>
+
+    <div class="dr"><div class="id">D7</div><div class="q">Le garde-fou « humeur basse »&nbsp;?</div><div class="rc">Obligatoire avant la sortie du pilier. Seuil et texte relus par une personne compétente.</div><div class="wy">On ne recueille pas l'humeur chaque jour sans savoir quoi dire quand elle reste basse.</div><div class="ro">—</div></div>
+
+    <div class="dr"><div class="id">D8</div><div class="q">Gratuit ou payant&nbsp;?</div><div class="rc">Saisie, journal et liens simples gratuits, pour toujours. Les liens poussés relèvent de la future offre, pas de la V1.</div><div class="wy">Le catalogue range déjà les analyses croisées poussées du côté payant&nbsp;; en V1, tout est gratuit.</div><div class="ro">Arbitrage D (monétisation)</div></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -15,7 +15,7 @@
 
 import type { ColorScheme } from './colors';
 
-export const STAGE_KEYS = ['home', 'strength', 'running', 'nutrition', 'lab'] as const;
+export const STAGE_KEYS = ['home', 'strength', 'running', 'nutrition', 'lab', 'wellbeing'] as const;
 export type StageKey = (typeof STAGE_KEYS)[number];
 
 export type StageTheme = {
@@ -177,6 +177,23 @@ const LAB: StageTheme = {
   accent: '#f2d28a',
 };
 
+/**
+ * US BIEN-02 — la scène du pilier Bien-être : un violet qui descend vers la nuit. Sombre dans les deux
+ * thèmes, comme les autres piliers. Encres mesurées par `__tests__/stage.test.ts` : `inkMuted` 6,4:1 au
+ * pire (haut de scène), blanc 8,7:1.
+ */
+const WELLBEING: StageTheme = {
+  gradient: ['#5a33a0', '#3f2178', '#1c1033'],
+  surfaces: ['#5a33a0', '#3f2178', '#1c1033'],
+  ink: '#ffffff',
+  inkMuted: '#e4d9fb',
+  glass: GLASS_ON_DARK,
+  glassBorder: GLASS_BORDER_ON_DARK,
+  solid: '#ffffff',
+  onSolid: '#3f2178',
+  accent: '#cdb8ff',
+};
+
 export function stageTheme(key: StageKey, scheme: ColorScheme): StageTheme {
   switch (key) {
     case 'strength':
@@ -187,6 +204,8 @@ export function stageTheme(key: StageKey, scheme: ColorScheme): StageTheme {
       return NUTRITION;
     case 'lab':
       return LAB;
+    case 'wellbeing':
+      return WELLBEING;
     case 'home':
       return scheme === 'dark' ? HOME_DARK : HOME_LIGHT;
   }

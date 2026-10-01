@@ -501,12 +501,14 @@
     "strength": "Strength",
     "running": "Running",
     "nutrition": "Food",
-    "lab": "Lab"
+    "lab": "Lab",
+    "wellbeing": "Wellbeing"
   },
   "pillars": {
     "strength": "Strength",
     "running": "Running",
-    "nutrition": "Nutrition"
+    "nutrition": "Nutrition",
+    "wellbeing": "Wellbeing"
   },
   "profile": {
     "title": "Profile",
@@ -1378,7 +1380,7 @@
       "wellbeing": {
         "positive": "good energy, low stress",
         "neutral": "neutral",
-        "negative": "fatigue or high stress"
+        "negative": "fatigue, stress or short night"
       },
       "unavailable": "unavailable",
       "reason": {
@@ -1599,7 +1601,8 @@
     },
     "pillars": {
       "title": "Your activities",
-      "subtitle": "Enable the pillars you want to track. Other tabs stay hidden."
+      "subtitle": "Enable the pillars you want to track. Other tabs stay hidden.",
+      "wellbeingHint": "Your night, energy and mood: what explains your sessions. You choose what you log."
     },
     "goal": {
       "title": "Your goal",
@@ -1785,6 +1788,7 @@
         "Health and location data are never shared without your explicit consent.",
         "We measure app usage (screens viewed, features used) through anonymous statistics, solely to improve it; these measurements never include your health data and you can turn them off at any time from settings.",
         "If you enable Health Connect, your workouts and runs are written to Android's health hub and your weight is read back from it: that exchange happens only on your phone. Your daily steps, however, are read from Health Connect and then **saved to your account** (one total per day, never the detail of your movements) to power your step goal, your history and your streak across all your devices. This health data is kept for as long as your account exists, is never shared with third parties, is included in your data export and is deleted with your account. You can turn syncing off in settings, and revoke access at any time from Health Connect.",
+        "The Wellbeing pillar is off by default and only turns on with your consent: it stores on your account what you log (your night and its quality, energy, drive to train, mood, stress, tags such as “sick”, and the modules you choose: alcohol, late coffee, nap, cravings). If you also turn on reading your night, the length of each night and its bedtime and wake time are read from Health Connect and stored on your account; a night you entered yourself is never replaced. Turning the pillar off deletes nothing; deleting your account deletes everything.",
         "You can request an export or deletion of your data at any time from settings."
       ]
     }
@@ -2131,7 +2135,8 @@
     },
     "pillars": {
       "title": "Active pillars",
-      "hint": "Tabs for disabled pillars are hidden. You can re-enable them anytime."
+      "hint": "Tabs for disabled pillars are hidden. You can re-enable them anytime.",
+      "wellbeingSettings": "Wellbeing pillar settings"
     },
     "appearance": {
       "title": "Appearance",
@@ -2843,7 +2848,10 @@
         "low_energy": "your reported energy is low",
         "load_risk": "your recent load is in the risk zone",
         "heavy_legs_yesterday": "you did a heavy leg session yesterday",
-        "heat": "it's hot"
+        "heat": "it's hot",
+        "sick": "you logged that you are sick",
+        "short_night": "your night was short or restless",
+        "low_motivation": "your drive to train is low this morning"
       },
       "advisory": "This is a suggestion: the planned session is unchanged.",
       "repsHint": "{{from}} → {{to}} reps",
@@ -3087,7 +3095,10 @@
     "indicators": {
       "mood": "Mood",
       "energy": "Energy",
-      "stress": "Stress"
+      "stress": "Stress",
+      "sleepQuality": "Sleep quality",
+      "motivation": "Drive to train",
+      "cravings": "Cravings"
     },
     "levels": {
       "mood": {
@@ -3110,6 +3121,27 @@
         "3": "Moderate",
         "4": "High",
         "5": "Very high"
+      },
+      "sleepQuality": {
+        "1": "Poor",
+        "2": "Restless",
+        "3": "Fair",
+        "4": "Good",
+        "5": "Excellent"
+      },
+      "motivation": {
+        "1": "None",
+        "2": "Low",
+        "3": "Average",
+        "4": "Good",
+        "5": "All in"
+      },
+      "cravings": {
+        "1": "None",
+        "2": "Mild",
+        "3": "Moderate",
+        "4": "Strong",
+        "5": "Very strong"
       }
     },
     "a11yLevel": "{{indicator}}: {{level}} out of 5, {{label}}",
@@ -3124,7 +3156,60 @@
     "sleepNone": "not logged",
     "sleepClear": "clear",
     "sleepLess": "Fifteen minutes less sleep",
-    "sleepMore": "Fifteen minutes more sleep"
+    "sleepMore": "Fifteen minutes more sleep",
+    "tags": {
+      "sick": "Sick",
+      "busyDay": "Busy day",
+      "lateNight": "Late night out",
+      "travel": "Travelling"
+    },
+    "moments": {
+      "morning": {
+        "overline": "Morning",
+        "title": "How do you wake up?"
+      },
+      "evening": {
+        "overline": "Evening",
+        "title": "How was your day?"
+      },
+      "fromHealthConnect": "read from Health Connect",
+      "tagsTitle": "Anything in particular?",
+      "soreness": "Soreness",
+      "sorenessHint": "Opens the pain journal to log a discomfort.",
+      "catchUp": "Last evening not logged",
+      "catchUpHint": "Yesterday’s mood and stress, in two taps.",
+      "save": "Done"
+    },
+    "modules": {
+      "alcohol": {
+        "title": "Alcohol",
+        "desc": "In the evening: how many drinks today. Shows what weighs on your night and next day’s run.",
+        "question": "Any drinks today?",
+        "a11y_one": "{{count}} drink",
+        "a11y_other": "{{count}} drinks",
+        "max": "3+",
+        "hint": "Logged, never judged."
+      },
+      "caffeine": {
+        "title": "Late coffee",
+        "desc": "In the evening: coffee after 4 pm? Shows whether it shortens your night.",
+        "question": "Coffee after 4 pm?",
+        "yes": "Yes",
+        "no": "No"
+      },
+      "nap": {
+        "title": "Nap",
+        "desc": "In the evening: how long you napped, if you did.",
+        "question": "A nap today?",
+        "less": "Ten minutes less nap",
+        "more": "Ten minutes more nap",
+        "none": "no nap"
+      },
+      "cravings": {
+        "title": "Cravings",
+        "desc": "In the evening: urge to snack? Logged in your journal, next to your nights and stress."
+      }
+    }
   },
   "measurements": {
     "title": "Measurements",
@@ -5846,6 +5931,36 @@
         "dotsNoDelta": {
           "value": "{{score}}",
           "label": "DOTS score"
+        },
+        "wellbeing": {
+          "nightStrength": {
+            "value": "{{delta}} %",
+            "label": "tonnage after a short night"
+          },
+          "nightRunning": {
+            "value": "{{delta}} s/km",
+            "label": "pace after a short night"
+          },
+          "nightIntake": {
+            "value": "{{delta}} kcal",
+            "label": "the day after a short night"
+          },
+          "motivationTraining": {
+            "value": "{{delta}} pts",
+            "label": "sessions done, low drive"
+          },
+          "stressJournal": {
+            "value": "{{delta}} pts",
+            "label": "food log kept, stressful day"
+          },
+          "trainingMood": {
+            "value": "{{delta}}",
+            "label": "evening mood on a training day"
+          },
+          "alcoholRunning": {
+            "value": "{{delta}} s/km",
+            "label": "pace the day after two drinks"
+          }
         }
       },
       "rows": {
@@ -6042,6 +6157,162 @@
           "label": "DOTS score",
           "value": "{{score}}",
           "note": "no 8-week change yet"
+        },
+        "wellbeing": {
+          "nightStrength": {
+            "learning": {
+              "label": "Short night → your strength session",
+              "value": "learning",
+              "note": "{{have}} of {{need}} cases on the thinner side"
+            },
+            "noLink": {
+              "label": "Short night → your strength session",
+              "value": "nothing visible",
+              "note": "{{exposed}} days against {{other}}: the gap stays under the threshold"
+            },
+            "probable": {
+              "label": "Short night → your strength session",
+              "value": "{{delta}} % tonnage",
+              "note": "{{exposed}} days against {{other}} · probable lead"
+            },
+            "solid": {
+              "label": "Short night → your strength session",
+              "value": "{{delta}} % tonnage",
+              "note": "{{exposed}} days against {{other}} · solid lead"
+            }
+          },
+          "nightRunning": {
+            "learning": {
+              "label": "Short night → your pace at equal effort",
+              "value": "learning",
+              "note": "{{have}} of {{need}} cases on the thinner side"
+            },
+            "noLink": {
+              "label": "Short night → your pace at equal effort",
+              "value": "nothing visible",
+              "note": "{{exposed}} days against {{other}}: the gap stays under the threshold"
+            },
+            "probable": {
+              "label": "Short night → your pace at equal effort",
+              "value": "{{delta}} s/km",
+              "note": "{{exposed}} days against {{other}} · probable lead"
+            },
+            "solid": {
+              "label": "Short night → your pace at equal effort",
+              "value": "{{delta}} s/km",
+              "note": "{{exposed}} days against {{other}} · solid lead"
+            }
+          },
+          "nightIntake": {
+            "learning": {
+              "label": "Short night → what you eat that day",
+              "value": "learning",
+              "note": "{{have}} of {{need}} cases on the thinner side"
+            },
+            "noLink": {
+              "label": "Short night → what you eat that day",
+              "value": "nothing visible",
+              "note": "{{exposed}} days against {{other}}: the gap stays under the threshold"
+            },
+            "probable": {
+              "label": "Short night → what you eat that day",
+              "value": "{{delta}} kcal",
+              "note": "{{exposed}} days against {{other}} · probable lead"
+            },
+            "solid": {
+              "label": "Short night → what you eat that day",
+              "value": "{{delta}} kcal",
+              "note": "{{exposed}} days against {{other}} · solid lead"
+            }
+          },
+          "motivationTraining": {
+            "learning": {
+              "label": "Low drive in the morning → trained that day",
+              "value": "learning",
+              "note": "{{have}} of {{need}} cases on the thinner side"
+            },
+            "noLink": {
+              "label": "Low drive in the morning → trained that day",
+              "value": "nothing visible",
+              "note": "{{exposed}} days against {{other}}: the gap stays under the threshold"
+            },
+            "probable": {
+              "label": "Low drive in the morning → trained that day",
+              "value": "{{delta}} points",
+              "note": "{{exposed}} days against {{other}} · probable lead"
+            },
+            "solid": {
+              "label": "Low drive in the morning → trained that day",
+              "value": "{{delta}} points",
+              "note": "{{exposed}} days against {{other}} · solid lead"
+            }
+          },
+          "stressJournal": {
+            "learning": {
+              "label": "Stressful day → food log kept",
+              "value": "learning",
+              "note": "{{have}} of {{need}} cases on the thinner side"
+            },
+            "noLink": {
+              "label": "Stressful day → food log kept",
+              "value": "nothing visible",
+              "note": "{{exposed}} days against {{other}}: the gap stays under the threshold"
+            },
+            "probable": {
+              "label": "Stressful day → food log kept",
+              "value": "{{delta}} points",
+              "note": "{{exposed}} days against {{other}} · probable lead"
+            },
+            "solid": {
+              "label": "Stressful day → food log kept",
+              "value": "{{delta}} points",
+              "note": "{{exposed}} days against {{other}} · solid lead"
+            }
+          },
+          "trainingMood": {
+            "learning": {
+              "label": "Training day → evening mood",
+              "value": "learning",
+              "note": "{{have}} of {{need}} cases on the thinner side"
+            },
+            "noLink": {
+              "label": "Training day → evening mood",
+              "value": "nothing visible",
+              "note": "{{exposed}} days against {{other}}: the gap stays under the threshold"
+            },
+            "probable": {
+              "label": "Training day → evening mood",
+              "value": "{{delta}} point",
+              "note": "{{exposed}} days against {{other}} · probable lead"
+            },
+            "solid": {
+              "label": "Training day → evening mood",
+              "value": "{{delta}} point",
+              "note": "{{exposed}} days against {{other}} · solid lead"
+            }
+          },
+          "alcoholRunning": {
+            "learning": {
+              "label": "Two drinks or more the night before → your pace",
+              "value": "learning",
+              "note": "{{have}} of {{need}} cases on the thinner side"
+            },
+            "noLink": {
+              "label": "Two drinks or more the night before → your pace",
+              "value": "nothing visible",
+              "note": "{{exposed}} days against {{other}}: the gap stays under the threshold"
+            },
+            "probable": {
+              "label": "Two drinks or more the night before → your pace",
+              "value": "{{delta}} s/km",
+              "note": "{{exposed}} days against {{other}} · probable lead"
+            },
+            "solid": {
+              "label": "Two drinks or more the night before → your pace",
+              "value": "{{delta}} s/km",
+              "note": "{{exposed}} days against {{other}} · solid lead"
+            }
+          }
         }
       },
       "source": {
@@ -6054,7 +6325,8 @@
         "rhythm": "Sessions, runs and logged meals over the last 8 weeks.",
         "strengthWeight": "Your records on the three lifts and your weigh-ins.",
         "cycle": "Averages by phase over {{cycles}} cycles. Observations, not advice.",
-        "discover": "A link only shows with enough data: never a zero in place of a gap."
+        "discover": "A link only shows with enough data: never a zero in place of a gap.",
+        "wellbeing": "Your check-ins and sessions over the last {{days}} days, compared day by day. Associations, not proof."
       },
       "missing": {
         "bothSports": {
@@ -6092,6 +6364,10 @@
         "cycles": {
           "text": "It takes {{need}} complete cycles to compare your phases. You have {{have}}.",
           "meter": "{{have}} of {{need}} cycles"
+        },
+        "wellbeingCases": {
+          "text": "{{need}} days on each side are needed to compare (for example {{need}} short nights and {{need}} normal ones). You have {{have}}.",
+          "meter": "{{have}} of {{need}} days"
         }
       },
       "routes": {
@@ -6107,7 +6383,8 @@
         "progress": "See my records",
         "cycle": "Open my cycle",
         "learn": "Understand in Learn",
-        "council": "Open the Council of three"
+        "council": "Open the Council of three",
+        "wellbeing": "Open the Wellbeing pillar"
       },
       "surfaces": {
         "strengthProgress": "Strength › Progress",
@@ -6116,7 +6393,8 @@
         "nutritionStats": "Nutrition › Stats",
         "planning": "Planner",
         "progress": "Strength › Progression",
-        "cycle": "My cycle"
+        "cycle": "My cycle",
+        "wellbeing": "Wellbeing › What matters"
       },
       "learning": {
         "shortNightPace": "Does a short night slow you down?",
@@ -6125,6 +6403,26 @@
         "missing": "{{needed}} cases on each side are needed to compare. You have {{cases}}.",
         "meter": "{{cases}} of {{needed}} cases",
         "action": "See in Learn"
+      },
+      "wellbeing": {
+        "question": "Does how you feel weigh on your sessions?",
+        "pair": "YOUR STATE × YOUR PILLARS",
+        "verdict": {
+          "discover": "The Lab can’t answer yet: more logged days are needed to compare.",
+          "adjust": {
+            "nightStrength": "{{nights}} short nights this week. After a short night, your tonnage is {{delta}} % on average ({{exposed}} nights against {{other}}).",
+            "nightRunning": "{{nights}} short nights this week. After a short night, you run {{delta}} s/km on average at equal effort ({{exposed}} nights against {{other}}).",
+            "nightIntake": "{{nights}} short nights this week. After a short night, you eat {{delta}} kcal on average ({{exposed}} days against {{other}})."
+          },
+          "holdsKnown": "Your data shows links between how you feel and your sessions; nothing triggers them this week.",
+          "holdsNone": "Nothing visible between how you feel and your sessions over the last {{days}} days."
+        },
+        "short": {
+          "discover": "Not enough logged days yet.",
+          "adjust": "{{nights}} short nights this week.",
+          "holdsKnown": "Known links, nothing to adjust this week.",
+          "holdsNone": "Nothing visible yet."
+        }
       }
     },
     "cross": {
@@ -6238,7 +6536,31 @@
         "gridReadout": "Week of {{week}} · {{summary}}",
         "phasesTitle": "Averages by phase",
         "phasesHint": "observations, not advice",
-        "noValue": "—"
+        "noValue": "—",
+        "effectsTitle": "THE GAPS",
+        "effectsHint": "over 90 days",
+        "effectsNone": "nothing visible",
+        "effectsCases": "{{exposed}} days against {{other}}",
+        "effectsA11y": "{{label}}: {{value}}, {{exposed}} days against {{other}}.",
+        "effectsUnit": {
+          "pct": "{{value}} %",
+          "secPerKm": "{{value}} s/km",
+          "kcal": "{{value}} kcal",
+          "points": "{{value}} pt",
+          "pctPoints": "{{value}} pts",
+          "minutes": "{{value}} min"
+        },
+        "effects": {
+          "nightStrength": "Short night → tonnage",
+          "nightRunning": "Short night → pace",
+          "nightIntake": "Short night → intake",
+          "motivationTraining": "Low drive → sessions done",
+          "stressJournal": "Stress → food log kept",
+          "trainingMood": "Training → evening mood",
+          "alcoholRunning": "Two drinks → next day’s pace",
+          "alcoholNight": "Two drinks → next night",
+          "caffeineNight": "Late coffee → night"
+        }
       },
       "cycleMissingTitle": "Not enough entries yet"
     },
@@ -6468,5 +6790,235 @@
   },
   "runningStats": {
     "title": "All your stats"
+  },
+  "wellbeingHub": {
+    "title": "Wellbeing",
+    "icons": {
+      "history": "My curves",
+      "settings": "Pillar settings"
+    },
+    "sections": {
+      "today": "Today",
+      "journal": "Journal",
+      "insights": "What matters"
+    },
+    "off": {
+      "title": "The Wellbeing pillar is off",
+      "body": "Turn it on to log your night, energy, drive, mood and stress, and see what they change to your sessions.",
+      "cta": "Turn the pillar on"
+    },
+    "stage": {
+      "noVerdict": "No verdict yet",
+      "noVerdictHint": "Do your check-in, or give your sessions time to add up.",
+      "morningFirst": "Start with your morning check-in: it sets the day.",
+      "suggestion": "A suggestion, never an order."
+    },
+    "signals": {
+      "sick": "sick",
+      "poorNight": "short or restless night",
+      "lowEnergy": "low energy",
+      "highStressYesterday": "high stress yesterday",
+      "lowMotivation": "low drive",
+      "goodNight": "good night",
+      "highEnergy": "good energy"
+    },
+    "lowMood": {
+      "title": "Things haven’t been great lately",
+      "body": "Your mood has been low for several days. If you need to talk, people are there for that: {{phone}}, free, day and night (France). Elsewhere, your local helpline.",
+      "call": "Call {{phone}}",
+      "callA11y": "Call {{phone}}, French national suicide prevention line, free, day and night",
+      "dismiss": "Close",
+      "note": "This card won’t come back for two weeks. The app makes no diagnosis."
+    },
+    "consent": {
+      "title": "Turn on the Wellbeing pillar?",
+      "body": "The pillar records your night, energy, drive, mood, stress and, if you log it, that you are sick: these are health data. They sync to your account, can be exported, and are deleted with it. You can turn the pillar off at any time.",
+      "confirm": "Turn on"
+    },
+    "today": {
+      "checkinsTitle": "Your two check-ins",
+      "morning": {
+        "title": "Morning",
+        "hint": "Night, energy, drive",
+        "a11y": "Morning check-in, {{state}}"
+      },
+      "evening": {
+        "title": "Evening",
+        "hint": "Mood, stress, your day",
+        "a11y": "Evening check-in, {{state}}"
+      },
+      "done": "done",
+      "todo": "to do",
+      "now": "now",
+      "changesTitle": "What it changes today",
+      "pillarSession": {
+        "strength": "Strength session",
+        "running": "Running session"
+      },
+      "advice": {
+        "postpone": {
+          "strength": "No intensity today: symptoms come before the plan. Move it to tomorrow?",
+          "running": "No intensity today: symptoms come before the plan. Move it to tomorrow?"
+        },
+        "lighten": {
+          "strength": "Keep the warm-up and drop one set per exercise: today’s form doesn’t ask for more.",
+          "running": "Keep the warm-up, drop {{pct}} % of the reps, same pace."
+        },
+        "shorten": {
+          "strength": "Low drive: a short version, the two key exercises, and decide on the spot.",
+          "running": "Low drive: start, and decide after the warm-up whether to go on."
+        },
+        "go": {
+          "strength": "Green light: a good day to try the planned load.",
+          "running": "Green light: good conditions to hold the target pace."
+        },
+        "keep": {
+          "strength": "Nothing to change: the session stays as planned.",
+          "running": "Nothing to change: an easy run often helps recovery."
+        }
+      },
+      "alreadyAdapted": "This session is already lightened for today.",
+      "applied": "Done. After the session, you can say whether it was right.",
+      "postpone": "Move to tomorrow",
+      "lighten": "Lighten today",
+      "seeSession": "See the session",
+      "nutrition": {
+        "sick": "Sick: today’s target takes a back seat, nothing to make up tomorrow.",
+        "poorNight": "After a short night, sugar cravings often rise in the afternoon. A planned snack beats a craving.",
+        "lateNight": "Late night yesterday: remember to drink this morning. Yesterday’s log can still be completed.",
+        "stressed": "Busy day yesterday: that’s often when the food log slips. A quick meal entry is enough."
+      },
+      "advisory": "Suggestions: nothing changes without your say.",
+      "nightsTitle": "Your nights this week",
+      "nightsAverage": "avg {{value}} · {{count}} nights",
+      "nightsA11y": "Your nights this week: {{count}} logged.",
+      "nightsHealthConnect": "Read your nights from Health Connect",
+      "followUps": {
+        "pain": "Pain",
+        "cycle": "Cycle",
+        "steps": "Steps",
+        "weight": "Weight",
+        "water": "Water"
+      },
+      "applyError": "The change couldn’t be saved. Try again.",
+      "apply": {
+        "title": "What changes in your plan",
+        "subtitle": "Today only. Your programme stays intact.",
+        "confirm": "Confirm",
+        "postponeDetail": "Session moved to tomorrow, same time.",
+        "lightenDetail": "{{pct}} % fewer reps, warm-up kept.",
+        "where": {
+          "strength": "Strength › Train, Planning",
+          "running": "Running › Run, Planning"
+        }
+      }
+    },
+    "journal": {
+      "didStrength": "Strength: {{name}}",
+      "didRun": "Run: {{km}} km",
+      "didEat": "Log: {{kcal}} kcal",
+      "night": "night {{value}}",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "cellEmpty": "{{day}}: not logged",
+      "cellA11y": "{{day}}: {{value}}",
+      "legend": "The darker the cell, the higher the level. Dashed: not logged, not zero. Dot: a tag that day.",
+      "legendSleep": "The darker the cell, the longer the night (under 5 h → 8 h and more). Dashed: not logged.",
+      "legendStress": "The darker the cell, the higher the stress. Dashed: not logged, not zero.",
+      "recent": "The last fifteen days",
+      "empty": "not logged",
+      "edit": {
+        "morning": "Morning",
+        "evening": "Evening",
+        "morningA11y": "Edit the morning of {{day}}",
+        "eveningA11y": "Edit the evening of {{day}}"
+      },
+      "curves": "See my curves",
+      "alcoholNone": "no alcohol",
+      "alcohol_one": "{{count}} drink",
+      "alcohol_other": "{{count}} drinks",
+      "alcoholMax": "{{max}} drinks or more",
+      "lateCaffeine": "coffee after 4 pm",
+      "nap": "{{value}} nap"
+    },
+    "insights": {
+      "intro": "Computed on your phone, over your last {{days}} days. We say “often goes with”, never “because”.",
+      "labOverline": "In the Lab",
+      "openLab": "Open the card in the Lab",
+      "noPillarToCross": "Turn on a pillar (strength, running or nutrition) to see what your state changes to your sessions.",
+      "nightsTitle": "What weighs on your nights",
+      "learning": "Learning: {{have}} of {{need}} cases on the thinner side.",
+      "intra": {
+        "alcoholNight": {
+          "label": "Two drinks or more → your next night",
+          "noLink": "Nothing visible ({{exposed}} evenings against {{other}}).",
+          "known": "Your next night is {{direction}} by {{delta}} on average ({{exposed}} evenings against {{other}})."
+        },
+        "caffeineNight": {
+          "label": "Coffee after 4 pm → your night",
+          "noLink": "Nothing visible ({{exposed}} evenings against {{other}}).",
+          "known": "Your night is {{direction}} by {{delta}} on average ({{exposed}} evenings against {{other}})."
+        }
+      },
+      "shorter": "shorter",
+      "longer": "longer",
+      "regularityTitle": "Your bedtime",
+      "regularity": "You go to bed around {{bedtime}}, give or take {{spread}} min ({{count}} nights read).",
+      "regularityLearning": "Five nights read from Health Connect are needed to talk about it.",
+      "regularityNeedsHealthConnect": "Computed on its own from nights read in Health Connect (pillar settings).",
+      "averagesTitle": "Your last {{days}} days",
+      "averagesEmpty": "Nothing logged over this period.",
+      "averageNight": "{{value}} on average over {{count}} nights",
+      "footnote": "Links found in your data, not proof. A day not logged is a gap, never a zero."
+    },
+    "context": {
+      "overline": "That day",
+      "night": "{{value}} night",
+      "nightWithQuality": "{{value}} night ({{quality}})",
+      "quality": "{{quality}} night",
+      "energy": "{{level}} energy",
+      "motivation": "{{level}} drive",
+      "usual": {
+        "strength": "After a short night, your tonnage is {{delta}} % on average ({{count}} nights): a weaker session that day is within your norm.",
+        "running": "After a short night, you run {{delta}} s/km on average at equal effort ({{count}} nights).",
+        "nutrition": "After a short night, you eat {{delta}} kcal on average ({{count}} days)."
+      },
+      "open": "See in Wellbeing"
+    },
+    "history": {
+      "openHub": "Open the Wellbeing pillar"
+    }
+  },
+  "wellbeingSettings": {
+    "title": "Wellbeing pillar",
+    "pillar": {
+      "title": "The pillar",
+      "desc": "Your night, energy, drive, mood, stress, and what they change to your sessions.",
+      "hint": "Turning it off keeps your data: it stays in your history and export. The basic check-in (mood, energy, stress, night) stays available with the pillar off."
+    },
+    "modules": {
+      "title": "Modules",
+      "hint": "Each module adds one question to the evening check-in. Water is tracked in Nutrition."
+    },
+    "sleep": {
+      "title": "Your night, read from Health Connect",
+      "toggle": "Read my night",
+      "desc": "Fills in your night every morning, when a watch or sleep app writes it to Health Connect.",
+      "unavailable": "Health Connect isn’t available on this device.",
+      "permissionMissing": "Permission to read sleep isn’t granted.",
+      "grant": "Allow reading sleep",
+      "neverImported": "No night read yet.",
+      "lastImport": "Last read: {{at}}",
+      "imported_one": "{{count}} night updated.",
+      "imported_other": "{{count}} nights updated.",
+      "importNow": "Read my nights now",
+      "openHealthConnect": "Manage access in Health Connect",
+      "denied": "Permission denied: your night stays to log by hand in the morning check-in.",
+      "how": "Your phone doesn’t measure sleep: a watch, ring or sleep app writes it to Health Connect. We only read the night session (wake periods removed), over the last 7 days. A night corrected by hand is never overwritten."
+    },
+    "guard": {
+      "title": "When things aren’t great",
+      "body": "If your mood stays low for several days, the app tells you once, gently, with a number where you can talk to someone. It makes no diagnosis."
+    }
   }
 }

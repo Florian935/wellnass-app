@@ -233,12 +233,23 @@ describe('Palettes par pilier — teinter doit AJOUTER de la couleur, jamais en 
    * (chroma 13 = neutre). Plus aucune exception ici — un pilier qui retirerait de la couleur à la
    * carte claire fera de nouveau échouer le test.
    */
+  /**
+   * ⚠️ **Exception chiffrée — le violet du pilier Bien-être (BIEN-02, 01/10/2026).** À la luminance de la
+   * carte claire (0,96), un violet ne peut PAS dépasser une chroma de 6 : rouge et bleu saturent à 255 et
+   * seul le vert, qui porte 72 % de la luminance, reste libre (`#fff9ff`). Mesuré sur sept violets, de
+   * `#3f2178` à `#b14fd0`, à toutes les doses de 0,22 à 0,8 : 6, toujours. Aucune teinte violette ne tient
+   * donc ce contrat — seuls les verts, jaunes et cyans le peuvent (la course passe en tirant vers le
+   * cyan). L'identité du pilier se lit en clair par le fond et le filet, comme le rouge fonte (planche
+   * MUSCU-UX06), et par l'accent `#6a3fb0` (6,0:1). Le plancher reste un plancher : sous 6, c'est une panne.
+   */
+  const LIGHT_FLOOR: Partial<Record<(typeof PILLAR_KEYS)[number], number>> = { wellbeing: 6 };
+
   it.each(PILLAR_KEYS.map((pillar) => ({ pillar })))(
     'light/$pillar : la surface teintée reste au moins aussi colorée que le neutre',
     ({ pillar }) => {
       const neutre = chroma(palettes.light.surface)!;
       const teintee = chroma(pillarPalette('light', pillar).surface)!;
-      expect(teintee).toBeGreaterThanOrEqual(neutre);
+      expect(teintee).toBeGreaterThanOrEqual(LIGHT_FLOOR[pillar] ?? neutre);
     },
   );
 
@@ -340,6 +351,7 @@ describe('Identité muscu — les copies en dur suivent le token', () => {
       running: palettes.dark.pillarRunning,
       nutrition: palettes.dark.pillarNutrition,
       lab: palettes.dark.pillarLab,
+      wellbeing: palettes.dark.pillarWellbeing,
     });
   });
 

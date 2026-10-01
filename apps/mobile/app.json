@@ -27,7 +27,8 @@
         "android.permission.health.READ_WEIGHT",
         "android.permission.health.READ_STEPS",
         "android.permission.health.READ_MENSTRUATION",
-        "android.permission.health.WRITE_MENSTRUATION"
+        "android.permission.health.WRITE_MENSTRUATION",
+        "android.permission.health.READ_SLEEP"
       ]
     },
     "web": {

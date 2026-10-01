@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Le contexte dans une sortie</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #f2f0f1; }
+a { color: #5a33a0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.card { background: #fffaf5; border: 1px solid #e3dcd8; border-radius: 20px; }
+.st { display: flex; flex-direction: column; gap: 2px; }
+.st b { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -.5px; }
+.st span { font-size: 11.5px; color: #786a59; font-weight: 600; }
+.fact { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #33291f; }
+.pt { width: 20px; height: 20px; flex: none; border-radius: 5px; color: #ffffff; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+.tb { border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 11px; color: #786a59; padding: 0; }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; background: #f2f0f1; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+  <div style="flex: 1; min-height: 0; padding: 12px 18px 0; display: flex; flex-direction: column; gap: 12px; overflow: hidden;">
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <button type="button" aria-label="Retour" style="width: 38px; height: 38px; border-radius: 12px; border: 1px solid #e3dcd8; background: #fffaf5; display: flex; align-items: center; justify-content: center; padding: 0;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"></path></svg></button>
+      <div class="eb" style="color: #2a64ad;">Sortie · jeu. 24 sept. · 18 h 40</div>
+    </div>
+
+    <div class="disp" style="font-weight: 800; font-size: 28px; letter-spacing: -.8px; line-height: 32px;">Sortie facile</div>
+
+    <div style="height: 140px; border-radius: 20px; overflow: hidden; background: #e2e9f2;">
+      <svg width="354" height="140" viewBox="0 0 354 140">
+        <path d="M0 40 L354 70" stroke="#f4f7fb" stroke-width="10"></path>
+        <path d="M120 0 L160 140" stroke="#f4f7fb" stroke-width="8"></path>
+        <path d="M250 0 L230 140" stroke="#f4f7fb" stroke-width="6"></path>
+        <path d="M60 110 C 80 60, 130 30, 180 42 S 290 60, 300 92 S 220 128, 160 118 S 70 130, 60 110 Z" fill="none" stroke="#2a64ad" stroke-width="4" stroke-linejoin="round"></path>
+        <circle cx="60" cy="110" r="6" fill="#ffffff" stroke="#2a64ad" stroke-width="3"></circle>
+      </svg>
+    </div>
+
+    <div class="card" style="padding: 12px 16px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+      <div class="st"><b>8,2</b><span>km</span></div>
+      <div class="st"><b>47:34</b><span>durée</span></div>
+      <div class="st"><b>5:48</b><span>/km</span></div>
+      <div class="st"><b>6</b><span>effort /10</span></div>
+    </div>
+
+    <div style="background: #fbf8ff; border: 1.5px solid #6a3fb0; border-radius: 20px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#efe7f8" stroke="#6a3fb0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>
+        <div class="eb" style="color: #5a33a0;">Le contexte de cette sortie</div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div class="fact"><span style="width: 6px; height: 6px; border-radius: 50%; background: #6a3fb0; display: block;"></span>Nuit précédente&nbsp;: <b>5 h 10, agitée</b></div>
+        <div class="fact"><span style="width: 6px; height: 6px; border-radius: 50%; background: #6a3fb0; display: block;"></span>Veille&nbsp;: <b>soirée</b></div>
+        <div class="fact"><span style="width: 6px; height: 6px; border-radius: 50%; background: #6a3fb0; display: block;"></span>Énergie du matin&nbsp;: <b>basse</b></div>
+      </div>
+      <div style="font-size: 13.5px; line-height: 20px; color: #33291f;">Le lendemain d'une nuit de moins de 6 h, tu cours en moyenne 11 s/km plus lentement à effort égal. Cette sortie reste dans ta norme&nbsp;: rien n'indique une baisse de forme.</div>
+      <a href="#bien-etre" style="font-weight: 700; font-size: 13.5px; text-decoration: none;">Voir la piste dans Bien-être →</a>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 6px;">
+      <div class="eb">La même ligne, ailleurs</div>
+      <div class="card" style="padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start;"><span class="pt" style="background: #a8261d;">M</span><span style="font-size: 12.5px; line-height: 17px; color: #5b4d3e;"><b style="color: #33291f;">Bilan de séance</b> · « nuit de 5 h 40 ce matin », sous le tonnage</span></div>
+      <div class="card" style="padding: 10px 12px; display: flex; gap: 10px; align-items: flex-start;"><span class="pt" style="background: #3f6b1c;">N</span><span style="font-size: 12.5px; line-height: 17px; color: #5b4d3e;"><b style="color: #33291f;">Journée nutrition</b> · « jour stressé, +320 kcal&nbsp;: c'est fréquent chez toi »</span></div>
+    </div>
+  </div>
+
+  <div style="height: 64px; flex: none; background: #fffaf5; border-top: 1px solid #e3dcd8; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));">
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg>Accueil</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect></svg>Muscu</button>
+    <button type="button" class="tb" style="color: #2a64ad;"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2a64ad" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19l4-5 3 2 3-6 4 2"></path><circle cx="15" cy="5" r="2"></circle></svg>Course</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14z"></path><path d="M5 19l7-7"></path></svg>Nutrition</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>Bien-être</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

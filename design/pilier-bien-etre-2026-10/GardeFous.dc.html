@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Garde-fous</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #f7eede; }
+a { color: #6a3fb0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; letter-spacing: .8px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.gf { background: #fffaf2; border: 1px solid #e3d3ba; border-radius: 24px; padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.gf .hd { display: flex; align-items: center; gap: 12px; }
+.ic { width: 42px; height: 42px; flex: none; border-radius: 13px; background: #efe7f8; display: flex; align-items: center; justify-content: center; }
+.gf b.t { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 22px; letter-spacing: -.4px; line-height: 26px; }
+.gf p { margin: 0; font-size: 15px; line-height: 23px; color: #5b4d3e; }
+.gf p b { color: #33291f; }
+.val { align-self: flex-start; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; color: #7a5714; background: #f5e8cc; border-radius: 999px; padding: 3px 9px; }
+</style>
+</helmet>
+<div style="width: 1440px; height: 1200px; box-sizing: border-box; padding: 72px 80px; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; gap: 40px; overflow: hidden;">
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div class="eb" style="color: #6a3fb0;">07 · Garde-fous</div>
+    <h2 class="disp" style="margin: 0; font-weight: 800; font-size: 50px; line-height: 56px; letter-spacing: -1.6px; max-width: 1180px;">Suivre l'humeur tous les jours, c'est accepter d'en répondre</h2>
+    <p style="margin: 0; font-size: 17px; line-height: 26px; color: #5b4d3e; max-width: 1060px;">Le pilier touche au plus intime du produit. Ces règles viennent avant les écrans&nbsp;; la première est un préalable à la sortie du pilier.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start;">
+
+    <div class="gf" style="border: 1.5px solid #6a3fb0;">
+      <div class="hd"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 11c0 5.6-7 10-7 10z"></path></svg></div><b class="t">Une humeur basse qui dure</b></div>
+      <p>Si l'humeur reste à 1 ou 2 sur au moins <b>5 des 7 derniers jours renseignés</b>, une carte douce, une seule fois, et pas avant 14 jours d'intervalle.</p>
+      <div style="background: #2b1d52; color: #f1ecfb; border-radius: 16px; padding: 14px 16px; font-size: 14.5px; line-height: 21px;">« Ça fait quelques jours que ça ne va pas fort. Si tu as besoin d'en parler, des gens sont là pour ça&nbsp;: le 3114, gratuit, jour et nuit. »</div>
+      <p>Jamais de diagnostic, jamais de mot clinique, jamais un commentaire sur une journée isolée.</p>
+      <span class="val">seuil et texte à faire relire</span>
+    </div>
+
+    <div class="gf">
+      <div class="hd"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V8a4 4 0 0 1 8 0v3"></path></svg></div><b class="t">Des données de santé</b></div>
+      <p>Nuit, humeur, stress, alcool, maladie&nbsp;: des données de santé au sens de l'<b>article 9 du RGPD</b>. Consentement explicite à l'activation du pilier, et un interrupteur propre pour l'alcool.</p>
+      <p>Export et suppression suivent le patron déjà posé (liste explicite de l'export, cascade à la suppression du compte). La politique de confidentialité est à compléter <b>avant</b> la relecture juridique de LANCE-00.</p>
+    </div>
+
+    <div class="gf">
+      <div class="hd"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"></path><path d="M12 3v18"></path><path d="M5 8h14"></path></svg></div><b class="t">Bien-être, pas médical</b></div>
+      <p>Le vocabulaire reste celui d'un carnet&nbsp;: « piste », « va souvent avec ». Jamais « insomnie », « dépression », « trouble ».</p>
+      <p>« Malade » met l'intensité en veille, il ne soigne pas. Rester dans une finalité <b>bien-être et sport</b>&nbsp;: c'est elle qui décide du statut réglementaire du logiciel.</p>
+    </div>
+
+    <div class="gf">
+      <div class="hd"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="8"></circle><line x1="6.5" y1="6.5" x2="17.5" y2="17.5"></line></svg></div><b class="t">Pas de boucle de jeu</b></div>
+      <p>Arbitrage C&nbsp;: le check-in ne compte pas dans la série (BIEN-01, décision D5). Aucune série de bonnes nuits, aucun badge d'humeur, aucun classement.</p>
+    </div>
+
+    <div class="gf">
+      <div class="hd"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></div><b class="t">Constater, jamais juger</b></div>
+      <p>Un verre, un café tardif, une fringale&nbsp;: notés, jamais commentés en rouge. Aucune notification « tu as mal dormi ». Un mauvais jour ne casse rien.</p>
+    </div>
+
+    <div class="gf">
+      <div class="hd"><div class="ic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14z"></path><path d="M5 19l7-7"></path></svg></div><b class="t">Jamais de restriction</b></div>
+      <p>La règle du Labo s'applique&nbsp;: aucune proposition ne creuse un déficit ni ne fait « rattraper » une journée. Une nuit courte ne se paie pas en calories.</p>
+    </div>
+  </div>
+
+  <div style="background: #2b1d52; border-radius: 22px; padding: 22px 26px; display: flex; gap: 18px; align-items: center; color: #ffffff;">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#cfc2ec" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"></rect><path d="M9 9h6v6H9z"></path></svg>
+    <div style="font-size: 16px; line-height: 24px;"><b>L'IA ne voit que des agrégats.</b> <span style="color: #d9cff0;">Comme pour les autres piliers&nbsp;: seuls les agrégats des piliers actifs partent au modèle, jamais une ligne brute d'humeur, et le pilier désactivé n'envoie rien.</span></div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

@@ -28,6 +28,7 @@ import { WorkoutLevelPreview } from '@/components/workout/WorkoutLevelPreview';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { togglePillar, updateSettings, useSettings } from '@/data/repositories/settings-repository';
+import { toggleWellbeingPillar } from '@/components/wellbeing/wellbeing-consent';
 import {
   useNotificationPrefs,
   updateNotificationPrefs,
@@ -61,6 +62,7 @@ const MENU_LABEL_KEY: Record<MenuKey, string> = {
   running: 'pillars.running',
   nutrition: 'pillars.nutrition',
   lab: 'tabs.lab',
+  wellbeing: 'pillars.wellbeing',
 };
 
 /** Formate une heure entière 0-23 en `HH:00`. */
@@ -416,8 +418,24 @@ export default function SettingsScreen() {
             />
           </View>
         ))}
+        {/* US BIEN-02 (D1) — le pilier Bien-être : activable comme les autres, mais par son propre
+            réglage (ce n'est pas un `Pillar`), et avec un consentement (données de santé). */}
+        <View style={[styles.row, { borderTopWidth: 1, borderTopColor: colors.border }]}>
+          <Text style={[styles.rowLabel, { color: colors.text }]}>{t('pillars.wellbeing')}</Text>
+          <Switch
+            testID="settings-wellbeing-pillar"
+            value={settings?.wellbeingPillarEnabled === true}
+            onValueChange={(next) => void toggleWellbeingPillar(t, next)}
+            trackColor={{ true: colors.accent, false: colors.border }}
+            thumbColor="#ffffff"
+            accessibilityLabel={t('pillars.wellbeing')}
+          />
+        </View>
       </View>
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('settings.pillars.hint')}</Text>
+      {settings?.wellbeingPillarEnabled === true ? (
+        <Button label={t('settings.pillars.wellbeingSettings')} variant="ghost" onPress={() => router.push('/wellbeing-settings')} />
+      ) : null}
 
       {/* Apparence (thème) */}
       <Text style={[styles.sectionTitle, { color: colors.textMuted, marginTop: 28 }]}>

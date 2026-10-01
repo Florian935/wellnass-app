@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Découpage</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #f7eede; }
+a { color: #6a3fb0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; letter-spacing: .8px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.lot { background: #fffaf2; border: 1px solid #e3d3ba; border-radius: 24px; padding: 22px 24px; display: flex; flex-direction: column; gap: 12px; }
+.lh { display: flex; align-items: center; justify-content: space-between; }
+.ln { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; color: #6a3fb0; letter-spacing: .5px; text-transform: uppercase; }
+.sz { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; color: #ffffff; background: #33291f; border-radius: 8px; padding: 3px 8px; }
+.lt { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 25px; letter-spacing: -.5px; line-height: 30px; }
+.lot ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 6px; font-size: 14.5px; line-height: 21px; color: #33291f; }
+.meta { display: grid; grid-template-columns: 78px minmax(0, 1fr); gap: 8px; border-top: 1px solid #ece0cd; padding-top: 10px; font-size: 12.5px; line-height: 18px; color: #5b4d3e; }
+.meta b { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .5px; text-transform: uppercase; color: #786a59; padding-top: 1px; }
+.rk { background: #2b1d52; border-radius: 20px; padding: 18px 20px; display: flex; flex-direction: column; gap: 6px; color: #ffffff; }
+.rk b { font-size: 16px; line-height: 22px; }
+.rk span { font-size: 14px; line-height: 20px; color: #d9cff0; }
+</style>
+</helmet>
+<div style="width: 1440px; height: 1480px; box-sizing: border-box; padding: 72px 80px; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; gap: 36px; overflow: hidden;">
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div class="eb" style="color: #6a3fb0;">08 · Découpage</div>
+    <h2 class="disp" style="margin: 0; font-weight: 800; font-size: 50px; line-height: 56px; letter-spacing: -1.6px;">Six lots, du plus sûr au plus ambitieux</h2>
+    <p style="margin: 0; font-size: 17px; line-height: 26px; color: #5b4d3e; max-width: 1060px;">Chaque lot suit le parcours habituel&nbsp;: <b>/us</b>, puis spec, plan, maquette, validation, code. Tailles relatives (S, M, L), pas des heures. Rien de tout ça n'est P0&nbsp;: après LANCE-01, sauf D3 à regarder avant le dépôt de la déclaration.</p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; align-items: start;">
+    <div class="lot" style="border: 1.5px solid #6a3fb0;">
+      <div class="lh"><span class="ln">Lot 1</span><span class="sz">M</span></div>
+      <div class="lt">La maison</div>
+      <ul>
+        <li>Pilier activable (accueil de l'app, réglages), identité violette, hub en trois onglets.</li>
+        <li>« Aujourd'hui » rassemble forme du jour, check-in, douleurs, cycle et pas.</li>
+        <li>Le garde-fou « humeur basse » (D7).</li>
+        <li>Aucune donnée neuve.</li>
+      </ul>
+      <div class="meta"><b>Touche</b><span>PILLARS, active_pillars (contrainte en base à vérifier), barre d'onglets, theme/pillar.ts, colors.ts, i18n FR + EN</span></div>
+      <div class="meta"><b>Décide</b><span>D1, D2, D7</span></div>
+    </div>
+
+    <div class="lot">
+      <div class="lh"><span class="ln">Lot 2</span><span class="sz">M</span></div>
+      <div class="lt">Le check-in en deux temps</div>
+      <ul>
+        <li>Qualité de la nuit, envie de s'entraîner, quatre étiquettes.</li>
+        <li>Feuille du matin, feuille du soir, rattrapage de la veille.</li>
+        <li>Libellés FR + EN des dix nouveaux niveaux.</li>
+      </ul>
+      <div class="meta"><b>Touche</b><span>daily_wellbeing (colonnes vides par défaut), étiquettes (colonne ou table, au plan), sync rule PowerSync à la main, export RGPD</span></div>
+      <div class="meta"><b>Décide</b><span>D4, D5</span></div>
+    </div>
+
+    <div class="lot">
+      <div class="lh"><span class="ln">Lot 3</span><span class="sz">M</span></div>
+      <div class="lt">La boucle</div>
+      <ul>
+        <li>La nuit et « malade » entrent dans la forme du jour.</li>
+        <li>Une envie ≤ 2 propose la version courte de la séance.</li>
+        <li>Une ligne « contexte » dans les bilans de séance, de sortie et de journée.</li>
+      </ul>
+      <div class="meta"><b>Touche</b><span>readiness.ts, session-adaptation.ts, bilans muscu, course, nutrition</span></div>
+      <div class="meta"><b>Après</b><span>Lot 2</span></div>
+    </div>
+
+    <div class="lot">
+      <div class="lh"><span class="ln">Lot 4</span><span class="sz">L</span></div>
+      <div class="lt">Ce qui compte</div>
+      <ul>
+        <li>Moteur de liens local, pur, testé&nbsp;: seuils, nombre de cas, pistes écartées.</li>
+        <li>Les cartes de l'onglet, et la passerelle vers l'enquête du Labo.</li>
+        <li>« Cette règle ne me correspond pas ».</li>
+      </ul>
+      <div class="meta"><b>Touche</b><span>packages/shared (nouveau module), lab-investigations.ts</span></div>
+      <div class="meta"><b>Après</b><span>Lot 2, et quelques semaines de données&nbsp;: plus le lot 2 part tôt, plus cet onglet a de quoi dire.</span></div>
+    </div>
+
+    <div class="lot">
+      <div class="lh"><span class="ln">Lot 5</span><span class="sz">M</span></div>
+      <div class="lt">Les capteurs</div>
+      <ul>
+        <li>La nuit lue dans Health Connect&nbsp;: durée, coucher, lever.</li>
+        <li>La régularité, dérivée, sans rien demander.</li>
+        <li>Fréquence cardiaque au repos et VFC&nbsp;: plus tard, avec une montre.</li>
+      </ul>
+      <div class="meta"><b>Touche</b><span>module natif Health Connect (déjà là), déclaration Play</span></div>
+      <div class="meta"><b>Décide</b><span>D3</span></div>
+    </div>
+
+    <div class="lot">
+      <div class="lh"><span class="ln">Lot 6</span><span class="sz">S chacun</span></div>
+      <div class="lt">Les modules</div>
+      <ul>
+        <li>Alcool, caféine tardive, sieste, fringales&nbsp;: un interrupteur chacun.</li>
+        <li>L'hydratation, c'est NUTR-12.</li>
+      </ul>
+      <div class="meta"><b>Touche</b><span>réglages du pilier, daily_wellbeing</span></div>
+      <div class="meta"><b>Décide</b><span>D6</span></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 14px;">
+    <h3 class="disp" style="margin: 0; font-weight: 700; font-size: 28px; letter-spacing: -.6px;">Ce qui coûte vraiment</h3>
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px;">
+      <div class="rk"><b>PILLARS passe de 3 à 4</b><span>Le filtrage des analyses (3 paires deviennent 6), l'accueil de l'app, les widgets et les tests-gardes qui énumèrent les piliers.</span></div>
+      <div class="rk"><b>La sync rule, à la main</b><span>À chaque colonne ou table neuve. Déjà oubliée trois fois (BIEN-01, RUN-F2c, VIE-01) — et la panne est silencieuse.</span></div>
+      <div class="rk"><b>Les dix secondes</b><span>Chronomètre en main, pour chaque moment. Si c'est plus long, on retire un geste, on n'explique pas.</span></div>
+      <div class="rk"><b>Le calendrier</b><span>Pas P0. Seul D3 se regarde avant le dépôt de la déclaration Play&nbsp;; tout le reste vient après LANCE-01.</span></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1480}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

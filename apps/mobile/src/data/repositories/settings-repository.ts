@@ -60,7 +60,25 @@ export type SettingsInput = Pick<
   | 'showEnergyEstimates'
   | 'streakUnit'
   | 'weeklyActivityGoal'
+  | WellbeingSettingKey
 >;
+
+/**
+ * US BIEN-02 → BIEN-07 — les six interrupteurs du pilier Bien-être, et leur colonne. Une table plutôt
+ * que six blocs recopiés : la lecture, l'écriture et le test parcourent la même liste, si bien qu'une
+ * colonne ajoutée ici ne peut pas être oubliée à l'un des quatre endroits (leçon de CYCLE-01).
+ */
+const WELLBEING_SETTING_COLUMNS = {
+  wellbeingPillarEnabled: 'wellbeing_pillar_enabled',
+  wellbeingAlcoholEnabled: 'wellbeing_alcohol_enabled',
+  wellbeingCaffeineEnabled: 'wellbeing_caffeine_enabled',
+  wellbeingNapEnabled: 'wellbeing_nap_enabled',
+  wellbeingCravingsEnabled: 'wellbeing_cravings_enabled',
+  sleepHealthConnectEnabled: 'sleep_health_connect_enabled',
+} as const;
+type WellbeingSettingKey = keyof typeof WELLBEING_SETTING_COLUMNS;
+type WellbeingSettingColumn = (typeof WELLBEING_SETTING_COLUMNS)[WellbeingSettingKey];
+const WELLBEING_SETTING_KEYS = Object.keys(WELLBEING_SETTING_COLUMNS) as WellbeingSettingKey[];
 
 /** Ligne brute renvoyée par SQLite (colonnes snake_case). */
 type SettingsDbRow = {
@@ -100,7 +118,7 @@ type SettingsDbRow = {
   created_at: string;
   updated_at: string;
   deleted_at: string | null;
-};
+} & Partial<Record<WellbeingSettingColumn, number | null>>;
 
 const SELECT_CURRENT =
   'SELECT * FROM user_settings WHERE deleted_at IS NULL LIMIT 1';
@@ -145,6 +163,13 @@ function decodeCycleHealthConnectEnabled(row: SettingsDbRow | null): boolean {
   return row?.cycle_health_connect_enabled === 1;
 }
 
+/** Les six interrupteurs du pilier Bien-être, lus strictement (`=== 1`). */
+function decodeWellbeingSettings(row: SettingsDbRow | null): Record<WellbeingSettingKey, boolean> {
+  return Object.fromEntries(
+    WELLBEING_SETTING_KEYS.map((key) => [key, row?.[WELLBEING_SETTING_COLUMNS[key]] === 1]),
+  ) as Record<WellbeingSettingKey, boolean>;
+}
+
 /** Convertit une ligne SQLite (snake_case) → objet de domaine (camelCase). */
 function rowToSettings(row: SettingsDbRow): UserSettings {
   return {
@@ -183,6 +208,9 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     // un choix.
     streakUnit: row.streak_unit === 'day' || row.streak_unit === 'week' ? row.streak_unit : null,
     weeklyActivityGoal: row.weekly_activity_goal ?? null,
+    // US BIEN-02 → BIEN-07 — `=== 1` : données de santé, une ligne antérieure (colonne `null`) se lit
+    // **désactivé**. L'absence ne vaut jamais consentement.
+    ...decodeWellbeingSettings(row),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     deletedAt: row.deleted_at,
@@ -240,6 +268,9 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
   }
   if ('aiConsentAt' in input) {
     columns['ai_consent_at'] = input.aiConsentAt ?? null;
+  }
+  for (const key of WELLBEING_SETTING_KEYS) {
+    if (key in input) columns[WELLBEING_SETTING_COLUMNS[key]] = input[key] ? 1 : 0;
   }
   return columns;
 }
@@ -311,6 +342,15 @@ export async function getCycleTrackingEnabled(): Promise<boolean> {
 
 export async function getCycleHealthConnectEnabled(): Promise<boolean> {
   return decodeCycleHealthConnectEnabled(await getCurrentRow());
+}
+
+/**
+ * US BIEN-06 — les deux opt-in qui gouvernent la lecture de la nuit (hors contexte React) : le
+ * pilier Bien-être ET la lecture du sommeil. Lus par `health-connect.ts`. Défaut **OFF**.
+ */
+export async function getSleepImportSettings(): Promise<{ pillar: boolean; sleep: boolean; nap: boolean }> {
+  const decoded = decodeWellbeingSettings(await getCurrentRow());
+  return { pillar: decoded.wellbeingPillarEnabled, sleep: decoded.sleepHealthConnectEnabled, nap: decoded.wellbeingNapEnabled };
 }
 
 /**

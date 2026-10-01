@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Bien-être — ce qui compte</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #f5eee9; }
+a { color: #5a33a0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #ece3ef; border-radius: 14px; padding: 4px; }
+.seg button { height: 34px; border: none; border-radius: 10px; background: transparent; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 13px; color: #5a33a0; }
+.seg .on { background: #6a3fb0; color: #ffffff; }
+.card { background: #fffaf5; border: 1px solid #e7dad3; border-radius: 20px; }
+.pt { width: 20px; height: 20px; flex: none; border-radius: 5px; color: #ffffff; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+.fx { display: flex; align-items: center; gap: 10px; padding: 7px 0; border-top: 1px solid rgba(106, 63, 176, .16); }
+.fx span.l { flex: 1; font-size: 13px; color: #33291f; }
+.fx b { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 15px; color: #3f2178; }
+.tb { border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 11px; color: #786a59; padding: 0; }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; background: #f5eee9; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+  <div style="flex: 1; min-height: 0; padding: 14px 18px 0; display: flex; flex-direction: column; gap: 12px; overflow: hidden;">
+
+    <div>
+      <div class="eb" style="color: #6a3fb0;">Sam. 26 sept.</div>
+      <div class="disp" style="font-weight: 800; font-size: 30px; letter-spacing: -1px; line-height: 34px;">Bien-être</div>
+    </div>
+
+    <div class="seg"><button type="button">Aujourd'hui</button><button type="button">Journal</button><button type="button" class="on">Ce qui compte</button></div>
+
+    <div style="font-size: 12.5px; line-height: 18px; color: #786a59; padding: 0 2px;">Calculé sur ton téléphone, sur tes 90 derniers jours. On dit « va souvent avec », jamais « parce que ».</div>
+
+    <div style="background: #efe7f8; border-radius: 20px; padding: 16px; display: flex; flex-direction: column; gap: 4px;">
+      <div class="eb" style="color: #5a33a0;">Ton premier levier</div>
+      <div class="disp" style="font-weight: 700; font-size: 24px; letter-spacing: -.6px;">Ta nuit</div>
+      <div style="font-size: 13px; color: #5b4d3e; margin-bottom: 6px;">Le lendemain d'une nuit de moins de 6 h&nbsp;:</div>
+      <div class="fx"><span class="pt" style="background: #a8261d;">M</span><span class="l">Tonnage de la séance</span><b>−9&nbsp;%</b></div>
+      <div class="fx"><span class="pt" style="background: #2a64ad;">C</span><span class="l">Allure, à effort égal</span><b>+11&nbsp;s/km</b></div>
+      <div class="fx"><span class="pt" style="background: #3f6b1c;">N</span><span class="l">Apports de la journée</span><b>+310&nbsp;kcal</b></div>
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5px; color: #5b4d3e; margin-top: 6px;"><span>38 nuits, dont 11 courtes</span><span style="border-radius: 999px; padding: 2px 8px; background: #6a3fb0; color: #ffffff; font-weight: 700;">piste solide</span></div>
+    </div>
+
+    <div class="card" style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-weight: 700; font-size: 15px;">Ton envie de t'entraîner</div>
+        <div style="font-size: 13px; line-height: 18px; color: #5b4d3e;">À 1 ou 2, 6 séances sur 10 écourtées — contre 1 sur 10 à 4 ou 5.</div>
+      </div>
+      <label style="display: flex; align-items: center; justify-content: space-between; gap: 10px; background: #f5eee9; border-radius: 12px; padding: 8px 10px; font-size: 13px; font-weight: 600;">
+        <span>Proposer la version courte ces jours-là</span>
+        <input type="checkbox" checked="checked" aria-label="Proposer la version courte les jours d'envie faible" style="width: 22px; height: 22px; accent-color: #6a3fb0; margin: 0;">
+      </label>
+      <div style="height: 1px; background: #eadfe0;"></div>
+      <div style="display: flex; flex-direction: column; gap: 4px;">
+        <div style="font-weight: 700; font-size: 15px;">Le stress</div>
+        <div style="font-size: 13px; line-height: 18px; color: #5b4d3e;">À 4 ou 5, ton journal nutrition est complet 3 jours sur 10, contre 8 sur 10 d'habitude.</div>
+      </div>
+    </div>
+
+    <div style="border: 1.5px dashed #c9b8c6; border-radius: 20px; padding: 12px 16px; display: flex; flex-direction: column; gap: 6px;">
+      <div class="eb">Pistes écartées</div>
+      <div style="font-size: 13px; line-height: 18px; color: #5b4d3e;"><b style="color: #33291f;">Café après 16 h</b> · rien de visible sur ta nuit (9 soirs)</div>
+      <div style="font-size: 13px; line-height: 18px; color: #5b4d3e;"><b style="color: #33291f;">Cycle</b> · écarts faibles entre phases (2 cycles, trop tôt)</div>
+    </div>
+
+    <a href="#labo" style="display: flex; align-items: center; justify-content: space-between; height: 40px; padding: 0 4px; font-weight: 700; font-size: 14px; text-decoration: none;">Creuser une piste dans le Labo<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#5a33a0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg></a>
+  </div>
+
+  <div style="height: 64px; flex: none; background: #fffaf5; border-top: 1px solid #e7dad3; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));">
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg>Accueil</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect></svg>Muscu</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19l4-5 3 2 3-6 4 2"></path><circle cx="15" cy="5" r="2"></circle></svg>Course</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14z"></path><path d="M5 19l7-7"></path></svg>Nutrition</button>
+    <button type="button" class="tb" style="color: #6a3fb0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="#efe7f8" stroke="#6a3fb0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>Bien-être</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

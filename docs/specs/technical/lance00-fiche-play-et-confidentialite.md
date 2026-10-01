@@ -9,6 +9,15 @@
 > Conséquence actée : le chemin critique passe d'environ **3 à 5 semaines**.
 > **Ne pas déposer la fiche avant d'avoir répercuté ces trois points.**
 
+> 🔴 **À REPRENDRE aussi — pilier Bien-être du 01/10/2026** (BIEN-02 → BIEN-07). Il ajoute des
+> **données de santé** saisies (qualité de la nuit, envie, humeur et stress déjà présents, étiquettes
+> « malade », « soirée », modules alcool, café tardif, sieste, fringales) et **la nuit lue dans Health
+> Connect** (`READ_SLEEP`, synchronisée sur le compte). Le brouillon ci-dessous a reçu la ligne Santé et
+> le paragraphe Health Connect (§1) ; restent **§3** (« Sécurité des données » : la nuit lue, collectée
+> **et** transmise) et **§4** (déclaration à **7 types**, voir
+> [health-connect-play-declaration.md](health-connect-play-declaration.md) §2 ter). Le texte in-app
+> `legal.privacy.body` a été complété le 01/10/2026.
+
 > **Statut : brouillons prêts à relire.** Ce document rassemble tout ce qui peut être **rédigé sans
 > compte Google Play**, pour que la création du compte (délai externe : vérification d'identité
 > Google, plusieurs jours) ne soit pas suivie d'une deuxième attente de rédaction.
@@ -78,7 +87,7 @@ n'apparaît qu'à l'upload.
 | Musculation | séances, séries, charges, répétitions, records, programmes | la fonction principale |
 | Course | distance, durée, allure, **tracés GPS** | la fonction principale |
 | Nutrition | aliments, quantités, repas, recettes, profil nutritionnel | la fonction principale |
-| Santé | poids, mensurations, bien-être quotidien, **pas quotidiens** | suivi demandé par l'utilisateur |
+| Santé | poids, mensurations, bien-être quotidien (humeur, énergie, stress, nuit et sa qualité, envie de s'entraîner, étiquettes comme « malade » ; si tu les actives : alcool, café tardif, sieste, fringales), **pas quotidiens**, **nuit lue dans Health Connect** | suivi demandé par l'utilisateur ; le pilier Bien-être est **désactivé par défaut** et s'active avec ton accord explicite |
 | Usage | écrans consultés, fonctionnalités utilisées | améliorer l'app — **désactivable** |
 
 **3. Ce que nous ne faisons pas**
@@ -90,8 +99,10 @@ Si tu actives Health Connect : tes séances et tes courses y sont **écrites**, 
 **relu** — cet échange a lieu **uniquement sur ton téléphone**. Tes **pas quotidiens**, en revanche,
 sont lus dans Health Connect puis **enregistrés sur ton compte** (un total par jour, jamais le détail
 de tes déplacements), afin d'alimenter ton objectif, ton historique et ta série sur tous tes
-appareils. Tu peux désactiver cette synchronisation dans les réglages et révoquer l'accès à tout
-moment depuis Health Connect.
+appareils. Si tu actives le pilier Bien-être **et** la lecture de ta nuit, la durée de chaque nuit et
+ses heures de coucher et de lever sont lues dans Health Connect puis **enregistrées sur ton compte** ;
+une nuit que tu as saisie toi-même n'est jamais remplacée. Tu peux désactiver ces synchronisations dans
+les réglages et révoquer l'accès à tout moment depuis Health Connect.
 
 **5. Où vont tes données**
 Hébergement Supabase (Union européenne). Chaque utilisateur est isolé des autres par des règles de

@@ -10,6 +10,13 @@ maj: 28/07/2026
 
 # US BIEN-01 — Check-in quotidien & journal de bien-être
 
+> 🔁 **Prolongé le 01/10/2026 par le pilier Bien-être** ([BIEN-02](bien02-pilier-bien-etre.md) →
+> [BIEN-07](bien07-modules.md)). Pour un compte **sans** le pilier, rien ne change : cette feuille
+> reste celle de l'accueil. **Pilier allumé**, elle cède la place au check-in en deux temps (matin /
+> soir, [BIEN-03](bien03-checkin-deux-temps.md)) ; la table `daily_wellbeing` est la même, enrichie de
+> colonnes facultatives. La note « dimension transverse, pas un 4ᵉ pilier » (§3.3) est renversée par la
+> décision D1 du 01/10/2026.
+
 > **Spec fonctionnelle — ✅ validée par Florian le 28/07/2026** (livrables spec + plan + maquette,
 > et arbitrage des 7 décisions §1). Implémentation en cours.
 > Roadmap **1.24** (V0.9, P1, ~5 h).

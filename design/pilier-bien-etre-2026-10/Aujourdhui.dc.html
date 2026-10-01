@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Bien-être — aujourd'hui</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #f5eee9; }
+a { color: #6a3fb0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #ece3ef; border-radius: 14px; padding: 4px; }
+.seg button { height: 34px; border: none; border-radius: 10px; background: transparent; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 13px; color: #5a33a0; }
+.seg .on { background: #6a3fb0; color: #ffffff; }
+.card { background: #fffaf5; border: 1px solid #e7dad3; border-radius: 20px; }
+.vc { display: inline-flex; gap: 5px; align-items: center; height: 26px; padding: 0 10px; border-radius: 999px; background: rgba(255, 255, 255, .1); color: #f1ecfb; font-size: 12px; font-weight: 600; }
+.vc b { font-family: 'Space Mono', ui-monospace, monospace; }
+.pt { width: 22px; height: 22px; flex: none; border-radius: 6px; color: #ffffff; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; }
+.bp { height: 38px; padding: 0 16px; border-radius: 12px; border: none; background: #6a3fb0; color: #ffffff; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 13.5px; }
+.bs { height: 38px; padding: 0 14px; border-radius: 12px; border: 1.5px solid #cdbfd0; background: transparent; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 13.5px; }
+.wk { display: flex; align-items: flex-end; justify-content: center; height: 56px; }
+.wk span { width: 18px; border-radius: 5px; display: block; }
+.su { height: 38px; border-radius: 12px; border: 1px solid #e7dad3; background: #fffaf5; display: flex; align-items: center; justify-content: center; gap: 6px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 12px; color: #33291f; padding: 0 6px; }
+.tb { border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 11px; color: #786a59; padding: 0; }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; background: #f5eee9; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+  <div style="flex: 1; min-height: 0; padding: 14px 18px 0; display: flex; flex-direction: column; gap: 12px; overflow: hidden;">
+
+    <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+      <div>
+        <div class="eb" style="color: #6a3fb0;">Sam. 26 sept.</div>
+        <div class="disp" style="font-weight: 800; font-size: 30px; letter-spacing: -1px; line-height: 34px;">Bien-être</div>
+      </div>
+      <button type="button" aria-label="Réglages du pilier" style="width: 40px; height: 40px; border-radius: 12px; border: 1px solid #e7dad3; background: #fffaf5; display: flex; align-items: center; justify-content: center; padding: 0;"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5b4d3e" stroke-width="2" stroke-linecap="round"><line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="17" x2="20" y2="17"></line><circle cx="9" cy="7" r="2.2" fill="#fffaf5"></circle><circle cx="15" cy="17" r="2.2" fill="#fffaf5"></circle></svg></button>
+    </div>
+
+    <div class="seg"><button type="button" class="on">Aujourd'hui</button><button type="button">Journal</button><button type="button">Ce qui compte</button></div>
+
+    <div style="background: #2b1d52; border-radius: 22px; padding: 16px 18px; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 10px;">
+      <div style="position: absolute; width: 180px; height: 180px; border-radius: 50%; background: #6a3fb0; opacity: .45; filter: blur(40px); top: -90px; right: -50px;"></div>
+      <div style="position: relative; display: flex; align-items: center; gap: 12px;">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#cfc2ec" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>
+        <div>
+          <div class="eb" style="color: #cfc2ec;">Ta forme du jour · 7 h 12</div>
+          <div class="disp" style="font-weight: 700; font-size: 25px; letter-spacing: -.6px; color: #ffffff; line-height: 30px;">Repos conseillé</div>
+        </div>
+      </div>
+      <div style="position: relative; font-size: 13px; line-height: 18px; color: #d9cff0;">Deux signaux&nbsp;: ta nuit et ton énergie. Une suggestion, pas une consigne.</div>
+      <div style="position: relative; display: flex; flex-wrap: wrap; gap: 6px;">
+        <span class="vc"><b style="color: #ffa596;">↓</b>Nuit 5 h 40 · agitée</span>
+        <span class="vc"><b style="color: #ffa596;">↓</b>Énergie basse</span>
+        <span class="vc"><b style="color: #cfc2ec;">=</b>Charge stable</span>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 14px 16px; display: flex; flex-direction: column; gap: 10px;">
+      <div style="font-weight: 700; font-size: 15.5px;">Ce que ça change aujourd'hui</div>
+      <div style="display: flex; gap: 10px;">
+        <span class="pt" style="background: #a8261d;">M</span>
+        <div style="flex: 1; display: flex; flex-direction: column; gap: 8px;">
+          <div>
+            <div style="font-weight: 700; font-size: 14px;">Jambes · 18 h 30</div>
+            <div style="font-size: 13px; line-height: 18px; color: #5b4d3e; margin-top: 2px;">Garder l'échauffement, retirer 25&nbsp;% des répétitions&nbsp;: 4 × 6 au lieu de 4 × 8.</div>
+          </div>
+          <div style="display: flex; gap: 8px;"><button type="button" class="bp">Alléger</button><button type="button" class="bs">Garder tel quel</button></div>
+        </div>
+      </div>
+      <div style="height: 1px; background: #eadfe0;"></div>
+      <div style="display: flex; gap: 10px;">
+        <span class="pt" style="background: #3f6b1c;">N</span>
+        <div style="font-size: 13px; line-height: 18px; color: #5b4d3e;">Après une nuit courte, tes envies de sucre montent souvent vers 16&nbsp;h. Ta collation est prévue&nbsp;: rien à compenser.</div>
+      </div>
+    </div>
+
+    <div class="card" style="padding: 12px 16px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: baseline;">
+        <div style="font-weight: 700; font-size: 14.5px;">Tes nuits cette semaine</div>
+        <div style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; color: #786a59;">moy. 6 h 26 · 5 nuits</div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px;">
+        <div class="wk"><span style="height: 45px; background: #7d58bd;"></span></div>
+        <div class="wk"><span style="height: 42px; background: #b096dc;"></span></div>
+        <div class="wk"><span style="height: 10px; border: 1.5px dashed #c9b8c6; box-sizing: border-box;"></span></div>
+        <div class="wk"><span style="height: 32px; background: #d4c3ec;"></span></div>
+        <div class="wk"><span style="height: 46px; background: #7d58bd;"></span></div>
+        <div class="wk"><span style="height: 35px; background: #d4c3ec; box-shadow: 0 0 0 2px #33291f;"></span></div>
+        <div class="wk"><span style="height: 4px; background: #ebe2e6;"></span></div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; font-size: 11px; text-align: center; color: #786a59; font-weight: 600;"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span style="color: #33291f; font-weight: 700;">Sam</span><span>Dim</span></div>
+    </div>
+
+    <div class="card" style="padding: 10px 14px; display: flex; align-items: center; gap: 12px;">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>
+      <div style="flex: 1;"><div style="font-weight: 700; font-size: 14px;">Ce soir · 10 s</div><div style="font-size: 12.5px; color: #786a59;">humeur, stress, étiquettes de la journée</div></div>
+      <div style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; color: #5a33a0; background: #efe7f8; border-radius: 999px; padding: 4px 9px;">21 h</div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px;">
+      <button type="button" class="su"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 3L6 13h5l-1 8 7-10h-5l1-8z"></path></svg>Douleurs</button>
+      <button type="button" class="su"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#6a3fb0" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12a8 8 0 1 1-2.3-5.7"></path><path d="M20 4v5h-5"></path></svg>Cycle</button>
+      <button type="button" class="su">6 820 pas</button>
+      <button type="button" class="su">72,4 kg</button>
+    </div>
+  </div>
+
+  <div style="height: 64px; flex: none; background: #fffaf5; border-top: 1px solid #e7dad3; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));">
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg>Accueil</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect></svg>Muscu</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19l4-5 3 2 3-6 4 2"></path><circle cx="15" cy="5" r="2"></circle></svg>Course</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14z"></path><path d="M5 19l7-7"></path></svg>Nutrition</button>
+    <button type="button" class="tb" style="color: #6a3fb0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="#efe7f8" stroke="#6a3fb0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>Bien-être</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

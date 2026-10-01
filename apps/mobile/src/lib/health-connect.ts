@@ -27,6 +27,8 @@ import {
   buildRunRecords,
   buildWorkoutSessionRecord,
   deviceOffsetSeconds,
+  localDayKey,
+  nightsFromSleepSessions,
   selectFlowLogsToImport,
   selectPeriodsToImport,
   selectWeightEntriesToImport,
@@ -40,6 +42,7 @@ import {
   type MenstruationPeriodRecordInput,
   type RemoteMenstruationFlowRecord,
   type RemoteMenstruationPeriodRecord,
+  type RemoteSleepSessionRecord,
   type RemoteWeightRecord,
   type StepsBucket,
 } from '@wellness/shared';
@@ -49,7 +52,9 @@ import {
   getCycleHealthConnectEnabled,
   getCycleTrackingEnabled,
   getHealthConnectEnabled,
+  getSleepImportSettings,
 } from '@/data/repositories/settings-repository';
+import { upsertImportedNights } from '@/data/repositories/daily-wellbeing-repository';
 import { logWeight } from '@/data/repositories/bodyweight-repository';
 import { upsertDailySteps } from '@/data/repositories/daily-steps-repository';
 import {
@@ -74,6 +79,9 @@ const LAST_STEPS_IMPORT_KEY = 'healthConnect.lastStepsImportAt';
 /** Idem pour le cycle (US CYCLE-01) — curseur distinct, throttle distinct. */
 const LAST_CYCLE_IMPORT_KEY = 'healthConnect.lastCycleImportAt';
 
+/** Idem pour la nuit (US BIEN-06) — curseur distinct, throttle distinct. */
+const LAST_SLEEP_IMPORT_KEY = 'healthConnect.lastSleepImportAt';
+
 /** Fenêtre par défaut, en jours, pour le rattrapage et la lecture du poids. */
 export const DEFAULT_WINDOW_DAYS = 30;
 
@@ -91,6 +99,15 @@ export const STEPS_IMPORT_THROTTLE_HOURS = 1;
 
 /** Throttle de l'import automatique du cycle (US CYCLE-01) — même ordre de grandeur que le poids. */
 export const CYCLE_IMPORT_THROTTLE_HOURS = 6;
+
+/**
+ * Throttle de l'import de la nuit (US BIEN-06) — **1 h**, comme les pas : la montre peut ne déposer
+ * la session qu'une demi-heure après le réveil, et le check-in du matin doit alors la retrouver.
+ */
+export const SLEEP_IMPORT_THROTTLE_HOURS = 1;
+
+/** Jours relus à chaque import : la fenêtre de rattrapage du check-in (J-6 → aujourd'hui). */
+export const SLEEP_IMPORT_WINDOW_DAYS = 7;
 
 /**
  * Les 4 permissions demandées — et pas une de plus (minimisation, déclaration Play).
@@ -124,6 +141,13 @@ const CYCLE_PERMISSIONS = [
   { accessType: 'read', recordType: 'MenstruationFlow' },
   { accessType: 'write', recordType: 'MenstruationFlow' },
 ] as const;
+
+/**
+ * US BIEN-06 — la nuit (décision D3 du 01/10/2026) : `READ_SLEEP`, et rien d'autre. **À part**, pour
+ * la même raison que le cycle : l'ajouter à `PERMISSIONS` ferait repasser en `permissions_missing`
+ * des comptes qui n'ont jamais activé le pilier Bien-être.
+ */
+const SLEEP_PERMISSIONS = [{ accessType: 'read', recordType: 'SleepSession' }] as const;
 
 /** Disponibilité du fournisseur — niveau 1 de l'état affiché (spec §2.1). */
 export type HealthConnectAvailability =
@@ -163,7 +187,7 @@ export type SyncReport = {
   /** Instant de la tentative (ISO UTC). */
   at: string;
   /** Ce qui était tenté. */
-  kind: 'workout' | 'run' | 'activity' | 'backfill' | 'weight' | 'steps' | 'cycle';
+  kind: 'workout' | 'run' | 'activity' | 'backfill' | 'weight' | 'steps' | 'cycle' | 'sleep';
   /** Nombre d'éléments réellement écrits / importés. */
   written: number;
   /**
@@ -1010,6 +1034,154 @@ export async function importCycleDataIfDue(): Promise<{ periods: number; flows: 
     return { periods: 0, flows: 0 };
   }
   return importCycleData();
+}
+
+// ---------------------------------------------------------------------------
+// US BIEN-06 — la nuit lue dans Health Connect (décision D3 du 01/10/2026)
+// ---------------------------------------------------------------------------
+
+/** La permission de lire le sommeil est-elle **déjà** accordée ? (Ne déclenche aucune demande.) */
+export async function hasSleepPermissions(): Promise<boolean> {
+  if (Platform.OS !== 'android') return false;
+  try {
+    const { initialize, getGrantedPermissions } = await nativeModule();
+    if (!(await initialize(HEALTH_CONNECT_PACKAGE))) return false;
+    const granted = await getGrantedPermissions();
+    return SLEEP_PERMISSIONS.every((needed) =>
+      granted.some(
+        (g) =>
+          (g as { accessType?: string }).accessType === needed.accessType &&
+          (g as { recordType?: string }).recordType === needed.recordType,
+      ),
+    );
+  } catch (error) {
+    console.warn('[health-connect] getGrantedPermissions (sommeil) a échoué :', error);
+    return false;
+  }
+}
+
+/**
+ * Demande la lecture du sommeil (écran système). **Seul** point de l'app qui la déclenche, et
+ * uniquement sur action explicite dans les réglages du pilier Bien-être.
+ */
+export async function requestSleepPermissions(): Promise<boolean> {
+  if (Platform.OS !== 'android') return false;
+  try {
+    const { initialize, requestPermission } = await nativeModule();
+    if (!(await initialize(HEALTH_CONNECT_PACKAGE))) return false;
+    await requestPermission([...SLEEP_PERMISSIONS] as Parameters<typeof requestPermission>[0]);
+    return hasSleepPermissions();
+  } catch (error) {
+    console.warn('[health-connect] requestPermission (sommeil) a échoué :', error);
+    return false;
+  }
+}
+
+/** État de la lecture de la nuit — pour l'interrupteur des réglages du pilier. */
+export async function getSleepState(): Promise<HealthConnectState> {
+  const availability = await getAvailability();
+  if (availability !== 'available') return availability;
+  const { pillar, sleep } = await getSleepImportSettings();
+  if (!pillar || !sleep) return 'off';
+  return (await hasSleepPermissions()) ? 'ready' : 'permissions_missing';
+}
+
+/**
+ * Garde de la nuit : le pilier Bien-être ET la lecture du sommeil activés, plus la permission.
+ * Volontairement indépendante de `healthConnectEnabled` (séances, poids, pas) : lire sa nuit ne
+ * demande pas d'écrire ses séances dans Health Connect.
+ */
+async function readySleep(): Promise<
+  | { native: Awaited<ReturnType<typeof nativeModule>>; reason?: undefined; inactive?: undefined }
+  | { native: null; reason: string; inactive?: boolean }
+> {
+  if (Platform.OS !== 'android') {
+    return { native: null, reason: 'plateforme non Android', inactive: true };
+  }
+  try {
+    const { pillar, sleep } = await getSleepImportSettings();
+    if (!pillar || !sleep) {
+      return { native: null, reason: 'pilier Bien-être ou lecture de la nuit désactivés', inactive: true };
+    }
+    const native = await nativeModule();
+    const status = await native.getSdkStatus(HEALTH_CONNECT_PACKAGE);
+    if (status !== SDK_AVAILABLE) {
+      return { native: null, reason: `Health Connect indisponible (getSdkStatus = ${status})` };
+    }
+    if (!(await native.initialize(HEALTH_CONNECT_PACKAGE))) {
+      return { native: null, reason: 'initialize() a renvoyé false' };
+    }
+    if (!(await hasSleepPermissions())) {
+      return { native: null, reason: 'permission sommeil non accordée' };
+    }
+    return { native };
+  } catch (error) {
+    return { native: null, reason: `initialisation impossible : ${errorMessage(error)}` };
+  }
+}
+
+/**
+ * Lit les sessions de sommeil des `days` derniers jours et écrit **une nuit par matin** dans le
+ * check-in (US BIEN-06). Les règles — nuit du matin du réveil, éveil retiré, saisie manuelle jamais
+ * écrasée — vivent dans `@wellness/shared` (`nightsFromSleepSessions`, `canWriteImportedNight`).
+ *
+ * Renvoie le nombre de jours écrits.
+ */
+export async function importSleep(days = SLEEP_IMPORT_WINDOW_DAYS): Promise<number> {
+  const { native, reason, inactive } = await readySleep();
+  if (!native) {
+    if (!inactive) report('sleep', 0, reason);
+    return 0;
+  }
+  try {
+    const now = Date.now();
+    // Un jour de plus que la fenêtre : la nuit du plus vieux matin a commencé la veille au soir.
+    const result = await native.readRecords('SleepSession', {
+      timeRangeFilter: {
+        operator: 'between',
+        startTime: new Date(now - (days + 1) * 86_400_000).toISOString(),
+        endTime: new Date(now).toISOString(),
+      },
+    });
+    const records = (result.records as unknown as RemoteSleepSessionRecord[]).filter(
+      (r) => (r.metadata?.dataOrigin ?? '') !== OWN_PACKAGE,
+    );
+    const nights = nightsFromSleepSessions(records, deviceOffsetSeconds(now));
+    const written = await upsertImportedNights(nights, localDayKey(new Date(now)));
+    await setLastSleepImportAt(new Date(now).toISOString());
+    // « Aucune session » se distingue d'une panne : la plupart du temps, c'est qu'aucune app source
+    // (montre, Samsung Health…) n'écrit le sommeil dans Health Connect.
+    report('sleep', written, records.length === 0 ? `aucune session de sommeil lue sur ${days} jours` : null);
+    return written;
+  } catch (error) {
+    report('sleep', 0, errorMessage(error));
+    return 0;
+  }
+}
+
+/** Horodatage du dernier import de la nuit (base du throttle). */
+export async function getLastSleepImportAt(): Promise<string | null> {
+  try {
+    return await SecureStore.getItemAsync(LAST_SLEEP_IMPORT_KEY);
+  } catch {
+    return null;
+  }
+}
+
+async function setLastSleepImportAt(iso: string): Promise<void> {
+  try {
+    await SecureStore.setItemAsync(LAST_SLEEP_IMPORT_KEY, iso);
+  } catch (error) {
+    console.warn('[health-connect] écriture du curseur d’import de la nuit impossible :', error);
+  }
+}
+
+/** Import de la nuit au retour au premier plan, throttlé. No-op silencieux pilier ou lecture éteints. */
+export async function importSleepIfDue(): Promise<number> {
+  if (Platform.OS !== 'android') return 0;
+  const last = await getLastSleepImportAt();
+  if (!shouldImportSteps(last, Date.now(), SLEEP_IMPORT_THROTTLE_HOURS)) return 0;
+  return importSleep();
 }
 
 /** Ouvre les réglages Health Connect du système (pour revoir ou révoquer les accès). */

@@ -570,6 +570,17 @@ function RootNavigator() {
             headerTintColor: colors.accent,
           }}
         />
+        {/* US BIEN-02 — les réglages du pilier Bien-être (modules, nuit lue, garde-fou). */}
+        <Stack.Screen
+          name="wellbeing-settings"
+          options={{
+            headerShown: true,
+            title: t('wellbeingSettings.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
         {/* US DOUL-01 — journal des zones sensibles. ⚠️ Sans cette déclaration, l'écran n'a aucun
             en-tête et son titre se dessine sous la barre d'état : leçon de PAS-01, qu'aucun test ni
             typecheck n'attrape. */}

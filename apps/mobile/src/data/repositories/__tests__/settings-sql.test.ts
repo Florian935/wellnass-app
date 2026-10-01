@@ -27,6 +27,7 @@ import {
   getCycleTrackingEnabled,
   getHealthConnectEnabled,
   getNotificationPrefs,
+  getSleepImportSettings,
   getUnitSystem,
   togglePillar,
   updateSettings,
@@ -225,6 +226,57 @@ describe('défauts des opt-in', () => {
     ]);
 
     expect(await getHealthConnectEnabled()).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US BIEN-02 → BIEN-07 — le pilier Bien-être, ses modules et la nuit lue
+// ---------------------------------------------------------------------------
+
+describe('pilier Bien-être', () => {
+  const WELLBEING_COLUMNS = {
+    wellbeingPillarEnabled: 'wellbeing_pillar_enabled',
+    wellbeingAlcoholEnabled: 'wellbeing_alcohol_enabled',
+    wellbeingCaffeineEnabled: 'wellbeing_caffeine_enabled',
+    wellbeingNapEnabled: 'wellbeing_nap_enabled',
+    wellbeingCravingsEnabled: 'wellbeing_cravings_enabled',
+    sleepHealthConnectEnabled: 'sleep_health_connect_enabled',
+  } as const;
+
+  it.each(Object.entries(WELLBEING_COLUMNS))('écrit %s dans la colonne %s, en 0/1', async (key, column) => {
+    // La panne du 31/07/2026, en six exemplaires possibles : une colonne absente du schéma local et
+    // l'interrupteur resterait éteint sans un mot.
+    await updateSettings({ [key]: true });
+    expect((row() as unknown as Record<string, unknown>)[column]).toBe(1);
+
+    await updateSettings({ [key]: false });
+    expect((row() as unknown as Record<string, unknown>)[column]).toBe(0);
+  });
+
+  it('🔴 tout est OFF par défaut — données de santé, consentement explicite (RGPD art. 9)', async () => {
+    expect(await getSleepImportSettings()).toEqual({ pillar: false, sleep: false, nap: false });
+
+    await ensureSettings();
+    expect(await getSleepImportSettings()).toEqual({ pillar: false, sleep: false, nap: false });
+  });
+
+  it('le pilier n’est PAS un pilier de `active_pillars` : l’activer ne touche pas aux trois autres', async () => {
+    await updateSettings({ activePillars: ['strength', 'running'] });
+
+    await updateSettings({ wellbeingPillarEnabled: true });
+
+    // Un « wellbeing » glissé dans la liste casserait la scène à trois disques du Labo et chaque
+    // `activePillars.length >= 2` du code.
+    expect(pillars()).toEqual(['strength', 'running']);
+    expect(await getSleepImportSettings()).toEqual(expect.objectContaining({ pillar: true }));
+  });
+
+  it('éteindre le pilier garde les modules et la lecture tels quels — rien n’est effacé', async () => {
+    await updateSettings({ wellbeingPillarEnabled: true, sleepHealthConnectEnabled: true, wellbeingNapEnabled: true });
+
+    await updateSettings({ wellbeingPillarEnabled: false });
+
+    expect(await getSleepImportSettings()).toEqual({ pillar: false, sleep: true, nap: true });
   });
 });
 

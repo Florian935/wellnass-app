@@ -1,4 +1,4 @@
-# État du projet — 30/09/2026
+# État du projet — 01/10/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 260 livré · 4 partiel · 2 à faire (sur 272)
+**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 266 livré · 4 partiel · 2 à faire (sur 278)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -22,6 +22,12 @@ avant de pouvoir publier.
 | **APPORT-01** — Manges-tu comme tu t'entraînes ? — lot d'analyses croisées muscu × nutrition | `recette` | `feature/apport01-manger-comme-on-sentraine` | [4.40] |
 | **AUTRE-01** — Les autres activités : vélo, natation, rando… saisies à la main | `recette` | `dev` | [4.42] |
 | **BIEN-01** — Check-in quotidien & journal de bien-être | `recette` | `feature/bien01-checkin-bien-etre` | [1.24] |
+| **BIEN-02** — Le pilier Bien-être — pilier activable, hub en trois onglets, garde-fou « humeur basse » | `recette` | `dev` | [1.31] |
+| **BIEN-03** — Le check-in en deux temps — matin et soir, qualité de nuit, envie, étiquettes | `recette` | `dev` | [1.32] |
+| **BIEN-04** — La boucle — la nuit et « malade » changent la forme du jour, la séance et le bilan | `recette` | `dev` | [1.33] |
+| **BIEN-05** — Ce qui compte — les croisements Bien-être, un lien du Labo et l'onglet du pilier | `recette` | `dev` | [1.34] |
+| **BIEN-06** — La nuit lue dans Health Connect — durée, coucher, lever, régularité | `recette` | `dev` | [1.35] |
+| **BIEN-07** — Les modules du pilier Bien-être — alcool, café tardif, sieste, fringales | `recette` | `dev` | [1.36] |
 | **BILAN-01** — Bilan hebdomadaire automatique | `recette` | `feature/bilan01-bilan-hebdo` | [7.16] |
 | **CARDIO-UX01** — Refonte UX du pilier Course — justesse, hub, course, après-course, préparation | `recette` | `feature/cardio-refonte-ux` | [5.40] |
 | **CARDIO-UX02** — Refonte du hub Course — le bleu partout, et un écran qui sait où en est le coureur | `recette` | `dev` | [5.42] |
@@ -112,7 +118,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **91 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BILAN-01, CARDIO-UX01, CARDIO-UX02, CARDIO-UX03, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, ECHO-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LABO-02, LABO-03, LABO-04, LAUNCHER-01, LETTRE-01, LIENS-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX07, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, NUTRI-UX03, OBJ-01, PARTAGE-01, PARTAGE-02, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **97 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BIEN-02, BIEN-03, BIEN-04, BIEN-05, BIEN-06, BIEN-07, BILAN-01, CARDIO-UX01, CARDIO-UX02, CARDIO-UX03, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, ECHO-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LABO-02, LABO-03, LABO-04, LAUNCHER-01, LETTRE-01, LIENS-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX07, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, NUTRI-UX03, OBJ-01, PARTAGE-01, PARTAGE-02, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -134,10 +140,10 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/labo-carrefour` (modifications non commitées) |
-| Commits | 1348 · `main` a **1345** commits de retard sur `dev` |
-| Specs d'US | 181 au total — 89 clôturées, 92 en cours |
-| Migrations | 112/112 poussées sur le cloud |
+| Branche courante | `dev` (modifications non commitées) |
+| Commits | 1349 · `main` a **1346** commits de retard sur `dev` |
+| Specs d'US | 187 au total — 89 clôturées, 98 en cours |
+| Migrations | 113/113 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -146,11 +152,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `441287c`  feat(labo): le Labo, carrefour des piliers — registre des liens, Croiser, fiche, échos, Apprendre
 - `dd388cc`  fix(cardio): CARDIO-UX03, « Choisir un programme » tient sur une ligne
 - `1cf7ef2`  feat(nutrition): NUTRI-UX03, le hub Nutrition en trois onglets — Aujourd'hui, Historique, Progrès
 - `fbf078d`  feat(cardio): CARDIO-UX03, le hub Course en trois onglets — Courir, Historique, Progrès
 - `20a4055`  feat(nutrition): NUTRI-UX03, le socle du hub en trois onglets — briques, requêtes, journal sorti de l'écran
-- `1584e8d`  docs(nutrition): NUTRI-UX03 cadrée — le hub Nutrition en trois onglets
 
 ---
 

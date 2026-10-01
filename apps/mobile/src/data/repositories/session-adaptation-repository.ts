@@ -25,6 +25,7 @@ import {
   computeAcwr,
   freshPainReports,
   isHeavyLegSession,
+  isPoorNight,
   localDayKey,
   proposeSessionAdaptation,
   worstRunningPain,
@@ -118,6 +119,9 @@ export function useSessionAdaptation(
     const heavyLegSessionYesterday =
       legRows.length > 0 ? isHeavyLegSession(setsByMuscle) : false;
 
+    // US BIEN-04 — pilier Bien-être activé : la nuit, « malade » et l'envie entrent dans la proposition.
+    // Pilier éteint, rien n'est passé : la règle est exactement celle de RUN-F4.
+    const pillarOn = settings?.wellbeingPillarEnabled === true;
     const proposal = proposeSessionAdaptation(sessionType, {
       worstPainLevel,
       energyLevel: wellbeing?.energy ?? null,
@@ -125,15 +129,23 @@ export function useSessionAdaptation(
       heavyLegSessionYesterday,
       // La météo n'a aucune source : RUN-F3b est bloquée sur un arbitrage de confidentialité.
       temperatureC: null,
+      ...(pillarOn
+        ? {
+            sick: wellbeing?.sick === true,
+            poorNight: isPoorNight(wellbeing),
+            lowMotivation: wellbeing?.motivation != null && wellbeing.motivation <= 2,
+          }
+        : {}),
     });
 
     return proposal.reasons.length > 0 ? proposal : null;
   }, [
     sessionType,
     settings?.painJournalEnabled,
+    settings?.wellbeingPillarEnabled,
+    wellbeing,
     reports,
     todayKey,
-    wellbeing?.energy,
     runs,
     acuteStartKey,
     chronicStartKey,

@@ -1,12 +1,13 @@
 import { useEffect } from 'react';
 import { AppState, type AppStateStatus } from 'react-native';
 
-import { importCycleDataIfDue, importStepsIfDue, importWeightIfDue } from '@/lib/health-connect';
+import { importCycleDataIfDue, importSleepIfDue, importStepsIfDue, importWeightIfDue } from '@/lib/health-connect';
 
 /**
  * Importe les données **lues** dans Health Connect au démarrage et au retour au premier plan :
  * les pesées (US CONF-06, throttle 6 h), les **pas quotidiens** (US PAS-01, throttle 1 h) et le
- * **cycle** (US CYCLE-01, throttle 6 h).
+ * **cycle** (US CYCLE-01, throttle 6 h) et la **nuit** (US BIEN-06, throttle 1 h — no-op silencieux tant que
+ * le pilier Bien-être et la lecture du sommeil ne sont pas activés).
  *
  * Anciennement `useHealthConnectWeightImport` — renommé quand les pas sont arrivés, le nom devenant
  * faux. C'est bien un seul point d'entrée pour des imports **indépendants** : chacun a son curseur
@@ -33,6 +34,7 @@ export function useHealthConnectImports(enabled: boolean): void {
     void importWeightIfDue();
     void importStepsIfDue();
     void importCycleDataIfDue();
+    void importSleepIfDue();
   }, [enabled]);
 
   useEffect(() => {
@@ -42,6 +44,7 @@ export function useHealthConnectImports(enabled: boolean): void {
       void importWeightIfDue();
       void importStepsIfDue();
       void importCycleDataIfDue();
+      void importSleepIfDue();
     });
     return () => sub.remove();
   }, [enabled]);

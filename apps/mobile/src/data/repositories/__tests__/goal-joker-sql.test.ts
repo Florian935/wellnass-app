@@ -248,10 +248,21 @@ describe('consumeJoker', () => {
   });
 
   it('refuse au-delà du quota du mois, en relisant la base', async () => {
-    await consumeJoker(dayKey(-1));
+    // Le quota se compte par **mois civil** : le 1er du mois, « hier » et « avant-hier » tombent dans le
+    // mois précédent et ce test ne pouvait pas tenir (échec constaté le 01/10/2026, sans rapport avec le
+    // code). On fige la seule date de CE test au milieu d'un mois, pas les minuteurs.
+    jest.useFakeTimers({
+      now: new Date(2026, 8, 20, 12, 0, 0),
+      doNotFake: ['nextTick', 'setImmediate', 'queueMicrotask', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval'],
+    });
+    try {
+      await consumeJoker(dayKey(-1));
 
-    await expect(consumeJoker(dayKey(-2))).rejects.toThrow(/Aucun joker disponible/);
-    expect(jokers()).toHaveLength(1);
+      await expect(consumeJoker(dayKey(-2))).rejects.toThrow(/Aucun joker disponible/);
+      expect(jokers()).toHaveLength(1);
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it('ne décompte pas un joker posé un autre mois', async () => {

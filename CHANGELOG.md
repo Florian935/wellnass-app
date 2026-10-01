@@ -10,6 +10,93 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 01/10/2026 — Le pilier Bien-être : pilier activable, check-in en deux temps, la boucle, Ce qui compte, la nuit lue, les modules (`dev`)
+
+> Six US livrées **en une vague** sur demande de Florian (« tu implémentes TOUT d'un seul lot et je
+> ferai le recettage à la fin ») : **BIEN-02** (1.31), **BIEN-03** (1.32), **BIEN-04** (1.33),
+> **BIEN-05** (1.34), **BIEN-06** (1.35), **BIEN-07** (1.36). Point de départ : sa question du 26/09
+> (« un pilier bien-être ? »), une toile d'analyse de 14 planches
+> (https://claude.ai/artifact/Uj3su2fdPF9reGM62MFkeN, `design/pilier-bien-etre-2026-10/`), puis ses
+> décisions **D1 à D8** du 01/10 (D1 pilier activable, D2 le Labo garde son onglet, D3 la nuit lue dans
+> Health Connect, D4 matin et soir, D5-D8 selon la recommandation). Travail directement sur `dev`
+> (consigne de Florian pour les chantiers en une vague). En recette : RECETTES §90 (53 critères).
+> Commit précédent sur `dev` : `441287c4`.
+
+### Ajouté
+- **Le pilier** (BIEN-02) : activable pour l'utilisateur mais **pas un `Pillar`** dans le code — drapeau
+  `user_settings.wellbeing_pillar_enabled`, comme le cycle (les ~30 endroits qui supposent trois piliers
+  sportifs restent intacts ; un `'wellbeing'` dans `active_pillars` aurait été lu « illisible » par un
+  client plus ancien). Consentement RGPD art. 9 à l'activation (`wellbeing-consent.ts`, un seul point
+  d'entrée pour l'onboarding, les Réglages et les réglages du pilier), désactivation immédiate et sans
+  effacement. Violet de nuit (`pillarWellbeing`, scène `#3f2178`, couleur de menu). Onglet
+  `wellbeing-hub` (lune) ; **le Labo garde le sien** (D2) : six onglets, libellés à 10 px au-delà de cinq.
+- **Hub** `app/(tabs)/wellbeing-hub.tsx` en trois onglets (Aujourd'hui · Journal · Ce qui compte), même
+  patron que les trois autres hubs (`WellbeingHeader`, `WellbeingStageSummary`, `wellbeing-section-store`,
+  `resolveWellbeingSection`) ; écran « pilier éteint » pour un lien entrant. **Journal** : le mois en
+  cinq violets, un indicateur à la fois, trou ≠ valeur ; 14 derniers jours avec ce que les piliers ont
+  fait et les réponses des modules. Réglages du pilier `app/wellbeing-settings.tsx`.
+- **Garde-fou « humeur basse »** (D7) : `shouldShowLowMoodCard` (5 des 7 dernières humeurs notées à 1-2
+  sur 14 jours, 14 jours de silence), `LowMoodCard` (3114), mémoire locale `low-mood-store`.
+- **Check-in en deux temps** (BIEN-03) : `MomentCheckinSheet` — matin (nuit, qualité, énergie, envie,
+  malade, en voyage, poids, courbatures → journal des douleurs), soir (humeur, stress, journée chargée,
+  soirée, modules) ; moment de l'heure mis en avant (`suggestCheckinMoment`, 12 h / 17 h) ; rattrapage
+  du soir de la veille. Une feuille n'écrit que les champs de son moment.
+- **La boucle** (BIEN-04) : `wellbeing-day.ts` (`buildWellbeingDay` : décaler, alléger, version courte,
+  go ; note de l'assiette) ; « Ce que ça change » dans Aujourd'hui, via la feuille du Labo (report au
+  lendemain, allègement écrit seulement sur une course intense) ; `WellbeingContextLine` (« Ce jour-là »)
+  dans les bilans de séance, de sortie, de journée nutrition et le détail d'une séance passée.
+- **Ce qui compte** (BIEN-05) : moteur pur `wellbeing-links.ts` — neuf croisements sur 90 jours, 8 cas
+  de chaque côté (14 pour « solide »), seuils de bruit nommés par unité ; **lien `wellbeing` du registre**
+  (« Ton état du jour pèse-t-il sur tes séances ? ») avec la forme de graphique `effects` ; onglet du
+  pilier = écho du lien, liens internes (alcool, café → nuit), régularité du coucher, moyennes 30 jours.
+- **La nuit lue dans Health Connect** (BIEN-06) : `wellbeing-sleep.ts` (`nightsFromSleepSessions` : matin
+  du réveil 3 h-14 h, ≥ 3 h, éveil retiré, sessions additionnées ; `bedtimeSpread`) ; `READ_SLEEP` **à
+  part** des permissions générales ; `importSleep` (7 jours), `importSleepIfDue` (1 h) au premier plan ;
+  `upsertImportedNights` (jamais sur une saisie manuelle, J-6 → aujourd'hui, pas de réécriture identique).
+- **Modules** (BIEN-07) : alcool, café tardif, sieste, fringales, éteints par défaut.
+- **Migration poussée** `20261001084709_bien02_pilier_bien_etre` (additive : 6 colonnes `user_settings`,
+  13 colonnes `daily_wellbeing`), types régénérés, schéma PowerSync. Aucune sync rule (`select *`).
+- Specs `bien02`…`bien07`, plans, toile, RECETTES §90, roadmap 1.31-1.36 (260 → 266 livrés), catalogue
+  BW-01…BW-07, déclaration Play à 7 types (§2 ter), brouillon de confidentialité et `legal.privacy.body`.
+
+### Modifié
+- `readiness.ts` : `classifyWellbeingComponent` reçoit `poorNight` et `sick` (pilier allumé seulement) ;
+  `session-adaptation.ts` : raisons `sick` (report), `short_night` (allègement de l'intense),
+  `low_motivation` (info). Pilier éteint : règles identiques à avant (non-régression testée).
+- `daily-wellbeing-repository.ts` réécrit : écriture des seules clés présentes, ligne existante
+  modifiable même « vide » (décocher), `sleep_source = 'manual'` à la saisie.
+- `CrossLinkChart` (forme `effects`), `LinkLens`, `link-routes` ; `QuickActions` (hub si pilier
+  allumé) ; `app/wellbeing.tsx` (nouvelles échelles) ; `app.json` (`READ_SLEEP`).
+- `isPoorNight` partagé (même seuil que le Labo, `SHORT_NIGHT_MINUTES`).
+
+### Corrigé (revue avant commit)
+- 🔴 **Doublon de ligne `daily_wellbeing`** : au retour de l'écran de permission, deux imports partaient
+  en même temps (et un check-in pouvait croiser un import) ; chacun créait la ligne du jour. Postgres a
+  un index unique `(user_id, log_date)` : la seconde aurait été rejetée et **toute la file d'envoi
+  PowerSync se serait figée**. Les écritures du repository passent désormais l'une après l'autre
+  (`serialized`) ; tests sur le vrai SQLite, vérifiés en échec sans le correctif.
+- Feuille du matin : « effacer » la nuit (règle LABO-01) manquait ; proposé pour une nuit saisie, pas
+  pour une nuit lue (que la lecture suivante réécrirait).
+- Graphique `effects` : chaque barre était rapportée à sa propre valeur, donc toujours pleine ; elle
+  l'est maintenant au seuil de bruit de son unité.
+- Module Fringales : son texte promettait un croisement qu'aucun calcul ne fait.
+- Consentement : fermer l'alerte en touchant à côté (Android) laissait la promesse pendante ; c'est un refus.
+- `goal-joker-sql.test.ts` : le test de quota échouait le 1ᵉʳ du mois (date figée pour ce test seul).
+
+### Technique / Notes
+- Tests : Vitest `wellbeing-pillar`, `wellbeing-sleep`, `wellbeing-links`, `wellbeing-day` (+ readiness,
+  session-adaptation, cross-links) ; Jest `moment-checkin-sheet`, `wellbeing-cards`, `journal-section`,
+  `wellbeing-consent`, `wellbeing-hub-screen`, `tabs-layout`, `health-connect-sleep`,
+  `daily-wellbeing-sql`, `settings-sql` (six colonnes sur le vrai schéma), `link-texts-coverage` (le lien
+  Bien-être, ses trois états et les quatre stades de chaque croisement), `cross-link-chart`.
+- Exception de contraste documentée : le violet en thème clair plafonne à une chroma de 6 (`LIGHT_FLOOR`).
+- ⚠️ **Hors code avant publication** : nouvel APK (permission native), déclaration Play à 7 types,
+  politique de confidentialité, **relecture du garde-fou** par une personne compétente, numéro d'aide hors
+  de France.
+- Non fait : sieste lue, FC repos/VFC, « cette règle ne me correspond pas », passerelle vers l'enquête,
+  historique figé du lien Bien-être, version courte écrite d'une séance de muscu.
+- Le journal des réconciliations de la roadmap compte 118 entrées (règle des 10 non tenue depuis
+  longtemps) : non traité ici.
 ## 30/09/2026 — Le Labo, carrefour des piliers : registre des liens, Croiser, fiche d'un lien, échos, Apprendre (`feature/labo-carrefour`)
 
 > Cinq US livrées **en une vague** sur demande explicite de Florian (« GO tu fais TOUT d'une seule

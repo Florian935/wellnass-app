@@ -203,3 +203,24 @@ describe('computeReadiness (US TRI-03, R4/R5)', () => {
     expect(result.wellbeing).toEqual(neutral);
   });
 });
+
+describe('classifyWellbeingComponent — US BIEN-04, signaux du pilier Bien-être', () => {
+  const none = { average: null, days: 0 };
+  const neutral = { energy: { average: 3, days: 3 }, stress: { average: 3, days: 3 } };
+
+  it('🔴 non-régression : sans les nouveaux signaux, la règle de TRI-03 est inchangée', () => {
+    expect(classifyWellbeingComponent(neutral)).toEqual({ state: 'neutral' });
+    expect(classifyWellbeingComponent({ ...neutral, poorNight: null, sick: false })).toEqual({ state: 'neutral' });
+    expect(classifyWellbeingComponent({ energy: none, stress: none })).toEqual({ state: 'unavailable', reason: 'no-recent-checkin' });
+  });
+
+  it('une nuit courte ou agitée, ou « malade », rend la composante négative — un seul signal suffit', () => {
+    expect(classifyWellbeingComponent({ ...neutral, poorNight: true })).toEqual({ state: 'negative' });
+    expect(classifyWellbeingComponent({ energy: { average: 5, days: 3 }, stress: { average: 1, days: 3 }, sick: true })).toEqual({ state: 'negative' });
+  });
+
+  it('la nuit seule suffit à rendre la composante disponible', () => {
+    expect(classifyWellbeingComponent({ energy: none, stress: none, poorNight: false })).toEqual({ state: 'neutral' });
+    expect(classifyWellbeingComponent({ energy: none, stress: none, poorNight: true })).toEqual({ state: 'negative' });
+  });
+});

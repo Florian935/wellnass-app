@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Les indicateurs</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #f7eede; }
+a { color: #6a3fb0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 12px; letter-spacing: .8px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.fam { display: flex; align-items: baseline; gap: 12px; padding: 20px 4px 8px; border-bottom: 2px solid #33291f; }
+.fam b { font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 23px; letter-spacing: -.5px; }
+.fam span { font-size: 13.5px; color: #786a59; }
+.row { display: grid; grid-template-columns: minmax(0, 1fr) 112px 66px 96px; gap: 12px; align-items: start; padding: 10px 4px; border-bottom: 1px solid #e3d3ba; }
+.nm { font-weight: 700; font-size: 15px; line-height: 20px; }
+.why { font-size: 12.5px; line-height: 17px; color: #786a59; margin-top: 3px; }
+.cap { font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; line-height: 15px; color: #5b4d3e; padding-top: 2px; }
+.x { display: flex; gap: 3px; padding-top: 1px; }
+.x span { width: 18px; height: 18px; box-sizing: border-box; border-radius: 5px; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+.x .m { background: #a8261d; color: #ffffff; }
+.x .c { background: #2a64ad; color: #ffffff; }
+.x .n { background: #3f6b1c; color: #ffffff; }
+.x .o { background: transparent; color: #c2b299; border: 1px solid #e3d3ba; }
+.b { display: inline-block; border-radius: 999px; padding: 3px 9px; font-weight: 700; font-size: 11px; letter-spacing: .3px; }
+.ex { background: #e6ebd9; color: #4c5a2e; }
+.so { background: #6a3fb0; color: #ffffff; }
+.mo { border: 1.5px solid #6a3fb0; color: #6a3fb0; padding: 1.5px 7.5px; }
+.de { background: #f5e8cc; color: #7a5714; }
+.pt { background: #ece3d3; color: #665a4a; }
+.ec { color: #786a59; text-decoration: line-through; padding-left: 0; }
+.ref { font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; color: #786a59; margin-top: 4px; }
+.lg { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: #5b4d3e; }
+.lg i { font-style: normal; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 13px; color: #33291f; }
+.ck { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 10px; padding: 9px 0; border-top: 1px solid rgba(255, 255, 255, .14); }
+.ck b { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; letter-spacing: .5px; text-transform: uppercase; color: #cfc2ec; padding-top: 2px; }
+.ck span { font-size: 14px; line-height: 20px; color: #f1ecfb; }
+.ck em { font-style: normal; color: #d8c8ff; font-weight: 700; }
+</style>
+</helmet>
+<div style="width: 1440px; height: 2080px; box-sizing: border-box; padding: 72px 80px; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column; gap: 28px; overflow: hidden;">
+
+  <div style="display: flex; gap: 48px; align-items: flex-start;">
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 12px;">
+      <div class="eb" style="color: #6a3fb0;">02 · Les indicateurs</div>
+      <h2 class="disp" style="margin: 0; font-weight: 800; font-size: 50px; line-height: 56px; letter-spacing: -1.6px;">33 candidats passés au crible</h2>
+      <p style="margin: 0; font-size: 17px; line-height: 26px; color: #5b4d3e;">Trois questions pour chacun&nbsp;: change-t-il une décision (la séance, l'assiette, le repos)&nbsp;? Se saisit-il en un geste&nbsp;? Sait-on l'analyser honnêtement&nbsp;? Dix existent déjà&nbsp;; six entrent au socle&nbsp;; le reste attend un module, une montre, ou reste dehors.</p>
+      <div style="display: flex; flex-wrap: wrap; gap: 18px; margin-top: 6px;">
+        <div class="lg"><span class="b ex">Existe</span><i>10</i></div>
+        <div class="lg"><span class="b so">Socle</span><i>6</i></div>
+        <div class="lg"><span class="b mo">Module</span><i>5</i></div>
+        <div class="lg"><span class="b de">Dérivé</span><i>3</i></div>
+        <div class="lg"><span class="b pt">Plus tard</span><i>6</i></div>
+        <div class="lg"><span class="b ec">Écarté</span><i>3</i></div>
+      </div>
+      <div class="lg" style="margin-top: 2px;">
+        <div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div>
+        <span>= croise la Musculation, la Course, la Nutrition&nbsp;· <b>Module</b> = activable dans le pilier, éteint par défaut&nbsp;· <b>Dérivé</b> = on ne demande rien, on le lit ailleurs</span>
+      </div>
+    </div>
+    <div style="width: 440px; flex: none; background: #2b1d52; border-radius: 24px; padding: 22px 24px; color: #ffffff; display: flex; flex-direction: column; gap: 4px;">
+      <div class="eb" style="color: #cfc2ec;">Le check-in proposé</div>
+      <div class="disp" style="font-weight: 700; font-size: 24px; letter-spacing: -.5px; margin: 4px 0 8px;">Deux moments, dix secondes chacun</div>
+      <div class="ck"><b>Matin</b><span>Nuit (durée + <em>qualité</em>) · Énergie · <em>Envie de t'entraîner</em></span></div>
+      <div class="ck"><b>Soir</b><span>Humeur · Stress · <em>Étiquettes</em>&nbsp;: malade, journée chargée, soirée, voyage</span></div>
+      <div class="ck"><b>Modules</b><span>Alcool, caféine tardive, sieste, fringales, hydratation</span></div>
+      <div style="font-size: 12.5px; line-height: 18px; color: #cfc2ec; margin-top: 6px;">En violet clair&nbsp;: ce qui est neuf. Tout le reste est déjà en base.</div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 48px; align-items: start;">
+
+    <div style="display: flex; flex-direction: column;">
+      <div class="fam"><b>Sommeil</b><span>la nuit qui précède la journée</span></div>
+      <div class="row"><div><div class="nm">Durée de la nuit</div><div class="why">Le levier le mieux documenté, sur la force comme sur l'appétit du lendemain.</div></div><div class="cap"><div>¼ h · matin</div><div>ou Health Connect</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b ex">Existe</span><div class="ref">LABO-01</div></div></div>
+      <div class="row"><div><div class="nm">Qualité de la nuit</div><div class="why">« Reposé au réveil&nbsp;? » 7&nbsp;h hachées ne valent pas 7&nbsp;h pleines.</div></div><div class="cap"><div>1 à 5</div><div>matin</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b so">Socle</span><div class="ref">nouveau</div></div></div>
+      <div class="row"><div><div class="nm">Régularité du coucher</div><div class="why">Heures de coucher et de lever&nbsp;: précieuses, trop coûteuses à saisir.</div></div><div class="cap"><div>auto</div><div>Health Connect</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b pt">Plus tard</span><div class="ref">avec D3</div></div></div>
+      <div class="row"><div><div class="nm">Sieste</div><div class="why">Explique une séance d'après-midi meilleure que prévu.</div></div><div class="cap"><div>durée</div><div>au fil</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b mo">Module</span></div></div>
+      <div class="row"><div><div class="nm">Phases, réveils nocturnes</div><div class="why">Demande une montre&nbsp;; la qualité ressentie suffit pour décider.</div></div><div class="cap"><div>auto</div><div>montre</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b pt">Plus tard</span></div></div>
+
+      <div class="fam"><b>Énergie et corps</b><span>ce que le corps dit</span></div>
+      <div class="row"><div><div class="nm">Énergie</div><div class="why">Déjà lue par la forme du jour et l'adaptation de séance (seuil 2 sur 5).</div></div><div class="cap"><div>1 à 5</div><div>matin</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b ex">Existe</span><div class="ref">BIEN-01</div></div></div>
+      <div class="row"><div><div class="nm">Jambes lourdes, courbatures</div><div class="why">Pas un indicateur de plus&nbsp;: la « gêne » du journal des douleurs, en un tap.</div></div><div class="cap"><div>raccourci</div><div>matin</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b de">Dérivé</span><div class="ref">DOUL-01</div></div></div>
+      <div class="row"><div><div class="nm">Douleurs</div><div class="why">Trois niveaux&nbsp;; modifient déjà la séance intense du jour.</div></div><div class="cap"><div>schéma</div><div>au fil</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b ex">Existe</span><div class="ref">DOUL-01</div></div></div>
+      <div class="row"><div><div class="nm">Malade</div><div class="why">Explique à lui seul une semaine noire&nbsp;; met l'intensité en veille.</div></div><div class="cap"><div>étiquette</div><div>au fil</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b so">Socle</span><div class="ref">nouveau</div></div></div>
+      <div class="row"><div><div class="nm">Cycle menstruel</div><div class="why">Six mesures déjà comparées d'une phase à l'autre.</div></div><div class="cap"><div>journal</div><div>au fil</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b ex">Existe</span><div class="ref">CYCLE-01</div></div></div>
+      <div class="row"><div><div class="nm">Poids</div><div class="why">Déjà proposé dans le check-in, une seule pesée par jour.</div></div><div class="cap"><div>kg</div><div>matin</div></div><div class="x"><span class="o">M</span><span class="o">C</span><span class="n">N</span></div><div><span class="b ex">Existe</span><div class="ref">4.30</div></div></div>
+      <div class="row"><div><div class="nm">Fréquence cardiaque au repos</div><div class="why">Bon témoin de fatigue, mais une montre et une permission de plus.</div></div><div class="cap"><div>auto</div><div>montre</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b pt">Plus tard</span></div></div>
+      <div class="row"><div><div class="nm">Variabilité cardiaque (VFC)</div><div class="why">Le cœur de Whoop et d'Oura&nbsp;; sans capteur, ne pas l'imiter.</div></div><div class="cap"><div>auto</div><div>montre</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b pt">Plus tard</span></div></div>
+
+      <div class="fam"><b>Appétit</b><span>ce que l'assiette ne dit pas</span></div>
+      <div class="row"><div><div class="nm">Faim, fringales</div><div class="why">Relie une nuit courte ou un jour stressé aux écarts du journal.</div></div><div class="cap"><div>1 à 5</div><div>soir</div></div><div class="x"><span class="o">M</span><span class="o">C</span><span class="n">N</span></div><div><span class="b mo">Module</span></div></div>
+      <div class="row"><div><div class="nm">Repas sautés</div><div class="why">Déjà visible dans le journal&nbsp;: ne jamais le redemander.</div></div><div class="cap"><div>journal</div><div>nutrition</div></div><div class="x"><span class="o">M</span><span class="o">C</span><span class="n">N</span></div><div><span class="b de">Dérivé</span></div></div>
+      <div class="row"><div><div class="nm">Confort digestif</div><div class="why">Relier un inconfort à un aliment, on ne sait pas le faire honnêtement.</div></div><div class="cap"><div>1 à 5</div><div>soir</div></div><div class="x"><span class="o">M</span><span class="o">C</span><span class="n">N</span></div><div><span class="b pt">Plus tard</span></div></div>
+    </div>
+
+    <div style="display: flex; flex-direction: column;">
+      <div class="fam"><b>Tête</b><span>l'état d'esprit</span></div>
+      <div class="row"><div><div class="nm">Humeur</div><div class="why">Proposée le soir&nbsp;: c'est la journée qu'on juge, pas le réveil.</div></div><div class="cap"><div>1 à 5</div><div>soir</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b ex">Existe</span><div class="ref">BIEN-01</div></div></div>
+      <div class="row"><div><div class="nm">Stress</div><div class="why">« Le stress du jour » se dit le soir. Lu par la forme du jour (seuil 4).</div></div><div class="cap"><div>1 à 5</div><div>soir</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b ex">Existe</span><div class="ref">BIEN-01</div></div></div>
+      <div class="row"><div><div class="nm">Envie de t'entraîner</div><div class="why">Prédit la séance sautée ou écourtée&nbsp;; le catalogue l'avait imaginée.</div></div><div class="cap"><div>1 à 5</div><div>matin</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b so">Socle</span><div class="ref">nouveau</div></div></div>
+      <div class="row"><div><div class="nm">Concentration</div><div class="why">Ne change aucune décision d'entraînement&nbsp;; recoupe l'énergie.</div></div><div class="cap"><div>—</div></div><div class="x"><span class="o">M</span><span class="o">C</span><span class="o">N</span></div><div><span class="b ec">Écarté</span></div></div>
+      <div class="row"><div><div class="nm">Anxiété, moral détaillé</div><div class="why">Terrain clinique&nbsp;: le garde-fou « humeur basse » suffit (planche 07).</div></div><div class="cap"><div>—</div></div><div class="x"><span class="o">M</span><span class="o">C</span><span class="o">N</span></div><div><span class="b ec">Écarté</span></div></div>
+
+      <div class="fam"><b>Hygiène de vie</b><span>les habitudes qui pèsent</span></div>
+      <div class="row"><div><div class="nm">Alcool</div><div class="why">Pèse sur la nuit et l'allure du lendemain. Constaté, jamais jugé.</div></div><div class="cap"><div>0 · 1 · 2 · 3+</div><div>soir</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b mo">Module</span></div></div>
+      <div class="row"><div><div class="nm">Caféine tardive</div><div class="why">« Un café après 16&nbsp;h&nbsp;? » Explique parfois une nuit courte.</div></div><div class="cap"><div>oui / non</div><div>soir</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b mo">Module</span></div></div>
+      <div class="row"><div><div class="nm">Hydratation</div><div class="why">C'est NUTR-12, déjà au catalogue pour la V2.</div></div><div class="cap"><div>verres</div><div>au fil</div></div><div class="x"><span class="o">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b mo">Module</span><div class="ref">NUTR-12</div></div></div>
+      <div class="row"><div><div class="nm">Pas</div><div class="why">Lus dans Health Connect&nbsp;; marcher compte déjà dans la série.</div></div><div class="cap"><div>auto</div><div>Health Connect</div></div><div class="x"><span class="o">M</span><span class="o">C</span><span class="n">N</span></div><div><span class="b ex">Existe</span><div class="ref">PAS-01</div></div></div>
+      <div class="row"><div><div class="nm">Écrans le soir, lumière du jour</div><div class="why">Lourds à saisir chaque jour, pour peu de décisions changées.</div></div><div class="cap"><div>—</div></div><div class="x"><span class="o">M</span><span class="o">C</span><span class="o">N</span></div><div><span class="b ec">Écarté</span></div></div>
+
+      <div class="fam"><b>Contexte du jour</b><span>des étiquettes, un tap, une liste fermée</span></div>
+      <div class="row"><div><div class="nm">Journée chargée</div><div class="why">Travail, études, enfants&nbsp;: explique une séance écourtée.</div></div><div class="cap"><div>étiquette</div><div>soir</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b so">Socle</span><div class="ref">nouveau</div></div></div>
+      <div class="row"><div><div class="nm">Soirée, couché tard</div><div class="why">Explique la nuit courte et le journal du soir resté vide.</div></div><div class="cap"><div>étiquette</div><div>soir</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b so">Socle</span><div class="ref">nouveau</div></div></div>
+      <div class="row"><div><div class="nm">Voyage, décalage horaire</div><div class="why">Change d'un coup le fuseau, la nuit et l'assiette.</div></div><div class="cap"><div>étiquette</div><div>au fil</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b so">Socle</span><div class="ref">nouveau</div></div></div>
+      <div class="row"><div><div class="nm">Chaleur</div><div class="why">Déjà connue des conditions de course&nbsp;: on ne la demande pas.</div></div><div class="cap"><div>auto</div><div>RUN-F3</div></div><div class="x"><span class="o">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b de">Dérivé</span></div></div>
+      <div class="row"><div><div class="nm">Vacances, période particulière</div><div class="why">Le mode « vie réelle » adoucit déjà les objectifs.</div></div><div class="cap"><div>période</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="n">N</span></div><div><span class="b ex">Existe</span><div class="ref">VIE-01</div></div></div>
+
+      <div class="fam"><b>Après l'effort</b><span>la variable à expliquer</span></div>
+      <div class="row"><div><div class="nm">Effort perçu (RPE ou RIR)</div><div class="why">Saisi en fin de séance et de sortie&nbsp;: c'est ce qu'on explique.</div></div><div class="cap"><div>échelle</div><div>après</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b ex">Existe</span><div class="ref">UX-05</div></div></div>
+      <div class="row"><div><div class="nm">Plaisir de la séance</div><div class="why">« Tu as aimé&nbsp;? » Prédit l'assiduité, au prix d'un tap de plus.</div></div><div class="cap"><div>1 à 5</div><div>après</div></div><div class="x"><span class="m">M</span><span class="c">C</span><span class="o">N</span></div><div><span class="b pt">Plus tard</span></div></div>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":2080}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>

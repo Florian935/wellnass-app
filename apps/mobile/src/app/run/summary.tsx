@@ -10,6 +10,7 @@ import {
   type RecordDistanceKey,
   type WorkoutFeeling,
   RUNNING_RECORD_DISTANCES,
+  localDayKey,
 } from '@wellness/shared';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -17,6 +18,7 @@ import { Alert, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'reac
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
+import { WellbeingContextLine } from '@/components/wellbeing/WellbeingContextLine';
 import { CelebrationCard } from '@/components/CelebrationCard';
 import { RunEnergySection } from '@/components/energy/RunEnergySection';
 import { FormScreen } from '@/components/FormScreen';
@@ -344,6 +346,9 @@ export default function RunSummaryScreen() {
 
       {/* Célébration d'un ou plusieurs records battus */}
       {beatenRecords.length > 0 ? <CelebrationBanner distances={beatenRecords} /> : null}
+
+      {/* US BIEN-04 — la nuit, l'énergie, le contexte du jour de la sortie (pilier Bien-être). */}
+      <WellbeingContextLine dayKey={localDayKey(new Date(run.startedAt))} pillar="running" />
 
       {/* ── Les quatre chiffres ─────────────────────────────────────────────────────────── */}
       <Card>

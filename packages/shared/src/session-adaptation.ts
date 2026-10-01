@@ -45,7 +45,11 @@ export type AdaptationReasonCode =
   | 'low_energy'
   | 'load_risk'
   | 'heavy_legs_yesterday'
-  | 'heat';
+  | 'heat'
+  // US BIEN-04 — signaux du pilier Bien-être, passés seulement quand il est activé.
+  | 'sick'
+  | 'short_night'
+  | 'low_motivation';
 
 export type AdaptationReason = {
   code: AdaptationReasonCode;
@@ -80,6 +84,17 @@ export type AdaptationSignals = {
    * existe pour que la regle soit ecrite et testee des maintenant, pas parce qu'elle tourne.
    */
   temperatureC?: number | null;
+  /**
+   * US BIEN-04 — signaux du pilier Bien-être. **Passés seulement quand le pilier est activé** :
+   * absents, la proposition est exactement celle de RUN-F4 (non-régression testée).
+   *  - `sick` : l'étiquette « malade » du jour → la séance est proposée au lendemain ;
+   *  - `poorNight` : nuit courte ou agitée (`isPoorNight`) → même traitement que l'énergie basse ;
+   *  - `lowMotivation` : envie ≤ 2 → signalée, sans rien changer (la version courte se propose
+   *    dans le pilier, pas ici).
+   */
+  sick?: boolean;
+  poorNight?: boolean | null;
+  lowMotivation?: boolean;
 };
 
 /** Energie a ce niveau ou en dessous = signal negatif. Aligne sur `WELLBEING_LOW_ENERGY`. */
@@ -177,10 +192,18 @@ export function proposeSessionAdaptation(
   else if (pain === 'pain') reasons.push({ code: 'pain_present', severity: 'alert' });
   else if (pain === 'discomfort') reasons.push({ code: 'pain_discomfort', severity: 'caution' });
 
+  // 1 bis. Malade (BIEN-04). Grave comme une douleur : l'intensite passe en veille, quelle que soit
+  //        la seance — mais on decale, on n'arrete pas : ce n'est pas un avis medical.
+  if (signals.sick === true) reasons.push({ code: 'sick', severity: 'alert' });
+
   // 2. Energie declaree (BIEN-01).
   if (signals.energyLevel != null && signals.energyLevel <= LOW_ENERGY_THRESHOLD) {
     reasons.push({ code: 'low_energy', severity: 'caution' });
   }
+
+  // 2 bis. Nuit courte ou agitee (BIEN-04) — meme poids que l'energie basse, c'est la meme fatigue.
+  if (signals.poorNight === true) reasons.push({ code: 'short_night', severity: 'caution' });
+
 
   // 3. Charge (RUN-18 / META-19). On reutilise la ZONE deja calculee, on ne reinvente pas de
   //    seuil : le 1,3 vit dans `training-time.ts` et nulle part ailleurs.
@@ -199,6 +222,10 @@ export function proposeSessionAdaptation(
     reasons.push({ code: 'heat', severity: 'info' });
   }
 
+  // 6. Envie faible (BIEN-04) — dite, jamais suivie d'un changement ici. Poussee EN DERNIER : a
+  //    gravite egale (info), le tri stable laisse la chaleur devant, qui, elle, propose un geste.
+  if (signals.lowMotivation === true) reasons.push({ code: 'low_motivation', severity: 'info' });
+
   reasons.sort((a, b) => SEVERITY_RANK[b.severity] - SEVERITY_RANK[a.severity]);
 
   if (reasons.length === 0) {
@@ -215,10 +242,15 @@ export function proposeSessionAdaptation(
   if (worst.code === 'pain_present') {
     return { action: intense ? 'postpone' : 'convert_easy', severity: 'alert', reasons };
   }
+  // Malade (BIEN-04) : la seance se decale, intense ou non. Une douleur passe devant (tri ci-dessus,
+  // a gravite egale la premiere poussee — la douleur — reste en tete).
+  if (worst.code === 'sick') {
+    return { action: 'postpone', severity: 'alert', reasons };
+  }
 
   // Signaux de fatigue sur seance intense : on garde l'echauffement et on retire du volume —
   // c'est la decision exacte du plan analyse, et elle preserve la qualite de ce qui reste.
-  if (intense && (worst.code === 'low_energy' || worst.code === 'load_risk')) {
+  if (intense && (worst.code === 'low_energy' || worst.code === 'load_risk' || worst.code === 'short_night')) {
     return {
       action: 'reduce_reps',
       severity: 'caution',

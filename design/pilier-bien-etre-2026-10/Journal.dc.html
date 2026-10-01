@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Bien-être — journal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>
+body { margin: 0; background: #f5eee9; }
+a { color: #6a3fb0; } a:hover { color: #3f2178; }
+.eb { font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: .6px; text-transform: uppercase; color: #786a59; }
+.disp { font-family: 'Bricolage Grotesque', system-ui, sans-serif; }
+.seg { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; background: #ece3ef; border-radius: 14px; padding: 4px; }
+.seg button { height: 34px; border: none; border-radius: 10px; background: transparent; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 700; font-size: 13px; color: #5a33a0; }
+.seg .on { background: #6a3fb0; color: #ffffff; }
+.card { background: #fffaf5; border: 1px solid #e7dad3; border-radius: 20px; }
+.ch { height: 32px; padding: 0 12px; border-radius: 999px; border: 1px solid #e7dad3; background: #fffaf5; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 12.5px; color: #5b4d3e; }
+.ch.on { background: #33291f; border-color: #33291f; color: #ffffff; }
+.cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.dy { height: 34px; border-radius: 9px; position: relative; box-sizing: border-box; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; padding: 4px 0 0 6px; }
+.dy i { position: absolute; right: 5px; bottom: 5px; width: 6px; height: 6px; border-radius: 50%; display: block; }
+.l1 { background: #efe8f7; color: #33291f; }
+.l2 { background: #d4c3ec; color: #33291f; }
+.l3 { background: #b096dc; color: #33291f; }
+.l4 { background: #7d58bd; color: #ffffff; }
+.l5 { background: #5f37a6; color: #ffffff; }
+.gp { border: 1.5px dashed #c9b8c6; color: #786a59; }
+.fu { background: #efe7e9; color: #786a59; }
+.en { background: transparent; }
+.it { padding: 10px 12px; display: flex; flex-direction: column; gap: 4px; }
+.pt { width: 18px; height: 18px; flex: none; border-radius: 5px; color: #ffffff; font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+.pc { display: inline-flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: #33291f; background: #f5eee9; border-radius: 999px; padding: 2px 8px 2px 3px; }
+.tb { border: none; background: transparent; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-weight: 600; font-size: 11px; color: #786a59; padding: 0; }
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; overflow: hidden; background: #f5eee9; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; display: flex; flex-direction: column;">
+  <div style="flex: 1; min-height: 0; padding: 14px 18px 0; display: flex; flex-direction: column; gap: 12px; overflow: hidden;">
+
+    <div>
+      <div class="eb" style="color: #6a3fb0;">Sam. 26 sept.</div>
+      <div class="disp" style="font-weight: 800; font-size: 30px; letter-spacing: -1px; line-height: 34px;">Bien-être</div>
+    </div>
+
+    <div class="seg"><button type="button">Aujourd'hui</button><button type="button" class="on">Journal</button><button type="button">Ce qui compte</button></div>
+
+    <div style="display: flex; gap: 6px;">
+      <button type="button" class="ch on">Nuit</button>
+      <button type="button" class="ch">Énergie</button>
+      <button type="button" class="ch">Humeur</button>
+      <button type="button" class="ch">Stress</button>
+      <button type="button" class="ch">Envie</button>
+    </div>
+
+    <div class="card" style="padding: 12px; display: flex; flex-direction: column; gap: 8px;">
+      <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div style="font-weight: 700; font-size: 15px;">Septembre 2026</div>
+        <div style="display: flex; align-items: center; gap: 4px; font-size: 10.5px; color: #786a59;">
+          <span>moins</span>
+          <span style="width: 12px; height: 12px; border-radius: 3px; background: #efe8f7; display: block;"></span>
+          <span style="width: 12px; height: 12px; border-radius: 3px; background: #d4c3ec; display: block;"></span>
+          <span style="width: 12px; height: 12px; border-radius: 3px; background: #b096dc; display: block;"></span>
+          <span style="width: 12px; height: 12px; border-radius: 3px; background: #7d58bd; display: block;"></span>
+          <span style="width: 12px; height: 12px; border-radius: 3px; background: #5f37a6; display: block;"></span>
+          <span>plus de sommeil</span>
+        </div>
+      </div>
+      <div class="cal" style="font-size: 10.5px; font-weight: 700; color: #786a59; text-align: center;"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+      <div class="cal">
+        <div class="dy en"></div>
+        <div class="dy l4">1</div>
+        <div class="dy l3">2</div>
+        <div class="dy l4">3</div>
+        <div class="dy l3">4</div>
+        <div class="dy l5">5</div>
+        <div class="dy gp">6</div>
+
+        <div class="dy l4">7</div>
+        <div class="dy l3">8<i style="background: #33291f;"></i></div>
+        <div class="dy l2">9</div>
+        <div class="dy l4">10</div>
+        <div class="dy l3">11</div>
+        <div class="dy l5">12</div>
+        <div class="dy gp">13</div>
+
+        <div class="dy l4">14</div>
+        <div class="dy l4">15<i style="background: #ffffff;"></i></div>
+        <div class="dy l1">16</div>
+        <div class="dy l3">17</div>
+        <div class="dy l4">18</div>
+        <div class="dy l5">19</div>
+        <div class="dy l4">20</div>
+
+        <div class="dy l4">21</div>
+        <div class="dy l3">22</div>
+        <div class="dy gp">23<i style="background: #6a3fb0;"></i></div>
+        <div class="dy l2">24</div>
+        <div class="dy l4">25</div>
+        <div class="dy l2" style="box-shadow: inset 0 0 0 2px #33291f;">26</div>
+        <div class="dy fu">27</div>
+
+        <div class="dy fu">28</div>
+        <div class="dy fu">29</div>
+        <div class="dy fu">30</div>
+        <div class="dy en"></div>
+        <div class="dy en"></div>
+        <div class="dy en"></div>
+        <div class="dy en"></div>
+      </div>
+      <div style="display: flex; gap: 14px; font-size: 11px; color: #786a59;">
+        <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 6px; height: 6px; border-radius: 50%; background: #6a3fb0; display: block;"></span>une étiquette ce jour-là</span>
+        <span style="display: flex; align-items: center; gap: 5px;"><span style="width: 12px; height: 10px; border-radius: 3px; border: 1.5px dashed #c9b8c6; display: block;"></span>non renseigné, pas zéro</span>
+      </div>
+    </div>
+
+    <div style="font-weight: 700; font-size: 14.5px; padding: 0 2px;">Les derniers jours</div>
+
+    <div class="card" style="display: flex; flex-direction: column;">
+      <div class="it">
+        <div style="display: flex; justify-content: space-between; align-items: center;"><b style="font-size: 13.5px;">Aujourd'hui · sam. 26</b><span class="pc"><span class="pt" style="background: #a8261d;">M</span>Jambes prévues</span></div>
+        <div style="font-size: 12.5px; color: #5b4d3e;">Nuit 5 h 40 · agitée · énergie basse · envie moyenne</div>
+      </div>
+      <div style="height: 1px; background: #eadfe0;"></div>
+      <div class="it">
+        <div style="display: flex; justify-content: space-between; align-items: center;"><b style="font-size: 13.5px;">Ven. 25</b><span class="pc"><span class="pt" style="background: #a8261d;">M</span>Push · 5 240 kg</span></div>
+        <div style="font-size: 12.5px; color: #5b4d3e;">Nuit 7 h 20 · bonne · énergie bonne · humeur bonne · stress calme</div>
+      </div>
+      <div style="height: 1px; background: #eadfe0;"></div>
+      <div class="it">
+        <div style="display: flex; justify-content: space-between; align-items: center;"><b style="font-size: 13.5px;">Jeu. 24</b><span class="pc"><span class="pt" style="background: #2a64ad;">C</span>Sortie · 8,2 km</span></div>
+        <div style="font-size: 12.5px; color: #5b4d3e;">Nuit 5 h 10 · agitée · énergie basse · humeur maussade · stress élevé</div>
+        <div><span style="font-size: 11px; font-weight: 700; color: #5a33a0; background: #efe7f8; border-radius: 999px; padding: 2px 8px;">veille&nbsp;: soirée</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="height: 64px; flex: none; background: #fffaf5; border-top: 1px solid #e7dad3; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr));">
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linejoin="round"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"></path></svg>Accueil</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round"><line x1="6" y1="12" x2="18" y2="12"></line><rect x="3" y="8" width="3" height="8" rx="1"></rect><rect x="18" y="8" width="3" height="8" rx="1"></rect></svg>Muscu</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19l4-5 3 2 3-6 4 2"></path><circle cx="15" cy="5" r="2"></circle></svg>Course</button>
+    <button type="button" class="tb"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#786a59" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 19c0-8 5-14 14-14 0 9-6 14-14 14z"></path><path d="M5 19l7-7"></path></svg>Nutrition</button>
+    <button type="button" class="tb" style="color: #6a3fb0;"><svg width="22" height="22" viewBox="0 0 24 24" fill="#efe7f8" stroke="#6a3fb0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"></path></svg>Bien-être</button>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return {};
+  }
+}
+</script>
+</body>
+</html>
