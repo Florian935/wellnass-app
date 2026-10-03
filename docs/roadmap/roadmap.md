@@ -470,6 +470,8 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 | 1.34 | Ce qui compte — les croisements Bien-être, un lien du Labo | Neuf croisements calculés localement sur 90 jours (nuit → tonnage, allure, apports ; envie → séances faites ; stress → journal ; séance → humeur ; alcool → allure et nuit ; café tardif → nuit), **8 cas de chaque côté**, seuils de bruit nommés. Les croisements × pilier deviennent **un lien du Labo** (« Ton état du jour pèse-t-il sur tes séances ? », fiche et graphique des écarts) ; l'onglet du pilier en garde l'écho, les liens internes, la régularité du coucher et les moyennes. | 🟢 | ✅ | **BIEN-05 — code livré le 01/10/2026, en recette** → [spec](../specs/functional/us/bien05-ce-qui-compte.md) · [plan](../plans/bien05-ce-qui-compte.md). Suit la règle du Labo carrefour (LIENS-01) plutôt que la planche « Ce qui compte » antérieure. Reportés : « cette règle ne me correspond pas », passerelle vers l'enquête. |
 | 1.35 | La nuit lue dans Health Connect | `READ_SLEEP` (permission **à part**) : les sessions de sommeil écrites par une app source (montre, bague, Samsung Health…) deviennent **une nuit par matin** — éveil retiré, nuit coupée additionnée, sieste écartée —, importées au premier plan au plus une fois par heure. Une nuit saisie à la main n'est **jamais** écrasée. La régularité du coucher se dérive sans rien demander. | 🟢 | ✅ | **BIEN-06 — code livré le 01/10/2026, en recette** → [spec](../specs/functional/us/bien06-nuit-health-connect.md) · [plan](../plans/bien06-nuit-health-connect.md). 🔴 **Nouvel APK requis** ; **déclaration Play à 7 types** et politique de confidentialité à mettre à jour avant publication (renverse l'arbitrage LABO-01 du 28/07). |
 | 1.36 | Les modules du pilier Bien-être | Alcool, café tardif, sieste, fringales : **éteints par défaut**, chacun ajoute sa question au check-in du soir, et ses réponses se relisent au Journal. L'eau reste dans Nutrition (NUTR-12). | 🟢 | ✅ | **BIEN-07 — code livré le 01/10/2026, en recette** → [spec](../specs/functional/us/bien07-modules.md) · [plan](../plans/bien07-modules.md). Aucun croisement ne lit encore la sieste ni les fringales. |
+| 7.42 | Prisme raconte — les bilans du soir et de la semaine rédigés | L'app calcule, elle ne raconte pas. **Prisme**, l'assistant IA, raconte en trois ou quatre phrases la carte « Ta journée » de l'accueil (dès 18 h, nouvelle) et le bilan hebdo, à la demande ; **tout nombre absent des faits fait jeter le texte** (garde-fou de NARR-01). Accord Prisme distinct du Labo IA ; fournisseur gratuit qui n'entraîne pas sur nos requêtes (Groq, Mistral après opt-out), **jamais Gemini** ; rien du bien-être ni de Health Connect ne part. | 🟢 | ⬜ | **PRISME-01 — cadrée et relue le 02/10/2026, validée par Florian le 03/10/2026** → [spec](../specs/functional/us/prisme01-prisme-raconte.md) · [plan](../plans/prisme01-prisme-raconte.md) · [maquette](../../design/prisme01-prisme-raconte/). Issue de l'[analyse](../product/analyse-assistant-prisme-2026-10.md) du 02/10/2026, décisions D1-D7 de Florian. 1 migration (accord Prisme + réservation atomique du quota). 🔴 Couplée à LANCE-00/01 : politique, « Sécurité des données », et accès testeurs (ACCES-IA) avant d'entrer dans le build Play. |
+| 4.48 | Prisme en recours de la saisie en phrase | La saisie rapide (4.5) comprend « un yaourt nature », pas « un poke bowl saumon avocat ». Sous une ligne « non trouvé », **« Demander à Prisme »** : seule cette partie part, Prisme rend des aliments et des grammes dans la langue de l'app, **la base calcule**, les lignes rejoignent la même revue ; rien n'est écrit avant « Ajouter ». | 🟢 | ⬜ | **PRISME-01** (même US que 7.42) → [spec](../specs/functional/us/prisme01-prisme-raconte.md). Rapprochement par `bestMatchIndex` / `rankFoodMatches`, comme la saisie locale. La photo de repas (retirée le 13/09/2026) est renvoyée à une US à part, PRISME-02. |
 
 > **Ne figurent pas dans ce tableau, volontairement** :
 > - les **US d'analyse** (META-06/08/09, MN-03/06, MR-06, NUTR-10/11/17, RN-01/02, MUSC-04/05) —
@@ -512,11 +514,13 @@ roadmap redevienne l'inventaire complet — sans quoi l'avancement affiché sous
 |---|:---:|:---:|
 | ✅ Livré | 266 | ~95 % |
 | 🟡 Partiel (5.24, 3.52, 5.40, 3.60) | 4 | ~1 % |
-| ⬜ À faire (9.2, 1.20) | 2 | ~1 % |
+| ⬜ À faire (9.2, 1.20, 7.42, 4.48) | 4 | ~1 % |
 | ⏳ Reporté (dans le périmètre — 8.7, 9.14) | 2 | ~1 % |
 | ❌ Abandonné (6.1, 3.18, 6.3, 8.3 — GIF/vidéos de démo exercices) | 4 | ~2 % |
-| **Total périmètre de lancement** | **278** | |
+| **Total périmètre de lancement** | **280** | |
 | ⏳ Reporté (section « Ultérieur — iOS » : 9.1, 1.3) | 2 | *hors décompte* |
+
+> **PRISME-01, 02/10/2026** ajoute **7.42** et **4.48** en ⬜ (Prisme, l'assistant IA : bilans du soir et de la semaine racontés, Prisme en recours de la saisie en phrase), cadrées et relues le 02/10/2026, validées le 03/10/2026 : total 278 → 280, à faire 2 → 4. Issues de l'[analyse du 02/10/2026](../product/analyse-assistant-prisme-2026-10.md).
 
 > **Pilier Bien-être, 01/10/2026** ajoute **1.31 à 1.36** (BIEN-02 → BIEN-07 — un quatrième pilier activable, le check-in en deux temps, la boucle vers la séance, les croisements devenus un lien du Labo, la nuit lue dans Health Connect, les modules), livrées en une seule vague : 260 → 266 livrés, total 272 → 278. En recette (§90).
 
@@ -680,6 +684,10 @@ Autonomie Claude (périmètre de lancement) : 🟢 Full auto ≈ 167 · 🟡 Sem
 > Une entrée par réconciliation, la plus récente en haut. **Trois lignes maximum par entrée** — le
 > détail vit dans le [CHANGELOG](../../CHANGELOG.md). Au-delà de 10 entrées, les plus anciennes
 > descendent dans [docs/journal/](../journal/).
+
+**03/10/2026 — Prisme, l'assistant IA (7.42, 4.48)**
+Ajoute **7.42** et **4.48** en ⬜ (hors cadrage) : 278 → **280** au total, à faire 2 → **4**. PRISME-01 cadrée et
+relue le 02/10 d'après l'analyse IA et les décisions D1-D7, validée par Florian le 03/10 ; aucune ligne de code.
 
 **01/10/2026 — Le pilier Bien-être (1.31 à 1.36)**
 Ajoute **1.31 à 1.36** en ✅ (hors cadrage) : 272 → **278** au total, 260 → **266** livrés. Pilier activable, check-in

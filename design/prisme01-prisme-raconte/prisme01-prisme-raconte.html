@@ -1,0 +1,438 @@
+<title>PRISME-01 · Prisme raconte</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+/* Mise en page : planche de maquettes, rangées d'écrans téléphone légendés. Les écrans restent dans le thème clair de l'app (palette colors.ts / stage.ts) ; seule la planche autour suit le thème du lecteur. */
+:root{
+  --page:#efe6d6; --page-ink:#33291f; --page-muted:#6f6252; --page-line:#dccdb4; --page-card:#fbf5ea;
+  /* écran de l'app, thème clair, constant */
+  --a-bg:#f7eede; --a-surface:#fffaf2; --a-surface-2:#f3ddd0; --a-line:#e3d3ba; --a-line-strong:#90897d;
+  --a-ink:#33291f; --a-muted:#786a59; --a-accent:#b14f2b; --a-on-accent:#ffffff;
+  --a-muscu:#a8261d; --a-course:#2a64ad; --a-nutri:#3f6b1c; --a-labo:#7a5714; --a-bien:#6a3fb0;
+  --a-good:#66714b; --a-warn-bg:#f7ead6; --a-warn-line:#e9cfa0; --a-warn-ink:#8a6419; --a-gold-soft:#f1e4c6;
+  --display:"Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --body:"Hanken Grotesk", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --mono:"Space Mono", ui-monospace, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){ --page:#14100b; --page-ink:#f4ecdd; --page-muted:#c9b79a; --page-line:#3a2e22; --page-card:#211a13; color-scheme:dark; }
+}
+:root[data-theme="dark"]{ --page:#14100b; --page-ink:#f4ecdd; --page-muted:#c9b79a; --page-line:#3a2e22; --page-card:#211a13; color-scheme:dark; }
+
+*{box-sizing:border-box}
+body{background:var(--page); color:var(--page-ink); font-family:var(--body); line-height:1.5}
+.wrap{max-width:1360px; margin:0 auto; padding-inline:clamp(16px,3vw,40px); padding-block:40px 64px}
+h1,h2,h3,h4{font-family:var(--display); margin:0; text-wrap:balance; line-height:1.15}
+p{margin:0}
+.eyebrow{font:700 12px var(--mono); letter-spacing:.1em; text-transform:uppercase; color:var(--page-muted)}
+header.top{display:grid; gap:12px; max-width:82ch; margin-bottom:28px}
+header.top h1{font-size:clamp(30px,4.5vw,48px); font-weight:800}
+header.top p{color:var(--page-muted)}
+.facts{display:flex; flex-wrap:wrap; gap:8px; margin-top:4px}
+.facts span{font-size:13px; border:1px solid var(--page-line); background:var(--page-card); border-radius:999px; padding:4px 10px}
+section.row{padding-top:30px; margin-top:30px; border-top:1px solid var(--page-line)}
+.row-head{display:grid; gap:6px; margin-bottom:18px; max-width:90ch}
+.row-head h2{font-size:24px}
+.row-head p{color:var(--page-muted); font-size:15px}
+.boards{display:flex; flex-wrap:wrap; gap:26px; align-items:flex-start}
+figure{margin:0; width:300px; max-width:100%; display:grid; gap:10px}
+figcaption{font-size:13.5px; color:var(--page-muted)}
+figcaption b{color:var(--page-ink); font-family:var(--display); font-size:15px; display:block}
+
+/* ── Téléphone ── */
+.ph{width:300px; max-width:100%; height:620px; border-radius:34px; background:#17110c; padding:8px; box-shadow:0 18px 40px -18px rgba(0,0,0,.45)}
+.sc{position:relative; height:100%; border-radius:27px; overflow:hidden; background:var(--a-bg); color:var(--a-ink); font-size:13px; display:flex; flex-direction:column}
+.sb{display:flex; justify-content:space-between; font:700 10.5px var(--mono); padding:9px 18px 4px; color:var(--a-muted)}
+.sc.dark-top .sb{color:#e6d8c4}
+.body{flex:1; overflow:hidden; padding:6px 12px 12px; display:flex; flex-direction:column; gap:9px}
+.stage-home{background:linear-gradient(180deg,#fff6e8,#efc39c); padding:2px 14px 14px}
+.stage-home .d{font-size:11.5px; color:#5e5244}
+.stage-home h3{font-size:21px; font-weight:800; color:#33291f; margin-top:2px}
+.stage-lab{background:linear-gradient(178deg,#3b0f0c 0%,#0f0a06 70%,#10233f 135%); color:#fff; padding:2px 14px 0}
+.stage-lab h3{font-size:21px; font-weight:800}
+.stage-lab .tabs{display:flex; margin-top:8px}
+.stage-lab .tabs span{flex:1; text-align:center; font-size:11.5px; font-weight:600; padding:7px 0 9px; color:#e6d8c4; border-bottom:2px solid transparent}
+.stage-lab .tabs span.on{color:#fff; border-color:#f2d28a}
+.hdr{display:flex; align-items:center; gap:8px; padding:4px 14px 8px}
+.hdr .back{font-size:18px; color:var(--a-muted)}
+.hdr h3{font-size:18px; font-weight:800}
+.card{background:var(--a-surface); border:1px solid var(--a-line); border-radius:14px; padding:10px 11px; display:grid; gap:7px}
+.card h4{font-size:15px; font-weight:700}
+.lbl{font:700 9.5px var(--mono); letter-spacing:.08em; text-transform:uppercase; color:var(--a-muted)}
+.frow{display:grid; grid-template-columns:8px minmax(0,1fr); gap:7px; align-items:baseline; font-size:12.5px}
+.frow i{width:7px; height:7px; border-radius:50%; display:inline-block; transform:translateY(-1px)}
+.frow b{font-weight:700}
+.n{font-family:var(--mono); font-size:11.5px; white-space:nowrap}
+.num{font-family:var(--mono); font-size:.9em; background:var(--a-gold-soft); border-radius:4px; padding:0 3px; white-space:nowrap}
+.btn{font:700 12.5px var(--body); border-radius:999px; padding:8px 12px; border:1px solid var(--a-line-strong); background:transparent; color:var(--a-ink); cursor:pointer; display:inline-flex; align-items:center; gap:7px; justify-content:center}
+.btn.pri{background:var(--a-accent); color:var(--a-on-accent); border-color:var(--a-accent)}
+.btn.prisme{background:#1c140c; color:#f2d28a; border-color:#1c140c}
+.btn.sm{padding:5px 10px; font-size:11.5px}
+.tell{display:grid; gap:7px; border-top:1px dashed var(--a-line); padding-top:8px}
+.tell .who{display:flex; align-items:center; gap:6px; font-size:11px; color:var(--a-muted)}
+.tell .who b{font-family:var(--display); font-size:13px; color:var(--a-ink)}
+.badge{font:700 9px var(--mono); color:var(--a-labo); border:1px solid var(--a-labo); border-radius:3px; padding:0 3px}
+.tell p{font-size:12.8px; line-height:1.5}
+.ok{font-size:11px; font-weight:700; color:var(--a-good)}
+.src{font-size:11px; color:var(--a-muted)}
+.src ul{margin:3px 0 0; padding-left:16px}
+.warn{background:var(--a-warn-bg); border:1px solid var(--a-warn-line); border-radius:12px; padding:9px 10px; display:grid; gap:5px; font-size:12px}
+.warn .h{font:700 10px var(--mono); letter-spacing:.06em; text-transform:uppercase; color:var(--a-warn-ink)}
+.stale{display:flex; justify-content:space-between; align-items:center; gap:8px; background:var(--a-warn-bg); border-radius:10px; padding:6px 8px; font-size:11.5px; color:var(--a-warn-ink); font-weight:600}
+.dec{background:#33291f; color:#f0e4d0; border-radius:12px; padding:10px 11px; display:grid; gap:4px}
+.dec .lbl{color:#c9b79a}
+.dec p{font-size:13px}
+.grid2{display:grid; grid-template-columns:1fr 1fr; gap:6px}
+.tile{background:var(--a-surface); border:1px solid var(--a-line); border-radius:12px; padding:8px 9px; display:grid; gap:2px}
+.tile .v{font:700 15px var(--mono)}
+.tile .c{font-size:10.5px; color:var(--a-muted)}
+.meal{display:grid; gap:6px}
+.meal .mh{display:flex; justify-content:space-between; align-items:baseline}
+.meal .mh h4{font-size:14.5px}
+.acts{display:flex; flex-wrap:wrap; gap:5px}
+.chip{font:600 11.5px var(--body); border:1px solid var(--a-line-strong); border-radius:999px; padding:4px 9px; background:var(--a-surface); color:var(--a-ink); display:inline-flex; gap:5px; align-items:center}
+.chip.hi{border-color:var(--a-labo); color:var(--a-labo); background:var(--a-gold-soft)}
+.field{border:1px solid var(--a-line-strong); border-radius:12px; padding:9px 10px; background:var(--a-surface); font-size:13px; min-height:74px}
+.kbd{margin-top:auto; background:#d9d2c6; border-radius:12px 12px 0 0; padding:8px; display:grid; gap:5px}
+.kbd .k{display:flex; gap:4px; justify-content:center}
+.kbd .k span{flex:1; max-width:24px; height:26px; background:#fffaf2; border-radius:5px; box-shadow:0 1px 0 #a69d90}
+.kbd .mic{display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#5e5244; padding:0 4px}
+.line{display:grid; grid-template-columns:minmax(0,1fr) auto 50px; gap:6px; align-items:center; font-size:12px; padding:6px 0; border-bottom:1px solid var(--a-line)}
+.line:last-of-type{border-bottom:0}
+.line small{display:block; color:var(--a-warn-ink); font-size:10.5px; font-weight:600}
+.line.unknown{color:var(--a-muted)}
+.step{display:inline-flex; align-items:center; border:1px solid var(--a-line-strong); border-radius:999px; overflow:hidden}
+.step button{width:24px; height:24px; border:0; background:var(--a-bg); color:var(--a-ink); font:700 14px var(--body); cursor:pointer}
+.step span{min-width:44px; text-align:center; font:700 11px var(--mono)}
+.kc{text-align:right; font:11px var(--mono); color:var(--a-muted)}
+.tot{display:flex; justify-content:space-between; font:700 12px var(--mono); border-top:1px solid var(--a-line); padding-top:7px}
+.sheet-bg{position:absolute; inset:0; background:rgba(15,10,6,.45); display:flex; align-items:flex-end}
+.sheet{width:100%; background:var(--a-surface); border-radius:20px 20px 0 0; padding:14px 14px 16px; display:grid; gap:8px}
+.grip{width:36px; height:4px; border-radius:2px; background:var(--a-line-strong); justify-self:center}
+.sheet h4{font-size:17px}
+.sheet ul{margin:0; padding-left:16px; display:grid; gap:4px; font-size:12px}
+.sheet .row2{display:flex; gap:6px}
+.sheet .row2 .btn{flex:1}
+.set{display:grid; grid-template-columns:minmax(0,1fr) auto; gap:8px; align-items:start; padding:8px 0; border-bottom:1px solid var(--a-line); font-size:12.5px}
+.set:last-child{border-bottom:0}
+.set small{display:block; color:var(--a-muted); font-size:11px}
+.sw{width:36px; height:21px; border-radius:999px; background:#cfc3ae; position:relative; border:0; cursor:pointer; flex:none}
+.sw::after{content:""; position:absolute; top:2px; left:2px; width:17px; height:17px; border-radius:50%; background:#fff; transition:left .15s}
+.sw[aria-checked="true"]{background:var(--a-accent)}
+.sw[aria-checked="true"]::after{left:17px}
+.quota{display:grid; gap:3px; font-size:11.5px}
+.quota div{display:flex; justify-content:space-between}
+.dossier .sus{display:grid; gap:3px; font-size:12px}
+.note{font-size:12.5px; color:var(--page-muted); max-width:300px}
+.legend{display:grid; gap:6px; background:var(--page-card); border:1px solid var(--page-line); border-radius:14px; padding:14px 16px; font-size:14px; max-width:82ch}
+.legend b{font-family:var(--display)}
+@media (prefers-reduced-motion: reduce){ .sw::after{transition:none} }
+</style>
+
+<div class="wrap">
+<header class="top">
+  <p class="eyebrow">Maquette · PRISME-01 · 02/10/2026</p>
+  <h1>Prisme raconte</h1>
+  <p>Le bilan du soir et de la semaine rédigés et vérifiés, et Prisme en recours de la saisie de repas en phrase qui existe déjà. Version révisée après relecture : ni photo, ni nuit, ni pas (Health Connect) dans cette US. Écrans de l’app en thème clair, données fictives : vendredi 2 octobre 2026, 21 h 10. Spec : <code>docs/specs/functional/us/prisme01-prisme-raconte.md</code>.</p>
+  <div class="facts"><span>10 écrans</span><span>Boutons « Prisme raconte » et portions jouables</span><span>Fournisseur montré : Groq, États-Unis (premier fournisseur prévu)</span></div>
+</header>
+
+<div class="legend">
+  <p><b>À lire en premier.</b> Chaque chiffre d’un texte de Prisme est surligné en doré : il figure dans les faits juste au-dessus, sinon le garde-fou jette le texte (écran 1c). Les faits s’affichent toujours, avec ou sans Prisme.</p>
+</div>
+
+<!-- ── 1 · Le soir ───────────────────────── -->
+<section class="row">
+  <div class="row-head">
+    <p class="eyebrow">Rangée 1</p>
+    <h2>Le bilan du soir, sur l’accueil dès 18 h</h2>
+    <p>La carte « Ta journée » vit dans la zone 1 de l’accueil. Les faits sont calculés sur le téléphone ; Prisme les raconte à la demande, jamais d’office.</p>
+  </div>
+  <div class="boards">
+    <figure>
+      <div class="ph"><div class="sc">
+        <div class="stage-home"><div class="sb" style="padding-inline:0"><span>21:10</span><span>5G · 64 %</span></div><p class="d">vendredi 2 octobre</p><h3>Belle soirée. Voici ta journée.</h3></div>
+        <div class="body">
+          <div class="card" id="evening">
+            <h4>Ta journée</h4>
+            <div class="frow"><i style="background:var(--a-muscu)"></i><span><b>Haut du corps A</b> · <span class="n">52 min</span> · <span class="n">8 420 kg</span> · <span class="n">18/18</span> séries</span></div>
+            <div class="frow"><i style="background:var(--a-nutri)"></i><span><b>Assiette</b> · <span class="n">2 140 / 2 450 kcal</span> · protéines <span class="n">118 / 150 g</span>, il manque <span class="n">32 g</span></span></div>
+            <div class="frow"><i style="background:var(--a-accent)"></i><span><b>Semaine</b> · <span class="n">3</span> activités sur <span class="n">4</span></span></div>
+            <div class="frow"><i style="background:var(--a-course)"></i><span><b>Demain</b> · sortie longue à <span class="n">9 h 00</span> · <span class="n">14 km</span></span></div>
+            <div id="tell-slot"><button class="btn prisme" type="button" id="tell-btn"><span data-mark></span>Prisme raconte</button></div>
+          </div>
+          <div class="card"><p class="lbl">La suite</p><p style="font-size:12px">Sortie longue demain 9 h · Pesée samedi</p></div>
+        </div>
+      </div></div>
+      <figcaption><b>1a · La carte « Ta journée »</b>Quatre faits, chacun d’un moteur existant. L’écart de protéines est calculé par le moteur, sinon Prisme ne pourrait pas le citer. Ni pas ni nuit : ils viennent de Health Connect et du bien-être, et ne partent pas. Touche « Prisme raconte ».</figcaption>
+    </figure>
+
+    <figure>
+      <div class="ph"><div class="sc">
+        <div class="stage-home"><div class="sb" style="padding-inline:0"><span>21:10</span><span>5G · 64 %</span></div><h3>Ta journée</h3></div>
+        <div class="body">
+          <div class="card">
+            <div class="tell" style="border-top:0; padding-top:0">
+              <div class="who"><span data-mark></span><b>Prisme</b><span class="badge">IA</span></div>
+              <p>Bonne séance de musculation ce soir : <span class="num">52</span> min et <span class="num">8 420</span> kg, les <span class="num">18</span> séries prévues faites. Côté assiette, <span class="num">2 140</span> kcal sur <span class="num">2 450</span>, et il te manque <span class="num">32</span> g de protéines (<span class="num">118</span> sur <span class="num">150</span>). Tu en es à <span class="num">3</span> activités sur <span class="num">4</span> cette semaine, et demain, la sortie longue de <span class="num">14</span> km est à <span class="num">9</span> h.</p>
+              <p class="ok">✓ Vérifié contre tes chiffres</p>
+              <div class="src"><p class="lbl">D’où ça vient</p><ul><li>Séance de musculation du jour (son nom ne part pas)</li><li>Assiette du jour, 3 repas</li><li>Semaine en cours</li><li>Demain : une sortie</li></ul></div>
+            </div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><b>1b · Le texte de Prisme</b>Trois phrases, chaque nombre surligné se retrouve dans les faits. « D’où ça vient » liste les blocs envoyés : le type de séance, jamais son nom.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="ph"><div class="sc">
+        <div class="stage-home"><div class="sb" style="padding-inline:0"><span>21:10</span><span>5G · 64 %</span></div><h3>Ta journée</h3></div>
+        <div class="body">
+          <div class="warn"><p class="h">Réponse écartée</p><p>Prisme a écarté sa réponse : elle citait un chiffre absent de tes données (<span class="num">73</span> kg). Tes faits restent juste en dessous.</p></div>
+          <div class="card">
+            <div class="frow"><i style="background:var(--a-muscu)"></i><span><b>Haut du corps A</b> · <span class="n">52 min</span> · <span class="n">8 420 kg</span></span></div>
+            <div class="frow"><i style="background:var(--a-nutri)"></i><span><b>Assiette</b> · <span class="n">2 140 / 2 450 kcal</span></span></div>
+            <div class="frow"><i style="background:var(--a-course)"></i><span><b>Demain</b> · <span class="n">14 km</span> à <span class="n">9 h 00</span></span></div>
+            <button class="btn sm" type="button">Prisme raconte</button>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><b>1c · Le refus du garde-fou</b>Un seul nombre inconnu jette tout le texte. Pas de seconde tentative automatique ; on peut relancer à la main.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="ph"><div class="sc">
+        <div class="stage-home"><div class="sb" style="padding-inline:0"><span>22:02</span><span>5G · 58 %</span></div><h3>Ta journée</h3></div>
+        <div class="body">
+          <div class="card">
+            <div class="stale"><span>Ta journée a bougé depuis ce texte.</span><button class="btn sm" type="button">Relire</button></div>
+            <div class="tell" style="border-top:0; padding-top:0; opacity:.62">
+              <div class="who"><span data-mark></span><b>Prisme</b><span class="badge">IA</span></div>
+              <p>Bonne séance ce soir : 52 min et 8 420 kg… il te manque 32 g de protéines…</p>
+            </div>
+            <div class="frow"><i style="background:var(--a-nutri)"></i><span><b>Assiette</b> · <span class="n">2 410 / 2 450 kcal</span> · protéines <span class="n">139 / 150 g</span></span></div>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><b>1d · La journée a bougé</b>Un skyr saisi à 22 h change l’assiette. Le texte reste, grisé, avec « Relire » : un texte périmé ne se fait pas passer pour juste.</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ── 2 · La semaine ───────────────────────── -->
+<section class="row">
+  <div class="row-head">
+    <p class="eyebrow">Rangée 2</p>
+    <h2>Le bilan de la semaine</h2>
+    <p>Sur l’écran de BILAN-01. La décision reste en tête et les chiffres dessous, inchangés ; Prisme raconte sous les chiffres.</p>
+  </div>
+  <div class="boards">
+    <figure>
+      <div class="ph"><div class="sc">
+        <div class="sb"><span>09:12</span><span>5G · 91 %</span></div>
+        <div class="hdr"><span class="back">‹</span><h3>Semaine du 21 au 27 sept.</h3></div>
+        <div class="body">
+          <div class="dec"><p class="lbl">La décision de la semaine</p><p>Point fort : ta régularité, 5 jours actifs sur 7. Garde ce rythme.</p></div>
+          <div class="grid2">
+            <div class="tile"><span class="lbl">Muscu</span><span class="v">16 280 kg</span><span class="c">2 séances · +8 %</span></div>
+            <div class="tile"><span class="lbl">Course</span><span class="v">31,5 km</span><span class="c">2 sorties · +12 %</span></div>
+            <div class="tile"><span class="lbl">Nutrition</span><span class="v">5/7</span><span class="c">dans la cible</span></div>
+            <div class="tile"><span class="lbl">Objectif</span><span class="v">62 %</span><span class="c">objectif de course</span></div>
+          </div>
+          <div class="card">
+            <div class="who" style="display:flex;gap:6px;align-items:center;font-size:11px;color:var(--a-muted)"><span data-mark></span><b style="font-family:var(--display);font-size:13px;color:var(--a-ink)">Prisme raconte ta semaine</b><span class="badge">IA</span></div>
+            <p style="font-size:12.8px">Semaine tenue : <span class="num">2</span> séances et <span class="num">2</span> sorties pour <span class="num">31,5</span> km. Ta cible tenue <span class="num">5</span> jours sur <span class="num">7</span>, et ton objectif de course avance à <span class="num">62</span> %. Ton bilan retient ta régularité : <span class="num">5</span> jours actifs.</p>
+            <p class="ok">✓ Vérifié contre tes chiffres</p>
+          </div>
+        </div>
+      </div></div>
+      <figcaption><b>2a · Le bilan hebdo raconté</b>La décision d’abord (règle de BILAN-01), puis les tuiles, puis Prisme. Il cite la décision du moteur, jamais une autre (R16) ; l’objectif part avec son type et son pourcentage, pas son nom.</figcaption>
+    </figure>
+    <p class="note">Sans Prisme (pas d’accord, hors ligne, bêta fermée), l’écran est exactement celui d’aujourd’hui : la carte du haut disparaît, rien d’autre ne bouge.</p>
+  </div>
+</section>
+
+<!-- ── 3 · Le repas ───────────────────────── -->
+<section class="row">
+  <div class="row-head">
+    <p class="eyebrow">Rangée 3</p>
+    <h2>Prisme en recours de la saisie en phrase</h2>
+    <p>La saisie rapide existe déjà (roadmap 4.5) : un analyseur hors ligne comprend « un yaourt nature ». Pour ce qu’il ne comprend pas, « Demander à Prisme ». Seule la partie non trouvée part ; rien n’est écrit avant « Ajouter ».</p>
+  </div>
+  <div class="boards">
+    <figure>
+      <div class="ph"><div class="sc">
+        <div class="sb"><span>12:49</span><span>5G · 77 %</span></div>
+        <div class="hdr"><span class="back">‹</span><h3>Saisie rapide · Déjeuner</h3></div>
+        <div class="body">
+          <div class="field" style="min-height:52px">un yaourt nature et un poke bowl saumon avocat</div>
+          <div class="card" style="gap:0">
+            <div class="line"><span>Yaourt nature</span><span class="n">125 g</span><span class="kc">76</span></div>
+            <div class="line unknown"><span>poke bowl saumon avocat<small style="color:var(--a-warn-ink)">non trouvé</small></span><span class="chip">Chercher</span><span class="kc">—</span></div>
+          </div>
+          <div class="card" style="background:var(--a-gold-soft);border-color:var(--a-labo)">
+            <p style="font-size:12px"><span data-mark data-size="16"></span> Prisme peut décomposer ce plat.</p>
+            <p style="font-size:11px;color:var(--a-muted)">Ce qui part chez Groq : « poke bowl saumon avocat ». Rien d’autre.</p>
+            <button class="btn prisme" type="button">Demander à Prisme</button>
+          </div>
+          <button class="btn" type="button" style="opacity:.55">Ajouter au déjeuner</button>
+        </div>
+      </div></div>
+      <figcaption><b>3a · La saisie rapide, telle qu’aujourd’hui</b>L’analyse locale reconnaît le yaourt. Le plat composé reste « non trouvé » : c’est là, et seulement là, que Prisme est proposé, avec le texte exact qui part.</figcaption>
+    </figure>
+
+    <figure>
+      <div class="ph"><div class="sc">
+        <div class="sb"><span>12:49</span><span>5G · 77 %</span></div>
+        <div class="hdr"><span class="back">‹</span><h3>Vérifie ton déjeuner</h3></div>
+        <div class="body" id="review">
+          <p style="font-size:11.5px;color:var(--a-muted)"><span data-mark data-size="14"></span> Prisme propose les aliments et les grammes ; l’app calcule.</p>
+          <div class="card" style="gap:0">
+            <div class="line" data-row="0"><span>Yaourt nature</span><span class="step"><button type="button" aria-label="Moins de yaourt">−</button><span>125 g</span><button type="button" aria-label="Plus de yaourt">+</button></span><span class="kc">76</span></div>
+            <div class="line" data-row="1"><span>Riz blanc cuit<small>à vérifier</small></span><span class="step"><button type="button" aria-label="Moins de riz">−</button><span>150 g</span><button type="button" aria-label="Plus de riz">+</button></span><span class="kc">218</span></div>
+            <div class="line" data-row="2"><span>Saumon cru</span><span class="step"><button type="button" aria-label="Moins de saumon">−</button><span>80 g</span><button type="button" aria-label="Plus de saumon">+</button></span><span class="kc">144</span></div>
+            <div class="line" data-row="3"><span>Avocat</span><span class="step"><button type="button" aria-label="Moins d’avocat">−</button><span>50 g</span><button type="button" aria-label="Plus d’avocat">+</button></span><span class="kc">80</span></div>
+            <div class="line" data-row="4"><span>Edamame</span><span class="step"><button type="button" aria-label="Moins d’edamame">−</button><span>40 g</span><button type="button" aria-label="Plus d’edamame">+</button></span><span class="kc">48</span></div>
+            <div class="tot"><span>Total</span><span id="tot">566 kcal · 31 g prot.</span></div>
+          </div>
+          <button class="btn pri" type="button">Ajouter au déjeuner</button>
+        </div>
+      </div></div>
+      <figcaption><b>3b · La même revue, complétée</b>Les quatre lignes de Prisme remplacent la ligne « non trouvé », rapprochées de la base avec le même classement que la saisie locale. Les portions se règlent (jouable). Valeurs de maquette.</figcaption>
+    </figure>
+    <p class="note">La photo de repas revient dans une US à part (PRISME-02) : le premier fournisseur prévu, Groq, ne lit pas les images, et la photo demande caméra, file hors ligne et redimensionnement.</p>
+  </div>
+</section>
+
+<!-- ── 4 · L’accord et les réglages ───────────────────────── -->
+<section class="row">
+  <div class="row-head">
+    <p class="eyebrow">Rangée 4</p>
+    <h2>Un accord à Prisme, au nom du vrai fournisseur</h2>
+    <p>Distinct de celui du Labo IA. Accordé par un appel au serveur (pas de refus juste après « Activer »), retiré localement, même hors ligne. Les textes sur le fournisseur viennent du serveur, jamais écrits en dur.</p>
+  </div>
+  <div class="boards">
+    <figure>
+      <div class="ph"><div class="sc">
+        <div class="stage-home"><div class="sb" style="padding-inline:0"><span>21:10</span><span>5G · 64 %</span></div><h3>Ta journée</h3></div>
+        <div class="body"><div class="card"><h4>Ta journée</h4><p class="src">…</p></div></div>
+        <div class="sheet-bg"><div class="sheet" role="dialog" aria-label="Accord Prisme">
+          <div class="grip"></div>
+          <div style="display:flex;align-items:center;gap:8px"><span data-mark data-size="30"></span><h4>Prisme lit tes chiffres et les raconte</h4></div>
+          <p style="font-size:12px">Prisme est une IA. Il raconte ce que l’app a calculé, et chaque chiffre qu’il cite est vérifié.</p>
+          <ul>
+            <li><b>Ce qui part</b> : les totaux du jour et de la semaine (séances, sorties, repas), et le texte d’un repas que tu lui demandes de lire.</li>
+            <li><b>Jamais</b> : ton nom, tes notes, le nom de tes séances, ta nuit, tes pas, ton humeur, ton cycle, tes douleurs.</li>
+            <li><b>Où</b> : Groq, aux États-Unis. Il ne s’en sert pas pour entraîner ses modèles et ne conserve pas tes demandes. Chez nous, seul un compteur est gardé.</li>
+          </ul>
+          <label style="display:flex;gap:7px;align-items:center;font-size:12px"><input type="checkbox" style="accent-color:var(--a-accent)"> J’ai 18 ans ou plus</label>
+          <p style="font-size:11px;color:var(--a-muted)">Tu peux retirer ton accord à tout moment dans Réglages › Prisme.</p>
+          <div class="row2"><button class="btn" type="button">Pas maintenant</button><button class="btn pri" type="button">Activer Prisme</button></div>
+        </div></div>
+      </div></div>
+      <figcaption><b>4a · La feuille d’accord</b>D’abord « c’est une IA », puis ce qui part, ce qui ne part jamais, le pays et ce que fait le fournisseur. La case « 18 ans ou plus » n’apparaît que si la date de naissance est inconnue. Avec Mistral, « en France ».</figcaption>
+    </figure>
+
+    <figure>
+      <div class="ph"><div class="sc">
+        <div class="sb"><span>21:14</span><span>5G · 63 %</span></div>
+        <div class="hdr"><span class="back">‹</span><h3>Prisme</h3></div>
+        <div class="body">
+          <div class="card" style="gap:0">
+            <div class="set"><span>Prisme raconte tes bilans et t’aide à saisir tes repas<small>Accord donné le 02/10/2026 à Groq (États-Unis)</small></span><button class="sw" type="button" role="switch" aria-checked="true" aria-label="Prisme"></button></div>
+          </div>
+          <div class="card"><p class="lbl">Fournisseur</p><p style="font-size:12.5px">Groq · États-Unis · n’entraîne pas ses modèles sur tes demandes, ne les conserve pas</p></div>
+          <div class="card"><p class="lbl">Ce qui part</p><ul style="margin:0;padding-left:16px;font-size:12px;display:grid;gap:3px"><li>Séances et sorties du jour : type, durée, tonnage, distance</li><li>Assiette du jour : totaux, cibles, écarts</li><li>Semaine en cours et bilan de la semaine</li><li>Le texte d’un repas, quand tu le demandes</li></ul></div>
+        </div>
+      </div></div>
+      <figcaption><b>4b · Réglages › Prisme</b>L’interrupteur est jouable : l’éteindre retire l’accord tout de suite, même hors ligne. Toujours visible, pour pouvoir retirer l’accord ; pour un compte de moins de 18 ans, il dit « réservé aux 18 ans et plus ».</figcaption>
+    </figure>
+  </div>
+</section>
+
+<!-- ── 5 · Les absences ───────────────────────── -->
+<section class="row">
+  <div class="row-head">
+    <p class="eyebrow">Rangée 5</p>
+    <h2>Quand Prisme n’est pas là</h2>
+    <p>Chaque absence se dit en une phrase, les faits restent. Aucun bouton qui mène nulle part.</p>
+  </div>
+  <div class="boards">
+    <figure>
+      <div class="ph"><div class="sc">
+        <div class="sb"><span>21:10</span><span>Hors ligne</span></div>
+        <div class="hdr"><h3>États</h3></div>
+        <div class="body">
+          <div class="warn"><p class="h">Hors ligne</p><p>Prisme a besoin du réseau. Le bouton reste là ; tes faits du jour aussi, et tout le reste de l’app marche hors ligne.</p></div>
+          <div class="warn"><p class="h">Demandes du jour utilisées</p><p>Tu as utilisé les 6 bilans du jour. Retour demain matin. Tes chiffres restent affichés.</p></div>
+          <p style="font-size:11.5px;color:var(--a-muted)">Moins de 18 ans, humeur basse en cours, ou fournisseur non autorisé (Gemini, Mistral sans opt-out) : aucune entrée Prisme, sans message sur l’accueil.</p>
+        </div>
+      </div></div>
+      <figcaption><b>5a · Les absences de Prisme</b>Hors ligne et quota : un message court, les faits intacts. Mineur, humeur basse ou fournisseur non autorisé : Prisme ne se montre pas.</figcaption>
+    </figure>
+    <p class="note">Hors de PRISME-01 : les résumés du Labo (NARR-01, Conseil des trois) dans la voix de Prisme dépendent de la question Q1 de la spec ; ils envoient aujourd’hui de vraies données sous l’accord « factices » du Labo IA.</p>
+  </div>
+</section>
+
+<section class="row">
+  <div class="row-head">
+    <p class="eyebrow">Non couvert par cette maquette</p>
+    <h2>Ce qui reste à voir sur téléphone</h2>
+    <p>Thème sombre, textes anglais, grandes polices, TalkBack. Hors de PRISME-01 : la photo (PRISME-02), l’accès réservé aux testeurs (ACCES-IA), le second accord bien-être, la conversation libre et la barre du Labo (phase 2).</p>
+  </div>
+</section>
+</div>
+
+<script>
+(function(){
+  function mark(size){
+    size = size || 22;
+    return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 32 32" aria-hidden="true" style="flex:none;vertical-align:middle"><rect width="32" height="32" rx="10" fill="#1c140c"/>'+
+      '<path d="M3 17 H11" stroke="#f4ecdd" stroke-width="1.6" stroke-linecap="round" opacity=".7"/>'+
+      '<path d="M10 23 L16 9 L22 23 Z" fill="none" stroke="#f2d28a" stroke-width="2" stroke-linejoin="round"/>'+
+      '<path d="M20 17 L29 13.5" stroke="#ff6b5e" stroke-width="1.8" stroke-linecap="round"/>'+
+      '<path d="M20.5 18.6 L29 18.6" stroke="#6fa8ef" stroke-width="1.8" stroke-linecap="round"/>'+
+      '<path d="M21 20.2 L29 23.6" stroke="#9ed16a" stroke-width="1.8" stroke-linecap="round"/></svg>';
+  }
+  document.querySelectorAll('[data-mark]').forEach(function(n){ n.innerHTML = mark(+(n.getAttribute('data-size') || 22)); });
+
+  // 1a : « Prisme raconte » lit puis affiche le texte vérifié
+  var slot = document.getElementById('tell-slot');
+  var btn = document.getElementById('tell-btn');
+  if (btn) btn.addEventListener('click', function(){
+    slot.innerHTML = '<p class="src">' + mark(16) + ' Prisme lit tes chiffres…</p>';
+    var reduce = false; try { reduce = matchMedia('(prefers-reduced-motion: reduce)').matches; } catch(e){}
+    setTimeout(function(){
+      slot.innerHTML = '<div class="tell" aria-live="polite"><div class="who">' + mark(18) + '<b>Prisme</b><span class="badge">IA</span></div>' +
+        '<p>Bonne séance ce soir : <span class="num">52</span> min et <span class="num">8 420</span> kg, les <span class="num">18</span> séries prévues faites. Il te manque <span class="num">32</span> g de protéines (<span class="num">118</span> sur <span class="num">150</span>). Demain, <span class="num">14</span> km à <span class="num">9</span> h.</p>' +
+        '<p class="ok">✓ Vérifié contre tes chiffres</p></div>';
+    }, reduce ? 0 : 900);
+  });
+
+  // 3c : portions réglables, total recalculé (valeurs pour 100 g, approximatives)
+  var rows = [ {k:61,p:4.3,g:125}, {k:145,p:2.9,g:150}, {k:180,p:20,g:80}, {k:160,p:2,g:50}, {k:120,p:11,g:40} ];
+  function step(g, dir){ var s = g < 60 ? 10 : 20; return Math.max(10, Math.min(1500, g + s*dir)); }
+  function redraw(){
+    var tk = 0, tp = 0;
+    rows.forEach(function(r, i){
+      var line = document.querySelector('#review .line[data-row="'+i+'"]');
+      line.querySelector('.step span').textContent = r.g + ' g';
+      var kc = Math.round(r.k * r.g / 100); line.querySelector('.kc').textContent = kc;
+      tk += r.k * r.g / 100; tp += r.p * r.g / 100;
+    });
+    document.getElementById('tot').textContent = Math.round(tk) + ' kcal · ' + Math.round(tp) + ' g prot.';
+  }
+  rows.forEach(function(r, i){
+    var line = document.querySelector('#review .line[data-row="'+i+'"]');
+    var b = line.querySelectorAll('.step button');
+    b[0].addEventListener('click', function(){ r.g = step(r.g, -1); redraw(); });
+    b[1].addEventListener('click', function(){ r.g = step(r.g, 1); redraw(); });
+  });
+
+  // 4b : interrupteurs
+  document.querySelectorAll('.sw').forEach(function(s){
+    s.addEventListener('click', function(){ s.setAttribute('aria-checked', s.getAttribute('aria-checked') === 'true' ? 'false' : 'true'); });
+  });
+})();
+</script>

@@ -10,6 +10,58 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 03/10/2026 — PRISME-01 : Prisme, l'assistant IA — analyse, cadrage relu et validé (`feature/prisme01-prisme-raconte`)
+
+> Demande de Florian (02/10/2026) : « les concurrents ont de l'IA ; on s'y met, avec des IA à usage
+> gratuit ». Analyse de l'app entière face au marché (12 concurrents), minimum à aligner pilier par
+> pilier, offres gratuites, coûts ; **décisions D1-D7 de Florian le jour même** (nom **Prisme**, il vit
+> dans le Labo, première US « Prisme raconte », test gratuit, vraies données pour la famille et les
+> amis, payant à rediscuter, bien-être non par défaut). Spec, plan et maquette **validés le 03/10/2026**,
+> question Q1 comprise. **Aucune ligne de code, aucune migration.** Commit précédent : `b1bbdbd5`.
+
+### Ajouté
+- Analyse `docs/product/analyse-assistant-prisme-2026-10.md` : ce que l'app sait déjà faire sans IA,
+  marché d'octobre 2026, minimum à aligner, pilier par pilier, l'assistant (nom, voix, place), tests
+  gratuits (qui entraîne sur nos requêtes), grille gratuit / payant et coûts, décisions D1-D7, phasage.
+  Compte rendu en ligne avec maquette jouable : https://claude.ai/artifact/2zptc9GuNxMTvxWJm8nioj
+- Spec `docs/specs/functional/us/prisme01-prisme-raconte.md` (front-matter `etape: code`) : le bilan du
+  soir (carte « Ta journée » de l'accueil dès 18 h, nouvelle) et le bilan hebdo racontés à la demande,
+  vérifiés par le garde-fou des nombres de NARR-01 ; Prisme en recours de la saisie en phrase (4.5) ;
+  accord Prisme distinct du Labo IA ; décisions dérivées DD1-DD15, Q1 ; règles R1-R16 ; dossiers en
+  liste blanche ; cas limites ; i18n FR/EN ; offline ; 20 critères de recette.
+- Plan `docs/plans/prisme01-prisme-raconte.md` : 8 étapes (contrats, dossiers, garde-fou, humeur basse
+  en cours, migration, serveur, plomberie, surfaces), recette serveur par appels `curl`.
+- Maquette `design/prisme01-prisme-raconte/` (10 écrans, planche HTML dans la palette de l'app ;
+  https://claude.ai/artifact/7CV99wcvuB1wFxvYKS9FDb).
+- Roadmap : lignes **7.42** et **4.48** (hors cadrage, ⬜), compteurs 278 → 280 et 2 → 4 à faire, journal.
+- BACKLOG : **ACCES-IA** et **PRISME-01b** (P1), **PRISME-02** (P2) ; LANCE-00 rouverte par PRISME-01.
+- IDEAS : l'entrée de la demande, promue en US.
+
+### Technique / Notes
+- **Relecture de la spec par un agent : 3 bloquants et 25 constats, tous intégrés** (spec §13). Ceux
+  qui ont changé la conception :
+  - `is_admin()` vaut vrai pour **n'importe quelle** ligne de `user_roles` : un rôle « testeur IA » y
+    aurait rendu administrateur → accès testeurs sorti en ACCES-IA, avec une table dédiée ;
+  - rien n'empêchait de vraies données de partir chez un fournisseur qui entraîne → réglage
+    `PRISME_PROVIDER` distinct de `AI_PROVIDER`, liste d'autorisés côté serveur (Groq, Anthropic,
+    Mistral seulement avec `MISTRAL_TRAINING_OPTOUT=verified`), **jamais Gemini** ;
+  - le dossier d'enquête peut porter la durée de sommeil → rien du bien-être ni de Health Connect ne
+    part dans PRISME-01 ;
+  - **la saisie de repas en phrase existait déjà** (4.5, `parseMealText`) : l'analyse l'avait ratée ;
+    « Décrire » devient un recours dans `meal-quick-entry` au lieu d'un nouvel écran ;
+  - `shouldShowLowMoodCard` a un délai de 14 jours et se ferme → prédicat « humeur basse en cours » ;
+  - quota contournable par appels simultanés → réservation atomique en SQL ;
+  - milliers anglais (« 12,480 ») mal lus par le garde-fou ; accord local remonté en différé ;
+    `WeeklyReview` sans objectifs ni piliers actifs ; titres de séance en texte libre.
+- ⚠️ **Constat sur l'existant, non corrigé ici** : NARR-01 et CONS-01 envoient le vrai dossier du Labo
+  sous l'accord du Labo IA, dont le texte dit « données factices ». Limité aux comptes qui ont activé le
+  Labo IA. Q1 tranchée par Florian le 03/10/2026 → **PRISME-01b**, après leur recette.
+- Qualité : `npm run lint` et `npm run typecheck` à 0, `agents:check` valide, `npm run test` vert
+  (3 685 Vitest shared, 4 909 Jest mobile, 587 admin) — lancés sur `dev`, au code identique à la
+  branche (le commit ne touche que de la documentation).
+- Travail fait dans un worktree (`C:\wellness-app-prisme01`) pour ne pas toucher aux deux fichiers
+  non commités de `dev` (`RECETTES.md`, `dev-build-android-local.md`).
+
 ## 01/10/2026 — Le pilier Bien-être : pilier activable, check-in en deux temps, la boucle, Ce qui compte, la nuit lue, les modules (`dev`)
 
 > Six US livrées **en une vague** sur demande de Florian (« tu implémentes TOUT d'un seul lot et je

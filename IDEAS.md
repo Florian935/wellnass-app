@@ -22,6 +22,27 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
 - [12/07/2026] 🆕 Widget écran d'accueil avec la séance du jour.
 -->
 
+- [02/10/2026] ✅ **Prisme, l'assistant IA du Labo** (demande de Florian, 02/10) : « un peu toutes
+  les applications concurrentes ont de l'IA maintenant ; on s'y met, avec des IA à usage gratuit ».
+  Analyse de l'app entière face au marché : le coach conversationnel est partout (MyFitnessPal,
+  Google Health, Strava, Garmin, Whoop, Oura), **presque toujours payant** (7 à 20 $/mois) ; le
+  minimum à aligner tient en trois gestes — **parler à l'app de ses données, un bilan rédigé le soir
+  et en fin de semaine, le repas saisi en photo ou en une phrase** ; personne ne croise les quatre
+  piliers, c'est là que l'assistant doit briller. _Décisions de Florian le jour même (D1-D7)_ : le nom
+  **Prisme** ; il vit dans le Labo (barre de question, phase 2) et sur chaque dossier ; **première US
+  « Prisme raconte »** ; fournisseur indifférent **tant que le test est gratuit** (Mistral une fois
+  l'opt-out d'entraînement vérifié, Groq sinon — Gemini gratuit entraîne sur nos requêtes, donc
+  factices seulement) ; **vraies données en bêta** (famille et amis) ; il y aura du payant, grille à
+  rediscuter ; bien-être, cycle et douleurs **non par défaut**. **Promue en US : PRISME-01**
+  (roadmap 7.42 et 4.48, validée par Florian le 03/10/2026), resserrée après relecture : bilans du soir et de la semaine,
+  et Prisme en recours de la saisie en phrase existante (4.5) ; la photo (PRISME-02), l'accès testeurs
+  (ACCES-IA) et le second accord bien-être suivent. **Analyse, marché, coûts et phasage :
+  [docs/product/analyse-assistant-prisme-2026-10.md](docs/product/analyse-assistant-prisme-2026-10.md)**
+  · compte rendu et maquette jouable en ligne : https://claude.ai/artifact/2zptc9GuNxMTvxWJm8nioj ·
+  maquette de l'US : [design/prisme01-prisme-raconte/](design/prisme01-prisme-raconte/).
+  ⚠️ Couplée à LANCE-00 : la politique de confidentialité dit aujourd'hui qu'aucune donnée n'est
+  partagée.
+
 - [20/09/2026] 🔍 **Reprendre les bonnes idées de Strava** (demande de Florian, 20/09) : « comme font
   un peu toutes les applications du marché ». **Analyse écrite le matin de mémoire, puis révisée le
   jour même sur 12 captures d'écran** fournies par Florian (compte gratuit, 0 activité) : elles ont
