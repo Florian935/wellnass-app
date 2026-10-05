@@ -8,7 +8,10 @@ import { insertAnalyticsEvent } from '@/data/repositories/analytics-repository';
 
 // Allowlist stricte anti-PII : n'AJOUTER ici QUE des clés non identifiantes (jamais de donnée
 // de santé/perso ni de texte libre). Toute clé absente est écartée par sanitizeProps.
-export const ALLOWED_PROP_KEYS = ['pillar'] as const;
+// US PRISME-01 — `provider` (identifiant technique du fournisseur IA : groq, mistral…) et `surface`
+// (evening | week | meal) : sans eux, le taux de refus du garde-fou ne se compare pas d'un fournisseur
+// à l'autre. Ni l'un ni l'autre ne dit rien de la personne.
+export const ALLOWED_PROP_KEYS = ['pillar', 'provider', 'surface'] as const;
 
 // Catalogue centralisé des noms d'événements (socle + adoption). Source unique pour éviter les
 // fautes de frappe : n'appeler track() qu'avec ANALYTICS_EVENTS.xxx.
@@ -35,6 +38,11 @@ export const ANALYTICS_EVENTS = {
   homeCheckinDone: 'home_checkin_done',
   weeklyRecapCard: 'weekly_recap_card',
   streakSavedEvening: 'streak_saved_evening',
+  // US PRISME-01 — des gestes, jamais un contenu : un bilan raconté, un texte jeté par le garde-fou,
+  // un repas lu. Le taux de `prisme_rejected` est le premier critère pour juger un fournisseur.
+  prismeTold: 'prisme_told',
+  prismeRejected: 'prisme_rejected',
+  prismeMealAsked: 'prisme_meal_asked',
 } as const;
 
 export type AnalyticsEventName = (typeof ANALYTICS_EVENTS)[keyof typeof ANALYTICS_EVENTS];

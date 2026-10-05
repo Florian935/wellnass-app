@@ -3,9 +3,9 @@ id: PRISME-01
 titre: "Prisme raconte — le bilan du soir et de la semaine rédigés, et Prisme en recours de la saisie en phrase"
 roadmap: [7.42, 4.48]
 catalogue: []
-etape: code
+etape: recette
 branche: feature/prisme01-prisme-raconte
-maj: 03/10/2026
+maj: 05/10/2026
 ---
 
 # US PRISME-01 — Prisme raconte
@@ -21,6 +21,10 @@ maj: 03/10/2026
 > version (§13 « Ce que la relecture a changé »).
 > ✅ **Spec, plan et maquette validés par Florian le 03/10/2026** (« je valide TOUT »), question Q1
 > comprise.
+> 🛠️ **Codée le 03/10/2026, livrée sur `dev` le 05/10/2026** : les écarts au plan (moyens, pas règles)
+> sont en fin de plan ; la recette est la §91 de [RECETTES.md](../../../../RECETTES.md), précédée d'une
+> suite d'appels au serveur. Migration poussée et fonction déployée le 05/10/2026 avec **Mistral**
+> (opt-out d'entraînement fait par Florian) : la console Groq refusait de créer une clé.
 
 ## 0. Le problème
 

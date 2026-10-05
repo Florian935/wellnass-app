@@ -15,8 +15,15 @@
  * dont on n'utilise ni le streaming ni les outils. Les deux adaptateurs tiennent en 60 lignes.
  */
 
-/** Les fournisseurs câblés. Le nom est celui attendu dans la variable `AI_PROVIDER`. */
-export const AI_PROVIDERS = ['gemini', 'anthropic'] as const;
+/**
+ * Les fournisseurs câblés. Le nom est celui attendu dans `AI_PROVIDER` (Labo IA) ou
+ * `PRISME_PROVIDER` (Prisme).
+ *
+ * US PRISME-01 — `groq` et `mistral` passent par **un seul adaptateur compatible OpenAI** : Groq,
+ * Mistral, Cerebras et OpenRouter parlent tous ce format, et en ajouter un autre ne demande qu'un
+ * préréglage de plus.
+ */
+export const AI_PROVIDERS = ['gemini', 'anthropic', 'groq', 'mistral'] as const;
 export type AiProvider = (typeof AI_PROVIDERS)[number];
 
 export type MediaType = 'image/jpeg' | 'image/png' | 'image/webp';
@@ -27,6 +34,8 @@ export type ProviderRequest = {
   maxTokens: number;
   /** Présente uniquement pour `kind: 'photo'`. Base64 **nu**, sans préfixe `data:`. */
   image?: { base64: string; mediaType: MediaType };
+  /** US PRISME-01 — réponse JSON attendue (`meal_text`) : le fournisseur la contraint s'il le sait. */
+  json?: boolean;
 };
 
 export type ProviderResult =
@@ -46,7 +55,60 @@ export type ProviderConfig = {
   /** Gemini seulement : modèle de secours quand le quota du premier est épuisé. */
   fallbackModel?: string | null;
   apiKey: string;
+  /** Compatibles OpenAI seulement : adresse de l'API, sans `/chat/completions`. */
+  baseUrl?: string;
+  /** Compatibles OpenAI seulement : effort de raisonnement à demander (`gpt-oss` chez Groq). */
+  reasoningEffort?: 'low' | null;
+  /** Compatibles OpenAI seulement : le modèle lit-il les images ? */
+  vision?: boolean;
 };
+
+/**
+ * US PRISME-01 — les préréglages compatibles OpenAI.
+ *
+ * ⚠️ **Les identifiants de modèles bougent** (leçon IA-LAB-01 §3.1) : les défauts ci-dessous sont
+ * surchargeables par variable, et une erreur de configuration remonte au client comme pour Gemini.
+ *
+ * 🔴 `gpt-oss-120b` est un modèle **à raisonnement** : chez Groq, le raisonnement entre dans le budget
+ * de sortie, comme chez Gemini — le piège du 16/09/2026 (budget mangé, réponse vide). D'où l'effort
+ * de raisonnement bas, et la détection de `finish_reason: length` plus bas.
+ */
+const OPENAI_PRESETS = {
+  groq: {
+    baseUrl: 'https://api.groq.com/openai/v1',
+    keyEnv: 'GROQ_API_KEY',
+    modelEnv: 'GROQ_MODEL',
+    defaultModel: 'openai/gpt-oss-120b',
+    reasoningEffort: 'low',
+    vision: false,
+  },
+  mistral: {
+    baseUrl: 'https://api.mistral.ai/v1',
+    keyEnv: 'MISTRAL_API_KEY',
+    modelEnv: 'MISTRAL_MODEL',
+    defaultModel: 'mistral-small-latest',
+    reasoningEffort: null,
+    vision: true,
+  },
+} as const;
+
+function openAiConfig(
+  provider: 'groq' | 'mistral',
+  env: (key: string) => string | undefined,
+): ProviderConfig | null {
+  const preset = OPENAI_PRESETS[provider];
+  const apiKey = env(preset.keyEnv);
+  if (!apiKey) return null;
+  return {
+    provider,
+    model: env(preset.modelEnv)?.trim() || preset.defaultModel,
+    fallbackModel: null,
+    apiKey,
+    baseUrl: preset.baseUrl,
+    reasoningEffort: preset.reasoningEffort,
+    vision: preset.vision,
+  };
+}
 
 /**
  * Lit la configuration dans l'environnement de la fonction.
@@ -64,6 +126,8 @@ export function readProviderConfig(env: (key: string) => string | undefined): Pr
   const anthropicKey = env('ANTHROPIC_API_KEY');
 
   const declared = env('AI_PROVIDER')?.trim().toLowerCase();
+  // US PRISME-01 — Groq et Mistral ne se déduisent jamais d'une clé présente : on les demande.
+  if (declared === 'groq' || declared === 'mistral') return openAiConfig(declared, env);
   const provider: AiProvider | null =
     declared === 'gemini' || declared === 'anthropic'
       ? declared
@@ -98,6 +162,84 @@ export function readProviderConfig(env: (key: string) => string | undefined): Pr
     fallbackModel: null,
     apiKey: anthropicKey,
   };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────────────────────────
+// US PRISME-01 — le fournisseur de Prisme : un réglage à part, et une liste d'autorisés
+// ─────────────────────────────────────────────────────────────────────────────────────────────────
+
+/** Ce que l'app peut dire d'un fournisseur dans le texte d'accord (spec R6). Jamais écrit en dur côté app. */
+export type PrismeProviderInfo = {
+  id: 'groq' | 'mistral' | 'anthropic';
+  label: string;
+  /** Code pays ISO : le texte d'accord dit où partent les données. */
+  country: string;
+  /** Toujours `false` : un fournisseur qui entraîne sur nos requêtes n'est jamais autorisé (DD1). */
+  trains: false;
+  /** Jours de conservation chez le fournisseur (journaux de sécurité et d'abus). */
+  retentionDays: number;
+};
+
+export type PrismeProviderResolution =
+  | { ok: true; config: ProviderConfig; info: PrismeProviderInfo }
+  /**
+   * `provider` : le fournisseur demandé n'est pas autorisé sur de vraies données (Gemini gratuit,
+   * Mistral sans opt-out vérifié, ou inconnu). `unconfigured` : rien de posé, ou la clé manque.
+   */
+  | { ok: false; reason: 'provider' | 'unconfigured' };
+
+const PRISME_PROVIDER_INFO: Record<PrismeProviderInfo['id'], Omit<PrismeProviderInfo, 'id' | 'trains'>> = {
+  groq: { label: 'Groq', country: 'US', retentionDays: 30 },
+  mistral: { label: 'Mistral AI', country: 'FR', retentionDays: 30 },
+  anthropic: { label: 'Anthropic', country: 'US', retentionDays: 30 },
+};
+
+/**
+ * Le fournisseur de **Prisme**, distinct de celui du Labo IA (`AI_PROVIDER`).
+ *
+ * 🔴 **La règle §7.2 de l'analyse IA devient un verrou de code** (spec DD1, bloquant de la relecture
+ * du 02/10/2026) : Prisme envoie de **vraies** données, donc il n'accepte que des fournisseurs qui
+ * n'entraînent pas leurs modèles sur nos requêtes.
+ *  - **Gemini n'est jamais autorisé** : son palier gratuit entraîne, sans opt-out.
+ *  - **Mistral** ne l'est que si `MISTRAL_TRAINING_OPTOUT=verified` — un geste humain, fait et vérifié
+ *    dans sa console, et écrit ici en connaissance de cause.
+ *  - Rien n'est déduit d'une clé présente : `PRISME_PROVIDER` doit être posée.
+ */
+export function readPrismeProviderConfig(env: (key: string) => string | undefined): PrismeProviderResolution {
+  const declared = env('PRISME_PROVIDER')?.trim().toLowerCase();
+  if (!declared) return { ok: false, reason: 'unconfigured' };
+
+  let config: ProviderConfig | null;
+  let id: PrismeProviderInfo['id'];
+
+  if (declared === 'groq') {
+    config = openAiConfig('groq', env);
+    id = 'groq';
+  } else if (declared === 'mistral') {
+    if (env('MISTRAL_TRAINING_OPTOUT')?.trim().toLowerCase() !== 'verified') {
+      return { ok: false, reason: 'provider' };
+    }
+    config = openAiConfig('mistral', env);
+    id = 'mistral';
+  } else if (declared === 'anthropic') {
+    const apiKey = env('ANTHROPIC_API_KEY');
+    config = apiKey
+      ? {
+          provider: 'anthropic',
+          // Haiku pour les bilans : le moins cher de la gamme, et un bilan n'a rien d'un raisonnement
+          // difficile (analyse §8).
+          model: env('PRISME_ANTHROPIC_MODEL')?.trim() || 'claude-haiku-4-5',
+          fallbackModel: null,
+          apiKey,
+        }
+      : null;
+    id = 'anthropic';
+  } else {
+    return { ok: false, reason: 'provider' };
+  }
+
+  if (!config) return { ok: false, reason: 'unconfigured' };
+  return { ok: true, config, info: { id, trains: false, ...PRISME_PROVIDER_INFO[id] } };
 }
 
 /**
@@ -404,6 +546,98 @@ async function callAnthropic(
   };
 }
 
+// ─────────────────────────────────────────────────────────────────────────────────────────────────
+// Compatibles OpenAI (Groq, Mistral) — `POST {baseUrl}/chat/completions`
+// ─────────────────────────────────────────────────────────────────────────────────────────────────
+
+type OpenAiResponse = {
+  choices?: Array<{ message?: { content?: string | null }; finish_reason?: string }>;
+};
+
+/**
+ * L'erreur d'un fournisseur compatible OpenAI, **réduite à son code et à son message**.
+ *
+ * 🔴 **Jamais le corps brut.** En mode JSON, Groq refuse une génération mal formée par un 400
+ * `json_validate_failed` dont le corps **recopie ce que le modèle a produit** (`failed_generation`) —
+ * c'est-à-dire, pour un repas décrit, ce que l'utilisateur a écrit. Le journaliser ou le renvoyer
+ * violerait la règle « rien n'est conservé » (spec R11). Ce cas est un échec ordinaire, pas une erreur
+ * de configuration.
+ */
+function openAiError(status: number, body: string, attempts: number): ProviderResult {
+  type ErrorFields = { code?: unknown; type?: unknown; message?: unknown };
+  let code: string | undefined;
+  let message: string | undefined;
+  try {
+    const parsed = JSON.parse(body) as ErrorFields & { error?: ErrorFields };
+    // Groq imbrique l'erreur (`{ error: { … } }`) ; Mistral la met à plat (`{ object: 'error', message,
+    // type, code }`). Sans ce repli, une clé Mistral refusée remontait « erreur sans détail lisible ».
+    const error = parsed.error ?? parsed;
+    code = typeof error.code === 'string' ? error.code : typeof error.type === 'string' ? error.type : undefined;
+    // 🔴 Le message n'est gardé que s'il est une chaîne : une erreur de validation de Mistral (422) est
+    // un objet qui recopie l'entrée fautive (`input`), donc potentiellement le texte de l'utilisateur.
+    message = typeof error.message === 'string' ? error.message : undefined;
+  } catch {
+    // Corps illisible : on n'en garde rien.
+  }
+  if (code === 'json_validate_failed') return { ok: false, kind: 'failed', detail: 'json_validate_failed' };
+  const summary = [code, message].filter(Boolean).join(' — ').slice(0, 300) || 'erreur sans détail lisible';
+  return classifyHttpError(status, summary, attempts);
+}
+
+async function callOpenAiCompatible(
+  config: ProviderConfig,
+  request: ProviderRequest,
+): Promise<ProviderResult> {
+  if (request.image && !config.vision) {
+    return { ok: false, kind: 'misconfigured', detail: `${config.provider} (${config.model}) ne lit pas les images.` };
+  }
+
+  const userContent = request.image
+    ? [
+        { type: 'text', text: request.prompt },
+        { type: 'image_url', image_url: { url: `data:${request.image.mediaType};base64,${request.image.base64}` } },
+      ]
+    : request.prompt;
+
+  const { response, attempts } = await fetchWithRetry(`${config.baseUrl}/chat/completions`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${config.apiKey}` },
+    body: JSON.stringify({
+      model: config.model,
+      messages: [
+        { role: 'system', content: request.system },
+        { role: 'user', content: userContent },
+      ],
+      max_tokens: request.maxTokens,
+      temperature: 0.4,
+      ...(request.json ? { response_format: { type: 'json_object' } } : {}),
+      ...(config.reasoningEffort ? { reasoning_effort: config.reasoningEffort } : {}),
+    }),
+  });
+
+  if (!response.ok) return openAiError(response.status, await response.text(), attempts);
+
+  const payload = (await response.json()) as OpenAiResponse;
+  const choice = payload.choices?.[0];
+  const finish = choice?.finish_reason ?? 'inconnue';
+  if (finish === 'content_filter') return { ok: false, kind: 'refused' };
+
+  // 🔴 Une réponse coupée par le budget n'est jamais passée au garde-fou : elle pourrait s'arrêter au
+  // milieu d'un chiffre (« 8 4 »), ou d'un JSON. C'est un échec, et on dit lequel. Mistral a une
+  // seconde coupure, `model_length` (fenêtre du modèle pleine) : même traitement.
+  if (finish === 'length' || finish === 'model_length') {
+    return {
+      ok: false,
+      kind: 'failed',
+      detail: `Réponse tronquée (finish_reason=${finish}). Budget de sortie : ${request.maxTokens} jetons.`,
+    };
+  }
+
+  const text = (choice?.message?.content ?? '').trim();
+  if (text.length > 0) return { ok: true, text };
+  return { ok: false, kind: 'failed', detail: `Le modèle n'a produit aucun texte (finish_reason=${finish}).` };
+}
+
 /**
  * Aiguille vers l'adaptateur. Une panne réseau est un `failed`, jamais une exception qui remonte.
  *
@@ -416,9 +650,9 @@ export async function callProvider(
   request: ProviderRequest,
 ): Promise<ProviderResult> {
   try {
-    return config.provider === 'gemini'
-      ? await callGemini(config, request)
-      : await callAnthropic(config, request);
+    if (config.provider === 'gemini') return await callGemini(config, request);
+    if (config.provider === 'anthropic') return await callAnthropic(config, request);
+    return await callOpenAiCompatible(config, request);
   } catch (error) {
     console.error('[ai-assist] appel fournisseur en échec', error);
     const message = error instanceof Error ? `${error.name}: ${error.message}` : String(error);

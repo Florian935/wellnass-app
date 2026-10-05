@@ -19,6 +19,7 @@ import { formatDayFull, type ReviewChange } from '@wellness/shared';
 import { BodyMap } from '@/components/body/BodyMap';
 import { BodyExplorerLink } from '@/components/body/BodyExplorerLink';
 import { Card } from '@/components/Card';
+import { PrismeWeek } from '@/components/prisme/PrismeWeek';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { useWeeklyMuscleTonnage, useWeeklyReview } from '@/data/repositories/weekly-review-repository';
@@ -54,6 +55,12 @@ export default function ReviewScreen() {
           ...decision.metrics,
           subject: resolveDecisionSubject(decision.kind, decision.subject, t),
         });
+
+  // Résolue une fois : l'écran l'affiche, et Prisme la reçoit telle quelle (PRISME-01, R4).
+  const periodLabel = t('review.period', {
+    start: formatDayFull(review.period.start),
+    end: formatDayFull(review.period.end),
+  });
 
   /**
    * Lignes de chiffres. Construites en **données** plutôt qu'en JSX pour que la bordure ne s'applique
@@ -100,12 +107,7 @@ export default function ReviewScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <ScreenHeader title={t('review.title')} />
 
-        <Text style={[styles.period, { color: colors.textMuted }]}>
-          {t('review.period', {
-            start: formatDayFull(review.period.start),
-            end: formatDayFull(review.period.end),
-          })}
-        </Text>
+        <Text style={[styles.period, { color: colors.textMuted }]}>{periodLabel}</Text>
 
         {/* US VIE-01 (R7) — l'annotation, AVANT la décision et y compris sur une semaine vide :
             c'est elle qui explique une semaine creuse. Sans elle, le bilan resterait exact mais
@@ -187,6 +189,10 @@ export default function ReviewScreen() {
                 );
               })}
             </Card>
+
+            {/* US PRISME-01 — Prisme raconte la semaine **sous** les chiffres : la décision reste en
+                tête (règle de BILAN-01), les chiffres la rendent vérifiable, le récit vient après. */}
+            <PrismeWeek review={review} periodLabel={periodLabel} decisionText={decision === null ? null : decisionText} />
 
             {/* US MUSC-F1b — schéma corporel, complément visuel au tonnage listé ci-dessus (R5 :
                 la ligne « Tonnage » du bloc chiffres reste affichée, jamais remplacée). */}

@@ -122,6 +122,12 @@ const user_settings = new Table({
   // colonne de cette table à devoir être déclarée ici : absente, l'écriture échoue et
   // `void updateSettings()` avale l'erreur — l'interrupteur revient à « éteint » sans message.
   ai_consent_at: column.text,
+  // US PRISME-01 — l'accord à Prisme (instant ISO, NULL = pas d'accord) et le fournisseur auquel il a
+  // été donné. Distincts de `ai_consent_at` (Labo IA, données factices). 🔴 Huitième et neuvième
+  // colonnes de cette table à devoir être déclarées ici : absentes, le retrait de l'accord échoue en
+  // silence. Migration : supabase/migrations/20261003075655_prisme_consent_quota.sql.
+  prisme_consent_at: column.text,
+  prisme_consent_provider: column.text,
   // US DEPENSE-02 — afficher (ou non) les calories dépensées. 🔴 Septième colonne de cette table à
   // devoir être déclarée ici ; masquée, la cible s'ajuste quand même (on retire l'affichage, pas le
   // calcul).

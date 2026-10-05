@@ -6636,6 +6636,144 @@
       "accept": "Enable"
     }
   },
+  "prisme": {
+    "name": "Prisme",
+    "badge": "AI",
+    "tell": "Prisme tells it",
+    "retell": "Read again",
+    "reading": "Prisme is reading your numbers…",
+    "verified": "Checked against your numbers",
+    "rejected": "Prisme discarded its answer: it quoted a number that isn’t in your data.",
+    "invalid": "Prisme couldn’t tell it this time. Your numbers are just above.",
+    "stale": "Your day has changed since this text.",
+    "sources": "Where it comes from",
+    "devSimulate": "Simulate an invented number (development)",
+    "evening": {
+      "title": "Your day"
+    },
+    "week": {
+      "title": "Prisme tells your week"
+    },
+    "meal": {
+      "offer": "Prisme can break down what the quick entry didn’t recognise.",
+      "ask": "Ask Prisme",
+      "asking": "Prisme is reading your meal…",
+      "sends": "What goes to {{provider}}: “{{text}}”. Nothing else.",
+      "roles": "Prisme suggests foods and grams; the app does the maths.",
+      "none": "Prisme didn’t recognise any food.",
+      "truncated": "Prisme kept the first 12 foods: check that nothing is missing.",
+      "check": "check this",
+      "invalid": "Prisme couldn’t read this meal."
+    },
+    "consent": {
+      "title": "Prisme reads your numbers and tells them",
+      "isAi": "Prisme is an AI. It tells what the app has calculated, and every number it quotes is checked.",
+      "sendsTitle": "What is sent",
+      "sends": "the day’s and week’s totals (workouts, runs, meals), and the text of a meal you ask it to read.",
+      "neverTitle": "Never",
+      "never": "your name, your notes, your workout names, your night, your steps, your mood, your cycle, your pain.",
+      "whereTitle": "Where",
+      "where": "They go to {{provider}}, {{country}}.",
+      "trainingNo": "It doesn’t use them to train its models.",
+      "retention": "It may keep your requests for up to {{days}} days for safety, then deletes them.",
+      "retentionNone": "It doesn’t keep your requests.",
+      "local": "On our side, only a counter is kept.",
+      "revoke": "You can withdraw your consent at any time in Settings › Prisme.",
+      "adult": "I’m 18 or older",
+      "activate": "Turn on Prisme",
+      "later": "Not now"
+    },
+    "country": {
+      "US": "in the United States",
+      "FR": "in France",
+      "other": "country: {{code}}"
+    },
+    "settings": {
+      "title": "Prisme",
+      "intro": "The app’s AI assistant: it tells your summaries and helps you log your meals. Nothing is sent without your consent.",
+      "toggle": "Turn on Prisme",
+      "grantedOn": "Consent given on {{date}} to {{provider}} ({{country}}).",
+      "providerTitle": "Provider",
+      "provider": "{{provider}}, {{country}}. It doesn’t use them to train its models.",
+      "sendsTitle": "What is sent",
+      "sends": "The day’s and week’s totals (workouts, runs, meals), and the text of a meal you ask Prisme to read. Never your name, notes, night, steps, mood, cycle or pain.",
+      "unavailable": "Prisme isn’t available right now.",
+      "unknown": "A connection is needed to check whether Prisme is available.",
+      "adultOnly": "Prisme is for people aged 18 and over.",
+      "refresh": "Check again"
+    },
+    "errors": {
+      "offline": "Prisme needs a connection. Your numbers are still here.",
+      "quota-exceeded": "You’ve used today’s requests. Back tomorrow morning.",
+      "unavailable": "Prisme isn’t available right now.",
+      "consent-required": "Turn on Prisme to continue.",
+      "refused": "Prisme declined to answer that.",
+      "misconfigured": "Prisme is misconfigured on the server.",
+      "not-allowed": "Prisme is for people aged 18 and over.",
+      "adult-required": "Confirm that you’re 18 or older.",
+      "settings-missing": "Your settings aren’t synced yet. Try again in a moment.",
+      "failed": "Prisme couldn’t answer. Try again later."
+    },
+    "dossier": {
+      "evening": {
+        "headline": "Your day, {{day}}"
+      },
+      "week": {
+        "label": "This week",
+        "headline": "Your week {{period}}",
+        "workouts_one": "{{count}} workout",
+        "workouts_other": "{{count}} workouts",
+        "runs_one": "{{count}} run",
+        "runs_other": "{{count}} runs",
+        "loggedDays": "{{days}} days logged",
+        "daysInTarget": "{{days}} on target",
+        "activeDays": "Consistency",
+        "activeDaysValue": "{{days}} active days out of {{of}}",
+        "goalBehind": "A goal has fallen behind: {{progressPct}}% progress for {{elapsedPct}}% of the time elapsed. Make it your priority this week.",
+        "records": "Records",
+        "recordsValue_one": "{{count}} record broken",
+        "recordsValue_other": "{{count}} records broken",
+        "goal": "Goal",
+        "goalValue": "{{type}}: {{pct}}%",
+        "realLife": "Real life",
+        "realLifeValue": "{{days}} days in real-life mode"
+      },
+      "session": {
+        "strength": "Strength workout",
+        "run": "Run",
+        "other": "Other activity"
+      },
+      "minutes": "{{minutes}} min",
+      "tonnage": "{{kg, number}} kg lifted",
+      "sets": "{{done}} sets out of {{planned}}",
+      "setsDone": "{{done}} sets",
+      "records_one": "{{count}} record broken",
+      "records_other": "{{count}} records broken",
+      "distance": "{{km, number}} km",
+      "pace": "pace {{pace}} per km",
+      "at": "at {{time}}",
+      "plate": {
+        "label": "Plate",
+        "kcalOfTarget": "{{kcal, number}} kcal out of {{target, number}}",
+        "kcal": "{{kcal, number}} kcal",
+        "kcalLeft": "{{kcal, number}} kcal left",
+        "kcalOver": "target exceeded by {{kcal, number}} kcal",
+        "kcalOnTarget": "target reached",
+        "proteinOfTarget": "protein {{g}} g out of {{target}} g",
+        "protein": "protein {{g}} g",
+        "proteinMissing": "{{g}} g of protein missing",
+        "proteinReached": "protein target reached",
+        "carbs": "carbs {{g}} g",
+        "meals_one": "{{count}} meal logged",
+        "meals_other": "{{count}} meals logged"
+      },
+      "weekProgress": "{{done}} activities out of {{goal}}",
+      "tomorrow": "Tomorrow",
+      "changeUp": "up {{pct}}%",
+      "changeDown": "down {{pct}}%",
+      "changeFlat": "steady"
+    }
+  },
   "runningHub": {
     "pace": {
       "title": {

@@ -78,6 +78,27 @@ jest.mock('@/components/TextField', () => {
   };
 });
 
+/**
+ * Le recours Prisme a ses propres tests (`PrismeMealRecourse.test.tsx`) : ici, un bouton qui rend ce
+ * que Prisme « répond », pour tenir ce que l'ÉCRAN en fait — ce qui part, et la revue qui en sort.
+ */
+let mockPrismeItems: { name: string; grams: number; confidence: number }[] = [];
+jest.mock('@/components/prisme/PrismeMealRecourse', () => {
+  const { Pressable } = require('react-native');
+  // Le texte envoyé est porté en `accessibilityHint`, pas en texte : il ne doit pas se confondre
+  // avec la ligne de revue qu'il reprend.
+  return {
+    PrismeMealRecourse: ({ unmatchedText, onItems }: { unmatchedText: string; onItems: (items: unknown[]) => void }) =>
+      unmatchedText.trim() ? (
+        <Pressable
+          accessibilityLabel="prisme-recours"
+          accessibilityHint={unmatchedText}
+          onPress={() => onItems(mockPrismeItems)}
+        />
+      ) : null,
+  };
+});
+
 jest.mock('@expo/vector-icons', () => {
   const { Text } = require('react-native');
   return { Ionicons: ({ name }: { name: string }) => <Text>icone-{name}</Text> };
@@ -469,5 +490,111 @@ describe('écriture', () => {
     await taper(screen.getByLabelText(/quickList\.addCount/));
 
     expect(entrees()[0]).toMatchObject({ quantityG: 13 });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Recours Prisme (US PRISME-01, spec §3, R8, R10)
+// ---------------------------------------------------------------------------
+
+describe('recours Prisme', () => {
+  const base = [
+    aliment({ id: 'f-1', name: 'Banane' }),
+    aliment({ id: 'f-riz', name: 'Riz blanc cuit', kcalPer100g: 130 }),
+    aliment({ id: 'f-sau', name: 'Saumon cru', kcalPer100g: 180 }),
+  ];
+
+  /** Le texte qui partirait chez Prisme. */
+  const envoye = () => screen.getByLabelText('prisme-recours').props.accessibilityHint as string;
+
+  beforeEach(() => {
+    mockPrismeItems = [];
+  });
+
+  it('🔴 seule la partie NON reconnue part (R10)', async () => {
+    await afficher({ foods: base });
+
+    await analyser('100 g de banane\npoke bowl maison');
+
+    expect(envoye()).toBe('poke bowl maison');
+  });
+
+  it('🔴 au-delà de 300 caractères, les lignes suivantes ne partent pas — et ne sont pas remplacées', async () => {
+    const longue = `plat ${'x'.repeat(290)}`;
+    await afficher({ foods: base });
+
+    await analyser(`${longue}\npoke bowl maison`);
+
+    expect(envoye()).toBe(longue);
+    mockPrismeItems = [{ name: 'Riz blanc cuit', grams: 150, confidence: 0.9 }];
+    await taper(screen.getByLabelText('prisme-recours'));
+    // La ligne restée chez soi est toujours là, non reconnue, et peut partir à son tour.
+    expect(envoye()).toBe('poke bowl maison');
+  });
+
+  it('tout reconnu : pas de recours', async () => {
+    await afficher({ foods: base });
+
+    await analyser('100 g de banane');
+
+    expect(screen.queryByLabelText('prisme-recours')).toBeNull();
+  });
+
+  it('🔴 les lignes de Prisme REMPLACENT la ligne non trouvée, rapprochées de la base, grammes du modèle', async () => {
+    mockPrismeItems = [
+      { name: 'Riz blanc cuit', grams: 150, confidence: 0.9 },
+      { name: 'Saumon cru', grams: 80, confidence: 0.9 },
+    ];
+    await afficher({ foods: base });
+
+    await analyser('100 g de banane\npoke bowl maison');
+    await taper(screen.getByLabelText('prisme-recours'));
+
+    expect(screen.queryByText('quickList.unmatched')).toBeNull();
+    expect(screen.getByText('Riz blanc cuit')).toBeTruthy();
+    expect(screen.getAllByLabelText('journal.grams').map((f) => f.props.value)).toEqual(['100', '150', '80']);
+    expect(screen.getByLabelText('quickList.addCount:{"count":3}')).toBeTruthy();
+    // Rien n'est parti au journal : seul « Ajouter » écrit (R8).
+    expect(mockAddEntry).not.toHaveBeenCalled();
+  });
+
+  it('🔴 la ligne la moins sûre est signalée « à vérifier »', async () => {
+    mockPrismeItems = [
+      { name: 'Riz blanc cuit', grams: 150, confidence: 0.5 },
+      { name: 'Saumon cru', grams: 80, confidence: 0.9 },
+    ];
+    await afficher({ foods: base });
+
+    await analyser('poke bowl maison');
+    await taper(screen.getByLabelText('prisme-recours'));
+
+    expect(screen.getAllByText('prisme.meal.check')).toHaveLength(1);
+  });
+
+  it('🔴 un aliment introuvable reste sans valeur, non compté, et ne repart pas chez Prisme', async () => {
+    mockPrismeItems = [
+      { name: 'Riz blanc cuit', grams: 150, confidence: 0.9 },
+      { name: 'Sauce mystère', grams: 20, confidence: 0.9 },
+    ];
+    await afficher({ foods: base });
+
+    await analyser('poke bowl maison');
+    await taper(screen.getByLabelText('prisme-recours'));
+
+    expect(screen.getByText('quickList.unmatched')).toBeTruthy();
+    expect(screen.getByText(/Sauce mystère/)).toBeTruthy();
+    expect(screen.getByLabelText('quickList.addCount:{"count":1}')).toBeTruthy();
+    expect(screen.queryByLabelText('prisme-recours')).toBeNull();
+  });
+
+  it('🔴 « Ajouter » écrit les lignes de Prisme, calculées par la BASE (R9)', async () => {
+    mockPrismeItems = [{ name: 'Riz blanc cuit', grams: 150, confidence: 0.9 }];
+    await afficher({ foods: base });
+
+    await analyser('poke bowl maison');
+    await taper(screen.getByLabelText('prisme-recours'));
+    await taper(screen.getByLabelText(/quickList\.addCount/));
+
+    expect(entrees()[0]).toMatchObject({ foodId: 'f-riz', quantityG: 150, kcal: 195 });
   });
 });

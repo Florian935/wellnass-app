@@ -29,15 +29,100 @@ import { z } from 'zod';
  * `coach` est le plus bas des trois alors que c'est le mode d'exploration : une analyse coûte dix
  * fois le contexte d'une reformulation, et le palier gratuit de Gemini plafonne autour de 1 500
  * appels/jour **pour tout le projet** — un seul testeur ne doit pas pouvoir l'épuiser.
+ *
+ * US PRISME-01 (DD9) — `narrate` (les bilans de Prisme) et `meal_text` (le repas décrit) : 6 par
+ * jour chacun pendant la bêta. Le palier gratuit est commun à toute la famille ; un bilan du soir,
+ * un de semaine et quelques relances suffisent.
  */
-export const AI_DAILY_QUOTA = { photo: 10, ask: 30, coach: 20 } as const;
+export const AI_DAILY_QUOTA = { photo: 10, ask: 30, coach: 20, narrate: 6, meal_text: 6 } as const;
 export type AiKind = keyof typeof AI_DAILY_QUOTA;
 
 /** Les fournisseurs câblés dans la fonction Edge. Miroir de `AI_PROVIDERS` (`providers.ts`). */
 export const AI_PROVIDER_LABELS: Record<string, string> = {
   gemini: 'Google Gemini',
   anthropic: 'Anthropic Claude',
+  groq: 'Groq',
+  mistral: 'Mistral AI',
 };
+
+// ───────────────────────────────────────────────────────────────────────────────────────────────
+// US PRISME-01 — le statut de Prisme, l'accord, le repas décrit
+// ───────────────────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Ce que le serveur dit de Prisme (`kind: 'status'`, gratuit, non décompté — spec DD6).
+ *
+ * 🔴 **`trains` est le littéral `false`.** Le serveur ne renvoie jamais disponible un fournisseur qui
+ * entraîne ses modèles sur nos requêtes (DD1) ; si un jour il le faisait, l'app refuserait ce statut
+ * plutôt que d'afficher un texte d'accord faux. Le nom, le pays et la conservation viennent d'ici et
+ * jamais d'un texte écrit en dur : on consent à un destinataire précis (R6).
+ */
+export const prismeStatusSchema = z.object({
+  available: z.boolean(),
+  /** Pourquoi Prisme n'est pas disponible : fournisseur non autorisé, âge, rien de configuré. */
+  reason: z.enum(['provider', 'age', 'unconfigured']).nullable(),
+  provider: z
+    .object({
+      id: z.string().min(1),
+      label: z.string().min(1),
+      /** Code pays ISO (« US », « FR ») : le texte d'accord dit où partent les données. */
+      country: z.string().length(2),
+      trains: z.literal(false),
+      /** Jours de conservation chez le fournisseur (journaux de sécurité). 0 = aucune. */
+      retentionDays: z.number().int().min(0),
+    })
+    .nullable(),
+  consent: z.object({ at: z.string().nullable(), provider: z.string().nullable() }),
+  remaining: z.object({ narrate: z.number().int().min(0), meal_text: z.number().int().min(0) }),
+});
+export type PrismeStatus = z.infer<typeof prismeStatusSchema>;
+
+/** L'accord Prisme tel que l'app le connaît (`user_settings.prisme_consent_*`). */
+export type PrismeConsent = { at: string | null; provider: string | null };
+
+/**
+ * Faut-il (re)demander l'accord avant un appel ?
+ *
+ * Oui sans accord, et oui si l'accord a été donné à **un autre** fournisseur que celui que le serveur
+ * emploie aujourd'hui (R6). Sans statut connu — l'app a démarré hors ligne —, l'accord local fait
+ * foi : le serveur tranchera au premier appel, et un refus `consent_required` rouvrira la feuille.
+ */
+export function needsPrismeConsent(consent: PrismeConsent, status: PrismeStatus | null): boolean {
+  if (consent.at === null) return true;
+  if (status === null) return false;
+  if (status.provider === null) return true;
+  return consent.provider !== status.provider.id;
+}
+
+/** Le texte envoyé par « Demander à Prisme » : la partie non reconnue de la phrase, pas plus. */
+export const MEAL_TEXT_MAX_CHARS = 300;
+
+/** Au-delà, la liste est coupée — le schéma de la photo borne au même nombre. */
+export const MEAL_ITEMS_MAX = 12;
+
+/**
+ * Lit la réponse d'un repas décrit (`meal_text`).
+ *
+ * 🔴 **Coupe la liste à {@link MEAL_ITEMS_MAX} avant de la valider.** `mealPhotoResultSchema` borne à
+ * 12 aliments : valider d'abord jetterait une réponse entière de 14 aliments, alors que les 12 premiers
+ * sont utilisables. `truncated` permet à l'écran de dire « vérifie qu'il ne manque rien ».
+ */
+export function parseMealTextResult(raw: string): { items: MealPhotoItem[]; truncated: boolean } | null {
+  const start = raw.indexOf('{');
+  const end = raw.lastIndexOf('}');
+  if (start < 0 || end <= start) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw.slice(start, end + 1));
+  } catch {
+    return null;
+  }
+  const items = (parsed as { items?: unknown } | null)?.items;
+  if (!Array.isArray(items)) return null;
+  const truncated = items.length > MEAL_ITEMS_MAX;
+  const result = mealPhotoResultSchema.safeParse({ items: items.slice(0, MEAL_ITEMS_MAX) });
+  return result.success ? { items: result.data.items, truncated } : null;
+}
 
 /** Sous ce seuil, l'aliment reconnu est signalé « à vérifier ». */
 export const AI_LOW_CONFIDENCE = 0.75;

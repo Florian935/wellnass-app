@@ -27,6 +27,7 @@ import {
   getCycleTrackingEnabled,
   getHealthConnectEnabled,
   getNotificationPrefs,
+  getPrismeConsent,
   getSleepImportSettings,
   getUnitSystem,
   togglePillar,
@@ -277,6 +278,43 @@ describe('pilier Bien-être', () => {
     await updateSettings({ wellbeingPillarEnabled: false });
 
     expect(await getSleepImportSettings()).toEqual({ pillar: false, sleep: true, nap: true });
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US PRISME-01 — l'accord à Prisme, distinct du Labo IA
+// ---------------------------------------------------------------------------
+
+describe('accord Prisme (PRISME-01)', () => {
+  const prisme = () => row() as unknown as Record<string, unknown>;
+
+  it('🔴 écrit les deux colonnes — absentes du schéma local, l’écriture échouerait en silence', async () => {
+    await updateSettings({ prismeConsentAt: '2026-10-03T19:00:00.000Z', prismeConsentProvider: 'groq' });
+
+    expect(prisme()['prisme_consent_at']).toBe('2026-10-03T19:00:00.000Z');
+    expect(prisme()['prisme_consent_provider']).toBe('groq');
+    expect(await getPrismeConsent()).toEqual({ at: '2026-10-03T19:00:00.000Z', provider: 'groq' });
+  });
+
+  it('🔴 aucun accord par défaut, même sans aucune ligne — l’absence ne vaut jamais accord', async () => {
+    expect(await getPrismeConsent()).toEqual({ at: null, provider: null });
+
+    await ensureSettings();
+    expect(await getPrismeConsent()).toEqual({ at: null, provider: null });
+  });
+
+  it('retirer l’accord efface l’instant ET le destinataire', async () => {
+    await updateSettings({ prismeConsentAt: '2026-10-03T19:00:00.000Z', prismeConsentProvider: 'groq' });
+
+    await updateSettings({ prismeConsentAt: null, prismeConsentProvider: null });
+
+    expect(await getPrismeConsent()).toEqual({ at: null, provider: null });
+  });
+
+  it('ne touche pas l’accord du Labo IA, et inversement', async () => {
+    await updateSettings({ aiConsentAt: '2026-09-15T10:00:00.000Z' });
+
+    expect(await getPrismeConsent()).toEqual({ at: null, provider: null });
   });
 });
 

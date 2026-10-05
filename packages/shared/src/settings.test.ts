@@ -91,6 +91,22 @@ describe('userSettingsRowSchema — defaults', () => {
     const row = userSettingsRowSchema.parse({ ...syncBase });
     expect(row.healthConnectEnabled).toBe(false);
   });
+
+  it('PRISME-01 : aucun accord Prisme par défaut — l’absence ne vaut jamais accord', () => {
+    const row = userSettingsRowSchema.parse({ ...syncBase });
+    expect(row.prismeConsentAt).toBeNull();
+    expect(row.prismeConsentProvider).toBeNull();
+  });
+
+  it('PRISME-01 : l’accord porte son instant ET son destinataire (R6)', () => {
+    const row = userSettingsRowSchema.parse({
+      ...syncBase,
+      prismeConsentAt: '2026-10-03T19:00:00.000Z',
+      prismeConsentProvider: 'groq',
+    });
+    expect(row.prismeConsentAt).toBe('2026-10-03T19:00:00.000Z');
+    expect(row.prismeConsentProvider).toBe('groq');
+  });
 });
 
 describe('userSettingsRowSchema — valeurs explicites', () => {

@@ -373,6 +373,17 @@ export function shouldShowLowMoodCard(
     const since = daysBetween(lastShownKey, todayKey);
     if (since >= 0 && since < LOW_MOOD_COOLDOWN_DAYS) return false;
   }
+  return isLowMoodOngoing(rows, todayKey);
+}
+
+/**
+ * US PRISME-01 (R12) — l'humeur basse **en cours** : le seuil de la carte, sans son délai ni sa
+ * fermeture.
+ *
+ * C'est la seule définition du seuil ; la carte l'appelle puis applique son délai. Prisme, lui, se
+ * tait tant que le seuil est atteint : la carte vue il y a trois jours ne dit pas que ça va mieux.
+ */
+export function isLowMoodOngoing(rows: ReadonlyArray<LocalWellbeing>, todayKey: string): boolean {
   const recent = livingRowsWithin(rows, LOW_MOOD_LOOKBACK_DAYS, todayKey)
     .filter((row) => isWellbeingLevel(row.mood))
     .slice(-LOW_MOOD_RECENT_ENTRIES);

@@ -57,6 +57,8 @@ export type SettingsInput = Pick<
   | 'cycleHealthConnectEnabled'
   | 'sbdLifts'
   | 'aiConsentAt'
+  | 'prismeConsentAt'
+  | 'prismeConsentProvider'
   | 'showEnergyEstimates'
   | 'streakUnit'
   | 'weeklyActivityGoal'
@@ -110,6 +112,9 @@ type SettingsDbRow = {
   sbd_lifts: string | null;
   /** Instant ISO du consentement à l'assistant IA (US DASH-01 §7), `null` = jamais consenti. */
   ai_consent_at: string | null;
+  /** US PRISME-01 — instant ISO de l'accord à Prisme, `null` = pas d'accord ; et son destinataire. */
+  prisme_consent_at: string | null;
+  prisme_consent_provider: string | null;
   /** US DEPENSE-02 — 0/1 ; `null` sur une ligne antérieure à la migration → lu « affiché ». */
   show_energy_estimates: number | null;
   /** US SERIE-01 — `null` = jamais choisi, ce qui n'est PAS la même chose qu'une valeur par défaut. */
@@ -198,6 +203,10 @@ function rowToSettings(row: SettingsDbRow): UserSettings {
     sbdLifts: sbdLiftsSchema.parse(parseJsonColumn<unknown>(row.sbd_lifts, null) ?? {}),
     // `?? null` et non un défaut permissif : l'absence de valeur ne vaut JAMAIS consentement.
     aiConsentAt: row.ai_consent_at ?? null,
+    // US PRISME-01 — même règle : une ligne antérieure à la migration (colonnes absentes) se lit
+    // « pas d'accord ».
+    prismeConsentAt: row.prisme_consent_at ?? null,
+    prismeConsentProvider: row.prisme_consent_provider ?? null,
     // US DEPENSE-02 — `!== 0` et non `=== 1` : sur une ligne locale antérieure à la migration la
     // colonne est `null`, ce qui doit se lire **affiché** (le défaut). L'inverse ferait disparaître
     // les dépenses de tous les comptes existants à la mise à jour, sans que personne l'ait demandé.
@@ -269,6 +278,12 @@ function inputToColumns(input: Partial<SettingsInput>): Record<string, unknown> 
   if ('aiConsentAt' in input) {
     columns['ai_consent_at'] = input.aiConsentAt ?? null;
   }
+  if ('prismeConsentAt' in input) {
+    columns['prisme_consent_at'] = input.prismeConsentAt ?? null;
+  }
+  if ('prismeConsentProvider' in input) {
+    columns['prisme_consent_provider'] = input.prismeConsentProvider ?? null;
+  }
   for (const key of WELLBEING_SETTING_KEYS) {
     if (key in input) columns[WELLBEING_SETTING_COLUMNS[key]] = input[key] ? 1 : 0;
   }
@@ -329,6 +344,15 @@ export async function getAnalyticsEnabled(): Promise<boolean> {
  */
 export async function getHealthConnectEnabled(): Promise<boolean> {
   return decodeHealthConnectEnabled(await getCurrentRow());
+}
+
+/**
+ * US PRISME-01 — l'accord à Prisme courant (hors contexte React), lu par `lib/ai/prisme.ts` avant un
+ * appel. `null`/`null` en l'absence de ligne ou de valeur : l'absence ne vaut jamais accord.
+ */
+export async function getPrismeConsent(): Promise<{ at: string | null; provider: string | null }> {
+  const row = await getCurrentRow();
+  return { at: row?.prisme_consent_at ?? null, provider: row?.prisme_consent_provider ?? null };
 }
 
 /**

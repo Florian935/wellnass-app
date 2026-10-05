@@ -13,11 +13,19 @@
  * parce que c'est elle qu'on évalue.
  */
 
+import { prismeStatusSchema, type PrismeStatus } from '@wellness/shared';
+
 import { supabase } from '@/lib/supabase';
 
 const FUNCTION_NAME = 'ai-assist';
 
-/** Les échecs que l'UI sait formuler. Tout le reste devient `failed`. */
+/**
+ * Les échecs que l'UI sait formuler. Tout le reste devient `failed`.
+ *
+ * US PRISME-01 — `not-allowed` (compte de moins de 18 ans, R13), `adult-required` (la feuille d'accord
+ * doit faire confirmer « 18 ans ou plus », DD15), `settings-missing` (accord demandé avant la première
+ * synchro des réglages).
+ */
 export type AiErrorCode =
   | 'consent-required'
   | 'quota-exceeded'
@@ -25,6 +33,9 @@ export type AiErrorCode =
   | 'unavailable'
   | 'refused'
   | 'misconfigured'
+  | 'not-allowed'
+  | 'adult-required'
+  | 'settings-missing'
   | 'failed';
 
 export type AiResult =
@@ -40,8 +51,16 @@ type PhotoRequest = {
 type AskRequest = { kind: 'ask'; prompt: string };
 /** IA-LAB-01 : le contexte agrégé (`buildAiContext`) et une question libre. */
 type CoachRequest = { kind: 'coach'; context: string; question: string };
+/** PRISME-01 : un bilan (dossier en liste blanche) et sa consigne (`buildBilanPrompt`). */
+type NarrateRequest = { kind: 'narrate'; context: string; question: string };
+/** PRISME-01 : la partie non reconnue d'une phrase de repas, et la langue de l'app. */
+type MealTextRequest = { kind: 'meal_text'; text: string; lang: 'fr' | 'en' };
 
-export type AiRequest = PhotoRequest | AskRequest | CoachRequest;
+export type AiRequest = PhotoRequest | AskRequest | CoachRequest | NarrateRequest | MealTextRequest;
+
+/** PRISME-01 — le statut, et l'accord (accordé par le serveur, DD3). */
+export type PrismeServiceRequest = { kind: 'status' } | { kind: 'consent'; grant: boolean; adult?: boolean };
+export type PrismeServiceResult = { ok: true; status: PrismeStatus } | { ok: false; code: AiErrorCode };
 
 type ServerPayload = {
   text?: string;
@@ -66,8 +85,45 @@ function codeFromServer(error: string | undefined, status: number | undefined): 
       return 'misconfigured';
     case 'refused':
       return 'refused';
+    case 'not_allowed':
+      return 'not-allowed';
+    case 'adult_required':
+      return 'adult-required';
+    case 'settings_missing':
+      return 'settings-missing';
     default:
       return status === 401 ? 'unavailable' : 'failed';
+  }
+}
+
+/** Lit l'erreur d'un `FunctionsHttpError`, ou conclut « hors ligne » s'il n'y a pas de réponse HTTP. */
+async function codeFromInvokeError(error: unknown): Promise<{ code: AiErrorCode; detail?: string }> {
+  const response = (error as { context?: Response }).context;
+  if (response && typeof response.json === 'function') {
+    try {
+      const payload = (await response.json()) as ServerPayload;
+      const code = codeFromServer(payload.error, response.status);
+      return payload.detail ? { code, detail: payload.detail } : { code };
+    } catch {
+      return { code: 'failed' };
+    }
+  }
+  return { code: 'offline' };
+}
+
+/**
+ * US PRISME-01 — le statut de Prisme, ou l'accord. La réponse est **validée** par le schéma partagé :
+ * un statut qui annoncerait un fournisseur qui entraîne ses modèles est refusé ici, plutôt que de
+ * nourrir un texte d'accord faux (spec R6).
+ */
+export async function callPrismeService(request: PrismeServiceRequest): Promise<PrismeServiceResult> {
+  try {
+    const { data, error } = await supabase.functions.invoke<unknown>(FUNCTION_NAME, { body: request });
+    if (error) return { ok: false, code: (await codeFromInvokeError(error)).code };
+    const parsed = prismeStatusSchema.safeParse(data);
+    return parsed.success ? { ok: true, status: parsed.data } : { ok: false, code: 'failed' };
+  } catch {
+    return { ok: false, code: 'offline' };
   }
 }
 
@@ -78,19 +134,10 @@ export async function callAiAssist(request: AiRequest): Promise<AiResult> {
     });
 
     if (error) {
-      // `FunctionsHttpError` porte la réponse ; les autres cas sont réseau ou relais.
-      const response = (error as { context?: Response }).context;
-      if (response && typeof response.json === 'function') {
-        try {
-          const payload = (await response.json()) as ServerPayload;
-          const code = codeFromServer(payload.error, response.status);
-          return payload.detail ? { ok: false, code, detail: payload.detail } : { ok: false, code };
-        } catch {
-          return { ok: false, code: 'failed' };
-        }
-      }
-      // Pas de réponse HTTP du tout : on est hors ligne, ou la fonction n'est pas déployée.
-      return { ok: false, code: 'offline' };
+      // `FunctionsHttpError` porte la réponse ; sans réponse HTTP du tout, on est hors ligne (ou la
+      // fonction n'est pas déployée).
+      const { code, detail } = await codeFromInvokeError(error);
+      return detail ? { ok: false, code, detail } : { ok: false, code };
     }
 
     if (!data?.text) return { ok: false, code: codeFromServer(data?.error, undefined) };

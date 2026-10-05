@@ -22,6 +22,7 @@ import { Button } from '@/components/Button';
 import { HealthConnectSection } from '@/components/HealthConnectSection';
 import { CycleTrackingSection } from '@/components/CycleTrackingSection';
 import { AiLabSection } from '@/components/AiLabSection';
+import { PrismeSettingsSection } from '@/components/prisme/PrismeSettingsSection';
 import { Segment } from '@/components/Segment';
 import { StreakUnitSection } from '@/components/settings/StreakUnitSection';
 import { WorkoutLevelPreview } from '@/components/workout/WorkoutLevelPreview';
@@ -940,6 +941,10 @@ export default function SettingsScreen() {
         enabled={settings?.cycleTrackingEnabled ?? false}
         healthConnectEnabled={settings?.cycleHealthConnectEnabled ?? false}
       />
+
+      {/* Prisme — l'accord à l'assistant IA (US PRISME-01). Juste avant le Labo IA : même geste
+          (autoriser une donnée à quitter l'appareil), mais un accord, un usage et un fournisseur à part. */}
+      <PrismeSettingsSection />
 
       {/* Labo IA — opt-in strict (US IA-LAB-01). Placé juste après les deux autres opt-in de
           santé, parce que c'est le même geste : autoriser une donnée à quitter l'appareil. */}

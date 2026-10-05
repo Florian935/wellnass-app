@@ -33,6 +33,7 @@ import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'r
 import { useTranslation } from 'react-i18next';
 import {
   addDays,
+  dayMoment,
   explainReadiness,
   localDayKey,
   type HomeWidgetId,
@@ -50,6 +51,7 @@ import { NowCard } from '@/components/dashboard/NowCard';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { MorningBrief } from '@/components/dashboard/MorningBrief';
 import { SinceLastVisitCard } from '@/components/dashboard/SinceLastVisitCard';
+import { EveningCard } from '@/components/dashboard/EveningCard';
 import { WeeklyStoryCard } from '@/components/dashboard/WeeklyStoryCard';
 import { GoalCard } from '@/components/goals/GoalCard';
 import { ExplainSheet } from '@/components/explain/ExplainSheet';
@@ -71,7 +73,7 @@ import { usePressingLink } from '@/data/repositories/cross-links-repository';
 import { InsightsProvider } from '@/data/repositories/insights-context';
 import { startRealLifePeriod, useRealLifeState } from '@/data/repositories/real-life-repository';
 import { useSyncRefresh } from '@/hooks/useSyncRefresh';
-import { useTodayDate } from '@/hooks/useTodayKey';
+import { useCurrentHour, useTodayDate } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -141,6 +143,8 @@ export default function HomeScreen() {
   const facts = useHomeScene();
   const rings = useWeekRings();
   const today = useTodayDate();
+  // US PRISME-01 — l'heure par `useCurrentHour`, jamais `new Date()` dans le corps (React Compiler).
+  const hour = useCurrentHour();
   const { active: activeGoals } = useGoals();
   const [savingCheckin, setSavingCheckin] = useState(false);
   // §6.1 — « Pourquoi ? » sur le verdict de forme : les étapes viennent de la brique, pas d'ici.
@@ -329,6 +333,10 @@ export default function HomeScreen() {
           speechLanguage={i18n.language === 'en' ? 'en-GB' : 'fr-FR'}
         />
       ) : null}
+
+      {/* US PRISME-01 — « Ta journée », dès 18 h : les faits du jour, et Prisme qui les raconte à la
+          demande. La carte se tait sur une journée sans séance ni repas. */}
+      {dayMoment(hour) === 'evening' ? <EveningCard /> : null}
 
       {/* §4.5 — ce qui a bougé depuis la dernière visite : la carte se tait si rien n'a bougé. */}
       <SinceLastVisitCard />

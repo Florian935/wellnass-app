@@ -5,15 +5,19 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   mealForHour,
+  AI_LOW_CONFIDENCE,
   DEFAULT_UNIT_GRAMS,
+  MEAL_TEXT_MAX_CHARS,
   bestMatchIndex,
   parseMealText,
   rankFoodMatches,
   scaleNutrition,
+  type MealPhotoItem,
   type ParsedUnit,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
+import { PrismeMealRecourse } from '@/components/prisme/PrismeMealRecourse';
 import { useFoods, type FoodListItem } from '@/data/repositories/food-repository';
 import { addFoodEntry } from '@/data/repositories/journal-repository';
 import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
@@ -60,6 +64,13 @@ type Row = {
    * d'ecrire son repas.
    */
   suggestions: FoodListItem[];
+  /**
+   * Ligne proposée par Prisme (US PRISME-01). Une ligne de Prisme non trouvée dans la base ne
+   * repart pas chez lui : on ne redemande pas au modèle ce qu'il vient de nommer.
+   */
+  fromPrisme?: boolean;
+  /** Prisme n'était pas sûr : la ligne est signalée « à vérifier » (R8). */
+  lowConfidence?: boolean;
 };
 
 export default function MealQuickEntryScreen() {
@@ -92,6 +103,19 @@ const meal = params.meal ?? mealForHour(hour);
 
   const [text, setText] = useState('');
   const [rows, setRows] = useState<Row[] | null>(null);
+  /** Change à chaque analyse : le recours Prisme repart de zéro (ses messages ne survivent pas). */
+  const [analysis, setAnalysis] = useState(0);
+
+  // Les propositions ne sont calculees que pour ce qui n'a pas ete reconnu : c'est la
+  // seule ligne ou elles servent, et le classement coute sur toute la base.
+  const suggestionsFor = (name: string): FoodListItem[] =>
+    rankFoodMatches(
+      foods.map((f) => ({ id: f.id, name: f.name, kind: 'food' as const })),
+      name,
+      { limit: 3 },
+    )
+      .map((m) => foods.find((f) => f.id === m.item.id))
+      .filter((f): f is FoodListItem => f != null);
 
   const analyze = () => {
     const items = parseMealText(text);
@@ -104,20 +128,57 @@ const meal = params.meal ?? mealForHour(hour);
         raw: item.raw,
         food,
         grams: grams ? String(grams) : '',
-        // Les propositions ne sont calculees que pour ce qui n'a pas ete reconnu : c'est la
-        // seule ligne ou elles servent, et le classement coute sur toute la base.
-        suggestions: food
-          ? []
-          : rankFoodMatches(
-              foods.map((f) => ({ id: f.id, name: f.name, kind: 'food' as const })),
-              item.foodName,
-              { limit: 3 },
-            )
-              .map((m) => foods.find((f) => f.id === m.item.id))
-              .filter((f): f is FoodListItem => f != null),
+        suggestions: food ? [] : suggestionsFor(item.foodName),
       };
     });
     setRows(next);
+    setAnalysis((n) => n + 1);
+  };
+
+  /**
+   * Ce qui part chez Prisme : les lignes tapées et non reconnues — rien d'autre (R10), et pas plus de
+   * 300 caractères. Une ligne qui ne tient plus reste dans la revue, et partira au tour suivant : seule
+   * une ligne envoyée peut être remplacée.
+   */
+  const toPrisme: Row[] = [];
+  let toPrismeLength = 0;
+  for (const r of rows ?? []) {
+    if (r.food || r.fromPrisme || r.raw.trim() === '') continue;
+    const added = r.raw.trim().length + (toPrisme.length > 0 ? 2 : 0);
+    if (toPrisme.length > 0 && toPrismeLength + added > MEAL_TEXT_MAX_CHARS) break;
+    toPrisme.push(r);
+    toPrismeLength += added;
+  }
+
+  /**
+   * Les aliments de Prisme REMPLACENT les lignes envoyées, à leur place, rapprochés de la base avec
+   * le même classement que la saisie locale (R8). Ses grammes sont repris, modifiables ; ses
+   * calories n'existent pas — la base calcule (R9). Rien n'est écrit : seul « Ajouter » écrit.
+   */
+  const applyPrisme = (sentKeys: string[], items: MealPhotoItem[]) => {
+    const stamp = Date.now();
+    const proposed: Row[] = items.map((item, idx) => {
+      const mi = bestMatchIndex(item.name, candidateNames);
+      const food = mi >= 0 ? foods[mi]! : null;
+      return {
+        key: `prisme-${stamp}-${idx}`,
+        raw: item.name,
+        food,
+        grams: food ? String(Math.max(1, Math.round(item.grams))) : '',
+        suggestions: food ? [] : suggestionsFor(item.name),
+        fromPrisme: true,
+        lowConfidence: item.confidence < AI_LOW_CONFIDENCE,
+      };
+    });
+    setRows((prev) => {
+      if (!prev) return prev;
+      // Une ligne réglée entre-temps (proposition choisie) n'est plus « envoyée » : on la garde.
+      const replaced = (r: Row) => sentKeys.includes(r.key) && !r.food;
+      const at = prev.findIndex(replaced);
+      if (at < 0) return [...prev, ...proposed];
+      const kept = prev.filter((r) => !replaced(r));
+      return [...kept.slice(0, at), ...proposed, ...kept.slice(at)];
+    });
   };
 
   const matchedCount = rows?.filter((r) => r.food).length ?? 0;
@@ -219,6 +280,9 @@ const meal = params.meal ?? mealForHour(hour);
                   <>
                     <View style={styles.rowMain}>
                       <Text style={[styles.rowName, { color: colors.text }]} numberOfLines={1}>{r.food.name}</Text>
+                      {r.lowConfidence ? (
+                        <Text style={[styles.unmatched, { color: colors.textMuted }]}>{t('prisme.meal.check')}</Text>
+                      ) : null}
                       <Text style={[styles.rowKcal, { color: colors.textMuted }]}>{kcalOf(r)} {t('nutrition.kcal')}</Text>
                     </View>
                     <View style={styles.gramField}>
@@ -279,6 +343,16 @@ const meal = params.meal ?? mealForHour(hour);
             ))}
           </View>
         )
+      ) : null}
+
+      {/* US PRISME-01 — le recours, sous la revue. Toujours monté pendant une revue : une fois les
+          lignes remplacées, il ne propose plus rien mais garde ce qu'il avait à dire. */}
+      {rows != null && rows.length > 0 ? (
+        <PrismeMealRecourse
+          key={analysis}
+          unmatchedText={toPrisme.map((r) => r.raw.trim()).join(', ')}
+          onItems={(items) => applyPrisme(toPrisme.map((r) => r.key), items)}
+        />
       ) : null}
 
       {rows != null && rows.length > 0 ? (

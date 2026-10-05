@@ -17,6 +17,7 @@ import {
   hasMorningCheckin,
   isAlcoholDrinks,
   isEmptyCheckin,
+  isLowMoodOngoing,
   isNapMinutes,
   isPoorNight,
   shouldShowLowMoodCard,
@@ -149,5 +150,34 @@ describe('shouldShowLowMoodCard — le garde-fou « humeur basse » (décision D
   it('ignore les humeurs de plus de 14 jours', () => {
     const old: LocalWellbeing[] = [20, 19, 18, 17, 16].map((n) => ({ logDate: day(n), mood: 1 }));
     expect(shouldShowLowMoodCard(old, TODAY, null)).toBe(false);
+  });
+});
+
+/**
+ * US PRISME-01 (R12) — l'humeur basse **en cours**, pour taire Prisme.
+ *
+ * La carte a un délai de 14 jours et se ferme : c'est voulu pour elle (jamais un rappel), mais
+ * Prisme ne doit pas reparler le lendemain d'un signal de détresse au motif que la carte a déjà été
+ * montrée. Même seuil, sans délai ni fermeture.
+ */
+describe('isLowMoodOngoing — l’humeur basse en cours (PRISME-01 R12)', () => {
+  const moods = (values: (number | null)[]): LocalWellbeing[] =>
+    values.map((mood, i) => ({ logDate: day(values.length - 1 - i), mood }));
+
+  it('même seuil que la carte : 5 des 7 dernières humeurs à 1 ou 2', () => {
+    expect(isLowMoodOngoing(moods([2, 1, 3, 2, 2, 4, 1]), TODAY)).toBe(true);
+    expect(isLowMoodOngoing(moods([2, 1, 3, 2, 4, 4, 1]), TODAY)).toBe(false);
+    expect(isLowMoodOngoing(moods([1, 1, 1, 1]), TODAY)).toBe(false);
+  });
+
+  it('reste vrai pendant le délai de la carte : l’avoir montrée ne fait pas disparaître la détresse', () => {
+    const rows = moods([2, 1, 2, 2, 2, 1, 1]);
+    expect(shouldShowLowMoodCard(rows, TODAY, day(3))).toBe(false);
+    expect(isLowMoodOngoing(rows, TODAY)).toBe(true);
+  });
+
+  it('ignore les humeurs de plus de 14 jours', () => {
+    const old: LocalWellbeing[] = [20, 19, 18, 17, 16].map((n) => ({ logDate: day(n), mood: 1 }));
+    expect(isLowMoodOngoing(old, TODAY)).toBe(false);
   });
 });

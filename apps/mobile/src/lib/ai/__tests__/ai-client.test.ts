@@ -4,7 +4,7 @@
  * l'assistant », « limite du jour atteinte », « la clé n'est pas la bonne » ou « tu es hors ligne »
  * — quatre messages qui n'appellent pas le même geste.
  */
-import { callAiAssist } from '../ai-client';
+import { callAiAssist, callPrismeService } from '../ai-client';
 import { supabase } from '@/lib/supabase';
 
 jest.mock('@/lib/supabase', () => ({
@@ -156,5 +156,85 @@ describe('le réseau', () => {
       ok: false,
       code: 'failed',
     });
+  });
+});
+
+// ───────────────────────────────────────────────────────────────────────────────────────────────
+// US PRISME-01 — Prisme : bilans, repas décrit, statut et accord
+// ───────────────────────────────────────────────────────────────────────────────────────────────
+
+const STATUS = {
+  available: true,
+  reason: null,
+  provider: { id: 'groq', label: 'Groq', country: 'US', trains: false, retentionDays: 30 },
+  consent: { at: null, provider: null },
+  remaining: { narrate: 6, meal_text: 6 },
+};
+
+describe('Prisme — les appels au modèle', () => {
+  it('un bilan raconté rend son texte, comme un appel du labo', async () => {
+    invoke.mockResolvedValue({ data: { text: 'Bonne séance.', used: 1, quota: 6, provider: 'groq', model: 'm' }, error: null });
+
+    await expect(callAiAssist({ kind: 'narrate', context: 'BILAN', question: 'Raconte.' })).resolves.toMatchObject({
+      ok: true,
+      text: 'Bonne séance.',
+      provider: 'groq',
+    });
+    expect(invoke).toHaveBeenCalledWith('ai-assist', {
+      body: { kind: 'narrate', context: 'BILAN', question: 'Raconte.' },
+    });
+  });
+
+  it('🔴 un compte de moins de 18 ans reçoit un code à lui (R13)', async () => {
+    invoke.mockResolvedValue({ data: null, error: httpError(403, { error: 'not_allowed', reason: 'age' }) });
+
+    await expect(callAiAssist({ kind: 'meal_text', text: 'poulet', lang: 'fr' })).resolves.toEqual({
+      ok: false,
+      code: 'not-allowed',
+    });
+  });
+});
+
+describe('callPrismeService — le statut et l’accord (DD3, DD6)', () => {
+  it('rend le statut validé', async () => {
+    invoke.mockResolvedValue({ data: STATUS, error: null });
+
+    await expect(callPrismeService({ kind: 'status' })).resolves.toEqual({ ok: true, status: STATUS });
+  });
+
+  it('🔴 refuse un statut qui annoncerait un fournisseur qui entraîne', async () => {
+    invoke.mockResolvedValue({ data: { ...STATUS, provider: { ...STATUS.provider, trains: true } }, error: null });
+
+    await expect(callPrismeService({ kind: 'status' })).resolves.toEqual({ ok: false, code: 'failed' });
+  });
+
+  it('accorder sans date de naissance ni confirmation : « 18 ans ou plus » est exigé (DD15)', async () => {
+    invoke.mockResolvedValue({ data: null, error: httpError(400, { error: 'adult_required' }) });
+
+    await expect(callPrismeService({ kind: 'consent', grant: true, adult: false })).resolves.toEqual({
+      ok: false,
+      code: 'adult-required',
+    });
+  });
+
+  it('accorder avant la première synchro des réglages : un code à lui', async () => {
+    invoke.mockResolvedValue({ data: null, error: httpError(409, { error: 'settings_missing' }) });
+
+    await expect(callPrismeService({ kind: 'consent', grant: true, adult: true })).resolves.toEqual({
+      ok: false,
+      code: 'settings-missing',
+    });
+  });
+
+  it('hors ligne : « hors ligne », comme le reste', async () => {
+    invoke.mockResolvedValue({ data: null, error: { name: 'FunctionsFetchError' } });
+
+    await expect(callPrismeService({ kind: 'status' })).resolves.toEqual({ ok: false, code: 'offline' });
+  });
+
+  it('une exception du relais devient « hors ligne »', async () => {
+    invoke.mockRejectedValue(new Error('boom'));
+
+    await expect(callPrismeService({ kind: 'status' })).resolves.toEqual({ ok: false, code: 'offline' });
   });
 });

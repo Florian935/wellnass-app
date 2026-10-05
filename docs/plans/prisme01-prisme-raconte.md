@@ -223,3 +223,24 @@ dernier quota (un seul passe) ; `meal_text` de 301 caractères (400) ; compte de
 1,5 à 2 semaines en un seul lot de recette, après le retrait de la photo, de l'accès testeurs et du
 second accord. Aucune dépendance native : recettable en dev client + Metro, sauf la migration et le
 déploiement de la fonction (gestes humains).
+
+## Écarts au code (03/10/2026)
+
+Ce que le code a fait autrement que ce plan, et pourquoi. Les règles de la spec sont tenues ; seuls les
+moyens changent.
+
+| Plan | Code | Pourquoi |
+|---|---|---|
+| Dossiers sur `NarrationDossier`, `buildNarrationPrompt` gagne `evening` / `week` | Type neuf `BilanDossier { headline, facts, decision, realLife }`, `bilanNumbers`, `buildBilanPrompt(dossier, lang, usage)` dans `ai-narration.ts` | Un bilan porte une décision et un indicateur de vie réelle que le dossier d'enquête n'a pas ; NARR-01 et CONS-01 restent intacts (Q1) |
+| `tellEvening`, `tellWeek` | Un seul `tellBilan(dossier, usage, lang)` | Même chemin ; `usage` choisit l'invite et la mesure (`surface`) |
+| Écarts `kcalGap`, `proteinGap` fournis par l'appelant | Calculés par `buildEveningDossier` lui-même, en faits nommés (`kcalLeft` / `kcalOver` / `kcalOnTarget`, `proteinMissing` / `proteinReached`) | Une seule règle, testée dans `shared` ; l'écran affiche le dossier, donc l'affiché = l'envoyé (R4, R5) |
+| Séries faites / prévues dans le dossier du soir | `setsDone` et `setsPlanned` existent mais valent `null` : la ligne ne part pas | `WorkoutHistoryItem` ne porte pas le compte des séries ; à brancher quand il le portera |
+| Objectifs de la semaine (`WeekGoal`) envoyés | `goals: []` | L'écran du bilan ne les affiche pas : n'envoyer que l'affiché (R4) prime |
+| `usePrismeCallable()` (réseau présent) | Pas de détection réseau : le hors-ligne se dit **au geste** (`offline`) | Aucune dépendance `netinfo` dans l'app ; la spec (§7) demande que les entrées restent hors ligne et disent « réseau requis » — c'est ce que fait l'échec au geste |
+| Verrou d'appel dans `prisme-store` | `useActionLock` dans `PrismeTell` et `PrismeMealRecourse` | Le verrou du dépôt pour le double appui ; le store ne garde que statut et textes |
+| Code client `truncated` | `finish_reason: length` → échec `failed` côté serveur | Un texte coupé n'atteint jamais le garde-fou ; rien de plus à dire à l'utilisateur qu'« inexploitable » |
+| `PrismeStatus.provider.retention: string` | `retentionDays: number` | La phrase de la feuille se compose avec le nombre (`retention` / `retentionNone`) |
+| `ai_reserve_quota(p_user, p_kind, p_quota)` | `+ p_day date` (et `ai_release_quota(p_user, p_kind, p_day)`) | Le même jour UTC sert à la réservation et à sa restitution, même si minuit tombe entre les deux |
+| `askMeal` rapproche les aliments de la base | `askMeal` rend les aliments ; **l'écran** les rapproche (`bestMatchIndex`, suggestions `rankFoodMatches`) | Le catalogue vit dans l'écran (`useFoods`) ; même classement que la saisie locale |
+| Recours : « le texte non reconnu » | Lignes non reconnues **entières**, jointes par « , », jusqu'à 300 caractères ; une ligne qui ne tient plus reste et partira au tour suivant ; une ligne rendue par Prisme et absente de la base ne repart pas | Seule une ligne envoyée peut être remplacée (R8, R10) |
+| Clés i18n `prisme.offline`, `prisme.dossier.plate`, `prisme.dossier.week` | `prisme.errors.offline` ; `prisme.dossier.plate.label`, `prisme.dossier.week.label` ; ajout de `prisme.meal.check` (« à vérifier ») et `prisme.meal.invalid` (« Prisme n'a pas pu lire ce repas ») | Une clé i18next ne peut pas être à la fois un texte et un parent |

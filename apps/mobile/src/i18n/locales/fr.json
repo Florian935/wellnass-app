@@ -6636,6 +6636,144 @@
       "accept": "J'active"
     }
   },
+  "prisme": {
+    "name": "Prisme",
+    "badge": "IA",
+    "tell": "Prisme raconte",
+    "retell": "Relire",
+    "reading": "Prisme lit tes chiffres…",
+    "verified": "Vérifié contre tes chiffres",
+    "rejected": "Prisme a écarté sa réponse : elle citait un chiffre absent de tes données.",
+    "invalid": "Prisme n’a pas su le raconter cette fois. Tes chiffres sont juste au-dessus.",
+    "stale": "Ta journée a bougé depuis ce texte.",
+    "sources": "D’où ça vient",
+    "devSimulate": "Simuler un chiffre inventé (développement)",
+    "evening": {
+      "title": "Ta journée"
+    },
+    "week": {
+      "title": "Prisme raconte ta semaine"
+    },
+    "meal": {
+      "offer": "Prisme peut décomposer ce que la saisie n’a pas reconnu.",
+      "ask": "Demander à Prisme",
+      "asking": "Prisme lit ton repas…",
+      "sends": "Ce qui part chez {{provider}} : « {{text}} ». Rien d’autre.",
+      "roles": "Prisme propose les aliments et les grammes ; l’app calcule.",
+      "none": "Prisme n’a reconnu aucun aliment.",
+      "truncated": "Prisme a gardé les 12 premiers aliments : vérifie qu’il ne manque rien.",
+      "check": "à vérifier",
+      "invalid": "Prisme n’a pas pu lire ce repas."
+    },
+    "consent": {
+      "title": "Prisme lit tes chiffres et les raconte",
+      "isAi": "Prisme est une IA. Il raconte ce que l’app a calculé, et chaque chiffre qu’il cite est vérifié.",
+      "sendsTitle": "Ce qui part",
+      "sends": "les totaux du jour et de la semaine (séances, sorties, repas), et le texte d’un repas que tu lui demandes de lire.",
+      "neverTitle": "Jamais",
+      "never": "ton nom, tes notes, le nom de tes séances, ta nuit, tes pas, ton humeur, ton cycle, tes douleurs.",
+      "whereTitle": "Où",
+      "where": "Ils partent chez {{provider}}, {{country}}.",
+      "trainingNo": "Il ne s’en sert pas pour entraîner ses modèles.",
+      "retention": "Il peut garder tes demandes jusqu’à {{days}} jours pour la sécurité, puis les efface.",
+      "retentionNone": "Il ne garde pas tes demandes.",
+      "local": "Chez nous, seul un compteur est gardé.",
+      "revoke": "Tu peux retirer ton accord à tout moment dans Réglages › Prisme.",
+      "adult": "J’ai 18 ans ou plus",
+      "activate": "Activer Prisme",
+      "later": "Pas maintenant"
+    },
+    "country": {
+      "US": "aux États-Unis",
+      "FR": "en France",
+      "other": "pays : {{code}}"
+    },
+    "settings": {
+      "title": "Prisme",
+      "intro": "L’assistant IA de l’app : il raconte tes bilans et t’aide à saisir tes repas. Rien ne part sans ton accord.",
+      "toggle": "Activer Prisme",
+      "grantedOn": "Accord donné le {{date}} à {{provider}} ({{country}}).",
+      "providerTitle": "Fournisseur",
+      "provider": "{{provider}}, {{country}}. Il ne s’en sert pas pour entraîner ses modèles.",
+      "sendsTitle": "Ce qui part",
+      "sends": "Les totaux du jour et de la semaine (séances, sorties, repas), et le texte d’un repas que tu demandes à Prisme de lire. Jamais ton nom, tes notes, ta nuit, tes pas, ton humeur, ton cycle ni tes douleurs.",
+      "unavailable": "Prisme n’est pas disponible pour l’instant.",
+      "unknown": "Il faut le réseau pour vérifier si Prisme est disponible.",
+      "adultOnly": "Prisme est réservé aux 18 ans et plus.",
+      "refresh": "Vérifier à nouveau"
+    },
+    "errors": {
+      "offline": "Prisme a besoin du réseau. Tes chiffres, eux, sont là.",
+      "quota-exceeded": "Tu as utilisé les demandes du jour. Retour demain matin.",
+      "unavailable": "Prisme n’est pas disponible pour l’instant.",
+      "consent-required": "Active Prisme pour continuer.",
+      "refused": "Prisme n’a pas voulu répondre à ça.",
+      "misconfigured": "Prisme est mal configuré côté serveur.",
+      "not-allowed": "Prisme est réservé aux 18 ans et plus.",
+      "adult-required": "Confirme que tu as 18 ans ou plus.",
+      "settings-missing": "Tes réglages ne sont pas encore synchronisés. Réessaie dans un instant.",
+      "failed": "Prisme n’a pas pu répondre. Réessaie plus tard."
+    },
+    "dossier": {
+      "evening": {
+        "headline": "Ta journée du {{day}}"
+      },
+      "week": {
+        "label": "Semaine en cours",
+        "headline": "Ta semaine {{period}}",
+        "workouts_one": "{{count}} séance",
+        "workouts_other": "{{count}} séances",
+        "runs_one": "{{count}} sortie",
+        "runs_other": "{{count}} sorties",
+        "loggedDays": "{{days}} jours journalisés",
+        "daysInTarget": "{{days}} dans la cible",
+        "activeDays": "Régularité",
+        "activeDaysValue": "{{days}} jours actifs sur {{of}}",
+        "goalBehind": "Un objectif a pris du retard : {{progressPct}} % de progression pour {{elapsedPct}} % du temps écoulé. Cette semaine, replace-le en priorité.",
+        "records": "Records",
+        "recordsValue_one": "{{count}} record battu",
+        "recordsValue_other": "{{count}} records battus",
+        "goal": "Objectif",
+        "goalValue": "{{type}} : {{pct}} %",
+        "realLife": "Vie réelle",
+        "realLifeValue": "{{days}} jours en mode vie réelle"
+      },
+      "session": {
+        "strength": "Séance de musculation",
+        "run": "Sortie de course",
+        "other": "Autre activité"
+      },
+      "minutes": "{{minutes}} min",
+      "tonnage": "{{kg, number}} kg soulevés",
+      "sets": "{{done}} séries sur {{planned}}",
+      "setsDone": "{{done}} séries",
+      "records_one": "{{count}} record battu",
+      "records_other": "{{count}} records battus",
+      "distance": "{{km, number}} km",
+      "pace": "allure {{pace}} par km",
+      "at": "à {{time}}",
+      "plate": {
+        "label": "Assiette",
+        "kcalOfTarget": "{{kcal, number}} kcal sur {{target, number}}",
+        "kcal": "{{kcal, number}} kcal",
+        "kcalLeft": "il reste {{kcal, number}} kcal",
+        "kcalOver": "cible dépassée de {{kcal, number}} kcal",
+        "kcalOnTarget": "cible atteinte",
+        "proteinOfTarget": "protéines {{g}} g sur {{target}} g",
+        "protein": "protéines {{g}} g",
+        "proteinMissing": "il manque {{g}} g de protéines",
+        "proteinReached": "cible de protéines atteinte",
+        "carbs": "glucides {{g}} g",
+        "meals_one": "{{count}} repas saisi",
+        "meals_other": "{{count}} repas saisis"
+      },
+      "weekProgress": "{{done}} activités sur {{goal}}",
+      "tomorrow": "Demain",
+      "changeUp": "en hausse de {{pct}} %",
+      "changeDown": "en baisse de {{pct}} %",
+      "changeFlat": "stable"
+    }
+  },
   "runningHub": {
     "pace": {
       "title": {

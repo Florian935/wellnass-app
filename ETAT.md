@@ -1,4 +1,4 @@
-# État du projet — 03/10/2026
+# État du projet — 05/10/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 266 livré · 4 partiel · 4 à faire (sur 280)
+**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 268 livré · 4 partiel · 2 à faire (sur 280)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -95,6 +95,7 @@ avant de pouvoir publier.
 | **OBJ-01** — Objectifs personnels à échéance | `recette` | `feature/obj01-objectifs` | [7.15] |
 | **PARTAGE-01** — Carte de séance / course partageable | `recette` | `feature/partage01-carte-partageable` | [7.17] |
 | **PARTAGE-02** — La carte de partage transparente — à coller sur sa propre photo | `recette` | `dev` | [7.35] |
+| **PRISME-01** — Prisme raconte — le bilan du soir et de la semaine rédigés, et Prisme en recours de la saisie en phrase | `recette` | `feature/prisme01-prisme-raconte` | [7.42, 4.48] |
 | **REPAS-01** — Planning repas à la semaine, liste de courses générée et partage | `recette` | `feature/repas01-planning-repas-liste-courses` | [4.27, 4.28, 4.29] |
 | **RESERV-01** — Le Réservoir — la jauge de glucides de la journée | `recette` | `dev` | [4.45] |
 | **RN-03** — Ajustement auto du TDEE selon le volume de course | `recette` | `feature/rn03-tdee-ajuste-course` | — |
@@ -113,13 +114,12 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
-| **PRISME-01** — Prisme raconte — le bilan du soir et de la semaine rédigés, et Prisme en recours de la saisie en phrase | `code` | `feature/prisme01-prisme-raconte` | [7.42, 4.48] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **97 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BIEN-02, BIEN-03, BIEN-04, BIEN-05, BIEN-06, BIEN-07, BILAN-01, CARDIO-UX01, CARDIO-UX02, CARDIO-UX03, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, ECHO-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LABO-02, LABO-03, LABO-04, LAUNCHER-01, LETTRE-01, LIENS-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX07, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, NUTRI-UX03, OBJ-01, PARTAGE-01, PARTAGE-02, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **98 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BIEN-02, BIEN-03, BIEN-04, BIEN-05, BIEN-06, BIEN-07, BILAN-01, CARDIO-UX01, CARDIO-UX02, CARDIO-UX03, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, ECHO-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LABO-02, LABO-03, LABO-04, LAUNCHER-01, LETTRE-01, LIENS-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX07, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, NUTRI-UX03, OBJ-01, PARTAGE-01, PARTAGE-02, PRISME-01, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -142,9 +142,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/prisme01-prisme-raconte` (modifications non commitées) |
-| Commits | 1350 · `main` a **1347** commits de retard sur `dev` |
+| Commits | 1351 · `main` a **1348** commits de retard sur `dev` |
 | Specs d'US | 188 au total — 89 clôturées, 99 en cours |
-| Migrations | 113/113 poussées sur le cloud |
+| Migrations | 114/114 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
@@ -153,11 +153,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `6fde130`  docs(prisme): PRISME-01 cadrée et validée — Prisme, l'assistant IA du Labo
 - `b1bbdbd`  feat(bien-etre): le pilier Bien-être — pilier activable, check-in matin et soir, la boucle, Ce qui compte, la nuit lue, les modules
 - `441287c`  feat(labo): le Labo, carrefour des piliers — registre des liens, Croiser, fiche, échos, Apprendre
 - `dd388cc`  fix(cardio): CARDIO-UX03, « Choisir un programme » tient sur une ligne
 - `1cf7ef2`  feat(nutrition): NUTRI-UX03, le hub Nutrition en trois onglets — Aujourd'hui, Historique, Progrès
-- `fbf078d`  feat(cardio): CARDIO-UX03, le hub Course en trois onglets — Courir, Historique, Progrès
 
 ---
 

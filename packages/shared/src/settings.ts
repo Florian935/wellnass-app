@@ -208,6 +208,22 @@ export const userSettingsRowSchema = syncFieldsSchema.extend({
   aiConsentAt: z.string().nullable().default(null),
 
   /**
+   * US PRISME-01 (DD3) — l'accord à **Prisme**, distinct de celui du Labo IA ci-dessus.
+   *
+   * Le Labo IA a été accordé sur un texte « données factices, le fournisseur gratuit peut s'en servir
+   * pour s'entraîner » : le réutiliser pour de vraies données serait un consentement donné à autre
+   * chose. Ici l'accord porte son **instant** (RGPD : prouver *quand*) et son **destinataire**
+   * (`prismeConsentProvider`, l'identifiant du fournisseur) : si le serveur change de fournisseur,
+   * l'accord est redemandé (R6).
+   *
+   * 🔴 **Accordé par un appel serveur**, pas par une écriture locale : la remontée PowerSync est
+   * différée, et le premier « Prisme raconte » juste après « Activer » prendrait un refus. Le
+   * **retrait**, lui, s'écrit en local et marche hors ligne.
+   */
+  prismeConsentAt: z.string().nullable().default(null),
+  prismeConsentProvider: z.string().nullable().default(null),
+
+  /**
    * US DEPENSE-02 — afficher les **calories dépensées** (bilan de séance, résumé de course,
    * historique des activités).
    *

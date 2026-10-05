@@ -23,6 +23,15 @@
 /** Au-delà, ce n'est plus un résumé. */
 export const NARRATION_MAX_CHARS = 400;
 
+/**
+ * US PRISME-01 — un bilan du soir ou de la semaine raconte plus de faits qu'un dossier d'enquête :
+ * trois ou quatre phrases, d'où un plafond un peu plus haut. Au-delà, ce n'est plus un bilan.
+ */
+export const BILAN_MAX_CHARS = 500;
+
+/** Langue du texte à vérifier : elle décide du sens de la virgule (PRISME-01 R3). */
+export type NarrationLang = 'fr' | 'en';
+
 /** En deçà, la réponse est tronquée ou vide. */
 export const NARRATION_MIN_CHARS = 20;
 
@@ -77,12 +86,19 @@ export type NarrationVerdict =
  * Les nombres écrits en toutes lettres (« trois semaines ») ne sont pas vus — et c'est assumé :
  * vérifier des mots demanderait un lexique par langue pour un risque quasi nul (personne n'invente
  * une statistique en toutes lettres).
+ *
+ * 🔴 **En anglais, la virgule sépare les milliers** (PRISME-01 R3) : `Intl.NumberFormat('en')`
+ * écrit « 12,480 kg ». Lu comme une décimale, un « 12,900 » inventé donnerait 12,9 — à 0,42 de 12,48,
+ * sous la tolérance d'arrondi, donc accepté. Seule une virgule suivie d'**exactement trois** chiffres
+ * est un séparateur ; « 12,48 » reste une décimale. Le français est la langue par défaut : rien ne
+ * change pour les appelants existants.
  */
-export function extractNumbers(text: string): number[] {
+export function extractNumbers(text: string, lang: NarrationLang = 'fr'): number[] {
   // Espaces fines/insécables employées comme séparateur de milliers → rien, pour recoller 12 480.
-  const normalised = text
+  let normalised = text
     .replace(/(\d)[   ](?=\d{3}\b)/g, '$1')
     .replace(/(\d)\s(?=\d{3}\b)/g, '$1');
+  if (lang === 'en') normalised = normalised.replace(/(\d),(?=\d{3}(?!\d))/g, '$1');
 
   const found: number[] = [];
   for (const match of normalised.matchAll(/\d+(?:[.,]\d+)?/g)) {
@@ -142,14 +158,19 @@ function isAllowed(value: number, allowed: readonly number[]): boolean {
  * et ré-interroger le modèle masquerait la fréquence du défaut, qui est justement ce qu'on veut
  * pouvoir constater (spec D3).
  */
-export function checkNarration(text: string, allowed: readonly number[]): NarrationVerdict {
+export function checkNarration(
+  text: string,
+  allowed: readonly number[],
+  options: { lang?: NarrationLang; maxChars?: number } = {},
+): NarrationVerdict {
+  const maxChars = options.maxChars ?? NARRATION_MAX_CHARS;
   const trimmed = text.trim();
-  if (trimmed.length < NARRATION_MIN_CHARS || trimmed.length > NARRATION_MAX_CHARS) {
+  if (trimmed.length < NARRATION_MIN_CHARS || trimmed.length > maxChars) {
     return { ok: false, reason: 'invalid' };
   }
 
   const expanded = expandAllowedNumbers(allowed);
-  for (const value of extractNumbers(trimmed)) {
+  for (const value of extractNumbers(trimmed, options.lang)) {
     if (!isAllowed(value, expanded)) return { ok: false, reason: 'unknownNumber', offending: value };
   }
 
@@ -235,4 +256,97 @@ export function buildNarrationPrompt(
       ].join(' ');
 
   return { context: lines.join('\n'), question };
+}
+
+// ───────────────────────────────────────────────────────────────────────────────────────────────
+// US PRISME-01 — les bilans racontés par Prisme (soir, semaine)
+// ───────────────────────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Un bilan, réduit à ce qui part vers le modèle. Même grammaire que le dossier d'enquête (des faits
+ * traduits et leurs valeurs), mais sans suspects ni pistes écartées : un bilan constate, il
+ * n'enquête pas. Construit par `prisme-dossiers.ts`, jamais à la main dans un écran.
+ */
+export type BilanDossier = {
+  /** « Ta journée du vendredi 2 octobre », « Ta semaine du 21 au 27 septembre ». */
+  headline: string;
+  /** Les faits **affichés** à l'écran, déjà traduits, avec leurs valeurs. */
+  facts: readonly NarrationFact[];
+  /** La décision du moteur, déjà traduite (bilan hebdo). `null` le soir. */
+  decision: string | null;
+  /** Période « vie réelle » (VIE-01) : la consigne interdit tout reproche (R12). */
+  realLife: boolean;
+};
+
+/**
+ * La liste de référence du garde-fou pour un bilan : tout ce que le modèle a sous les yeux, texte
+ * compris — même règle que `dossierNumbers` (« 6 h 05 » donne 6 et 5).
+ */
+export function bilanNumbers(dossier: BilanDossier, lang: NarrationLang = 'fr'): number[] {
+  // Le dossier est écrit dans la langue de l'app : il se relit avec les mêmes règles que le texte du
+  // modèle. Relu à la française, un « 12,480 kg » anglais autorisait 12,48 — donc un « 12 » inventé (R3).
+  const fromText = [
+    dossier.headline,
+    ...dossier.facts.map((fact) => `${fact.label} ${fact.detail}`),
+    dossier.decision ?? '',
+  ].flatMap((line) => extractNumbers(line, lang));
+
+  return [...fromText, ...dossier.facts.flatMap((fact) => [...fact.values])];
+}
+
+/**
+ * L'invite d'un bilan, FR et EN. Contrat technique avec le modèle, versionné avec le garde-fou : la
+ * consigne demande ce que le garde-fou vérifie (n'employer que ces chiffres), et ce qu'il ne peut
+ * pas vérifier (ne rien calculer, ne rien recommander d'autre, ne rien reprocher).
+ */
+export function buildBilanPrompt(
+  dossier: BilanDossier,
+  lang: NarrationLang,
+  usage: 'evening' | 'week',
+): { context: string; question: string } {
+  const fr = lang === 'fr';
+
+  const lines: string[] = [];
+  lines.push(fr ? `BILAN : ${dossier.headline}` : `SUMMARY: ${dossier.headline}`);
+  lines.push('');
+  lines.push(fr ? 'FAITS :' : 'FACTS:');
+  for (const fact of dossier.facts) lines.push(`- ${fact.label} : ${fact.detail}`);
+  if (dossier.decision !== null) {
+    lines.push('');
+    lines.push(fr ? `DÉCISION DU BILAN : ${dossier.decision}` : `ENGINE DECISION: ${dossier.decision}`);
+  }
+
+  const sentences = fr
+    ? [
+        usage === 'evening'
+          ? 'Raconte cette journée en trois ou quatre phrases, à la personne concernée, en la tutoyant.'
+          : 'Raconte cette semaine en trois ou quatre phrases, à la personne concernée, en la tutoyant.',
+        "N'emploie QUE les chiffres ci-dessus, tels quels. Ne calcule aucun écart, aucun total, aucun pourcentage.",
+        'Commence par ce qui a été fait. Pas de diagnostic, pas de culpabilisation, pas d’injonction.',
+      ]
+    : [
+        usage === 'evening'
+          ? 'Tell this day in three or four sentences, to the person concerned.'
+          : 'Tell this week in three or four sentences, to the person concerned.',
+        'Use ONLY the numbers above, as they are. Do not compute any difference, total or percentage.',
+        'Start with what was done. No diagnosis, no guilt, no orders.',
+      ];
+
+  if (dossier.decision !== null) {
+    sentences.push(
+      fr
+        ? 'Tu peux citer la décision du bilan ; ne fais aucune autre recommandation.'
+        : 'You may quote the engine decision; make no other recommendation.',
+    );
+  }
+  if (dossier.realLife) {
+    sentences.push(
+      fr
+        ? 'La personne traverse une période « vie réelle » (vacances, maladie, déplacement) : aucun reproche, aucune comparaison.'
+        : 'The person is in a “real life” period (holiday, illness, travel): no reproach, no comparison.',
+    );
+  }
+  sentences.push(fr ? `${BILAN_MAX_CHARS - 50} caractères au maximum.` : `${BILAN_MAX_CHARS - 50} characters maximum.`);
+
+  return { context: lines.join('\n'), question: sentences.join(' ') };
 }

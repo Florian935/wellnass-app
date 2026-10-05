@@ -1,11 +1,15 @@
 import { describe, it, expect } from 'vitest';
 import {
+  BILAN_MAX_CHARS,
+  bilanNumbers,
+  buildBilanPrompt,
   buildNarrationPrompt,
   checkNarration,
   dossierNumbers,
   expandAllowedNumbers,
   extractNumbers,
   NARRATION_MAX_CHARS,
+  type BilanDossier,
   type NarrationDossier,
 } from './ai-narration';
 
@@ -183,5 +187,143 @@ describe('buildNarrationPrompt', () => {
     expect(context).not.toContain('ÉCARTÉES');
     expect(context).not.toContain('NON JUGEABLES');
     expect(context).not.toContain('EXPÉRIENCE');
+  });
+});
+
+// ───────────────────────────────────────────────────────────────────────────────────────────────
+// US PRISME-01 — le garde-fou en anglais, la longueur par usage, et les bilans de Prisme
+// ───────────────────────────────────────────────────────────────────────────────────────────────
+
+describe('extractNumbers — en anglais, la virgule des milliers (PRISME-01 R3)', () => {
+  it('🔴 lit « 12,480 » comme douze mille quatre cent quatre-vingts', () => {
+    // Sans ça, un « 12,900 kg » inventé devient 12,9 : à 0,42 de 12,48, sous la tolérance d'arrondi,
+    // donc accepté. La faille n'existe qu'en anglais, où la virgule sépare les milliers.
+    expect(extractNumbers('12,480 kg', 'en')).toEqual([12480]);
+    expect(extractNumbers('1,234,567 steps', 'en')).toEqual([1234567]);
+  });
+
+  it('garde la décimale à point, et une virgule suivie de deux chiffres reste décimale', () => {
+    expect(extractNumbers('82.5 kg then 12,48', 'en')).toEqual([82.5, 12.48]);
+  });
+
+  it('ne change rien en français, langue par défaut', () => {
+    expect(extractNumbers('12,480 kg')).toEqual([12.48]);
+    expect(extractNumbers('12,480 kg', 'fr')).toEqual([12.48]);
+  });
+});
+
+describe('checkNarration — langue et longueur par usage', () => {
+  it('🔴 en anglais, refuse « 12,900 kg » quand le dossier porte 12 480', () => {
+    const allowed = [12480, 4];
+    expect(checkNarration('You lifted 12,480 kg over 4 sessions this week.', allowed, { lang: 'en' }).ok).toBe(true);
+    expect(checkNarration('You lifted 12,900 kg over 4 sessions this week.', allowed, { lang: 'en' })).toEqual({
+      ok: false,
+      reason: 'unknownNumber',
+      offending: 12900,
+    });
+  });
+
+  it('un bilan a droit à plus de place qu’un résumé de dossier', () => {
+    const text = 'Une journée calme et régulière, sans rien à signaler de particulier. '.repeat(7);
+    expect(text.length).toBeGreaterThan(NARRATION_MAX_CHARS);
+    expect(text.length).toBeLessThanOrEqual(BILAN_MAX_CHARS);
+    expect(checkNarration(text, []).ok).toBe(false);
+    expect(checkNarration(text, [], { maxChars: BILAN_MAX_CHARS }).ok).toBe(true);
+  });
+});
+
+const EVENING: BilanDossier = {
+  headline: 'Ta journée du vendredi 2 octobre',
+  facts: [
+    { label: 'Séance de musculation', detail: '52 min, 8420 kg, 18 séries sur 18', values: [52, 8420, 18, 18] },
+    {
+      label: 'Assiette',
+      detail: '2140 kcal sur 2450, protéines 118 g sur 150 g, il manque 32 g',
+      values: [2140, 2450, 118, 150, 32],
+    },
+  ],
+  decision: null,
+  realLife: false,
+};
+
+const WEEK: BilanDossier = {
+  headline: 'Ta semaine du 21 au 27 septembre',
+  facts: [{ label: 'Course', detail: '2 sorties, 31,5 km (+12 %)', values: [2, 31.5, 12] }],
+  decision: 'Point fort : ta régularité, 5 jours actifs sur 7.',
+  realLife: false,
+};
+
+describe('bilanNumbers — tout ce que le modèle a sous les yeux, et rien d’autre', () => {
+  it('lit le titre, le texte des faits, leurs valeurs et la décision', () => {
+    const allowed = bilanNumbers(WEEK);
+    expect(allowed).toEqual(expect.arrayContaining([21, 27, 2, 31.5, 12, 5, 7]));
+  });
+
+  it('🔴 en anglais, le dossier se relit en anglais : « 12,480 kg » n’autorise pas 12 (R3)', () => {
+    const english: BilanDossier = {
+      headline: 'Your day on Friday',
+      facts: [{ label: 'Strength session', detail: '12,480 kg lifted', values: [12480] }],
+      decision: null,
+      realLife: false,
+    };
+    // Relu à la française, « 12,480 » ajoutait 12,48 — donc 12 — aux nombres permis : un « 12 kg de
+    // plus » inventé passait.
+    expect(bilanNumbers(english, 'en')).not.toContain(12.48);
+    expect(checkNarration('You lifted 12 kg more than last time.', bilanNumbers(english, 'en'), { lang: 'en' }).ok).toBe(
+      false,
+    );
+    expect(checkNarration('You lifted 12,480 kg.', bilanNumbers(english, 'en'), { lang: 'en' }).ok).toBe(true);
+  });
+
+  it('🔴 une différence absente du dossier est refusée, même juste (spec R5)', () => {
+    const withoutGap: BilanDossier = {
+      ...EVENING,
+      facts: [{ label: 'Assiette', detail: 'protéines 118 g sur 150 g', values: [118, 150] }],
+    };
+    // 150 − 118 = 32 : juste, mais calculé par le modèle. Le garde-fou ne sait pas vérifier un
+    // calcul ; il ne laisse passer que ce que le moteur a fourni.
+    const verdict = checkNarration('Il te manque 32 g de protéines ce soir.', bilanNumbers(withoutGap));
+    expect(verdict).toEqual({ ok: false, reason: 'unknownNumber', offending: 32 });
+    expect(checkNarration('Il te manque 32 g de protéines ce soir.', bilanNumbers(EVENING)).ok).toBe(true);
+  });
+});
+
+describe('buildBilanPrompt — les bilans de Prisme', () => {
+  it('met le titre et chaque fait dans le contexte', () => {
+    const { context } = buildBilanPrompt(EVENING, 'fr', 'evening');
+    expect(context).toContain('Ta journée du vendredi 2 octobre');
+    expect(context).toContain('Séance de musculation');
+    expect(context).toContain('il manque 32 g');
+  });
+
+  it('🔴 interdit d’inventer un chiffre et d’en calculer un', () => {
+    const { question } = buildBilanPrompt(EVENING, 'fr', 'evening');
+    expect(question).toContain('QUE les chiffres');
+    expect(question).toContain('Ne calcule aucun');
+  });
+
+  it('la semaine porte la décision du moteur, et le modèle n’en propose pas d’autre (R16)', () => {
+    const { context, question } = buildBilanPrompt(WEEK, 'fr', 'week');
+    expect(context).toContain('DÉCISION DU BILAN : Point fort');
+    expect(question).toContain('aucune autre recommandation');
+  });
+
+  it('une période « vie réelle » se raconte sans reproche (R12)', () => {
+    expect(buildBilanPrompt({ ...EVENING, realLife: true }, 'fr', 'evening').question).toContain('aucun reproche');
+    expect(buildBilanPrompt(EVENING, 'fr', 'evening').question).not.toContain('vie réelle');
+  });
+
+  it('bascule en anglais', () => {
+    const { context, question } = buildBilanPrompt(WEEK, 'en', 'week');
+    expect(context).toContain('ENGINE DECISION:');
+    expect(question).toContain('ONLY the numbers');
+    expect(question).toContain('Do not compute');
+  });
+
+  it('le soir en anglais, période « vie réelle » comprise', () => {
+    const { context, question } = buildBilanPrompt({ ...EVENING, realLife: true }, 'en', 'evening');
+    expect(context).toContain('SUMMARY:');
+    expect(question).toContain('Tell this day');
+    expect(question).toContain('no reproach');
   });
 });

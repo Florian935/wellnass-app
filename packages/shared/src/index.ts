@@ -199,6 +199,8 @@ export * from './ai-assist';
 export * from './ai-context';
 // US NARR-01 — narration vérifiée d'un dossier d'enquête.
 export * from './ai-narration';
+// US PRISME-01 — les dossiers du soir et de la semaine que Prisme raconte (liste blanche).
+export * from './prisme-dossiers';
 // US CARDIO-UX03 — le hub Course en trois onglets : onglet, dernière fois, historique, objectif.
 export * from './run-hub-section';
 export * from './run-last-time';

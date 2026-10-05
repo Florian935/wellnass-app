@@ -10,6 +10,100 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 05/10/2026 — PRISME-01 : Prisme raconte — le soir, la semaine, et le recours de la saisie en phrase (`feature/prisme01-prisme-raconte` → `dev`)
+
+> Code de l'US validée le 03/10/2026 (roadmap **7.42** et **4.48**, ⬜ → ✅). Prisme, l'assistant IA,
+> raconte à la demande la carte « Ta journée » (accueil, dès 18 h) et le bilan hebdo à partir d'un
+> dossier calculé par le moteur, et décompose ce que la saisie rapide n'a pas reconnu. **Le moteur
+> calcule, Prisme raconte** : tout nombre absent du dossier fait jeter le texte. Migration poussée le
+> 05/10/2026 (autorisée par Florian) ; fonction déployée par Florian avec **Mistral** (opt-out
+> d'entraînement fait), la console Groq refusant de créer une clé. En recette : RECETTES **§91**.
+> Commit précédent : `6fde130e`.
+
+### Ajouté
+- **Contrats partagés** (`packages/shared`) : `prismeStatusSchema` / `PrismeStatus` (fournisseur, pays,
+  `trains: false` littéral, `retentionDays`, accord, restes du jour), `needsPrismeConsent` (accord absent
+  **ou** donné à un autre fournisseur, R6), quotas `narrate: 6` et `meal_text: 6`, `parseMealTextResult`
+  (liste coupée à 12 **avant** validation), réglages `prismeConsentAt` / `prismeConsentProvider`.
+- **Dossiers en liste blanche** `prisme-dossiers.ts` : `buildEveningDossier` (séances terminées du jour par
+  **type**, assiette avec **écarts calculés par le moteur** — `kcalLeft` / `kcalOver` / `kcalOnTarget`,
+  `proteinMissing` / `proteinReached` —, semaine, demain, vie réelle), `eveningFingerprint`,
+  `buildWeekDossier` (piliers actifs seulement, décision telle qu'affichée). Test-garde des clés (R4).
+- **Garde-fou** (`ai-narration.ts`) : `extractNumbers(text, lang)` lit « 12,480 » comme 12 480 en anglais
+  (R3) ; `checkNarration` avec `maxChars` (500 pour un bilan) ; `BilanDossier`, `bilanNumbers`,
+  `buildBilanPrompt` (« que ces chiffres », aucun écart calculé, aucune autre décision, aucun reproche).
+- `isLowMoodOngoing` (`wellbeing.ts`) : le seuil de la carte « humeur basse » sans son délai ni sa
+  fermeture ; `shouldShowLowMoodCard` l'appelle (une seule définition, R12).
+- **Migration** `20261003075655_prisme_consent_quota` : `user_settings.prisme_consent_at` /
+  `prisme_consent_provider` ; `ai_reserve_quota` / `ai_release_quota` (`service_role` seulement) —
+  réservation en une instruction.
+- **Fonction `ai-assist`** : types `status` et `consent` (avant tout contrôle de fournisseur), `narrate`,
+  `meal_text` ; `PRISME_PROVIDER` et sa liste d'autorisés (Groq, Anthropic, Mistral seulement avec
+  `MISTRAL_TRAINING_OPTOUT=verified`, **jamais Gemini**) ; adaptateur compatible OpenAI (Groq, Mistral)
+  sans dépendance ; contrôle d'âge (18 ans) ; quota réservé avant l'appel et rendu en cas d'échec.
+- **App** : `lib/ai/prisme.ts` (`refreshPrismeStatus`, `tellBilan`, `askMeal`, `grantPrismeConsent` par
+  le serveur, `revokePrismeConsent` en local), `stores/prisme-store.ts`, `usePrismeVisibility`,
+  `useEveningFacts` + `lib/ai/evening-facts.ts` ; composants `PrismeMark`, `PrismeTell`,
+  `PrismeConsentSheet`, `PrismeWeek`, `PrismeSettingsSection`, `PrismeMealRecourse` ; carte
+  `EveningCard` sur l'accueil (le soir) ; bloc sous les chiffres du bilan hebdo ; section Réglages ›
+  Prisme ; recours « Demander à Prisme » dans `meal-quick-entry` (seules les lignes non reconnues
+  partent, 300 caractères, montrées avant l'envoi ; les aliments rendus **remplacent** la ligne, la moins
+  sûre est marquée « à vérifier », rien n'est écrit avant « Ajouter »).
+- i18n : bloc `prisme` FR + EN ; analytics `prisme_told`, `prisme_rejected`, `prisme_meal_asked` avec les
+  propriétés `provider` et `surface`.
+- Docs : RECETTES §91 (prérequis, 10 appels serveur, 20 critères + 5 de détail, grille de ton, plan B Mistral), écarts
+  au code en fin de plan, registre `MIGRATIONS.md`, `database.types.ts` régénéré.
+
+### Modifié
+- `ai-assist` : la réservation atomique protège aussi le **Labo IA** (`coach`), qui garde `AI_PROVIDER`
+  et son propre accord.
+- Spec PRISME-01 : `etape: recette`. Roadmap 7.42 et 4.48 → ✅ ; ligne « Hors cadrage » recomptée
+  (68 → 76 : elle n'avait suivi ni le pilier Bien-être ni PRISME-01).
+
+### Corrigé
+- **Relecture avant commit (agent de revue), 0 bloquant ; corrigés quand même, test d'abord :**
+  - 🔴 **R4** — la décision « objectif en retard » nomme l'objectif, et ce nom peut être celui d'un
+    **exercice perso** (texte saisi) : il partait chez le fournisseur via la décision du bilan. Prisme
+    reçoit désormais la même décision, mêmes chiffres, **sans le nom** (`prisme.dossier.week.goalBehind`) ;
+    l'écran ne change pas ;
+  - **R3 à moitié appliqué** : `bilanNumbers` relisait le dossier à la française même en anglais —
+    « 12,480 kg » autorisait 12,48, donc un « 12 » inventé. `bilanNumbers(dossier, lang)` ;
+  - « 5 jours **sur 7** » était jeté : l'écran affiche « 5 / 7 », mais 7 n'était dans aucun fait. Le
+    fait de régularité porte désormais « sur 7 » ;
+  - refus `consent_required` du serveur (accord retiré sur un autre appareil, pas encore synchronisé) :
+    la feuille d'accord **se rouvre** au lieu d'un refus à chaque appui (spec §7) ;
+  - un compte de moins de 18 ans qui a un accord stocké peut le **retirer** (l'interrupteur était masqué) ;
+  - clé React en double sur la carte du soir pour deux séances identiques.
+- **Double appui** sur « Prisme raconte » et « Demander à Prisme » : deux appuis du même cycle lançaient
+  deux appels, donc deux décomptes (critère 15). Trouvé par un test ; verrou `useActionLock`.
+- Adaptateur compatible OpenAI, pour Mistral : erreurs à plat lues (une clé refusée remontait « erreur
+  sans détail lisible ») sans jamais garder un message non textuel (une 422 recopie l'entrée) ;
+  `finish_reason: model_length` traité comme une coupure.
+
+### Technique / Notes
+- Écarts au plan, tous consignés dans le plan : pas de détection réseau (le hors-ligne se dit au
+  geste) ; séries faites / prévues non envoyées (`WorkoutHistoryItem` ne les porte pas) ; objectifs non
+  envoyés avec la semaine (l'écran ne les affiche pas) ; un seul `tellBilan`.
+- La fonction Edge n'a pas de runner Deno : typecheck par un shim ; la vérification réelle est la suite
+  d'appels de la section A de RECETTES §91.
+- Qualité : `npm run lint` et `npm run typecheck` à 0, `agents:check` valide, `npm run test` vert
+  (3 748 Vitest shared, 5 006 Jest mobile, 587 admin).
+- 🔴 Prisme ne doit pas entrer dans un build Play avant ACCES-IA et la mise à jour de la politique de
+  confidentialité (spec §11).
+- ⚠️ **Points de la relecture laissés en l'état** (non bloquants, à reprendre si la recette les montre) :
+  - le quota est **rendu** sur tout échec, y compris ceux qui consomment des jetons (réponse coupée,
+    vide, refusée) — même règle que le Labo ; et aucun délai par appel : si l'Edge tue un appel pendu, la
+    réservation n'est pas rendue ;
+  - le statut n'est demandé **qu'une fois par session** : s'il échoue au démarrage, il ne se réessaie que
+    par Réglages › « Vérifier à nouveau » (un compte sans accord local ne voit alors pas Prisme) ;
+  - date de naissance connue en local mais pas encore au serveur : `adult_required` sans case à cocher,
+    jusqu'à la synchro du profil ;
+  - la RLS laisse l'app écrire `prisme_consent_*` directement : seule la case déclarative « 18 ans » est
+    contournable, le contrôle d'âge du serveur reste à chaque appel ;
+  - dossiers et carte du soir toujours en **kg / km**, même en unités impériales ;
+  - une ligne non reconnue de plus de 300 caractères part coupée et est remplacée entière.
+- Travail fait dans le worktree `C:\wellness-app-prisme01`, retiré après fusion.
+
 ## 03/10/2026 — PRISME-01 : Prisme, l'assistant IA — analyse, cadrage relu et validé (`feature/prisme01-prisme-raconte`)
 
 > Demande de Florian (02/10/2026) : « les concurrents ont de l'IA ; on s'y met, avec des IA à usage

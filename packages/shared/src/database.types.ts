@@ -2923,6 +2923,8 @@ export type Database = {
           language: string
           notifications: Json
           pain_journal_enabled: boolean
+          prisme_consent_at: string | null
+          prisme_consent_provider: string | null
           sbd_lifts: Json | null
           session_conflicts_enabled: boolean
           show_energy_estimates: boolean
@@ -2956,6 +2958,8 @@ export type Database = {
           language?: string
           notifications?: Json
           pain_journal_enabled?: boolean
+          prisme_consent_at?: string | null
+          prisme_consent_provider?: string | null
           sbd_lifts?: Json | null
           session_conflicts_enabled?: boolean
           show_energy_estimates?: boolean
@@ -2989,6 +2993,8 @@ export type Database = {
           language?: string
           notifications?: Json
           pain_journal_enabled?: boolean
+          prisme_consent_at?: string | null
+          prisme_consent_provider?: string | null
           sbd_lifts?: Json | null
           session_conflicts_enabled?: boolean
           show_energy_estimates?: boolean
@@ -3389,6 +3395,14 @@ export type Database = {
       }
     }
     Functions: {
+      ai_release_quota: {
+        Args: { p_day: string; p_kind: string; p_user: string }
+        Returns: undefined
+      }
+      ai_reserve_quota: {
+        Args: { p_day: string; p_kind: string; p_quota: number; p_user: string }
+        Returns: number
+      }
       ban_user: {
         Args: { reason: string; target_user_id: string }
         Returns: undefined

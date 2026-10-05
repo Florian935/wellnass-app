@@ -11,8 +11,8 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **01/10/2026** — **88 sections** (§90 « le pilier Bien-être » ajoutée : six US,
-> une recette ; le 30/09/2026 : §89 « le Labo, carrefour des piliers », cinq US ; le 26/09/2026 : §88 NUTRI-UX03 et §87 CARDIO-UX03 ; §86 MUSCU-UX07 le
+> Dernière mise à jour : **03/10/2026** — **89 sections** (§91 PRISME-01 « Prisme raconte » ajoutée : migration
+> poussée, secret Groq et déploiement de la fonction à faire avant ; le 01/10/2026 : §90 « le pilier Bien-être », six US, une recette ; le 30/09/2026 : §89 « le Labo, carrefour des piliers », cinq US ; le 26/09/2026 : §88 NUTRI-UX03 et §87 CARDIO-UX03 ; §86 MUSCU-UX07 le
 > 25/09/2026 ; le 23/09/2026 : §84 MUSCU-FIX02 et §85 MUSCU-UX06 recettées et clôturées, sections
 > purgées).
 >
@@ -5806,3 +5806,163 @@ la sieste lue dans Health Connect ; fréquence cardiaque au repos et VFC ; « ce
 pas » et la passerelle vers l'enquête du Labo ; l'historique figé du lien Bien-être ; une version courte
 **écrite** d'une séance de muscu (aujourd'hui un conseil) ; aucun croisement ne lit encore la sieste ni
 les fringales.
+
+---
+
+## 91. PRISME-01 — Prisme raconte (`feature/prisme01-prisme-raconte` → `dev`)
+
+Spec : [prisme01-prisme-raconte.md](docs/specs/functional/us/prisme01-prisme-raconte.md) (critères §14) ·
+plan [docs/plans/prisme01-prisme-raconte.md](docs/plans/prisme01-prisme-raconte.md) (écarts au code en
+fin de plan) · maquette [design/prisme01-prisme-raconte/](design/prisme01-prisme-raconte/)
+(https://claude.ai/artifact/7CV99wcvuB1wFxvYKS9FDb) · roadmap **7.42** et **4.48**
+
+Prisme, l'assistant IA de l'app, sur trois surfaces : la carte « Ta journée » de l'accueil dès 18 h, le
+bilan hebdo, et le recours « Demander à Prisme » de la saisie rapide d'un repas. **Le moteur calcule,
+Prisme raconte** : chaque nombre d'un texte doit venir du dossier envoyé, sinon le texte est jeté.
+
+> ✅ **Prérequis 1 — la migration** `20261003075655_prisme_consent_quota` (deux colonnes de `user_settings`,
+> `ai_reserve_quota`, `ai_release_quota`) : **poussée le 05/10/2026**, types régénérés, cochée au
+> [registre](supabase/MIGRATIONS.md).
+>
+> 🔴 **Prérequis 2 — le fournisseur.** Compte Groq gratuit (https://console.groq.com, clé d'API), puis,
+> **par toi seul** (la clé ne passe pas par moi) :
+> `npx supabase secrets set PRISME_PROVIDER=groq GROQ_API_KEY=<ta clé>` — facultatif :
+> `GROQ_MODEL` (défaut `openai/gpt-oss-120b`).
+> **Plan B — Mistral** (le 05/10/2026, la console Groq refusait de créer une clé) : offre gratuite
+> « Experiment » sur https://console.mistral.ai ; 🔴 **avant toute clé**, Admin › **Privacy** › couper
+> « Anonymous improvement data » (sinon les appels servent à l'entraînement) ; puis
+> `npx supabase secrets set PRISME_PROVIDER=mistral MISTRAL_API_KEY=<ta clé> MISTRAL_TRAINING_OPTOUT=verified`.
+> La feuille d'accord dira alors « Mistral AI, en France ». Partout où cette section dit « Groq », lire
+> « Mistral AI ».
+>
+> 🔴 **Prérequis 3 — la fonction** : `npx supabase functions deploy ai-assist --use-api` (la migration
+> dont elle dépend est poussée). Elle porte aussi le Labo IA : le critère 19 vérifie qu'il n'a pas bougé.
+>
+> ✅ **Aucune sync rule** : `user_settings` est en `select *`. ⚠️ Vérifier dans le dashboard PowerSync que
+> `prisme_consent_at` et `prisme_consent_provider` **remontent** (un retrait d'accord fait hors ligne doit
+> arriver au serveur).
+>
+> ✅ **Aucune dépendance native** : dev client + Metro suffit. Le critère 8 demande un **build de
+> développement** (l'option « simuler un chiffre inventé » n'existe pas en production).
+>
+> 🔵 **Données** : une séance terminée et deux repas saisis aujourd'hui (critères 4 à 6) ; une semaine close
+> non vide (critère 7) ; un objectif de semaine (SERIE-01) pour voir le bloc « Semaine en cours ».
+> ⚠️ **Le quota est de 6 récits et 6 repas par jour** (jour UTC) : les critères 12, 15 et 16 en consomment.
+> Passer 12 et 15 un autre jour que 5 à 7 si besoin.
+
+### A — Le serveur, à la main (avant le téléphone)
+
+Dans Git Bash. Une fois : l'URL du projet, la clé anon, et un jeton de **ton compte de test** (copier
+`access_token` de la réponse).
+
+```bash
+export URL="https://<ref>.supabase.co" ANON="<clé anon>"
+curl -s "$URL/auth/v1/token?grant_type=password" -H "apikey: $ANON" -H "Content-Type: application/json" \
+  -d '{"email":"<compte de test>","password":"<mot de passe>"}'
+export JWT="<access_token>"
+ai() { curl -s -w '  → HTTP %{http_code}\n' "$URL/functions/v1/ai-assist" -H "Authorization: Bearer $JWT" \
+  -H "apikey: $ANON" -H "Content-Type: application/json" -d "$1"; }
+```
+
+- [ ] S1. **Avant** `PRISME_PROVIDER` : `ai '{"kind":"status"}'` → 200, `"available":false`,
+      `"reason":"unconfigured"` (pas un 503 : l'app doit pouvoir l'apprendre).
+- [ ] S2. `PRISME_PROVIDER=gemini` (redéployer) : `status` → `"reason":"provider"`. Même chose avec
+      `PRISME_PROVIDER=mistral` sans `MISTRAL_TRAINING_OPTOUT=verified`. Remettre `groq`.
+- [ ] S3. `status` avec Groq : `"available":true`, `"provider":{"id":"groq","label":"Groq","country":"US",
+      "trains":false,"retentionDays":30}`, `"remaining":{"narrate":6,"meal_text":6}`.
+- [ ] S4. Sans accord : `ai '{"kind":"narrate","context":"Séance : 52 min","question":"Raconte."}'` → 403
+      `consent_required`.
+- [ ] S5. `ai '{"kind":"consent","grant":true,"adult":true}'` → 200 et le statut, `"consent":{"at":"…",
+      "provider":"groq"}`. Puis le `narrate` de S4 → 200 avec `"text"`. `status` : `narrate` à 5.
+- [ ] S6. **Accord donné à un autre fournisseur** : dans le SQL editor,
+      `update user_settings set prisme_consent_provider = 'mistral' where user_id = '<id>';` puis `narrate`
+      → 403 `consent_required`. Refaire S5 pour remettre l'accord.
+- [ ] S7. `ai "{\"kind\":\"meal_text\",\"lang\":\"fr\",\"text\":\"$(printf 'a%.0s' {1..301})\"}"` → 400
+      `bad_request` (301 caractères). `ai '{"kind":"meal_text","lang":"fr","text":"poke bowl saumon avocat"}'`
+      → 200, `"text"` est un JSON `{"items":[{"name":…,"grams":…,"confidence":…}]}` **sans calories**, noms
+      en français.
+- [ ] S8. **Deux appels simultanés au dernier quota** : appeler `narrate` jusqu'à `"remaining":{"narrate":1…`
+      (voir `status`), puis `ai '<narrate>' & ai '<narrate>' & wait` → **un** 200 et **un** 429
+      `quota_exceeded`. `status` : `narrate` à 0.
+- [ ] S9. **Moins de 18 ans** : `profiles.birth_date` à une date de moins de 18 ans → `status` :
+      `"reason":"age"` ; `consent` → 403 `not_allowed`. Date de naissance **vide** et `"adult":false` →
+      400 `adult_required`. Remettre la vraie date.
+- [ ] S10. 🔴 Les journaux de la fonction (dashboard › Edge Functions › Logs) ne contiennent **aucun texte**
+      de réponse du modèle ni de repas (R11).
+
+### B — L'accord et les Réglages
+
+- [ ] 1. **Sans accord** : accueil, bilan hebdo, saisie rapide **identiques** à avant, sauf les entrées
+      de Prisme, qui ouvrent la feuille d'accord.
+- [ ] 2. La feuille dit « IA » en premier, nomme **Groq** et « aux États-Unis », dit qu'il n'entraîne pas
+      et garde jusqu'à 30 jours ; **date de naissance absente** → « J'ai 18 ans ou plus » est exigée
+      (« Activer » refusé sans la case).
+- [ ] 3. « Activer », puis « Prisme raconte » **tout de suite** : pas de refus du serveur.
+- [ ] 14. Compte de **moins de 18 ans** : rien de Prisme nulle part ; Réglages › Prisme dit « réservé aux
+      18 ans et plus », sans interrupteur.
+- [ ] 18. Changer `PRISME_PROVIDER` (Groq → Mistral avec `MISTRAL_TRAINING_OPTOUT=verified`, ou →
+      `anthropic`) et redéployer : au geste suivant, la feuille d'accord revient, au nom du nouveau
+      fournisseur ; Réglages montre l'interrupteur **éteint**.
+- [ ] B1. Réglages › Prisme : « Accord donné le … à Groq (aux États-Unis) » ; l'éteindre **en mode avion**
+      retire l'accord tout de suite (les entrées repartent à la feuille) ; au retour du réseau, le serveur
+      le voit (S4 redonne 403).
+
+### C — Le soir (accueil, dès 18 h)
+
+- [ ] 4. Après 18 h, une séance terminée et deux repas : la carte « Ta journée » montre ses faits
+      (séance : durée, tonnage ou distance et allure ; assiette : kcal et protéines contre les cibles, ce
+      qui reste ou dépasse ; semaine ; demain). Avant 18 h : pas de carte.
+- [ ] 5. « Prisme raconte » rend **trois ou quatre phrases** ; chaque nombre du texte est visible dans les
+      faits au-dessus ; « D'où ça vient » liste les blocs envoyés, **sans** nuit, pas, humeur ni nom de
+      séance.
+- [ ] 6. Saisir un repas après lecture, revenir : « Ta journée a bougé depuis ce texte », « Relire » relance.
+- [ ] 8. **Refus du garde-fou** (build de développement) : Réglages › Prisme › « Simuler un chiffre
+      inventé », puis « Prisme raconte » → « Prisme a écarté sa réponse… » ; les faits restent.
+- [ ] 12. **Mode vie réelle** actif : sur **trois tirages**, aucun texte ne contient « devrais », « dois »,
+      « il faut », « oublié », « rattraper », « manqué », « dommage » (en anglais : “should”, “must”,
+      “have to”, “forgot”, “catch up”, “missed”, “shame”). La grille n'est pas un test automatique : on lit.
+- [ ] 13. Humeur basse en cours (5 humeurs à 1-2 sur les 7 dernières notées) : la carte garde ses faits,
+      **sans** bouton — même après avoir fermé la carte « Ça ne va pas fort » du hub Bien-être.
+- [ ] 15. Deux appuis rapides sur « Prisme raconte » : **un seul** appel (`status` : un seul décompte).
+
+### D — La semaine (bilan hebdo)
+
+- [ ] 7. Le bloc « Prisme raconte ta semaine » est **sous** les chiffres ; le texte raconte la semaine et
+      cite la décision de la semaine **sans en proposer une autre**. Semaine vide : pas de bloc.
+- [ ] D1. Seuls les piliers **actifs** apparaissent dans « D'où ça vient » ; aucun objectif personnel ne part
+      (l'écran du bilan ne les affiche pas — voir les écarts du plan).
+- [ ] D2. 🔴 Décision « objectif en retard » sur un objectif nommé d'après un **exercice perso** : l'écran
+      garde le nom, le texte de Prisme parle d'« un objectif » **sans** le nom (R4). Un texte qui dit
+      « 5 jours sur 7 » passe le garde-fou.
+
+### E — Le repas (saisie rapide)
+
+- [ ] 10. « un yaourt nature et un poke bowl saumon avocat » : le yaourt est reconnu localement ; sous la
+      revue, Prisme montre **« Ce qui part chez Groq : « poke bowl saumon avocat ». Rien d'autre. »**
+      **avant** l'envoi ; « Demander à Prisme » → les lignes rendues **remplacent** la ligne non trouvée,
+      avec leurs grammes, modifiables ; la moins sûre porte « à vérifier » ; rien n'est écrit avant
+      « Ajouter ».
+- [ ] 11. Un aliment rendu par Prisme mais **absent de la base** reste « non reconnu », sans valeur, non
+      compté dans « Ajouter N », et **ne repart pas** chez Prisme.
+- [ ] E1. Une phrase de plus de 12 aliments : « Prisme a gardé les 12 premiers aliments… ». Un texte sans
+      aliment (« bonjour ») : « Prisme n'a reconnu aucun aliment » ; la revue ne bouge pas.
+- [ ] E2. Tout reconnu localement : **pas** de « Demander à Prisme ».
+
+### F — Absences et transverse
+
+- [ ] 16. **Mode avion** : les entrées restent ; le geste dit « Prisme a besoin du réseau. Tes chiffres, eux,
+      sont là. » **Quota épuisé** : « Tu as utilisé les demandes du jour. Retour demain matin. » ; faits intacts.
+- [ ] 17. `PRISME_PROVIDER=gemini` (ou Mistral sans opt-out) : rien de Prisme dans l'app ; Réglages ›
+      Prisme dit « pas disponible pour l'instant ».
+- [ ] 19. **Labo IA** inchangé : `AI_PROVIDER`, son propre accord, son quota ; il répond comme avant.
+- [ ] 9. **Anglais** : un texte avec « 12,480 kg » passe quand le dossier porte 12 480 ; « 12,900 kg » est
+      rejeté (couvert par les tests du garde-fou ; à l'écran, vérifier qu'un tonnage à 4 chiffres en anglais
+      n'est **pas** rejeté à tort).
+- [ ] 20. FR et EN : textes dans la langue de l'app, « Prisme » non traduit ; **TalkBack** lit le texte dès son
+      apparition et annonce l'occupation ; à **1,5× de police**, rien n'est coupé ; thème sombre lisible.
+
+⚠️ **Ce qui n'a pas été fait** (détail dans les écarts du plan) : le nombre de **séries faites / prévues**
+ne part pas (l'historique des séances ne le porte pas) ; les **objectifs** ne partent pas avec la semaine ;
+aucune détection réseau avant le geste (le hors-ligne se dit au geste) ; la conversation du Labo, la photo
+(PRISME-02), l'accès testeurs (**ACCES-IA, requis avant tout build Play contenant Prisme**, spec §11),
+NARR-01/CONS-01 dans la voix de Prisme (PRISME-01b).
