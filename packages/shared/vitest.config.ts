@@ -15,6 +15,9 @@ export default defineConfig({
         // 100 % exigés — un seuil qu'on ne pouvait donc pas tenir, et que personne ne voyait
         // échouer puisque la CI ne lançait jamais la couverture.
         'src/database.types.ts',
+        // Outillage de test (US NORYN-01 : fausse base, instantanés) — jamais importé par le code de
+        // production. Le mesurer reviendrait à tester les tests.
+        'src/**/*.testkit.ts',
       ],
       // **Objectif de [bonnes-pratiques §4](../../docs/specs/technical/bonnes-pratiques.md) atteint
       // sur trois axes sur quatre**, le 04/08/2026 : instructions, fonctions et lignes sont à

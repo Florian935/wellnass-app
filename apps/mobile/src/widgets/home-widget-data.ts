@@ -29,6 +29,7 @@ import {
   effectiveNutritionObjective,
   goalSchema,
   isGoalReached,
+  isPillarArray,
   isRealLifeDay,
   localDayKey,
   localMidnightDaysAgo,
@@ -36,7 +37,6 @@ import {
   nutritionObjectiveSchema,
   objectiveFromGoal,
   parseJsonColumn,
-  PILLARS,
   realLifeDayKeys,
   resolveActivePillars,
   sexSchema,
@@ -47,9 +47,6 @@ import {
 } from '@wellness/shared';
 
 const STREAK_WINDOW_DAYS = 30;
-
-const isPillarArray = (value: unknown): value is Pillar[] =>
-  Array.isArray(value) && value.every((p) => (PILLARS as readonly string[]).includes(p as string));
 
 export type TodaySessionSummary =
   | { kind: 'session'; pillar: 'strength' | 'running'; name: string }

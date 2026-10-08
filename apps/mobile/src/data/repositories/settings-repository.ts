@@ -23,6 +23,7 @@ import type { NotificationPrefs, Pillar, UnitSystem, UserSettingsRow } from '@we
 import {
   PILLARS,
   defaultNotificationPrefs,
+  isPillarArray,
   parseJsonColumn,
   parseIntensityScale,
   parseNotificationPrefs,
@@ -132,14 +133,8 @@ const SELECT_CURRENT =
 // Mapping snake_case ↔ camelCase
 // ---------------------------------------------------------------------------
 
-/**
- * Valide que la colonne `active_pillars` décodée est bien un tableau de piliers connus.
- * Sans ce garde-fou, une ligne corrompue (JSON trop profondément encodé) pouvait laisser
- * une **chaîne** typée `Pillar[]` → `activePillars.map` plantait le rendu du summary
- * d'onboarding (crash rejeu, fix/onboarding-rejeu-profil).
- */
-const isPillarArray = (value: unknown): value is Pillar[] =>
-  Array.isArray(value) && value.every((p) => (PILLARS as readonly string[]).includes(p as string));
+// `isPillarArray` (garde de la colonne `active_pillars` décodée) vit dans `@wellness/shared` depuis
+// NORYN-01 : la fonction `noryn-context` décode les piliers actifs exactement comme l'app.
 
 /** Décode la colonne analytics_enabled (0/1/null) → booléen. Défaut opt-out ON (null/absent → true). */
 function decodeAnalyticsEnabled(row: SettingsDbRow | null): boolean {

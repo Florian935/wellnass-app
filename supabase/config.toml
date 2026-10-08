@@ -385,6 +385,13 @@ deno_version = 2
 # [edge_runtime.secrets]
 # secret_key = "env(SECRET_VALUE)"
 
+# US NORYN-01 — la fonction que Noryn appelle de serveur à serveur. Noryn n'est pas un utilisateur de
+# l'app : la passerelle ne doit PAS exiger de JWT Supabase. La fonction se protège seule, par le jeton
+# propre à Noryn (empreinte SHA-256 en secret `NORYN_TOKEN_SHA256`). Les autres fonctions (`ai-assist`)
+# gardent la vérification du JWT par défaut.
+[functions.noryn-context]
+verify_jwt = false
+
 [analytics]
 enabled = true
 port = 54327

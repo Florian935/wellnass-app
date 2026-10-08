@@ -25,9 +25,11 @@
     "db:push": "supabase db push",
     "db:push:dry": "supabase db push --dry-run",
     "db:new": "supabase migration new",
-    "db:types": "supabase gen types typescript --project-id nsxzflxsgovriwwvflxe > packages/shared/src/database.types.ts"
+    "db:types": "supabase gen types typescript --project-id nsxzflxsgovriwwvflxe > packages/shared/src/database.types.ts",
+    "noryn:deploy": "node scripts/noryn-context-bundle.mjs deploy"
   },
   "devDependencies": {
+    "esbuild": "0.21.5",
     "supabase": "^2.109.1"
   }
 }

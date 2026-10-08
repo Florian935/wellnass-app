@@ -22,6 +22,18 @@ export function resolveActivePillars(activePillars: readonly Pillar[] | null | u
   return activePillars ? [...activePillars] : [...PILLARS];
 }
 
+/**
+ * Garde de la colonne `active_pillars` une fois décodée : un tableau de piliers **connus**. Sans elle,
+ * une ligne corrompue (JSON trop profondément encodé) laissait passer une **chaîne** typée `Pillar[]`
+ * (crash rejeu, fix/onboarding-rejeu-profil). À passer à `parseJsonColumn`.
+ *
+ * Sortie de `settings-repository.ts` et `home-widget-data.ts` (deux copies) par **NORYN-01** : la
+ * fonction `noryn-context` décode les piliers actifs exactement comme l'app.
+ */
+export function isPillarArray(value: unknown): value is Pillar[] {
+  return Array.isArray(value) && value.every((p) => (PILLARS as readonly string[]).includes(p as string));
+}
+
 /** Langues supportées dès le lancement (décision G — FR + EN). */
 export const LOCALES = ['fr', 'en'] as const;
 

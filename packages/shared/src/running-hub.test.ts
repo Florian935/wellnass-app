@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   estimateRunMinutes,
+  plannedRunDistanceM,
   referencePaceFromCooperTest,
   referencePaceFromRaceTime,
   resolveRunHubState,
@@ -321,5 +322,32 @@ describe('estimateRunMinutes', () => {
     expect(
       estimateRunMinutes({ targetDurationSeconds: null, totalDistanceM: null, refPaceSPerKm: 300 }),
     ).toBeNull();
+  });
+});
+
+describe('plannedRunDistanceM (sorti de l’écran Course par NORYN-01, à la ligne près)', () => {
+  const bloc = (reps: number, fastDistanceM: number | null, recoveryDistanceM: number | null) => ({
+    reps,
+    fastDistanceM,
+    recoveryDistanceM,
+  });
+
+  it('sans bloc, rend la distance cible — ou null', () => {
+    expect(plannedRunDistanceM([], 8000)).toBe(8000);
+    expect(plannedRunDistanceM([], null)).toBeNull();
+  });
+
+  it('additionne fractions et récupérations de chaque bloc, répétitions comprises', () => {
+    // 6 × (400 + 200) + 1 × (2000 + 0)
+    expect(plannedRunDistanceM([bloc(6, 400, 200), bloc(1, 2000, null)], 9000)).toBe(5600);
+  });
+
+  it('compte un bloc à 0 répétition comme une seule', () => {
+    expect(plannedRunDistanceM([bloc(0, 1000, null)], null)).toBe(1000);
+  });
+
+  it('retombe sur la distance cible quand les blocs ne portent aucune distance', () => {
+    expect(plannedRunDistanceM([bloc(5, null, null)], 7000)).toBe(7000);
+    expect(plannedRunDistanceM([bloc(5, null, null)], null)).toBeNull();
   });
 });

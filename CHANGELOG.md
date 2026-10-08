@@ -10,6 +10,85 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 08/10/2026 — NORYN-01 : Noryn lit la journée et la semaine — la fonction `noryn-context` (`feature/noryn01-noryn-context` → `dev`)
+
+> Code de l'US validée le 08/10/2026 (roadmap **9.17**, ⬜ → ✅). Noryn, l'orchestrateur personnel de
+> Florian, lit en lecture seule `context/day` et `context/week`, selon le contrat figé côté Noryn
+> (TASK-013). **Aucune action sur le cloud** : la migration n'est pas poussée, la fonction n'est pas
+> déployée, aucun secret n'est posé — gestes humains, en tête de RECETTES **§92**.
+> Commit précédent : `77d6f3b0`.
+
+### Ajouté
+- **`packages/shared/src/noryn/`** (non exporté par l'index du paquet : rien n'entre dans l'app) :
+  - `paris-date.ts` — jour civil à Paris d'un instant (`formatToParts`), arithmétique de clés en UTC,
+    fenêtre servie J−8 … J+15 (D8) ;
+  - `contract.ts` — le contrat en zod **strict** (bornes, entiers, « jamais synchronisé »,
+    `synced_at ≤ generated_at`, 6 séances par jour, UUID canoniques) ; les deux exemples du contrat
+    servent de tests de référence ;
+  - `sessions.ts` — une séance : intensité et étiquettes de course, `heavy_lower` par
+    `isHeavyLegSession`, durées par `estimateSessionMinutes` / `estimateRunMinutes` ; muscu en
+    intensité `null` (D6), jamais `upper_body` (D7) ; tri et plafond de 6 par jour ;
+  - `snapshot.ts` — l'instantané du propriétaire, `syncedAtOf` (tronqué à la milliseconde, borné),
+    domaines suivis décodés comme l'app (D5), séances jointes **telles que le téléphone les voit**
+    (règles de synchro : bibliothèque publiée, exercices archivés de la bibliothèque compris) ;
+  - `day.ts`, `week.ts` — les deux synthèses ; cibles et verdict à `null` (D1) ; `intensity_on_hold`
+    = « malade » + pilier Bien-être (D4) ; valeurs hors bornes → `null`, objectifs normalisés comme
+    l'app ;
+  - `auth.ts`, `request.ts` — jeton Bearer (16–4 096 ASCII), empreinte comparée à temps constant,
+    propriétaire par secret, exactement un paramètre ;
+  - `source.ts` — lectures `service_role` au seul propriétaire, colonnes en **liste blanche** (la
+    semaine ne lit ni repas, ni eau, et du check-in la seule nuit), contenu lié filtré « bibliothèque
+    ou propriétaire », **double barrière** (ligne étrangère → échec), propriétaire inconnu → 503 ;
+  - `handler.ts`, `index.ts` — l'ordre des contrôles R1, échec fermé partout, réponses JSON `no-store`
+    sans CORS, journal réduit à un code ; `createNorynHandler` relit les secrets à chaque requête ;
+    `webSha256Hex` (WebCrypto).
+- **Migration** `20261008134728_noryn01_sync_receipts` (**à pousser par Florian**) : table
+  `sync_receipts` (RLS sans politique, `grant select` à `service_role`) et déclencheurs sur 19 tables ;
+  le reçu prend l'heure du **serveur**, seulement pour une écriture du propriétaire de la ligne, et ne
+  peut jamais faire échouer l'écriture (tout rattrapé, `lock_timeout`). Registre `MIGRATIONS.md` à
+  `[ ]`.
+- **Fonction** `supabase/functions/noryn-context/index.ts` — une coquille : client `service_role`,
+  `Deno.serve`, import de `./core.bundle.js` ; `[functions.noryn-context] verify_jwt = false` dans
+  `supabase/config.toml`.
+- **Bundle** `scripts/noryn-context-bundle.mjs` (+ `.d.mts`) : esbuild, un fichier ESM, `zod` compris.
+  **Une seule commande, `npm run noryn:deploy`** : refuse un arbre non commité (`packages/shared`, la
+  fonction, `config.toml`, `package.json`, le lockfile, le script), construit (bannière avec le commit),
+  lance `supabase functions deploy noryn-context --use-api`, puis **efface le bundle** — un déploiement
+  lancé à la main échoue au lieu d'envoyer du code périmé. Le fichier est aussi ignoré par git.
+  `esbuild` `0.21.5` exact en `devDependency` racine.
+- Tests : ~240 cas Vitest — isolation sur une fausse base PostgREST à **deux comptes** (aucune valeur
+  ni identifiant du second ne sort, jour comme semaine), enregistreur de filtres, test-garde de la liste
+  blanche, matrice d'accès (401 / 503 / 405 / 404 / 400 / 200), fenêtre, changements d'heure des
+  29/03 et 25/10/2026 (cas qui tombent un autre jour en UTC et à Paris), jamais synchronisé, échec
+  fermé, bundle chargé et exécuté seul sous Node.
+- RECETTES **§92** (6 gestes préalables, 20 critères) ; spec en `etape: recette`.
+
+### Modifié
+- `isPillarArray` passe dans `packages/shared/src/pillar.ts` ; ses **deux** copies du mobile
+  (`settings-repository.ts`, `home-widget-data.ts`) l'importent. Sans changement de comportement.
+- `plannedRunDistanceM` sort du `useMemo` de `(tabs)/running.tsx` vers `running-hub.ts`, à la ligne près.
+- `packages/shared/vitest.config.ts` : `*.testkit.ts` exclu de la couverture.
+- Roadmap 9.17 ✅ (269 livrés, 2 à faire), journal ; spec §4.2 précisée (contenu vu par le téléphone).
+
+### Technique / Notes
+- **Couverture** : les seuils globaux de `packages/shared` sont **déjà rouges sur `dev`** avant cette US
+  (mesuré sur `77d6f3b0` : lignes 98,67 %, branches 96,03 %, fonctions 99,39 %). Fichiers NORYN-01 à
+  100 % sur les quatre axes ; global à 98,73 / 96,19 / 99,43. Dette à traiter à part.
+- Qualité : `typecheck`, `lint`, `agents:check` verts ; tests verts — shared 3 958 (dont ~240 NORYN-01),
+  mobile 5 006, admin 587. ⚠️ `health-connect-state.test.ts` (mobile, 16 cas) a échoué **une fois** en
+  suite complète puis passé seul (32/32) et en relance complète : test instable, sans lien avec cette US
+  (aucun fichier Health Connect touché) — à surveiller.
+- **Worktree** : les liens `node_modules/@wellness/shared` pointent vers le dépôt principal ; pour
+  tester le code du worktree, lien local vers son `packages/shared` (ignoré par git).
+- **Revue de code par un agent** : aucun bloquant ; deux points importants corrigés — le déploiement
+  pouvait partir avec un bundle périmé ou non versionné (désormais impossible, voir ci-dessus), et le
+  filtre `deleted_at` n'était protégé par aucun test (lignes supprimées dans la fausse base, filtre
+  vérifié sur chaque requête, mutation vérifiée). Points mineurs traités : semaine qui lisait trop,
+  liste blanche figée en clair dans le test, `unknown_owner`, zod 3 aligné sur le zod 4 de Noryn
+  (`+0200` refusé, règle de semaine sûre sur une date illisible), fuseau construit à la demande, un seul
+  bloc rattrapé par écriture dans la migration, test en double retiré.
+- Écarts au plan détaillés en fin de `docs/plans/noryn01-noryn-context.md`.
+
 ## 08/10/2026 — NORYN-01 : Noryn lit la journée et la semaine — cadrage relu et validé (`feature/noryn01-noryn-context` → `dev`)
 
 > Demande de Florian (08/10/2026) : Noryn, son orchestrateur personnel (agenda, santé, finances), veut

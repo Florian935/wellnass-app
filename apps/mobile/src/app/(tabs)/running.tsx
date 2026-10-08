@@ -36,6 +36,7 @@ import {
   lastTimeReps,
   localDayKey,
   pickRunLastTime,
+  plannedRunDistanceM,
   recordCountsByRun,
   repsInRange,
   resolveRacePredictions,
@@ -170,16 +171,10 @@ export default function RunningScreen() {
   );
 
   /** Volume de la séance : la structure d'abord, la cible en repli (voir CARDIO-UX02). */
-  const totalDistanceM = useMemo(() => {
-    if (todayBlocks.length === 0) return todaySession?.targetDistanceM ?? null;
-    let total = 0;
-    for (const block of todayBlocks) {
-      const reps = Math.max(1, block.reps);
-      total += reps * (block.fastDistanceM ?? 0);
-      total += reps * (block.recoveryDistanceM ?? 0);
-    }
-    return total > 0 ? total : (todaySession?.targetDistanceM ?? null);
-  }, [todayBlocks, todaySession?.targetDistanceM]);
+  const totalDistanceM = useMemo(
+    () => plannedRunDistanceM(todayBlocks, todaySession?.targetDistanceM ?? null),
+    [todayBlocks, todaySession?.targetDistanceM],
+  );
 
   const hubToday: RunHubTodaySession | null = useMemo(() => {
     if (!todaySession) return null;

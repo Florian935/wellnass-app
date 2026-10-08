@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 268 livré · 4 partiel · 3 à faire (sur 281)
+**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 269 livré · 4 partiel · 2 à faire (sur 281)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -85,6 +85,7 @@ avant de pouvoir publier.
 | **MUSCU-UX07** — Hub Musculation en trois onglets — S'entraîner, Historique, Progrès | `recette` | `feature/muscu-ux07-hub-trois-onglets` | [3.65] |
 | **MUSCU-UX02** — Bilan de séance — 3 niveaux de lecture, écran unique récap/historique | `recette` | `feature/muscu-ux02-bilan-seance` | [3.35] |
 | **NARR-01** — L'IA raconte le dossier d'enquête — et ne peut pas inventer un chiffre | `recette` | `dev` | [7.33] |
+| **NORYN-01** — Noryn lit la journée et la semaine — deux synthèses Wellness en lecture seule | `recette` | `feature/noryn01-noryn-context` | [9.17] |
 | **NUTR-16** — Répartition calorique par repas | `recette` | `feature/nutr16-repartition-repas` | [4.38] |
 | **NUTR-18** — Bilan calorique hebdomadaire | `recette` | `feature/nutr18-bilan-calorique-hebdo` | — |
 | **NUTR-F1** — Rappels programmés nutrition — repas et pesée, à l'échéance apprise | `recette` | `feature/nutrf1-rappels-nutrition` | [1.14, 2.5] |
@@ -114,13 +115,12 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
-| **NORYN-01** — Noryn lit la journée et la semaine — deux synthèses Wellness en lecture seule | `code` | `feature/noryn01-noryn-context` | [9.17] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **98 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BIEN-02, BIEN-03, BIEN-04, BIEN-05, BIEN-06, BIEN-07, BILAN-01, CARDIO-UX01, CARDIO-UX02, CARDIO-UX03, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, ECHO-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LABO-02, LABO-03, LABO-04, LAUNCHER-01, LETTRE-01, LIENS-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX07, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, NUTRI-UX03, OBJ-01, PARTAGE-01, PARTAGE-02, PRISME-01, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **99 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BIEN-02, BIEN-03, BIEN-04, BIEN-05, BIEN-06, BIEN-07, BILAN-01, CARDIO-UX01, CARDIO-UX02, CARDIO-UX03, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, ECHO-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LABO-02, LABO-03, LABO-04, LAUNCHER-01, LETTRE-01, LIENS-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX07, MUSCU-UX02, NARR-01, NORYN-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, NUTRI-UX03, OBJ-01, PARTAGE-01, PARTAGE-02, PRISME-01, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -143,22 +143,23 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/noryn01-noryn-context` (modifications non commitées) |
-| Commits | 1352 · `main` a **1349** commits de retard sur `dev` |
+| Commits | 1353 · `main` a **1350** commits de retard sur `dev` |
 | Specs d'US | 189 au total — 89 clôturées, 100 en cours |
-| Migrations | 114/114 poussées sur le cloud |
+| Migrations | 114/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
 ### ⚠️ Alertes
 
+- ⚠️ 1 migration(s) non poussée(s) sur le cloud
 - ⚠️ Working tree : modifications non commitées
 
 ## 🕒 Derniers commits
 
+- `77d6f3b`  docs(noryn): NORYN-01 cadrée et validée — Noryn lit la journée et la semaine
 - `2c96d7c`  feat(prisme): PRISME-01 — Prisme raconte le soir et la semaine, et décompose un repas non reconnu
 - `6fde130`  docs(prisme): PRISME-01 cadrée et validée — Prisme, l'assistant IA du Labo
 - `b1bbdbd`  feat(bien-etre): le pilier Bien-être — pilier activable, check-in matin et soir, la boucle, Ce qui compte, la nuit lue, les modules
 - `441287c`  feat(labo): le Labo, carrefour des piliers — registre des liens, Croiser, fiche, échos, Apprendre
-- `dd388cc`  fix(cardio): CARDIO-UX03, « Choisir un programme » tient sur une ligne
 
 ---
 

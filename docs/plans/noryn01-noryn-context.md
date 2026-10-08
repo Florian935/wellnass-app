@@ -26,7 +26,7 @@ dernier. **Aucun écran, aucune chaîne i18n, aucune sync rule.**
 | 7 | **Accès** : jeton, chemin, paramètres, fenêtre | `noryn/auth.ts`, `noryn/request.ts` **(neufs)** | `auth.test.ts`, `request.test.ts` **(neufs)** |
 | 8 | **La source** : requêtes du propriétaire, double barrière | `noryn/source.ts` **(neuf)** | `source.test.ts` **(neuf)** — isolation à deux utilisateurs, test-garde des colonnes |
 | 9 | **Le gestionnaire** et le point d'entrée du bundle | `noryn/handler.ts`, `noryn/index.ts` **(neufs)** | `handler.test.ts` **(neuf)** — matrice d'accès, en-têtes, jamais synchronisé |
-| 10 | **Le bundle** | `scripts/noryn-context-bundle.mjs` (+ `.d.mts`) **(neufs)**, `packages/shared/package.json` (`esbuild` exact), `package.json` racine (`noryn:build`, `noryn:deploy`), `.gitignore` | `noryn/bundle.test.ts` **(neuf)** — construit en mémoire et exécute le bundle sous Node |
+| 10 | **Le bundle** | `scripts/noryn-context-bundle.mjs` (+ `.d.mts`) **(neufs)**, `package.json` racine (`esbuild` exact, `noryn:deploy`), `.gitignore` | `noryn/bundle.test.ts` **(neuf)** — construit en mémoire et exécute le bundle sous Node |
 | 11 | **La coquille Deno**, la config, les docs | `supabase/functions/noryn-context/index.ts` **(neuf)**, `supabase/config.toml`, spec (`etape: recette`), `RECETTES.md`, roadmap | recette |
 
 ## Étape 1 — la migration
@@ -246,13 +246,10 @@ appelée qu'avec un code fixe).
   `packages/shared/src/noryn/index.ts`, `bundle: true`, `format: 'esm'`, `platform: 'neutral'`,
   `mainFields: ['module', 'main']`, `target: 'es2022'`, sortie
   `supabase/functions/noryn-context/core.bundle.js`, bannière « fichier généré — ne pas éditer » avec
-  le **SHA du commit**. Appelé en ligne de commande par `npm run noryn:build`, qui **refuse** de
-  construire si `packages/shared` ou `supabase/functions/noryn-context` ont des modifications non
-  commitées : ce qui part en production est toujours un état versionné.
+  le **SHA du commit**. Appelé par `npm run noryn:deploy` *(voir les écarts au plan, point 10)*.
 - La CLI lit les fichiers sur le disque, sans consulter `.gitignore` (vérifié dans son code, §7 de la
   spec) : le bundle ignoré par git est bien téléversé.
-- `package.json` racine : `"noryn:build"` et `"noryn:deploy": "npm run noryn:build && supabase
-  functions deploy noryn-context --use-api"`.
+- `package.json` racine : `"noryn:deploy"` *(écarts au plan, point 10)*.
 - `.gitignore` : `supabase/functions/noryn-context/core.bundle.js`.
 - `packages/shared/package.json` : `"esbuild": "0.21.5"` (exact) en `devDependencies`.
 - `bundle.test.ts` : construit en mémoire (`write: false`), vérifie qu'**aucun import** ne reste dans la
@@ -309,3 +306,59 @@ Les cibles et le verdict, sans duplication :
    **aujourd'hui** seulement (l'app ne le calcule pas pour un autre jour), si `show` est vrai.
 
 Le reçu de synchro (étape 1) couvre déjà ces tables : aucune autre migration.
+
+## Écarts au plan (code livré le 08/10/2026)
+
+Des moyens, pas des règles : aucune décision D1-D9 n'a bougé.
+
+1. **Le contenu « tel que le téléphone le voit »** — trouvé en codant. Les règles de synchro PowerSync ne
+   font descendre de la bibliothèque que les programmes et exercices **publiés**, et gardent les
+   exercices **archivés** de la bibliothèque (ADMIN-01), alors que les exercices personnels archivés
+   disparaissent. Les requêtes de l'app joignent ce qu'elle a en local : `sessionInputsFor` reproduit ce
+   « visible » avant d'appliquer les filtres de chaque requête (hub, COLLIS-01). D'où deux colonnes de
+   plus dans la liste blanche : `programs.status`, `exercises.status`. Spec §4.2 précisée.
+2. **Pas de contrôle explicite des 64 Kio.** Le contrat plafonne une réponse (42 séances, champs bornés)
+   très en dessous : le contrôle aurait été du code inatteignable. Un test fige l'invariant sur la
+   semaine la plus chargée possible (42 séances, moins de 16 Kio).
+3. **`webSha256Hex` dans `packages/shared`** (WebCrypto, vecteurs de référence testés) plutôt que dans la
+   coquille Deno : elle n'a plus que trois lignes de branchement.
+4. **`esbuild` en `devDependency` exacte à la racine** (`0.21.5`), pas dans `packages/shared` : le script
+   de build est à la racine. Lockfile : une ligne.
+5. **Secrets relus à chaque requête** (`createNorynHandler`) : retirer `NORYN_TOKEN_SHA256` coupe l'accès
+   sans attendre un redémarrage de la fonction (testé).
+6. **Codes de journal** : `missing_token_hash`, `missing_owner`, `db_error`, `foreign_row`, `build_error`
+   (reçu illisible → 500), `contract_error`, `unexpected_error` (empreinte impossible à calculer → 500).
+7. **`isPillarArray` existait en deux copies** dans le mobile (`settings-repository.ts`,
+   `home-widget-data.ts`) : les deux sont remplacées par celle de `packages/shared`.
+8. **Couverture** : `*.testkit.ts` (fausse base, instantanés) exclu de la mesure. Les seuils **globaux**
+   de `packages/shared` étaient **déjà rouges sur `dev` avant cette US** (mesuré sur `origin/dev`
+   `77d6f3b0` : lignes 98,67 %, branches 96,03 %, fonctions 99,39 % — `cross-links.ts`, `explain.ts`,
+   `health-connect.ts`…). Les fichiers de NORYN-01 sont à 100 % sur les quatre axes ; le global remonte
+   à 98,73 / 96,19 / 99,43. Dette à traiter à part.
+9. **Tests dans un worktree** : les liens de l'espace de travail (`node_modules/@wellness/shared`)
+   pointent vers le dépôt principal ; pour tester le code du worktree, un lien local
+   `node_modules/@wellness/shared` → `packages/shared` du worktree (ignoré par git).
+
+**Après la revue de code** (agent, 08/10/2026 : aucun bloquant, deux points importants, tous traités) :
+
+10. **Une seule commande, `npm run noryn:deploy`** (plus de `noryn:build`). Elle refuse un arbre non
+    commité — `packages/shared`, la fonction, mais aussi `supabase/config.toml` (`verify_jwt`),
+    `package.json`, `package-lock.json` (la version de zod) et le script lui-même —, efface tout bundle
+    qui traînerait, construit, déploie, puis **efface le bundle**. Il n'en reste jamais sur le disque :
+    un `supabase functions deploy` lancé à la main échoue (fichier absent) au lieu d'envoyer du code
+    périmé ou non versionné. Le point d'entrée du script se reconnaît par chemin réel (jonctions, liens).
+11. **Le filtre `deleted_at` est désormais prouvé** : la fausse base porte un repas, une eau, une séance,
+    un plan et un bloc supprimés ; un test vérifie le filtre sur chaque requête (sauf le reçu et les
+    exercices, voulu) ; retirer le filtre fait échouer trois tests (vérifié par mutation).
+12. **La semaine ne lit que ce qu'elle sert** : ni repas, ni eau, ni profil nutritionnel, et du check-in
+    la seule durée de la nuit (`WEEK_WELLBEING_COLUMNS`). La liste blanche est **figée en clair** dans le
+    test, au lieu d'être comparée à elle-même.
+13. **Propriétaire inconnu → 503 `unknown_owner`** : un UUID mal saisi dans le secret (ni profil ni
+    réglages) aurait répondu « jamais synchronisé » pour toujours, indiscernable de l'état normal
+    d'après déploiement.
+14. **zod 3 aligné sur le zod 4 de Noryn** : un décalage horaire sans deux-points (`+0200`) est refusé,
+    et la règle de semaine ne calcule plus rien sur un début illisible (elle levait au lieu de refuser).
+15. **Fuseau construit à la demande** : un runtime sans données de fuseaux répondrait 500 en JSON au lieu
+    d'empêcher la fonction de démarrer.
+16. **Migration** : un seul bloc rattrapé par écriture (celui de `note_sync_receipt_for`), au lieu de
+    deux imbriqués.

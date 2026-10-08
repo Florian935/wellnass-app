@@ -62,6 +62,8 @@ ios/.xcode.env.local
 supabase/.branches/
 supabase/.temp/
 **/supabase/.env
+# US NORYN-01 — bundle de la fonction noryn-context, construit au déploiement (npm run noryn:build)
+supabase/functions/noryn-context/core.bundle.js
 
 # --- TypeScript / build ---
 *.tsbuildinfo

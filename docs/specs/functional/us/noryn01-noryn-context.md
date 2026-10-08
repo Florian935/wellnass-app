@@ -3,7 +3,7 @@ id: NORYN-01
 titre: "Noryn lit la journée et la semaine — deux synthèses Wellness en lecture seule"
 roadmap: [9.17]
 catalogue: []
-etape: code
+etape: recette
 branche: feature/noryn01-noryn-context
 maj: 08/10/2026
 ---
@@ -21,8 +21,10 @@ maj: 08/10/2026
 > **Maquette** : sans objet — aucune interface (le brief le prévoit, §4).
 > **Relue** le 08/10/2026 par un agent de revue : 3 bloquants et 7 constats importants, intégrés (§16).
 > ✅ **Spec et plan validés par Florian le 08/10/2026** : décisions **D1 à D9** retenues telles que
-> proposées (§2). Aucune ligne de code à ce stade, aucune migration poussée, aucun appel au projet
-> Supabase.
+> proposées (§2).
+> 🛠️ **Codée le 08/10/2026** (écarts au plan — des moyens, pas des règles — en fin de plan). En recette :
+> [RECETTES.md](../../../../RECETTES.md) §92, précédée des gestes humains (secrets, migration,
+> déploiement). Aucune migration poussée, aucun appel au projet Supabase par un agent.
 
 ## 0. Le besoin
 
@@ -164,7 +166,10 @@ même jour, les suivantes ne sont pas envoyées (le contrat n'a aucun moyen de l
 
 Le contenu lié (`programs`, `sessions`, `exercise_plans`, `session_intervals`, `exercises`) est lu par
 identifiants, avec le filtre `owner_id` **nul (bibliothèque) ou égal au propriétaire** dans la requête
-même. Une séance planifiée qui pointe vers du contenu d'un autre compte est donc **écartée** — c'est
+même — puis réduit à ce que **le téléphone a en local**, puisque c'est là que les requêtes de l'app
+joignent (règles de synchro PowerSync) : de la bibliothèque, les programmes et exercices **publiés**
+seulement, exercices **archivés compris** (ADMIN-01) ; de ses propres lignes, les non supprimées.
+*(Précision trouvée en codant, le 08/10/2026.)* Une séance planifiée qui pointe vers du contenu d'un autre compte est donc **écartée** — c'est
 possible : la RLS d'insertion de `planned_sessions` ne vérifie que `owner_id`, pas `session_id`.
 
 ### 4.3 `context/week`
@@ -223,8 +228,11 @@ et un domaine non suivi reste `null`.
 - **R7 — Double barrière**, avant de composer :
   - une ligne **d'une table de l'utilisateur** dont le propriétaire n'est pas Florian — le signe d'un
     filtre oublié — fait **échouer** la requête (503) : **rien** n'est envoyé ;
-  - une ligne de **contenu lié** qui n'est ni de la bibliothèque ni à Florian est **écartée**, avec la
-    séance qui la référençait (§4.2).
+  - une ligne de **contenu lié** qui n'est ni de la bibliothèque ni à Florian est **écartée**, comme
+    elle est absente du téléphone : une séance ou un programme étrangers écartent la séance planifiée
+    qui les référence ; un plan, un exercice ou un bloc étranger est ignoré seul (§4.2).
+- **R7 bis — Propriétaire inconnu** : un secret au format UUID mais sans profil ni réglages (UUID mal
+  saisi) → **503** `unknown_owner`, jamais un « jamais synchronisé » indiscernable de l'état normal.
 
 **Minimisation**
 
@@ -234,7 +242,8 @@ et un domaine non suivi reste `null`.
   (`alcohol_drinks`, `late_caffeine`, `nap_minutes`, `cravings`), ni les étiquettes autres que `sick`,
   ni les heures de coucher et de lever, ni aucun `name`, `notes`, `description`, `instructions`,
   `meal_type`, `food_id`, `micronutrients`, `weight_kg`, `gps_track`, `distance_m` réalisée, allure
-  réalisée. NORYN-02 élargira la liste (le stress et le poids entrent dans le calcul du verdict et des
+  réalisée. Et chaque synthèse ne lit que ce qu'elle sert : la semaine ne lit ni repas, ni eau, et du
+  check-in la seule durée de la nuit. NORYN-02 élargira la liste (le stress et le poids entrent dans le calcul du verdict et des
   cibles) : la règle qui ne bouge pas est **R9**.
 - **R9** — La réponse ne contient que les champs du contrat (schéma strict, DD3) ; un champ en plus
   est une erreur, pas un 200.
@@ -380,8 +389,8 @@ file (§6).
   `NORYN_OWNER_USER_ID` (UUID du compte de Florian). `SUPABASE_URL` et `SUPABASE_SERVICE_ROLE_KEY` sont fournis d'office aux Edge Functions.
 - **Migration** : `npm run db:push`, puis `npm run db:types`, puis cocher le registre
   [supabase/MIGRATIONS.md](../../../../supabase/MIGRATIONS.md).
-- **Déploiement** : `npm run noryn:deploy` (build du bundle + `npx supabase functions deploy
-  noryn-context --use-api`).
+- **Déploiement** : `npm run noryn:deploy` — refuse un arbre non commité, construit le bundle, lance
+  `npx supabase functions deploy noryn-context --use-api`, puis efface le bundle.
 - Le jeton se génère hors de git (brief §7) et se pose côté Noryn en secret Fly à la livraison de
   TASK-014.
 - ⚠️ **À confirmer en recette** : qu'avec `verify_jwt = false` la passerelle n'exige ni JWT ni `apikey`
@@ -458,11 +467,13 @@ test** avec des données aux mêmes dates (pas, repas, check-in, séances).
 18. Aucune trace de l'humeur, du stress, du poids, des repas, des notes ou du motif dans les réponses ;
     les lignes écrites **par la fonction** dans ses journaux ne contiennent ni jeton, ni date, ni corps
     (la plateforme journalise l'URL de son côté, R10).
-19. La synchro du téléphone n'est jamais bloquée par le reçu (écritures de toutes les tables
+19. *(voir aussi 21)* La synchro du téléphone n'est jamais bloquée par le reçu (écritures de toutes les tables
     concernées, dont une suppression).
 20. Les réponses du jour et de la semaine passent les schémas de Noryn
     (`WellnessDayWireSchema`, `WellnessWeekWireSchema`) ; comparaison de forme avec le serveur de
     fixtures de Noryn (brief §6).
+21. `NORYN_OWNER_USER_ID` posé avec un UUID qui n'est pas le tien → **503** (journal
+    `noryn-context: unknown_owner`) ; remis à ton UUID → 200.
 
 ## 16. Ce que la relecture a changé (08/10/2026)
 

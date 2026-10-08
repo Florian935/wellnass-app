@@ -11,8 +11,8 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **03/10/2026** — **89 sections** (§91 PRISME-01 « Prisme raconte » ajoutée : migration
-> poussée, secret Groq et déploiement de la fonction à faire avant ; le 01/10/2026 : §90 « le pilier Bien-être », six US, une recette ; le 30/09/2026 : §89 « le Labo, carrefour des piliers », cinq US ; le 26/09/2026 : §88 NUTRI-UX03 et §87 CARDIO-UX03 ; §86 MUSCU-UX07 le
+> Dernière mise à jour : **08/10/2026** — **90 sections** (§92 NORYN-01 « Noryn lit la journée et la semaine »
+> ajoutée : secrets, migration et déploiement de la fonction à faire avant ; le 03/10/2026 : §91 PRISME-01 « Prisme raconte » ; le 01/10/2026 : §90 « le pilier Bien-être », six US, une recette ; le 30/09/2026 : §89 « le Labo, carrefour des piliers », cinq US ; le 26/09/2026 : §88 NUTRI-UX03 et §87 CARDIO-UX03 ; §86 MUSCU-UX07 le
 > 25/09/2026 ; le 23/09/2026 : §84 MUSCU-FIX02 et §85 MUSCU-UX06 recettées et clôturées, sections
 > purgées).
 >
@@ -5966,3 +5966,81 @@ ne part pas (l'historique des séances ne le porte pas) ; les **objectifs** ne p
 aucune détection réseau avant le geste (le hors-ligne se dit au geste) ; la conversation du Labo, la photo
 (PRISME-02), l'accès testeurs (**ACCES-IA, requis avant tout build Play contenant Prisme**, spec §11),
 NARR-01/CONS-01 dans la voix de Prisme (PRISME-01b).
+## 92. NORYN-01 — Noryn lit la journée et la semaine (`feature/noryn01-noryn-context` → `dev`)
+
+Spec : [noryn01-noryn-context.md](docs/specs/functional/us/noryn01-noryn-context.md) (critères §15) ·
+plan [docs/plans/noryn01-noryn-context.md](docs/plans/noryn01-noryn-context.md) (écarts au code en fin
+de plan) · roadmap **9.17** · contrat : dépôt Noryn, `docs/08-WELLNESS-CONTRACT.md` (TASK-013)
+
+Une fonction Edge, `noryn-context`, que Noryn appelle de serveur à serveur : `GET …/context/day?date=…` et
+`GET …/context/week?start=<lundi>`. Lecture seule, un seul compte (le tien, fixé par secret), le jeton de
+Noryn et rien d'autre. **Aucun écran, aucun nouvel APK** : l'app ne change pas (deux refactors sans effet
+visible). Cibles caloriques et verdict de forme à `null` en v1 (D1, NORYN-02 au backlog).
+
+> 🔴 **À préparer AVANT de recetter, dans cet ordre — gestes humains, aucun agent ne les fait.**
+>
+> 1. **Le jeton.** Hors de git, une seule fois :
+>    ```
+>    node -e "const c=require('crypto');const t=c.randomBytes(32).toString('base64url');console.log('JETON (pour Noryn) :',t);console.log('EMPREINTE (secret Supabase) :',c.createHash('sha256').update(t).digest('hex'))"
+>    ```
+>    Garde le jeton pour Noryn (secret Fly à la livraison de TASK-014) ; seule l'empreinte va chez Supabase.
+> 2. **Les secrets** — l'UUID de ton compte est dans le dashboard Supabase › Authentication › Users :
+>    `npx supabase secrets set NORYN_TOKEN_SHA256=<empreinte> NORYN_OWNER_USER_ID=<uuid>`
+> 3. **La migration** `20261008134728_noryn01_sync_receipts` (reçu de synchro) : `npm run db:push:dry`,
+>    `npm run db:push`, `npm run db:types`, puis cocher le [registre](supabase/MIGRATIONS.md). ⚠️ Si une
+>    autre migration a été poussée depuis le 08/10/2026, la **redater** d'abord. **Aucune sync rule.**
+> 4. **Le déploiement**, depuis un arbre propre sur `dev` : `npm run noryn:deploy` — il refuse un arbre
+>    non commité, construit le bundle, lance `supabase functions deploy noryn-context --use-api`, puis
+>    efface le bundle. ⚠️ Toujours par cette commande : un `npx supabase functions deploy` direct échoue.
+> 5. **Un second compte de test** avec des pas, un repas, un verre d'eau, un check-in et une séance
+>    planifiée **aux mêmes dates** que les tiennes (isolation, critère 17).
+> 6. **Une première écriture du téléphone** après la migration (un verre d'eau suffit) : avant elle, la
+>    fonction répond « jamais synchronisé » — aucune valeur, aucune séance. C'est voulu.
+>
+> Pour les appels (Git Bash) :
+> ```
+> URL=https://<projet>.supabase.co/functions/v1/noryn-context ; TOKEN=<jeton>
+> nc() { curl -s -i "$URL/$1" -H "Authorization: Bearer $TOKEN" "${@:2}"; }
+> nc "context/day?date=$(date +%F)"            # 200
+> nc "context/week?start=<lundi de la semaine>" # 200
+> ```
+
+- [ ] 1. Sans `Authorization` → **401** `{"error":"unauthorized"}`, en-tête `WWW-Authenticate: Bearer`.
+- [ ] 2. Mauvais jeton → 401. Ton JWT d'utilisateur de l'app → 401. Seulement un en-tête `apikey` → 401.
+- [ ] 3. Secret `NORYN_TOKEN_SHA256` retiré puis fonction rappelée : avec le jeton → **503** (jamais 200),
+      sans jeton → 401. Secret remis.
+- [ ] 4. Bon jeton, `-X POST` → **405** (`Allow: GET`). Bon jeton, `?date=` d'hier → 200.
+- [ ] 5. La passerelle laisse passer **sans `apikey`** (le `curl` ci-dessus n'en envoie pas).
+- [ ] 6. En-têtes de toutes les réponses : `Content-Type: application/json`, `Cache-Control: no-store`, aucun
+      `Access-Control-*`.
+- [ ] 7. `?date=` à J−8 et J+15 → 200 (un jour de marge, D8) ; J−9 ou J+16 → **400** `out_of_window` ;
+      `?start=` un mardi → 400 `bad_request`.
+- [ ] 8. Journée : pas, kcal, protéines, eau et check-in du matin **égaux à l'app** ce jour-là ; cibles et
+      `readiness` à `null`.
+- [ ] 9. Séances du jour et de la semaine = celles du planning (heure, pilier, statut) ; une sortie longue
+      porte `long_run` et `moderate` ; une séance de jambes chargée (≥ 8 séries) porte `heavy_lower`.
+- [ ] 10. Durée estimée d'une séance de muscu = celle de la carte du hub ; d'une course = celle du hub Course.
+- [ ] 11. `done` de la semaine = séances de muscu et courses **terminées** de la semaine (heure de Paris).
+- [ ] 12. « Malade » coché au check-in du matin, pilier Bien-être allumé → `intensity_on_hold: true` ; pilier
+      éteint → `false`. Aucun motif nulle part.
+- [ ] 13. Pilier Nutrition éteint → `nutrition` et `hydration` à `null`. Health Connect éteint → `steps` à `null`.
+- [ ] 14. Un verre d'eau, synchroniser, rappeler → `synced_at` avance, **à l'heure du serveur**, jamais après
+      `generated_at`.
+- [ ] 15. Mode avion, ajouter un repas, attendre, rappeler → `synced_at` **ne bouge pas** ; réseau revenu → il
+      avance.
+- [ ] 16. Horloge du téléphone avancée de 2 h, un verre, synchroniser → `synced_at` reste à l'heure du serveur.
+- [ ] 17. **Isolation** : aucune valeur, aucun identifiant du second compte n'apparaît, jour comme semaine.
+- [ ] 18. Aucune trace de l'humeur, du stress, du poids, des repas, des notes ou du motif dans les réponses ;
+      dans les journaux de la fonction (dashboard › Edge Functions › Logs), seulement des codes
+      `noryn-context: …` — ni jeton, ni date, ni corps (la plateforme note l'URL de son côté).
+- [ ] 19. La synchro du téléphone n'est **jamais bloquée** par le reçu : écrire dans plusieurs tables
+      (repas, eau, check-in, séance, réglages), en supprimer une ligne ; tout remonte, le dashboard PowerSync
+      ne montre aucune opération en échec.
+- [ ] 20. Les réponses passent les schémas de Noryn (`WellnessDayWireSchema`, `WellnessWeekWireSchema`) ;
+      forme comparée au serveur de fixtures de Noryn (brief §6).
+- [ ] 21. `NORYN_OWNER_USER_ID` reposé avec un UUID qui n'est pas le tien → **503** (journal
+      `noryn-context: unknown_owner`) ; remis à ton UUID → 200.
+
+⚠️ **Ce qui n'est pas dans cette US** : les cibles caloriques et de protéines et le verdict de forme
+(NORYN-02, après l'arbitrage de l'écart E4 de la spec) ; l'étiquette `upper_body` (D7) ; l'intensité des
+séances de muscu (D6).

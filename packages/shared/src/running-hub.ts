@@ -120,6 +120,34 @@ export function estimateRunMinutes(input: {
   return Math.round(seconds / 60);
 }
 
+/** Ce qu'un bloc de séance de course apporte au volume prévu. */
+export type PlannedRunBlockVolume = {
+  reps: number;
+  fastDistanceM: number | null;
+  recoveryDistanceM: number | null;
+};
+
+/**
+ * Volume prévu d'une séance de course : la **structure** d'abord, la distance cible en repli (voir
+ * CARDIO-UX02). C'est l'entrée `totalDistanceM` d'`estimateRunMinutes`.
+ *
+ * Sorti tel quel du `useMemo` de l'écran Course par **NORYN-01** : la fonction `noryn-context` estime
+ * la durée d'une course planifiée avec **le même** calcul que le hub, sans le recopier.
+ */
+export function plannedRunDistanceM(
+  blocks: readonly PlannedRunBlockVolume[],
+  targetDistanceM: number | null,
+): number | null {
+  if (blocks.length === 0) return targetDistanceM;
+  let total = 0;
+  for (const block of blocks) {
+    const reps = Math.max(1, block.reps);
+    total += reps * (block.fastDistanceM ?? 0);
+    total += reps * (block.recoveryDistanceM ?? 0);
+  }
+  return total > 0 ? total : targetDistanceM;
+}
+
 // ---------------------------------------------------------------------------
 // Ma semaine (constat F37)
 // ---------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { LOCALES, PILLARS, localeSchema, pillarSchema, resolveActivePillars } from './pillar';
+import { LOCALES, PILLARS, isPillarArray, localeSchema, pillarSchema, resolveActivePillars } from './pillar';
 
 describe('pillarSchema', () => {
   it('expose exactement les trois piliers', () => {
@@ -47,5 +47,19 @@ describe('localeSchema', () => {
 
   it('rejette une locale non supportée', () => {
     expect(localeSchema.safeParse('es').success).toBe(false);
+  });
+});
+
+describe('isPillarArray', () => {
+  it('accepte un tableau de piliers connus, vide compris', () => {
+    expect(isPillarArray(['strength', 'nutrition'])).toBe(true);
+    expect(isPillarArray([])).toBe(true);
+  });
+
+  it('refuse un pilier inconnu, une chaîne ou une valeur non tableau', () => {
+    expect(isPillarArray(['strength', 'yoga'])).toBe(false);
+    expect(isPillarArray('["strength"]')).toBe(false);
+    expect(isPillarArray(null)).toBe(false);
+    expect(isPillarArray({ 0: 'strength' })).toBe(false);
   });
 });
