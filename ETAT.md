@@ -1,4 +1,4 @@
-# État du projet — 05/10/2026
+# État du projet — 08/10/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 268 livré · 4 partiel · 2 à faire (sur 280)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 268 livré · 4 partiel · 3 à faire (sur 281)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -114,6 +114,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **NORYN-01** — Noryn lit la journée et la semaine — deux synthèses Wellness en lecture seule | `code` | `feature/noryn01-noryn-context` | [9.17] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -127,11 +128,11 @@ avant de pouvoir publier.
 - LANCE-01 — Publication Play Store
 - LANCE-02 — Retirer le spike VBT-01 du build de soumission
 
-<details><summary>P1 finitions (11) · P2 confort (4)</summary>
+<details><summary>P1 finitions (11) · P2 confort (5)</summary>
 
 **P1** — ACCES-IA — Prisme réservé aux testeurs · PRISME-01b — Les résumés du Labo dans la voix de Prisme · RUN-F3b — Météo de course · CLAV-01 — Le clavier recouvre les formulaires (edge-to-edge) · CARDIO-02 — Les quatre portes vers l'allure de référence · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect · IDENT-01 — L'identité de pilier appartient à l'écran, pas à l'onglet
 
-**P2** — PRISME-02 — La photo de repas, avec Prisme · SOCLE-01 — RevenueCat câblé inactif · VBT-01 — Vitesse de barre à la caméra · CARDIO-08 — « X sur Y dans la plage » sans l’échauffement, dans l’analyse
+**P2** — PRISME-02 — La photo de repas, avec Prisme · SOCLE-01 — RevenueCat câblé inactif · VBT-01 — Vitesse de barre à la caméra · NORYN-02 — Les cibles et le verdict de forme pour Noryn · CARDIO-08 — « X sur Y dans la plage » sans l’échauffement, dans l’analyse
 
 </details>
 
@@ -141,9 +142,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/prisme01-prisme-raconte` (modifications non commitées) |
-| Commits | 1351 · `main` a **1348** commits de retard sur `dev` |
-| Specs d'US | 188 au total — 89 clôturées, 99 en cours |
+| Branche courante | `feature/noryn01-noryn-context` (modifications non commitées) |
+| Commits | 1352 · `main` a **1349** commits de retard sur `dev` |
+| Specs d'US | 189 au total — 89 clôturées, 100 en cours |
 | Migrations | 114/114 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -153,11 +154,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `2c96d7c`  feat(prisme): PRISME-01 — Prisme raconte le soir et la semaine, et décompose un repas non reconnu
 - `6fde130`  docs(prisme): PRISME-01 cadrée et validée — Prisme, l'assistant IA du Labo
 - `b1bbdbd`  feat(bien-etre): le pilier Bien-être — pilier activable, check-in matin et soir, la boucle, Ce qui compte, la nuit lue, les modules
 - `441287c`  feat(labo): le Labo, carrefour des piliers — registre des liens, Croiser, fiche, échos, Apprendre
 - `dd388cc`  fix(cardio): CARDIO-UX03, « Choisir un programme » tient sur une ligne
-- `1cf7ef2`  feat(nutrition): NUTRI-UX03, le hub Nutrition en trois onglets — Aujourd'hui, Historique, Progrès
 
 ---
 

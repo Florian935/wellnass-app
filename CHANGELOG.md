@@ -10,6 +10,63 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 08/10/2026 — NORYN-01 : Noryn lit la journée et la semaine — cadrage relu et validé (`feature/noryn01-noryn-context` → `dev`)
+
+> Demande de Florian (08/10/2026) : Noryn, son orchestrateur personnel (agenda, santé, finances), veut
+> **lire** deux synthèses Wellness, la journée et la semaine, sans rien écrire ; contrat figé côté Noryn
+> (TASK-013, `docs/08-WELLNESS-CONTRACT.md`, branche `agent/claude/TASK-013` lue en lecture seule).
+> Brief vérifié contre le code ; spec et plan **validés par Florian le jour même** (D1 à D9, telles que
+> proposées). **Aucune ligne de code, aucune migration poussée, aucun appel au projet Supabase.**
+> Commit précédent : `2c96d7c6`.
+
+### Ajouté
+- Spec `docs/specs/functional/us/noryn01-noryn-context.md` (front-matter `etape: code`) : Edge Function
+  `noryn-context` (`GET context/day`, `GET context/week`), jeton propre à Noryn comparé par empreinte
+  SHA-256 à temps constant, `verify_jwt = false`, un seul compte fixé par secret (`service_role`, filtre
+  du propriétaire sur chaque requête et double barrière), colonnes lues en liste blanche, réponse
+  validée contre un schéma strict du contrat avant envoi ; correspondance champ par champ, règles
+  R1-R14, cas limites (dont les changements d'heure des 29/03 et 25/10/2026), 20 critères de recette.
+- Plan `docs/plans/noryn01-noryn-context.md` : 11 étapes TDD (migration, deux refactors sans effet,
+  dates de Paris, contrat, séances, journée / semaine, accès, source, gestionnaire, bundle esbuild,
+  coquille Deno) ; esquisse de NORYN-02.
+- Roadmap : ligne **9.17** (hors cadrage, ⬜), compteurs 280 → 281 et 2 → 3 à faire, ligne « Hors
+  cadrage » 76 → 77, journal.
+- BACKLOG : **NORYN-02** (P2) — les cibles et le verdict de forme pour Noryn.
+
+### Technique / Notes
+- **Décisions validées** : D1 cibles kcal / protéines et verdict de forme à `null` en v1 (leur calcul est
+  **composé dans quatre hooks** du mobile ; NORYN-02 l'extraira sans changement) ; D2 `packages/shared`
+  embarqué par un bundle esbuild construit au déploiement (`npm run noryn:deploy`), non versionné ;
+  D3/D9 `synced_at` = **reçu de synchro** posé par la base pour chaque compte (table `sync_receipts` +
+  déclencheurs, heure du serveur, seulement les écritures du propriétaire de la ligne, ne peut jamais
+  faire échouer une écriture PowerSync) ; D4 `intensity_on_hold` = « malade », pilier Bien-être allumé
+  (ni « vie réelle », ni douleurs) ; D5 domaines suivis comme l'app les affiche ; D6 intensité muscu
+  `null` ; D7 pas d'`upper_body` ; D8 fenêtre J−8…J+15 (un jour de marge).
+- **Constats vérifiés dans le code** (spec §1, E1-E16) :
+  - `updated_at` est écrit **par l'horloge du téléphone** (`_sql.ts`) et remonte tel quel ;
+    `set_updated_at` ne réécrit qu'à l'`UPDATE` et manque sur `daily_steps`, `daily_wellbeing`,
+    `real_life_periods`, `activities` → `max(updated_at)` violerait le contrat ;
+  - CLI `supabase` 2.109.1, `--use-api` : téléverse les fichiers du dépôt importés par chemin relatif,
+    mais lit les chemins **littéralement** — les imports sans extension de `packages/shared` ne
+    suivent pas → import direct impossible ;
+  - ⚠️ **écart interne à l'app** (E4, à trancher avant NORYN-02) : en mode `activities`,
+    `useDayNutritionTargets` calcule la base des macros avec `tdee` et `useDayCalorieTarget` avec
+    `sportFreeTdee` — les protéines ne sont pas calculées sur la base de la cible affichée ;
+  - `heavy_lower` (COLLIS-01) compte les exercices archivés, la durée estimée du hub non : le serveur
+    reprendra chaque filtre tel quel.
+- **Relecture de la spec par un agent : 3 bloquants et 7 constats importants, tous intégrés** (spec §16) :
+  portée du reçu (D9), un exemple de changement d'heure faux, `auth.uid()` lu hors du bloc protégé du
+  déclencheur, `grant select` à `service_role` (sinon 503 permanent après le 30/10/2026), filtres des
+  exercices, douleur exclue de la veille, contenu lié étranger écarté, marge de fenêtre, objectifs
+  normalisés.
+- Qualité : `typecheck`, `lint`, `test` (admin 587, mobile 5 006, shared 3 748) et `agents:check` verts.
+  ⚠️ Dans un worktree sans `node_modules` propres, le lint d'`apps/admin` résout
+  `eslint-plugin-react-hooks` 7.1.1 (racine) au lieu de 5.2.0 (imbriqué) et lève 13 erreurs
+  `set-state-in-effect` sur du code existant : artefact d'environnement, levé en reliant
+  `apps/admin/node_modules` et `apps/mobile/node_modules` à ceux du dépôt principal.
+- Gestes humains à venir, **aucun fait** : secrets `NORYN_TOKEN_SHA256` / `NORYN_OWNER_USER_ID`,
+  `db:push` + `db:types`, déploiement de la fonction.
+
 ## 05/10/2026 — PRISME-01 : Prisme raconte — le soir, la semaine, et le recours de la saisie en phrase (`feature/prisme01-prisme-raconte` → `dev`)
 
 > Code de l'US validée le 03/10/2026 (roadmap **7.42** et **4.48**, ⬜ → ✅). Prisme, l'assistant IA,
