@@ -26,6 +26,8 @@ import { useTranslation } from 'react-i18next';
 import {
   activityLoadSessions,
   composeDayCalorieTarget,
+  dayMacroTargets,
+  hasManualMacros,
   composeReadiness,
   localDayKeyOf,
   READINESS_NUTRITION_WINDOW_DAYS,
@@ -49,14 +51,12 @@ import {
   computeTrainingTime,
   DEFAULT_SPORT_FREE_LEVEL,
   sportFreeTdee,
-  defaultMacroRatios,
   effectiveNutritionObjective,
   estimateRunCalories,
   isRealLifeDay,
   localDateFromDayKey,
   localDayKey,
   localMidnightDaysAgo,
-  macroGramsFromCalories,
   minimalWeekTargets,
   type MinimalWeekTargets,
   objectiveFromGoal,
@@ -386,6 +386,13 @@ export type NutritionSummary = {
 /** Objectif calorique et bonus du jour `dayKey`, retourné par `useDayCalorieTarget`. */
 export type DayCalorieTarget = {
   /**
+   * Socle de la cible (US NORYN-02, D1-A) : `tdee` (niveau d'activité, sport compris) ou socle **hors
+   * sport** en mode `activities` (DEPENSE-00). Rendu pour l'onglet Nutrition (macros, explication de la
+   * cible) : ne jamais le recalculer à côté — c'était la cause de l'écart E4.
+   */
+  socle: number | null;
+  socleKind: 'tdee' | 'sportFree';
+  /**
    * Objectif calorique **de base** (TDEE + delta objectif, ou override manuel),
    * hors bonus jour d'entraînement. Indépendant du jour. `null` si le profil est
    * incomplet (poids, taille, âge ou objectif manquants).
@@ -449,7 +456,7 @@ export function useDayCalorieTarget(dayKey: string): DayCalorieTarget {
   // US NORYN-02 — la composition (socle selon le mode, objectif du jour, surcharge, bonus) vit dans
   // `composeDayCalorieTarget` (@wellness/shared) : la fonction `noryn-context` l'appelle aussi.
   // Poids : le socle prend celui du profil, la course du mode `auto` la dernière pesée.
-  const { target, effectiveTarget, trainingBonus, bonusSource, isTrainingDay } =
+  const { socle, socleKind, target, effectiveTarget, trainingBonus, bonusSource, isTrainingDay } =
     composeDayCalorieTarget({
       dayKey,
       profile,
@@ -465,6 +472,8 @@ export function useDayCalorieTarget(dayKey: string): DayCalorieTarget {
     });
 
   return {
+    socle,
+    socleKind,
     target,
     effectiveTarget,
     trainingBonus,
@@ -843,23 +852,25 @@ export function useStreakData(windowDays = 30): StreakData {
 /**
  * Cible de **protéines du jour**, en grammes — `null` si le profil ne permet pas de la calculer.
  *
- * La saisie manuelle prime, sinon elle se dérive de la cible calorique du jour et des ratios de
- * l'objectif. Extraite de `useMinimalWeekTargets` le 13/09/2026 (US DASH-01) : le brief du matin en
- * a besoin lui aussi, et c'était la cinquième copie de cette chaîne qui menaçait.
+ * Extraite de `useMinimalWeekTargets` le 13/09/2026 (US DASH-01) : le brief du matin en a besoin lui
+ * aussi, et c'était la cinquième copie de cette chaîne qui menaçait.
+ *
+ * US NORYN-02 (D1-A) — **la même règle que l'onglet Nutrition** (`dayMacroTargets`) : les protéines se
+ * prennent sur la cible **de base**, le bonus du jour allant entièrement aux glucides (MN-04 D1). Avant,
+ * elles se prenaient sur la cible effective : un jour de séance à forfait 300, le brief annonçait 266 g
+ * quand l'onglet Nutrition en demandait 236. Deux gardes restent propres à ce hook : objectif nutritionnel
+ * jamais posé → `null` (on n'invente pas un chiffre), et 0 g → `null` (une macro manuelle posée sans les
+ * protéines ne fait pas une cible).
  */
 export function useProteinTarget(): number | null {
   const { nutritionProfile } = useNutritionProfile();
+  const { profile } = useProfile();
   const todayKey = useTodayKey();
-  const { effectiveTarget } = useDayCalorieTarget(todayKey);
-  const objective = nutritionProfile?.objective ?? null;
+  const { target, effectiveTarget } = useDayCalorieTarget(todayKey);
 
-  // `null` si le profil est incomplet — on n'invente pas un chiffre (cas limite de la spec §5).
-  return (
-    nutritionProfile?.manualProteinG ??
-    (effectiveTarget != null && objective != null
-      ? macroGramsFromCalories(effectiveTarget, defaultMacroRatios(objective)).protein
-      : null)
-  );
+  if (!hasManualMacros(nutritionProfile) && nutritionProfile?.objective == null) return null;
+  const protein = dayMacroTargets({ profile, nutritionProfile, dayTarget: { target, effectiveTarget } })?.protein ?? null;
+  return protein != null && protein > 0 ? protein : null;
 }
 
 export function useMinimalWeekTargets(): MinimalWeekTargets {

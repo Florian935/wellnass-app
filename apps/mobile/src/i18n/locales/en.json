@@ -571,6 +571,8 @@
       "incomplete": "Enter your weight, height and date of birth to calculate your calorie needs.",
       "completeProfile": "Complete my profile",
       "tdeeHint": "What your body burns in a day, at rest and in activity — estimated from your weight, height, age and activity level.",
+      "sportFreeBase": "Expenditure outside training",
+      "sportFreeBaseHint": "What your body burns in a day without your workouts. Each session or activity is added to that day's target, at the low end of its range.",
       "sportFree": {
         "label": "Outside sport, you are mostly…",
         "seated": "Seated",
@@ -4551,6 +4553,7 @@
     },
     "kcal": {
       "tdee": "Your estimated daily expenditure",
+      "sportFree": "Your expenditure outside training",
       "objective": "Adjustment for your goal",
       "trainingDay": "Training-day bonus",
       "target": "Your target for the day"

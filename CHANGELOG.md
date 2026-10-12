@@ -10,6 +10,40 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — NORYN-02, étape 4 : D1-A, une seule règle pour les protéines (`feature/noryn02-cibles-forme` → `dev`)
+
+> **Des chiffres changent dans l'app**, ceux annoncés au §1.2 de la spec et seulement eux. Commit
+> précédent : `b08464b0`.
+
+### Corrigé
+- **Écart E4** (mode `activities`) : l'onglet Nutrition et les Réglages prenaient le socle `tdee` (sport
+  compris) au lieu du socle **hors sport** de la cible du jour. Profil A, jour de repos : macros
+  236 / 206 / 66 (2 362 kcal) pour une cible de 2 048 → désormais **205 / 179 / 57** ; l'explication de la
+  cible additionne enfin (311 kcal manquaient). Réglages : la ligne « Dépense hors sport » remplace
+  « Dépense estimée (TDEE) » dans ce mode, et l'objectif affiché est celui de l'onglet.
+- **Brief du matin, « Que manger ? », faits du bilan de Prisme, objectif de semaine minimal**
+  (`useProteinTarget`) : les protéines se prenaient sur la cible **effective** (bonus compris), contre
+  MN-04 D1. Jour de séance à forfait 300 : 266 g → **236 g**, comme l'onglet Nutrition. Une seule macro
+  manuelle posée sans les protéines : `null` au lieu du calcul (l'onglet affiche 0 g).
+
+### Ajouté
+- `@wellness/shared` : `dayMacroTargets` (la règle unique des macros), `nutritionSocle` (le socle selon le
+  mode, partagé par la cible du jour et les Réglages) ; `composeDayNutritionTargets` reprend socle et base
+  de la cible du jour au lieu de les recalculer ; `explainCalorieTarget` reçoit `socleKind`.
+- `useDayCalorieTarget` rend `socle` et `socleKind`.
+- i18n FR + EN : `explain.kcal.sportFree` (« Ta dépense hors sport »), `nutrition.calories.sportFreeBase`
+  (« Dépense hors sport ») et `nutrition.calories.sportFreeBaseHint`.
+- Tests : cas D1-A dans `day-target.test.ts`, `explain.test.ts`, le filet (`day-nutrition-targets-assembly`,
+  chaque valeur changée marquée « D1-A — avant : … »), et l'écran Réglages en mode `activities`.
+
+### Modifié
+- `NutritionSummaryCard` et le relais du mode immersif (`useNutritionRelay`) appellent `dayMacroTargets` :
+  leurs copies de la règle disparaissent, sans changement de valeur.
+
+### Technique / Notes
+- Filet de la cible calorique : seule la forme change (`socle`, `socleKind` écartés de la comparaison
+  complète, figés par un cas à part). Jest 5 116, Vitest `shared` 4 032.
+
 ## 12/10/2026 — NORYN-02, étape 3 : la composition sort des hooks, sans changement (`feature/noryn02-cibles-forme` → `dev`)
 
 > Les filets de l'étape précédente (84 cas) passent **sans une ligne modifiée**. Commit précédent : `081402d3`.

@@ -571,6 +571,8 @@
       "incomplete": "Renseigne ton poids, ta taille et ta date de naissance pour calculer ton besoin calorique.",
       "completeProfile": "Compléter mon profil",
       "tdeeHint": "Ce que ton corps dépense en une journée, repos et activité compris — estimé d'après ton poids, ta taille, ton âge et ton niveau d'activité.",
+      "sportFreeBase": "Dépense hors sport",
+      "sportFreeBaseHint": "Ce que ton corps dépense en une journée sans tes séances. Chaque séance ou activité s'ajoute à la cible de son jour, au bas de sa fourchette.",
       "sportFree": {
         "label": "Hors sport, tu es plutôt…",
         "seated": "Assis",
@@ -4551,6 +4553,7 @@
     },
     "kcal": {
       "tdee": "Ta dépense estimée sur la journée",
+      "sportFree": "Ta dépense hors sport",
       "objective": "Ajustement lié à ton objectif",
       "trainingDay": "Bonus du jour d'entraînement",
       "target": "Ta cible du jour"

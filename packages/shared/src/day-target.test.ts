@@ -3,11 +3,13 @@ import {
   appliedObjective,
   composeDayCalorieTarget,
   composeDayNutritionTargets,
+  dayMacroTargets,
   hasManualMacros,
+  nutritionSocle,
   trainedOnDay,
   type TargetNutritionProfile,
 } from './day-target';
-import { objectiveFromGoal } from './nutrition';
+import { objectiveFromGoal, trainingDayMacroGrams } from './nutrition';
 import { estimateRunCalories } from './running';
 
 /** Rattachement **non local** : le jour UTC de l'instant (la brique ne lit aucun fuseau). */
@@ -227,59 +229,85 @@ describe('appliedObjective / hasManualMacros', () => {
   });
 });
 
-describe('composeDayNutritionTargets — l’onglet Nutrition (comportement figé, E4 compris)', () => {
-  const nutritionInput = {
-    dayKey: TODAY,
-    profile: PROFILE,
-    nutritionProfile: NUTRITION,
-    realLifePeriods: [],
-    dayTarget: { effectiveTarget: 2359 },
-    at: AT,
-  };
+describe('nutritionSocle (US NORYN-02, D1-A)', () => {
+  it('`tdee` hors mode `activities`, socle hors sport sinon ; sans profil : rien', () => {
+    expect(nutritionSocle({ profile: PROFILE, nutritionProfile: NUTRITION, at: AT })).toEqual({ socle: 2759, socleKind: 'tdee' });
+    expect(nutritionSocle({ profile: PROFILE, nutritionProfile: { trainingBonusMode: 'activities' }, at: AT })).toEqual({
+      socle: 2448,
+      socleKind: 'sportFree',
+    });
+    expect(nutritionSocle({ profile: null, nutritionProfile: null, at: AT })).toEqual({ socle: null, socleKind: 'tdee' });
+  });
+});
 
-  it('`fixed`, repos : base 2 359, macros 236 / 206 / 66', () => {
-    expect(composeDayNutritionTargets(nutritionInput)).toEqual({
-      tdeeValue: 2759,
-      target: 2359,
-      targetMacros: { protein: 236, carbs: 206, fat: 66 },
+describe('dayMacroTargets — la seule règle des macros (D1-A)', () => {
+  const day = { target: 2048, effectiveTarget: 2648 };
+
+  it('sur la base du jour, le bonus entièrement en glucides (MN-04)', () => {
+    // Profil A en mode `activities`, 600 kcal dépensées : la base 2 048 (et non 2 359 sur `tdee`).
+    expect(dayMacroTargets({ profile: PROFILE, nutritionProfile: NUTRITION, dayTarget: day })).toEqual({
+      protein: 205,
+      carbs: 329,
+      fat: 57,
+    });
+  });
+
+  it('les macros égalent la cible, à l’arrondi près', () => {
+    const m = dayMacroTargets({ profile: PROFILE, nutritionProfile: NUTRITION, dayTarget: day });
+    expect(Math.abs((m?.protein ?? 0) * 4 + (m?.carbs ?? 0) * 4 + (m?.fat ?? 0) * 9 - 2648)).toBeLessThanOrEqual(5);
+  });
+
+  it('macros manuelles : priment, les absentes à 0, même sans cible', () => {
+    expect(
+      dayMacroTargets({ profile: PROFILE, nutritionProfile: { manualCarbsG: 200 }, dayTarget: { target: null, effectiveTarget: null } }),
+    ).toEqual({ protein: 0, carbs: 200, fat: 0 });
+    expect(
+      dayMacroTargets({ profile: PROFILE, nutritionProfile: { manualProteinG: 150, manualFatG: 70 }, dayTarget: day }),
+    ).toEqual({ protein: 150, carbs: 0, fat: 70 });
+  });
+
+  it('sans cible ni macro manuelle : rien', () => {
+    expect(dayMacroTargets({ profile: PROFILE, nutritionProfile: NUTRITION, dayTarget: { target: 2048, effectiveTarget: null } })).toBeNull();
+    expect(dayMacroTargets({ profile: PROFILE, nutritionProfile: NUTRITION, dayTarget: { target: null, effectiveTarget: 2048 } })).toBeNull();
+  });
+
+  it('objectif jamais posé : celui du but principal', () => {
+    expect(
+      dayMacroTargets({ profile: PROFILE, nutritionProfile: null, dayTarget: { target: 2000, effectiveTarget: 2000 } }),
+    ).toEqual(trainingDayMacroGrams({ targetBase: 2000, effectiveTarget: 2000, objective: objectiveFromGoal('muscle') }));
+  });
+});
+
+describe('composeDayNutritionTargets — l’onglet Nutrition (D1-A)', () => {
+  const dayTarget = composeDayCalorieTarget({ ...base, nutritionProfile: { ...NUTRITION, trainingBonusMode: 'activities' }, energyKcal: 600 });
+
+  it('reprend le socle et la base de la cible du jour : plus de second calcul', () => {
+    expect(composeDayNutritionTargets({ profile: PROFILE, nutritionProfile: NUTRITION, dayTarget, at: AT })).toEqual({
+      tdeeValue: 2448,
+      socleKind: 'sportFree',
+      target: 2048,
+      targetMacros: { protein: 205, carbs: 329, fat: 57 },
       profileComplete: true,
     });
   });
 
-  it('le bonus du jour va aux glucides', () => {
-    expect(composeDayNutritionTargets({ ...nutritionInput, dayTarget: { effectiveTarget: 2659 } }).targetMacros).toEqual({
-      protein: 236,
-      carbs: 281,
-      fat: 66,
+  it('`fixed` : inchangé (base 2 359, 236 / 206 / 66)', () => {
+    const fixed = composeDayCalorieTarget(base);
+    expect(composeDayNutritionTargets({ profile: PROFILE, nutritionProfile: NUTRITION, dayTarget: fixed, at: AT })).toMatchObject({
+      tdeeValue: 2759,
+      target: 2359,
+      targetMacros: { protein: 236, carbs: 206, fat: 66 },
     });
   });
 
-  it('« vie réelle » ce jour : base au maintien', () => {
+  it('profil incomplet ou absent', () => {
+    const none = composeDayCalorieTarget({ ...base, profile: { ...PROFILE, heightCm: null } });
     expect(
-      composeDayNutritionTargets({ ...nutritionInput, realLifePeriods: [{ startedOn: TODAY, endsOn: TODAY }] }).target,
-    ).toBe(2759);
-  });
-
-  it('macros manuelles, partielles comprises', () => {
+      composeDayNutritionTargets({ profile: { ...PROFILE, heightCm: null }, nutritionProfile: NUTRITION, dayTarget: none, at: AT }),
+    ).toEqual({ tdeeValue: null, socleKind: 'tdee', target: null, targetMacros: null, profileComplete: false });
+    expect(composeDayNutritionTargets({ profile: null, nutritionProfile: null, dayTarget: none, at: AT }).profileComplete).toBe(false);
     expect(
-      composeDayNutritionTargets({ ...nutritionInput, nutritionProfile: { ...NUTRITION, manualCarbsG: 200 } }).targetMacros,
-    ).toEqual({ protein: 0, carbs: 200, fat: 0 });
-    expect(
-      composeDayNutritionTargets({
-        ...nutritionInput,
-        nutritionProfile: { ...NUTRITION, manualProteinG: 150, manualFatG: 70 },
-      }).targetMacros,
-    ).toEqual({ protein: 150, carbs: 0, fat: 70 });
-  });
-
-  it('profil incomplet : ni base, ni macros calculées ; sans cible effective non plus', () => {
-    expect(composeDayNutritionTargets({ ...nutritionInput, profile: { ...PROFILE, heightCm: null } })).toEqual({
-      tdeeValue: null,
-      target: null,
-      targetMacros: null,
-      profileComplete: false,
-    });
-    expect(composeDayNutritionTargets({ ...nutritionInput, dayTarget: { effectiveTarget: null } }).targetMacros).toBeNull();
-    expect(composeDayNutritionTargets({ ...nutritionInput, profile: null, nutritionProfile: null }).profileComplete).toBe(false);
+      composeDayNutritionTargets({ profile: { ...PROFILE, birthDate: null }, nutritionProfile: NUTRITION, dayTarget: none, at: AT }).profileComplete,
+    ).toBe(false);
   });
 });

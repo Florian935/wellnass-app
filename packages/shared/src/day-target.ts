@@ -8,6 +8,10 @@
  * (`apps/mobile/src/hooks/useDayNutritionTargets.ts`), qui n'y gardent que leurs lectures. Les
  * formules restent dans `nutrition.ts` et `running.ts`.
  *
+ * Puis **une** réparation, décidée à part (D1-A de NORYN-02) : les macros n'ont plus qu'une règle,
+ * `dayMacroTargets`, sur la base de la cible du jour — l'onglet Nutrition recalculait sa base sur `tdee`
+ * quel que soit le mode (écart E4), et le brief du matin prenait les protéines sur la cible effective.
+ *
  * Les **replis** que les hooks et les lecteurs de lignes répétaient (`trainingBonusMode ?? 'fixed'`,
  * `trainingDayBonus ?? 0`, niveau d'activité `?? 'moderate'`, socle hors sport `?? 'standing'`,
  * objectif repli sur le but principal) vivent **ici**, une fois (spec NORYN-02 D8).
@@ -20,7 +24,6 @@ import type { DayKeyOf } from './day-energy';
 import {
   DEFAULT_SPORT_FREE_LEVEL,
   dayCalorieBonus,
-  effectiveActivityLevel,
   effectiveNutritionObjective,
   objectiveFromGoal,
   sportFreeTdee,
@@ -120,6 +123,40 @@ export function trainedOnDay(input: {
 }
 
 /**
+ * Le **socle** de la cible, selon le mode : `tdee` (niveau d'activité, repli « modéré ») ou, en mode
+ * `activities`, le socle **hors sport** (DEPENSE-00 R1, repli « debout »). `null` si le profil ne
+ * permet pas de calcul (poids, taille ou âge manquant).
+ *
+ * Utilisé par la cible du jour **et** par l'écran de réglage de l'objectif : depuis NORYN-02 (D1-A),
+ * plus personne ne recalcule le socle à part — c'était la cause de l'écart E4.
+ */
+export function nutritionSocle(input: {
+  profile: TargetProfile | null;
+  nutritionProfile: TargetNutritionProfile | null;
+  at: Date;
+}): { socle: number | null; socleKind: 'tdee' | 'sportFree' } {
+  const { profile, nutritionProfile, at } = input;
+  const age = ageOf(profile?.birthDate, at);
+  const usesRealEnergy = (nutritionProfile?.trainingBonusMode ?? 'fixed') === 'activities';
+  const socle = usesRealEnergy
+    ? sportFreeTdee({
+        sex: profile?.sex ?? 'unspecified',
+        weightKg: profile?.weightKg ?? undefined,
+        heightCm: profile?.heightCm ?? undefined,
+        age,
+        sportFreeLevel: nutritionProfile?.sportFreeLevel ?? DEFAULT_SPORT_FREE_LEVEL,
+      })
+    : tdee({
+        sex: profile?.sex ?? 'unspecified',
+        weightKg: profile?.weightKg ?? undefined,
+        heightCm: profile?.heightCm ?? undefined,
+        age,
+        activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
+      });
+  return { socle, socleKind: usesRealEnergy ? 'sportFree' : 'tdee' };
+}
+
+/**
  * La cible calorique d'un jour (`useDayCalorieTarget`).
  *
  * - **Socle** : `tdee` (niveau d'activité, repli « modéré ») ; en mode `activities`, le socle **hors
@@ -150,23 +187,7 @@ export function composeDayCalorieTarget(input: {
   const { dayKey, profile, nutritionProfile, at } = input;
 
   const objective = appliedObjective(nutritionProfile, profile);
-  const age = ageOf(profile?.birthDate, at);
-  const usesRealEnergy = (nutritionProfile?.trainingBonusMode ?? 'fixed') === 'activities';
-  const socle = usesRealEnergy
-    ? sportFreeTdee({
-        sex: profile?.sex ?? 'unspecified',
-        weightKg: profile?.weightKg ?? undefined,
-        heightCm: profile?.heightCm ?? undefined,
-        age,
-        sportFreeLevel: nutritionProfile?.sportFreeLevel ?? DEFAULT_SPORT_FREE_LEVEL,
-      })
-    : tdee({
-        sex: profile?.sex ?? 'unspecified',
-        weightKg: profile?.weightKg ?? undefined,
-        heightCm: profile?.heightCm ?? undefined,
-        age,
-        activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
-      });
+  const { socle, socleKind } = nutritionSocle({ profile, nutritionProfile, at });
   const inRealLifePeriod = isRealLifeDay(input.realLifePeriods, dayKey);
   const target =
     socle != null && objective != null
@@ -219,7 +240,7 @@ export function composeDayCalorieTarget(input: {
 
   return {
     socle,
-    socleKind: usesRealEnergy ? 'sportFree' : 'tdee',
+    socleKind,
     target,
     effectiveTarget,
     trainingBonus: bonus,
@@ -238,57 +259,60 @@ export function hasManualMacros(nutritionProfile: TargetNutritionProfile | null)
 }
 
 /**
- * Les cibles de l'onglet Nutrition (`useDayNutritionTargets`) : la base, les macros, et si le profil
- * permet un calcul personnel.
+ * Les **cibles de macros** d'un jour — la seule règle de l'app depuis NORYN-02 (D1-A) : macros
+ * manuelles si l'une est posée (les absentes à 0) ; sinon les ratios de l'objectif appliqués à la cible
+ * **de base** du jour, et le bonus du jour **entièrement** en glucides (MN-04 D1). La base est celle de
+ * `composeDayCalorieTarget` : en mode `activities`, le socle hors sport (DEPENSE-00 R1).
  *
- * Macros : manuelles si une macro manuelle est posée, sinon `trainingDayMacroGrams` — le bonus du jour
- * redirigé vers les glucides (MN-04).
- *
- * ⚠️ Recopie fidèle de l'existant : la base est recalculée ici sur `tdee` **quel que soit le mode**,
- * alors que la cible calorique prend le socle hors sport en mode `activities` (écart E4).
+ * `null` sans macro manuelle quand le profil ne permet pas de cible.
  */
-export function composeDayNutritionTargets(input: {
-  dayKey: string;
+export function dayMacroTargets(input: {
   profile: TargetProfile | null;
   nutritionProfile: TargetNutritionProfile | null;
-  realLifePeriods: ReadonlyArray<RealLifeSpan>;
-  dayTarget: { effectiveTarget: number | null };
-  at: Date;
-}): { tdeeValue: number | null; target: number | null; targetMacros: MacroGrams | null; profileComplete: boolean } {
-  const { dayKey, profile, nutritionProfile, at } = input;
-  const objective = appliedObjective(nutritionProfile, profile);
-  const age = ageOf(profile?.birthDate, at) ?? null;
-  const tdeeValue = tdee({
-    sex: profile?.sex ?? 'unspecified',
-    weightKg: profile?.weightKg ?? undefined,
-    heightCm: profile?.heightCm ?? undefined,
-    age: age ?? undefined,
-    activityLevel: effectiveActivityLevel({ activityLevel: nutritionProfile?.activityLevel ?? null }),
+  dayTarget: { target: number | null; effectiveTarget: number | null };
+}): MacroGrams | null {
+  const { profile, nutritionProfile, dayTarget } = input;
+  if (hasManualMacros(nutritionProfile)) {
+    return {
+      protein: nutritionProfile?.manualProteinG ?? 0,
+      carbs: nutritionProfile?.manualCarbsG ?? 0,
+      fat: nutritionProfile?.manualFatG ?? 0,
+    };
+  }
+  if (dayTarget.target == null || dayTarget.effectiveTarget == null) return null;
+  return trainingDayMacroGrams({
+    targetBase: dayTarget.target,
+    effectiveTarget: dayTarget.effectiveTarget,
+    objective: appliedObjective(nutritionProfile, profile),
   });
-  const target =
-    tdeeValue != null
-      ? targetCalories(
-          tdeeValue,
-          effectiveNutritionObjective(objective, isRealLifeDay(input.realLifePeriods, dayKey)),
-          nutritionProfile?.manualCalories ?? null,
-        )
-      : null;
+}
 
-  const effectiveTarget = input.dayTarget.effectiveTarget;
-  const targetMacros: MacroGrams | null = hasManualMacros(nutritionProfile)
-    ? {
-        protein: nutritionProfile?.manualProteinG ?? 0,
-        carbs: nutritionProfile?.manualCarbsG ?? 0,
-        fat: nutritionProfile?.manualFatG ?? 0,
-      }
-    : target != null && effectiveTarget != null
-      ? trainingDayMacroGrams({ targetBase: target, effectiveTarget, objective })
-      : null;
-
+/**
+ * Les cibles de l'onglet Nutrition (`useDayNutritionTargets`) : le socle et la base **de la cible du
+ * jour** (plus de second calcul), les macros (`dayMacroTargets`), et si le profil permet un calcul
+ * personnel.
+ *
+ * US NORYN-02, D1-A — avant, la base était recalculée ici sur `tdee` quel que soit le mode : en mode
+ * `activities`, les macros dépassaient la cible affichée et l'explication n'additionnait plus (écart E4).
+ */
+export function composeDayNutritionTargets(input: {
+  profile: TargetProfile | null;
+  nutritionProfile: TargetNutritionProfile | null;
+  dayTarget: Pick<DayCalorieTargetResult, 'socle' | 'socleKind' | 'target' | 'effectiveTarget'>;
+  at: Date;
+}): {
+  tdeeValue: number | null;
+  socleKind: 'tdee' | 'sportFree';
+  target: number | null;
+  targetMacros: MacroGrams | null;
+  profileComplete: boolean;
+} {
+  const { profile, nutritionProfile, dayTarget, at } = input;
   return {
-    tdeeValue,
-    target,
-    targetMacros,
-    profileComplete: profile?.weightKg != null && profile?.heightCm != null && age != null,
+    tdeeValue: dayTarget.socle,
+    socleKind: dayTarget.socleKind,
+    target: dayTarget.target,
+    targetMacros: dayMacroTargets({ profile, nutritionProfile, dayTarget }),
+    profileComplete: profile?.weightKg != null && profile?.heightCm != null && ageOf(profile?.birthDate, at) != null,
   };
 }

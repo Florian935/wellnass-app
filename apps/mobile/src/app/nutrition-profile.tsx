@@ -7,16 +7,16 @@ import {
   MICRONUTRIENT_KEYS,
   NUTRITION_OBJECTIVES,
   activityFactor,
-  computeAge,
   effectiveActivityLevel,
   hasChosenActivityLevel,
   DEFAULT_SPORT_FREE_LEVEL,
   defaultMacroRatios,
   macroGramsFromCalories,
+  localDateFromDayKey,
   macroRatiosFromGrams,
+  nutritionSocle,
   objectiveFromGoal,
   targetCalories,
-  tdee,
   type ActivityLevel,
   type DietRestriction,
   type MacroGrams,
@@ -36,6 +36,7 @@ import {
   useNutritionProfile,
 } from '@/data/repositories/nutrition-repository';
 import { useTrackedMicros } from '@/stores/tracked-micros';
+import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -118,14 +119,12 @@ export default function NutritionProfileScreen() {
   const trackedMicros = useTrackedMicros((s) => s.tracked);
   const toggleMicro = useTrackedMicros((s) => s.toggle);
 
-  const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : null;
-  const tdeeValue = tdee({
-    sex: profile?.sex ?? 'unspecified',
-    weightKg: profile?.weightKg ?? undefined,
-    heightCm: profile?.heightCm ?? undefined,
-    age: age ?? undefined,
-    activityLevel,
-  });
+  // US NORYN-02 (D1-A) — le socle de la cible du jour, pas un second calcul : en mode `activities`, le
+  // socle **hors sport** (DEPENSE-00). Avant, cet écran prenait `tdee` quel que soit le mode et annonçait
+  // un objectif que l'onglet Nutrition ne demandait pas. Toujours sans vie réelle ni bonus (VIE-01) :
+  // c'est l'écran où l'on règle l'objectif, pas la cible d'un jour.
+  const today = localDateFromDayKey(useTodayKey());
+  const { socle: tdeeValue, socleKind } = nutritionSocle({ profile, nutritionProfile, at: today });
 
   const autoTarget = tdeeValue != null ? targetCalories(tdeeValue, objective) : null;
   const target = tdeeValue != null ? targetCalories(tdeeValue, objective, manualCalories) : null;
@@ -232,12 +231,14 @@ export default function NutritionProfileScreen() {
       ) : (
         <Card>
           <View style={styles.row}>
-            <Text style={[styles.rowLabel, { color: colors.textMuted }]}>{t('nutrition.calories.tdee')}</Text>
+            <Text style={[styles.rowLabel, { color: colors.textMuted }]}>
+              {t(socleKind === 'sportFree' ? 'nutrition.calories.sportFreeBase' : 'nutrition.calories.tdee')}
+            </Text>
             <Text style={[styles.rowValue, { color: colors.text }]}>{tdeeValue} {t('nutrition.kcal')}</Text>
           </View>
           {/* R1.4 — « TDEE » est un sigle de nutritionniste posé sur le chiffre central du pilier. */}
           <Text style={[styles.hint, { color: colors.textMuted }]}>
-            {t('nutrition.calories.tdeeHint')}
+            {t(socleKind === 'sportFree' ? 'nutrition.calories.sportFreeBaseHint' : 'nutrition.calories.tdeeHint')}
           </Text>
           <View style={styles.row}>
             <Text style={[styles.rowLabel, { color: colors.textMuted }]}>{t('nutrition.calories.target')}</Text>

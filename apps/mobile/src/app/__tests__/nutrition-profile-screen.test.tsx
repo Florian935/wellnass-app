@@ -22,6 +22,8 @@
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
+import { defaultMacroRatios, macroGramsFromCalories, nutritionSocle, targetCalories } from '@wellness/shared';
+
 import NutritionProfileScreen from '../nutrition-profile';
 import { upsertNutritionProfile, useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
@@ -343,6 +345,24 @@ describe('calories', () => {
     // rendrait incompréhensible un déficit ou un surplus.
     expect(screen.getByText('nutrition.calories.tdee')).toBeTruthy();
     expect(screen.getByText('nutrition.calories.target')).toBeTruthy();
+  });
+
+  it('🔴 NORYN-02 (D1-A) — mode « selon ce que tu fais » : le socle HORS SPORT, nommé comme tel', async () => {
+    const nutritionProfile = { trainingBonusMode: 'activities', objective: 'cut' };
+    await afficher({ nutritionProfile });
+
+    // Avant : « Dépense estimée (TDEE) » quel que soit le mode, et un objectif que l'onglet Nutrition ne
+    // demandait pas (le `tdee` sport compris, au lieu du socle hors sport de la cible du jour).
+    expect(screen.getByText('nutrition.calories.sportFreeBase')).toBeTruthy();
+    expect(screen.getByText('nutrition.calories.sportFreeBaseHint')).toBeTruthy();
+    expect(screen.queryByText('nutrition.calories.tdee')).toBeNull();
+    const { socle } = nutritionSocle({ profile: PROFIL, nutritionProfile: { trainingBonusMode: 'activities' }, at: new Date() });
+    const target = targetCalories(socle as number, 'cut');
+    expect(Number(screen.getByLabelText(CHAMP.manuel).props.placeholder)).toBe(target);
+    // Les macros de l'objectif (sans bonus) sur cette même base : celles de l'onglet Nutrition un jour sans dépense.
+    expect(Number(screen.getAllByLabelText(CHAMP.grammes)[0]!.props.value)).toBe(
+      macroGramsFromCalories(target, defaultMacroRatios('cut')).protein,
+    );
   });
 
   it('🔴 la cible AUTOMATIQUE sert de placeholder au champ manuel', async () => {

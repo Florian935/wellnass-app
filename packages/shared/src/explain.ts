@@ -177,6 +177,11 @@ export function explainGlycogen(input: {
 
 export function explainCalorieTarget(input: {
   tdee: number;
+  /**
+   * US NORYN-02 — la nature du socle : en mode `activities`, c'est le socle **hors sport** (DEPENSE-00),
+   * et la ligne doit le dire. Absent = `tdee`.
+   */
+  socleKind?: 'tdee' | 'sportFree';
   objectiveDeltaKcal: number;
   trainingDayBonusKcal: number;
   target: number;
@@ -184,7 +189,7 @@ export function explainCalorieTarget(input: {
   profileComplete: boolean;
 }): Explanation {
   const steps: ExplainStep[] = [
-    { key: 'explain.kcal.tdee', value: input.tdee },
+    { key: input.socleKind === 'sportFree' ? 'explain.kcal.sportFree' : 'explain.kcal.tdee', value: input.tdee },
     { key: 'explain.kcal.objective', value: input.objectiveDeltaKcal },
   ];
   if (input.trainingDayBonusKcal !== 0) steps.push({ key: 'explain.kcal.trainingDay', value: input.trainingDayBonusKcal });

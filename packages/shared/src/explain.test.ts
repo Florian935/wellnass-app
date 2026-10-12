@@ -106,6 +106,13 @@ describe('explainRacePrediction', () => {
 });
 
 describe('explainCalorieTarget', () => {
+  it('US NORYN-02 — en mode `activities`, la première ligne nomme le socle hors sport', () => {
+    expect(
+      explainCalorieTarget({ tdee: 2448, socleKind: 'sportFree', objectiveDeltaKcal: -400, trainingDayBonusKcal: 600, target: 2648, profileComplete: true })
+        .steps[0],
+    ).toEqual({ key: 'explain.kcal.sportFree', value: 2448 });
+  });
+
   it('dépense, objectif, jour d’entraînement, cible', () => {
     expect(
       explainCalorieTarget({ tdee: 2480, objectiveDeltaKcal: -300, trainingDayBonusKcal: 0, target: 2180, profileComplete: true }),

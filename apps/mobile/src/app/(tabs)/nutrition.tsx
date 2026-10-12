@@ -127,6 +127,7 @@ export default function NutritionScreen() {
 
   const {
     tdeeValue,
+    socleKind,
     target,
     effectiveTarget,
     trainingBonus,
@@ -395,6 +396,7 @@ export default function NutritionScreen() {
           tdeeValue != null && target != null && effectiveTarget != null
             ? explainCalorieTarget({
                 tdee: tdeeValue,
+                socleKind,
                 objectiveDeltaKcal: target - tdeeValue,
                 trainingDayBonusKcal: trainingApplies && !targetLoading ? trainingBonus : 0,
                 target: effectiveTarget,

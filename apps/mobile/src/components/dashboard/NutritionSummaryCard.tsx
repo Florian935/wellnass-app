@@ -16,8 +16,7 @@ import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   mealForHour,
-  objectiveFromGoal,
-  trainingDayMacroGrams,
+  dayMacroTargets,
   type WidgetSize,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -123,21 +122,9 @@ export function NutritionSummaryCard({ size = 'wide' }: { size?: WidgetSize }) {
   const pct = eff != null && eff > 0 ? Math.min(1, kcal / eff) : 0;
   const pctBudget = eff != null && eff > 0 ? Math.round((remaining! / eff) * 100) : 0;
 
-  // Cibles macro (mêmes règles que l'écran nutrition : manuel prioritaire, sinon ratios objectif).
-  const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
-  const manualSet =
-    nutritionProfile?.manualProteinG != null ||
-    nutritionProfile?.manualCarbsG != null ||
-    nutritionProfile?.manualFatG != null;
-  const targetMacros = manualSet
-    ? {
-        protein: nutritionProfile?.manualProteinG ?? 0,
-        carbs: nutritionProfile?.manualCarbsG ?? 0,
-        fat: nutritionProfile?.manualFatG ?? 0,
-      }
-    : target != null && effectiveTarget != null && objective != null
-      ? trainingDayMacroGrams({ targetBase: target, effectiveTarget, objective })
-      : null;
+  // Cibles macro : la règle unique de l'app (`dayMacroTargets`, US NORYN-02 D1-A) — manuel prioritaire,
+  // sinon ratios de l'objectif sur la base du jour, bonus en glucides. Plus de copie ici.
+  const targetMacros = dayMacroTargets({ profile, nutritionProfile, dayTarget: { target, effectiveTarget } });
 
   // ── Petit carré ────────────────────────────────────────────────────────────
   if (size === 'small') {

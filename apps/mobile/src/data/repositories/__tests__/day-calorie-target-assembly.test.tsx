@@ -44,7 +44,9 @@ const TOMORROW = shiftKey(TODAY, 1);
 const targetOn = async (dayKey: string, sources: Sources = {}) => {
   setSources(sources);
   const { result } = await renderHook(() => useDayCalorieTarget(dayKey));
-  const { isLoading: _ignored, ...rest } = result.current;
+  // Étape 4 (D1-A) : le hook rend aussi le socle (`socle`, `socleKind`) — une forme, pas un calcul ; ses
+  // valeurs sont figées par le `describe` « socle » en fin de fichier.
+  const { isLoading: _ignored, socle: _socle, socleKind: _socleKind, ...rest } = result.current;
   return rest;
 };
 
@@ -229,5 +231,17 @@ describe('useDayCalorieTarget — mode `activities`', () => {
       effectiveTarget: 2048,
       bonusSource: 'none',
     });
+  });
+});
+
+describe('useDayCalorieTarget — le socle rendu (US NORYN-02, D1-A)', () => {
+  it('`tdee` hors mode `activities`, socle hors sport sinon', async () => {
+    setSources();
+    const fixed = await renderHook(() => useDayCalorieTarget(TODAY));
+    expect(fixed.result.current).toMatchObject({ socle: 2759, socleKind: 'tdee' });
+
+    setSources({ nutrition: { trainingBonusMode: 'activities' } });
+    const activities = await renderHook(() => useDayCalorieTarget(TODAY));
+    expect(activities.result.current).toMatchObject({ socle: 2448, socleKind: 'sportFree' });
   });
 });

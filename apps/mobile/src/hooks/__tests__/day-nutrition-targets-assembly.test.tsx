@@ -2,9 +2,9 @@
  * US NORYN-02 — le **filet** des cibles de macros : `useDayNutritionTargets` (onglet Nutrition) et
  * `useProteinTarget` (brief du matin, « Que manger ? », Prisme).
  *
- * Écrit et vert **avant** l'extraction : il fige le comportement **actuel, défaut E4 compris**
- * (spec NORYN-02 §1.2). L'extraction (étape 3 du plan) ne doit rien y changer ; la réparation D1
- * (étape 4) n'y change que les lignes du tableau §1.2, chacune commentée.
+ * Écrit et vert **avant** l'extraction : il figeait le comportement **actuel, défaut E4 compris**
+ * (spec NORYN-02 §1.2). L'extraction (étape 3 du plan) n'y a rien changé ; la réparation D1-A (étape 4)
+ * n'y change que les lignes du tableau §1.2, chacune marquée « D1-A » avec la valeur d'avant.
  *
  * Profil A, sèche (40 / 35 / 25) : `tdee` 2 759 → base 2 359 ; socle hors sport 2 448 → base 2 048.
  */
@@ -79,22 +79,30 @@ describe('useDayNutritionTargets — l’onglet Nutrition', () => {
     });
   });
 
-  // ── Défaut E4, figé tel quel avant l'extraction ──────────────────────────────────────────────
-  it('`activities`, repos : base `tdee` (2 359) sous une cible de 2 048 — macros 2 362 kcal', async () => {
+  // ── D1-A : l'écart E4 réparé ─────────────────────────────────────────────────────────────────
+  it('`activities`, repos : socle hors sport (2 448) et base 2 048 — les macros retombent sur la cible', async () => {
+    // D1-A — avant : tdeeValue 2 759, target 2 359, macros 236 / 206 / 66 (2 362 kcal pour une cible de 2 048).
     expect(await nutritionTargets({ nutrition: activitiesMode })).toMatchObject({
-      tdeeValue: 2759,
-      target: 2359,
+      tdeeValue: 2448,
+      socleKind: 'sportFree',
+      target: 2048,
       effectiveTarget: 2048,
-      targetMacros: { protein: 236, carbs: 206, fat: 66 },
+      targetMacros: { protein: 205, carbs: 179, fat: 57 },
     });
   });
 
-  it('`activities`, 600 kcal dépensées : protéines 236', async () => {
+  it('`activities`, 600 kcal dépensées : protéines 205, les 600 kcal en glucides', async () => {
+    // D1-A — avant : 236 / 278 / 66.
     expect(await nutritionTargets({ nutrition: activitiesMode, energyByDay: { [TODAY]: 600 } })).toMatchObject({
       effectiveTarget: 2648,
       trainingBonus: 600,
-      targetMacros: { protein: 236, carbs: 278, fat: 66 },
+      targetMacros: { protein: 205, carbs: 329, fat: 57 },
     });
+  });
+
+  it('l’explication additionne : socle + objectif + bonus = cible', async () => {
+    const r = await nutritionTargets({ nutrition: activitiesMode, energyByDay: { [TODAY]: 600 } });
+    expect((r.tdeeValue as number) + ((r.target as number) - (r.tdeeValue as number)) + r.trainingBonus).toBe(r.effectiveTarget);
   });
 
   it('macros manuelles complètes : telles quelles', async () => {
@@ -140,25 +148,32 @@ describe('useProteinTarget — le brief du matin, « Que manger ? », Prisme', (
     expect(await proteinTarget()).toBe(236);
   });
 
-  // ── Défaut : le bonus gonfle les protéines (contre MN-04 D1), figé tel quel ──────────────────
-  it('`fixed`, séance : 266 (cible effective)', async () => {
-    expect(await proteinTarget(trainedToday)).toBe(266);
+  // ── D1-A : la même règle que l'onglet Nutrition (le bonus va aux glucides, MN-04 D1) ────────
+  it('`fixed`, séance : 236, comme l’onglet Nutrition', async () => {
+    // D1-A — avant : 266 (protéines prises sur la cible effective, bonus compris).
+    expect(await proteinTarget(trainedToday)).toBe(236);
   });
 
   it('`activities`, repos : 205', async () => {
     expect(await proteinTarget({ nutrition: activitiesMode })).toBe(205);
   });
 
-  it('`activities`, 600 kcal : 265', async () => {
-    expect(await proteinTarget({ nutrition: activitiesMode, energyByDay: { [TODAY]: 600 } })).toBe(265);
+  it('`activities`, 600 kcal : 205', async () => {
+    // D1-A — avant : 265.
+    expect(await proteinTarget({ nutrition: activitiesMode, energyByDay: { [TODAY]: 600 } })).toBe(205);
   });
 
   it('protéines manuelles : la saisie', async () => {
     expect(await proteinTarget({ nutrition: { manualProteinG: 150 } })).toBe(150);
   });
 
-  it('glucides manuels seuls : le calcul', async () => {
-    expect(await proteinTarget({ nutrition: { manualCarbsG: 200 } })).toBe(236);
+  it('glucides manuels seuls : pas de cible de protéines', async () => {
+    // D1-A — avant : 236 (le calcul). L'onglet Nutrition affiche 0 g : le brief se tait plutôt.
+    expect(await proteinTarget({ nutrition: { manualCarbsG: 200 } })).toBeNull();
+  });
+
+  it('macros manuelles, objectif jamais posé : la saisie', async () => {
+    expect(await proteinTarget({ nutrition: { objective: null as unknown as 'cut', manualProteinG: 150 } })).toBe(150);
   });
 
   it('objectif nutritionnel jamais posé : null', async () => {

@@ -13,11 +13,7 @@
  */
 
 import { useMemo } from 'react';
-import {
-  objectiveFromGoal,
-  resolveActivePillars,
-  trainingDayMacroGrams,
-} from '@wellness/shared';
+import { dayMacroTargets, hasManualMacros, resolveActivePillars } from '@wellness/shared';
 import { useDayCalorieTarget } from '@/data/repositories/dashboard-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
@@ -46,18 +42,13 @@ export function useNutritionRelay(): { extraCarbsG: number } | null {
   if (target === null || effectiveTarget === null) return null;
 
   // Macros fixées à la main : le bonus ne les touche pas, il n'y a donc aucun relais à annoncer.
-  const manualSet =
-    nutritionProfile?.manualProteinG != null ||
-    nutritionProfile?.manualCarbsG != null ||
-    nutritionProfile?.manualFatG != null;
-  if (manualSet) return null;
+  if (hasManualMacros(nutritionProfile)) return null;
 
-  // Même chaîne que l'écran nutrition : l'objectif explicite du profil alimentaire prime, sinon
-  // il se déduit du but principal. Diverger ici afficherait un chiffre que le journal contredit.
-  const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
-  const base = trainingDayMacroGrams({ targetBase: target, effectiveTarget: target, objective });
-  const boosted = trainingDayMacroGrams({ targetBase: target, effectiveTarget, objective });
-  const extraCarbsG = Math.round(boosted.carbs - base.carbs);
+  // US NORYN-02 (D1-A) — la règle unique de l'app (`dayMacroTargets`), celle de l'écran nutrition :
+  // le même jour sans bonus, puis avec. Diverger ici afficherait un chiffre que le journal contredit.
+  const base = dayMacroTargets({ profile, nutritionProfile, dayTarget: { target, effectiveTarget: target } });
+  const boosted = dayMacroTargets({ profile, nutritionProfile, dayTarget: { target, effectiveTarget } });
+  const extraCarbsG = Math.round((boosted?.carbs ?? 0) - (base?.carbs ?? 0));
 
   return extraCarbsG > 0 ? { extraCarbsG } : null;
 }

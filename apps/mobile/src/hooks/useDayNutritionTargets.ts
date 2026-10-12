@@ -10,7 +10,9 @@
  *   redirige le bonus de séance vers les glucides (US MN-04).
  *
  * US NORYN-02 — la composition vit dans `composeDayNutritionTargets` (@wellness/shared) ; ce hook n'en
- * garde que les lectures.
+ * garde que les lectures. **D1-A** : le socle et la base sont ceux de la cible du jour — en mode
+ * `activities`, le socle hors sport. Avant, l'onglet les recalculait sur `tdee` quel que soit le mode :
+ * les macros dépassaient la cible affichée et l'explication de la cible n'additionnait plus (écart E4).
  */
 
 import { useMemo } from 'react';
@@ -18,7 +20,6 @@ import { composeDayNutritionTargets, localDateFromDayKey } from '@wellness/share
 import { useDayCalorieTarget } from '@/data/repositories/dashboard-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
-import { useRealLifePeriods } from '@/data/repositories/real-life-repository';
 import { useTodayKey } from '@/hooks/useTodayKey';
 
 export type Macros = { protein: number; carbs: number; fat: number };
@@ -26,29 +27,28 @@ export type Macros = { protein: number; carbs: number; fat: number };
 export function useDayNutritionTargets(day: string) {
   const { profile } = useProfile();
   const { nutritionProfile } = useNutritionProfile();
-  const { periods: realLifePeriods } = useRealLifePeriods();
   // L'âge se prend à la date du jour (réactive) : même résultat que `new Date()`, sans horloge lue ici.
   const todayKey = useTodayKey();
   const today = useMemo(() => localDateFromDayKey(todayKey), [todayKey]);
 
+  const dayTarget = useDayCalorieTarget(day);
   const {
     effectiveTarget,
     trainingBonus,
     isTrainingDay: trainingApplies,
     isLoading: targetLoading,
-  } = useDayCalorieTarget(day);
+  } = dayTarget;
 
-  const { tdeeValue, target, targetMacros, profileComplete } = composeDayNutritionTargets({
-    dayKey: day,
+  const { tdeeValue, socleKind, target, targetMacros, profileComplete } = composeDayNutritionTargets({
     profile,
     nutritionProfile,
-    realLifePeriods,
-    dayTarget: { effectiveTarget },
+    dayTarget,
     at: today,
   });
 
   return {
     tdeeValue,
+    socleKind,
     target,
     effectiveTarget,
     trainingBonus,
