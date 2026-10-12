@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — NORYN-01 : migration poussée, fonction déployée (`feature/noryn01-noryn-context` → `dev`)
+
+> Gestes humains de RECETTES §92 faits par Florian : jeton et empreinte générés hors de git, secrets
+> `NORYN_TOKEN_SHA256` et `NORYN_OWNER_USER_ID` posés, `npm run db:push`, `npm run noryn:deploy`,
+> `npm run db:types`. Ce commit range ce qui en découle. Commit précédent : `1b5657bf`.
+
+### Modifié
+- `packages/shared/src/database.types.ts` régénéré depuis le cloud : table `sync_receipts`, et
+  `note_sync_receipt_for` listée comme RPC (`execute` retiré à `anon` et `authenticated` par la
+  migration ; appelée par `service_role`, `auth.uid()` est nul et elle ne fait rien).
+- `supabase/MIGRATIONS.md` : `20261008134728_noryn01_sync_receipts` cochée (12/10/2026).
+- RECETTES §92 (gestes 1 à 4 faits), roadmap 9.17, en-tête de la spec.
+
+### Technique / Notes
+- Restent avant la recette : une première écriture du téléphone (le reçu de synchro est vide tant
+  qu'aucune écriture n'est arrivée depuis la migration) et le second compte de test.
+
 ## 12/10/2026 — Docs : recette PRISME-01 en cours (§91) et l'APK qui grossissait (`dev`)
 
 > Documentation seule, commitée avec l'accord de Florian : la progression de la recette PRISME-01, et

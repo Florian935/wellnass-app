@@ -5,7 +5,7 @@ roadmap: [9.17]
 catalogue: []
 etape: recette
 branche: feature/noryn01-noryn-context
-maj: 08/10/2026
+maj: 12/10/2026
 ---
 
 # US NORYN-01 — Noryn lit la journée et la semaine
@@ -24,7 +24,7 @@ maj: 08/10/2026
 > proposées (§2).
 > 🛠️ **Codée le 08/10/2026** (écarts au plan — des moyens, pas des règles — en fin de plan). En recette :
 > [RECETTES.md](../../../../RECETTES.md) §92, précédée des gestes humains (secrets, migration,
-> déploiement). Aucune migration poussée, aucun appel au projet Supabase par un agent.
+> déploiement) — **faits par Florian le 12/10/2026**. Aucun appel au projet Supabase par un agent.
 
 ## 0. Le besoin
 

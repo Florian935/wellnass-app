@@ -2796,6 +2796,29 @@ export type Database = {
           },
         ]
       }
+      sync_receipts: {
+        Row: {
+          received_at: string
+          user_id: string
+        }
+        Insert: {
+          received_at: string
+          user_id: string
+        }
+        Update: {
+          received_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sync_receipts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       todos: {
         Row: {
           created_at: string
@@ -3416,6 +3439,7 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_content_editor: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      note_sync_receipt_for: { Args: { row_owner: string }; Returns: undefined }
       purge_expired_accounts: { Args: never; Returns: number }
       request_account_deletion: { Args: never; Returns: string }
       unban_user: { Args: { target_user_id: string }; Returns: undefined }

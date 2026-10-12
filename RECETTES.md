@@ -6013,6 +6013,9 @@ Une fonction Edge, `noryn-context`, que Noryn appelle de serveur à serveur : `G
 Noryn et rien d'autre. **Aucun écran, aucun nouvel APK** : l'app ne change pas (deux refactors sans effet
 visible). Cibles caloriques et verdict de forme à `null` en v1 (D1, NORYN-02 au backlog).
 
+> ✅ **Gestes 1 à 4 faits par Florian le 12/10/2026** : jeton et empreinte générés, secrets posés,
+> migration poussée (types régénérés, registre coché), fonction déployée. Restent les gestes 5 et 6.
+>
 > 🔴 **À préparer AVANT de recetter, dans cet ordre — gestes humains, aucun agent ne les fait.**
 >
 > 1. **Le jeton.** Hors de git, une seule fois :
