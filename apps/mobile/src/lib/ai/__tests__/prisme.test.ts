@@ -63,6 +63,15 @@ describe('tellBilan — raconter, puis vérifier', () => {
     expect(track).toHaveBeenCalledWith('prisme_rejected', { provider: 'groq', surface: 'evening' });
   });
 
+  it('🔴 retire le gras Markdown avant l’écran : la carte n’affiche pas « **52 minutes** » (recette du 05/10/2026)', async () => {
+    ai.mockResolvedValue(reply('Tu as fait une séance de **52 minutes** aujourd’hui.\n\nC’est noté.'));
+
+    await expect(tellBilan(DOSSIER, 'evening', 'fr')).resolves.toEqual({
+      ok: true,
+      text: 'Tu as fait une séance de 52 minutes aujourd’hui.\n\nC’est noté.',
+    });
+  });
+
   it('jette une réponse inexploitable (trop courte)', async () => {
     ai.mockResolvedValue(reply('Ok.'));
 

@@ -10,6 +10,45 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — PRISME-01, recette §91 : le gras de Mistral ne s'affiche plus, « Ta semaine a bougé » (`dev`)
+
+> Recette de PRISME-01 menée avec Florian du 05 au 08/10/2026 (RECETTES §91), sur APK local. Prisme
+> est servi par **Mistral AI** (`PRISME_PROVIDER=mistral`, opt-out d'entraînement vérifié) : la console
+> Groq refusait de créer une clé. Deux défauts trouvés, corrigés test d'abord. Commit précédent :
+> `32c7f7cf` (le catalogue d'aliments, trouvé pendant la même recette).
+
+### Corrigé
+- 🔴 **Le gras Markdown du modèle s'affichait tel quel.** `ministral-14b-latest` écrivait
+  « **52 minutes** » dans **6 récits sur 6** (S5, S8), malgré la consigne « texte simple », et la carte
+  rend un `Text` brut. `stripMarkdown` (`ai-narration.ts`) retire gras, italique, code et titres —
+  un astérisque isolé (« 5 * 3 ») reste — et `tellBilan` l'applique **avant** le garde-fou et
+  l'affichage. L'invite du bilan demande aussi un texte brut (FR « Écris du texte brut, sans gras ni
+  astérisques, sans titre ni liste. », EN « Write plain text, no bold, no asterisks, no headings or
+  lists. »). Tests rouges d'abord : 4 Vitest (shared), 1 Jest (`prisme.test.ts`).
+- **« Ta journée a bougé depuis ce texte » sous le bilan de la semaine.** Une semaine close bouge
+  encore — un repas oublié s'ajoute depuis Nutrition › Historique, et c'est ce que la recette D2 a
+  fait. Nouvelle clé `prisme.staleWeek` (« Ta semaine a bougé depuis ce texte. » / « Your week has
+  changed since this text. »), choisie par `PrismeTell` selon la surface ; le commentaire de
+  `PrismeWeek` qui disait le contraire est corrigé. Test rouge d'abord.
+
+### Technique / Notes
+- **Réglages serveur posés par Florian** (secrets, hors dépôt) : le modèle par défaut de la fonction,
+  `mistral-small-latest`, est plafonné à **0 requête/min** sur le palier gratuit (429 `1300` après
+  3 tentatives — le quota, lui, est bien rendu) ; `mistral-medium-latest` aussi, `mistral-large-latest`
+  est hors palier (403 `1910`). **`MISTRAL_MODEL=ministral-14b-latest`** (30 req/min) posé avec une
+  nouvelle clé. ⚠️ Le plan B de la §91 ne mentionne pas `MISTRAL_MODEL` : à ajouter.
+- Recette §91 au 08/10/2026 : **S3 à S10, critères 1, 2, 3, B1, 7, D1, D2 validés** ; S1/S2 reportés au
+  critère 17 (même changement de réglage) ; 18 attend Groq ; section E reprise avec le nouvel APK ;
+  section C après 18 h ; 8 demande un build de développement. RECETTES.md **non inclus** dans ce commit
+  (il porte aussi une note d'une autre session, à commiter avec l'accord de Florian).
+- Jeu SQL de recette dans le cloud, sur le compte de Florian : semaine du 28/09 et objectif sur un
+  exercice perso (ids `91000000-…`) — script de nettoyage à jouer en fin de recette.
+- À juger au critère 10 : sur « poke bowl saumon avocat », Mistral ajoute des ingrédients non cités
+  (nori, œuf, maïs, carotte, concombre, confiance 0,6 à 0,85).
+- Spec `etape: recette` inchangée ; roadmap 7.42 et 4.48 : statut inchangé (✅).
+- Qualité, même arbre que le commit précédent : lint, typecheck, `agents:check` à 0 ; tests verts
+  (3 962 Vitest shared, 5 025 Jest mobile, 587 admin).
+
 ## 12/10/2026 — Nutrition : le catalogue d'aliments sans `LEFT JOIN` — la recherche répond, la saisie par liste reconnaît (`dev`)
 
 > Trouvé le 08/10/2026 en recette de PRISME-01 (RECETTES §91, critère 10), sur l'APK du téléphone de

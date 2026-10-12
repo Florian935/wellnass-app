@@ -6646,6 +6646,7 @@
     "rejected": "Prisme a écarté sa réponse : elle citait un chiffre absent de tes données.",
     "invalid": "Prisme n’a pas su le raconter cette fois. Tes chiffres sont juste au-dessus.",
     "stale": "Ta journée a bougé depuis ce texte.",
+    "staleWeek": "Ta semaine a bougé depuis ce texte.",
     "sources": "D’où ça vient",
     "devSimulate": "Simuler un chiffre inventé (développement)",
     "evening": {

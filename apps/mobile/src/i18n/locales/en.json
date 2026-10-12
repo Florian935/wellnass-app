@@ -6646,6 +6646,7 @@
     "rejected": "Prisme discarded its answer: it quoted a number that isn’t in your data.",
     "invalid": "Prisme couldn’t tell it this time. Your numbers are just above.",
     "stale": "Your day has changed since this text.",
+    "staleWeek": "Your week has changed since this text.",
     "sources": "Where it comes from",
     "devSimulate": "Simulate an invented number (development)",
     "evening": {

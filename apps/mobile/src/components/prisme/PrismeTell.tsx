@@ -105,7 +105,10 @@ export function PrismeTell({ dossier, usage, storeKey, fingerprint, testID = 'pr
         <View style={styles.result} accessibilityLiveRegion="polite">
           {stale ? (
             <View style={styles.staleRow}>
-              <Text style={[styles.meta, styles.staleText, { color: colors.textMuted }]}>{t('prisme.stale')}</Text>
+              {/* Une semaine close bouge aussi : un repas oublié s'ajoute depuis l'Historique. */}
+              <Text style={[styles.meta, styles.staleText, { color: colors.textMuted }]}>
+                {t(usage === 'week' ? 'prisme.staleWeek' : 'prisme.stale')}
+              </Text>
               <Pressable
                 testID={`${testID}-retell`}
                 accessibilityRole="button"

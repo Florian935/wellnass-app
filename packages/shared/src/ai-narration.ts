@@ -178,6 +178,23 @@ export function checkNarration(
 }
 
 /**
+ * US PRISME-01 — le texte d'un modèle, **sans ses marques Markdown** : gras, italique, code, titres.
+ *
+ * 🔴 **Constaté en recette le 05/10/2026** : `ministral-14b` (Mistral) écrivait « **52 minutes** » dans
+ * 6 récits sur 6, malgré la consigne « texte simple ». L'écran affiche un `Text` brut : les astérisques
+ * seraient apparus tels quels sur la carte. L'invite le demande aussi, mais seule cette passe le
+ * garantit. Un astérisque isolé (« 5 * 3 ») n'est pas une marque : il reste.
+ */
+export function stripMarkdown(text: string): string {
+  return text
+    .replace(/^#{1,6}[ \t]+/gm, '')
+    .replace(/\*\*(\S(?:[^*\n]*\S)?)\*\*/g, '$1')
+    .replace(/__(\S(?:[^_\n]*\S)?)__/g, '$1')
+    .replace(/\*(\S(?:[^*\n]*\S)?)\*/g, '$1')
+    .replace(/`([^`\n]+)`/g, '$1');
+}
+
+/**
  * La liste de référence du garde-fou : tout ce que le modèle a **effectivement sous les yeux**.
  *
  * 🔴 On ne se contente pas des valeurs brutes (`fact.values`), on relit aussi **le texte du
@@ -323,6 +340,7 @@ export function buildBilanPrompt(
           : 'Raconte cette semaine en trois ou quatre phrases, à la personne concernée, en la tutoyant.',
         "N'emploie QUE les chiffres ci-dessus, tels quels. Ne calcule aucun écart, aucun total, aucun pourcentage.",
         'Commence par ce qui a été fait. Pas de diagnostic, pas de culpabilisation, pas d’injonction.',
+        'Écris du texte brut, sans gras ni astérisques, sans titre ni liste.',
       ]
     : [
         usage === 'evening'
@@ -330,6 +348,7 @@ export function buildBilanPrompt(
           : 'Tell this week in three or four sentences, to the person concerned.',
         'Use ONLY the numbers above, as they are. Do not compute any difference, total or percentage.',
         'Start with what was done. No diagnosis, no guilt, no orders.',
+        'Write plain text, no bold, no asterisks, no headings or lists.',
       ];
 
   if (dossier.decision !== null) {

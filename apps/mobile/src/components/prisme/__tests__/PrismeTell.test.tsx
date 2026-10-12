@@ -172,6 +172,15 @@ describe('PrismeTell', () => {
     expect(screen.getByText('Texte neuf.')).toBeTruthy();
   });
 
+  it('🔴 une semaine complétée après lecture dit « ta semaine a bougé », pas « ta journée » (recette du 06/10/2026)', async () => {
+    usePrismeStore.setState({ texts: { 'week:2026-09-28': { text: 'Texte d’avant.', fingerprint: 'a' } } });
+
+    await render(<PrismeTell dossier={DOSSIER} usage="week" storeKey="week:2026-09-28" fingerprint="b" testID="t" />);
+
+    expect(screen.getByText('prisme.staleWeek')).toBeTruthy();
+    expect(screen.queryByText('prisme.stale')).toBeNull();
+  });
+
   it('un texte à jour ne se dit pas périmé', async () => {
     usePrismeStore.setState({ texts: { 'evening:2026-10-02': { text: 'Texte à jour.', fingerprint: 'a' } } });
 

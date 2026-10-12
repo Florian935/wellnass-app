@@ -18,6 +18,7 @@ import {
   buildBilanPrompt,
   checkNarration,
   parseMealTextResult,
+  stripMarkdown,
   type BilanDossier,
   type MealPhotoItem,
 } from '@wellness/shared';
@@ -71,7 +72,9 @@ export async function tellBilan(
     return { ok: false, code: response.code };
   }
 
-  const text = __DEV__ && usePrismeStore.getState().devSimulateInvented ? `${response.text}${SIMULATED_INVENTION}` : response.text;
+  // Le gras d'un modèle (« **52 minutes** ») s'afficherait tel quel dans un `Text` brut.
+  const told = stripMarkdown(response.text);
+  const text = __DEV__ && usePrismeStore.getState().devSimulateInvented ? `${told}${SIMULATED_INVENTION}` : told;
   const verdict = checkNarration(text, bilanNumbers(dossier, lang), { lang, maxChars: BILAN_MAX_CHARS });
   const measure = { provider: response.provider, surface: usage };
 

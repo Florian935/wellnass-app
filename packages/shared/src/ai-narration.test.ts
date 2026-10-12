@@ -9,6 +9,7 @@ import {
   expandAllowedNumbers,
   extractNumbers,
   NARRATION_MAX_CHARS,
+  stripMarkdown,
   type BilanDossier,
   type NarrationDossier,
 } from './ai-narration';
@@ -325,5 +326,28 @@ describe('buildBilanPrompt — les bilans de Prisme', () => {
     expect(context).toContain('SUMMARY:');
     expect(question).toContain('Tell this day');
     expect(question).toContain('no reproach');
+  });
+
+  it('demande du texte brut, sans gras ni astérisques (recette du 05/10/2026)', () => {
+    expect(buildBilanPrompt(EVENING, 'fr', 'evening').question).toContain('texte brut, sans gras ni astérisques');
+    expect(buildBilanPrompt(WEEK, 'en', 'week').question).toContain('plain text, no bold, no asterisks');
+  });
+});
+
+describe('stripMarkdown — Prisme écrit du texte, pas du Markdown', () => {
+  it('🔴 retire le gras que Mistral met autour d’un chiffre (recette du 05/10/2026)', () => {
+    expect(stripMarkdown('Tu as fait une séance de **52 minutes** aujourd’hui.\n\nC’est noté.')).toBe(
+      'Tu as fait une séance de 52 minutes aujourd’hui.\n\nC’est noté.',
+    );
+  });
+
+  it('retire aussi l’italique, le code et les titres', () => {
+    expect(stripMarkdown('__Bonne__ séance, *vraiment*, avec `8 420 kg`.')).toBe('Bonne séance, vraiment, avec 8 420 kg.');
+    expect(stripMarkdown('## Ta journée\nTu as couru 5 km.')).toBe('Ta journée\nTu as couru 5 km.');
+  });
+
+  it('laisse un astérisque isolé et un texte sans marque tels quels', () => {
+    expect(stripMarkdown('5 * 3 séries, puis 2 * 4.')).toBe('5 * 3 séries, puis 2 * 4.');
+    expect(stripMarkdown('Bonne séance de musculation ce soir : 52 min.')).toBe('Bonne séance de musculation ce soir : 52 min.');
   });
 });

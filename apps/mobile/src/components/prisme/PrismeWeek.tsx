@@ -53,7 +53,8 @@ export function PrismeWeek({ review, periodLabel, decisionText }: Props) {
       dossier={dossier}
       usage="week"
       storeKey={`week:${review.period.start}`}
-      // Une semaine close ne bouge plus : son empreinte est celle du dossier lui-même.
+      // L'empreinte est le dossier lui-même : une semaine close bouge encore quand on y ajoute un repas
+      // oublié (Nutrition › Historique), et le texte se dit alors périmé.
       fingerprint={JSON.stringify(dossier)}
       testID="review-prisme"
     />
