@@ -73,4 +73,43 @@ describe('bestMatchIndex', () => {
     expect(bestMatchIndex('xyzzy', foods)).toBe(-1);
     expect(bestMatchIndex('', foods)).toBe(-1);
   });
+
+  // Recette PRISME-01 du 12/10/2026 : « poke bowl saumon avocat » était « reconnu »… comme Avocat,
+  // 150 g, 305 kcal. Le saumon et le riz disparaissaient, et Prisme n'était jamais proposé.
+  const ciqual = ['Avocat', 'Avocat, pulpe, crue', 'Saumon, cru', 'Riz blanc, cuit', 'Salade verte', 'Tomate, crue', 'Pâte de fruits'];
+
+  it('🔴 un plat composé n’est pas reconnu par un seul de ses ingrédients', () => {
+    expect(bestMatchIndex('poke bowl saumon avocat', ciqual)).toBe(-1);
+  });
+
+  it('🔴 une liste sans virgule n’est pas reconnue par un seul de ses mots', () => {
+    expect(bestMatchIndex('salade tomate concombre maïs thon', ciqual)).toBe(-1);
+  });
+
+  it('🔴 un mot sur deux ne suffit pas : « algue nori » n’est pas de l’agar', () => {
+    expect(bestMatchIndex('algue nori', ['Agar (algue), frais, cru'])).toBe(-1);
+  });
+
+  it('🔴 un mot de liaison commun ne suffit pas', () => {
+    expect(bestMatchIndex('beurre de cacahuète', ['Pâte de fruits'])).toBe(-1);
+  });
+
+  // Contrôle sur le vrai catalogue CIQUAL, même jour : le texte était cherché À L'INTÉRIEUR des mots.
+  const vrais = ['Chorizo', 'Riz blanc cuit', 'Pomme', 'Pomme de terre cuite', 'Compote de pomme, préemballée'];
+
+  it('🔴 « riz » donne du riz, pas du chorizo', () => {
+    expect(vrais[bestMatchIndex('riz', vrais)]).toBe('Riz blanc cuit');
+  });
+
+  it('🔴 « pommes de terre » et « compote de pommes » ne sont pas des pommes', () => {
+    expect(vrais[bestMatchIndex('pommes de terre', vrais)]).toBe('Pomme de terre cuite');
+    expect(vrais[bestMatchIndex('compote de pommes', vrais)]).toBe('Compote de pomme, préemballée');
+  });
+
+  it('garde une correspondance qui couvre l’essentiel du texte, ponctuation du catalogue comprise', () => {
+    expect(ciqual[bestMatchIndex('avocat', ciqual)]).toBe('Avocat');
+    expect(ciqual[bestMatchIndex('saumon cru', ciqual)]).toBe('Saumon, cru');
+    expect(ciqual[bestMatchIndex('filet de saumon cru', ciqual)]).toBe('Saumon, cru');
+    expect(['Yaourt nature', 'Yaourt aux fruits'][bestMatchIndex('yaourt nature bio', ['Yaourt nature', 'Yaourt aux fruits'])]).toBe('Yaourt nature');
+  });
 });

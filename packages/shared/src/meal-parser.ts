@@ -140,28 +140,53 @@ function singular(word: string): string {
   return word.length > 3 && word.endsWith('s') ? word.slice(0, -1) : word;
 }
 
+/** Mots de liaison : ils ne disent rien de l'aliment, et ne comptent ni pour ni contre. */
+const LINK_WORDS = new Set([
+  'de', 'du', 'des', 'd', 'la', 'le', 'les', 'l', 'au', 'aux', 'a', 'en', 'et', 'avec', 'un', 'une',
+  'of', 'the', 'with', 'and',
+]);
+
+/** Les mots porteurs d'un nom normalisé : sans la ponctuation du catalogue (« Saumon, cru »), au singulier. */
+function contentWords(normalized: string): string[] {
+  return normalized
+    .split(/[^a-z0-9œæ]+/)
+    .filter((word) => word.length > 0 && !LINK_WORDS.has(word))
+    .map(singular);
+}
+
 /**
  * Indice du meilleur aliment correspondant à `name` parmi `candidateNames`
  * (tolérant aux accents et au pluriel). Renvoie -1 si aucune correspondance plausible.
+ *
+ * 🔴 **Un nom qui n'explique pas PLUS de la moitié du texte ne le reconnaît pas** (recette
+ * PRISME-01, 12/10/2026). « poke bowl saumon avocat » était « reconnu »… comme Avocat, 150 g,
+ * 305 kcal : le saumon et le riz disparaissaient du journal, et la ligne, réputée reconnue, ne
+ * partait jamais chez Prisme. Tout se compte en mots porteurs : ni la ponctuation du catalogue, ni
+ * les mots de liaison.
  */
 export function bestMatchIndex(name: string, candidateNames: ReadonlyArray<string>): number {
   const t = normalizeName(name);
   if (t.length === 0) return -1;
-  const tWords = t.split(' ').map(singular);
+  const tWords = contentWords(t);
+  // Rien que des mots de liaison (« de ») : rien à reconnaître.
+  if (tWords.length === 0) return -1;
   let best = -1;
   let bestScore = 0;
   candidateNames.forEach((candidate, i) => {
     const n = normalizeName(candidate);
-    let score = 0;
-    if (n === t) {
-      score = 100;
-    } else if (n.includes(t) || t.includes(n)) {
-      score = 60 - Math.abs(n.length - t.length);
-    } else {
-      const cWords = n.split(' ').map(singular);
-      const overlap = tWords.filter((w) => cWords.includes(w)).length;
-      score = overlap > 0 ? 20 * overlap : 0;
-    }
+    const cWords = contentWords(n);
+    const covered = tWords.filter((w) => cWords.includes(w)).length;
+    if (n !== t && covered * 2 <= tWords.length) return;
+    // Compté en MOTS, jamais en sous-chaîne : « riz » est dans « chorizo », et le nom le plus court
+    // gagnait. Ce qui compte : la part du texte que le nom explique (rappel), puis la part du nom que
+    // le texte explique (précision : « Pomme de terre cuite » bat « Pomme » pour « pommes de terre »),
+    // et un nom qui commence comme le texte.
+    const score =
+      n === t
+        ? 100
+        : 50 * (covered / tWords.length) +
+          30 * (covered / Math.max(1, cWords.length)) +
+          (cWords[0] === tWords[0] ? 10 : 0);
     if (score > bestScore) {
       bestScore = score;
       best = i;

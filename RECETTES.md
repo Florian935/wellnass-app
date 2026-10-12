@@ -5927,8 +5927,9 @@ ai() { curl -s -w '  → HTTP %{http_code}\n' "$URL/functions/v1/ai-assist" -H "
       case 18 ans exigée (date de naissance vide).
 - [x] 3. « Activer », puis « Prisme raconte » **tout de suite** : pas de refus du serveur.
       — **Florian, 06/10/2026** (APK) : premier récit du bilan hebdo après l'accord, pas de refus, plus d'astérisques.
-- [ ] 14. Compte de **moins de 18 ans** : rien de Prisme nulle part ; Réglages › Prisme dit « réservé aux
+- [x] 14. Compte de **moins de 18 ans** : rien de Prisme nulle part ; Réglages › Prisme dit « réservé aux
       18 ans et plus », sans interrupteur.
+      — **Florian, 12/10/2026** (APK).
 - [ ] 18. Changer `PRISME_PROVIDER` (Groq → Mistral avec `MISTRAL_TRAINING_OPTOUT=verified`, ou →
       `anthropic`) et redéployer : au geste suivant, la feuille d'accord revient, au nom du nouveau
       fournisseur ; Réglages montre l'interrupteur **éteint**.
@@ -5973,24 +5974,33 @@ ai() { curl -s -w '  → HTTP %{http_code}\n' "$URL/functions/v1/ai-assist" -H "
 
 ### E — Le repas (saisie rapide)
 
-- [ ] 10. « un yaourt nature et un poke bowl saumon avocat » : le yaourt est reconnu localement ; sous la
+- [x] 10. « un yaourt nature et un poke bowl saumon avocat » : le yaourt est reconnu localement ; sous la
       revue, Prisme montre **« Ce qui part chez Groq : « poke bowl saumon avocat ». Rien d'autre. »**
       **avant** l'envoi ; « Demander à Prisme » → les lignes rendues **remplacent** la ligne non trouvée,
       avec leurs grammes, modifiables ; la moins sûre porte « à vérifier » ; rien n'est écrit avant
       « Ajouter ».
-- [ ] 11. Un aliment rendu par Prisme mais **absent de la base** reste « non reconnu », sans valeur, non
+      — **Florian, 12/10/2026** (APK du 12/10, 11 h 04) : KO au premier passage — le rapprochement local
+      « reconnaissait » le poke bowl comme Avocat 150 g et donnait du chorizo pour « riz » ; corrigé
+      (`bestMatchIndex`, test d'abord), repassé OK.
+- [x] 11. Un aliment rendu par Prisme mais **absent de la base** reste « non reconnu », sans valeur, non
       compté dans « Ajouter N », et **ne repart pas** chez Prisme.
-- [ ] E1. Une phrase de plus de 12 aliments : « Prisme a gardé les 12 premiers aliments… ». Un texte sans
+      — **Florian, 12/10/2026** (APK).
+- [x] E1. Une phrase de plus de 12 aliments : « Prisme a gardé les 12 premiers aliments… ». Un texte sans
       aliment (« bonjour ») : « Prisme n'a reconnu aucun aliment » ; la revue ne bouge pas.
-- [ ] E2. Tout reconnu localement : **pas** de « Demander à Prisme ».
+      — **Florian, 12/10/2026** (APK) : liste de 14 aliments sans virgule → « 12 premiers » ; « bonjour » → aucun.
+- [x] E2. Tout reconnu localement : **pas** de « Demander à Prisme ».
+      — **Florian, 12/10/2026** (APK) : « une banane et un yaourt nature » → Banane 120 g, Yaourt nature 125 g,
+      « Ajouter 2 aliments », aucun recours.
 
 ### F — Absences et transverse
 
 - [ ] 16. **Mode avion** : les entrées restent ; le geste dit « Prisme a besoin du réseau. Tes chiffres, eux,
       sont là. » **Quota épuisé** : « Tu as utilisé les demandes du jour. Retour demain matin. » ; faits intacts.
+      — **Florian, 12/10/2026** : mode avion validé ; **quota épuisé à faire** (compteur mis à 6 par SQL).
 - [ ] 17. `PRISME_PROVIDER=gemini` (ou Mistral sans opt-out) : rien de Prisme dans l'app ; Réglages ›
       Prisme dit « pas disponible pour l'instant ».
-- [ ] 19. **Labo IA** inchangé : `AI_PROVIDER`, son propre accord, son quota ; il répond comme avant.
+- [x] 19. **Labo IA** inchangé : `AI_PROVIDER`, son propre accord, son quota ; il répond comme avant.
+      — **Florian, 12/10/2026** (APK).
 - [ ] 9. **Anglais** : un texte avec « 12,480 kg » passe quand le dossier porte 12 480 ; « 12,900 kg » est
       rejeté (couvert par les tests du garde-fou ; à l'écran, vérifier qu'un tonnage à 4 chiffres en anglais
       n'est **pas** rejeté à tort).

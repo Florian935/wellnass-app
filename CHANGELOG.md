@@ -10,6 +10,53 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — Nutrition : la saisie par liste ne prend plus un poke bowl pour un avocat, ni du riz pour du chorizo (`dev`)
+
+> Trouvé le 12/10/2026 en recette de PRISME-01 (RECETTES §91, critère 10), sur l'APK qui portait le
+> correctif du catalogue (`32c7f7cf`) : maintenant que la saisie par liste **voit** les 3 244 aliments,
+> « un yaourt nature et un poke bowl saumon avocat » donnait Yaourt nature **et Avocat, 150 g,
+> 305 kcal** — le saumon et le riz disparaissaient, et la ligne, réputée reconnue, ne partait jamais
+> chez Prisme. Commit précédent : `1b5657bf`.
+
+### Corrigé
+- 🔴 **Un seul mot suffisait à « reconnaître » une ligne** (`bestMatchIndex`, `meal-parser.ts`) : un
+  nom d'aliment contenu dans le texte tapé, ou partageant un mot avec lui, gagnait. Un aliment ne
+  reconnaît plus une ligne que s'il en explique **plus de la moitié des mots porteurs** (mots de liaison
+  « de », « du », « aux »… et ponctuation du catalogue écartés). « poke bowl saumon avocat », une liste
+  de 14 aliments sans virgule et « algue nori » (qui donnait « Agar (algue) ») partent désormais chez
+  Prisme ; « beurre de cacahuète » n'est plus une « Pâte de fruits » par le seul « de ».
+- 🔴 **Le texte était cherché à l'intérieur des mots** : contrôle sur les vrais noms CIQUAL, « 100 g de
+  riz » donnait **Chorizo** (« riz » est dans « cho**riz**o », et le nom le plus court gagnait),
+  « pommes de terre » et « compote de pommes » donnaient « Pomme ». Classement compté **en mots** :
+  part du texte expliquée par le nom, puis part du nom expliquée par le texte, puis un nom qui commence
+  comme le texte. Riz → « Riz blanc cuit », pommes de terre → « Pomme de terre cuite », compote →
+  « Compote de pomme ».
+
+### Ajouté
+- `meal-parser.test.ts` : 8 tests sur des noms CIQUAL réels (plat composé, liste sans virgule, un mot
+  sur deux, mot de liaison, chorizo, pommes de terre et compote, correspondances à garder) — 7 rouges
+  avant le correctif. `meal-quick-entry-screen.test.tsx` : le poke bowl part chez Prisme même quand la
+  base connaît l'avocat — rouge avant.
+
+### Modifié
+- RECETTES §91 : E2, 10 (KO au premier passage, cause et correctif notés), 11, E1, 14, 19 cochés ;
+  16 à moitié (mode avion validé, quota épuisé à faire).
+
+### Technique / Notes
+- ⚠️ **Contrepartie assumée** : « pavé de saumon » n'est plus reconnu localement (un mot porteur sur
+  deux). Il part chez Prisme, ou l'utilisateur choisit parmi les suggestions de la ligne — plutôt qu'un
+  faux rapprochement écrit dans le journal. À rediscuter si la recette le trouve gênant.
+- Contrôle sur une trentaine de saisies courantes contre les 3 244 noms CIQUAL : banane, poulet, œufs,
+  jambon, lait demi-écrémé, compote, pommes de terre tombent juste. Restent des ambiguïtés anciennes
+  (« verre de lait » → « Lait de coco », plus court que « Lait demi-écrémé ») : sans notion d'aliment
+  courant, le classement ne peut pas trancher.
+- Seul appelant : la saisie par liste (`meal-quick-entry.tsx`, analyse locale et rapprochement des
+  aliments de Prisme). Roadmap 4.36, statut inchangé (✅).
+- APK local reconstruit le 12/10 à 11 h 04 (bundle forcé : le correctif est dans `packages/shared`,
+  que Gradle ignore) ; critères 10, 11 et E1 repassés OK sur le téléphone.
+- Qualité : lint, typecheck, `agents:check` à 0 ; tests verts (3 969 Vitest shared, 5 026 Jest mobile,
+  587 admin), code de sortie lu sans pipe.
+
 ## 12/10/2026 — NORYN-01 : migration poussée, fonction déployée (`feature/noryn01-noryn-context` → `dev`)
 
 > Gestes humains de RECETTES §92 faits par Florian : jeton et empreinte générés hors de git, secrets

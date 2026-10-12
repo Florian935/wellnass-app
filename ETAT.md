@@ -142,8 +142,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/noryn01-noryn-context` (modifications non commitées) |
-| Commits | 1357 · `main` a **1354** commits de retard sur `dev` |
+| Branche courante | `dev` (modifications non commitées) |
+| Commits | 1358 · `main` a **1355** commits de retard sur `dev` |
 | Specs d'US | 189 au total — 89 clôturées, 100 en cours |
 | Migrations | 115/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -154,11 +154,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `d359c1e`  chore(noryn): NORYN-01 — migration poussée et fonction déployée, types régénérés
 - `1b5657b`  docs(recette): PRISME-01 en cours (§91), et l'APK qui grossissait à chaque build
 - `1386f61`  fix(prisme): recette §91 — le gras de Mistral ne s'affiche plus, « Ta semaine a bougé »
 - `32c7f7c`  fix(nutrition): le catalogue d'aliments sans LEFT JOIN — la recherche répond, la saisie par liste reconnaît
 - `bd5101f`  feat(noryn): NORYN-01 — Noryn lit la journée et la semaine, la fonction noryn-context
-- `77d6f3b`  docs(noryn): NORYN-01 cadrée et validée — Noryn lit la journée et la semaine
 
 ---
 

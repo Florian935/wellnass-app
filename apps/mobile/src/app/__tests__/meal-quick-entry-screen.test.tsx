@@ -532,6 +532,15 @@ describe('recours Prisme', () => {
     expect(envoye()).toBe('poke bowl maison');
   });
 
+  it('🔴 un plat composé part chez Prisme, même quand la base connaît un de ses ingrédients (recette du 12/10/2026)', async () => {
+    await afficher({ foods: [...base, aliment({ id: 'f-avo', name: 'Avocat', kcalPer100g: 203 })] });
+
+    await analyser('100 g de banane et un poke bowl saumon avocat');
+
+    // Il était « reconnu » comme Avocat, 150 g, 305 kcal — et Prisme n'était jamais proposé.
+    expect(envoye()).toBe('un poke bowl saumon avocat');
+  });
+
   it('tout reconnu : pas de recours', async () => {
     await afficher({ foods: base });
 
