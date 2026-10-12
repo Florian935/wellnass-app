@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 269 livré · 4 partiel · 2 à faire (sur 281)
+**MVP1 (= V1.0 complète)** `███████████████████░` **95 %** — 269 livré · 4 partiel · 3 à faire (sur 282)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **3 candidats P0**
 avant de pouvoir publier.
@@ -115,6 +115,7 @@ avant de pouvoir publier.
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
+| **NORYN-02** — Noryn reçoit les cibles et le verdict de forme — la composition sortie des hooks, sans formule recopiée | `validation` | `feature/noryn02-cibles-forme` | [9.18] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
@@ -131,7 +132,7 @@ avant de pouvoir publier.
 
 **P1** — ACCES-IA — Prisme réservé aux testeurs · PRISME-01b — Les résumés du Labo dans la voix de Prisme · RUN-F3b — Météo de course · CLAV-01 — Le clavier recouvre les formulaires (edge-to-edge) · CARDIO-02 — Les quatre portes vers l'allure de référence · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect · IDENT-01 — L'identité de pilier appartient à l'écran, pas à l'onglet
 
-**P2** — PRISME-02 — La photo de repas, avec Prisme · SOCLE-01 — RevenueCat câblé inactif · VBT-01 — Vitesse de barre à la caméra · NORYN-02 — Les cibles et le verdict de forme pour Noryn · CARDIO-08 — « X sur Y dans la plage » sans l’échauffement, dans l’analyse
+**P2** — PRISME-02 — La photo de repas, avec Prisme · SOCLE-01 — RevenueCat câblé inactif · VBT-01 — Vitesse de barre à la caméra · CIBLE-01 — Une seule « cible du jour » dans tout le pilier Nutrition · CARDIO-08 — « X sur Y dans la plage » sans l’échauffement, dans l’analyse
 
 </details>
 
@@ -141,9 +142,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/noryn01-noryn-context` (modifications non commitées) |
-| Commits | 1359 · `main` a **1356** commits de retard sur `dev` |
-| Specs d'US | 189 au total — 90 clôturées, 99 en cours |
+| Branche courante | `feature/noryn02-cibles-forme` (modifications non commitées) |
+| Commits | 1360 · `main` a **1357** commits de retard sur `dev` |
+| Specs d'US | 190 au total — 90 clôturées, 100 en cours |
 | Migrations | 115/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -153,11 +154,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `749e50e`  docs(noryn): NORYN-01 recettée et clôturée — 21 critères passés, conforme aux schémas de Noryn
 - `3fe681e`  fix(nutrition): la saisie par liste ne prend plus un poke bowl pour un avocat, ni du riz pour du chorizo
 - `d359c1e`  chore(noryn): NORYN-01 — migration poussée et fonction déployée, types régénérés
 - `1b5657b`  docs(recette): PRISME-01 en cours (§91), et l'APK qui grossissait à chaque build
 - `1386f61`  fix(prisme): recette §91 — le gras de Mistral ne s'affiche plus, « Ta semaine a bougé »
-- `32c7f7c`  fix(nutrition): le catalogue d'aliments sans LEFT JOIN — la recherche répond, la saisie par liste reconnaît
 
 ---
 

@@ -10,6 +10,52 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — NORYN-02 cadrée : les cibles et le verdict de forme pour Noryn (`feature/noryn02-cibles-forme` → `dev`)
+
+> Cadrage seul, **aucune ligne de code** : spec et plan écrits, relus par un agent, en attente de
+> validation par Florian (`etape: validation`). Commit précédent : `749e50ef`.
+
+### Ajouté
+- `docs/specs/functional/us/noryn02-cibles-forme.md` : servir `energy_target_kcal`, `protein_target_g` et
+  `readiness` à Noryn en sortant la composition de `useDayEnergy`, `useIsTrainingDay`,
+  `useDayCalorieTarget`, `useDayNutritionTargets` et `useReadiness` vers des fonctions pures de
+  `packages/shared`, appelées par l'app et par `noryn-context`. Contrat Noryn inchangé, **aucune
+  migration**. Décisions D1 à D9 et DD1 à DD9 à valider ; **D1 (l'écart E4) à trancher d'abord**.
+- `docs/plans/noryn02-cibles-forme.md` : huit étapes, un commit chacune — parité des lectures SQL (jeu
+  de données unique joué dans le harnais SQLite et dans la fausse base de Noryn), filet d'assemblage des
+  hooks vert avant l'extraction, extraction sans changement, réparation D1 à part, puis Noryn
+  (décodage, source en deux temps, journée), recette.
+- Roadmap **9.18** (⬜, hors cadrage) : total 281 → 282, à faire 2 → 3 ; journal des réconciliations.
+- BACKLOG **CIBLE-01** (P2) : une seule « cible du jour » dans le pilier Nutrition — `useDailyCalorieTargets`
+  ne compte pas les autres activités (écart noté au §D9 de NUTRI-UX03, jamais porté au backlog) et le
+  planning repas a son propre calcul (socle `tdee` quel que soit le mode).
+
+### Supprimé
+- BACKLOG : la ligne NORYN-02, entrée dans le pipeline.
+
+### Technique / Notes
+- **E4 est un défaut, pas un choix** : en mode `activities`, `useDayNutritionTargets` (onglet Nutrition)
+  et Réglages › Nutrition prennent le socle `tdee` alors que la cible calorique prend le socle hors sport
+  (DEPENSE-00 R1) ; un jour de repos, la somme des macros dépasse la cible affichée (profil A : 2 362 kcal
+  pour 2 048) et l'explication de la cible n'additionne plus (311 kcal manquent). Et `useProteinTarget`
+  (brief du matin, « Que manger ? », Prisme) calcule les protéines sur la cible **effective**, bonus
+  compris, contre MN-04 D1. Quatre écrans, trois règles ; seule la carte Nutrition de l'accueil respecte
+  les deux règles écrites. Recommandation : une seule règle partout (option A).
+- **Écarts relevés avec la spec NORYN-01** (§2, F1-F11) : jour d'entraînement (autres activités,
+  anticipation sans jointure), **trois poids** dans une même cible (profil pour le socle, dernière pesée
+  pour la course `auto`, pesée à la date pour la dépense), fenêtre bien-être = 3 jours du calendrier et
+  non 3 check-ins, dépense des courses sans filtre de statut, `workout_sets` hors du reçu de synchro
+  (sans conséquence : reçu plus ancien, sens prudent), test-garde R8 à changer table par table.
+- **Relecture** (agent, lecture seule) : chiffres et lignes confirmés ; 1 bloquant (rien ne prouvait la
+  parité avec le SQL de l'app → maillon « parité des lectures ») et 9 importants intégrés (âge à Paris
+  pour toute date, lecture en deux temps, listes blanches par usage, R4 requête par requête, pesées
+  ciblées — PostgREST plafonne à 1 000 lignes —, socle rendu par la composition, 4ᵉ cible dans les
+  Réglages, protéines sans cible calorique, erreur de calcul → champ `null`).
+- Constat annexe, non traité : les front-matters de DEPENSE-01, AUTRE-01 et DEPENSE-00 citent 4.41,
+  4.42 et 4.43 quand la roadmap les porte en 4.42, 4.43 et 4.44.
+- Contrôles : `typecheck`, `lint`, `test` (Jest 5 026, Vitest 3 969 + 587) et `agents:check` verts sur
+  l'arbre de travail ; seuls des fichiers Markdown ont changé depuis.
+
 ## 12/10/2026 — NORYN-01 recettée et clôturée (`feature/noryn01-noryn-context` → `dev`)
 
 > Recette RECETTES §92 menée par Florian sur le projet cloud, le 12/10/2026 : 21 critères passés. US
