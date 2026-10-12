@@ -262,3 +262,62 @@ parité ; mobile : −300 lignes de hooks, 5 fichiers de tests (~1 000 lignes) ;
   intérieur ; l'étape 4 change des chiffres annoncés. Recette §13, critères 9 et 10.
 - **Bundle plus gros** : il embarque le moteur de dépense, la nutrition et la forme. Sans effet
   fonctionnel ; `bundle.test.ts` le construit et l'exécute.
+
+## Écarts au plan (code livré le 12/10/2026)
+
+Des moyens, pas des règles : aucune décision D1-D9 ni DD1-DD9 n'a bougé.
+
+1. **`activityLoadSessions`** est sortie vers `training-time.ts` (à côté de `computeAcwr`), pas vers
+   `readiness.ts` ; `ACWR_ACUTE_WINDOW_DAYS` / `ACWR_CHRONIC_WINDOW_DAYS` y sont exportées.
+2. **`useDayNutritionTargets`** prend la date du jour par `useTodayKey()` + `localDateFromDayKey`, et non
+   `useTodayDate()` : les tests de l'écran Nutrition ne mockent que `useTodayKey`. Même valeur.
+3. **Le socle n'a été rendu par `useDayCalorieTarget` qu'à l'étape 4** : l'ajouter à l'étape 3 changeait la
+   forme comparée en bloc par le filet (`toEqual`). À l'étape 4, l'aide `targetOn` du filet écarte
+   `socle`/`socleKind` de la comparaison complète ; un cas à part les fige. Seule la forme a bougé.
+4. **`nutritionSocle`** (neuve) : le socle selon le mode, partagé par la cible du jour **et** les Réglages
+   (qui recalculaient `tdee` à part — la même famille de défaut qu'E4). D'où **deux clés i18n de plus** que
+   la spec §10 n'en annonçait : `nutrition.calories.sportFreeBase` et `…sportFreeBaseHint` (Réglages), en
+   plus de `explain.kcal.sportFree`.
+5. **`useProteinTarget`** : les macros manuelles gardent la priorité même objectif jamais posé (comme
+   avant) ; seul le calcul exige un objectif posé. 0 g → `null`.
+6. **Jeu de parité** : toutes les séances, courses et activités datées du 08/10 (« aujourd'hui » du jeu),
+   pour que la journée servie et le verdict les couvrent. Une séance `completed` **sans fin** n'est pas lue
+   par le serveur (ses lectures bornent `finished_at`) : l'app la lit, mais l'ignore partout où le serveur
+   s'en servirait (jour d'entraînement, dépense, charge). Le test le dit.
+7. **Fausse base** (`noryn.testkit.ts`) : `order` puis `limit` ; **`NULL` ne passe plus aucune comparaison**
+   (`gte`, `lt`, `lte`), comme en SQL — avant, `'null' >= '2026-…'` passait en silence (trouvé par le test
+   de parité) ; deux instants se comparent comme des instants ; une colonne inconnue dans un filtre ou un
+   tri lève ; `ignoreOwnerFilterOn` oublie le filtre propriétaire sur **une** table, pour prouver la double
+   barrière au second temps de lecture.
+8. **Plafond PostgREST** : code `truncated` (503), distinct de `db_error`, pour le journal.
+9. **Jeu à deux comptes étendu** (profil A, mode `activities`, séance du 08/10 et ses séries, pesées,
+   périodes, activités, valeurs reconnaissables chez l'autre compte) : la semaine du 05/10 compte désormais
+   **deux** séances de muscu pour Florian — deux attentes de NORYN-01 passent de 1 à 2 (le jeu, pas le code).
+10. **Listes blanches** : `stress`, `weight_kg` et `distance_m` quittent l'exclusion globale ; chaque sélection
+    doit égaler **l'une** des listes de sa table (`READ_COLUMNS`, `TARGET_COLUMNS`, `READINESS_COLUMNS`,
+    `WEEK_WELLBEING_COLUMNS`), toutes figées en clair dans `source.test.ts`, avec un test qui dit **où** chacune
+    de ces trois colonnes a le droit d'être (`stress` : verdict seulement).
+11. **Pilier Nutrition éteint** : la journée ne lit plus `nutrition_profiles`, `food_entries`, `water_entries`
+    (NORYN-01 les lisait pour rien). Réponse inchangée.
+12. **Pesées** : la dernière n'est lue qu'en mode `auto` (seul usage), la pesée à la date et la plus ancienne
+    qu'en mode `activities` ; `weightAtDate` sur ces deux-là donne le même résultat que sur toutes, pour la
+    date servie (grâce au `CHECK (weight_kg > 0)`). Les entrées des cibles portent leur `date` : le verdict
+    ne prend la cible de base que d'entrées lues **pour aujourd'hui**.
+13. **Coquille Deno inchangée** : `handler.ts` passe `today` à la source et le journal à `buildNorynDay`.
+14. **Ce que le filet ne couvre pas, contrairement au plan** : les macros de `NutritionSummaryCard` et des
+    Réglages n'y sont pas — leurs tests d'écran existants passent sans modification (mêmes valeurs hors
+    mode `activities`), et un cas neuf fige les Réglages en mode `activities`. La **couverture Jest des
+    hooks avant/après** n'a pas été relevée : la preuve tient au filet inchangé (84 cas) et aux briques
+    couvertes à 100 % par Vitest.
+
+**Après la revue de code** (agent, 12/10/2026 : aucun bloquant, quatre points importants, tous traités) :
+
+15. Listes blanches des cibles et du verdict **figées** en clair (elles ne l'étaient pas, contrairement à ce
+    que disait l'écart 10) ; `set_type` exclu.
+16. Double barrière **prouvée table par table** au second temps (`it.each` sur dix tables, une série
+    étrangère rattachée à une séance de Florian dans le jeu).
+17. Test-garde R1 **sans échappatoire** : toute instruction `import`/`export … from` doit être un import nommé
+    reconnu, noms de `./snapshot` compris ; ni `import()` ni `require`.
+18. Tests ajoutés : exception de composition et troncature **de bout en bout par le gestionnaire** (200 +
+    `target_error` ; 503 + `truncated`), changement d'heure du 26/10/2026, nuit d'un anniversaire par
+    `buildNorynDay`, instants au format PostgREST, DD9 avec deux poids différents.

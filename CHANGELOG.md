@@ -10,6 +10,24 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — NORYN-02, étape 8 : en recette (`feature/noryn02-cibles-forme` → `dev`)
+
+> US à `etape: recette` ; roadmap **9.18** ✅. Commit précédent : `16768ad9`.
+
+### Ajouté
+- `supabase/scripts/noryn02-recette-donnees.sql` : un jeu **relatif à aujourd'hui à Paris** (activité seule à
+  J−4, activité et course à J−2, séance planifiée à J+3, période « vie réelle » de J+5 à J+6), réponses
+  attendues **en fonction de l'écran** (la cible dépend du profil réel) ; UUID à renseigner à la main,
+  jamais commité. `noryn02-recette-nettoyage.sql` le retire par identifiants fixes.
+- RECETTES **§93** : prérequis (redéploiement par Florian, jeu de données, objectif posé), 11 critères en
+  deux blocs (Noryn dit ce que dit l'app ; l'app n'a plus qu'une règle de protéines), ce qui n'est pas fait.
+
+### Modifié
+- Spec : `etape: recette`, codée le 12/10/2026 ; D9 précisée (dernière pesée en `auto`, pesée à la date et
+  plus ancienne en `activities`). Plan : 18 écarts (des moyens, pas des règles), dont ceux de la revue.
+- Roadmap **9.18** ⬜ → ✅ (269 → **270** livrés, à faire 3 → **2**), journal des réconciliations.
+- BACKLOG **CIBLE-01** : D2-A retenue, à cadrer à part ; la composition pure est prête à être appelée.
+
 ## 12/10/2026 — NORYN-02, étapes 5-7 : Noryn reçoit les cibles et le verdict de forme (`feature/noryn02-cibles-forme` → `dev`)
 
 > `energy_target_kcal`, `protein_target_g` et `readiness` ne valent plus `null` : la fonction appelle les

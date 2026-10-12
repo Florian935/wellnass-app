@@ -3,7 +3,7 @@ id: NORYN-02
 titre: "Noryn reçoit les cibles et le verdict de forme — la composition sortie des hooks, sans formule recopiée"
 roadmap: [9.18]
 catalogue: []
-etape: code
+etape: recette
 branche: feature/noryn02-cibles-forme
 maj: 12/10/2026
 ---
@@ -21,7 +21,10 @@ maj: 12/10/2026
 > **Maquette** : sans objet — aucune interface (à un libellé près si D1 retient l'option A, §10).
 > **Relue** le 12/10/2026 par un agent de revue : 1 bloquant et 9 constats importants, intégrés (§14).
 > ✅ **Validée par Florian le 12/10/2026** : D1-A (une seule règle de protéines) et D2 à D9 **telles que
-> proposées** (« D1 : ta reco ; D2 à D9 : tes reco aussi »). Code en cours, étape par étape (plan).
+> proposées** (« D1 : ta reco ; D2 à D9 : tes reco aussi »).
+> 🛠️ **Codée le 12/10/2026**, en cinq commits (filets, extraction, D1-A, Noryn, recette) ; écarts au plan —
+> des moyens, pas des règles — en fin de plan. En recette : [RECETTES.md](../../../../RECETTES.md) §93,
+> après le redéploiement par Florian (`npm run noryn:deploy`). Aucune migration, aucun appel au projet.
 
 ## 0. Le besoin
 
@@ -161,7 +164,7 @@ pour NORYN-02.
 | **D6** | Vie réelle et surcharge manuelle | **Comme l'app, par la fonction extraite** : période « vie réelle » couvrant **la date demandée** → objectif ramené au maintien (VIE-01 R4) ; `manual_calories` → la cible de base, qui prime sur l'objectif et la vie réelle, bonus ajouté ensuite ; macros manuelles → D1. Aucun motif ne sort (NORYN-01 D4 inchangée) | Ce sont des entrées du calcul, pas des règles de Noryn | — |
 | **D7** | Fuseau et fenêtres 7 / 28 j | **Paris côté serveur** (NORYN-01 R12) : « aujourd'hui », les fenêtres (J−6, J−27, J−2) et le jour d'un instant se calculent à Paris. La fonction pure **reçoit** le rattachement d'un instant à un jour (`dayKeyOf`) et l'instant de l'âge (`at`) : l'app lui passe l'heure du téléphone ; le serveur passe le jour de Paris, et pour l'âge **midi UTC d'aujourd'hui à Paris, quelle que soit la date demandée** (l'app prend l'âge d'aujourd'hui pour toute date, DD6) — `at` est obligatoire côté serveur | Identique tant que le téléphone est à l'heure de Paris (contrat : le fuseau de Florian est Europe/Paris) ; en voyage, une séance finie près de minuit peut changer de jour d'un côté seulement. Il n'existe aucune colonne qui dise le fuseau du téléphone. `computeAge` lit des accesseurs locaux : juste sur un serveur en UTC et un téléphone en Europe, faux dans un fuseau à l'ouest de Greenwich (limite existante de l'app, non traitée ici) | Lire le fuseau du téléphone (aucune donnée pour cela) |
 | **D8** | Des lignes Postgres aux types du domaine, sans dupliquer les mappers | Les fonctions pures prennent des **entrées étroites**, des `Pick<>` des types du domaine déjà partagés (`ProfileRow`, `NutritionProfileRow`, `Omit<Activity, 'notes'>`, `Pick<RealLifePeriod, 'startedOn' \| 'endsOn'>`…) : le mobile leur passe ses objets **tels quels**. Les **replis** que les hooks et les mappers répètent (`trainingBonusMode ?? 'fixed'`, `trainingDayBonus ?? 0`, `activityLevel ?? 'moderate'`, `sportFreeLevel ?? 'standing'`, objectif repli sur `objectiveFromGoal`) entrent **dans** la fonction pure, une seule fois. Côté serveur, `noryn/snapshot.ts` ne fait que le **décodage de représentation** de Postgres : renommer, booléens natifs, `jsonb` par `parseJsonColumn` (comme NORYN-01), énumérations **à `CHECK`** validées par les schémas zod partagés, `null` admis là où la colonne l'admet ; `activity_type`, sans `CHECK` à dessein, passe tel quel (l'estimation retombe sur « Autre », comme dans l'app) | Les mappers du mobile décodent la représentation **SQLite** (0/1, JSON en texte, doubles encodages) : ce n'est pas la même que celle de Postgres, il n'y a rien à partager là. Ce qui se partage, c'est le type du domaine et les replis — ils vivront dans la fonction pure | Sortir les mappers du mobile vers `shared` avec un paramètre « dialecte » : plus de code, pour décoder deux formats qui n'ont rien en commun |
-| **D9** | Ce qui est lu, et quand | **Chaque lecture ne sert qu'à ce qu'elle sert**, en deux temps. **D'abord** ce que NORYN-01 lit pour décider (reçu, réglages, `profiles.user_id` et `daily_step_goal`). **Ensuite**, seulement si le téléphone a déjà synchronisé : les entrées des cibles **si le pilier Nutrition est actif** ; celles du verdict **si la date demandée est aujourd'hui** ; pesées seulement en mode `auto` ou `activities` (le socle prend le poids du profil), par lectures ciblées (la dernière ; la plus récente au plus tard le jour dit ; la plus ancienne) ; séries seulement en mode `activities`, pour les séances du jour ; périodes « vie réelle » couvrant la date. La semaine ne lit **rien de neuf** | Minimisation (NORYN-01 R8) : ni pesées, ni stress, ni profil ne sont lus pour rien. Et PostgREST plafonne une lecture à 1 000 lignes (`max_rows`), sans ordre garanti : lire « toutes les pesées » se couperait en silence | Tout lire à chaque appel du jour (un aller-retour de moins) |
+| **D9** | Ce qui est lu, et quand | **Chaque lecture ne sert qu'à ce qu'elle sert**, en deux temps. **D'abord** ce que NORYN-01 lit pour décider (reçu, réglages, `profiles.user_id` et `daily_step_goal`). **Ensuite**, seulement si le téléphone a déjà synchronisé : les entrées des cibles **si le pilier Nutrition est actif** ; celles du verdict **si la date demandée est aujourd'hui** ; pesées seulement en mode `auto` (la dernière) ou `activities` (la plus récente au plus tard le jour dit, la plus ancienne) — le socle prend le poids du profil —, par lectures ciblées ; séries seulement en mode `activities`, pour les séances du jour ; périodes « vie réelle » couvrant la date. La semaine ne lit **rien de neuf** | Minimisation (NORYN-01 R8) : ni pesées, ni stress, ni profil ne sont lus pour rien. Et PostgREST plafonne une lecture à 1 000 lignes (`max_rows`), sans ordre garanti : lire « toutes les pesées » se couperait en silence | Tout lire à chaque appel du jour (un aller-retour de moins) |
 
 **Décisions dérivées** (à relire, pas d'arbitrage attendu) :
 
@@ -344,6 +347,7 @@ sont annoncés comme tels (Noryn tient la source pour ancienne au-delà de 24 h)
 
 - L'écart `useDailyCalorieTargets` (D2-A) et le calcul propre du planning repas (§1.5) : BACKLOG
   (CIBLE-01).
+- Deux libellés de plus que le §10 n'en annonçait, côté Réglages (plan, écart 4).
 - Unifier les trois poids de la cible (D5) ; l'âge dans un fuseau à l'ouest de Greenwich (D7).
 - Un verdict pour un autre jour qu'aujourd'hui (D4).
 - Toute évolution du contrat, tout champ neuf, toute écriture depuis Noryn.
