@@ -10,6 +10,31 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — Docs : recette PRISME-01 en cours (§91) et l'APK qui grossissait (`dev`)
+
+> Documentation seule, commitée avec l'accord de Florian : la progression de la recette PRISME-01, et
+> une note APK du 02/10/2026 laissée non commitée par une autre session. Commit précédent : `1386f614`.
+
+### Modifié
+- **RECETTES §91 (PRISME-01)** : S3 à S10, critères 1, 2, 3, B1, 7, D1, D2 cochés, chacun avec son
+  constat daté (05 au 08/10/2026). Partout où la section dit « Groq », la recette a été passée avec
+  **Mistral AI** ; le constat de S5 note `MISTRAL_MODEL=ministral-14b-latest` (le modèle par défaut est
+  plafonné à 0 requête/min sur le palier gratuit), ceux de 7 et D2 le jeu SQL de recette (ids
+  `91000000-…`, à nettoyer en fin de recette).
+- **RECETTES, pilier Bien-être (note du 02/10/2026)** : le prérequis « APK neuf » précise qu'il faut
+  régénérer `android/` (`npx expo prebuild --platform android --no-install --no-clean`) pour que
+  `READ_SLEEP` entre dans le manifeste ; la remarque « inoffensif en recette » sur les bundles DOM empilés
+  est barrée — ils portaient l'APK à 309 Mo et l'installation par mail échouait sans message.
+- **`dev-build-android-local.md`** (note du 02/10/2026) : § « L'APK grossit à chaque build » — cause (les
+  bundles des composants DOM `*.dom.tsx` s'empilent dans `www.bundle`, `gradlew clean` étant exclu),
+  purge avant build, build `arm64-v8a` seul, contrôles `aapt2` ; une permission ajoutée à `app.json`
+  n'entre pas dans l'APK sans `expo prebuild` ; installation par Google Drive, USB ou `adb install -r`,
+  **pas par mail** (pièce jointe limitée à 25 Mo).
+
+### Technique / Notes
+- Aucun code. Qualité relancée quand même : lint, typecheck, `agents:check` à 0 ; tests verts
+  (3 962 Vitest shared, 5 025 Jest mobile, 587 admin).
+
 ## 12/10/2026 — PRISME-01, recette §91 : le gras de Mistral ne s'affiche plus, « Ta semaine a bougé » (`dev`)
 
 > Recette de PRISME-01 menée avec Florian du 05 au 08/10/2026 (RECETTES §91), sur APK local. Prisme

@@ -191,9 +191,46 @@ compilation native comprise.
 > un changement dans `packages/shared` est pris en compte immédiatement. C'est la raison de fond de
 > préférer le mode A en recette — le mode B est fait pour **distribuer** un APK, pas pour itérer.
 
+### ⚠️ L'APK grossit à chaque build : les scènes 3D s'empilent (constaté le 02/10/2026)
+
+**Symptôme** : APK de **309 Mo** (212 Mo le 17/09). Envoyé par mail, l'installateur Android affiche une
+barre qui n'avance pas, puis se ferme **sans message** : il abandonne pendant la copie du fichier.
+
+**Cause** : les composants DOM d'Expo (scène 3D du Labo, `*.dom.tsx`) sont bundlés dans
+`app/build/generated/assets/react/release/www.bundle/`. Chaque build y **ajoute** sa version
+(`entry-<hash>.js` + son `.map`) **sans retirer les anciennes**, et `gradlew clean` est exclu (il casse le
+codegen JNI). Le 02/10/2026 : **35 versions**, 243 Mo bruts, 86,6 Mo une fois compressés dans l'APK. S'y
+ajoutent les bibliothèques natives des **quatre** architectures, dont `x86` et `x86_64` (≈ 100 Mo) qui ne
+servent qu'aux émulateurs.
+
+**Correctif** — avant chaque build destiné à un téléphone :
+```powershell
+cd apps\mobile\android
+Remove-Item -Recurse -Force app\build\generated\assets\react\release\www.bundle, `
+  app\build\intermediates\assets\release\mergeReleaseAssets\www.bundle, `
+  app\build\intermediates\compressed_assets\release\compressReleaseAssets\out\assets\www.bundle `
+  -ErrorAction SilentlyContinue
+$env:NODE_ENV = 'production'
+.\gradlew.bat assembleRelease -PreactNativeArchitectures=arm64-v8a
+```
+`arm64-v8a` couvre tous les téléphones Android récents ; ajouter `,armeabi-v7a` pour un vieux 32 bits.
+
+⚠️ **Une permission ajoutée à `app.json` n'arrive pas toute seule dans l'APK.** `android/` est généré
+(et ignoré par Git) : tant qu'on ne relance pas `npx expo prebuild --platform android --no-install
+--no-clean` depuis `apps/mobile`, le manifeste garde l'ancienne liste. Constaté le 02/10/2026 :
+`READ_SLEEP` (BIEN-06) absente d'un APK construit après le commit, manifeste daté du 03/08. Contrôle :
+```powershell
+& "$env:LOCALAPPDATA\Android\Sdk\build-tools\<version>\aapt2.exe" dump permissions `
+  apps\mobile\android\app\build\outputs\apk\release\app-release.apk
+```
+Contrôle : `native-code: 'arm64-v8a'` dans `aapt2 dump badging`, et un seul couple `entry-*.js` (+ le
+`.map`) par composant DOM dans `assets/www.bundle/` de l'APK.
+
 ### Installer sur le téléphone (sans fil)
-1. Transférer `app-release.apk` sur le tél : mail à soi-même, Google Drive/OneDrive, Teams, ou
-   copie via clé USB.
+1. Transférer `app-release.apk` sur le tél : **Google Drive** (téléverser, puis le télécharger depuis
+   l'appli Drive), câble USB vers le dossier `Download`, ou `adb install -r`. ⚠️ **Pas par mail** : une
+   pièce jointe Gmail est limitée à 25 Mo, l'APK en fait toujours bien plus. Ouvrir ensuite le fichier
+   **depuis l'appli Fichiers**, pas depuis l'aperçu d'une pièce jointe.
 2. Ouvrir le fichier sur le tél → autoriser « installer des applis de sources inconnues » si
    demandé → installer.
 

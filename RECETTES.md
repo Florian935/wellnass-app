@@ -35,7 +35,10 @@
 > baisser la finesse de grille (une variante à 915 Ko existe), ou ouvrir la voie `assetExts` restée
 > non testée.
 > ⚠️ `gradlew clean` casse le codegen JNI ; des bundles DOM orphelins s'accumulent dans les assets.
-> Inoffensif en recette, à traiter avant le Play Store.
+> ~~Inoffensif en recette~~ — **plus du tout** : le 02/10/2026, 35 versions empilées portaient l'APK à
+> 309 Mo, et l'installation par mail échouait sans message. Purge + build arm64 seul :
+> [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md) § « L'APK grossit à
+> chaque build ».
 > ⚠️ **Tout le JS est cuit dans l'APK** : pour itérer vite, dev client + Metro (mode A de
 > [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md)).
 > **⑪ une §70 est arrivée, et ce n'est pas une fonctionnalité** : le **spike 3D** de la silhouette.
@@ -5653,9 +5656,12 @@ implémentes TOUT d'un seul lot et je ferai le recettage à la fin »). Décisio
 activable, D2 le Labo garde son onglet, D3 la nuit lue dans Health Connect, D4 matin et soir, D5 à D8
 selon la recommandation de la toile.
 
-> 🔴 **Prérequis 1 — un APK neuf.** La permission `READ_SLEEP` est ajoutée à `app.json` : un dev client ou
-> un APK construit avant le 01/10/2026 **ne la déclare pas**, et la demande de lecture de la nuit échoue
-> sans écran système. Tout le reste (sections A à D, F) marche avec dev client + Metro.
+> 🔴 **Prérequis 1 — un APK neuf, après `expo prebuild`.** La permission `READ_SLEEP` est ajoutée à
+> `app.json` : un dev client ou un APK construit sans avoir régénéré `android/`
+> (`npx expo prebuild --platform android --no-install --no-clean`) **ne la déclare pas**, et la demande
+> de lecture de la nuit échoue sans écran système. Contrôle et build allégé :
+> [dev-build-android-local.md](docs/specs/technical/dev-build-android-local.md). Tout le reste (sections
+> A à D, F) marche avec dev client + Metro.
 >
 > 🔴 **Prérequis 2 — le garde-fou (D7) doit être relu** par une personne compétente **avant la sortie du
 > pilier** : seuil (5 humeurs à 1-2 sur les 7 dernières notées, 14 jours de silence) et texte de la carte
@@ -5868,44 +5874,69 @@ ai() { curl -s -w '  → HTTP %{http_code}\n' "$URL/functions/v1/ai-assist" -H "
       `"reason":"unconfigured"` (pas un 503 : l'app doit pouvoir l'apprendre).
 - [ ] S2. `PRISME_PROVIDER=gemini` (redéployer) : `status` → `"reason":"provider"`. Même chose avec
       `PRISME_PROVIDER=mistral` sans `MISTRAL_TRAINING_OPTOUT=verified`. Remettre `groq`.
-- [ ] S3. `status` avec Groq : `"available":true`, `"provider":{"id":"groq","label":"Groq","country":"US",
+- [x] S3. `status` avec Groq : `"available":true`, `"provider":{"id":"groq","label":"Groq","country":"US",
       "trains":false,"retentionDays":30}`, `"remaining":{"narrate":6,"meal_text":6}`.
-- [ ] S4. Sans accord : `ai '{"kind":"narrate","context":"Séance : 52 min","question":"Raconte."}'` → 403
-      `consent_required`.
-- [ ] S5. `ai '{"kind":"consent","grant":true,"adult":true}'` → 200 et le statut, `"consent":{"at":"…",
+      — **Florian, 05/10/2026, avec Mistral** : `{"id":"mistral","label":"Mistral AI","country":"FR",
+      "trains":false,"retentionDays":30}`, restes 6 / 6.
+- [x] S4. Sans accord : `ai '{"kind":"narrate","context":"Séance : 52 min","question":"Raconte."}'` → 403
+      `consent_required`. — **Florian, 05/10/2026** (accord retiré d'abord par `consent` / `grant:false` → 200).
+- [x] S5. `ai '{"kind":"consent","grant":true,"adult":true}'` → 200 et le statut, `"consent":{"at":"…",
       "provider":"groq"}`. Puis le `narrate` de S4 → 200 avec `"text"`. `status` : `narrate` à 5.
-- [ ] S6. **Accord donné à un autre fournisseur** : dans le SQL editor,
+      — **Florian, 05/10/2026, avec Mistral** : accord `"provider":"mistral"` ; récit 200 avec
+      `"model":"ministral-14b-latest"` ; `narrate` à 5. ⚠️ Le défaut `mistral-small-latest` est plafonné à
+      **0 requête/min** sur le palier gratuit (429 `1300` après 3 tentatives, quota bien rendu) :
+      `MISTRAL_MODEL=ministral-14b-latest` posé avec une nouvelle clé (`mistral-medium` à 0, `mistral-large`
+      hors palier).
+- [x] S6. **Accord donné à un autre fournisseur** : dans le SQL editor,
       `update user_settings set prisme_consent_provider = 'mistral' where user_id = '<id>';` puis `narrate`
       → 403 `consent_required`. Refaire S5 pour remettre l'accord.
-- [ ] S7. `ai "{\"kind\":\"meal_text\",\"lang\":\"fr\",\"text\":\"$(printf 'a%.0s' {1..301})\"}"` → 400
+      — **Florian, 05/10/2026** : à l'inverse (fournisseur en service = Mistral), accord passé à `'groq'` →
+      403 `consent_required` ; accord redonné → `"provider":"mistral"`, rien de décompté.
+- [x] S7. `ai "{\"kind\":\"meal_text\",\"lang\":\"fr\",\"text\":\"$(printf 'a%.0s' {1..301})\"}"` → 400
       `bad_request` (301 caractères). `ai '{"kind":"meal_text","lang":"fr","text":"poke bowl saumon avocat"}'`
       → 200, `"text"` est un JSON `{"items":[{"name":…,"grams":…,"confidence":…}]}` **sans calories**, noms
       en français.
-- [ ] S8. **Deux appels simultanés au dernier quota** : appeler `narrate` jusqu'à `"remaining":{"narrate":1…`
+      — **Florian, 05/10/2026** (`ministral-14b-latest`) : 400 à 301 caractères ; poke bowl → 8 aliments
+      (saumon, riz, avocat + nori, œuf, maïs, carotte, concombre, confiance 0,6 à 0,85), sans calories, JSON
+      nu (pas de bloc de code).
+- [x] S8. **Deux appels simultanés au dernier quota** : appeler `narrate` jusqu'à `"remaining":{"narrate":1…`
       (voir `status`), puis `ai '<narrate>' & ai '<narrate>' & wait` → **un** 200 et **un** 429
       `quota_exceeded`. `status` : `narrate` à 0.
-- [ ] S9. **Moins de 18 ans** : `profiles.birth_date` à une date de moins de 18 ans → `status` :
+      — **Florian, 05/10/2026** : 4 récits (restes 1), puis deux appels lancés ensemble → un 200 (`"used":6`)
+      et un 429 `quota_exceeded` ; `narrate` à 0.
+- [x] S9. **Moins de 18 ans** : `profiles.birth_date` à une date de moins de 18 ans → `status` :
       `"reason":"age"` ; `consent` → 403 `not_allowed`. Date de naissance **vide** et `"adult":false` →
       400 `adult_required`. Remettre la vraie date.
-- [ ] S10. 🔴 Les journaux de la fonction (dashboard › Edge Functions › Logs) ne contiennent **aucun texte**
+      — **Florian, 05/10/2026** : naissance en 2012 → `"reason":"age"` (200) et `consent` → 403
+      `not_allowed` ; date vide + `"adult":false` → 400 `adult_required` ; accord Mistral intact.
+- [x] S10. 🔴 Les journaux de la fonction (dashboard › Edge Functions › Logs) ne contiennent **aucun texte**
       de réponse du modèle ni de repas (R11).
+      — **Florian, 05/10/2026** : journaux et invocations relus, recherche par mots du repas et des récits :
+      seuls les messages d’échec 429 de Mistral, aucun contenu.
 
 ### B — L'accord et les Réglages
 
-- [ ] 1. **Sans accord** : accueil, bilan hebdo, saisie rapide **identiques** à avant, sauf les entrées
+- [x] 1. **Sans accord** : accueil, bilan hebdo, saisie rapide **identiques** à avant, sauf les entrées
       de Prisme, qui ouvrent la feuille d'accord.
-- [ ] 2. La feuille dit « IA » en premier, nomme **Groq** et « aux États-Unis », dit qu'il n'entraîne pas
+      — **Florian, 08/10/2026** (APK) : « Prisme raconte » du bilan et « Demander à Prisme » ouvrent la feuille ;
+      accueil inchangé ; accord redonné depuis la feuille.
+- [x] 2. La feuille dit « IA » en premier, nomme **Groq** et « aux États-Unis », dit qu'il n'entraîne pas
       et garde jusqu'à 30 jours ; **date de naissance absente** → « J'ai 18 ans ou plus » est exigée
       (« Activer » refusé sans la case).
-- [ ] 3. « Activer », puis « Prisme raconte » **tout de suite** : pas de refus du serveur.
+      — **Florian, 05/10/2026** (APK, Réglages › Prisme) : « Mistral AI, en France », sans entraînement, 30 jours ;
+      case 18 ans exigée (date de naissance vide).
+- [x] 3. « Activer », puis « Prisme raconte » **tout de suite** : pas de refus du serveur.
+      — **Florian, 06/10/2026** (APK) : premier récit du bilan hebdo après l'accord, pas de refus, plus d'astérisques.
 - [ ] 14. Compte de **moins de 18 ans** : rien de Prisme nulle part ; Réglages › Prisme dit « réservé aux
       18 ans et plus », sans interrupteur.
 - [ ] 18. Changer `PRISME_PROVIDER` (Groq → Mistral avec `MISTRAL_TRAINING_OPTOUT=verified`, ou →
       `anthropic`) et redéployer : au geste suivant, la feuille d'accord revient, au nom du nouveau
       fournisseur ; Réglages montre l'interrupteur **éteint**.
-- [ ] B1. Réglages › Prisme : « Accord donné le … à Groq (aux États-Unis) » ; l'éteindre **en mode avion**
+- [x] B1. Réglages › Prisme : « Accord donné le … à Groq (aux États-Unis) » ; l'éteindre **en mode avion**
       retire l'accord tout de suite (les entrées repartent à la feuille) ; au retour du réseau, le serveur
       le voit (S4 redonne 403).
+      — **Florian, 08/10/2026** (« à Mistral AI (en France) ») : retrait en mode avion immédiat, la feuille revient ;
+      réseau revenu → `narrate` 403 `consent_required`. Remontée de `prisme_consent_*` vérifiée (PowerSync / base).
 
 ### C — Le soir (accueil, dès 18 h)
 
@@ -5927,13 +5958,18 @@ ai() { curl -s -w '  → HTTP %{http_code}\n' "$URL/functions/v1/ai-assist" -H "
 
 ### D — La semaine (bilan hebdo)
 
-- [ ] 7. Le bloc « Prisme raconte ta semaine » est **sous** les chiffres ; le texte raconte la semaine et
+- [x] 7. Le bloc « Prisme raconte ta semaine » est **sous** les chiffres ; le texte raconte la semaine et
       cite la décision de la semaine **sans en proposer une autre**. Semaine vide : pas de bloc.
-- [ ] D1. Seuls les piliers **actifs** apparaissent dans « D'où ça vient » ; aucun objectif personnel ne part
+      — **Florian, 05-06/10/2026** : semaine vide → pas de bloc ; semaine du 28/09 remplie par le jeu SQL de recette
+      (ids `91000000-…`, à nettoyer en fin de recette) → bloc sous les chiffres, décision citée sans autre.
+- [x] D1. Seuls les piliers **actifs** apparaissent dans « D'où ça vient » ; aucun objectif personnel ne part
       (l'écran du bilan ne les affiche pas — voir les écarts du plan).
-- [ ] D2. 🔴 Décision « objectif en retard » sur un objectif nommé d'après un **exercice perso** : l'écran
+      — **Florian, 06/10/2026**.
+- [x] D2. 🔴 Décision « objectif en retard » sur un objectif nommé d'après un **exercice perso** : l'écran
       garde le nom, le texte de Prisme parle d'« un objectif » **sans** le nom (R4). Un texte qui dit
       « 5 jours sur 7 » passe le garde-fou.
+      — **Florian, 06/10/2026** : objectif 1RM sur l'exercice perso « Rowing du garage de Florian » (jeu SQL) →
+      l'écran le nomme, le texte de Prisme dit « un objectif », sans le nom.
 
 ### E — Le repas (saisie rapide)
 
