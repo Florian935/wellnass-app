@@ -35,7 +35,9 @@ import { insertWithSyncFields, patch } from './_sql';
 /** Ligne brute de `real_life_periods`. */
 type PeriodRow = { id: string; started_on: string; ends_on: string };
 
-const SELECT_PERIODS = `
+// Exportée pour le test de parité de NORYN-02 (`noryn02-parity-sql.test.ts`) : la fonction `noryn-context`
+// doit retenir exactement les mêmes lignes que cette requête.
+export const SELECT_PERIODS = `
   SELECT id, started_on, ends_on
   FROM real_life_periods
   WHERE deleted_at IS NULL

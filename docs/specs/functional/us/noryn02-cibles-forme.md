@@ -3,7 +3,7 @@ id: NORYN-02
 titre: "Noryn reçoit les cibles et le verdict de forme — la composition sortie des hooks, sans formule recopiée"
 roadmap: [9.18]
 catalogue: []
-etape: validation
+etape: code
 branche: feature/noryn02-cibles-forme
 maj: 12/10/2026
 ---
@@ -20,7 +20,8 @@ maj: 12/10/2026
 > §4, §5 R8-R9. **Plan** : [docs/plans/noryn02-cibles-forme.md](../../../plans/noryn02-cibles-forme.md).
 > **Maquette** : sans objet — aucune interface (à un libellé près si D1 retient l'option A, §10).
 > **Relue** le 12/10/2026 par un agent de revue : 1 bloquant et 9 constats importants, intégrés (§14).
-> ⏳ **En attente de validation par Florian** : D1 d'abord (§1), puis D2 à D9 (§3). Aucune ligne de code.
+> ✅ **Validée par Florian le 12/10/2026** : D1-A (une seule règle de protéines) et D2 à D9 **telles que
+> proposées** (« D1 : ta reco ; D2 à D9 : tes reco aussi »). Code en cours, étape par étape (plan).
 
 ## 0. Le besoin
 
@@ -148,7 +149,7 @@ pour NORYN-02.
 | F10 | §6 : le reçu de synchro couvre les tables de NORYN-02 | ✅ sauf **`workout_sets`**, dont le mode `activities` lit le nombre de séries validées. Aucune migration pour autant (§8) |
 | F11 | R8 : « NORYN-02 élargira la liste » | Le test-garde exclut **globalement** `stress`, `weight_kg` et `distance_m` ([source.test.ts](../../../../packages/shared/src/noryn/source.test.ts)) : il faut le changer volontairement, table par table (§7) |
 
-## 3. Décisions — à valider
+## 3. Décisions — validées par Florian le 12/10/2026
 
 | # | Question | Proposition | Pourquoi | Alternative |
 |---|---|---|---|---|

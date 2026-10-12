@@ -311,7 +311,9 @@ export function useUpcomingSessions(days: number): {
 // useHasPlannedSession — support US 4.7b (anticipation bonus calorique)
 // ---------------------------------------------------------------------------
 
-const SELECT_HAS_PLANNED = `
+// Exportée pour le test de parité de NORYN-02 (`noryn02-parity-sql.test.ts`) : la fonction `noryn-context`
+// doit retenir exactement les mêmes lignes que cette requête.
+export const SELECT_HAS_PLANNED = `
   SELECT 1 AS has FROM planned_sessions
   WHERE owner_id = ? AND scheduled_date = ?
     AND status IN ('planned','done') AND deleted_at IS NULL

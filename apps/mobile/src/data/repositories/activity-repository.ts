@@ -40,7 +40,9 @@ type ActivityDbRow = {
   notes: string | null;
 };
 
-const SELECT_ACTIVITIES = `
+// Exportée pour le test de parité de NORYN-02 (`noryn02-parity-sql.test.ts`) : la fonction `noryn-context`
+// doit retenir exactement les mêmes lignes que cette requête.
+export const SELECT_ACTIVITIES = `
   SELECT id, activity_type, started_at, duration_seconds, intensity, rpe, distance_m, device_kcal, notes
   FROM activities
   WHERE deleted_at IS NULL

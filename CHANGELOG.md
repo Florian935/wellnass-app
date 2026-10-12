@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — NORYN-02, étapes 1-2 : les filets, verts avant l'extraction (`feature/noryn02-cibles-forme` → `dev`)
+
+> Spec **validée par Florian le 12/10/2026** (D1-A, D2 à D9 telles que proposées) : `etape: code`.
+> Aucun calcul ne change dans ce commit. Commit précédent : `389610ca`.
+
+### Ajouté
+- **Parité des lectures** (plan, étape 1) : `packages/shared/src/noryn/parity.fixture.json`, un jeu de
+  données unique (séances, séries, courses, activités, séances planifiées, pesées, périodes, repas,
+  check-ins) et ce que les lectures doivent en retenir ; `noryn02-parity-sql.test.ts` le joue dans le
+  harnais SQLite avec **les requêtes de l'app** (10 cas). Le côté serveur comparera ses lectures au même
+  `expected`.
+- **Filet d'assemblage** (plan, étape 2), sources mockées, briques pures réelles, horloge figée au
+  08/10/2026 : `day-energy-assembly` (12), `day-calorie-target-assembly` (23), `readiness-assembly` (22),
+  `hooks/__tests__/day-nutrition-targets-assembly` (17) — le comportement **actuel, défaut E4 compris**.
+- `apps/mobile/src/test-utils/day-target-sources.ts` : les sources communes de ces filets (profil A,
+  instants à heure locale, `useDailyTotals` / `useWellbeingRows` filtrés comme leur SQL).
+
+### Modifié
+- Requêtes **exportées sans changement** pour la parité : `SELECT_WORKOUTS`, `SELECT_RUNS`
+  (`energy-repository`), `SELECT_ACTIVITIES`, `SELECT_HAS_PLANNED`, `SELECT_PERIODS` ; constantes neuves
+  `SELECT_WEIGHT_ENTRIES`, `SELECT_LATEST_WEIGHT` (`bodyweight-repository`) et `SELECT_WELLBEING_SINCE`
+  (`daily-wellbeing-repository`), reprises à l'identique des chaînes en ligne qu'elles remplacent.
+- Spec NORYN-02 : `etape: code`, décisions marquées validées.
+
 ## 12/10/2026 — NORYN-02 cadrée : les cibles et le verdict de forme pour Noryn (`feature/noryn02-cibles-forme` → `dev`)
 
 > Cadrage seul, **aucune ligne de code** : spec et plan écrits, relus par un agent, en attente de

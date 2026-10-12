@@ -91,6 +91,12 @@ type WellbeingDbRow = {
 const SELECT_COLS = `id, log_date, mood, energy, stress, sleep_minutes, sleep_quality, motivation, sick, busy_day,
   late_night, travel, alcohol_drinks, late_caffeine, nap_minutes, cravings, sleep_source, sleep_start_at, sleep_end_at`;
 
+/**
+ * Check-ins depuis une date. Exportée pour le test de parité de NORYN-02 (`noryn02-parity-sql.test.ts`) :
+ * la fonction `noryn-context` doit retenir exactement les mêmes lignes pour le verdict de forme.
+ */
+export const SELECT_WELLBEING_SINCE = `SELECT ${SELECT_COLS} FROM daily_wellbeing WHERE deleted_at IS NULL AND log_date >= ? ORDER BY log_date DESC`;
+
 /** Les colonnes d'une échelle 1-5, et d'une étiquette. */
 const SCALE_COLUMN: Record<WellbeingScaleKey, string> = {
   mood: 'mood',
@@ -143,7 +149,7 @@ export function useWellbeingEntries(sinceDate?: string): {
   isLoading: boolean;
 } {
   const sql = sinceDate
-    ? `SELECT ${SELECT_COLS} FROM daily_wellbeing WHERE deleted_at IS NULL AND log_date >= ? ORDER BY log_date DESC`
+    ? SELECT_WELLBEING_SINCE
     : `SELECT ${SELECT_COLS} FROM daily_wellbeing WHERE deleted_at IS NULL ORDER BY log_date DESC`;
   const { data, isLoading } = useQuery<WellbeingDbRow>(sql, sinceDate ? [sinceDate] : []);
   return { entries: data.map(toEntry), isLoading };

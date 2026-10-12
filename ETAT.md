@@ -114,8 +114,8 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **NORYN-02** — Noryn reçoit les cibles et le verdict de forme — la composition sortie des hooks, sans formule recopiée | `code` | `feature/noryn02-cibles-forme` | [9.18] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
-| **NORYN-02** — Noryn reçoit les cibles et le verdict de forme — la composition sortie des hooks, sans formule recopiée | `validation` | `feature/noryn02-cibles-forme` | [9.18] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
@@ -143,7 +143,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/noryn02-cibles-forme` (modifications non commitées) |
-| Commits | 1360 · `main` a **1357** commits de retard sur `dev` |
+| Commits | 1361 · `main` a **1358** commits de retard sur `dev` |
 | Specs d'US | 190 au total — 90 clôturées, 100 en cours |
 | Migrations | 115/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -154,11 +154,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `389610c`  docs(noryn): NORYN-02 cadrée — spec et plan en validation, E4 tranché comme défaut
 - `749e50e`  docs(noryn): NORYN-01 recettée et clôturée — 21 critères passés, conforme aux schémas de Noryn
 - `3fe681e`  fix(nutrition): la saisie par liste ne prend plus un poke bowl pour un avocat, ni du riz pour du chorizo
 - `d359c1e`  chore(noryn): NORYN-01 — migration poussée et fonction déployée, types régénérés
 - `1b5657b`  docs(recette): PRISME-01 en cours (§91), et l'APK qui grossissait à chaque build
-- `1386f61`  fix(prisme): recette §91 — le gras de Mistral ne s'affiche plus, « Ta semaine a bougé »
 
 ---
 

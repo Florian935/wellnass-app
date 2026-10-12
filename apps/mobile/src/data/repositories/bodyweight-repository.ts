@@ -12,11 +12,16 @@ export type WeightEntry = { id: string; logDate: string; weightKg: number };
 
 type WeightDbRow = { id: string; log_date: string; weight_kg: number };
 
+// Exportées pour le test de parité de NORYN-02 (`noryn02-parity-sql.test.ts`) : la fonction
+// `noryn-context` doit retenir exactement les mêmes pesées que ces requêtes.
+export const SELECT_WEIGHT_ENTRIES = `SELECT id, log_date, weight_kg FROM body_weight_entries WHERE deleted_at IS NULL ORDER BY log_date`;
+export const SELECT_LATEST_WEIGHT = `SELECT id, log_date, weight_kg FROM body_weight_entries WHERE deleted_at IS NULL ORDER BY log_date DESC LIMIT 1`;
+
 /** Pesées depuis `sinceDate` (AAAA-MM-JJ), ordonnées chronologiquement. */
 export function useWeightEntries(sinceDate?: string): { entries: WeightEntry[]; isLoading: boolean } {
   const sql = sinceDate
     ? `SELECT id, log_date, weight_kg FROM body_weight_entries WHERE deleted_at IS NULL AND log_date >= ? ORDER BY log_date`
-    : `SELECT id, log_date, weight_kg FROM body_weight_entries WHERE deleted_at IS NULL ORDER BY log_date`;
+    : SELECT_WEIGHT_ENTRIES;
   const params = sinceDate ? [sinceDate] : [];
   const { data, isLoading } = useQuery<WeightDbRow>(sql, params);
   return {
@@ -27,9 +32,7 @@ export function useWeightEntries(sinceDate?: string): { entries: WeightEntry[]; 
 
 /** Dernière pesée enregistrée (ou null). */
 export function useLatestWeight(): { latest: WeightEntry | null; isLoading: boolean } {
-  const { data, isLoading } = useQuery<WeightDbRow>(
-    `SELECT id, log_date, weight_kg FROM body_weight_entries WHERE deleted_at IS NULL ORDER BY log_date DESC LIMIT 1`,
-  );
+  const { data, isLoading } = useQuery<WeightDbRow>(SELECT_LATEST_WEIGHT);
   const r = data[0];
   return { latest: r ? { id: r.id, logDate: r.log_date, weightKg: r.weight_kg } : null, isLoading };
 }

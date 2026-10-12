@@ -122,7 +122,9 @@ type RunRow = {
  * Les séries non validées sont écartées : une séance interrompue garde ses séries prévues, et les
  * compter ferait payer un travail qui n'a pas eu lieu.
  */
-const SELECT_WORKOUTS = `
+// Exportée pour le test de parité de NORYN-02 (`noryn02-parity-sql.test.ts`) : la fonction `noryn-context`
+// doit retenir exactement les mêmes lignes que cette requête.
+export const SELECT_WORKOUTS = `
   SELECT w.id, w.started_at, w.finished_at, w.duration_seconds, w.rpe,
          COUNT(s.id) AS total_sets
   FROM workouts w
@@ -132,7 +134,9 @@ const SELECT_WORKOUTS = `
   ORDER BY w.finished_at DESC
 `;
 
-const SELECT_RUNS = `
+// Exportée pour le test de parité de NORYN-02 (`noryn02-parity-sql.test.ts`) : la fonction `noryn-context`
+// doit retenir exactement les mêmes lignes que cette requête.
+export const SELECT_RUNS = `
   SELECT id, finished_at, distance_m, duration_seconds, elevation_gain_m, rpe
   FROM runs
   WHERE deleted_at IS NULL AND finished_at IS NOT NULL
