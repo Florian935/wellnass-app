@@ -3,7 +3,7 @@ id: NORYN-01
 titre: "Noryn lit la journée et la semaine — deux synthèses Wellness en lecture seule"
 roadmap: [9.17]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/noryn01-noryn-context
 maj: 12/10/2026
 ---
@@ -25,6 +25,11 @@ maj: 12/10/2026
 > 🛠️ **Codée le 08/10/2026** (écarts au plan — des moyens, pas des règles — en fin de plan). En recette :
 > [RECETTES.md](../../../../RECETTES.md) §92, précédée des gestes humains (secrets, migration,
 > déploiement) — **faits par Florian le 12/10/2026**. Aucun appel au projet Supabase par un agent.
+> ✅ **Recettée et clôturée par Florian le 12/10/2026** : 21 critères passés sur le projet, avec un jeu de
+> données connu d'avance (`supabase/scripts/noryn01-recette-donnees.sql`, puis
+> `noryn01-recette-nettoyage.sql`) ; les réponses réelles passent les schémas zod 4 de Noryn
+> (`WellnessDayWireSchema`, `WellnessWeekWireSchema`). Une réserve, documentée au §11 : un secret retiré
+> ou changé ne s'applique qu'aux instances neuves de la fonction.
 
 ## 0. Le besoin
 
@@ -393,8 +398,15 @@ file (§6).
   `npx supabase functions deploy noryn-context --use-api`, puis efface le bundle.
 - Le jeton se génère hors de git (brief §7) et se pose côté Noryn en secret Fly à la livraison de
   TASK-014.
-- ⚠️ **À confirmer en recette** : qu'avec `verify_jwt = false` la passerelle n'exige ni JWT ni `apikey`
-  (c'est le fonctionnement documenté des webhooks, mais rien ne peut le prouver sans le projet).
+- ✅ **Confirmé en recette (12/10/2026)** : avec `verify_jwt = false`, la passerelle n'exige ni JWT ni
+  `apikey` ; c'est la fonction qui répond 401.
+- ⚠️ **Révoquer ou changer le jeton : changer le secret PUIS redéployer** (`npm run noryn:deploy`).
+  Constaté en recette (critère 3) : une instance de la fonction déjà démarrée garde les secrets qu'elle
+  avait à son démarrage jusqu'à ce que la plateforme la recycle. Après `secrets unset`, des appels ont
+  encore reçu 401 (ancienne empreinte) au lieu de 503 — jamais 200 — et, de même, après un changement
+  d'empreinte, l'ancien jeton peut rester accepté quelques minutes par une instance ancienne. Le
+  redéploiement force des instances neuves. Le code relit bien les secrets à chaque requête ; c'est
+  `Deno.env`, côté plateforme, qui est figé par instance.
 
 ## 12. Confidentialité et Play
 

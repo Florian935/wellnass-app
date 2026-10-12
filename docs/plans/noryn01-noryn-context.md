@@ -362,3 +362,12 @@ Des moyens, pas des règles : aucune décision D1-D9 n'a bougé.
     d'empêcher la fonction de démarrer.
 16. **Migration** : un seul bloc rattrapé par écriture (celui de `note_sync_receipt_for`), au lieu de
     deux imbriqués.
+
+**En recette** (12/10/2026) :
+
+17. **Secrets figés par instance** : « retirer `NORYN_TOKEN_SHA256` coupe l'accès sans redémarrage » (point 5)
+    n'est vrai que pour une instance neuve. Sur la plateforme, `Deno.env` est figé au démarrage d'une
+    instance : pour révoquer un jeton tout de suite, changer le secret puis redéployer (spec §11).
+18. **Jeu de recette versionné** : `supabase/scripts/noryn01-recette-donnees.sql` et
+    `noryn01-recette-nettoyage.sql` — valeurs connues d'avance, identifiants fixes, UUID du compte à
+    renseigner à la main et jamais commité.

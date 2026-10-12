@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — NORYN-01 recettée et clôturée (`feature/noryn01-noryn-context` → `dev`)
+
+> Recette RECETTES §92 menée par Florian sur le projet cloud, le 12/10/2026 : 21 critères passés. US
+> clôturée (`etape: close`), section §92 purgée. Commit précédent : `3fe681e6`.
+
+### Ajouté
+- `supabase/scripts/noryn01-recette-donnees.sql` : le jeu de recette joué ce jour (un dimanche rempli, une
+  séance de jambes lourdes, une sortie longue, des séances faites dont une finie à 00 h 30 à Paris), avec
+  les réponses attendues en tête ; UUID du compte à renseigner à la main, jamais commité.
+- `supabase/scripts/noryn01-recette-nettoyage.sql` : le retire, par identifiants fixes.
+
+### Modifié
+- Spec : `etape: close` ; §11 — passerelle sans JWT ni `apikey` confirmée ; **révoquer un jeton = changer
+  le secret puis redéployer**.
+- RECETTES : §92 purgée (89 sections). Roadmap 9.17 (remarque, journal). Plan : écarts constatés en recette.
+
+### Technique / Notes
+- **Résultats** : accès (401 sans jeton, avec un faux jeton, avec la clé anon en Bearer ou en `apikey` ;
+  405 ; fenêtre J−8 … J+15 et 400 au-delà), propriétaire inconnu → 503, données du jeu exactes (1 450 kcal,
+  76 g, 1 500 ml malgré 750 ml supprimés, check-in, séance à 30 min `heavy_lower`, sortie longue
+  `moderate` `long_run`, `done` par semaine à l'heure de Paris), durée égale à la carte du hub,
+  « malade » et domaines non suivis, fraîcheur (`synced_at` à l'heure du serveur, immobile en mode avion
+  et avec l'horloge du téléphone décalée), isolation avec un second compte, journaux réduits à des codes,
+  synchro jamais bloquée.
+- **Contrat** : les réponses réelles (jour du 11/10, semaine du 05/10 ; 608 et 864 octets) passent
+  `WellnessDayWireSchema` et `WellnessWeekWireSchema` de Noryn (zod 4, copiés de la branche
+  `agent/claude/TASK-013` dans un dossier temporaire, rien écrit dans `C:\noryn`).
+- **Réserve (critère 3)** : après `secrets unset`, 401 au lieu de 503 — jamais 200. `Deno.env` est figé
+  par instance côté plateforme : pour révoquer tout de suite, changer le secret puis redéployer.
+- Les vrais pas du 11/10 existaient déjà : le jeu les a gardés (7 533 au lieu de 8 421), comme prévu.
+
 ## 12/10/2026 — Nutrition : la saisie par liste ne prend plus un poke bowl pour un avocat, ni du riz pour du chorizo (`dev`)
 
 > Trouvé le 12/10/2026 en recette de PRISME-01 (RECETTES §91, critère 10), sur l'APK qui portait le
