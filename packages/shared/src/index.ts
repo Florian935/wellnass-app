@@ -76,6 +76,8 @@ export * from './week-verdict';
 // US DEPENSE-01 / AUTRE-01 — le moteur de dépense (commun aux 3 sources) et les autres activités.
 export * from './activity';
 export * from './energy';
+export * from './day-energy';
+export * from './day-target';
 export * from './meal-plan';
 export * from './shopping-list';
 export * from './strength-intensity';

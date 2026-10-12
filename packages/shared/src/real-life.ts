@@ -103,7 +103,7 @@ function within(dayKey: string, from: string, to: string): boolean {
  * période aberrante venue de la base.
  */
 export function isRealLifeDay(
-  periods: ReadonlyArray<RealLifePeriod>,
+  periods: ReadonlyArray<Pick<RealLifePeriod, 'startedOn' | 'endsOn'>>,
   dayKey: string,
 ): boolean {
   return periods.some((p) => within(dayKey, p.startedOn, p.endsOn));

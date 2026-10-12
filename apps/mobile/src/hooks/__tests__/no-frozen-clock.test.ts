@@ -84,6 +84,10 @@ const WATCHED = [
   // les 11 autres cartes devenues mortes après INSIGHTS-02. La liste est lue par `readFileSync` :
   // y laisser un chemin inexistant aurait fait échouer ce test, pas seulement l'affaiblir.
   'src/components/dashboard/NutritionSummaryCard.tsx',
+  // US NORYN-02 : l'âge de la dépense et de la cible se prend désormais à `useTodayDate()` — la date
+  // du jour réactive — et plus à un `new Date()` implicite. Un retour en arrière serait gelé ici.
+  'src/data/repositories/energy-repository.ts',
+  'src/hooks/useDayNutritionTargets.ts',
 ];
 
 /** Expressions qui lisent l'horloge. */

@@ -24,14 +24,16 @@ import { useMemo } from 'react';
 import { useQuery } from '@powersync/react';
 import { useTranslation } from 'react-i18next';
 import {
+  activityLoadSessions,
+  composeDayCalorieTarget,
+  composeReadiness,
+  localDayKeyOf,
+  READINESS_NUTRITION_WINDOW_DAYS,
+  READINESS_WELLBEING_WINDOW_DAYS,
+  trainedOnDay,
   daysBetween,
   activeDayKeys,
   addDays,
-  averageIntake,
-  classifyLoadComponent,
-  classifyNutritionComponent,
-  classifyWellbeingComponent,
-  isPoorNight,
   computeAcwr,
   computeAge,
   computeCaloricBalance,
@@ -40,20 +42,17 @@ import {
   computeEffectiveTargetForDay,
   computeGoalAdherence,
   computeOvertrainingGuard,
-  computeReadiness,
   computeStreak,
   computeStreakWithJokers,
   countDeficitDaysInWindow,
   findRestorableGap,
   computeTrainingTime,
-  dayCalorieBonus,
   DEFAULT_SPORT_FREE_LEVEL,
   sportFreeTdee,
   defaultMacroRatios,
   effectiveNutritionObjective,
   estimateRunCalories,
   isRealLifeDay,
-  isTrainingDay as computeIsTrainingDay,
   localDateFromDayKey,
   localDayKey,
   localMidnightDaysAgo,
@@ -70,8 +69,6 @@ import {
   effectiveActivityLevel,
   targetCalories,
   tdee,
-  trainingDayCalories,
-  wellbeingAverages,
   type ActivityLevel,
   type ConcurrentTrainingInterference,
   type DayActivity,
@@ -321,16 +318,26 @@ export function useIsTrainingDay(dayKey: string): { isTrainingDay: boolean; isLo
   // C'est ce qui donne à ce jour son bonus (modes forfait/auto) et ses glucides péri-séance (MN-04).
   const { activities, isLoading: activitiesLoading } = useActivitiesOnDay(dayKey);
 
-  const retroactiveDone = useMemo(() => {
-    const doneOnDay = (arr: { finishedAt: string | null }[]) =>
-      arr.some((x) => x.finishedAt != null && localDayKey(new Date(x.finishedAt)) === dayKey);
-    return doneOnDay(workouts) || doneOnDay(runs) || activities.length > 0;
-  }, [workouts, runs, activities, dayKey]);
-
   const todayKey = useTodayKey();
 
+  // US NORYN-02 — la règle vit dans `trainedOnDay` (@wellness/shared) : la fonction `noryn-context`
+  // l'appelle aussi. Les activités sont déjà celles du jour ; la brique refiltre, sans effet.
+  const isTrainingDay = useMemo(
+    () =>
+      trainedOnDay({
+        dayKey,
+        todayKey,
+        workouts,
+        completedRuns: runs,
+        activities,
+        hasPlanned,
+        dayKeyOf: localDayKeyOf,
+      }),
+    [dayKey, todayKey, workouts, runs, activities, hasPlanned],
+  );
+
   return {
-    isTrainingDay: computeIsTrainingDay({ retroactiveDone, hasPlanned, dayKey, todayKey }),
+    isTrainingDay,
     isLoading: workoutsLoading || runsLoading || plannedLoading || activitiesLoading,
   };
 }
@@ -432,101 +439,30 @@ export function useDayCalorieTarget(dayKey: string): DayCalorieTarget {
   // ce hook sert aussi à des jours passés (adhérence NUTR-10, bilan calorique NUTR-18), et une cible
   // rétroactive doit refléter ce qui était demandé CE jour-là.
   const { periods } = useRealLifePeriods();
-  const inRealLifePeriod = isRealLifeDay(periods, dayKey);
 
   const isLoading = nutritionLoading || profileLoading || weightLoading || trainingLoading || runsLoading;
 
   // US DEPENSE-00 — la dépense réelle du jour (bas des fourchettes), mode `activities` seulement.
   const { targetKcal: energyKcalToday, isLoading: energyLoading } = useDayEnergy(dayKey);
+  const today = useTodayDate();
 
-  // Calcul de l'objectif de base — même logique que nutrition-stats.tsx (indépendant du jour)
-  const objective =
-    nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
-  const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : undefined;
-  // 🔴 US DEPENSE-00 — le mode `activities` change AUSSI le socle, il n'ajoute pas qu'un bonus.
-  // Le facteur d'activité ordinaire (×1,2 à ×1,9) est défini par la fréquence d'entraînement : lui
-  // ajouter la dépense de chaque séance compterait le sport deux fois (analyse §3, jusqu'à 95 % du
-  // déficit d'une sèche effacé). Le socle hors sport ne contient, lui, aucun entraînement.
-  const usesRealEnergy = (nutritionProfile?.trainingBonusMode ?? 'fixed') === 'activities';
-  const tdeeValue = usesRealEnergy
-    ? sportFreeTdee({
-        sex: profile?.sex ?? 'unspecified',
-        weightKg: profile?.weightKg ?? undefined,
-        heightCm: profile?.heightCm ?? undefined,
-        age,
-        sportFreeLevel: nutritionProfile?.sportFreeLevel ?? DEFAULT_SPORT_FREE_LEVEL,
-      })
-    : tdee({
-        sex: profile?.sex ?? 'unspecified',
-        weightKg: profile?.weightKg ?? undefined,
-        heightCm: profile?.heightCm ?? undefined,
-        age,
-        activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
-      });
-  // US VIE-01 (R4) : pendant une période « vie réelle », l'objectif retombe au maintien — le déficit
-  // comme le surplus. C'est bien la **cible du jour** ici, donc la règle s'applique (l'écran de
-  // réglage de l'objectif, lui, en est exclu : voir `nutrition-profile.tsx`).
-  const target =
-    tdeeValue != null && objective != null
-      ? targetCalories(
-          tdeeValue,
-          effectiveNutritionObjective(objective, inRealLifePeriod),
-          nutritionProfile?.manualCalories ?? null,
-        )
-      : null;
-
-  // --- Bonus du jour (RN-02) : mode forfait / auto + dépense des courses ---
-  const mode: TrainingBonusMode = nutritionProfile?.trainingBonusMode ?? 'fixed';
-  const fixedBonus = nutritionProfile?.trainingDayBonus ?? 0;
-
-  // Poids : dernière pesée si dispo, sinon poids du profil général, sinon null.
-  const weightKg = latest?.weightKg ?? profile?.weightKg ?? null;
-
-  // Piliers actifs (même patron que useMostRecentRecord / useDeficitVolumeAlert).
-  const activePillars = resolveActivePillars(settings?.activePillars);
-  const runningActive = activePillars.includes('running');
-
-  // Dépense des courses terminées ce jour (0 si running inactif).
-  const runCaloriesOnDay = runningActive
-    ? runs
-        .filter((r) => r.finishedAt && localDayKey(new Date(r.finishedAt)) === dayKey)
-        .reduce(
-          (sum, r) =>
-            sum +
-            estimateRunCalories({
-              distanceM: r.distanceM,
-              durationSeconds: r.durationSeconds,
-              weightKg,
-            }),
-          0,
-        )
-    : 0;
-
-  const bonus = dayCalorieBonus({
-    mode,
-    isTrainingDay: trainedThatDay,
-    fixedBonus,
-    runCaloriesToday: runCaloriesOnDay,
-    energyKcalToday,
-  });
-
-  const trainingBonus = bonus;
-  // En mode `activities`, le bonus ne dépend PAS du statut « jour d'entraînement » : une sortie vélo
-  // un jour sans séance planifiée compte, et un jour de séance sans rien de saisi ne compte pas.
-  const isTrainingDay = (mode === 'activities' ? bonus > 0 : trainedThatDay && bonus > 0) && target != null;
-  const effectiveTarget = target != null ? trainingDayCalories(target, bonus) : target;
-
-  // Origine du bonus appliqué.
-  const bonusSource: 'run' | 'forfait' | 'activities' | 'none' =
-    mode === 'activities'
-      ? bonus > 0
-        ? 'activities'
-        : 'none'
-      : mode === 'auto' && runCaloriesOnDay > 0
-        ? 'run'
-        : bonus > 0
-          ? 'forfait'
-          : 'none';
+  // US NORYN-02 — la composition (socle selon le mode, objectif du jour, surcharge, bonus) vit dans
+  // `composeDayCalorieTarget` (@wellness/shared) : la fonction `noryn-context` l'appelle aussi.
+  // Poids : le socle prend celui du profil, la course du mode `auto` la dernière pesée.
+  const { target, effectiveTarget, trainingBonus, bonusSource, isTrainingDay } =
+    composeDayCalorieTarget({
+      dayKey,
+      profile,
+      nutritionProfile,
+      latestWeightKg: latest?.weightKg ?? null,
+      activePillars: settings?.activePillars,
+      realLifePeriods: periods,
+      trainedThatDay,
+      completedRuns: runs,
+      energyKcal: energyKcalToday,
+      dayKeyOf: localDayKeyOf,
+      at: today,
+    });
 
   return {
     target,
@@ -1348,27 +1284,7 @@ export type TrainingLoadAlert = { show: boolean; ratio: number | null };
  * hooks sous-jacents sont appelés inconditionnellement (règle des hooks React) ; le gating
  * n'intervient qu'au moment de retourner le résultat.
  */
-/**
- * Une activité libre vue comme une **séance de charge** (US AUTRE-01).
- *
- * La méthode session-RPE (Foster) ne connaît que deux entrées — un ressenti et des minutes — et ne
- * demande donc aucun pilier : c'est ce qui permet à une sortie vélo d'entrer telle quelle dans
- * l'ACWR, le garde-fou de charge et le score de disponibilité. Sans ça, trois heures de vélo
- * pesaient **zéro** et l'app disait « repos » à quelqu'un qui venait de rouler 90 km.
- *
- * `finishedAt` est reconstruit (début + durée) : les unions de charge raisonnent toutes sur la fin
- * de séance, et une activité n'en stocke pas.
- */
-function activityLoadSessions(
-  activities: readonly { rpe: number | null; durationSeconds: number; startedAt: string }[],
-): { rpe: number | null; durationSeconds: number | null; finishedAt: string | null }[] {
-  return activities.map((a) => ({
-    rpe: a.rpe,
-    durationSeconds: a.durationSeconds,
-    finishedAt: new Date(new Date(a.startedAt).getTime() + a.durationSeconds * 1000).toISOString(),
-  }));
-}
-
+/** `activityLoadSessions` (une activité vue comme une séance de charge) : `@wellness/shared`, US NORYN-02. */
 export function useTrainingLoadAlert(): TrainingLoadAlert {
   const { settings } = useSettings();
   const activePillars = resolveActivePillars(settings?.activePillars);
@@ -1546,12 +1462,6 @@ export function useOvertrainingGuardAlert(): OvertrainingGuardResult {
 // useReadiness — widget transverse (US TRI-03, score de forme / readiness)
 // ---------------------------------------------------------------------------
 
-/** Fenêtre nutrition (spec R2) — fixe, 7 j calendaires, indépendante des fenêtres ACWR. */
-const READINESS_NUTRITION_WINDOW_DAYS = 7;
-
-/** Fenêtre bien-être (spec R3/D5) — 3 derniers jours renseignés, énergie + stress seulement. */
-const READINESS_WELLBEING_WINDOW_DAYS = 3;
-
 /**
  * Expose le score de forme transverse (US TRI-03) : verdict + détail des 3 composantes
  * (charge / nutrition / bien-être). **Dégradation par composante** (spec D2), pas de garde
@@ -1566,16 +1476,9 @@ const READINESS_WELLBEING_WINDOW_DAYS = 3;
  */
 export function useReadiness(): ReadinessResult {
   const { settings } = useSettings();
-  const activePillars = resolveActivePillars(settings?.activePillars);
-  const strengthActive = activePillars.includes('strength');
-  const runningActive = activePillars.includes('running');
-  const nutritionActive = activePillars.includes('nutrition');
-
   const { workouts } = useWorkoutHistory();
   const { runs } = useRunHistory();
   const { activities: readinessActivities } = useActivities();
-  const acuteStartKey = useWindowStartKey(ACUTE_WINDOW_DAYS);
-  const chronicStartKey = useWindowStartKey(CHRONIC_WINDOW_DAYS);
 
   const nutritionWindowKey = useWindowStartKey(READINESS_NUTRITION_WINDOW_DAYS);
   const { totals } = useDailyTotals(nutritionWindowKey);
@@ -1585,51 +1488,20 @@ export function useReadiness(): ReadinessResult {
   const wellbeingWindowKey = useWindowStartKey(READINESS_WELLBEING_WINDOW_DAYS);
   const { rows: wellbeingRows } = useWellbeingRows(wellbeingWindowKey);
 
-  // R1 — charge : séances des seuls piliers actifs (dégradation par pilier, contrairement au
-  // gating tout-ou-rien de `useTrainingLoadAlert`).
-  const sessions = [
-    ...(strengthActive
-      ? workouts.map((w) => ({
-          rpe: w.rpe,
-          durationSeconds: w.durationSeconds,
-          finishedAt: w.finishedAt,
-        }))
-      : []),
-    ...(runningActive
-      ? runs.map((r) => ({ rpe: r.rpe, durationSeconds: r.durationSeconds, finishedAt: r.finishedAt }))
-      : []),
-    // US AUTRE-01 — les autres activités n'appartiennent à aucun pilier : elles ne sont donc jamais
-    // gatées. Une sortie vélo fatigue autant que le reste, que la course soit activée ou non.
-    ...activityLoadSessions(readinessActivities),
-  ];
-  const byWindow = (startKey: string) =>
-    sessions.filter((s) => s.finishedAt != null && localDayKey(new Date(s.finishedAt)) >= startKey);
-  const acwr = computeAcwr({
-    acuteSessions: byWindow(acuteStartKey),
-    chronicSessions: byWindow(chronicStartKey),
+  // US NORYN-02 — la composition (fenêtres, piliers, cible de base, nuit et « malade ») vit dans
+  // `composeReadiness` (@wellness/shared) : la fonction `noryn-context` l'appelle aussi.
+  return composeReadiness({
+    todayKey,
+    activePillars: settings?.activePillars,
+    wellbeingPillarEnabled: settings?.wellbeingPillarEnabled === true,
+    workouts,
+    completedRuns: runs,
+    activities: readinessActivities,
+    dailyKcal: totals,
+    baseTargetKcal: target,
+    wellbeingRows,
+    dayKeyOf: localDayKeyOf,
   });
-  const load = classifyLoadComponent(acwr);
-
-  // R2 — nutrition : pilier inactif traité comme aucun jour loggé (même dégradation naturelle).
-  const nutrition = classifyNutritionComponent({
-    loggedDaysCount: nutritionActive ? totals.length : 0,
-    avgKcal: averageIntake(totals).kcal,
-    targetKcal: target ?? 0,
-  });
-
-  // R3/D5 — bien-être : transverse, jamais gardé par pilier (comme le widget lui-même).
-  const wellbeingAvg = wellbeingAverages(wellbeingRows, READINESS_WELLBEING_WINDOW_DAYS, todayKey);
-  // US BIEN-04 — pilier Bien-être activé : la nuit de ce matin et « malade » entrent dans la
-  // composante. Pilier éteint, rien n'est passé : la règle est exactement celle de TRI-03.
-  const pillarOn = settings?.wellbeingPillarEnabled === true;
-  const todayRow = pillarOn ? (wellbeingRows.find((r) => r.logDate === todayKey && r.deletedAt == null) ?? null) : null;
-  const wellbeing = classifyWellbeingComponent({
-    energy: wellbeingAvg.energy,
-    stress: wellbeingAvg.stress,
-    ...(pillarOn ? { poorNight: isPoorNight(todayRow), sick: todayRow?.sick === true } : {}),
-  });
-
-  return computeReadiness({ load, nutrition, wellbeing });
 }
 
 // ---------------------------------------------------------------------------

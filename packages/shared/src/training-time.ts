@@ -47,6 +47,36 @@ export function formatHoursMinutes(totalSeconds: number): string {
 const ACUTE_WINDOW_DAYS = 7;
 const CHRONIC_WINDOW_DAYS = 28;
 
+/** Fenêtres de l'ACWR, exposées pour les compositions qui filtrent les séances (US NORYN-02). */
+export const ACWR_ACUTE_WINDOW_DAYS = ACUTE_WINDOW_DAYS;
+export const ACWR_CHRONIC_WINDOW_DAYS = CHRONIC_WINDOW_DAYS;
+
+/** Une séance vue par la charge : un ressenti, une durée, une fin. */
+export type LoadSession = { rpe: number | null; durationSeconds: number | null; finishedAt: string | null };
+
+/**
+ * Une activité libre vue comme une **séance de charge** (US AUTRE-01).
+ *
+ * La méthode session-RPE (Foster) ne connaît que deux entrées — un ressenti et des minutes — et ne
+ * demande donc aucun pilier : c'est ce qui permet à une sortie vélo d'entrer telle quelle dans
+ * l'ACWR, le garde-fou de charge et le score de disponibilité. Sans ça, trois heures de vélo
+ * pesaient **zéro** et l'app disait « repos » à quelqu'un qui venait de rouler 90 km.
+ *
+ * `finishedAt` est reconstruit (début + durée) : les unions de charge raisonnent toutes sur la fin
+ * de séance, et une activité n'en stocke pas.
+ *
+ * Sortie de `dashboard-repository.ts` par US NORYN-02, sans changement.
+ */
+export function activityLoadSessions(
+  activities: ReadonlyArray<{ rpe: number | null; durationSeconds: number; startedAt: string }>,
+): LoadSession[] {
+  return activities.map((a) => ({
+    rpe: a.rpe,
+    durationSeconds: a.durationSeconds,
+    finishedAt: new Date(new Date(a.startedAt).getTime() + a.durationSeconds * 1000).toISOString(),
+  }));
+}
+
 /** Seuil de la zone de risque (spec R4) — standard sport-science (méthode de Foster). */
 export const ACWR_RISK_THRESHOLD = 1.3;
 

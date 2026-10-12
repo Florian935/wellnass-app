@@ -143,7 +143,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/noryn02-cibles-forme` (modifications non commitées) |
-| Commits | 1361 · `main` a **1358** commits de retard sur `dev` |
+| Commits | 1362 · `main` a **1358** commits de retard sur `dev` |
 | Specs d'US | 190 au total — 90 clôturées, 100 en cours |
 | Migrations | 115/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -154,11 +154,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `081402d`  test(noryn): NORYN-02 étapes 1-2 — parité des lectures et filet de l'assemblage, verts avant l'extraction
 - `389610c`  docs(noryn): NORYN-02 cadrée — spec et plan en validation, E4 tranché comme défaut
 - `749e50e`  docs(noryn): NORYN-01 recettée et clôturée — 21 critères passés, conforme aux schémas de Noryn
 - `3fe681e`  fix(nutrition): la saisie par liste ne prend plus un poke bowl pour un avocat, ni du riz pour du chorizo
 - `d359c1e`  chore(noryn): NORYN-01 — migration poussée et fonction déployée, types régénérés
-- `1b5657b`  docs(recette): PRISME-01 en cours (§91), et l'APK qui grossissait à chaque build
 
 ---
 

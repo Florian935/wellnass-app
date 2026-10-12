@@ -5,6 +5,18 @@ export function localDayKey(d: Date): string {
 }
 
 /**
+ * Le jour **local** d'un instant ISO (`AAAA-MM-JJ`) — le rattachement que l'app applique partout
+ * (une séance finie à 23 h 30 appartient à ce jour-là).
+ *
+ * US NORYN-02 : les compositions partagées (cible du jour, verdict de forme) ne lisent aucun fuseau ;
+ * elles **reçoivent** ce rattachement. L'app leur passe celui-ci ; la fonction `noryn-context`, qui
+ * tourne en UTC, leur passe le jour à Paris.
+ */
+export function localDayKeyOf(instant: string): string {
+  return localDayKey(new Date(instant));
+}
+
+/**
  * Inverse de `localDayKey` : minuit **local** du jour désigné par la clé `AAAA-MM-JJ`.
  *
  * Ne jamais passer par `new Date('2026-07-12')` pour ça : la spec ECMAScript parse une date seule

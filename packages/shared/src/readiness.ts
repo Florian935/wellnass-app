@@ -9,9 +9,19 @@
  * aurait rendu `push` inatteignable dès que la nutrition est active — corrigé pendant le TDD.
  */
 
-import { DEFICIT_ALERT_RATIO, MIN_LOGGED_DAYS } from './bodyweight';
-import type { AcwrResult } from './training-time';
-import type { WellbeingAverage } from './wellbeing';
+import { averageIntake, DEFICIT_ALERT_RATIO, MIN_LOGGED_DAYS } from './bodyweight';
+import { localDateFromDayKey, localDayKey, localMidnightDaysAgo } from './date';
+import type { DayKeyOf } from './day-energy';
+import { resolveActivePillars, type Pillar } from './pillar';
+import {
+  activityLoadSessions,
+  ACWR_ACUTE_WINDOW_DAYS,
+  ACWR_CHRONIC_WINDOW_DAYS,
+  computeAcwr,
+  type AcwrResult,
+  type LoadSession,
+} from './training-time';
+import { isPoorNight, wellbeingAverages, type LocalWellbeing, type WellbeingAverage } from './wellbeing';
 
 export type ReadinessComponentState = 'positive' | 'neutral' | 'negative' | 'unavailable';
 
@@ -135,4 +145,101 @@ export function computeReadiness(input: {
       : 'ok';
 
   return { show: true, verdict, ...base };
+}
+
+// ---------------------------------------------------------------------------
+// US NORYN-02 — la composition du verdict, sortie de `useReadiness`
+// ---------------------------------------------------------------------------
+
+/** Fenêtre nutrition (TRI-03 R2) — fixe, 7 j calendaires, indépendante des fenêtres ACWR. */
+export const READINESS_NUTRITION_WINDOW_DAYS = 7;
+
+/** Fenêtre bien-être (TRI-03 R3/D5) — 3 jours du calendrier, énergie + stress seulement. */
+export const READINESS_WELLBEING_WINDOW_DAYS = 3;
+
+/**
+ * Borne basse d'une fenêtre de `days` jours **incluant** `todayKey` (`days = 7` → J−6) — le même calcul
+ * que `useWindowStartKey` du mobile, en clés de jour.
+ */
+export function windowStartKey(todayKey: string, days: number): string {
+  return localDayKey(localMidnightDaysAgo(days - 1, localDateFromDayKey(todayKey)));
+}
+
+/**
+ * Le verdict de forme d'**aujourd'hui** (`useReadiness`, TRI-03 + BIEN-04), composé une seule fois
+ * pour l'app et pour la fonction `noryn-context`. Sortie **sans changement de calcul**.
+ *
+ * - **Charge** : ACWR sur les séances des piliers actifs (muscu, course) et les autres activités,
+ *   jamais gardées par un pilier ; fenêtres J−6 et J−27 sur le jour de la **fin**, sans borne haute.
+ * - **Nutrition** : jours notés depuis J−6 (sans borne haute) contre la cible **de base** d'aujourd'hui
+ *   (jamais l'effective) ; pilier Nutrition éteint → aucun jour.
+ * - **Bien-être** : énergie et stress des 3 jours du calendrier ; pilier Bien-être allumé, la nuit de ce
+ *   matin et « malade ».
+ *
+ * `dayKeyOf` rattache un instant à son jour (voir `day-energy.ts`).
+ */
+export function composeReadiness(input: {
+  todayKey: string;
+  activePillars: readonly Pillar[] | null | undefined;
+  wellbeingPillarEnabled: boolean;
+  workouts: ReadonlyArray<LoadSession>;
+  /** Courses **terminées** (`status = 'completed'`). */
+  completedRuns: ReadonlyArray<LoadSession>;
+  activities: ReadonlyArray<{ rpe: number | null; durationSeconds: number; startedAt: string }>;
+  /** Totaux de kcal par jour noté (`SELECT_DAILY_TOTALS`, arrondis jour par jour). */
+  dailyKcal: ReadonlyArray<{ logDate: string; kcal: number }>;
+  /** Cible **de base** d'aujourd'hui (`composeDayCalorieTarget(...).target`). */
+  baseTargetKcal: number | null;
+  wellbeingRows: ReadonlyArray<LocalWellbeing>;
+  dayKeyOf: DayKeyOf;
+}): ReadinessResult {
+  const { todayKey, dayKeyOf } = input;
+  const activePillars = resolveActivePillars(input.activePillars);
+  const strengthActive = activePillars.includes('strength');
+  const runningActive = activePillars.includes('running');
+  const nutritionActive = activePillars.includes('nutrition');
+
+  const acuteStartKey = windowStartKey(todayKey, ACWR_ACUTE_WINDOW_DAYS);
+  const chronicStartKey = windowStartKey(todayKey, ACWR_CHRONIC_WINDOW_DAYS);
+
+  // R1 — charge : séances des seuls piliers actifs ; les autres activités ne sont jamais gardées.
+  const sessions: LoadSession[] = [
+    ...(strengthActive
+      ? input.workouts.map((w) => ({ rpe: w.rpe, durationSeconds: w.durationSeconds, finishedAt: w.finishedAt }))
+      : []),
+    ...(runningActive
+      ? input.completedRuns.map((r) => ({ rpe: r.rpe, durationSeconds: r.durationSeconds, finishedAt: r.finishedAt }))
+      : []),
+    ...activityLoadSessions(input.activities),
+  ];
+  const byWindow = (startKey: string) =>
+    sessions.filter((s) => s.finishedAt != null && dayKeyOf(s.finishedAt) >= startKey);
+  const load = classifyLoadComponent(
+    computeAcwr({ acuteSessions: byWindow(acuteStartKey), chronicSessions: byWindow(chronicStartKey) }),
+  );
+
+  // R2 — nutrition : pilier inactif traité comme aucun jour noté (même dégradation naturelle).
+  const nutritionStartKey = windowStartKey(todayKey, READINESS_NUTRITION_WINDOW_DAYS);
+  const totals = input.dailyKcal
+    .filter((d) => d.logDate >= nutritionStartKey)
+    .map((d) => ({ kcal: d.kcal, proteinG: 0, carbsG: 0, fatG: 0 }));
+  const nutrition = classifyNutritionComponent({
+    loggedDaysCount: nutritionActive ? totals.length : 0,
+    avgKcal: averageIntake(totals).kcal,
+    targetKcal: input.baseTargetKcal ?? 0,
+  });
+
+  // R3/D5 — bien-être : transverse. BIEN-04 — pilier allumé : la nuit de ce matin et « malade ».
+  const wellbeingAvg = wellbeingAverages(input.wellbeingRows, READINESS_WELLBEING_WINDOW_DAYS, todayKey);
+  const pillarOn = input.wellbeingPillarEnabled;
+  const todayRow = pillarOn
+    ? (input.wellbeingRows.find((r) => r.logDate === todayKey && r.deletedAt == null) ?? null)
+    : null;
+  const wellbeing = classifyWellbeingComponent({
+    energy: wellbeingAvg.energy,
+    stress: wellbeingAvg.stress,
+    ...(pillarOn ? { poorNight: isPoorNight(todayRow), sick: todayRow?.sick === true } : {}),
+  });
+
+  return computeReadiness({ load, nutrition, wellbeing });
 }

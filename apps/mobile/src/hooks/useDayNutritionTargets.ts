@@ -8,22 +8,18 @@
  *   courses et des autres activités).
  * - Macros cibles : manuelles si l'utilisateur en a posé une, sinon `trainingDayMacroGrams`, qui
  *   redirige le bonus de séance vers les glucides (US MN-04).
+ *
+ * US NORYN-02 — la composition vit dans `composeDayNutritionTargets` (@wellness/shared) ; ce hook n'en
+ * garde que les lectures.
  */
 
-import {
-  computeAge,
-  effectiveActivityLevel,
-  effectiveNutritionObjective,
-  isRealLifeDay,
-  objectiveFromGoal,
-  targetCalories,
-  tdee,
-  trainingDayMacroGrams,
-} from '@wellness/shared';
+import { useMemo } from 'react';
+import { composeDayNutritionTargets, localDateFromDayKey } from '@wellness/shared';
 import { useDayCalorieTarget } from '@/data/repositories/dashboard-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useRealLifePeriods } from '@/data/repositories/real-life-repository';
+import { useTodayKey } from '@/hooks/useTodayKey';
 
 export type Macros = { protein: number; carbs: number; fat: number };
 
@@ -31,24 +27,9 @@ export function useDayNutritionTargets(day: string) {
   const { profile } = useProfile();
   const { nutritionProfile } = useNutritionProfile();
   const { periods: realLifePeriods } = useRealLifePeriods();
-
-  const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
-  const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : null;
-  const tdeeValue = tdee({
-    sex: profile?.sex ?? 'unspecified',
-    weightKg: profile?.weightKg ?? undefined,
-    heightCm: profile?.heightCm ?? undefined,
-    age: age ?? undefined,
-    activityLevel: effectiveActivityLevel(nutritionProfile),
-  });
-  const target =
-    tdeeValue != null
-      ? targetCalories(
-          tdeeValue,
-          effectiveNutritionObjective(objective, isRealLifeDay(realLifePeriods, day)),
-          nutritionProfile?.manualCalories ?? null,
-        )
-      : null;
+  // L'âge se prend à la date du jour (réactive) : même résultat que `new Date()`, sans horloge lue ici.
+  const todayKey = useTodayKey();
+  const today = useMemo(() => localDateFromDayKey(todayKey), [todayKey]);
 
   const {
     effectiveTarget,
@@ -57,19 +38,14 @@ export function useDayNutritionTargets(day: string) {
     isLoading: targetLoading,
   } = useDayCalorieTarget(day);
 
-  const manualSet =
-    nutritionProfile?.manualProteinG != null ||
-    nutritionProfile?.manualCarbsG != null ||
-    nutritionProfile?.manualFatG != null;
-  const targetMacros: Macros | null = manualSet
-    ? {
-        protein: nutritionProfile?.manualProteinG ?? 0,
-        carbs: nutritionProfile?.manualCarbsG ?? 0,
-        fat: nutritionProfile?.manualFatG ?? 0,
-      }
-    : target != null && effectiveTarget != null
-      ? trainingDayMacroGrams({ targetBase: target, effectiveTarget, objective })
-      : null;
+  const { tdeeValue, target, targetMacros, profileComplete } = composeDayNutritionTargets({
+    dayKey: day,
+    profile,
+    nutritionProfile,
+    realLifePeriods,
+    dayTarget: { effectiveTarget },
+    at: today,
+  });
 
   return {
     tdeeValue,
@@ -78,7 +54,7 @@ export function useDayNutritionTargets(day: string) {
     trainingBonus,
     trainingApplies,
     targetLoading,
-    targetMacros,
-    profileComplete: profile?.weightKg != null && profile?.heightCm != null && age != null,
+    targetMacros: targetMacros as Macros | null,
+    profileComplete,
   };
 }

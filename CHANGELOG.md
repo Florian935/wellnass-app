@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — NORYN-02, étape 3 : la composition sort des hooks, sans changement (`feature/noryn02-cibles-forme` → `dev`)
+
+> Les filets de l'étape précédente (84 cas) passent **sans une ligne modifiée**. Commit précédent : `081402d3`.
+
+### Ajouté
+- `packages/shared/src/day-energy.ts` : `restingMetabolismOn` (l'unique copie de la règle du repos au poids
+  de la date — elle était écrite deux fois), `energyItemsByDay`, `dayEnergyTotals`, types `DayEnergyItem`,
+  `EnergyWorkout`, `EnergyRun`, `DayKeyOf`.
+- `packages/shared/src/day-target.ts` : `trainedOnDay`, `composeDayCalorieTarget` (rend aussi le socle et
+  sa nature), `composeDayNutritionTargets` (socle `tdee` **encore** quel que soit le mode : E4 déplacé, pas
+  réparé), `appliedObjective`, `hasManualMacros`. Les replis répétés par les hooks y vivent une fois.
+- `readiness.ts` : `composeReadiness`, `windowStartKey`, fenêtres `READINESS_*` ; `training-time.ts` :
+  `activityLoadSessions` (sortie de `dashboard-repository`), `ACWR_*_WINDOW_DAYS` ; `date.ts` :
+  `localDayKeyOf`.
+- Tests Vitest : `day-energy` (12), `day-target` (28), `readiness-compose` (18), avec un rattachement au
+  jour **non local** (preuve que les briques ne lisent aucun fuseau) ; fichiers neufs à 100 %.
+
+### Modifié
+- `useEnergyItemsByDay`, `useDayEnergy`, `useRestingMetabolismAt`, `useIsTrainingDay`, `useDayCalorieTarget`,
+  `useReadiness`, `useDayNutritionTargets` : ne gardent que leurs lectures et appellent les briques.
+- L'âge se prend à la date du jour **réactive** (`useTodayDate`, ou `useTodayKey` dans
+  `useDayNutritionTargets` dont les tests d'écran mockent ce seul hook) au lieu d'un `new Date()` implicite :
+  `computeAge` ne compare que des dates, le résultat est identique. `no-frozen-clock` surveille désormais
+  `energy-repository.ts` et `useDayNutritionTargets.ts`.
+- `isRealLifeDay` accepte une période réduite à ses bornes (élargissement de type, aucun effet).
+
+### Technique / Notes
+- `useDayCalorieTarget` ne rend **pas encore** le socle : l'ajouter changeait la forme comparée par le filet.
+  Il arrive avec la réparation D1 (étape 4), qui en a besoin.
+- Suites : Jest 5 112 (289 fichiers), Vitest `shared` 4 027 ; la couverture globale de `shared` reste sous ses
+  seuils (dette antérieure à NORYN-01) mais monte (98,76 / 96,35 / 99,44).
+
 ## 12/10/2026 — NORYN-02, étapes 1-2 : les filets, verts avant l'extraction (`feature/noryn02-cibles-forme` → `dev`)
 
 > Spec **validée par Florian le 12/10/2026** (D1-A, D2 à D9 telles que proposées) : `etape: code`.

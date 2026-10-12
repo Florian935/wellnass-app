@@ -19,22 +19,26 @@ import { useMemo } from 'react';
 
 import { useQuery } from '@powersync/react';
 import {
-  computeAge,
+  dayEnergyTotals,
+  energyItemsByDay,
   estimateActivityEnergy,
-  estimateRunEnergy,
-  estimateStrengthEnergy,
   localDayKey,
-  restingMetabolism,
+  localDayKeyOf,
+  restingMetabolismOn,
   sumEnergyForTarget,
-  weightAtDate,
   type Activity,
+  type DayEnergyItem,
   type EnergyEstimate,
   type RestingMetabolism,
 } from '@wellness/shared';
 
+import { useTodayDate } from '@/hooks/useTodayKey';
+
 import { useActivities } from './activity-repository';
 import { useWeightEntries } from './bodyweight-repository';
 import { useProfile } from './profile-repository';
+
+export type { DayEnergyItem };
 
 // ---------------------------------------------------------------------------
 // Métabolisme de repos
@@ -53,6 +57,9 @@ export function useRestingMetabolismAt(dayKey: string): {
 } {
   const { profile, isLoading: profileLoading } = useProfile();
   const { entries, isLoading: weightLoading } = useWeightEntries();
+  // L'âge se prend à la date du jour (réactive) : `computeAge` ne compare que des dates, le résultat
+  // est celui de `new Date()`, sans horloge lue dans le corps du hook (US NORYN-02).
+  const today = useTodayDate();
 
   // Valeurs extraites AVANT les mémos : le compilateur React refuse une dépendance en
   // `profile?.x` dont le corps lit `profile.x` — deux expressions différentes à ses yeux.
@@ -61,20 +68,16 @@ export function useRestingMetabolismAt(dayKey: string): {
   const birthDate = profile?.birthDate ?? null;
   const profileWeightKg = profile?.weightKg ?? null;
 
-  const weightKg = useMemo(
-    () => weightAtDate(entries, dayKey) ?? profileWeightKg,
-    [entries, dayKey, profileWeightKg],
-  );
-
-  const resting = useMemo(
+  // US NORYN-02 — la règle vit dans `restingMetabolismOn` (@wellness/shared), une seule fois.
+  const { resting, weightKg } = useMemo(
     () =>
-      restingMetabolism({
-        sex,
-        weightKg,
-        heightCm,
-        age: birthDate ? computeAge(new Date(birthDate)) : null,
+      restingMetabolismOn({
+        profile: { sex, heightCm, birthDate, weightKg: profileWeightKg },
+        weightEntries: entries,
+        dayKey,
+        at: today,
       }),
-    [sex, heightCm, birthDate, weightKg],
+    [sex, heightCm, birthDate, profileWeightKg, entries, dayKey, today],
   );
 
   return { resting, weightKg, isLoading: profileLoading || weightLoading };
@@ -83,19 +86,6 @@ export function useRestingMetabolismAt(dayKey: string): {
 // ---------------------------------------------------------------------------
 // La journée
 // ---------------------------------------------------------------------------
-
-/** Une ligne de la journée en énergie : d'où vient la dépense, et combien. */
-export type DayEnergyItem = {
-  id: string;
-  kind: 'strength' | 'run' | 'activity';
-  /** Clé du catalogue pour une activité ; `null` pour une séance ou une course. */
-  activityType: string | null;
-  /** Titre libre d'une séance de muscu (`null` = séance sans nom). */
-  title: string | null;
-  startedAt: string;
-  durationSeconds: number | null;
-  estimate: EnergyEstimate;
-};
 
 type WorkoutRow = {
   id: string;
@@ -168,109 +158,43 @@ export function useEnergyItemsByDay(): {
   const { data: runs, isLoading: runsLoading } = useQuery<RunRow>(SELECT_RUNS);
   const { activities, isLoading: activitiesLoading } = useActivities();
 
+  const today = useTodayDate();
+
   // Mêmes extractions que ci-dessus, pour la même raison (compilateur React).
   const sex = profile?.sex ?? null;
   const heightCm = profile?.heightCm ?? null;
   const birthDate = profile?.birthDate ?? null;
   const profileWeightKg = profile?.weightKg ?? null;
 
-  const byDay = useMemo(() => {
-    const map = new Map<string, DayEnergyItem[]>();
-    const age = birthDate ? computeAge(new Date(birthDate)) : null;
-    const restingCache = new Map<string, { resting: RestingMetabolism | null; weightKg: number | null }>();
-
-    const restingFor = (dayKey: string) => {
-      const cached = restingCache.get(dayKey);
-      if (cached) return cached;
-      const weightKg = weightAtDate(entries, dayKey) ?? profileWeightKg;
-      const value = {
-        weightKg,
-        resting: restingMetabolism({ sex, weightKg, heightCm, age }),
-      };
-      restingCache.set(dayKey, value);
-      return value;
-    };
-
-    const push = (dayKey: string, item: DayEnergyItem) => {
-      const list = map.get(dayKey);
-      if (list) list.push(item);
-      else map.set(dayKey, [item]);
-    };
-
-    for (const w of workouts) {
-      const dayKey = localDayKey(new Date(w.finished_at));
-      const estimate = estimateStrengthEnergy({
-        durationSeconds: w.duration_seconds,
-        totalSets: w.total_sets,
-        rpe: w.rpe,
-        resting: restingFor(dayKey).resting,
-      });
-      if (estimate) {
-        push(dayKey, {
+  // US NORYN-02 — la composition vit dans `energyItemsByDay` (@wellness/shared) : la fonction
+  // `noryn-context` l'appelle aussi. Ici, la lecture et le passage des lignes aux entrées.
+  const byDay = useMemo(
+    () =>
+      energyItemsByDay({
+        profile: { sex, heightCm, birthDate, weightKg: profileWeightKg },
+        weightEntries: entries,
+        workouts: workouts.map((w) => ({
           id: w.id,
-          kind: 'strength',
-          activityType: null,
-          // Une séance n'a pas de titre propre en base (il vient de la séance planifiée) : la carte
-          // affiche donc le libellé générique « Musculation ». Aller le chercher demanderait une
-          // jointure sur `sessions` + `session_translations` pour une ligne de liste.
-          title: null,
           startedAt: w.started_at,
+          finishedAt: w.finished_at,
           durationSeconds: w.duration_seconds,
-          estimate,
-        });
-      }
-    }
-
-    for (const r of runs) {
-      const dayKey = localDayKey(new Date(r.finished_at));
-      const { resting, weightKg } = restingFor(dayKey);
-      const estimate = estimateRunEnergy({
-        distanceM: r.distance_m,
-        durationSeconds: r.duration_seconds,
-        elevationGainM: r.elevation_gain_m,
-        rpe: r.rpe,
-        weightKg,
-        resting,
-      });
-      if (estimate) {
-        push(dayKey, {
+          rpe: w.rpe,
+          totalSets: w.total_sets,
+        })),
+        finishedRuns: runs.map((r) => ({
           id: r.id,
-          kind: 'run',
-          activityType: null,
-          title: null,
-          startedAt: r.finished_at,
+          finishedAt: r.finished_at,
+          distanceM: r.distance_m,
           durationSeconds: r.duration_seconds,
-          estimate,
-        });
-      }
-    }
-
-    for (const a of activities) {
-      const dayKey = localDayKey(new Date(a.startedAt));
-      const estimate = estimateActivityEnergy({
-        activityType: a.activityType,
-        intensity: a.intensity,
-        durationSeconds: a.durationSeconds,
-        distanceM: a.distanceM,
-        deviceKcal: a.deviceKcal,
-        resting: restingFor(dayKey).resting,
-      });
-      if (estimate) {
-        push(dayKey, {
-          id: a.id,
-          kind: 'activity',
-          activityType: a.activityType,
-          title: null,
-          startedAt: a.startedAt,
-          durationSeconds: a.durationSeconds,
-          estimate,
-        });
-      }
-    }
-
-    for (const list of map.values()) list.sort((x, y) => x.startedAt.localeCompare(y.startedAt));
-    return map;
-  }, [workouts, runs, activities, entries, sex, heightCm, birthDate, profileWeightKg]);
+          elevationGainM: r.elevation_gain_m,
+          rpe: r.rpe,
+        })),
+        activities,
+        dayKeyOf: localDayKeyOf,
+        at: today,
+      }),
+    [workouts, runs, activities, entries, sex, heightCm, birthDate, profileWeightKg, today],
+  );
 
   return {
     byDay,
@@ -304,13 +228,9 @@ export function useDayEnergy(dayKey: string): {
 } {
   const { byDay, isLoading } = useEnergyItemsByDay();
   const items = useMemo(() => byDay.get(dayKey) ?? [], [byDay, dayKey]);
+  const { totalKcal, targetKcal } = dayEnergyTotals(items);
 
-  return {
-    items,
-    totalKcal: items.reduce((sum, i) => sum + i.estimate.kcal, 0),
-    targetKcal: sumEnergyForTarget(items.map((i) => i.estimate)),
-    isLoading,
-  };
+  return { items, totalKcal, targetKcal, isLoading };
 }
 
 /**
