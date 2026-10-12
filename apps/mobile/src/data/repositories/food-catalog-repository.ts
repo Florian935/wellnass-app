@@ -24,6 +24,7 @@ import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { foldDiacritics, rankFoodMatches, type SearchableItem } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
+import { NAMED_FOODS_SQL } from './_sql';
 
 /**
  * Nombre maximal de lignes remontées de SQLite avant classement.
@@ -74,19 +75,14 @@ type TemplateRow = { id: string; name: string; item_count: number; total_kcal: n
  * sans une requête par ligne — la donnée était déjà en base (`food_entries.quantity_g`), elle
  * n'était simplement jamais lue.
  */
-const SELECT_CANDIDATES = `
-  SELECT f.id, f.category, f.kcal_per_100g, f.portions,
-         COALESCE(tl.name, tfr.name) AS name,
-         (fav.id IS NOT NULL) AS is_favorite,
+export const SELECT_CANDIDATES = `
+  SELECT f.id, f.category, f.kcal_per_100g, f.portions, f.name, f.is_favorite,
          (SELECT e.quantity_g FROM food_entries e
            WHERE e.food_id = f.id AND e.deleted_at IS NULL AND e.quantity_g IS NOT NULL
            ORDER BY e.created_at DESC LIMIT 1) AS last_qty,
          (SELECT MAX(e.created_at) FROM food_entries e
            WHERE e.food_id = f.id AND e.deleted_at IS NULL) AS last_used
-  FROM foods f
-  LEFT JOIN food_translations tl  ON tl.food_id = f.id AND tl.lang = ?      AND tl.deleted_at IS NULL
-  LEFT JOIN food_translations tfr ON tfr.food_id = f.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
-  LEFT JOIN food_favorites fav    ON fav.food_id = f.id AND fav.deleted_at IS NULL
+  FROM ${NAMED_FOODS_SQL} f
   WHERE f.deleted_at IS NULL
 `;
 
@@ -119,6 +115,25 @@ function foodToEntry(row: FoodRow): CatalogEntry {
   };
 }
 
+/** « Tes habitudes » : favoris et aliments déjà consommés. Exportée pour le banc des vues PowerSync. */
+export const SELECT_HABIT_FOODS = `${SELECT_CANDIDATES}
+     AND (f.is_favorite OR EXISTS (
+       SELECT 1 FROM food_entries e WHERE e.food_id = f.id AND e.deleted_at IS NULL))
+   ORDER BY last_used DESC NULLS LAST, is_favorite DESC, name COLLATE NOCASE
+   LIMIT ?`;
+
+/**
+ * La recherche de la feuille d'ajout : bornée, débuts de nom d'abord. Sans terme, la base par nom.
+ * Exportée pour le banc des vues PowerSync.
+ */
+export const selectCandidateSearch = (active: boolean): string =>
+  active
+    ? `${SELECT_CANDIDATES} AND (f.name LIKE ? COLLATE NOCASE)
+       ORDER BY (CASE WHEN f.name LIKE ? COLLATE NOCASE THEN 0 ELSE 1 END),
+                last_used DESC NULLS LAST, f.name COLLATE NOCASE
+       LIMIT ?`
+    : `${SELECT_CANDIDATES} ORDER BY name COLLATE NOCASE LIMIT ?`;
+
 /**
  * Liste « tes habitudes » : récents et favoris fusionnés, récents d'abord.
  *
@@ -130,14 +145,7 @@ function foodToEntry(row: FoodRow): CatalogEntry {
 export function useHabitFoods(): { entries: CatalogEntry[]; isLoading: boolean } {
   const { i18n } = useTranslation();
   const lang = i18n.language === 'en' ? 'en' : 'fr';
-  const { data, isLoading } = useQuery<FoodRow>(
-    `${SELECT_CANDIDATES}
-       AND (fav.id IS NOT NULL OR EXISTS (
-         SELECT 1 FROM food_entries e WHERE e.food_id = f.id AND e.deleted_at IS NULL))
-     ORDER BY last_used DESC NULLS LAST, is_favorite DESC, name COLLATE NOCASE
-     LIMIT ?`,
-    [lang, HABITS_LIMIT],
-  );
+  const { data, isLoading } = useQuery<FoodRow>(SELECT_HABIT_FOODS, [lang, HABITS_LIMIT]);
   return { entries: useMemo(() => data.map(foodToEntry), [data]), isLoading };
 }
 
@@ -178,12 +186,7 @@ export function useCatalogSearch(
   // Une liste qui rétrécit quand on précise sa recherche donne l'impression d'un moteur cassé.
   const prefixe = `${trimmed}%`;
   const { data: foods, isLoading: loadingFoods } = useQuery<FoodRow>(
-    active
-      ? `${SELECT_CANDIDATES} AND (COALESCE(tl.name, tfr.name) LIKE ? COLLATE NOCASE)
-         ORDER BY (CASE WHEN COALESCE(tl.name, tfr.name) LIKE ? COLLATE NOCASE THEN 0 ELSE 1 END),
-                  last_used DESC NULLS LAST, COALESCE(tl.name, tfr.name) COLLATE NOCASE
-         LIMIT ?`
-      : `${SELECT_CANDIDATES} ORDER BY name COLLATE NOCASE LIMIT ?`,
+    selectCandidateSearch(active),
     active ? [lang, like, prefixe, SQL_SCAN_LIMIT] : [lang, SQL_SCAN_LIMIT],
   );
 

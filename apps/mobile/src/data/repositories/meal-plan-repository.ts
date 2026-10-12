@@ -24,7 +24,7 @@ import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { addFoodEntry, removeEntry } from './journal-repository';
 import { applyTemplate } from './meal-template-repository';
-import { insertWithSyncFields, nowUtc, patch, softDelete, txInsert } from './_sql';
+import { foodNameSql, insertWithSyncFields, nowUtc, patch, softDelete, txInsert } from './_sql';
 
 type PlanDbRow = {
   id: string;
@@ -235,6 +235,14 @@ export async function planRecipe(
   });
 }
 
+/** L'aliment à planifier : son nom et ses valeurs pour 100 g. Exportée pour le banc des vues PowerSync. */
+export const SELECT_FOOD_TO_PLAN = `
+  SELECT ${foodNameSql('f.id', "'fr'")} AS name,
+         f.kcal_per_100g, f.protein_per_100g, f.carbs_per_100g, f.fat_per_100g
+  FROM foods f
+  WHERE f.id = ? AND f.deleted_at IS NULL
+`;
+
 /**
  * Planifie un **aliment simple** (US NUTRI-UX01, R7.1).
  *
@@ -254,15 +262,7 @@ export async function planFood(
     protein_per_100g: number | null;
     carbs_per_100g: number | null;
     fat_per_100g: number | null;
-  }>(
-    `SELECT COALESCE(tl.name, tfr.name) AS name,
-            f.kcal_per_100g, f.protein_per_100g, f.carbs_per_100g, f.fat_per_100g
-     FROM foods f
-     LEFT JOIN food_translations tl  ON tl.food_id = f.id AND tl.lang = 'fr' AND tl.deleted_at IS NULL
-     LEFT JOIN food_translations tfr ON tfr.food_id = f.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
-     WHERE f.id = ? AND f.deleted_at IS NULL`,
-    [foodId],
-  );
+  }>(SELECT_FOOD_TO_PLAN, [foodId]);
   if (!food) throw new Error(`Aliment introuvable ou archivé : ${foodId}`);
 
   const quantity = Math.max(1, Math.round(grams));

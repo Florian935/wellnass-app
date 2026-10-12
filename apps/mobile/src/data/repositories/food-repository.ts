@@ -25,7 +25,7 @@ import { useTranslation } from 'react-i18next';
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
 import { resolveDeviceLocale } from '@/i18n';
-import { insertWithSyncFields, patch, softDelete } from './_sql';
+import { NAMED_FOODS_SQL, insertWithSyncFields, patch, softDelete } from './_sql';
 
 /** Élément d'aliment affiché dans la recherche/liste (nom résolu, valeurs pour 100 g). */
 export type FoodListItem = {
@@ -72,19 +72,21 @@ function parsePortions(raw: string | null): FoodPortion[] {
   return Array.isArray(parsed) ? (parsed as FoodPortion[]) : [];
 }
 
-const SELECT_FOODS = `
+/**
+ * Le catalogue, nom résolu et favori compris. Consomme un `?` : la langue. Les requêtes qui la
+ * complètent lisent `f.name` et `f.is_favorite` comme des colonnes.
+ *
+ * 🔴 Plus de `LEFT JOIN` (recette PRISME-01, 08/10/2026) : sur les vues PowerSync, chaque aliment
+ * relisait toutes les traductions — 29 s sur PC pour le catalogue. Voir `foodNameSql`.
+ */
+export const SELECT_FOODS = `
   SELECT f.id, f.source, f.category, f.kcal_per_100g, f.protein_per_100g, f.carbs_per_100g,
          f.sugars_per_100g, f.fat_per_100g, f.saturated_fat_per_100g, f.fiber_per_100g,
-         f.portions, f.micronutrients, f.preparation_state,
-         COALESCE(tl.name, tfr.name) AS name,
-         (fav.id IS NOT NULL) AS is_favorite
-  FROM foods f
-  LEFT JOIN food_translations tl  ON tl.food_id = f.id AND tl.lang = ?      AND tl.deleted_at IS NULL
-  LEFT JOIN food_translations tfr ON tfr.food_id = f.id AND tfr.lang = 'fr' AND tfr.deleted_at IS NULL
-  LEFT JOIN food_favorites fav    ON fav.food_id = f.id AND fav.deleted_at IS NULL
+         f.portions, f.micronutrients, f.preparation_state, f.name, f.is_favorite
+  FROM ${NAMED_FOODS_SQL} f
   WHERE f.deleted_at IS NULL
 `;
-const ORDER_BY_NAME = 'ORDER BY name COLLATE NOCASE';
+export const ORDER_BY_NAME = 'ORDER BY name COLLATE NOCASE';
 
 function rowToItem(row: FoodListDbRow): FoodListItem {
   return {
@@ -163,14 +165,12 @@ export const FOOD_SEARCH_RESULT_LIMIT = 60;
  */
 export const selectFoodSearch = (active: boolean): string =>
   active
-    ? // ⚠️ `COALESCE(tl.name, tfr.name)` et non l'alias `name` : les deux jointures de traduction
-      // portent une colonne `name`, donc l'alias est **ambigu** dans un `WHERE` (SQLite le refuse
-      // net : « ambiguous column name: name »). L'`ORDER BY` l'accepterait, mais mélanger les deux
-      // formes dans la même requête ne se relit pas.
+    ? // `f.name` est une colonne de la table dérivée de `SELECT_FOODS` : un seul nom par aliment,
+      // utilisable tel quel dans le `WHERE` comme dans l'`ORDER BY`.
       `${SELECT_FOODS}
-    AND COALESCE(tl.name, tfr.name) LIKE ? COLLATE NOCASE
-  ORDER BY (CASE WHEN COALESCE(tl.name, tfr.name) LIKE ? COLLATE NOCASE THEN 0 ELSE 1 END),
-           COALESCE(tl.name, tfr.name) COLLATE NOCASE
+    AND f.name LIKE ? COLLATE NOCASE
+  ORDER BY (CASE WHEN f.name LIKE ? COLLATE NOCASE THEN 0 ELSE 1 END),
+           f.name COLLATE NOCASE
   LIMIT ?
 `
     : `${SELECT_FOODS} ${ORDER_BY_NAME} LIMIT ?`;
@@ -262,14 +262,30 @@ export async function findFoodByBarcode(barcode: string, lang: 'fr' | 'en'): Pro
   return row ? rowToItem(row) : null;
 }
 
+/** Les favoris, par nom. Exportée pour le banc des vues PowerSync. */
+export const SELECT_FAVORITE_FOODS = `${SELECT_FOODS} AND f.is_favorite ${ORDER_BY_NAME}`;
+
 /** Aliments favoris de l'utilisateur courant. */
 export function useFavoriteFoods(): { foods: FoodListItem[]; isLoading: boolean } {
   const { i18n } = useTranslation();
   const lang = i18n.language === 'en' ? 'en' : 'fr';
-  const sql = `${SELECT_FOODS} AND fav.id IS NOT NULL ${ORDER_BY_NAME}`;
-  const { data, isLoading } = useQuery<FoodListDbRow>(sql, [lang]);
+  const { data, isLoading } = useQuery<FoodListDbRow>(SELECT_FAVORITE_FOODS, [lang]);
   return { foods: data.map(rowToItem), isLoading };
 }
+
+/** Les aliments récemment journalisés, du plus récent au plus ancien. Exportée pour le banc. */
+export const SELECT_RECENT_FOODS = `
+  ${SELECT_FOODS}
+    AND f.id IN (
+      SELECT food_id FROM food_entries
+      WHERE food_id IS NOT NULL AND deleted_at IS NULL
+    )
+  ORDER BY (
+    SELECT MAX(e.created_at) FROM food_entries e
+    WHERE e.food_id = f.id AND e.deleted_at IS NULL
+  ) DESC
+  LIMIT ?
+`;
 
 /**
  * Aliments **récemment journalisés** (les plus récents d'abord, dédupliqués), pour une
@@ -278,19 +294,7 @@ export function useFavoriteFoods(): { foods: FoodListItem[]; isLoading: boolean 
 export function useRecentFoods(limit = 20): { foods: FoodListItem[]; isLoading: boolean } {
   const { i18n } = useTranslation();
   const lang = i18n.language === 'en' ? 'en' : 'fr';
-  const sql = `
-    ${SELECT_FOODS}
-      AND f.id IN (
-        SELECT food_id FROM food_entries
-        WHERE food_id IS NOT NULL AND deleted_at IS NULL
-      )
-    ORDER BY (
-      SELECT MAX(e.created_at) FROM food_entries e
-      WHERE e.food_id = f.id AND e.deleted_at IS NULL
-    ) DESC
-    LIMIT ?
-  `;
-  const { data, isLoading } = useQuery<FoodListDbRow>(sql, [lang, limit]);
+  const { data, isLoading } = useQuery<FoodListDbRow>(SELECT_RECENT_FOODS, [lang, limit]);
   return { foods: data.map(rowToItem), isLoading };
 }
 

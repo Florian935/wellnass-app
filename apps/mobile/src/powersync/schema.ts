@@ -213,6 +213,9 @@ const foods = new Table({
   deleted_at: column.text,
 });
 
+// 🔴 Index locaux (recette PRISME-01, 08/10/2026) : le nom d'un aliment se lit par sous-requête
+// `(food_id, lang)` (`foodNameSql`). Sans eux, chaque aliment du catalogue relisait toutes les
+// traductions — 29 s sur PC, des minutes sur un téléphone. Garde-fou : food-query-plan.test.ts.
 const food_translations = new Table({
   food_id: column.text,
   owner_id: column.text,
@@ -221,7 +224,7 @@ const food_translations = new Table({
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
-});
+}, { indexes: { food_lang: ['food_id', 'lang'] } });
 
 const food_favorites = new Table({
   user_id: column.text,
@@ -229,7 +232,7 @@ const food_favorites = new Table({
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
-});
+}, { indexes: { food: ['food_id'] } });
 
 const food_entries = new Table({
   user_id: column.text,
@@ -247,7 +250,9 @@ const food_entries = new Table({
   created_at: column.text,
   updated_at: column.text,
   deleted_at: column.text,
-});
+  // Dernière quantité et dernière utilisation d'un aliment, lues pour chaque candidat de la feuille
+  // d'ajout (`SELECT_CANDIDATES`) : sans index, une relecture du journal par aliment.
+}, { indexes: { food: ['food_id'] } });
 
 const exercises = new Table({
   owner_id: column.text,

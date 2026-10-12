@@ -155,7 +155,7 @@ describe('useHabitFoods', () => {
 
 describe('quantité proposée', () => {
   const entryFor = async (row: Record<string, unknown>) => {
-    feedBy([{ match: 'FROM foods f', data: [{ id: 'f-1', name: 'Pomme', category: 'fruits', kcal_per_100g: 52, portions: null, last_qty: null, last_used: null, is_favorite: 0, ...row }] }]);
+    feedBy([{ match: 'AS last_qty', data: [{ id: 'f-1', name: 'Pomme', category: 'fruits', kcal_per_100g: 52, portions: null, last_qty: null, last_used: null, is_favorite: 0, ...row }] }]);
     const { result } = await renderHook(() => useHabitFoods());
     return result.current.entries[0]!;
   };
@@ -201,7 +201,7 @@ describe('quantité proposée', () => {
   });
 
   it('accepte un aliment sans nom traduit plutôt que de le faire disparaître', async () => {
-    feedBy([{ match: 'FROM foods f', data: [{ id: 'f-1', name: null, category: 'fruits', kcal_per_100g: 52, portions: null, last_qty: null, last_used: null, is_favorite: 0 }] }]);
+    feedBy([{ match: 'AS last_qty', data: [{ id: 'f-1', name: null, category: 'fruits', kcal_per_100g: 52, portions: null, last_qty: null, last_used: null, is_favorite: 0 }] }]);
     const { result } = await renderHook(() => useHabitFoods());
 
     expect(result.current.entries[0]!.name).toBe('');
@@ -292,7 +292,7 @@ describe('useCatalogSearch', () => {
   it('plafonne la liste rendue à l’écran', async () => {
     feedBy([
       {
-        match: 'FROM foods f',
+        match: 'AS last_qty',
         data: Array.from({ length: 200 }, (_, i) => ({
           id: `f-${i}`, name: `Aliment ${i}`, category: 'divers', kcal_per_100g: 100,
           portions: null, last_qty: null, last_used: null, is_favorite: 0,
@@ -314,7 +314,7 @@ describe('useCatalogSearch', () => {
   });
 
   it.each([
-    ['aliments', 'FROM foods f'],
+    ['aliments', 'AS last_qty'],
     ['recettes', 'FROM recipes r'],
     ['repas types', 'FROM meal_templates tpl'],
   ])('relaie le chargement de la famille « %s »', async (_label, match) => {

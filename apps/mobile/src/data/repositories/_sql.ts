@@ -61,6 +61,47 @@ export const exerciseNameSql = (exerciseId: string, liveOnly = false): string =>
   exerciseTranslationSql('name', exerciseId, liveOnly);
 
 // ---------------------------------------------------------------------------
+// Aliments : nom traduit et favori (lecture)
+// ---------------------------------------------------------------------------
+
+/**
+ * Le nom d'un aliment dans la langue courante, avec repli sur le français — en **sous-requêtes
+ * scalaires**, jamais en `LEFT JOIN food_translations`. Même raison qu'`exerciseTranslationSql`.
+ *
+ * 🔴 Recette PRISME-01 (08/10/2026) : tout le catalogue nommait l'aliment par `LEFT JOIN`. Pour
+ * chacun des 3 244 aliments, les 6 488 traductions étaient relues deux fois : **29 s sur PC** pour le
+ * catalogue, des minutes sur un téléphone. La recherche ne rendait jamais rien, la saisie par liste
+ * ne reconnaissait plus « riz », et les 5 connexions de lecture occupées faisaient attendre toute
+ * l'app. Ainsi, par l'index `(food_id, lang)` de `schema.ts` : **29 ms**.
+ * Garde-fou : `food-query-plan.test.ts`, sur des vues construites comme celles de PowerSync.
+ *
+ * Consomme **un** `?` (la langue) avec `lang = '?'` ; aucun avec `"'fr'"`.
+ *
+ * @param foodId expression SQL de l'id (`foods.id`, `f.id`…) — jamais une saisie.
+ */
+export function foodNameSql(foodId: string, lang: '?' | "'fr'" = '?'): string {
+  const pick = (l: string) =>
+    `(SELECT ft.name FROM food_translations ft
+      WHERE ft.food_id = ${foodId} AND ft.lang = ${l} AND ft.deleted_at IS NULL LIMIT 1)`;
+  return lang === "'fr'" ? pick("'fr'") : `COALESCE(${pick('?')}, ${pick("'fr'")})`;
+}
+
+/** `1` si l'aliment est un favori vivant : un `EXISTS` par l'index `food_id`, sans `LEFT JOIN`. */
+export const foodFavoriteSql = (foodId: string): string =>
+  `EXISTS (SELECT 1 FROM food_favorites ff WHERE ff.food_id = ${foodId} AND ff.deleted_at IS NULL)`;
+
+/**
+ * Les aliments, chacun avec `name` (résolu, repli français) et `is_favorite` — à utiliser comme
+ * table dérivée (`FROM ${NAMED_FOODS_SQL} f`). Les requêtes qui la complètent lisent `f.name` et
+ * `f.is_favorite` comme des colonnes, et ne rendent qu'**une** ligne par aliment (le `LEFT JOIN`
+ * en rendait une par traduction et par favori en double). Consomme un `?` : la langue.
+ */
+export const NAMED_FOODS_SQL = `(
+    SELECT foods.*, ${foodNameSql('foods.id')} AS name, ${foodFavoriteSql('foods.id')} AS is_favorite
+    FROM foods
+  )`;
+
+// ---------------------------------------------------------------------------
 // Soft delete
 // ---------------------------------------------------------------------------
 

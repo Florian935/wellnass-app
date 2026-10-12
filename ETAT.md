@@ -1,4 +1,4 @@
-# État du projet — 08/10/2026
+# État du projet — 12/10/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -142,8 +142,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/noryn01-noryn-context` (modifications non commitées) |
-| Commits | 1353 · `main` a **1350** commits de retard sur `dev` |
+| Branche courante | `dev` (modifications non commitées) |
+| Commits | 1354 · `main` a **1351** commits de retard sur `dev` |
 | Specs d'US | 189 au total — 89 clôturées, 100 en cours |
 | Migrations | 114/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -155,11 +155,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `bd5101f`  feat(noryn): NORYN-01 — Noryn lit la journée et la semaine, la fonction noryn-context
 - `77d6f3b`  docs(noryn): NORYN-01 cadrée et validée — Noryn lit la journée et la semaine
 - `2c96d7c`  feat(prisme): PRISME-01 — Prisme raconte le soir et la semaine, et décompose un repas non reconnu
 - `6fde130`  docs(prisme): PRISME-01 cadrée et validée — Prisme, l'assistant IA du Labo
 - `b1bbdbd`  feat(bien-etre): le pilier Bien-être — pilier activable, check-in matin et soir, la boucle, Ce qui compte, la nuit lue, les modules
-- `441287c`  feat(labo): le Labo, carrefour des piliers — registre des liens, Croiser, fiche, échos, Apprendre
 
 ---
 

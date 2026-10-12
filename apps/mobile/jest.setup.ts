@@ -43,7 +43,9 @@ jest.mock('@powersync/react-native', () => ({
     real: 'REAL',
   },
   Schema: jest.fn().mockImplementation((tables) => ({ tables })),
-  Table: jest.fn().mockImplementation((columns) => ({ columns })),
+  // Les options (`indexes`) sont gardées : le banc des vues PowerSync (`powersync-views.ts`) en a
+  // besoin pour poser les mêmes index d'expression que sur le téléphone.
+  Table: jest.fn().mockImplementation((columns, options) => ({ columns, options })),
   UpdateType: {
     PUT: 'PUT',
     PATCH: 'PATCH',

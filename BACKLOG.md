@@ -148,6 +148,11 @@ Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
       `exerciseTranslationSql` (`data/repositories/_sql.ts`) ; un test sur le harnais par requête
       reprise, sur le modèle de `session-live-sql.test.ts`. Même remarque pour les autres
       `LEFT JOIN` sur de grosses tables (`program_translations`, `sessions`).
+      ✅ **Aliments faits le 08/10/2026** (recette PRISME-01) : le catalogue (3 244 aliments) prenait
+      29 s sur PC et bloquait les 5 connexions de lecture du téléphone → 22 ms (`foodNameSql`).
+      **Banc prêt pour la suite** : `test-utils/powersync-views.ts` construit la base comme PowerSync
+      (vues JSON + index d'expression de `schema.ts`) et `perRowRereads` nomme les tables relues par
+      ligne — modèle : `food-query-plan.test.ts`, une ligne par requête reprise.
 
 - [ ] 🟠 **`health-connect-state.test.ts` — mode de défaillance identifié, déclencheur toujours
       inconnu.** Constaté le 07/08/2026 en intégrant ALLURE-01 : **16 des 31 tests** en échec sur un

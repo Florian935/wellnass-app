@@ -27,7 +27,7 @@
  * c'est très exactement ce qui a permis à la panne de synchro de passer inaperçue.
  */
 
-import { COUNT_LIBRARY_FOODS, FOOD_SEARCH_SCAN_LIMIT, selectFoodSearch } from '../food-repository';
+import { COUNT_LIBRARY_FOODS, FOOD_SEARCH_SCAN_LIMIT, ORDER_BY_NAME, SELECT_FAVORITE_FOODS, SELECT_FOODS, selectFoodSearch } from '../food-repository';
 import { resetTestDb, seed, getTestDb } from '@/test-utils/sqlite-harness';
 
 jest.mock('@/powersync/system', () => ({
@@ -132,6 +132,51 @@ describe('selectFoodSearch — la requête bornée de l’écran plein', () => {
 
     const rows = getTestDb().prepare(selectFoodSearch(false)).all('fr', 10) as { name: string }[];
     expect(rows.map((r) => r.name)).toEqual(['Abricot', 'Banane']);
+  });
+});
+
+describe('SELECT_FOODS — le nom et le favori, sans jointure (recette PRISME-01, 08/10/2026)', () => {
+  const catalogue = (lang: 'fr' | 'en') =>
+    getTestDb().prepare(`${SELECT_FOODS} ${ORDER_BY_NAME}`).all(lang) as { id: string; name: string | null; is_favorite: number }[];
+
+  it('nomme l’aliment dans la langue demandée, et retombe sur le français', () => {
+    aliment('f1', 'Pomme');
+    seed('food_translations', [{ id: 'f1-en', food_id: 'f1', lang: 'en', name: 'Apple' }]);
+    aliment('f2', 'Poireau');
+
+    expect(catalogue('en').map((r) => r.name)).toEqual(['Apple', 'Poireau']);
+  });
+
+  it('ignore une traduction archivée', () => {
+    aliment('f1', 'Pomme');
+    seed('food_translations', [{ id: 'f1-en', food_id: 'f1', lang: 'en', name: 'Old apple', deleted_at: '2026-01-01T00:00:00Z' }]);
+
+    expect(catalogue('en').map((r) => r.name)).toEqual(['Pomme']);
+  });
+
+  it('🔴 une seule ligne par aliment, même avec deux traductions vivantes dans la même langue', () => {
+    aliment('f1', 'Riz');
+    seed('food_translations', [{ id: 'f1-fr-bis', food_id: 'f1', lang: 'fr', name: 'Riz blanc' }]);
+    seed('food_favorites', [
+      { id: 'fav-1', user_id: 'user-1', food_id: 'f1' },
+      { id: 'fav-2', user_id: 'user-1', food_id: 'f1' },
+    ]);
+
+    // Le LEFT JOIN rendait l'aliment 2 × 2 = 4 fois : quatre « Riz » dans la liste.
+    expect(catalogue('fr').map((r) => r.id)).toEqual(['f1']);
+  });
+
+  it('marque le favori, et les favoris ne gardent que lui', () => {
+    aliment('f1', 'Riz');
+    aliment('f2', 'Pâtes');
+    seed('food_favorites', [
+      { id: 'fav-1', user_id: 'user-1', food_id: 'f1' },
+      { id: 'fav-2', user_id: 'user-1', food_id: 'f2', deleted_at: '2026-01-01T00:00:00Z' },
+    ]);
+
+    expect(catalogue('fr').map((r) => [r.name, r.is_favorite])).toEqual([['Pâtes', 0], ['Riz', 1]]);
+    const favoris = getTestDb().prepare(SELECT_FAVORITE_FOODS).all('fr') as { name: string }[];
+    expect(favoris.map((r) => r.name)).toEqual(['Riz']);
   });
 });
 

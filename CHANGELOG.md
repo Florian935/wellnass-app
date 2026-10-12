@@ -10,6 +10,66 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — Nutrition : le catalogue d'aliments sans `LEFT JOIN` — la recherche répond, la saisie par liste reconnaît (`dev`)
+
+> Trouvé le 08/10/2026 en recette de PRISME-01 (RECETTES §91, critère 10), sur l'APK du téléphone de
+> Florian : chercher « riz » tournait sans fin, la saisie par liste ne reconnaissait plus rien
+> (« riz », « avocat », « yaourt nature » : « non reconnu »), et l'accord à Prisme mettait une
+> dizaine de minutes à s'enregistrer. **Ce n'était ni Prisme, ni le réseau.** Commit précédent :
+> `bd5101ff`.
+
+### Corrigé
+- 🔴 **Les requêtes du catalogue nommaient l'aliment par `LEFT JOIN food_translations`** (et
+  `food_favorites`). Sur une vue PowerSync, SQLite n'utilise jamais d'index pour la table de droite
+  d'un `LEFT JOIN` — constat de MUSCU-FIX02 (23/09) pour les exercices, mais les aliments n'étaient
+  pas dans sa liste. Pour chacun des 3 244 aliments, les 6 488 traductions étaient relues deux fois :
+  **29 s sur PC** pour le catalogue complet (banc qui reproduit les vues), des minutes sur un téléphone.
+  Et la base locale n'a que **5 connexions de lecture** (`OPSqliteAdapter`) : trois frappes (« r »,
+  « ri », « riz ») et la saisie par liste suffisaient à les occuper toutes, et **toute autre lecture
+  attendait derrière** — dont celle des réglages avant d'écrire l'accord à Prisme.
+- Réécrites en **sous-requêtes scalaires**, par index : `SELECT_FOODS` et tout ce qui le complète
+  (`useFoods`, `selectFoodSearch`, favoris, récents, `selectDenseFoods`, `getFood`,
+  `findFoodByBarcode`), `SELECT_CANDIDATES` (feuille d'ajout, « tes habitudes »),
+  `SELECT_FOOD_TO_PLAN` (menu de la semaine). Mesuré sur 3 244 aliments : catalogue **22 ms**,
+  recherche « riz » 6 ms, feuille d'ajout 6 ms, un aliment par id < 0,1 ms.
+- Un aliment qui avait deux traductions vivantes dans la même langue, ou deux favoris, apparaissait
+  plusieurs fois (produit du `LEFT JOIN`) : une seule ligne désormais. Test d'abord.
+
+### Ajouté
+- `_sql.ts` : `foodNameSql(foodId, lang)` (repli sur le français), `foodFavoriteSql`, `NAMED_FOODS_SQL`
+  — table dérivée `f` qui porte `name` et `is_favorite` ; les requêtes qui la complètent les lisent
+  comme des colonnes (`f.name LIKE ?`, `AND f.is_favorite`).
+- `schema.ts` : index locaux `food_translations (food_id, lang)`, `food_favorites (food_id)`,
+  `food_entries (food_id)` — créés par PowerSync au démarrage de l'app, **aucune migration serveur**.
+- `test-utils/powersync-views.ts` : un banc qui construit la base **comme PowerSync** (tables
+  `ps_data__*` en JSON, vues `CAST(json_extract(…))`, index d'expression lus dans `AppSchema`) ;
+  `perRowRereads` nomme les tables relues pour chaque ligne d'un plan. Le harnais `sqlite-harness`
+  ne peut pas voir ce défaut : ses tables sont de vraies tables.
+- `food-query-plan.test.ts` : 11 requêtes du catalogue, **toutes rouges avant le correctif**, plus deux
+  tests du banc lui-même (il voit bien la relecture d'un `LEFT JOIN`). `food-search-sql.test.ts` : nom
+  dans la langue demandée et repli, traduction archivée, une ligne par aliment, favoris.
+
+### Modifié
+- Requêtes exportées pour le banc : `SELECT_FOODS`, `ORDER_BY_NAME`, `SELECT_FAVORITE_FOODS`,
+  `SELECT_RECENT_FOODS` (`food-repository.ts`), `SELECT_CANDIDATES`, `SELECT_HABIT_FOODS`,
+  `selectCandidateSearch` (`food-catalog-repository.ts`), `SELECT_FOOD_TO_PLAN`
+  (`meal-plan-repository.ts`) — extraites des hooks **à l'identique d'abord** (tests verts), réécrites
+  ensuite.
+- `jest.setup.ts` : le faux `Table` de PowerSync garde ses options (`indexes`) pour le banc.
+- `food-catalog-sql.test.tsx` : le mock aiguillait sur le texte `FROM foods f` ; il aiguille sur
+  `AS last_qty`, propre à la requête des aliments.
+- BACKLOG : la ligne des `LEFT JOIN` d'exercices note les aliments faits et le banc disponible.
+
+### Technique / Notes
+- Roadmap 4.36 (saisie par liste) et 4.46 (recherche bornée) : statut inchangé (✅).
+- APK local reconstruit le 08/10 avec ce correctif (bundle vérifié) ; à confirmer sur le téléphone :
+  recherche « riz » immédiate, accord à Prisme en une seconde.
+- ⚠️ Si le symptôme « la bibliothèque n'est pas arrivée sur le téléphone » (NUTRI-UX02, 20/09) revient,
+  penser aussi à cette lenteur : une requête du catalogue qui ne rend rien ressemble à une base vide.
+- Reste au BACKLOG : ~30 requêtes d'exercices en `LEFT JOIN` ; le banc est prêt pour elles.
+- Qualité, sur l'arbre intégré à `origin/dev` (NORYN-01) : lint, typecheck et `agents:check` à 0 ;
+  tests verts (3 962 Vitest shared, 5 025 Jest mobile, 587 admin), code de sortie lu sans pipe.
+
 ## 08/10/2026 — NORYN-01 : Noryn lit la journée et la semaine — la fonction `noryn-context` (`feature/noryn01-noryn-context` → `dev`)
 
 > Code de l'US validée le 08/10/2026 (roadmap **9.17**, ⬜ → ✅). Noryn, l'orchestrateur personnel de
