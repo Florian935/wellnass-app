@@ -130,7 +130,8 @@ describe('handleNorynRequest — réponses', () => {
   it('la semaine passe aussi', async () => {
     const res = await call(request('/context/week?start=2026-10-05'));
     expect(res.status).toBe(200);
-    expect(JSON.parse(res.body).training.done).toEqual({ strength: 1, running: 1 });
+    // La séance du 06/10, et (jeu étendu par NORYN-02) celle du 08/10.
+    expect(JSON.parse(res.body).training.done).toEqual({ strength: 2, running: 1 });
   });
 
   it('toutes les réponses d’erreur sont du JSON no-store', async () => {
@@ -268,5 +269,34 @@ describe('handleNorynRequest — taille', () => {
     const res = await call(request(DAY), { ownerId: '33333333-3333-4333-8333-333333333333', log });
     expect(res.status).toBe(503);
     expect(log).toHaveBeenCalledWith('unknown_owner');
+  });
+});
+
+describe('handleNorynRequest — NORYN-02 (DD8, plafond PostgREST)', () => {
+  it('une exception dans la composition des cibles : 200, le champ à null, `target_error` au journal', async () => {
+    const codes: string[] = [];
+    const snapshot = await createNorynSource(fakeDb(twoUserTables()).client).load(OWNER, {
+      from: '2026-10-08',
+      to: '2026-10-08',
+      scope: 'day',
+      today: '2026-10-08',
+    });
+    Object.defineProperty(snapshot.targets!, 'profile', { get: () => { throw new Error('boum'); } });
+    const res = await call(request(DAY), { source: { load: async () => snapshot }, log: (code) => codes.push(code) });
+    expect(res.status).toBe(200);
+    expect(JSON.parse(res.body).nutrition).toMatchObject({ energy_target_kcal: null, protein_target_g: null });
+    expect(codes).toContain('target_error');
+  });
+
+  it('une lecture au plafond de PostgREST : 503, `truncated` au journal, rien de composé', async () => {
+    const codes: string[] = [];
+    const tables = twoUserTables();
+    tables.activities = Array.from({ length: 1000 }, (_, i) => ({ ...tables.activities![0]!, id: `a-${i}` }));
+    const res = await call(request(DAY), {
+      source: createNorynSource(fakeDb(tables).client),
+      log: (code) => codes.push(code),
+    });
+    expect(res.status).toBe(503);
+    expect(codes).toEqual(['truncated']);
   });
 });

@@ -1,15 +1,20 @@
 /**
  * US NORYN-01 — `context/day` : la journée, telle que Noryn la lit (spec §4.1).
  *
- * Pur : aucune lecture d'horloge (`now` entre par paramètre), aucune requête. Les cibles caloriques
- * et le verdict de forme valent `null` en v1 (D1) : leur calcul est composé dans des hooks du mobile,
- * et NORYN-02 l'en sortira sans le changer — le recopier ici serait la duplication interdite.
+ * Pur : aucune lecture d'horloge (`now` entre par paramètre), aucune requête.
+ *
+ * US NORYN-02 — les cibles et le verdict ne sont plus à `null` : ils viennent de `targets.ts`, qui
+ * appelle les **mêmes** compositions que l'app. Une exception dans l'un ou l'autre ne met à `null` que
+ * ce champ, avec un code fixe au journal (spec DD8) : le contrat dit « `null` when Wellness cannot
+ * compute them ».
  */
 
 import { DEFAULT_WATER_TARGET_ML } from '../hydration';
 import { normalizeStepGoal } from '../steps';
 import type { NorynDay } from './contract';
+import { parisDayKey } from './paris-date';
 import { buildNorynSessions } from './sessions';
+import { norynReadiness, norynTargets, type NorynTargets } from './targets';
 import {
   boundedInt,
   refPaceOf,
@@ -61,14 +66,39 @@ function recoveryOf(row: WellbeingRow | null): NonNullable<NorynDay['recovery']>
   };
 }
 
-export function buildNorynDay(snapshot: OwnerSnapshot, query: { date: string; now: Date }): NorynDay {
+const NO_TARGETS: NorynTargets = { energyTargetKcal: null, proteinTargetG: null };
+
+/** Calcule un champ ; une exception ne met à `null` que lui, et laisse un code fixe au journal (DD8). */
+function guarded<T>(compute: () => T, fallback: T, log: (code: string) => void, code: string): T {
+  try {
+    return compute();
+  } catch {
+    log(code);
+    return fallback;
+  }
+}
+
+export function buildNorynDay(
+  snapshot: OwnerSnapshot,
+  query: { date: string; now: Date; log?: (code: string) => void },
+): NorynDay {
   const { date, now } = query;
+  const log = query.log ?? (() => undefined);
+  const today = parisDayKey(now);
   const syncedAt = syncedAtOf(snapshot.receivedAt, now);
   // Jamais synchronisé : aucune valeur mesurée ni saisie, aucune séance, pas de veille (contrat).
   const synced = syncedAt !== null;
   const tracked = trackedDomains(snapshot.settings);
   const wellbeing = synced ? (snapshot.wellbeing.find((r) => r.log_date === date) ?? null) : null;
   const consumed = synced ? consumedOn(snapshot, date) : { kcal: null, protein: null };
+  // DD2 : jamais synchronisé, ni cible ni verdict. DD3 : pilier Nutrition éteint, pas de cible (le verdict
+  // reste servi). D4 : le verdict d'aujourd'hui seulement.
+  const targets =
+    synced && tracked.nutrition
+      ? guarded(() => norynTargets(snapshot, { date, today }), NO_TARGETS, log, 'target_error')
+      : NO_TARGETS;
+  const readiness =
+    synced && date === today ? guarded(() => norynReadiness(snapshot, { today }), null, log, 'readiness_error') : null;
 
   return {
     date,
@@ -80,9 +110,9 @@ export function buildNorynDay(snapshot: OwnerSnapshot, query: { date: string; no
     nutrition: tracked.nutrition
       ? {
           energy_kcal: consumed.kcal,
-          energy_target_kcal: null,
+          energy_target_kcal: targets.energyTargetKcal,
           protein_g: consumed.protein,
-          protein_target_g: null,
+          protein_target_g: targets.proteinTargetG,
         }
       : null,
     hydration: tracked.nutrition
@@ -90,7 +120,7 @@ export function buildNorynDay(snapshot: OwnerSnapshot, query: { date: string; no
       : null,
     // D5 : le check-in est au socle, il est toujours suivi.
     recovery: recoveryOf(wellbeing),
-    readiness: null,
+    readiness,
     // D4 : « malade » met l'intensité en veille (BIEN-04), pilier Bien-être allumé. Jamais le motif.
     intensity_on_hold: tracked.wellbeingPillar && wellbeing?.sick === true,
     training: synced ? buildNorynSessions(sessionInputsFor(snapshot, [date]), refPaceOf(snapshot)) : [],

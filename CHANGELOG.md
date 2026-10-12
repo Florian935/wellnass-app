@@ -10,6 +10,46 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 12/10/2026 — NORYN-02, étapes 5-7 : Noryn reçoit les cibles et le verdict de forme (`feature/noryn02-cibles-forme` → `dev`)
+
+> `energy_target_kcal`, `protein_target_g` et `readiness` ne valent plus `null` : la fonction appelle les
+> **mêmes** compositions que l'app. Contrat inchangé, **aucune migration**. ⚠️ À redéployer par Florian
+> (`npm run noryn:deploy`). Commit précédent : `25b21f81`.
+
+### Ajouté
+- `packages/shared/src/noryn/targets.ts` : `norynTargets` (cible effective du jour et protéines de la règle
+  unique, bornées au contrat) et `norynReadiness` (verdict d'aujourd'hui si l'app le montre). Le jour d'un
+  instant se prend à Paris, l'âge à midi UTC d'aujourd'hui à Paris pour toute date. Aucune formule : un
+  test-garde fixe la liste des imports permis.
+- `snapshot.ts` : lignes Postgres des cibles et du verdict (`TargetRows`, `ReadinessRows`) et leurs
+  décodeurs — représentation seulement (énumérations à `CHECK` validées par les schémas zod du paquet ;
+  les replis restent dans les compositions).
+- Tests : `targets.test.ts` (valeurs du filet du mobile, modes, Paris, changement d'heure, anniversaire,
+  DD1-DD8, garde R1), `source-noryn02.test.ts` (**parité des lectures** sur `parity.fixture.json` — le même
+  `expected` que le harnais SQLite du mobile —, ce qui est lu et quand, filtres R4, DD9, double barrière
+  table par table, plafond PostgREST), cas DD8 et troncature de bout en bout dans `handler.test.ts`.
+
+### Modifié
+- `source.ts` : **lecture en deux temps** (reçu, réglages, profil minimal, puis ce qui sert) ; entrées des
+  cibles si synchronisé et pilier Nutrition actif ; entrées du verdict si la date est aujourd'hui ; dernière
+  pesée en `auto`, pesée à la date et plus ancienne en `activities`, séries en `activities` ; listes blanches
+  par usage (`TARGET_COLUMNS`, `READINESS_COLUMNS`) ; `order`/`limit` dans le client structurel ; une lecture
+  au plafond (1 000 lignes) échoue (`truncated`, 503). Pilier Nutrition éteint : plus de lecture des repas,
+  de l'eau ni du profil nutritionnel (réponse inchangée).
+- `day.ts` : remplit les trois champs ; une exception ne met à `null` que son champ (`target_error`,
+  `readiness_error` au journal). `handler.ts` passe `today` et le journal.
+- `noryn.testkit.ts` : `NULL` ne passe plus aucune comparaison (comme en SQL — un `'null' >= …` passait),
+  instants comparés comme des instants, colonne inconnue dans un filtre levée, `order`/`limit`,
+  `ignoreOwnerFilterOn` ; jeu à deux comptes étendu (profil A en mode `activities`, séance du 08/10, séries,
+  pesées, périodes, activités). Deux attentes de semaine de NORYN-01 passent de 1 à 2 séances (le jeu).
+- `parity.fixture.json` : séances, courses et activités datées du 08/10 ; colonnes `motivation`,
+  `scheduled_time` ajoutées (lues par la journée de NORYN-01).
+
+### Technique / Notes
+- **Revue de code** (agent) : aucun bloquant ; quatre importants traités (listes blanches figées, double
+  barrière prouvée au second temps, garde R1 sans échappatoire, tests de bout en bout) — plan, écarts 15-18.
+- Couverture : `src/noryn`, `day-energy`, `day-target`, `readiness` à 100 % ; Vitest `shared` 4 107, Jest 5 116.
+
 ## 12/10/2026 — NORYN-02, étape 4 : D1-A, une seule règle pour les protéines (`feature/noryn02-cibles-forme` → `dev`)
 
 > **Des chiffres changent dans l'app**, ceux annoncés au §1.2 de la spec et seulement eux. Commit

@@ -1,16 +1,26 @@
 import { describe, expect, it } from 'vitest';
 import { buildNorynDay } from './day';
 import { NOW, OTHER, OTHER_MARKERS, OWNER, fakeDb, twoUserTables, uid } from './noryn.testkit';
-import { NorynSourceError, READ_COLUMNS, WEEK_WELLBEING_COLUMNS, createNorynSource } from './source';
+import {
+  NorynSourceError,
+  READINESS_COLUMNS,
+  READ_COLUMNS,
+  TARGET_COLUMNS,
+  WEEK_WELLBEING_COLUMNS,
+  createNorynSource,
+} from './source';
 import { buildNorynWeek } from './week';
 
-const DAY_RANGE = { from: '2026-10-08', to: '2026-10-08', scope: 'day' } as const;
-const WEEK_RANGE = { from: '2026-10-05', to: '2026-10-11', scope: 'week' } as const;
+const DAY_RANGE = { from: '2026-10-08', to: '2026-10-08', scope: 'day', today: '2026-10-08' } as const;
+const WEEK_RANGE = { from: '2026-10-05', to: '2026-10-11', scope: 'week', today: '2026-10-08' } as const;
 
-/** Les colonnes que la spec (R8) exclut en v1 : aucune ne doit être demandée. */
+/**
+ * Les colonnes que la spec (R8) exclut : aucune ne doit être demandée, quel que soit l'usage.
+ * NORYN-02 permet `stress` (verdict), `weight_kg` (profil, pesées) et `distance_m` (courses,
+ * activités) — **table par table**, figé dans `createNorynSource — NORYN-02, listes par usage` plus bas.
+ */
 const EXCLUDED_COLUMNS = [
   'mood',
-  'stress',
   'alcohol_drinks',
   'late_caffeine',
   'nap_minutes',
@@ -27,10 +37,9 @@ const EXCLUDED_COLUMNS = [
   'meal_type',
   'food_id',
   'micronutrients',
-  'weight_kg',
   'gps_track',
-  'distance_m',
   'avg_pace_s_per_km',
+  'set_type',
 ];
 
 /** Les tables de l'utilisateur et leur colonne propriétaire. */
@@ -47,6 +56,10 @@ const USER_TABLES: Record<string, string> = {
   planned_sessions: 'owner_id',
   workouts: 'user_id',
   runs: 'user_id',
+  real_life_periods: 'user_id',
+  body_weight_entries: 'user_id',
+  activities: 'user_id',
+  workout_sets: 'user_id',
 };
 const CONTENT_TABLES = ['sessions', 'programs', 'exercise_plans', 'exercises', 'session_intervals'];
 
@@ -78,7 +91,8 @@ describe('createNorynSource — isolation au seul propriétaire', () => {
 
     const json = JSON.stringify(week);
     for (const marker of OTHER_MARKERS) expect(json).not.toContain(marker);
-    expect(week.training.done).toEqual({ strength: 1, running: 1 });
+    // La séance du 06/10, et (jeu étendu par NORYN-02) celle du 08/10.
+    expect(week.training.done).toEqual({ strength: 2, running: 1 });
     // Le total du 07/10 est supprimé : aucun pas ce jour-là.
     expect(week.steps?.days[2]).toEqual({ date: '2026-10-07', count: null });
   });
@@ -147,16 +161,23 @@ describe('createNorynSource — minimisation (R8)', () => {
     expect(WEEK_WELLBEING_COLUMNS).toEqual(['user_id', 'log_date', 'sleep_minutes']);
   });
 
-  it('chaque sélection est celle de la liste blanche, sans *', async () => {
+  it('chaque sélection est l’une des listes blanches de sa table, sans *', async () => {
     const { client, log } = fakeDb(twoUserTables());
     await createNorynSource(client).load(OWNER, DAY_RANGE);
     await createNorynSource(client).load(OWNER, WEEK_RANGE);
 
+    const lists = (table: string): string[][] =>
+      [
+        READ_COLUMNS[table as keyof typeof READ_COLUMNS],
+        TARGET_COLUMNS[table as keyof typeof TARGET_COLUMNS],
+        READINESS_COLUMNS[table as keyof typeof READINESS_COLUMNS],
+        table === 'daily_wellbeing' ? WEEK_WELLBEING_COLUMNS : undefined,
+      ]
+        .filter((l) => l !== undefined)
+        .map((l) => [...(l as readonly string[])]);
     for (const q of log) {
       expect(q.columns).not.toContain('*');
-      const allowed = [...READ_COLUMNS[q.table as keyof typeof READ_COLUMNS]];
-      const weekWellbeing = q.table === 'daily_wellbeing' && q.columns.length === WEEK_WELLBEING_COLUMNS.length;
-      expect(q.columns).toEqual(weekWellbeing ? [...WEEK_WELLBEING_COLUMNS] : allowed);
+      expect(lists(q.table)).toContainEqual(q.columns);
     }
   });
 
@@ -171,16 +192,19 @@ describe('createNorynSource — minimisation (R8)', () => {
   });
 
   it('aucune colonne exclue par la spec n’est lue', () => {
-    for (const columns of Object.values(READ_COLUMNS)) {
-      for (const excluded of EXCLUDED_COLUMNS) expect(columns).not.toContain(excluded);
+    for (const list of [READ_COLUMNS, TARGET_COLUMNS, READINESS_COLUMNS]) {
+      for (const columns of Object.values(list)) {
+        for (const excluded of EXCLUDED_COLUMNS) expect(columns).not.toContain(excluded);
+      }
     }
   });
 
-  it('la journée ne lit pas les séances faites', async () => {
+  it('la journée ne lit les séances faites que pour la cible et le verdict, jamais avec les colonnes de la semaine', async () => {
     const { client, log } = fakeDb(twoUserTables());
     await createNorynSource(client).load(OWNER, DAY_RANGE);
-    expect(log.map((q) => q.table)).not.toContain('workouts');
-    expect(log.map((q) => q.table)).not.toContain('runs');
+    for (const q of log.filter((x) => x.table === 'workouts' || x.table === 'runs')) {
+      expect(q.columns).not.toEqual([...READ_COLUMNS.workouts]);
+    }
   });
 
   it('la semaine lit les séances terminées avec un jour de marge de part et d’autre (jour à Paris)', async () => {
@@ -241,5 +265,54 @@ describe('createNorynSource — pannes', () => {
     await expect(
       createNorynSource(client).load('33333333-3333-4333-8333-333333333333', DAY_RANGE),
     ).rejects.toMatchObject({ code: 'unknown_owner' });
+  });
+});
+
+describe('createNorynSource — NORYN-02, listes par usage', () => {
+  it('les listes des cibles et du verdict sont figées ici : toute colonne de plus exige de relire ce test', () => {
+    expect(TARGET_COLUMNS).toEqual({
+      profiles: ['user_id', 'birth_date', 'sex', 'height_cm', 'weight_kg', 'main_goal'],
+      nutrition_profiles: [
+        'user_id',
+        'objective',
+        'activity_level',
+        'manual_calories',
+        'manual_protein_g',
+        'manual_carbs_g',
+        'manual_fat_g',
+        'training_day_bonus',
+        'training_bonus_mode',
+        'sport_free_level',
+      ],
+      real_life_periods: ['user_id', 'started_on', 'ends_on'],
+      body_weight_entries: ['user_id', 'log_date', 'weight_kg'],
+      activities: ['user_id', 'id', 'activity_type', 'started_at', 'duration_seconds', 'intensity', 'rpe', 'distance_m', 'device_kcal'],
+      workout_sets: ['user_id', 'workout_id'],
+      workouts: ['user_id', 'id', 'started_at', 'finished_at', 'duration_seconds', 'rpe'],
+      runs: ['user_id', 'id', 'status', 'finished_at', 'duration_seconds', 'distance_m', 'elevation_gain_m', 'rpe'],
+    });
+    expect(READINESS_COLUMNS).toEqual({
+      workouts: ['user_id', 'finished_at', 'duration_seconds', 'rpe'],
+      runs: ['user_id', 'finished_at', 'duration_seconds', 'rpe'],
+      activities: ['user_id', 'started_at', 'duration_seconds', 'rpe'],
+      food_entries: ['user_id', 'log_date', 'kcal'],
+      daily_wellbeing: ['user_id', 'log_date', 'energy', 'stress', 'sleep_minutes', 'sleep_quality', 'sick'],
+    });
+  });
+
+  it('`stress`, `weight_kg`, `distance_m` : chacun dans ses seules tables et son seul usage', () => {
+    const where = (column: string) =>
+      Object.entries({ READ: READ_COLUMNS, TARGET: TARGET_COLUMNS, READINESS: READINESS_COLUMNS })
+        .flatMap(([usage, lists]) =>
+          Object.entries(lists)
+            .filter(([, columns]) => (columns as readonly string[]).includes(column))
+            .map(([table]) => `${usage}.${table}`),
+        )
+        .sort();
+    expect(where('stress')).toEqual(['READINESS.daily_wellbeing']);
+    expect(where('weight_kg')).toEqual(['TARGET.body_weight_entries', 'TARGET.profiles']);
+    expect(where('distance_m')).toEqual(['TARGET.activities', 'TARGET.runs']);
+    expect(where('mood')).toEqual([]);
+    expect(where('reps')).toEqual(['READ.session_intervals']); // les répétitions PRÉVUES d'un bloc, jamais celles d'une série
   });
 });

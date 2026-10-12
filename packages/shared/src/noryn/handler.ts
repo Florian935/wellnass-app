@@ -86,7 +86,7 @@ export async function handleNorynRequest(req: NorynHttpRequest, deps: NorynHandl
     const to = route.kind === 'day' ? route.date : addDayKeys(route.start, 6);
     let snapshot;
     try {
-      snapshot = await deps.source.load(owner, { from, to, scope: route.kind });
+      snapshot = await deps.source.load(owner, { from, to, scope: route.kind, today });
     } catch (error) {
       deps.log(error instanceof NorynSourceError ? error.code : 'db_error');
       return unavailable(503);
@@ -97,7 +97,7 @@ export async function handleNorynRequest(req: NorynHttpRequest, deps: NorynHandl
     try {
       payload =
         route.kind === 'day'
-          ? buildNorynDay(snapshot, { date: route.date, now: deps.now })
+          ? buildNorynDay(snapshot, { date: route.date, now: deps.now, log: deps.log })
           : buildNorynWeek(snapshot, { start: route.start, now: deps.now });
     } catch {
       deps.log('build_error');

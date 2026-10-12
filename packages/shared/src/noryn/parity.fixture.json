@@ -1,93 +1,515 @@
 {
-  "$comment": "US NORYN-02 — jeu de parité des lectures. Les mêmes lignes sont jouées dans le harnais SQLite du mobile (apps/mobile/src/data/repositories/__tests__/noryn02-parity-sql.test.ts, requêtes de l'app) et dans la fausse base de Noryn (packages/shared/src/noryn/source.test.ts, lectures et décodeurs du serveur). Les deux côtés doivent retenir exactement `expected`. Ne contient que des cas déterministes des deux côtés (deux pesées le même jour : même poids).",
+  "$comment": "US NORYN-02 — jeu de parité des lectures. Les mêmes lignes sont jouées dans le harnais SQLite du mobile (apps/mobile/src/data/repositories/__tests__/noryn02-parity-sql.test.ts, requêtes de l'app) et dans la fausse base de Noryn (packages/shared/src/noryn/source.test.ts, lectures et décodeurs du serveur). Les deux côtés doivent retenir exactement `expected`. Ne contient que des cas déterministes des deux côtés (deux pesées le même jour : même poids). Séances, courses et activités sont toutes le jeudi 08/10 (« aujourd'hui ») : la journée servie et le verdict les couvrent.",
   "owner": "11111111-1111-4111-8111-111111111111",
   "today": "2026-10-08",
   "rows": {
     "workouts": [
-      { "id": "w1", "user_id": "11111111-1111-4111-8111-111111111111", "status": "completed", "started_at": "2026-10-08T16:00:00.000Z", "finished_at": "2026-10-08T17:00:00.000Z", "duration_seconds": 3600, "rpe": 7, "deleted_at": null },
-      { "id": "w2", "user_id": "11111111-1111-4111-8111-111111111111", "status": "completed", "started_at": "2026-10-07T16:00:00.000Z", "finished_at": null, "duration_seconds": null, "rpe": null, "deleted_at": null },
-      { "id": "w3", "user_id": "11111111-1111-4111-8111-111111111111", "status": "active", "started_at": "2026-10-08T18:00:00.000Z", "finished_at": null, "duration_seconds": null, "rpe": null, "deleted_at": null },
-      { "id": "w4", "user_id": "11111111-1111-4111-8111-111111111111", "status": "completed", "started_at": "2026-10-05T16:00:00.000Z", "finished_at": "2026-10-05T17:00:00.000Z", "duration_seconds": 3600, "rpe": 8, "deleted_at": "2026-10-05T18:00:00.000Z" },
-      { "id": "w5", "user_id": "11111111-1111-4111-8111-111111111111", "status": "cancelled", "started_at": "2026-10-04T16:00:00.000Z", "finished_at": null, "duration_seconds": null, "rpe": null, "deleted_at": "2026-10-04T16:10:00.000Z" },
-      { "id": "w6", "user_id": "11111111-1111-4111-8111-111111111111", "status": "completed", "started_at": "2026-10-06T06:15:00.000Z", "finished_at": "2026-10-06T07:00:00.000Z", "duration_seconds": 2700, "rpe": null, "deleted_at": null }
+      {
+        "id": "w1",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "status": "completed",
+        "started_at": "2026-10-08T16:00:00.000Z",
+        "finished_at": "2026-10-08T17:00:00.000Z",
+        "duration_seconds": 3600,
+        "rpe": 7,
+        "deleted_at": null
+      },
+      {
+        "id": "w2",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "status": "completed",
+        "started_at": "2026-10-08T05:00:00.000Z",
+        "finished_at": null,
+        "duration_seconds": null,
+        "rpe": null,
+        "deleted_at": null
+      },
+      {
+        "id": "w3",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "status": "active",
+        "started_at": "2026-10-08T18:00:00.000Z",
+        "finished_at": null,
+        "duration_seconds": null,
+        "rpe": null,
+        "deleted_at": null
+      },
+      {
+        "id": "w4",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "status": "completed",
+        "started_at": "2026-10-08T08:00:00.000Z",
+        "finished_at": "2026-10-08T09:00:00.000Z",
+        "duration_seconds": 3600,
+        "rpe": 8,
+        "deleted_at": "2026-10-08T20:00:00.000Z"
+      },
+      {
+        "id": "w5",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "status": "cancelled",
+        "started_at": "2026-10-08T10:00:00.000Z",
+        "finished_at": null,
+        "duration_seconds": null,
+        "rpe": null,
+        "deleted_at": "2026-10-08T20:00:00.000Z"
+      },
+      {
+        "id": "w6",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "status": "completed",
+        "started_at": "2026-10-08T06:15:00.000Z",
+        "finished_at": "2026-10-08T07:00:00.000Z",
+        "duration_seconds": 2700,
+        "rpe": null,
+        "deleted_at": null
+      }
     ],
     "workout_sets": [
-      { "id": "s1", "user_id": "11111111-1111-4111-8111-111111111111", "workout_id": "w1", "set_type": "normal", "done": true, "deleted_at": null },
-      { "id": "s2", "user_id": "11111111-1111-4111-8111-111111111111", "workout_id": "w1", "set_type": "warmup", "done": true, "deleted_at": null },
-      { "id": "s3", "user_id": "11111111-1111-4111-8111-111111111111", "workout_id": "w1", "set_type": "normal", "done": false, "deleted_at": null },
-      { "id": "s4", "user_id": "11111111-1111-4111-8111-111111111111", "workout_id": "w1", "set_type": "normal", "done": true, "deleted_at": "2026-10-08T17:05:00.000Z" },
-      { "id": "s5", "user_id": "11111111-1111-4111-8111-111111111111", "workout_id": "w6", "set_type": "normal", "done": true, "deleted_at": null },
-      { "id": "s6", "user_id": "11111111-1111-4111-8111-111111111111", "workout_id": "w4", "set_type": "normal", "done": true, "deleted_at": null }
+      {
+        "id": "s1",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "workout_id": "w1",
+        "set_type": "normal",
+        "done": true,
+        "deleted_at": null
+      },
+      {
+        "id": "s2",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "workout_id": "w1",
+        "set_type": "warmup",
+        "done": true,
+        "deleted_at": null
+      },
+      {
+        "id": "s3",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "workout_id": "w1",
+        "set_type": "normal",
+        "done": false,
+        "deleted_at": null
+      },
+      {
+        "id": "s4",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "workout_id": "w1",
+        "set_type": "normal",
+        "done": true,
+        "deleted_at": "2026-10-08T20:00:00.000Z"
+      },
+      {
+        "id": "s5",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "workout_id": "w6",
+        "set_type": "normal",
+        "done": true,
+        "deleted_at": null
+      },
+      {
+        "id": "s6",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "workout_id": "w4",
+        "set_type": "normal",
+        "done": true,
+        "deleted_at": null
+      }
     ],
     "runs": [
-      { "id": "r1", "user_id": "11111111-1111-4111-8111-111111111111", "status": "completed", "finished_at": "2026-10-07T06:00:00.000Z", "duration_seconds": 2700, "distance_m": 8000, "elevation_gain_m": 50, "rpe": 5, "deleted_at": null },
-      { "id": "r2", "user_id": "11111111-1111-4111-8111-111111111111", "status": "active", "finished_at": "2026-10-06T06:00:00.000Z", "duration_seconds": 1800, "distance_m": 5000, "elevation_gain_m": null, "rpe": null, "deleted_at": null },
-      { "id": "r3", "user_id": "11111111-1111-4111-8111-111111111111", "status": "cancelled", "finished_at": "2026-10-05T06:00:00.000Z", "duration_seconds": 600, "distance_m": 1500, "elevation_gain_m": null, "rpe": null, "deleted_at": null },
-      { "id": "r4", "user_id": "11111111-1111-4111-8111-111111111111", "status": "completed", "finished_at": "2026-10-04T06:00:00.000Z", "duration_seconds": 3000, "distance_m": 10000, "elevation_gain_m": null, "rpe": 6, "deleted_at": "2026-10-04T07:00:00.000Z" },
-      { "id": "r5", "user_id": "11111111-1111-4111-8111-111111111111", "status": "active", "finished_at": null, "duration_seconds": null, "distance_m": null, "elevation_gain_m": null, "rpe": null, "deleted_at": null }
+      {
+        "id": "r1",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "status": "completed",
+        "finished_at": "2026-10-08T06:00:00.000Z",
+        "duration_seconds": 2700,
+        "distance_m": 8000,
+        "elevation_gain_m": 50,
+        "rpe": 5,
+        "deleted_at": null
+      },
+      {
+        "id": "r2",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "status": "active",
+        "finished_at": "2026-10-08T07:30:00.000Z",
+        "duration_seconds": 1800,
+        "distance_m": 5000,
+        "elevation_gain_m": null,
+        "rpe": null,
+        "deleted_at": null
+      },
+      {
+        "id": "r3",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "status": "cancelled",
+        "finished_at": "2026-10-08T08:30:00.000Z",
+        "duration_seconds": 600,
+        "distance_m": 1500,
+        "elevation_gain_m": null,
+        "rpe": null,
+        "deleted_at": null
+      },
+      {
+        "id": "r4",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "status": "completed",
+        "finished_at": "2026-10-08T09:30:00.000Z",
+        "duration_seconds": 3000,
+        "distance_m": 10000,
+        "elevation_gain_m": null,
+        "rpe": 6,
+        "deleted_at": "2026-10-08T20:00:00.000Z"
+      },
+      {
+        "id": "r5",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "status": "active",
+        "finished_at": null,
+        "duration_seconds": null,
+        "distance_m": null,
+        "elevation_gain_m": null,
+        "rpe": null,
+        "deleted_at": null
+      }
     ],
     "activities": [
-      { "id": "a1", "user_id": "11111111-1111-4111-8111-111111111111", "activity_type": "bike", "started_at": "2026-10-04T08:00:00.000Z", "duration_seconds": 3600, "intensity": "moderate", "rpe": 6, "distance_m": 25000, "device_kcal": null, "deleted_at": null },
-      { "id": "a2", "user_id": "11111111-1111-4111-8111-111111111111", "activity_type": "hike", "started_at": "2026-10-03T08:00:00.000Z", "duration_seconds": 5400, "intensity": "light", "rpe": null, "distance_m": null, "device_kcal": null, "deleted_at": "2026-10-03T12:00:00.000Z" },
-      { "id": "a3", "user_id": "11111111-1111-4111-8111-111111111111", "activity_type": "parapente", "started_at": "2026-10-02T10:00:00.000Z", "duration_seconds": 1800, "intensity": "light", "rpe": 3, "distance_m": null, "device_kcal": 120, "deleted_at": null }
+      {
+        "id": "a1",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "activity_type": "bike",
+        "started_at": "2026-10-08T11:00:00.000Z",
+        "duration_seconds": 3600,
+        "intensity": "moderate",
+        "rpe": 6,
+        "distance_m": 25000,
+        "device_kcal": null,
+        "deleted_at": null
+      },
+      {
+        "id": "a2",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "activity_type": "hike",
+        "started_at": "2026-10-08T12:00:00.000Z",
+        "duration_seconds": 5400,
+        "intensity": "light",
+        "rpe": null,
+        "distance_m": null,
+        "device_kcal": null,
+        "deleted_at": "2026-10-08T20:00:00.000Z"
+      },
+      {
+        "id": "a3",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "activity_type": "parapente",
+        "started_at": "2026-10-08T13:00:00.000Z",
+        "duration_seconds": 1800,
+        "intensity": "light",
+        "rpe": 3,
+        "distance_m": null,
+        "device_kcal": 120,
+        "deleted_at": null
+      }
     ],
     "planned_sessions": [
-      { "id": "p1", "owner_id": "11111111-1111-4111-8111-111111111111", "program_id": "prog-1", "session_id": "sess-1", "scheduled_date": "2026-10-08", "status": "planned", "deleted_at": null },
-      { "id": "p2", "owner_id": "11111111-1111-4111-8111-111111111111", "program_id": "prog-1", "session_id": "sess-1", "scheduled_date": "2026-10-09", "status": "done", "deleted_at": null },
-      { "id": "p3", "owner_id": "11111111-1111-4111-8111-111111111111", "program_id": "prog-1", "session_id": "sess-1", "scheduled_date": "2026-10-10", "status": "skipped", "deleted_at": null },
-      { "id": "p4", "owner_id": "11111111-1111-4111-8111-111111111111", "program_id": "prog-1", "session_id": "sess-1", "scheduled_date": "2026-10-11", "status": "planned", "deleted_at": "2026-10-07T10:00:00.000Z" },
-      { "id": "p5", "owner_id": "11111111-1111-4111-8111-111111111111", "program_id": "prog-supprime", "session_id": "sess-supprimee", "scheduled_date": "2026-10-12", "status": "planned", "deleted_at": null }
+      {
+        "id": "p1",
+        "owner_id": "11111111-1111-4111-8111-111111111111",
+        "program_id": "prog-1",
+        "session_id": "sess-1",
+        "scheduled_date": "2026-10-08",
+        "status": "planned",
+        "deleted_at": null,
+        "scheduled_time": null
+      },
+      {
+        "id": "p2",
+        "owner_id": "11111111-1111-4111-8111-111111111111",
+        "program_id": "prog-1",
+        "session_id": "sess-1",
+        "scheduled_date": "2026-10-09",
+        "status": "done",
+        "deleted_at": null,
+        "scheduled_time": null
+      },
+      {
+        "id": "p3",
+        "owner_id": "11111111-1111-4111-8111-111111111111",
+        "program_id": "prog-1",
+        "session_id": "sess-1",
+        "scheduled_date": "2026-10-10",
+        "status": "skipped",
+        "deleted_at": null,
+        "scheduled_time": null
+      },
+      {
+        "id": "p4",
+        "owner_id": "11111111-1111-4111-8111-111111111111",
+        "program_id": "prog-1",
+        "session_id": "sess-1",
+        "scheduled_date": "2026-10-11",
+        "status": "planned",
+        "deleted_at": "2026-10-07T10:00:00.000Z",
+        "scheduled_time": null
+      },
+      {
+        "id": "p5",
+        "owner_id": "11111111-1111-4111-8111-111111111111",
+        "program_id": "prog-supprime",
+        "session_id": "sess-supprimee",
+        "scheduled_date": "2026-10-12",
+        "status": "planned",
+        "deleted_at": null,
+        "scheduled_time": null
+      }
     ],
     "body_weight_entries": [
-      { "id": "b1", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-09-01", "weight_kg": 81, "deleted_at": null },
-      { "id": "b2", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-01", "weight_kg": 80, "deleted_at": null },
-      { "id": "b3", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-05", "weight_kg": 79.5, "deleted_at": null },
-      { "id": "b4", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-05", "weight_kg": 79.5, "deleted_at": null },
-      { "id": "b5", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-07", "weight_kg": 70, "deleted_at": "2026-10-07T20:00:00.000Z" }
+      {
+        "id": "b1",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-09-01",
+        "weight_kg": 81,
+        "deleted_at": null
+      },
+      {
+        "id": "b2",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-01",
+        "weight_kg": 80,
+        "deleted_at": null
+      },
+      {
+        "id": "b3",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-05",
+        "weight_kg": 79.5,
+        "deleted_at": null
+      },
+      {
+        "id": "b4",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-05",
+        "weight_kg": 79.5,
+        "deleted_at": null
+      },
+      {
+        "id": "b5",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-07",
+        "weight_kg": 70,
+        "deleted_at": "2026-10-07T20:00:00.000Z"
+      }
     ],
     "real_life_periods": [
-      { "id": "rl1", "user_id": "11111111-1111-4111-8111-111111111111", "started_on": "2026-10-13", "ends_on": "2026-10-14", "deleted_at": null },
-      { "id": "rl2", "user_id": "11111111-1111-4111-8111-111111111111", "started_on": "2026-10-08", "ends_on": "2026-10-09", "deleted_at": "2026-10-07T09:00:00.000Z" }
+      {
+        "id": "rl1",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "started_on": "2026-10-13",
+        "ends_on": "2026-10-14",
+        "deleted_at": null
+      },
+      {
+        "id": "rl2",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "started_on": "2026-10-08",
+        "ends_on": "2026-10-09",
+        "deleted_at": "2026-10-07T09:00:00.000Z"
+      }
     ],
     "food_entries": [
-      { "id": "f1", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-02", "kcal": 600, "protein_g": 30.4, "deleted_at": null },
-      { "id": "f2", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-02", "kcal": 650, "protein_g": 20, "deleted_at": null },
-      { "id": "f3", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-03", "kcal": 0, "protein_g": 0, "deleted_at": null },
-      { "id": "f4", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-05", "kcal": 900, "protein_g": 40, "deleted_at": "2026-10-05T21:00:00.000Z" },
-      { "id": "f5", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-09", "kcal": 300, "protein_g": 10, "deleted_at": null },
-      { "id": "f6", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-01", "kcal": 500, "protein_g": 25, "deleted_at": null },
-      { "id": "f7", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-08", "kcal": 1450, "protein_g": 92, "deleted_at": null }
+      {
+        "id": "f1",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-02",
+        "kcal": 600,
+        "protein_g": 30.4,
+        "deleted_at": null
+      },
+      {
+        "id": "f2",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-02",
+        "kcal": 650,
+        "protein_g": 20,
+        "deleted_at": null
+      },
+      {
+        "id": "f3",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-03",
+        "kcal": 0,
+        "protein_g": 0,
+        "deleted_at": null
+      },
+      {
+        "id": "f4",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-05",
+        "kcal": 900,
+        "protein_g": 40,
+        "deleted_at": "2026-10-05T21:00:00.000Z"
+      },
+      {
+        "id": "f5",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-09",
+        "kcal": 300,
+        "protein_g": 10,
+        "deleted_at": null
+      },
+      {
+        "id": "f6",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-01",
+        "kcal": 500,
+        "protein_g": 25,
+        "deleted_at": null
+      },
+      {
+        "id": "f7",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-08",
+        "kcal": 1450,
+        "protein_g": 92,
+        "deleted_at": null
+      }
     ],
     "daily_wellbeing": [
-      { "id": "d1", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-05", "energy": 1, "stress": 5, "sleep_minutes": 300, "sleep_quality": 1, "sick": true, "deleted_at": null },
-      { "id": "d2", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-06", "energy": 4, "stress": 2, "sleep_minutes": 450, "sleep_quality": 4, "sick": false, "deleted_at": null },
-      { "id": "d3", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-07", "energy": 1, "stress": 5, "sleep_minutes": 240, "sleep_quality": 1, "sick": true, "deleted_at": "2026-10-07T21:00:00.000Z" },
-      { "id": "d4", "user_id": "11111111-1111-4111-8111-111111111111", "log_date": "2026-10-08", "energy": 5, "stress": 1, "sleep_minutes": 480, "sleep_quality": 5, "sick": false, "deleted_at": null }
+      {
+        "id": "d1",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-05",
+        "energy": 1,
+        "stress": 5,
+        "sleep_minutes": 300,
+        "sleep_quality": 1,
+        "sick": true,
+        "deleted_at": null,
+        "motivation": null
+      },
+      {
+        "id": "d2",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-06",
+        "energy": 4,
+        "stress": 2,
+        "sleep_minutes": 450,
+        "sleep_quality": 4,
+        "sick": false,
+        "deleted_at": null,
+        "motivation": null
+      },
+      {
+        "id": "d3",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-07",
+        "energy": 1,
+        "stress": 5,
+        "sleep_minutes": 240,
+        "sleep_quality": 1,
+        "sick": true,
+        "deleted_at": "2026-10-07T21:00:00.000Z",
+        "motivation": null
+      },
+      {
+        "id": "d4",
+        "user_id": "11111111-1111-4111-8111-111111111111",
+        "log_date": "2026-10-08",
+        "energy": 5,
+        "stress": 1,
+        "sleep_minutes": 480,
+        "sleep_quality": 5,
+        "sick": false,
+        "deleted_at": null,
+        "motivation": null
+      }
     ]
   },
   "expected": {
-    "historyWorkoutIds": ["w1", "w2", "w6"],
-    "energyWorkouts": [{ "id": "w1", "totalSets": 2 }, { "id": "w6", "totalSets": 1 }],
-    "historyRunIds": ["r1"],
-    "energyRunIds": ["r1", "r2", "r3"],
-    "activityIds": ["a1", "a3"],
-    "hasPlanned": { "2026-10-08": true, "2026-10-09": true, "2026-10-10": false, "2026-10-11": false, "2026-10-12": true },
-    "latestWeight": { "logDate": "2026-10-05", "weightKg": 79.5 },
-    "weightEntries": [
-      { "logDate": "2026-09-01", "weightKg": 81 },
-      { "logDate": "2026-10-01", "weightKg": 80 },
-      { "logDate": "2026-10-05", "weightKg": 79.5 },
-      { "logDate": "2026-10-05", "weightKg": 79.5 }
+    "historyWorkoutIds": [
+      "w1",
+      "w2",
+      "w6"
     ],
-    "periods": [{ "startedOn": "2026-10-13", "endsOn": "2026-10-14" }],
+    "energyWorkouts": [
+      {
+        "id": "w1",
+        "totalSets": 2
+      },
+      {
+        "id": "w6",
+        "totalSets": 1
+      }
+    ],
+    "historyRunIds": [
+      "r1"
+    ],
+    "energyRunIds": [
+      "r1",
+      "r2",
+      "r3"
+    ],
+    "activityIds": [
+      "a1",
+      "a3"
+    ],
+    "hasPlanned": {
+      "2026-10-08": true,
+      "2026-10-09": true,
+      "2026-10-10": false,
+      "2026-10-11": false,
+      "2026-10-12": true
+    },
+    "latestWeight": {
+      "logDate": "2026-10-05",
+      "weightKg": 79.5
+    },
+    "weightEntries": [
+      {
+        "logDate": "2026-09-01",
+        "weightKg": 81
+      },
+      {
+        "logDate": "2026-10-01",
+        "weightKg": 80
+      },
+      {
+        "logDate": "2026-10-05",
+        "weightKg": 79.5
+      },
+      {
+        "logDate": "2026-10-05",
+        "weightKg": 79.5
+      }
+    ],
+    "periods": [
+      {
+        "startedOn": "2026-10-13",
+        "endsOn": "2026-10-14"
+      }
+    ],
     "dailyKcalSince": "2026-10-02",
     "dailyKcal": [
-      { "logDate": "2026-10-02", "kcal": 1250 },
-      { "logDate": "2026-10-03", "kcal": 0 },
-      { "logDate": "2026-10-08", "kcal": 1450 },
-      { "logDate": "2026-10-09", "kcal": 300 }
+      {
+        "logDate": "2026-10-02",
+        "kcal": 1250
+      },
+      {
+        "logDate": "2026-10-03",
+        "kcal": 0
+      },
+      {
+        "logDate": "2026-10-08",
+        "kcal": 1450
+      },
+      {
+        "logDate": "2026-10-09",
+        "kcal": 300
+      }
     ],
     "wellbeingSince": "2026-10-06",
-    "wellbeingDates": ["2026-10-06", "2026-10-08"]
+    "wellbeingDates": [
+      "2026-10-06",
+      "2026-10-08"
+    ]
   }
 }
