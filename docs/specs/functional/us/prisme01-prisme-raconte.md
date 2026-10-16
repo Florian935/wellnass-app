@@ -3,12 +3,20 @@ id: PRISME-01
 titre: "Prisme raconte — le bilan du soir et de la semaine rédigés, et Prisme en recours de la saisie en phrase"
 roadmap: [7.42, 4.48]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/prisme01-prisme-raconte
-maj: 05/10/2026
+maj: 16/10/2026
 ---
 
 # US PRISME-01 — Prisme raconte
+
+> ✅ **Clôturée le 16/10/2026** : recette RECETTES §91 menée avec Florian du 05 au 16/10/2026, **41 critères
+> sur 43**, section purgée. Prisme est servi par **Mistral AI** (`PRISME_PROVIDER=mistral`, opt-out
+> vérifié, `MISTRAL_MODEL=ministral-14b-latest` : le modèle par défaut est plafonné à 0 requête/min sur
+> le palier gratuit). Reportés au [BACKLOG](../../../../BACKLOG.md) : le critère **8** (build de
+> développement) et le **18** (passage sur Groq). Trois défauts trouvés en recette, corrigés test
+> d'abord : le gras Markdown du modèle, « Ta semaine a bougé », et — hors Prisme — le catalogue
+> d'aliments et la saisie par liste (voir le CHANGELOG des 12 et 16/10/2026).
 
 > **Analyse de référence** : [analyse-assistant-prisme-2026-10.md](../../../product/analyse-assistant-prisme-2026-10.md)
 > (compte rendu en ligne avec maquette jouable : https://claude.ai/artifact/2zptc9GuNxMTvxWJm8nioj).

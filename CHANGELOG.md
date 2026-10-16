@@ -10,6 +10,45 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 16/10/2026 — PRISME-01 recettée et clôturée (`dev`)
+
+> Recette RECETTES §91 menée avec Florian du 05 au 16/10/2026, sur APK local et sur le projet cloud :
+> **41 critères sur 43**. US clôturée (`etape: close`), §91 purgée. Commit précédent : `3ffe3fd2`.
+
+### Modifié
+- Spec : `etape: close`, note de clôture en tête (fournisseur en service, réglages, reports, défauts
+  trouvés). Roadmap 7.42 et 4.48 : remarques à jour, statuts inchangés (✅), entrée au journal.
+- RECETTES : §91 purgée (89 sections).
+- BACKLOG : **PRISME-01 — deux critères de recette à repasser** (P1) : le **8** (« Simuler un chiffre
+  inventé », qui n'existe qu'en build de développement) et le **18** (accord redemandé au passage de
+  Mistral à Groq, dont la console refusait de créer une clé).
+- CHANGELOG : l'entrée du 12/10/2026 sur la saisie par liste donnait `1b5657bf` pour commit précédent ;
+  c'était `d359c1ef` (une autre session avait commité entre-temps).
+
+### Technique / Notes
+- **Ce qui a été vu** : serveur S1 à S10 (statut, accord, récit, repas, quota réservé atomiquement — deux
+  appels simultanés au dernier quota : un 200 et un 429 —, âge, journaux sans contenu, Gemini et Mistral
+  sans opt-out refusés ; un secret changé est pris en compte sans redéploiement) ; accord (feuille « Mistral
+  AI, en France », case 18 ans, retrait hors ligne remonté au serveur) ; soir (pas de carte avant 18 h,
+  faits, récit de 4 phrases dont chaque nombre est dans les faits, « Ta journée a bougé », trois tirages
+  en vie réelle sans reproche, humeur basse sans bouton, double appui = un seul décompte) ; semaine
+  (bloc sous les chiffres, piliers actifs seuls, objectif en retard sans le nom de l'exercice perso) ;
+  repas (poke bowl décomposé et remplacé, aliment inconnu non compté ni renvoyé, 12 premiers, « bonjour »,
+  tout reconnu sans recours) ; transverse (mode avion, quota épuisé, fournisseur indisponible, Labo IA
+  inchangé, anglais avec « 4,640 kg » accepté, TalkBack, police 1,5×, thème sombre).
+- **Trois défauts trouvés en recette, corrigés test d'abord** : le gras Markdown du modèle et « Ta semaine
+  a bougé » (`1386f614`) ; et, hors Prisme, le catalogue d'aliments lu par `LEFT JOIN` (`32c7f7cf`) puis
+  le rapprochement de la saisie par liste (`3fe681e6`).
+- **Serveur en service** : `PRISME_PROVIDER=mistral`, `MISTRAL_TRAINING_OPTOUT=verified`,
+  `MISTRAL_MODEL=ministral-14b-latest` — le défaut `mistral-small-latest` est plafonné à 0 requête/min sur
+  le palier gratuit, `mistral-medium-latest` aussi.
+- **Reste à ranger côté données, par Florian** : le jeu SQL de recette (ids `91000000-…`, script de
+  nettoyage donné en séance), le mode vie réelle ouvert pour le critère 12, la date de naissance modifiée
+  pour les critères 2 et 14.
+- 🔴 Toujours vrai : Prisme ne doit pas entrer dans un build Play avant **ACCES-IA** et la politique de
+  confidentialité à jour (spec §11, BACKLOG).
+- Aucun code. Qualité relancée : voir le commit.
+
 ## 12/10/2026 — NORYN-02, étape 8 : en recette (`feature/noryn02-cibles-forme` → `dev`)
 
 > US à `etape: recette` ; roadmap **9.18** ✅. Commit précédent : `16768ad9`.
@@ -241,7 +280,7 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 > correctif du catalogue (`32c7f7cf`) : maintenant que la saisie par liste **voit** les 3 244 aliments,
 > « un yaourt nature et un poke bowl saumon avocat » donnait Yaourt nature **et Avocat, 150 g,
 > 305 kcal** — le saumon et le riz disparaissaient, et la ligne, réputée reconnue, ne partait jamais
-> chez Prisme. Commit précédent : `1b5657bf`.
+> chez Prisme. Commit précédent : `d359c1ef`.
 
 ### Corrigé
 - 🔴 **Un seul mot suffisait à « reconnaître » une ligne** (`bestMatchIndex`, `meal-parser.ts`) : un
