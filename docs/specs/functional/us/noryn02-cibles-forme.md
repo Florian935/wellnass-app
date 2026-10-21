@@ -3,12 +3,22 @@ id: NORYN-02
 titre: "Noryn reçoit les cibles et le verdict de forme — la composition sortie des hooks, sans formule recopiée"
 roadmap: [9.18]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/noryn02-cibles-forme
-maj: 12/10/2026
+maj: 21/10/2026
 ---
 
 # US NORYN-02 — Noryn reçoit les cibles et le verdict de forme
+
+> ✅ **Clôturée le 21/10/2026** : recette RECETTES §93 menée avec Florian du 16 au 21/10/2026, **11 critères
+> sur 11**, section purgée, jeu de recette retiré. Fonction redéployée par Florian le 16/10/2026
+> (`npm run noryn:deploy`). Noryn dit ce que dit l'app dans les trois modes, aux jours passés et futurs,
+> avec les surcharges et le pilier éteint ; les deux réponses passent les schémas **stricts** de Noryn
+> (`WellnessDayWireSchema`, `WellnessWeekWireSchema`), sans clé sensible, et les journaux de la fonction ne
+> portent que des codes fixes. Côté app, D1-A vérifié (une seule cible de protéines, « Dépense hors sport »
+> en FR et en EN, lu par TalkBack) et aucune régression sur le parcours du critère 9. Aucun défaut trouvé.
+> Reste au [BACKLOG](../../../../BACKLOG.md) : **CIBLE-01** (l'écart D2 attendu au critère 3 — historique
+> sans autres activités — et le planning repas).
 
 > **Demande** : Florian, 12/10/2026 — servir à Noryn `energy_target_kcal`, `protein_target_g` et
 > `readiness`, qui valent `null` depuis NORYN-01 (sa décision D1-A).

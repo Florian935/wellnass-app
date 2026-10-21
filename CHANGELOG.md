@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 21/10/2026 — NORYN-02 recettée et clôturée (`feature/noryn02-cibles-forme` → `dev`)
+
+> Recette RECETTES §93 menée avec Florian du 16 au 21/10/2026, sur APK local et sur la fonction déployée :
+> **11 critères sur 11**. US clôturée (`etape: close`), §93 purgée. Commit précédent : `cac23e88`.
+
+### Modifié
+- Spec : `etape: close`, note de clôture en tête (redéploiement du 16/10, schémas Noryn, ce qui reste).
+  Roadmap 9.18 : remarques à jour (clôturée, redéployée), statut inchangé (✅), entrée au journal.
+- RECETTES : §93 purgée (88 sections), en-tête à jour.
+
+### Technique / Notes
+- **Ce qui a été vu** : Noryn = app pour la cible du jour et les protéines (onglet et carte d'accueil) dans
+  les trois modes (Forfait, Auto, « Selon ce que tu fais ») ; jours passés J−2 et J−4 = « Ta journée en
+  énergie » (avec l'écart D2 attendu en Forfait, CIBLE-01) ; jours futurs J+3 (séance planifiée, sans
+  anticipation du bonus en « Selon ce que tu fais ») et J+5 (vie réelle, sans ajustement) ; surcharges
+  manuelles servies telles quelles ; verdict = accueil et hub Bien-être, « Malade » → `rest`, hier → `null` ;
+  pilier Nutrition éteint → `nutrition` `null`, verdict servi ; D1-A dans l'app (macros = cible, « Ta
+  dépense hors sport », brief et « Que manger ? » alignés sur l'onglet un jour à bonus) ; non-régression du
+  parcours du critère 9 ; anglais et TalkBack pour les deux libellés neufs.
+- **Critère 8** : les réponses jour et semaine du 21/10 validées hors dépôt contre `WellnessDayWireSchema` et
+  `WellnessWeekWireSchema` de Noryn (copie en lecture seule, zod 4, objets stricts) : conformes, 22 et 23
+  clés, aucune clé sensible ; journaux de `noryn-context` sans autre chose que des codes fixes.
+- **Aucun défaut trouvé.** Jeu de recette retiré par Florian (`noryn02-recette-nettoyage.sql`), réglages remis.
+- Reste au BACKLOG : **CIBLE-01** (historique sans autres activités, planning repas).
+- La branche est rebasée sur `cac23e88` (clôture PRISME-01) avant ce commit. Aucun code. Qualité relancée :
+  voir le commit.
+
 ## 16/10/2026 — PRISME-01 recettée et clôturée (`dev`)
 
 > Recette RECETTES §91 menée avec Florian du 05 au 16/10/2026, sur APK local et sur le projet cloud :

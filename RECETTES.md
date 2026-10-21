@@ -11,7 +11,8 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **16/10/2026** — **89 sections** (§91 PRISME-01 « Prisme raconte » recettée et
+> Dernière mise à jour : **21/10/2026** — **88 sections** (§93 NORYN-02 « Noryn reçoit les cibles et le verdict de forme »
+> recettée et clôturée, section purgée ; le 16/10/2026 : §91 PRISME-01 « Prisme raconte » recettée et
 > clôturée, section purgée — 8 et 18 reportés au BACKLOG ; le 12/10/2026 : §93 NORYN-02 « Noryn reçoit les cibles et le verdict de forme » ajoutée ; §92 NORYN-01 « Noryn lit la journée et la semaine »
 > recettée et clôturée, section purgée ; le 03/10/2026 : §91 PRISME-01 « Prisme raconte » ; le 01/10/2026 : §90 « le pilier Bien-être », six US, une recette ; le 30/09/2026 : §89 « le Labo, carrefour des piliers », cinq US ; le 26/09/2026 : §88 NUTRI-UX03 et §87 CARDIO-UX03 ; §86 MUSCU-UX07 le
 > 25/09/2026 ; le 23/09/2026 : §84 MUSCU-FIX02 et §85 MUSCU-UX06 recettées et clôturées, sections
@@ -5813,70 +5814,3 @@ la sieste lue dans Health Connect ; fréquence cardiaque au repos et VFC ; « ce
 pas » et la passerelle vers l'enquête du Labo ; l'historique figé du lien Bien-être ; une version courte
 **écrite** d'une séance de muscu (aujourd'hui un conseil) ; aucun croisement ne lit encore la sieste ni
 les fringales.
-
----
-
-## 93. NORYN-02 — Noryn reçoit les cibles et le verdict de forme (`feature/noryn02-cibles-forme` → `dev`)
-
-Spec : [noryn02-cibles-forme.md](docs/specs/functional/us/noryn02-cibles-forme.md) (critères §13) ·
-plan [docs/plans/noryn02-cibles-forme.md](docs/plans/noryn02-cibles-forme.md) (écarts en fin de plan) ·
-roadmap **9.18** · pas de maquette (aucune interface, à deux libellés près).
-
-Deux choses à recetter : **Noryn** reçoit `energy_target_kcal`, `protein_target_g` et `readiness` — les
-mêmes valeurs que l'app ; et **l'app** affiche désormais **une seule** cible de protéines (D1-A : l'écart
-E4 réparé). Les chiffres changent **seulement** en mode « Selon ce que tu fais » (`activities`) et, pour
-le brief du matin, les jours à bonus.
-
-> 🔴 **Prérequis 1 — le déploiement, par toi** : `npm run noryn:deploy` depuis `dev` à jour (arbre propre).
-> **Aucune migration**, aucune sync rule, aucun `db:types`.
->
-> 🔵 **Prérequis 2 — le jeu de données** : `supabase/scripts/noryn02-recette-donnees.sql` dans le SQL
-> Editor (ton UUID dans `v_user`, jamais commité). Il pose, autour d'aujourd'hui à Paris : une activité
-> **seule** à J−4, une activité et une course à J−2, une séance planifiée à J+3, une période « vie réelle »
-> de J+5 à J+6. Puis ouvrir l'app (les lignes descendent) et **ajouter un verre d'eau** (reçu de synchro).
-> Nettoyage à la fin : `noryn02-recette-nettoyage.sql`.
->
-> 🔵 **Prérequis 3** : un objectif nutritionnel posé (sans lui, la carte d'accueil n'affiche pas de
-> macros) ; noter ton **mode** (Réglages › Nutrition › bonus) et ton **forfait**, puis les remettre à la fin.
->
-> Appels : `curl -s -H "Authorization: Bearer $NORYN_TOKEN" "<url>/functions/v1/noryn-context/context/day?date=AAAA-MM-JJ"`.
-
-### A — Noryn dit ce que dit l'app
-
-- [ ] 1. **Aujourd'hui** : `energy_target_kcal` = « Ta cible du jour » de l'onglet Nutrition ;
-      `protein_target_g` = la cible de la barre Protéines du même onglet **et** de la carte Nutrition de
-      l'accueil (taille large).
-- [ ] 2. Les mêmes égalités après passage en mode **Auto**, puis **Selon ce que tu fais** (Réglages ›
-      Nutrition), en synchronisant entre chaque ; mode remis ensuite.
-- [ ] 3. **Jours passés** : J−2 (activité + course) et J−4 (activité **seule**) : `energy_target_kcal` = la
-      cible de « Ta journée en énergie » sur la page de ce jour. En mode Forfait avec un forfait réglé,
-      J−4 montre l'**écart D2 attendu** avec la ligne d'état de la même page (BACKLOG CIBLE-01).
-- [ ] 4. **Jour futur** (J+3, séance planifiée) : en Forfait, cible = celle d'aujourd'hui **sans** son bonus,
-      **plus** le forfait (chiffres de l'explication de la cible) ; en « Selon ce que tu fais », socle +
-      objectif. **J+5** (« vie réelle ») : la cible sans l'ajustement d'objectif.
-- [ ] 5. **Surcharges** : calories manuelles → cible = la saisie (+ bonus) ; protéines manuelles →
-      `protein_target_g` = la saisie ; retirées ensuite.
-- [ ] 6. **Forme** : `readiness` = le verdict de l'accueil et du hub Bien-être ; « malade » coché (pilier
-      Bien-être allumé) → `rest` des deux côtés ; `?date=` d'hier → `readiness` `null`.
-- [ ] 7. Pilier Nutrition éteint → `nutrition` `null`, `readiness` toujours servi.
-- [ ] 8. Les réponses passent `WellnessDayWireSchema` et `WellnessWeekWireSchema` de Noryn ; la semaine est
-      **identique** à avant ; aucune trace du stress, du poids, de l'âge, de l'objectif ni des dépenses ;
-      les journaux de la fonction ne portent que des codes fixes.
-
-### B — L'app : une seule règle (D1-A), rien d'autre ne bouge
-
-- [ ] 9. **Non-régression** (mêmes chiffres qu'avant hors mode « Selon ce que tu fais ») : onglet Nutrition
-      (cible, reste, macros, explication), Réglages › Nutrition, carte Nutrition de l'accueil (trois
-      tailles), page d'un jour passé, Statistiques (adhérence, bilan), « Ta journée en énergie », sections
-      énergie des bilans de séance et de course, relais nutrition du mode immersif, score de forme (accueil,
-      hub Bien-être, Labo), brief du matin et « Que manger ? ».
-- [ ] 10. **Mode « Selon ce que tu fais »** : la somme des macros de l'onglet Nutrition retombe sur la
-      cible ; l'explication de la cible commence par « **Ta dépense hors sport** » et additionne ; Réglages ›
-      Nutrition dit « **Dépense hors sport** » et montre les mêmes protéines de base. **Un jour à bonus**
-      (Forfait) : le brief du matin annonce les mêmes protéines que l'onglet Nutrition (avant : plus).
-- [ ] 11. FR et EN : les deux libellés neufs traduits (« Your expenditure outside training »,
-      « Expenditure outside training ») ; TalkBack les lit.
-
-⚠️ **Ce qui n'est pas fait** (spec §12, BACKLOG CIBLE-01) : l'historique (`useDailyCalorieTargets`) ne compte
-toujours pas les autres activités, et le planning repas garde son propre calcul de la cible ; un verdict
-pour un autre jour qu'aujourd'hui ; l'âge dans un fuseau à l'ouest de Greenwich.
