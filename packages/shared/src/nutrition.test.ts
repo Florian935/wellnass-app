@@ -11,7 +11,6 @@ import {
   basalMetabolicRate,
   caloriesFromMacros,
   computeCaloricBalance,
-  computeEffectiveTargetForDay,
   computeGoalAdherence,
   computeJournalCompletion,
   dayCalorieBonus,
@@ -614,24 +613,6 @@ describe('resolveMealSplit (US NUTR-16)', () => {
   it('moyenne kcal/jour = total du repas / jours renseignés (pas la longueur de la fenêtre)', () => {
     const rows = resolveMealSplit([{ mealKey: 'breakfast', kcal: 1050 }], defaultMeals, 3);
     expect(rows[0]?.avgKcalPerDay).toBe(350);
-  });
-});
-
-describe('computeEffectiveTargetForDay', () => {
-  it('base seule hors jour de séance', () => {
-    expect(
-      computeEffectiveTargetForDay({ targetBase: 2000, mode: 'fixed', fixedBonus: 300, isTrainingDay: false, runCaloriesToday: 0 }),
-    ).toBe(2000);
-  });
-  it('base + forfait un jour de séance (mode fixed)', () => {
-    expect(
-      computeEffectiveTargetForDay({ targetBase: 2000, mode: 'fixed', fixedBonus: 300, isTrainingDay: true, runCaloriesToday: 0 }),
-    ).toBe(2300);
-  });
-  it('base + dépense course (mode auto)', () => {
-    expect(
-      computeEffectiveTargetForDay({ targetBase: 2000, mode: 'auto', fixedBonus: 300, isTrainingDay: true, runCaloriesToday: 450 }),
-    ).toBe(2450);
   });
 });
 

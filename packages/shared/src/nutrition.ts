@@ -290,30 +290,6 @@ export function dayCalorieBonus(params: {
 }
 
 /**
- * Objectif calorique effectif d'un jour = base + bonus du jour (forfait fixe les jours de
- * séance, ou dépense d'une course en mode auto). Compose `dayCalorieBonus` + `trainingDayCalories`
- * pour un usage batch (adhérence NUTR-10) hors contexte hook. Pur.
- */
-export function computeEffectiveTargetForDay(params: {
-  targetBase: number;
-  mode: TrainingBonusMode;
-  fixedBonus: number;
-  isTrainingDay: boolean;
-  runCaloriesToday: number;
-  /** US DEPENSE-00 — dépenses réelles du jour (bas de fourchette), mode `activities` uniquement. */
-  energyKcalToday?: number;
-}): number {
-  const bonus = dayCalorieBonus({
-    mode: params.mode,
-    isTrainingDay: params.isTrainingDay,
-    fixedBonus: params.fixedBonus,
-    runCaloriesToday: params.runCaloriesToday,
-    energyKcalToday: params.energyKcalToday,
-  });
-  return trainingDayCalories(params.targetBase, bonus);
-}
-
-/**
  * Adhérence calorique (item NUTR-10) : part des jours loggés dont les kcal tombent dans la
  * fourchette ±`marginPct` % de l'objectif effectif du jour. Les jours sans objectif
  * (`effectiveTarget` null ou ≤ 0) sont ignorés (exclus du dénominateur). Pur.

@@ -10,6 +10,29 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/10/2026 — CIBLE-01, étape 7 : ménage, test-garde R1 et preuve Noryn (`feature/cible01-cible-du-jour`)
+
+> Plan CIBLE-01, étape 7. Commit précédent : `266087e9`.
+
+### Supprimé
+- `computeEffectiveTargetForDay` (`packages/shared/src/nutrition.ts`) et son `describe` dans
+  `nutrition.test.ts` : plus aucun appelant depuis l'étape 3 (DD5). Son comportement est couvert par les
+  tests de `composeDayCalorieTarget` et de `composeCalorieTargetsForDays`.
+
+### Ajouté
+- `cible01-no-formula.test.ts` (test-garde R1) : `dashboard-repository.ts`, `meal-plan/index.tsx` et
+  `home-widget-data.ts` n'importent aucune des 15 briques de calcul de la cible du jour (`tdee`,
+  `targetCalories`, `computeAge`, `isTrainingDay`, `computeEffectiveTargetForDay`…).
+
+### Technique / Notes — la preuve que Noryn ne bouge pas (spec §7)
+- **Bundle** de `noryn-context` (`buildNorynBundle()`, le build de `npm run noryn:deploy`) reconstruit dans ce
+  worktree et comparé à la référence de l'étape 1 : **identique, octet pour octet**. Aucun redéploiement.
+- `git diff 9a3ca226` **vide** sur `packages/shared/src/noryn/`, `day-target.ts`, `day-energy.ts`,
+  `readiness.ts`, `supabase/functions/` et `scripts/noryn-context-bundle.mjs`, et sur tous les tests de
+  NORYN-02 (Vitest de `noryn/`, `parity.fixture.json`, `noryn02-parity-sql`, filets d'assemblage) ; seul
+  `nutrition.ts` change dans la fermeture de Noryn — le retrait d'une fonction qu'aucun de ses modules
+  n'importe.
+
 ## 22/10/2026 — CIBLE-01, étape 6 : la carte de régularité sur la cible de chaque jour (`feature/cible01-cible-du-jour`)
 
 > Plan CIBLE-01, étape 6 (D9-A). Commit précédent : `2dc06c6f`.
