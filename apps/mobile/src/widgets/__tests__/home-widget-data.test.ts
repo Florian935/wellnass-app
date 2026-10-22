@@ -180,8 +180,8 @@ describe('computeHomeWidgetSnapshot', () => {
 
   // ── US CIBLE-01 — le filet du « Restant » ─────────────────────────────────────────────────────
   // Profil A (homme, 80 kg, 180 cm, 30 ans) : `tdee` « modéré » 2 759, hors sport « debout » 2 448 ;
-  // sèche −400, forfait 300 ; 2 000 kcal mangées. Les tests étiquetés figent la valeur d'aujourd'hui
-  // d'un cas que la spec (§6) annonce comme changé : seul leur attendu bouge, à l'étape du widget.
+  // sèche −400, forfait 300 ; 2 000 kcal mangées. Les tests étiquetés figeaient la valeur d'avant d'un
+  // cas que la spec (§6) annonce comme changé : seul leur attendu a bougé, à l'étape 5 (le widget).
   const seedProfileA = (overrides: Record<string, unknown> = {}) =>
     seed('profiles', [
       { user_id: 'user-1', sex: 'male', height_cm: 180, weight_kg: 80, birth_date: '1996-01-15', main_goal: 'muscle', ...overrides },
@@ -210,7 +210,7 @@ describe('computeHomeWidgetSnapshot', () => {
     expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(359);
   });
 
-  it('CIBLE-01 C16 — séance faite aujourd’hui, forfait 300 : le restant ignore le bonus', async () => {
+  it('CIBLE-01 C16 — séance faite aujourd’hui, forfait 300 : le restant d’Aujourd’hui, bonus compris (spec §6 C16)', async () => {
     seedActivePillars(['strength', 'running', 'nutrition']);
     seedProfileA();
     seedNutritionA();
@@ -219,37 +219,109 @@ describe('computeHomeWidgetSnapshot', () => {
       { user_id: 'user-1', status: 'completed', started_at: `${TODAY}T09:00:00.000Z`, finished_at: `${TODAY}T10:00:00.000Z`, duration_seconds: 3600 },
     ]);
 
-    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(359);
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(659);
   });
 
-  it('CIBLE-01 C17 — mode `activities` : socle `tdee`', async () => {
+  it('CIBLE-01 C17 — mode `activities` : socle hors sport 2 448 − 400 (spec §6 C17)', async () => {
     seedActivePillars(['strength', 'running', 'nutrition']);
     seedProfileA();
     seedNutritionA({ training_bonus_mode: 'activities' });
     seedEaten();
 
-    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(359);
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(48);
   });
 
-  it('CIBLE-01 C18 — dernière pesée (70 kg) ≠ poids du profil (80 kg) : socle au poids de la pesée', async () => {
+  it('CIBLE-01 C18 — dernière pesée (70 kg) ≠ poids du profil (80 kg) : socle au poids du profil (spec §6 C18)', async () => {
     seedActivePillars(['strength', 'running', 'nutrition']);
     seedProfileA();
     seedNutritionA();
     seedEaten();
     seed('body_weight_entries', [{ user_id: 'user-1', log_date: '2026-08-01', weight_kg: 70 }]);
-    const at70 = tdee({ sex: 'male', weightKg: 70, heightCm: 180, age: 30, activityLevel: 'moderate' })! - 400;
+    const at80 = tdee({ sex: 'male', weightKg: 80, heightCm: 180, age: 30, activityLevel: 'moderate' })! - 400;
 
-    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(at70 - 2000);
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(at80 - 2000);
   });
 
-  it('CIBLE-01 C19 — profil sans poids, une pesée : un restant au poids de la pesée', async () => {
+  it('CIBLE-01 C19 — profil sans poids, une pesée : pas de restant, comme Aujourd’hui (spec §6 C19)', async () => {
     seedActivePillars(['strength', 'running', 'nutrition']);
     seedProfileA({ weight_kg: null });
     seedNutritionA();
     seedEaten();
     seed('body_weight_entries', [{ user_id: 'user-1', log_date: '2026-08-01', weight_kg: 80 }]);
 
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBeNull();
+  });
+
+  // ── US CIBLE-01 — le « Restant » est celui d'Aujourd'hui, dans les trois modes ──────────────────
+  it('CIBLE-01 — séance planifiée aujourd’hui, pas faite (Forfait) : le forfait anticipé', async () => {
+    seedActivePillars(['strength', 'running', 'nutrition']);
+    seedProfileA();
+    seedNutritionA();
+    seedEaten();
+    seedPlannedSession('strength');
+
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(659);
+  });
+
+  it('CIBLE-01 — séance sautée aujourd’hui : aucun forfait', async () => {
+    seedActivePillars(['strength', 'running', 'nutrition']);
+    seedProfileA();
+    seedNutritionA();
+    seedEaten();
+    seedPlannedSession('strength', { status: 'skipped' });
+
     expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(359);
+  });
+
+  it('CIBLE-01 — mode `auto`, course terminée aujourd’hui : sa dépense (8 km en 45 min, 657)', async () => {
+    seedActivePillars(['strength', 'running', 'nutrition']);
+    seedProfileA();
+    seedNutritionA({ training_bonus_mode: 'auto' });
+    seedEaten();
+    seed('runs', [
+      {
+        user_id: 'user-1',
+        status: 'completed',
+        source: 'manual',
+        started_at: `${TODAY}T05:00:00.000Z`,
+        finished_at: `${TODAY}T05:45:00.000Z`,
+        duration_seconds: 2700,
+        distance_m: 8000,
+        rpe: 5,
+      },
+    ]);
+
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(2359 + 657 - 2000);
+  });
+
+  it('CIBLE-01 — « Selon ce que tu fais », vélo de 60 min aujourd’hui : la dépense retenue (500)', async () => {
+    seedActivePillars(['strength', 'running', 'nutrition']);
+    seedProfileA();
+    seedNutritionA({ training_bonus_mode: 'activities' });
+    seedEaten();
+    seed('activities', [
+      {
+        user_id: 'user-1',
+        activity_type: 'bike',
+        started_at: `${TODAY}T08:00:00.000Z`,
+        duration_seconds: 3600,
+        intensity: 'moderate',
+        rpe: 6,
+        distance_m: 25000,
+      },
+    ]);
+
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(2048 + 500 - 2000);
+  });
+
+  it('CIBLE-01 — période « vie réelle » aujourd’hui : l’objectif au maintien', async () => {
+    seedActivePillars(['strength', 'running', 'nutrition']);
+    seedProfileA();
+    seedNutritionA();
+    seedEaten();
+    seed('real_life_periods', [{ user_id: 'user-1', started_on: TODAY, ends_on: TODAY }]);
+
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(2759 - 2000);
   });
 
   it('kcal restantes : profil incomplet (pas de taille/poids) → null', async () => {

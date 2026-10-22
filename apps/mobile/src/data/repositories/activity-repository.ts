@@ -28,7 +28,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch, softDelete } from './_sql';
 
 /** Ligne brute de `activities`. */
-type ActivityDbRow = {
+export type ActivityDbRow = {
   id: string;
   activity_type: string;
   started_at: string;
@@ -49,7 +49,8 @@ export const SELECT_ACTIVITIES = `
   ORDER BY started_at DESC
 `;
 
-function toActivity(row: ActivityDbRow): Activity {
+/** Une ligne de `activities` → le domaine. Exportée pour le widget (US CIBLE-01). */
+export function toActivity(row: ActivityDbRow): Activity {
   return {
     id: row.id,
     activityType: row.activity_type,

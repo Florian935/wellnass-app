@@ -87,7 +87,8 @@ export function useRestingMetabolismAt(dayKey: string): {
 // La journée
 // ---------------------------------------------------------------------------
 
-type WorkoutRow = {
+/** Ligne de `SELECT_WORKOUTS` (exportée pour le widget, US CIBLE-01). */
+export type WorkoutRow = {
   id: string;
   started_at: string;
   finished_at: string;
@@ -96,7 +97,8 @@ type WorkoutRow = {
   total_sets: number;
 };
 
-type RunRow = {
+/** Ligne de `SELECT_RUNS` (exportée pour le widget, US CIBLE-01). */
+export type RunRow = {
   id: string;
   finished_at: string;
   distance_m: number | null;

@@ -9,39 +9,46 @@
  * (streak, calcul calorique) reste déléguée aux **mêmes fonctions pures** de `@wellness/shared`
  * que les hooks — jamais dupliquée avec un risque de divergence.
  *
- * **Simplifications assumées pour la V1** (spec §8, hors périmètre) :
- *  - « séance du jour » ne distingue pas une séance déjà en cours (`useActiveWorkout`) ni les
- *    replis riches de `useTodaySession` (déjà faite / prochaine à venir) — seulement « prévue
- *    aujourd'hui » ou « repos ».
- *  - « kcal restantes » utilise l'objectif de **base** (TDEE + objectif), sans le bonus jour
- *    d'entraînement de `useDayCalorieTarget` — un sous-estimé les jours de séance, jamais un
- *    sur-estimé.
+ * **Simplification assumée pour la V1** (spec §8, hors périmètre) : « séance du jour » ne distingue
+ * pas une séance déjà en cours (`useActiveWorkout`) ni les replis riches de `useTodaySession` (déjà
+ * faite / prochaine à venir) — seulement « prévue aujourd'hui » ou « repos ».
+ *
+ * US CIBLE-01 (D8-A) — « kcal restantes » n'est plus une simplification : c'est la cible
+ * **d'Aujourd'hui** (bonus du jour compris, socle selon le mode, poids du profil) moins le mangé, par les
+ * mêmes compositions et **les mêmes requêtes** que les hooks. Elle était calculée ici à part, sur la base
+ * `tdee` quel que soit le mode et au poids de la dernière pesée, sans bonus : elle sur-estimait le restant
+ * en mode « Selon ce que tu fais », et le sous-estimait les jours de séance.
  */
 
 import { powerSync } from '@/powersync/system';
 import { useAuthStore } from '@/stores/auth-store';
-import { getLatestWeightKg } from '@/data/repositories/bodyweight-repository';
+import { toActivity, SELECT_ACTIVITIES, type ActivityDbRow } from '@/data/repositories/activity-repository';
+import { getLatestWeightKg, SELECT_WEIGHT_ENTRIES } from '@/data/repositories/bodyweight-repository';
+import { SELECT_PLANNED_DAYS_BETWEEN, SELECT_RUN_HISTORY } from '@/data/repositories/day-target-sql';
+import { SELECT_RUNS, SELECT_WORKOUTS, type RunRow, type WorkoutRow } from '@/data/repositories/energy-repository';
+import { SELECT_PERIODS, toPeriod, type PeriodRow } from '@/data/repositories/real-life-repository';
 import {
   activeDayKeys,
   activityLevelSchema,
-  computeAge,
+  composeCalorieTargetsForDays,
   computeStreakWithJokers,
-  effectiveNutritionObjective,
+  dayEnergyTotals,
+  energyItemsByDay,
   goalSchema,
   isGoalReached,
   isPillarArray,
-  isRealLifeDay,
+  localDateFromDayKey,
   localDayKey,
+  localDayKeyOf,
   localMidnightDaysAgo,
   normalizeStepGoal,
   nutritionObjectiveSchema,
-  objectiveFromGoal,
   parseJsonColumn,
   realLifeDayKeys,
   resolveActivePillars,
   sexSchema,
-  targetCalories,
-  tdee,
+  sportFreeLevelSchema,
+  trainingBonusModeSchema,
   type DayActivity,
   type Pillar,
 } from '@wellness/shared';
@@ -202,67 +209,137 @@ async function computeTodaySessionMetric(
 }
 
 // ---------------------------------------------------------------------------
-// Kcal restantes — objectif de base (TDEE + objectif), sans le bonus jour d'entraînement (§8)
+// Kcal restantes — la cible d'Aujourd'hui moins le mangé (US CIBLE-01, D8-A)
 // ---------------------------------------------------------------------------
 
+/** Une ligne de `SELECT_RUN_HISTORY` : ce que la cible en lit. */
+type CompletedRunRow = { finished_at: string | null; distance_m: number | null; duration_seconds: number | null };
+
+/**
+ * Le « Restant » : la cible effective d'aujourd'hui — **celle d'Aujourd'hui et de Noryn** — moins le
+ * mangé du jour. Les lectures sont celles des hooks (`useCalorieTargetsForDays`, `useEnergyItemsByDay`),
+ * par leurs constantes SQL et leurs lecteurs de lignes, importés : séances terminées, courses terminées,
+ * autres activités, séance planifiée du jour, dernière pesée, périodes « vie réelle » ; en mode « Selon ce
+ * que tu fais », aussi toutes les courses finies et les pesées, pour la dépense du jour. Puis la même
+ * composition (`composeCalorieTargetsForDays`, pour un jour). Seuls le profil, le profil nutritionnel et
+ * les repas du jour restent des lectures propres au widget (avec son décodage des énumérations).
+ */
 async function computeKcalRemainingMetric(
   activePillars: Pillar[],
   todayKey: string,
 ): Promise<number | null> {
   if (!activePillars.includes('nutrition')) return null; // D6
 
-  const [profileRow, nutritionRow, latestWeight, todayTotal, periodRows] = await Promise.all([
-    powerSync.getOptional<{
-      sex: string | null;
-      height_cm: number | null;
-      weight_kg: number | null;
-      birth_date: string | null;
-      main_goal: string | null;
-    }>(`SELECT sex, height_cm, weight_kg, birth_date, main_goal FROM profiles WHERE deleted_at IS NULL LIMIT 1`),
-    powerSync.getOptional<{
-      objective: string | null;
-      activity_level: string | null;
-      manual_calories: number | null;
-    }>(
-      `SELECT objective, activity_level, manual_calories FROM nutrition_profiles WHERE deleted_at IS NULL LIMIT 1`,
-    ),
-    getLatestWeightKg(),
-    powerSync.getOptional<{ kcal: number }>(
-      `SELECT SUM(kcal) AS kcal FROM food_entries WHERE deleted_at IS NULL AND log_date = ?`,
-      [todayKey],
-    ),
-    // US VIE-01 : la cible du jour doit être la MÊME que dans l'app (R4).
-    powerSync.getAll<{ id: string; started_on: string; ends_on: string }>(
-      `SELECT id, started_on, ends_on FROM real_life_periods WHERE deleted_at IS NULL`,
-    ),
-  ]);
+  const userId = useAuthStore.getState().session?.user.id ?? '';
+  const [profileRow, nutritionRow, latestWeight, todayTotal, periodRows, workoutRows, runRows, activityRows, plannedRows] =
+    await Promise.all([
+      powerSync.getOptional<{
+        sex: string | null;
+        height_cm: number | null;
+        weight_kg: number | null;
+        birth_date: string | null;
+        main_goal: string | null;
+      }>(`SELECT sex, height_cm, weight_kg, birth_date, main_goal FROM profiles WHERE deleted_at IS NULL LIMIT 1`),
+      powerSync.getOptional<{
+        objective: string | null;
+        activity_level: string | null;
+        manual_calories: number | null;
+        training_day_bonus: number | null;
+        training_bonus_mode: string | null;
+        sport_free_level: string | null;
+      }>(
+        `SELECT objective, activity_level, manual_calories, training_day_bonus, training_bonus_mode, sport_free_level
+         FROM nutrition_profiles WHERE deleted_at IS NULL LIMIT 1`,
+      ),
+      getLatestWeightKg(),
+      powerSync.getOptional<{ kcal: number }>(
+        `SELECT SUM(kcal) AS kcal FROM food_entries WHERE deleted_at IS NULL AND log_date = ?`,
+        [todayKey],
+      ),
+      // Les mêmes requêtes que les hooks de la cible : jamais réécrites ici (spec CIBLE-01 R6).
+      powerSync.getAll<PeriodRow>(SELECT_PERIODS),
+      powerSync.getAll<WorkoutRow>(SELECT_WORKOUTS),
+      powerSync.getAll<CompletedRunRow>(SELECT_RUN_HISTORY),
+      powerSync.getAll<ActivityDbRow>(SELECT_ACTIVITIES),
+      powerSync.getAll<{ scheduled_date: string }>(SELECT_PLANNED_DAYS_BETWEEN, [userId, todayKey, todayKey]),
+    ]);
 
-  const weightKg = latestWeight ?? profileRow?.weight_kg ?? undefined;
-  const age = profileRow?.birth_date ? computeAge(new Date(profileRow.birth_date)) : undefined;
-  const sex = sexSchema.catch('unspecified').parse(profileRow?.sex);
-  const activityLevel = activityLevelSchema.catch('moderate').parse(nutritionRow?.activity_level);
-  const tdeeValue = tdee({
-    sex,
-    weightKg: weightKg ?? undefined,
-    heightCm: profileRow?.height_cm ?? undefined,
-    age,
-    activityLevel,
-  });
+  const profile = {
+    sex: sexSchema.catch('unspecified').parse(profileRow?.sex),
+    weightKg: profileRow?.weight_kg ?? null,
+    heightCm: profileRow?.height_cm ?? null,
+    birthDate: profileRow?.birth_date ?? null,
+    mainGoal: goalSchema.nullable().catch(null).parse(profileRow?.main_goal ?? null),
+  };
+  const nutritionProfile = nutritionRow
+    ? {
+        objective: nutritionObjectiveSchema.nullable().catch(null).parse(nutritionRow.objective),
+        activityLevel: activityLevelSchema.nullable().catch(null).parse(nutritionRow.activity_level),
+        manualCalories: nutritionRow.manual_calories,
+        trainingDayBonus: nutritionRow.training_day_bonus,
+        trainingBonusMode: trainingBonusModeSchema.nullable().catch(null).parse(nutritionRow.training_bonus_mode),
+        sportFreeLevel: sportFreeLevelSchema.nullable().catch(null).parse(nutritionRow.sport_free_level),
+      }
+    : null;
+  const activities = activityRows.map(toActivity);
+  const at = localDateFromDayKey(todayKey);
 
-  const mainGoal = goalSchema.nullable().catch(null).parse(profileRow?.main_goal ?? null);
-  const objective = nutritionObjectiveSchema.nullable().catch(null).parse(nutritionRow?.objective)
-    ?? objectiveFromGoal(mainGoal);
-  if (tdeeValue == null) return null;
+  // La dépense du jour (bas des fourchettes) : seulement en mode « Selon ce que tu fais », le seul qui la
+  // retienne (`dayCalorieBonus` l'ignore ailleurs) — ses lectures ne se font que dans ce mode.
+  let energyKcalToday = 0;
+  if (nutritionProfile?.trainingBonusMode === 'activities') {
+    const [finishedRuns, weightRows] = await Promise.all([
+      powerSync.getAll<RunRow>(SELECT_RUNS),
+      powerSync.getAll<{ log_date: string; weight_kg: number }>(SELECT_WEIGHT_ENTRIES),
+    ]);
+    const items = energyItemsByDay({
+      profile,
+      weightEntries: weightRows.map((w) => ({ logDate: w.log_date, weightKg: w.weight_kg })),
+      workouts: workoutRows.map((w) => ({
+        id: w.id,
+        startedAt: w.started_at,
+        finishedAt: w.finished_at,
+        durationSeconds: w.duration_seconds,
+        rpe: w.rpe,
+        totalSets: w.total_sets,
+      })),
+      finishedRuns: finishedRuns.map((r) => ({
+        id: r.id,
+        finishedAt: r.finished_at,
+        distanceM: r.distance_m,
+        durationSeconds: r.duration_seconds,
+        elevationGainM: r.elevation_gain_m,
+        rpe: r.rpe,
+      })),
+      activities,
+      dayKeyOf: localDayKeyOf,
+      at,
+    }).get(todayKey);
+    energyKcalToday = dayEnergyTotals(items ?? []).targetKcal;
+  }
 
-  const inRealLifePeriod = isRealLifeDay(
-    periodRows.map((r) => ({ id: r.id, startedOn: r.started_on, endsOn: r.ends_on })),
+  const today = composeCalorieTargetsForDays({
+    dayKeys: [todayKey],
     todayKey,
-  );
-  const target = targetCalories(
-    tdeeValue,
-    effectiveNutritionObjective(objective, inRealLifePeriod),
-    nutritionRow?.manual_calories ?? null,
-  );
+    profile,
+    nutritionProfile,
+    latestWeightKg: latestWeight,
+    activePillars,
+    realLifePeriods: periodRows.map(toPeriod),
+    workouts: workoutRows.map((w) => ({ finishedAt: w.finished_at })),
+    completedRuns: runRows.map((r) => ({
+      finishedAt: r.finished_at,
+      distanceM: r.distance_m,
+      durationSeconds: r.duration_seconds,
+    })),
+    activities,
+    plannedDayKeys: new Set(plannedRows.map((r) => r.scheduled_date)),
+    energyKcalByDay: new Map([[todayKey, energyKcalToday]]),
+    dayKeyOf: localDayKeyOf,
+    at,
+  }).get(todayKey);
+
+  if (today?.effectiveTarget == null) return null;
   const consumed = todayTotal?.kcal ?? 0;
-  return target - consumed;
+  return today.effectiveTarget - consumed;
 }

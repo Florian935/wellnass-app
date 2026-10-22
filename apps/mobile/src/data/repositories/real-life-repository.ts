@@ -33,7 +33,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { insertWithSyncFields, patch } from './_sql';
 
 /** Ligne brute de `real_life_periods`. */
-type PeriodRow = { id: string; started_on: string; ends_on: string };
+export type PeriodRow = { id: string; started_on: string; ends_on: string };
 
 // Exportée pour le test de parité de NORYN-02 (`noryn02-parity-sql.test.ts`) : la fonction `noryn-context`
 // doit retenir exactement les mêmes lignes que cette requête.
@@ -44,7 +44,8 @@ export const SELECT_PERIODS = `
   ORDER BY started_on DESC
 `;
 
-function toPeriod(row: PeriodRow): RealLifePeriod {
+/** Une ligne de `real_life_periods` → le domaine. Exportée pour le widget (US CIBLE-01). */
+export function toPeriod(row: PeriodRow): RealLifePeriod {
   return { id: row.id, startedOn: row.started_on, endsOn: row.ends_on };
 }
 

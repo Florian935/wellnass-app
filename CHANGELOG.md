@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/10/2026 — CIBLE-01, étape 5 : le « Restant » du widget = celui d'Aujourd'hui (`feature/cible01-cible-du-jour`)
+
+> Plan CIBLE-01, étape 5 (D8-A). Le widget d'écran d'accueil ne recalcule plus sa cible : il lit avec les
+> requêtes des hooks et appelle la même composition, pour aujourd'hui. Commit précédent : `15696e70`.
+
+### Modifié
+- `widgets/home-widget-data.ts` — `computeKcalRemainingMetric` : `composeCalorieTargetsForDays([aujourd'hui])`
+  sur `SELECT_WORKOUTS`, `SELECT_RUN_HISTORY`, `SELECT_ACTIVITIES` (+ `toActivity`),
+  `SELECT_PLANNED_DAYS_BETWEEN`, la dernière pesée, `SELECT_PERIODS` (+ `toPeriod`) ; en mode « Selon ce que
+  tu fais », aussi `SELECT_RUNS` et `SELECT_WEIGHT_ENTRIES` pour la dépense du jour (`energyItemsByDay`).
+  Plus de `tdee`, `targetCalories`, `computeAge`… ; en-tête : la simplification « sans bonus » de
+  LAUNCHER-01 §8 est levée.
+- `day-target-sql.ts` : reçoit `SELECT_RUN_HISTORY`, déplacée de `run-repository.ts` (qui la garde sous
+  `SELECT_HISTORY` et `SELECT_HISTORY_FOR_TEST`), commentaire compris.
+- Lecteurs de lignes exportés : `toActivity` / `ActivityDbRow` (`activity-repository.ts`), `toPeriod` /
+  `PeriodRow` (`real-life-repository.ts`), `WorkoutRow` / `RunRow` (`energy-repository.ts`).
+- **Chiffres qui bougent (spec §6)** : C16 (jour d'entraînement : bonus compris), C17 (socle hors sport en
+  « Selon ce que tu fais »), C18 (socle au poids du profil, plus de la dernière pesée), C19 (profil sans
+  poids : plus de « Restant », comme Aujourd'hui).
+
+### Technique / Notes
+- **Filet** : seuls les 4 tests étiquetés C16 à C19 de `home-widget-data.test.ts` ont changé d'attendu
+  (659, 48, 359, `null`). Ajoutés : séance prévue, séance sautée, course en `auto`, vélo en « Selon ce que tu
+  fais », vie réelle (harnais SQLite) ; `widget-target-reads.test.ts` (test-garde R6 : aucune requête
+  réécrite sur les tables de la cible, constantes partagées, aucun import de `workout-`, `run-` ni
+  `planned-session-repository`, aucune formule importée) ; `cible01-widget-reads-sql.test.ts`
+  (`SELECT_WORKOUTS` retient les mêmes séances terminées que l'historique).
+- **Écart au plan** : seule `SELECT_RUN_HISTORY` déménage dans le module feuille — c'est la seule requête
+  de la cible qui vivait dans un repository lourd ; `activity-`, `real-life-`, `bodyweight-` et
+  `energy-repository` sont légers (aucun import de Health Connect, d'analytique ni de `@/i18n`), le widget
+  les importe directement.
+
 ## 22/10/2026 — CIBLE-01, étape 4 : le planning repas sur la cible d'Aujourd'hui (`feature/cible01-cible-du-jour`)
 
 > Plan CIBLE-01, étape 4. Le planning repas ne recalcule plus la cible : chaque jour de la semaine affichée
