@@ -51,7 +51,7 @@ const mockWeight = useLatestWeight as jest.Mock;
 const afficher = async () => {
   const onStats = jest.fn();
   const onStart = jest.fn();
-  await render(<ProgressSection targetKcal={2400} onStats={onStats} onStart={onStart} />);
+  await render(<ProgressSection onStats={onStats} onStart={onStart} />);
   return { onStats, onStart };
 };
 

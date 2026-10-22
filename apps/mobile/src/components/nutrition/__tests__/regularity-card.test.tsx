@@ -1,10 +1,12 @@
 /**
  * US CIBLE-01 — le **filet** du seuil « complète » de la carte de régularité (spec C6, D9).
  *
- * Une journée est « complète » au-delà d'un tiers de la cible (`dayFill`). Avant CIBLE-01, la cible est
- * celle que l'appelant passe : **aucune** dans Statistiques (repli 600 kcal), **celle d'aujourd'hui**
- * dans Progrès, appliquée aux 30 jours. Le jeu de la recette pose 700 kcal à J−10 : « complète » sans
- * cible, « partielle » face à la cible d'aujourd'hui (2 659, seuil 886).
+ * Une journée est « complète » au-delà d'un tiers de la cible (`dayFill`). Avant CIBLE-01, la cible était
+ * celle que l'appelant passait : **aucune** dans Statistiques (repli 600 kcal), **celle d'aujourd'hui**
+ * dans Progrès, appliquée à toute la fenêtre. Le jeu de la recette pose 700 kcal à J−10 : « complète »
+ * sans cible, « partielle » face à la cible d'aujourd'hui (2 659, seuil 886). Depuis l'étape 6, chaque
+ * jour est jugé sur **sa** cible : la carte n'a plus de prop de cible, et Progrès et Statistiques disent
+ * la même chose.
  */
 import React from 'react';
 import { StyleSheet } from 'react-native';
@@ -57,23 +59,23 @@ beforeEach(() => {
 });
 afterEach(() => jest.useRealTimers());
 
-describe('la case de J−10 (700 kcal), mode `fixed`', () => {
-  it('CIBLE-01 C6 — Statistiques (aucune cible, seuil 600) : complète', async () => {
+describe('la case de J−10 (700 kcal), jugée sur sa propre cible', () => {
+  it('CIBLE-01 C6 — Forfait (2 359, seuil 786) : partielle (spec §6 C6, D9)', async () => {
     setSources(cible01Sources('fixed'));
-    await render(<RegularityCard targetKcal={null} windowDays={30} />);
-    expect(fillOf(J(-10))).toBe('complete');
+    await render(<RegularityCard windowDays={30} />);
+    expect(fillOf(J(-10))).toBe('partial');
   });
 
-  it('CIBLE-01 C6 — Progrès (la cible d’aujourd’hui, 2 659, seuil 886) : partielle', async () => {
-    setSources(cible01Sources('fixed'));
-    await render(<RegularityCard targetKcal={2659} windowDays={30} />);
-    expect(fillOf(J(-10))).toBe('partial');
+  it('CIBLE-01 C6 — « Selon ce que tu fais » (2 048, seuil 683) : complète (spec §6 C6)', async () => {
+    setSources(cible01Sources('activities'));
+    await render(<RegularityCard windowDays={30} />);
+    expect(fillOf(J(-10))).toBe('complete');
   });
 });
 
 it('un jour sans rien de noté est vide, quelle que soit la cible', async () => {
   setSources(cible01Sources('fixed'));
-  await render(<RegularityCard targetKcal={null} windowDays={30} />);
+  await render(<RegularityCard windowDays={30} />);
   expect(fillOf(J(-9))).toBe('empty');
   expect(fillOf(J(-6))).toBe('complete');
 });

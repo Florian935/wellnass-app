@@ -364,7 +364,6 @@ export default function NutritionScreen() {
           />
         ) : (
           <ProgressSection
-            targetKcal={effectiveTarget}
             onStats={() => router.push('/nutrition-stats')}
             onStart={() => setSection('today')}
           />

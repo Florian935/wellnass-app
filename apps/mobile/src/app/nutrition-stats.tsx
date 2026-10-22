@@ -158,7 +158,7 @@ function RegularityTab() {
         label={(o) => t(`stats.ranges.${o}`)}
       />
 
-      <RegularityCard targetKcal={null} windowDays={windowDays} />
+      <RegularityCard windowDays={windowDays} />
 
       {adherence.isLoading ? null : !adherence.hasTarget ? (
         <Card>

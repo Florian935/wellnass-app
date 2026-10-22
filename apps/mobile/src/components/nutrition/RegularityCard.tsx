@@ -20,10 +20,13 @@ import {
   currentStreak,
   emptyDays,
   filledPct,
+  localDateFromDayKey,
   localDayKey,
   type DayFill,
 } from '@wellness/shared';
+import { useDailyCalorieTargets } from '@/data/repositories/dashboard-repository';
 import { useDailyTotals, useJournalCompletion } from '@/data/repositories/journal-repository';
+import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -36,22 +39,18 @@ const DEFAULT_WINDOW_DAYS = 30;
  * d'une adhérence sur 7 aurait mis deux périodes différentes côte à côte, qu'on croirait
  * comparables — précisément ce qu'un seul sélecteur par écran cherche à éviter.
  */
-export function RegularityCard({
-  targetKcal,
-  windowDays = DEFAULT_WINDOW_DAYS,
-}: {
-  targetKcal: number | null;
-  windowDays?: number;
-}) {
+export function RegularityCard({ windowDays = DEFAULT_WINDOW_DAYS }: { windowDays?: number }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
 
+  // « Aujourd'hui » réactif (US CIBLE-01, DD8) : `new Date()` lu dans un mémo restait figé.
+  const todayKey = useTodayKey();
   const dayKeys = useMemo(() => {
-    const today = new Date();
+    const today = localDateFromDayKey(todayKey);
     return Array.from({ length: windowDays }, (_, i) =>
       localDayKey(addDays(today, i - (windowDays - 1))),
     );
-  }, [windowDays]);
+  }, [windowDays, todayKey]);
 
   const { totals, isLoading } = useDailyTotals(dayKeys[0]!);
   /**
@@ -62,10 +61,18 @@ export function RegularityCard({
    * l'ancienne carte de complétude — la heatmap le reprend, elle ne le remplace pas.
    */
   const completion = useJournalCompletion(windowDays);
-  const cells = useMemo(
-    () => buildHeatmap(dayKeys, totals, targetKcal),
-    [dayKeys, totals, targetKcal],
-  );
+  /**
+   * US CIBLE-01 (D9) — chaque jour est jugé sur **sa** cible : celle de l'historique, qui est celle
+   * d'Aujourd'hui pour ce jour-là (`useDailyCalorieTargets`, les jours notés — un jour sans rien de noté
+   * est vide quelle que soit la cible). Avant, l'appelant passait une cible unique : celle d'aujourd'hui
+   * (bonus du jour compris) dans Progrès, aucune (repli 600 kcal) dans Statistiques — la même journée y
+   * était « complète » d'un côté, « partielle » de l'autre.
+   */
+  const { days: targetDays } = useDailyCalorieTargets(dayKeys[0]!, null);
+  const cells = useMemo(() => {
+    const targetOf = new Map(targetDays.map((d) => [d.dayKey, d.effectiveTarget]));
+    return buildHeatmap(dayKeys, totals, (dayKey) => targetOf.get(dayKey));
+  }, [dayKeys, totals, targetDays]);
 
   const fillColor: Record<DayFill, string> = {
     complete: colors.success,

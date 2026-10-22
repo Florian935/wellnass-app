@@ -54,11 +54,15 @@ export function dayFill(kcal: number, targetKcal: number | null | undefined): Da
  * C'est tout l'intérêt de la heatmap — les trous sont l'information, pas l'absence de donnée.
  * `dayKeys` est fourni par l'appelant (la génération de clés locales vit dans `date.ts`) pour que
  * cette brique reste pure et sans dépendance à l'horloge.
+ *
+ * US CIBLE-01 (D9) — chaque jour est jugé sur **sa** cible (`targetFor`) : une seule cible pour toute
+ * la fenêtre (celle d'aujourd'hui dans Progrès, aucune dans Statistiques) faisait dire « complète » d'un
+ * côté et « partielle » de l'autre pour la même journée.
  */
 export function buildHeatmap(
   dayKeys: readonly string[],
   totals: readonly DailyTotalInput[],
-  targetKcal: number | null | undefined,
+  targetFor: (dayKey: string) => number | null | undefined,
 ): HeatmapCell[] {
   const byDate = new Map<string, number>();
   for (const t of totals) {
@@ -66,7 +70,7 @@ export function buildHeatmap(
   }
   return dayKeys.map((logDate) => {
     const kcal = byDate.get(logDate) ?? 0;
-    return { logDate, fill: dayFill(kcal, targetKcal), kcal };
+    return { logDate, fill: dayFill(kcal, targetFor(logDate)), kcal };
   });
 }
 

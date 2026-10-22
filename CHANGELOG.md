@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/10/2026 — CIBLE-01, étape 6 : la carte de régularité sur la cible de chaque jour (`feature/cible01-cible-du-jour`)
+
+> Plan CIBLE-01, étape 6 (D9-A). Commit précédent : `2dc06c6f`.
+
+### Modifié
+- `journal-regularity.ts` (shared) — `buildHeatmap(dayKeys, totals, targetFor)` : la cible **par jour**
+  remplace la cible unique (`dayFill` inchangé). Ses tests passent sur une fonction constante (mêmes
+  attendus) et gagnent un cas « cible par jour ».
+- `RegularityCard.tsx` : lit `useDailyCalorieTargets(premier jour, null)` et juge chaque case sur la cible
+  de son jour ; ses jours partent de `useTodayKey` (DD8) ; plus de prop `targetKcal`, retirée aussi de
+  `ProgressSection` et de ses appelants (`(tabs)/nutrition.tsx`, `nutrition-stats.tsx`).
+- **Chiffre qui bouge (spec §6 C6)** : le seuil « complète » d'un jour passé — un tiers de **sa** cible, au
+  lieu de celle d'aujourd'hui (Progrès) ou d'un repli de 600 kcal (Statistiques). Progrès et Statistiques
+  disent désormais la même chose pour la même journée.
+
+### Technique / Notes
+- **Filet** : `regularity-card.test.tsx` — la prop de cible disparaît (changement de signature) ; les deux
+  tests C6 affirment J−10 « partielle » en Forfait (seuil 786) et « complète » en « Selon ce que tu fais »
+  (seuil 683). `nutrition-progress-section.test.tsx` : la prop retirée de l'appel, rien d'autre.
+- **Écart au plan** : la carte lit `useDailyCalorieTargets` (comme écrit au plan) et non
+  `useCalorieTargetsForDays` — l'essai a montré que l'écran Statistiques, dont le test mocke
+  `dashboard-repository`, aurait sinon chargé les repositories réels.
+- Suite complète verte (5 204 Jest, 199 fichiers Vitest), typecheck, lint.
+
 ## 22/10/2026 — CIBLE-01, étape 5 : le « Restant » du widget = celui d'Aujourd'hui (`feature/cible01-cible-du-jour`)
 
 > Plan CIBLE-01, étape 5 (D8-A). Le widget d'écran d'accueil ne recalcule plus sa cible : il lit avec les

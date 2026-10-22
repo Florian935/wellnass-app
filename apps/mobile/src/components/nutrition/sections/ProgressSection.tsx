@@ -23,12 +23,11 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 type Props = {
-  targetKcal: number | null;
   onStats: () => void;
   onStart: () => void;
 };
 
-export function ProgressSection({ targetKcal, onStats, onStart }: Props) {
+export function ProgressSection({ onStats, onStart }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { first, isLoading } = useFirstLogDate();
@@ -60,7 +59,7 @@ export function ProgressSection({ targetKcal, onStats, onStart }: Props) {
       <WeekVerdictCard />
       <ProteinPerKgCard window="7d" />
       <WeightGoalCard />
-      <RegularityCard targetKcal={targetKcal} windowDays={7} />
+      <RegularityCard windowDays={7} />
       <Pressable onPress={onStats} style={styles.link} accessibilityRole="button">
         <Ionicons name="stats-chart-outline" size={16} color={colors.textMuted} />
         <Text style={[styles.linkLabel, { color: colors.textMuted }]}>{t('nutrition.week.allStats')}</Text>

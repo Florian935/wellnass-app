@@ -142,7 +142,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/cible01-cible-du-jour` (modifications non commitées) |
-| Commits | 1373 · `main` a **1369** commits de retard sur `dev` |
+| Commits | 1374 · `main` a **1369** commits de retard sur `dev` |
 | Specs d'US | 191 au total — 92 clôturées, 99 en cours |
 | Migrations | 115/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -153,11 +153,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `2dc06c6`  feat(widget): CIBLE-01 étape 5 — le « Restant » du widget est celui d'Aujourd'hui
 - `15696e7`  feat(nutrition): CIBLE-01 étape 4 — le planning repas prend la cible d'Aujourd'hui
 - `8b4fc48`  feat(nutrition): CIBLE-01 étape 3 — l'historique prend la cible d'Aujourd'hui
 - `115a339`  feat(cible): CIBLE-01 étape 2 — la cible d'une plage de jours, par les compositions de NORYN-02
 - `50a4723`  test(cible): CIBLE-01 étape 1 — le filet, figé sur le code actuel
-- `aeefbf6`  docs(cible): CIBLE-01 cadrée, relue et validée (D1 à D12) — spec, plan, BACKLOG
 
 ---
 

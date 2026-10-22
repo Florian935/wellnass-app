@@ -44,12 +44,12 @@ describe('dayFill', () => {
 
 describe('buildHeatmap', () => {
   it('ajoute les jours absents des totaux comme vides — les trous sont l’information', () => {
-    const map = buildHeatmap(keys(5), [{ logDate: '2026-09-02', kcal: 1800 }], 2000);
+    const map = buildHeatmap(keys(5), [{ logDate: '2026-09-02', kcal: 1800 }], () => 2000);
     expect(map.map((c) => c.fill)).toEqual(['empty', 'complete', 'empty', 'empty', 'empty']);
   });
 
   it('respecte l’ordre fourni, aujourd’hui en dernier', () => {
-    const map = buildHeatmap(keys(3), [], 2000);
+    const map = buildHeatmap(keys(3), [], () => 2000);
     expect(map.map((c) => c.logDate)).toEqual(['2026-09-01', '2026-09-02', '2026-09-03']);
   });
 
@@ -57,19 +57,34 @@ describe('buildHeatmap', () => {
     const map = buildHeatmap(['2026-09-01'], [
       { logDate: '2026-09-01', kcal: 400 },
       { logDate: '2026-09-01', kcal: 500 },
-    ], 2000);
+    ], () => 2000);
     expect(map[0]!.kcal).toBe(900);
     expect(map[0]!.fill).toBe('complete');
   });
 
   it('ignore un total non numérique plutôt que de propager un NaN', () => {
-    const map = buildHeatmap(['2026-09-01'], [{ logDate: '2026-09-01', kcal: Number.NaN }], 2000);
+    const map = buildHeatmap(['2026-09-01'], [{ logDate: '2026-09-01', kcal: Number.NaN }], () => 2000);
     expect(map[0]!.kcal).toBe(0);
     expect(map[0]!.fill).toBe('empty');
   });
 
+  it('juge chaque jour sur sa propre cible (US CIBLE-01, D9)', () => {
+    // 700 kcal : « complète » face à 2 048 (seuil 683), « partielle » face à 2 359 (seuil 786).
+    const targets: Record<string, number> = { '2026-09-01': 2048, '2026-09-02': 2359 };
+    const map = buildHeatmap(
+      ['2026-09-01', '2026-09-02', '2026-09-03'],
+      [
+        { logDate: '2026-09-01', kcal: 700 },
+        { logDate: '2026-09-02', kcal: 700 },
+        { logDate: '2026-09-03', kcal: 700 },
+      ],
+      (dayKey) => targets[dayKey] ?? null,
+    );
+    expect(map.map((c) => c.fill)).toEqual(['complete', 'partial', 'complete']);
+  });
+
   it('rend une fenêtre vide sans clé', () => {
-    expect(buildHeatmap([], [], 2000)).toEqual([]);
+    expect(buildHeatmap([], [], () => 2000)).toEqual([]);
   });
 });
 
