@@ -135,6 +135,9 @@ lib (D4) — jamais de texte en dur dans la couche natif/config plugin.
   **base** (TDEE + objectif), sans le bonus de `useDayCalorieTarget` — sous-estime le restant les
   jours de séance, jamais un sur-estimé. Évite de dupliquer toute la chaîne
   profil/activité/courses du jour pour un gain marginal sur un widget « en un coup d'œil ».
+  ✅ **Levée le 22/10/2026 par [CIBLE-01](cible01-cible-du-jour.md) (D8-A)** : la chaîne existe désormais
+  en composition pure ; le widget lit avec les requêtes des hooks et rend le restant d'Aujourd'hui, bonus
+  compris, socle selon le mode, au poids du profil (il sur-estimait en mode « Selon ce que tu fais »).
 - **Description du sélecteur de widgets non traduite** (implémentation) : le config plugin
   écrit une seule chaîne (`translatable: 'false'`), en français, quel que soit l'appareil — les
   **textes du widget lui-même** (D4) restent, eux, entièrement FR/EN.

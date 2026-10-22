@@ -128,6 +128,13 @@ pour qu'on ne la « corrige » pas par symétrie apparente.
 >
 > L'intention de D1 est donc **tenue et renforcée** : on ne redéfinit rien, et on s'aligne sur la
 > source qui compte.
+>
+> ✅ **22/10/2026 — [CIBLE-01](cible01-cible-du-jour.md) (D5)** : la cible des jours passe par les
+> compositions de NORYN-02, et le groupement par `trainedOnDay` — la règle d'`isTrainingDay`, autres
+> activités comprises (AUTRE-01) et séance prévue d'aujourd'hui comprise. `trainedDays` (séances et
+> courses seules) n'existe plus : une sortie vélo seule tombait en « repos » alors qu'elle donnait le
+> forfait à la cible du jour. En mode « Selon ce que tu fais », la cible ne dépend pas du jour
+> d'entraînement (le bonus est la dépense) : l'alignement n'y est qu'approché.
 
 ### 2.2 D2 — 🔴 La tolérance appartient à l'utilisateur
 

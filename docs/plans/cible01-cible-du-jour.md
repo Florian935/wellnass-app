@@ -291,4 +291,29 @@ Tests : filet C6 ; Progrès et Statistiques donnent les mêmes cases pour la mê
 
 ## Écarts au plan
 
-*(à remplir à l'implémentation)*
+Codé le 22/10/2026, huit commits (`50a47239` filet → `416c5df8` preuve Noryn, puis la recette). Des
+moyens, pas des règles :
+
+1. **Le module SQL feuille ne reçoit qu'une requête de plus** (étape 5) : `SELECT_RUN_HISTORY`, la seule
+   requête de la cible qui vivait dans un repository lourd (`run-repository`). `activity-`, `real-life-`,
+   `bodyweight-` et `energy-repository` sont légers (ni Health Connect, ni analytique, ni `@/i18n`) : le
+   widget en importe directement les constantes et les lecteurs (`toActivity`, `toPeriod`, types de
+   lignes exportés). `SELECT_HAS_PLANNED` n'a pas déménagé : la lecture par plage
+   (`SELECT_PLANNED_DAYS_BETWEEN`, `[aujourd'hui, aujourd'hui]`) la remplace pour le widget, avec la preuve
+   SQLite de leur équivalence.
+2. **La carte de régularité lit `useDailyCalorieTargets`** (étape 6), comme écrit au plan, après un essai
+   avec `useCalorieTargetsForDays` : l'écran Statistiques, dont le test mocke `dashboard-repository`, aurait
+   chargé les repositories réels et `@/i18n`.
+3. **Le harnais ne mocke rien de plus** qu'à l'étape 1 ; les tests du planning ont en revanche un fichier
+   neuf (`meal-plan-targets.test.tsx`) en plus de `meal-plan-screen.test.tsx`, dont seuls les mocks (étape
+   1) et l'en-tête (étape 4) ont changé.
+4. **Qualité** : `typecheck`, `lint` et les tests ciblés à chaque commit ; la suite complète avant chaque
+   envoi sur `dev` (étapes 3, 6, 8). Une fois, `EPERM` sur le cache de transformation Jest (course entre
+   processus sous Windows) : suite relancée seule, verte.
+5. **Sans cible calculable, plus de pastille dans le planning** : avant, le bonus pouvait s'afficher sous
+   une carte sans objectif ; un bonus ne s'ajoute à rien (`mealPlanDayTarget`).
+6. Le test « sans pilier d'entraînement » du planning est resté vert **tel quel** (D7-B) ; `day-target-parity`
+   a gagné une parité « planning = `useDayCalorieTarget` » sur J−6 → J+5.
+7. Le script de recette a été rejoué sur un Postgres 13 jetable du scratchpad (schéma réduit aux tables
+   lues, contraintes des migrations) : premier passage posé, second refusé par la garde, nettoyage complet,
+   rejoué. Heures vérifiées à Paris.

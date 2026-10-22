@@ -173,6 +173,11 @@ précédentes. Une contrainte d'unicité sur une table synchronisée est un piè
   **bonus jour d'entraînement** (`trainingDayCalories`) si une séance est planifiée ce jour-là **et**
   que le pilier correspondant est actif (décision H). Aucun pilier actif hors nutrition → aucun bonus
   affiché, aucune mention d'entraînement.
+  ✅ **22/10/2026 — [CIBLE-01](cible01-cible-du-jour.md)** : la cible de chaque jour est celle
+  d'Aujourd'hui (compositions de NORYN-02) : socle hors sport et dépense réelle en « Selon ce que tu
+  fais » (aucune anticipation pour un jour futur), dépense de la course en Auto, forfait du réalisé ou d'une
+  séance `planned`/`done` — jamais d'une séance sautée ou manquée ; pastille selon l'origine du bonus. La
+  règle « aucun pilier d'entraînement actif → aucun bonus » est **gardée** (CIBLE-01 D7-B).
 - **R6 — La liste de courses lit les ingrédients vivants**, pas les snapshots : `recipe_ingredients`
   et `meal_template_items` au moment de la génération.
 - **R7 — Une quantité absente n'est jamais zéro.** `quantity_g` est nullable dans les deux tables

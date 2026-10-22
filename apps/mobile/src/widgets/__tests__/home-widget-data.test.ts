@@ -324,6 +324,20 @@ describe('computeHomeWidgetSnapshot', () => {
     expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(2759 - 2000);
   });
 
+  it.each([
+    ['fixed', 39],
+    ['auto', 39],
+    ['activities', -572],
+  ] as const)('CIBLE-01 — recette (spec §14.2) : séance prévue aujourd’hui, 2 620 mangées, mode `%s` → %i', async (mode, restant) => {
+    seedActivePillars(['strength', 'running', 'nutrition']);
+    seedProfileA();
+    seedNutritionA({ training_bonus_mode: mode });
+    seedEaten(2620);
+    seedPlannedSession('strength');
+
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(restant);
+  });
+
   it('kcal restantes : profil incomplet (pas de taille/poids) → null', async () => {
     seedActivePillars(['nutrition']);
     seed('nutrition_profiles', [{ user_id: 'user-1', objective: 'maintain', activity_level: 'moderate' }]);

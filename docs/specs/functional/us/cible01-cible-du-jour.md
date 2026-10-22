@@ -3,7 +3,7 @@ id: CIBLE-01
 titre: "Une seule « cible du jour » dans tout le pilier Nutrition — l'historique, le planning repas et le widget passent par la composition de NORYN-02"
 roadmap: [4.7, 4.27, 4.40, 4.44, 7.19]
 catalogue: [NUTR-10, NUTR-18, MN-20, MN-16]
-etape: code
+etape: recette
 branche: feature/cible01-cible-du-jour
 maj: 22/10/2026
 ---
@@ -26,7 +26,13 @@ maj: 22/10/2026
 > agent de revue (§15), chiffres du §14 recalculés de façon indépendante. Aucune migration, aucun appel
 > au projet, aucun déploiement (§9).
 > ✅ **Validée par Florian le 22/10/2026** : D1 à D12 **telles que proposées** (dont D7-B, D8-A, D9-A).
-> Implémentation dans la foulée, sur la même branche.
+> 🛠️ **Codée le 22/10/2026**, en huit commits (filet, brique, historique, planning, widget, régularité,
+> ménage et preuve Noryn, recette), poussés sur `dev`. Le filet a tenu : seuls les tests étiquetés C1 à
+> C19 ont changé d'attendu, chacun à l'étape qui le touche ; les filets de NORYN-02 et
+> `goal-adherence-assembly` sont restés verts sans une ligne modifiée. Tous les chiffres du §14.2 sont
+> affirmés par `cible01-recette.test.tsx`. Écarts au plan — des moyens, pas des règles — en fin de plan.
+> En recette : [RECETTES.md](../../../../RECETTES.md) §94. Aucune migration, aucun appel au projet, aucun
+> déploiement.
 
 ## 0. Le besoin
 
@@ -277,6 +283,12 @@ disparaissent et C4 ne garde que l'autre activité ; avec D7-A, C13 donne le bon
    noms actuels, `SELECT_HISTORY_FOR_TEST` compris.
 4. **Conséquence** : aucun redéploiement. Et puisque R2 aligne l'historique sur K1, Noryn — qui suit déjà
    K1 — dit désormais aussi ce que dit la ligne d'état d'un jour passé.
+
+✅ **Fait le 22/10/2026 (étape 7)** : bundle reconstruit dans ce worktree et comparé à la référence prise
+avant la première ligne de code — **identique**, octet pour octet ; `git diff 9a3ca226` vide sur `noryn/`,
+`day-target.ts`, `day-energy.ts`, `readiness.ts`, `supabase/functions/`, le script du bundle et tous les
+tests de NORYN-02 ; seule `nutrition.ts` change dans la fermeture de Noryn (retrait de
+`computeEffectiveTargetForDay`, qu'aucun de ses modules n'importe).
 
 ## 8. Performance
 

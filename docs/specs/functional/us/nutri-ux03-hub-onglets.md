@@ -135,6 +135,9 @@ la saisie, un jour à la fois.
     d'aujourd'hui (`useDayCalorieTarget`) compte. La case d'aujourd'hui peut donc différer
     légèrement du remplissage du hub : c'est l'écart existant entre ces deux hooks, pas un effet de
     cette US.
+  - ✅ **22/10/2026 — écart réparé par [CIBLE-01](cible01-cible-du-jour.md)** : `useDailyCalorieTargets`
+    passe par les compositions de `useDayCalorieTarget` ; le calendrier, la liste et la page d'un jour
+    comptent les autres activités, et la case d'aujourd'hui la séance prévue (RECETTES §94).
 - **D10 — Les repas habituels (Q4).** Un repas habituel, ce sont **les mêmes aliments** notés au
   moins deux fois dans le même repas, sur les 60 derniers jours. Il se reprend avec les quantités de
   la dernière fois (R9).

@@ -10,6 +10,36 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/10/2026 — CIBLE-01 en recette : jeu de données, chiffres figés, RECETTES §94 (`feature/cible01-cible-du-jour` → `dev`)
+
+> Plan CIBLE-01, étape 8. US passée à `etape: recette`. Commit précédent : `416c5df8`.
+
+### Ajouté
+- `supabase/scripts/cible01-recette-donnees.sql` : le jeu du §14.1 de la spec sur un **compte de test
+  vierge** — garde (refus si repas, séances, courses, activités, séances planifiées ou périodes entre
+  J−30 et J+10, ou une pesée), profil A et profil nutritionnel posés (upsert), identifiants fixes
+  `c1b1e001-0000-4000-8000-…`, exercice de bibliothèque choisi par requête, dates relatives à aujourd'hui
+  à Paris, une transaction. `cible01-recette-nettoyage.sql` : suppression par identifiants fixes.
+- `cible01-recette.test.tsx` : **tous les tableaux du §14.2** affirmés (historique, Statistiques 7 et 30 j,
+  carte de régularité, APPORT-01, planning repas, D7-B) dans les trois modes, et les dépenses du jeu
+  recalculées par les fonctions pures (170, 500, 560 ; course du mode `auto` 657). Le widget : trois cas de
+  recette dans `home-widget-data.test.ts` (39, 39, −572).
+- `RECETTES.md` **§94** : préparation, tableaux, critères 1 à 12, et l'encadré des sections en attente dont
+  un critère change (§27, §28, §53, §47, §8, §88, §65).
+
+### Modifié
+- Spec : `etape: recette`, note de livraison, résultat de la preuve Noryn (§7). Plan : écarts (7 points).
+- Notes datées dans les specs voisines : NUTRI-UX03 (D9 réparé), REPAS-01 (R5 : cible d'Aujourd'hui, règle
+  des piliers gardée), APPORT-01 (D1 : groupement sur `trainedOnDay`), LAUNCHER-01 (§8 : simplification
+  levée).
+- Roadmap : remarques de 4.7, 4.27, 4.40, 4.44 et 7.19 ; entrée au journal ; aucun statut ni compteur ne
+  bouge.
+
+### Technique / Notes
+- Script de recette rejoué sur un Postgres 13 jetable (scratchpad, schéma réduit, contraintes des
+  migrations) : posé, refusé au second passage par la garde, nettoyé, rejoué ; heures vérifiées à Paris.
+  Base supprimée ensuite. Aucun appel au projet Supabase.
+
 ## 22/10/2026 — CIBLE-01, étape 7 : ménage, test-garde R1 et preuve Noryn (`feature/cible01-cible-du-jour`)
 
 > Plan CIBLE-01, étape 7. Commit précédent : `266087e9`.
