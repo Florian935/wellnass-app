@@ -10,6 +10,34 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/10/2026 — CIBLE-01, étape 2 : la brique, la lecture par plage, le hook (`feature/cible01-cible-du-jour`)
+
+> Plan CIBLE-01, étape 2. Le code neuf, que **personne n'appelle encore** : le filet de l'étape 1 est vert
+> sans une ligne modifiée. Commit précédent : `50a47239`.
+
+### Ajouté
+- `packages/shared/src/day-target-range.ts` — `composeCalorieTargetsForDays` : range une fois séances,
+  courses et activités par jour, puis appelle `trainedOnDay` et `composeDayCalorieTarget` pour chaque jour ;
+  rend aussi `trainedThatDay` et `trainedBy` (`done` / `planned`, par un second appel de `trainedOnDay`
+  sans les séances planifiées). Exporté par `index.ts` ; **non importé par `noryn/`**.
+- `day-target-range.test.ts` (Vitest, 100 %) : équivalence jour par jour avec les compositions appelées
+  sur les tableaux entiers, sur 400 jours et six scénarios (`fixed`, `auto`, `auto` sans pilier course,
+  `activities`, surcharge, aucun profil nutritionnel) ; jours demandés, liste vide, `trainedBy`, `dayKeyOf`.
+- `apps/mobile/src/data/repositories/day-target-sql.ts` (module feuille) — `SELECT_PLANNED_DAYS_BETWEEN`,
+  le filtre de `SELECT_HAS_PLANNED` mot pour mot, sur une plage.
+- `planned-session-repository.ts` — `usePlannedDayKeys(fromKey, toKey)` (une requête par plage) ; la
+  constante y est réexportée.
+- `day-targets-repository.ts` — `useCalorieTargetsForDays(dayKeys)` : les lectures, puis la brique ;
+  séances planifiées lues à partir d'aujourd'hui seulement ; `hasTarget` par `nutritionSocle` ; `isLoading`
+  sur toutes les lectures, dépense comprise. Hors de `dashboard-repository.ts` (qui charge `@/i18n`).
+- Tests : `cible01-planned-days-sql.test.ts` (harnais SQLite : mêmes jours que `SELECT_HAS_PLANNED`, jour
+  par jour ; statuts, suppressions, propriétaire, bornes, plage vide ; une requête par plage) et
+  `day-targets-repository.test.tsx` (plage des séances planifiées, cibles du jeu en Forfait, `hasTarget`,
+  `weightKg`, chargement).
+
+### Technique / Notes
+- Bundle `noryn-context` comparé à la référence de l'étape 1 : **identique**.
+
 ## 22/10/2026 — CIBLE-01, étape 1 : le filet, figé sur le code actuel (`feature/cible01-cible-du-jour`)
 
 > Plan CIBLE-01, étape 1. Des tests d'assemblage **verts sur le code d'aujourd'hui** : chaque test sans

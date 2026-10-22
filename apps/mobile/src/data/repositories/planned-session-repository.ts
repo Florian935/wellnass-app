@@ -57,6 +57,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useSettings } from '@/data/repositories/settings-repository';
 import { usePainReports } from '@/data/repositories/pain-repository';
 import { nowUtc, patch, txInsert } from './_sql';
+import { SELECT_PLANNED_DAYS_BETWEEN } from './day-target-sql';
 import { useTodayDate, useTodayKey, useWindowStartKey, useWindowStartUtc } from '@/hooks/useTodayKey';
 
 // ---------------------------------------------------------------------------
@@ -336,6 +337,31 @@ export function useHasPlannedSession(dayKey: string): {
     dayKey,
   ]);
   return { hasPlanned: data.length > 0, isLoading };
+}
+
+// ---------------------------------------------------------------------------
+// usePlannedDayKeys — US CIBLE-01 (la cible du jour sur une plage)
+// ---------------------------------------------------------------------------
+
+export { SELECT_PLANNED_DAYS_BETWEEN };
+
+/**
+ * Les jours de `[fromKey, toKey]` qui portent une séance planifiée `planned`/`done` — ce que
+ * `useHasPlannedSession` répond jour par jour, en **une** requête pour toute la plage (CIBLE-01 D6).
+ * Une plage vide (`fromKey > toKey`) rend un ensemble vide.
+ */
+export function usePlannedDayKeys(
+  fromKey: string,
+  toKey: string,
+): { dayKeys: ReadonlySet<string>; isLoading: boolean } {
+  const userId = useAuthStore((s) => s.session?.user.id ?? '');
+  const { data, isLoading } = useQuery<{ scheduled_date: string }>(SELECT_PLANNED_DAYS_BETWEEN, [
+    userId,
+    fromKey,
+    toKey,
+  ]);
+  const dayKeys = useMemo(() => new Set(data.map((r) => r.scheduled_date)), [data]);
+  return { dayKeys, isLoading };
 }
 
 // ---------------------------------------------------------------------------

@@ -78,6 +78,7 @@ export * from './activity';
 export * from './energy';
 export * from './day-energy';
 export * from './day-target';
+export * from './day-target-range';
 export * from './meal-plan';
 export * from './shopping-list';
 export * from './strength-intensity';
