@@ -107,7 +107,11 @@ export function RegularityCard({
         accessibilityLabel={t('stats.regularity.a11y', { pct, days: windowDays })}
       >
         {cells.map((cell) => (
-          <View key={cell.logDate} style={[styles.cell, { backgroundColor: fillColor[cell.fill] }]} />
+          <View
+            key={cell.logDate}
+            testID={`regularity-cell-${cell.logDate}`}
+            style={[styles.cell, { backgroundColor: fillColor[cell.fill] }]}
+          />
         ))}
       </View>
 

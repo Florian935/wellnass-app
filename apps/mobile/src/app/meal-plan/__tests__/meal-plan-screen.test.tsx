@@ -68,8 +68,39 @@ jest.mock('@/data/repositories/real-life-repository', () => ({
 jest.mock('@/data/repositories/settings-repository', () => ({
   useSettings: jest.fn(() => ({ settings: null })),
 }));
-jest.mock('@/data/repositories/planned-session-repository', () => ({
-  useWeekPlan: jest.fn(() => ({ items: [] })),
+jest.mock('@/data/repositories/planned-session-repository', () => {
+  const useWeekPlan = jest.fn(() => ({ items: [] }));
+  return {
+    useWeekPlan,
+    // US CIBLE-01 — la lecture par plage du planning (étape 4) : les mêmes séances que `useWeekPlan`,
+    // statuts `planned`/`done` (une séance sans statut est `planned`). Déclarée avant d'être lue, pour que
+    // les tests de ce fichier ne changent pas quand l'écran change de source.
+    usePlannedDayKeys: jest.fn((fromKey: string, toKey: string) => ({
+      dayKeys: new Set(
+        (useWeekPlan() as { items: { scheduledDate: string; status?: string }[] }).items
+          .filter((i) => (i.status ?? 'planned') !== 'skipped' && i.scheduledDate >= fromKey && i.scheduledDate <= toKey)
+          .map((i) => i.scheduledDate),
+      ),
+      isLoading: false,
+    })),
+  };
+});
+// US CIBLE-01 — les autres lectures de la cible du jour (étape 4) : ni séance, ni course, ni activité,
+// ni dépense, ni pesée dans ces tests. Mockées dès maintenant pour la même raison.
+jest.mock('@/data/repositories/workout-repository', () => ({
+  useWorkoutHistory: jest.fn(() => ({ workouts: [], isLoading: false })),
+}));
+jest.mock('@/data/repositories/run-repository', () => ({
+  useRunHistory: jest.fn(() => ({ runs: [], isLoading: false })),
+}));
+jest.mock('@/data/repositories/activity-repository', () => ({
+  useActivities: jest.fn(() => ({ activities: [], isLoading: false })),
+}));
+jest.mock('@/data/repositories/energy-repository', () => ({
+  useEnergyTargetByDay: jest.fn(() => ({ byDay: new Map(), isLoading: false })),
+}));
+jest.mock('@/data/repositories/bodyweight-repository', () => ({
+  useLatestWeight: jest.fn(() => ({ latest: null, isLoading: false })),
 }));
 jest.mock('@/data/repositories/recipe-repository', () => ({ useRecipes: jest.fn(() => ({ recipes: [] })) }));
 jest.mock('@/data/repositories/meal-template-repository', () => ({

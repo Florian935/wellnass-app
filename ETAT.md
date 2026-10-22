@@ -142,7 +142,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/cible01-cible-du-jour` (modifications non commitées) |
-| Commits | 1368 · `main` a **1365** commits de retard sur `dev` |
+| Commits | 1369 · `main` a **1366** commits de retard sur `dev` |
 | Specs d'US | 191 au total — 92 clôturées, 99 en cours |
 | Migrations | 115/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -153,11 +153,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `aeefbf6`  docs(cible): CIBLE-01 cadrée, relue et validée (D1 à D12) — spec, plan, BACKLOG
 - `9a3ca22`  docs(noryn): NORYN-02 recettée et clôturée — §93 purgée
 - `cac23e8`  docs(prisme): PRISME-01 recettée et clôturée — §91 purgée, 8 et 18 au BACKLOG
 - `3ffe3fd`  docs(noryn): NORYN-02 en recette — jeu de données relatif à aujourd'hui, RECETTES §93, 9.18 livrée
 - `16768ad`  feat(noryn): NORYN-02 — Noryn reçoit les cibles et le verdict de forme, par les compositions de l'app
-- `25b21f8`  fix(nutrition): NORYN-02 D1-A — une seule règle pour les protéines, le socle hors sport partout
 
 ---
 

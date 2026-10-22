@@ -10,6 +10,38 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/10/2026 — CIBLE-01, étape 1 : le filet, figé sur le code actuel (`feature/cible01-cible-du-jour`)
+
+> Plan CIBLE-01, étape 1. Des tests d'assemblage **verts sur le code d'aujourd'hui** : chaque test sans
+> étiquette doit rester vert sans une ligne modifiée ; les tests étiquetés `CIBLE-01 C<n>` figent la
+> valeur actuelle d'un cas que la spec (§6) annonce comme changé. Commit précédent : `aeefbf60`.
+
+### Ajouté
+- `test-utils/cible01-dataset.ts` : le jeu de la recette (spec §14.1), relatif au `TODAY` du harnais.
+- `daily-calorie-targets-assembly.test.tsx` : `useDailyCalorieTargets`, `useGoalAdherenceForRange`,
+  `useTrainingNutritionCross` dans les trois modes (jours rendus, bornes, marge, `weightKg`, profil
+  incomplet, repos, séance, course, vie réelle, surcharge, forfait 0, profil nutritionnel absent, courses
+  du mode `auto`, pilier course éteint, dépense en `activities`) ; C1 à C4 à leur valeur actuelle.
+- `day-target-parity.test.tsx` : `useDayCalorieTarget` contre `useDailyCalorieTargets` sur le jeu, jour
+  par jour, trois modes — égalité sur les témoins, écart actuel affirmé sur J−5 et J (C1, C2).
+- `meal-plan/__tests__/meal-plan-targets.test.tsx` : la cible et le bonus des 12 jours du jeu dans le
+  planning, trois modes (colonne « Avant » du §14.2), piliers (D7-B, C13), témoins.
+- `regularity-card.test.tsx` : le seuil « complète » de J−10 (C6), sans cible et sur la cible d'aujourd'hui.
+- `home-widget-data.test.ts` : le « Restant » (repos, C16 à C19) sur le harnais SQLite.
+
+### Modifié
+- `test-utils/day-target-sources.ts` : `plannedSessions` (avec statut) nourrit `useHasPlannedSession`,
+  `useWeekPlan` et le futur `usePlannedDayKeys` ; `setSources` ne remplit que les hooks mockés par le
+  fichier de test (`jest.isMockFunction`) — les filets de NORYN-02 passent sans changement.
+- `meal-plan-screen.test.tsx` : **mocks seulement** (lectures futures de la cible, et `usePlannedDayKeys`
+  dérivé des séances de `useWeekPlan`) ; aucun test ni attendu modifié.
+- `RegularityCard.tsx` : un `testID` par case (`regularity-cell-<jour>`), sans changement de rendu.
+
+### Technique / Notes
+- Bundle de `noryn-context` construit dans ce worktree avant toute ligne de code (scratchpad, ni commité
+  ni affiché) : la référence de la preuve du §7.
+- Qualité : typecheck, lint, filets ciblés verts (NORYN-02 compris) ; suite complète relancée avant le push.
+
 ## 22/10/2026 — CIBLE-01 cadrée, relue et validée (`feature/cible01-cible-du-jour` → `dev`)
 
 > Une seule « cible du jour » dans tout le pilier Nutrition : l'historique (`useDailyCalorieTargets`), le

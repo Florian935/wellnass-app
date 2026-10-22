@@ -7,6 +7,8 @@
  * repli, priorité musculation > running), pas la logique déjà couverte ailleurs (streak, TDEE...).
  */
 
+import { tdee } from '@wellness/shared';
+
 import { computeHomeWidgetSnapshot } from '../home-widget-data';
 import { resetTestDb, seed } from '@/test-utils/sqlite-harness';
 
@@ -174,6 +176,80 @@ describe('computeHomeWidgetSnapshot', () => {
 
     expect(snapshot.kcalRemaining).not.toBeNull();
     expect(snapshot.kcalRemaining).toBeGreaterThan(0);
+  });
+
+  // ── US CIBLE-01 — le filet du « Restant » ─────────────────────────────────────────────────────
+  // Profil A (homme, 80 kg, 180 cm, 30 ans) : `tdee` « modéré » 2 759, hors sport « debout » 2 448 ;
+  // sèche −400, forfait 300 ; 2 000 kcal mangées. Les tests étiquetés figent la valeur d'aujourd'hui
+  // d'un cas que la spec (§6) annonce comme changé : seul leur attendu bouge, à l'étape du widget.
+  const seedProfileA = (overrides: Record<string, unknown> = {}) =>
+    seed('profiles', [
+      { user_id: 'user-1', sex: 'male', height_cm: 180, weight_kg: 80, birth_date: '1996-01-15', main_goal: 'muscle', ...overrides },
+    ]);
+  const seedNutritionA = (overrides: Record<string, unknown> = {}) =>
+    seed('nutrition_profiles', [
+      {
+        user_id: 'user-1',
+        objective: 'cut',
+        activity_level: 'moderate',
+        training_day_bonus: 300,
+        training_bonus_mode: 'fixed',
+        sport_free_level: 'standing',
+        ...overrides,
+      },
+    ]);
+  const seedEaten = (kcal = 2000) =>
+    seed('food_entries', [{ user_id: 'user-1', log_date: TODAY, meal_type: 'lunch', kcal, protein_g: 0, carbs_g: 0, fat_g: 0 }]);
+
+  it('kcal restantes : jour de repos, mode `fixed` — base 2 359', async () => {
+    seedActivePillars(['strength', 'running', 'nutrition']);
+    seedProfileA();
+    seedNutritionA();
+    seedEaten();
+
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(359);
+  });
+
+  it('CIBLE-01 C16 — séance faite aujourd’hui, forfait 300 : le restant ignore le bonus', async () => {
+    seedActivePillars(['strength', 'running', 'nutrition']);
+    seedProfileA();
+    seedNutritionA();
+    seedEaten();
+    seed('workouts', [
+      { user_id: 'user-1', status: 'completed', started_at: `${TODAY}T09:00:00.000Z`, finished_at: `${TODAY}T10:00:00.000Z`, duration_seconds: 3600 },
+    ]);
+
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(359);
+  });
+
+  it('CIBLE-01 C17 — mode `activities` : socle `tdee`', async () => {
+    seedActivePillars(['strength', 'running', 'nutrition']);
+    seedProfileA();
+    seedNutritionA({ training_bonus_mode: 'activities' });
+    seedEaten();
+
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(359);
+  });
+
+  it('CIBLE-01 C18 — dernière pesée (70 kg) ≠ poids du profil (80 kg) : socle au poids de la pesée', async () => {
+    seedActivePillars(['strength', 'running', 'nutrition']);
+    seedProfileA();
+    seedNutritionA();
+    seedEaten();
+    seed('body_weight_entries', [{ user_id: 'user-1', log_date: '2026-08-01', weight_kg: 70 }]);
+    const at70 = tdee({ sex: 'male', weightKg: 70, heightCm: 180, age: 30, activityLevel: 'moderate' })! - 400;
+
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(at70 - 2000);
+  });
+
+  it('CIBLE-01 C19 — profil sans poids, une pesée : un restant au poids de la pesée', async () => {
+    seedActivePillars(['strength', 'running', 'nutrition']);
+    seedProfileA({ weight_kg: null });
+    seedNutritionA();
+    seedEaten();
+    seed('body_weight_entries', [{ user_id: 'user-1', log_date: '2026-08-01', weight_kg: 80 }]);
+
+    expect((await computeHomeWidgetSnapshot()).kcalRemaining).toBe(359);
   });
 
   it('kcal restantes : profil incomplet (pas de taille/poids) → null', async () => {

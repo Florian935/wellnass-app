@@ -7,6 +7,11 @@
  * être en tête de fichier pour être remontés), puis appelle `setSources` pour remplir les hooks de
  * lecture. Les briques pures ne sont **jamais** mockées : on veut l'assemblage réel bout en bout.
  *
+ * US CIBLE-01 — `setSources` ne remplit **que les hooks que le fichier de test a mockés**
+ * (`jest.isMockFunction`) : un scénario décrit une fois nourrit toutes les lectures, anciennes et
+ * nouvelles (`useWeekPlan` du planning d'avant, `usePlannedDayKeys` de la lecture par plage), sans
+ * obliger les filets de NORYN-02 à déclarer des mocks qu'ils n'utilisent pas.
+ *
  * Les jours sont des clés **locales** et les instants sont fabriqués à une heure locale
  * (`atLocal`) : le test ne dépend pas du fuseau de la machine qui le lance.
  */
@@ -14,6 +19,7 @@
 import { localDayKey } from '@wellness/shared';
 
 import { useActivities, useActivitiesOnDay } from '@/data/repositories/activity-repository';
+import * as plannedSessionRepository from '@/data/repositories/planned-session-repository';
 import { useLatestWeight, useWeightEntries } from '@/data/repositories/bodyweight-repository';
 import { useWellbeingRows } from '@/data/repositories/daily-wellbeing-repository';
 import { useDayEnergy, useEnergyTargetByDay } from '@/data/repositories/energy-repository';
@@ -90,6 +96,11 @@ export const shiftKey = (dayKey: string, n: number): string => {
 export type SourceWorkout = { finishedAt: string | null; durationSeconds?: number | null; rpe?: number | null };
 export type SourceRun = { finishedAt: string | null; distanceM?: number | null; durationSeconds?: number | null; rpe?: number | null };
 export type SourceActivity = { startedAt: string; durationSeconds?: number; rpe?: number | null; activityType?: string };
+/**
+ * Une séance planifiée (CIBLE-01). Sans statut : `planned`. `plannedDays` reste accepté (filets de
+ * NORYN-02) et vaut une séance `planned` par jour.
+ */
+export type SourcePlannedSession = { date: string; status?: 'planned' | 'done' | 'skipped' };
 export type SourceWellbeing = {
   logDate: string;
   energy?: number | null;
@@ -110,6 +121,8 @@ export type Sources = {
   runs?: SourceRun[];
   activities?: SourceActivity[];
   plannedDays?: string[];
+  /** Séances planifiées avec leur statut (CIBLE-01) ; s'ajoutent à `plannedDays`. */
+  plannedSessions?: SourcePlannedSession[];
   periods?: { startedOn: string; endsOn: string }[];
   /** Dépense retenue (bas de fourchette) par jour, telle que `useDayEnergy` la rendrait. */
   energyByDay?: Record<string, number>;
@@ -119,7 +132,32 @@ export type Sources = {
   wellbeing?: SourceWellbeing[];
 };
 
-const asMock = (fn: unknown) => fn as jest.Mock;
+/**
+ * Le mock d'un hook, **s'il est mocké** par le fichier de test ; sinon un mock jetable, sans effet. Un
+ * export absent (un hook que le module n'a pas encore, ou que le fichier n'a pas déclaré) est ignoré.
+ */
+const asMock = (fn: unknown): jest.Mock => (jest.isMockFunction(fn) ? fn : jest.fn());
+
+/** Le mock d'un export lu par son nom — il peut ne pas exister encore dans le module réel. */
+const exportOf = (module: unknown, name: string): unknown => (module as Record<string, unknown>)[name];
+
+/** Une séance planifiée telle que `useWeekPlan` la rend (seuls la date et le statut comptent ici). */
+const plannedItem = (s: SourcePlannedSession, i: number) => ({
+  id: `ps${i}`,
+  programId: 'prog-1',
+  sessionId: `sess-${i}`,
+  scheduledDate: s.date,
+  scheduledTime: null,
+  status: s.status ?? 'planned',
+  weekIndex: 0,
+  sessionName: null,
+  sessionType: null,
+  targetDistanceM: null,
+  targetDurationSeconds: null,
+  orderIndex: i,
+  pillar: 'strength',
+  exerciseCount: 0,
+});
 
 /** Remplit tous les hooks de lecture d'après `sources` (le reste reste vide). */
 export function setSources(sources: Sources = {}): void {
@@ -181,8 +219,25 @@ export function setSources(sources: Sources = {}): void {
     activities: activities.filter((a) => localDayKey(new Date(a.startedAt)) === dayKey),
     isLoading: false,
   }));
+  // Une seule liste de séances planifiées pour toutes les lectures : `SELECT_HAS_PLANNED` et la lecture
+  // par plage retiennent `planned`/`done` ; `useWeekPlan` (le planning d'avant CIBLE-01), tout statut.
+  const sessions: SourcePlannedSession[] = [
+    ...(sources.plannedDays ?? []).map((date) => ({ date, status: 'planned' as const })),
+    ...(sources.plannedSessions ?? []),
+  ];
+  const anticipated = new Set(sessions.filter((s) => (s.status ?? 'planned') !== 'skipped').map((s) => s.date));
   asMock(useHasPlannedSession).mockImplementation((dayKey: string) => ({
-    hasPlanned: (sources.plannedDays ?? []).includes(dayKey),
+    hasPlanned: anticipated.has(dayKey),
+    isLoading: false,
+  }));
+  asMock(exportOf(plannedSessionRepository, 'usePlannedDayKeys')).mockImplementation((fromKey: string, toKey: string) => ({
+    dayKeys: new Set([...anticipated].filter((d) => d >= fromKey && d <= toKey)),
+    isLoading: false,
+  }));
+  asMock(exportOf(plannedSessionRepository, 'useWeekPlan')).mockImplementation((weekStart: string) => ({
+    items: sessions
+      .map(plannedItem)
+      .filter((item) => item.scheduledDate >= weekStart && item.scheduledDate <= shiftKey(weekStart, 6)),
     isLoading: false,
   }));
   asMock(useRealLifePeriods).mockReturnValue({
