@@ -10,6 +10,43 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/10/2026 — CIBLE-01 cadrée, relue et validée (`feature/cible01-cible-du-jour` → `dev`)
+
+> Une seule « cible du jour » dans tout le pilier Nutrition : l'historique (`useDailyCalorieTargets`), le
+> planning repas et le widget d'écran d'accueil passeront par les compositions pures de NORYN-02. Cadrage
+> seul, **aucun code**. Validée par Florian le 22/10/2026 (D1 à D12 telles que proposées). Commit
+> précédent : `9a3ca226`.
+
+### Ajouté
+- Spec `docs/specs/functional/us/cible01-cible-du-jour.md` (`etape: code`) : inventaire de **12** calculs ou
+  usages d'une cible du jour (K1-K12, dont le widget, la carte de régularité, le socle remonté du Labo, quatre
+  fenêtres jugées sur la cible d'aujourd'hui et le contexte du Labo IA) ; règles côte à côte ; décisions D1-D12
+  et dérivées DD1-DD12 ; chaque chiffre qui bouge (C1-C19) ; preuve que Noryn ne bouge pas (bundle identique,
+  tests NORYN-02 intacts) ; jeu de recette sur un compte de test vierge, chiffres attendus écran par écran
+  dans les trois modes.
+- Plan `docs/plans/cible01-cible-du-jour.md` : neuf étapes, le filet d'abord (vert sur le code actuel), une
+  brique neuve `composeCalorieTargetsForDays` (`packages/shared/src/day-target-range.ts`), un hook
+  `useCalorieTargetsForDays` dans un module dédié, un module SQL feuille pour le widget.
+
+### Modifié
+- BACKLOG : **CIBLE-01** quitte le backlog (entrée dans le pipeline) ; écarts signalés ajoutés en P2 —
+  **CIBLE-02** (séance planifiée d'un pilier éteint), **CIBLE-03** (séance marquée faite sans séance
+  enregistrée), **CIBLE-04** (socle du Labo « Et si… » et du Conseil), **CIBLE-05** (fenêtres jugées sur la
+  cible d'aujourd'hui, dont le score de forme partagé avec Noryn), **CIBLE-06** (cible du contexte du Labo
+  IA) ; dette : `WeekStrip.tsx` sans appelant.
+- ETAT.md régénéré.
+
+### Technique / Notes
+- **Relecture** par un agent de revue (spec §15) : tous les chiffres du §14.2 recalculés par les fonctions
+  pures ; 1 bloquant (inventaire incomplet : K8-K12) et 6 importants intégrés (preuve Noryn dans le même
+  worktree, module SQL feuille pour le widget, harnais de tests tolérant, hook hors de
+  `dashboard-repository.ts`, D7 passée de A à B).
+- **D7-B** : le planning garde sa règle « ni muscu ni course actif → aucun bonus » (décision H) ; seule
+  exception assumée à « une cible par jour », le défaut d'Aujourd'hui et de Noryn part en CIBLE-02.
+- Pas de ligne de roadmap neuve (mise en cohérence de 4.7, 4.27, 4.40, 4.44, 7.19) ; aucun statut ne bouge.
+- Worktree `.expo/claude-worktrees/cible-01` : jonction `node_modules/@wellness/shared` → son
+  `packages/shared` (ignorée par git), sans quoi les tests liraient le `packages/shared` du dépôt principal.
+
 ## 21/10/2026 — NORYN-02 recettée et clôturée (`feature/noryn02-cibles-forme` → `dev`)
 
 > Recette RECETTES §93 menée avec Florian du 16 au 21/10/2026, sur APK local et sur la fonction déployée :

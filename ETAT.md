@@ -1,4 +1,4 @@
-# État du projet — 21/10/2026
+# État du projet — 22/10/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -113,6 +113,7 @@ avant de pouvoir publier.
 | **UX-05** — Intensité en RPE ou en RIR, au choix | `recette` | `feature/ux05-rpe-ou-rir` | [3.55] |
 | **UX-LOT-01** — Lot de finitions remontées en recette (UX-02, UX-03, UX-04) | `recette` | `feature/uxlot01-finitions-recette` | [3.53, 3.54, 7.18] |
 | **VIE-01** — Mode « vie réelle » — dégradation gracieuse des objectifs | `recette` | `feature/vie01-mode-vie-reelle` | [1.28] |
+| **CIBLE-01** — Une seule « cible du jour » dans tout le pilier Nutrition — l'historique, le planning repas et le widget passent par la composition de NORYN-02 | `code` | `feature/cible01-cible-du-jour` | [4.7, 4.27, 4.40, 4.44, 7.19] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -126,11 +127,11 @@ avant de pouvoir publier.
 - LANCE-01 — Publication Play Store
 - LANCE-02 — Retirer le spike VBT-01 du build de soumission
 
-<details><summary>P1 finitions (11) · P2 confort (5)</summary>
+<details><summary>P1 finitions (11) · P2 confort (9)</summary>
 
 **P1** — ACCES-IA — Prisme réservé aux testeurs · PRISME-01b — Les résumés du Labo dans la voix de Prisme · RUN-F3b — Météo de course · CLAV-01 — Le clavier recouvre les formulaires (edge-to-edge) · CARDIO-02 — Les quatre portes vers l'allure de référence · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect · IDENT-01 — L'identité de pilier appartient à l'écran, pas à l'onglet
 
-**P2** — PRISME-02 — La photo de repas, avec Prisme · SOCLE-01 — RevenueCat câblé inactif · VBT-01 — Vitesse de barre à la caméra · CIBLE-01 — Une seule « cible du jour » dans tout le pilier Nutrition · CARDIO-08 — « X sur Y dans la plage » sans l’échauffement, dans l’analyse
+**P2** — PRISME-02 — La photo de repas, avec Prisme · SOCLE-01 — RevenueCat câblé inactif · VBT-01 — Vitesse de barre à la caméra · CIBLE-02 — Une séance planifiée d'un pilier éteint donne-t-elle le forfait ? · CIBLE-03 — La séance marquée faite sans séance enregistrée · CIBLE-04 — Le socle du Labo « Et si… » et du Conseil des trois · CIBLE-05 — Les fenêtres jugées sur la cible d'aujourd'hui · CIBLE-06 — La cible du contexte du Labo IA · CARDIO-08 — « X sur Y dans la plage » sans l’échauffement, dans l’analyse
 
 </details>
 
@@ -140,9 +141,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/noryn02-cibles-forme` (modifications non commitées) |
-| Commits | 1367 · `main` a **1364** commits de retard sur `dev` |
-| Specs d'US | 190 au total — 92 clôturées, 98 en cours |
+| Branche courante | `feature/cible01-cible-du-jour` (modifications non commitées) |
+| Commits | 1368 · `main` a **1365** commits de retard sur `dev` |
+| Specs d'US | 191 au total — 92 clôturées, 99 en cours |
 | Migrations | 115/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -152,11 +153,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `9a3ca22`  docs(noryn): NORYN-02 recettée et clôturée — §93 purgée
 - `cac23e8`  docs(prisme): PRISME-01 recettée et clôturée — §91 purgée, 8 et 18 au BACKLOG
 - `3ffe3fd`  docs(noryn): NORYN-02 en recette — jeu de données relatif à aujourd'hui, RECETTES §93, 9.18 livrée
 - `16768ad`  feat(noryn): NORYN-02 — Noryn reçoit les cibles et le verdict de forme, par les compositions de l'app
 - `25b21f8`  fix(nutrition): NORYN-02 D1-A — une seule règle pour les protéines, le socle hors sport partout
-- `b08464b`  refactor(nutrition): NORYN-02 étape 3 — la composition de la cible du jour et du verdict sort des hooks
 
 ---
 
