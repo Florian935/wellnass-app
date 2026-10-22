@@ -10,6 +10,30 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/10/2026 — CIBLE-01, étape 3 : l'historique sur la cible d'Aujourd'hui (`feature/cible01-cible-du-jour`)
+
+> Plan CIBLE-01, étape 3. `useDailyCalorieTargets` ne calcule plus rien : il lit les jours notés et
+> demande leur cible à `useCalorieTargetsForDays`. Calendrier, page d'un jour passé, adhérence, bilans et
+> APPORT-01 disent désormais la cible d'Aujourd'hui et de Noryn. Commit précédent : `115a339a`.
+
+### Modifié
+- `dashboard-repository.ts` — `useDailyCalorieTargets` : la formule recopiée (socle, objectif, bonus,
+  jours d'entraînement réduits aux séances et courses) disparaît, avec onze imports devenus inutiles ;
+  `isTrainingDay` des jours = `trainedOnDay` (D5, DD2, documenté sur le type) ; `isLoading` couvre toutes
+  les lectures (DD4). Commentaires d'APPORT-01 réécrits (« le groupement colle à la cible »).
+- `HistorySection.tsx` : commentaire (la source unique est celle d'Aujourd'hui).
+- **Chiffres qui bougent (spec §6)** : C1 (jour à autre activité seule, Forfait et Auto : + forfait), C2
+  (aujourd'hui à séance prévue : + forfait), C3 (jour futur noté à séance prévue), C4 (groupes d'APPORT-01 :
+  ces jours deviennent « séance », dans les trois modes). En mode « Selon ce que tu fais », aucune cible de
+  l'historique ne bouge.
+
+### Technique / Notes
+- **Filet** : seuls les 13 tests étiquetés C1 à C4 ont changé d'attendu (`daily-calorie-targets-assembly`,
+  `day-target-parity`, qui affirme désormais l'égalité Aujourd'hui = historique sur **tous** les jours du
+  jeu, trois modes). `goal-adherence-assembly.test.tsx` et les filets de NORYN-02 passent **sans
+  modification**.
+- Suite complète verte (5 179 Jest, 199 fichiers Vitest), typecheck, lint.
+
 ## 22/10/2026 — CIBLE-01, étape 2 : la brique, la lecture par plage, le hook (`feature/cible01-cible-du-jour`)
 
 > Plan CIBLE-01, étape 2. Le code neuf, que **personne n'appelle encore** : le filet de l'étape 1 est vert

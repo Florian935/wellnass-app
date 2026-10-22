@@ -81,7 +81,8 @@ export function HistorySection({ todayKey, mealOfHour, mealList, historyRows, on
   const monthStart = `${month.year}-${pad(month.month)}-01`;
   const monthEnd = `${month.year}-${pad(month.month)}-${pad(new Date(month.year, month.month, 0).getDate())}`;
 
-  // Une seule source de cible pour le calendrier, la liste et la page d'un jour (D9).
+  // Une seule source de cible pour le calendrier, la liste et la page d'un jour (D9) — et depuis
+  // CIBLE-01, la même que celle d'Aujourd'hui : autres activités et séance prévue du jour comprises.
   const { days: targetDays, marginPct } = useDailyCalorieTargets(monthStart, monthEnd);
   const calendarDays: NutritionCalendarDay[] = useMemo(
     () => targetDays.map((d) => ({ dayKey: d.dayKey, kcal: d.kcal, target: d.effectiveTarget })),

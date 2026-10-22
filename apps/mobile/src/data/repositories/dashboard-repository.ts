@@ -37,11 +37,9 @@ import {
   activeDayKeys,
   addDays,
   computeAcwr,
-  computeAge,
   computeCaloricBalance,
   computeConcurrentTrainingInterference,
   computeDeficitVolumeAlert,
-  computeEffectiveTargetForDay,
   computeGoalAdherence,
   computeOvertrainingGuard,
   computeStreak,
@@ -49,17 +47,11 @@ import {
   countDeficitDaysInWindow,
   findRestorableGap,
   computeTrainingTime,
-  DEFAULT_SPORT_FREE_LEVEL,
-  sportFreeTdee,
-  effectiveNutritionObjective,
-  estimateRunCalories,
-  isRealLifeDay,
   localDateFromDayKey,
   localDayKey,
   localMidnightDaysAgo,
   minimalWeekTargets,
   type MinimalWeekTargets,
-  objectiveFromGoal,
   resolveActivePillars,
   startOfWeek,
   ROLLING_WEEK_DAYS,
@@ -67,8 +59,6 @@ import {
   stepsActiveDays,
   suggestActivityLevel,
   effectiveActivityLevel,
-  targetCalories,
-  tdee,
   type ActivityLevel,
   type ConcurrentTrainingInterference,
   type DayActivity,
@@ -79,7 +69,6 @@ import {
   type ReadinessResult,
   type RecordDistanceKey,
   type RecordType,
-  type TrainingBonusMode,
   computeEnergyByDayType,
   computeAdherenceByDayType,
   findLowFuelDays,
@@ -117,7 +106,8 @@ import { useRunningRecords } from './running-record-repository';
 import { useRunnerProfile } from './running-profile-repository';
 import { useSettings } from './settings-repository';
 import { useActivities, useActivitiesOnDay } from './activity-repository';
-import { useDayEnergy, useEnergyTargetByDay } from './energy-repository';
+import { useDayEnergy } from './energy-repository';
+import { useCalorieTargetsForDays } from './day-targets-repository';
 import { useActiveProgram } from './program-repository';
 import { useHasPlannedSession } from './planned-session-repository';
 import { useAuthStore } from '@/stores/auth-store';
@@ -1608,6 +1598,12 @@ export type DailyCalorieTarget = {
   kcal: number;
   /** Cible du jour, bonus de séance déjà appliqué. `null` = objectif non calculable (pas de TDEE). */
   effectiveTarget: number | null;
+  /**
+   * **Jour d'entraînement** (`trainedOnDay`, US CIBLE-01 D5/DD2) : séance ou course terminée, autre
+   * activité, ou — aujourd'hui et après — séance planifiée `planned`/`done`, **que le bonus s'applique
+   * ou non**. ≠ `DayCalorieTarget.isTrainingDay`, qui veut dire « jour d'entraînement **et** bonus
+   * appliqué ». C'est ce qu'APPORT-01 groupe en « jours de séance ».
+   */
   isTrainingDay: boolean;
 };
 
@@ -1623,29 +1619,26 @@ export type DailyCalorieTargets = {
 };
 
 /**
- * Cible calorique effective de chaque jour d'une fenêtre `[fromKey, toKey]` (bornes incluses ;
- * `toKey = null` = jusqu'à aujourd'hui).
+ * Cible calorique effective de chaque jour **noté** d'une fenêtre `[fromKey, toKey]` (bornes incluses ;
+ * `toKey = null` = sans borne haute — un repas daté de demain compris).
  *
  * ── Pourquoi ce hook existe ─────────────────────────────────────────────────────────────────────
- * Cet assemblage était **écrit deux fois** : dans `useGoalAdherenceForRange` et dans
- * `useTrainingNutritionCross` (APPORT-01, 08/08/2026). Les deux copies appelaient les mêmes
- * fonctions pures dans le même ordre, donc rien ne divergeait — mais deux définitions de « la cible
- * du jour » finissent toujours par diverger, au premier ajustement du bonus (`fixed`/`auto`, RN-02)
- * ou de la règle VIE-01. Et cette divergence-là est invisible : elle ne plante pas, elle affiche
- * deux chiffres différents pour la même journée sur deux écrans.
+ * L'adhérence (NUTR-10), le bilan calorique (NUTR-18), le bilan hebdo (BILAN-01), le lot croisé
+ * (APPORT-01), le calendrier d'Historique et la page d'un jour passé jugent chacun des jours notés sur
+ * « la cible du jour ». Elle n'a qu'une définition : celle d'Aujourd'hui et de Noryn.
  *
- * L'extraction est faite **après** avoir couvert `useGoalAdherenceForRange`
- * (`goal-adherence-assembly.test.tsx`) : refactoriser d'abord aurait été sans filet.
+ * ── US CIBLE-01 — plus aucune formule ici ───────────────────────────────────────────────────────
+ * Ce hook recalculait la cible à côté de `useDayCalorieTarget` (socle, objectif, bonus), et ses jours
+ * d'entraînement ne comptaient que les séances et courses **terminées** : une sortie vélo seule ne
+ * donnait pas le forfait à la ligne d'état d'un jour passé, quand « Ta journée en énergie », sur la même
+ * page, le donnait ; la case d'aujourd'hui ignorait la séance prévue qu'Aujourd'hui comptait. Il ne fait
+ * plus que lire les jours notés et demander leur cible à `useCalorieTargetsForDays`, qui appelle les
+ * compositions de NORYN-02 (`trainedOnDay`, `composeDayCalorieTarget`). `day-target-parity.test.tsx`
+ * fige l'égalité avec `useDayCalorieTarget`, jour par jour.
  *
- * ── Ce que l'assemblage garantit ────────────────────────────────────────────────────────────────
- * - **La cible de base est une fonction DU JOUR** (US VIE-01, R4), pas de la fenêtre : une fenêtre
- *   de 30 jours peut mêler des jours en période « vie réelle » (objectif ramené au maintien) et des
- *   jours normaux. Une cible unique fausserait toute la fenêtre, pas seulement les jours concernés.
- * - **`isTrainingDay` vient des séances TERMINÉES** (muscu + course), rattachées au jour **local**
- *   de `finished_at`. C'est la même convention partout dans l'app — et c'est ce qui garantit que le
- *   groupement d'APPORT-01 colle exactement à la cible qui a servi à juger chaque jour.
- * - **La dépense de course n'entre que si le pilier running est actif** (décision H) ; les courses
- *   d'un même jour se cumulent.
+ * Ce que la composition garantit, et qui comptait déjà ici : la cible de base est une fonction **du
+ * jour** (VIE-01 R4) ; la dépense des courses du mode `auto` n'entre que si le pilier course est actif ;
+ * en mode `activities`, le socle est hors sport et le bonus est la dépense réelle du jour.
  *
  * Hooks appelés inconditionnellement.
  */
@@ -1654,126 +1647,34 @@ export function useDailyCalorieTargets(
   toKey: string | null,
 ): DailyCalorieTargets {
   const { nutritionProfile, isLoading: nutriLoading } = useNutritionProfile();
-  const { profile, isLoading: profileLoading } = useProfile();
-  const { latest, isLoading: weightLoading } = useLatestWeight();
-  const { settings } = useSettings();
   const { totals: allTotals, isLoading: totalsLoading } = useDailyTotals(fromKey);
-  const { workouts, isLoading: wLoading } = useWorkoutHistory();
-  const { runs, isLoading: rLoading } = useRunHistory();
-  // US VIE-01 : l'appartenance est évaluée **par jour** — la plage peut mêler jours en période et
-  // jours normaux.
-  const { periods } = useRealLifePeriods();
 
-  const isLoading =
-    nutriLoading || profileLoading || weightLoading || totalsLoading || wLoading || rLoading;
+  // Borne haute : sans elle, un bilan de la semaine close inclurait les jours de la semaine en cours —
+  // sous un titre « semaine du 20 au 26 », un chiffre portant sur une autre période.
+  const totals = useMemo(
+    () => (toKey === null ? allTotals : allTotals.filter((d) => d.logDate <= toKey)),
+    [allTotals, toKey],
+  );
+  const dayKeys = useMemo(() => totals.map((d) => d.logDate), [totals]);
+  const { byDay, hasTarget, weightKg, isLoading: targetsLoading } = useCalorieTargetsForDays(dayKeys);
 
-  // Objectif de base (indépendant du jour), même logique que useDayCalorieTarget.
-  const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
-  const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : undefined;
-  // US DEPENSE-00 : en mode `activities`, le socle est **hors sport** — sans quoi l'adhérence
-  // rétroactive comparerait les apports à une cible qui compte l'entraînement deux fois.
-  const tdeeValue =
-    (nutritionProfile?.trainingBonusMode ?? 'fixed') === 'activities'
-      ? sportFreeTdee({
-          sex: profile?.sex ?? 'unspecified',
-          weightKg: profile?.weightKg ?? undefined,
-          heightCm: profile?.heightCm ?? undefined,
-          age,
-          sportFreeLevel: nutritionProfile?.sportFreeLevel ?? DEFAULT_SPORT_FREE_LEVEL,
-        })
-      : tdee({
-          sex: profile?.sex ?? 'unspecified',
-          weightKg: profile?.weightKg ?? undefined,
-          heightCm: profile?.heightCm ?? undefined,
-          age,
-          activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
-        });
-  const hasTarget = tdeeValue != null && objective != null;
-
-  const mode: TrainingBonusMode = nutritionProfile?.trainingBonusMode ?? 'fixed';
-  const fixedBonus = nutritionProfile?.trainingDayBonus ?? 0;
   const marginPct = nutritionProfile?.adherenceMarginPct ?? 10;
-  const weightKg = latest?.weightKg ?? profile?.weightKg ?? null;
-  // US DEPENSE-00 — la dépense réellement retenue par jour (bas des fourchettes). Le même hook que
-  // la carte « Ta journée en énergie » : deux calculs séparés finiraient par se contredire, et
-  // l'adhérence rétroactive porterait sur une cible que plus aucun écran ne sait justifier.
-  const { byDay: energyByDay } = useEnergyTargetByDay();
-  const runningActive = resolveActivePillars(settings?.activePillars).includes('running');
-  const manualCalories = nutritionProfile?.manualCalories ?? null;
 
-  const days = useMemo(() => {
-    // Borne haute : sans elle, un bilan de la semaine close inclurait les jours de la semaine en
-    // cours — sous un titre « semaine du 20 au 26 », un chiffre portant sur une autre période.
-    const totals = toKey === null ? allTotals : allTotals.filter((d) => d.logDate <= toKey);
+  const days = useMemo(
+    () =>
+      totals.map((d) => {
+        const target = byDay.get(d.logDate);
+        return {
+          dayKey: d.logDate,
+          kcal: d.kcal,
+          effectiveTarget: target?.effectiveTarget ?? null,
+          isTrainingDay: target?.trainedThatDay ?? false,
+        };
+      }),
+    [totals, byDay],
+  );
 
-    // Jours d'entraînement (muscu/course terminés) + dépense course, par jour local.
-    const trainedDays = new Set<string>();
-    for (const w of workouts) if (w.finishedAt) trainedDays.add(localDayKey(new Date(w.finishedAt)));
-    for (const r of runs) if (r.finishedAt) trainedDays.add(localDayKey(new Date(r.finishedAt)));
-
-    const runCaloriesByDay = new Map<string, number>();
-    if (runningActive) {
-      for (const r of runs) {
-        if (!r.finishedAt) continue;
-        const k = localDayKey(new Date(r.finishedAt));
-        runCaloriesByDay.set(
-          k,
-          (runCaloriesByDay.get(k) ?? 0) +
-            estimateRunCalories({
-              distanceM: r.distanceM,
-              durationSeconds: r.durationSeconds,
-              weightKg,
-            }),
-        );
-      }
-    }
-
-    const targetBaseFor = (dayKey: string): number | null =>
-      tdeeValue != null && objective != null
-        ? targetCalories(
-            tdeeValue,
-            effectiveNutritionObjective(objective, isRealLifeDay(periods, dayKey)),
-            manualCalories,
-          )
-        : null;
-
-    return totals.map((d) => {
-      const targetBase = targetBaseFor(d.logDate);
-      const isTraining = trainedDays.has(d.logDate);
-      return {
-        dayKey: d.logDate,
-        kcal: d.kcal,
-        effectiveTarget:
-          targetBase == null
-            ? null
-            : computeEffectiveTargetForDay({
-                targetBase,
-                mode,
-                fixedBonus,
-                isTrainingDay: isTraining,
-                runCaloriesToday: runCaloriesByDay.get(d.logDate) ?? 0,
-                energyKcalToday: energyByDay.get(d.logDate) ?? 0,
-              }),
-        isTrainingDay: isTraining,
-      };
-    });
-  }, [
-    allTotals,
-    toKey,
-    workouts,
-    runs,
-    periods,
-    tdeeValue,
-    objective,
-    manualCalories,
-    mode,
-    fixedBonus,
-    weightKg,
-    runningActive,
-    energyByDay,
-  ]);
-
-  return { days, marginPct, hasTarget, weightKg, isLoading };
+  return { days, marginPct, hasTarget, weightKg, isLoading: nutriLoading || totalsLoading || targetsLoading };
 }
 
 /**
@@ -1844,7 +1745,7 @@ export const SELECT_PROTEIN_BY_MEAL = `
  * chiffres incomparables d'un écran à l'autre.
  *
  * ⚠️ **`finished_at` et non `started_at`** : c'est la date de clôture qui rattache une séance à un
- * jour partout ailleurs (`trainedDays` juste au-dessus). Une séance commencée à 23 h 50 appartient au
+ * jour partout ailleurs (`trainedOnDay`, la cible du jour). Une séance commencée à 23 h 50 appartient au
  * jour où elle se termine, comme pour le reste de l'app.
  */
 export const SELECT_STRENGTH_VOLUME_BY_DAY = `
@@ -1870,22 +1771,20 @@ export type TrainingNutritionCross = {
 /**
  * Les quatre analyses croisées muscu × nutrition sur 4 semaines (US APPORT-01).
  *
- * ── 🔴 Pourquoi `trainedDays` et non `isTrainingDay` ────────────────────────────────────────────
- * La spec (D1) prescrivait `isTrainingDay`. **L'implémentation a montré mieux** : le calcul de la
- * cible effective, juste au-dessus dans ce fichier, groupe les jours avec un `trainedDays` bâti des
- * séances **terminées** (muscu + course). Or sur une fenêtre **passée** les deux coïncident —
- * `isTrainingDay` vaut `retroactiveDone || (hasPlanned && dayKey >= todayKey)`, et sa branche
- * d'anticipation ne peut pas se déclencher sur un jour révolu.
+ * ── 🔴 Le groupement colle à la cible ─────────────────────────────────────────────────────────
+ * « Jour de séance » ou « jour de repos » : le drapeau `isTrainingDay` des jours **vient** de
+ * `useDailyCalorieTargets`, dans le même objet que la cible qui a jugé chaque jour. Depuis CIBLE-01
+ * (D5), c'est le jour d'entraînement de `trainedOnDay` — celui d'Aujourd'hui et de Noryn : séance ou
+ * course terminée, **autre activité**, et la séance planifiée d'aujourd'hui. Avant, seules les séances
+ * et courses terminées comptaient : une sortie vélo seule tombait en « repos » alors qu'elle donnait le
+ * forfait à la cible du jour.
  *
- * Reprendre `trainedDays` garantit donc que **le groupement colle exactement à la cible** qui a servi
- * à juger chaque jour. Importer `isTrainingDay` séparément aurait ouvert la porte à un jour classé
- * « séance » alors que sa cible aurait été calculée en jour de repos — une incohérence interne
- * invisible et impossible à débusquer en recette.
+ * ⚠️ En mode `activities`, la cible ne dépend pas du jour d'entraînement (le bonus est la dépense) : le
+ * groupement n'y colle qu'à peu près — aujourd'hui, une séance prévue classe le jour en « séance » avec
+ * la cible de base. Assumé (spec CIBLE-01 D5).
  *
- * Depuis la factorisation (dette du 08/08/2026), cette garantie n'est plus une convention à
- * respecter des deux côtés : les jours **viennent** de `useDailyCalorieTargets`, qui porte la cible
- * et le drapeau `isTrainingDay` dans le même objet. Il ne reste ici que ce qui est propre au lot —
- * le volume de musculation par jour, et les quatre moteurs.
+ * Il ne reste ici que ce qui est propre au lot — le volume de musculation par jour, et les quatre
+ * moteurs.
  */
 export function useTrainingNutritionCross(): TrainingNutritionCross {
   const fromKey = useWindowStartKey(CROSS_WINDOW_DAYS);

@@ -3,9 +3,9 @@
  * bilan NUTR-18, groupes d'APPORT-01).
  *
  * Écrit et vert **avant** que le hook ne passe par la composition de NORYN-02 : chaque test qui ne
- * porte pas d'étiquette `CIBLE-01 C<n>` doit rester vert **sans une ligne modifiée** après. Les tests
- * étiquetés figent la valeur **d'aujourd'hui** d'un cas que la spec (§6) annonce comme changé : seul
- * leur attendu bouge, à l'étape qui le touche, avec la référence au cas.
+ * porte pas d'étiquette `CIBLE-01 C<n>` est resté vert **sans une ligne modifiée** après. Les tests
+ * étiquetés figeaient la valeur d'avant d'un cas que la spec (§6) annonce comme changé : seul leur
+ * attendu a bougé, à l'étape 3, avec la référence au cas.
  *
  * Profil A (homme, 80 kg, 180 cm, 30 ans) : `tdee` « modéré » 2 759, socle hors sport « debout »
  * 2 448 ; sèche = −400 ; forfait 300.
@@ -130,24 +130,24 @@ describe('mode `fixed`', () => {
     expect(await dayOf(J(-1), sources)).toEqual({ effectiveTarget: 2359, isTrainingDay: false });
   });
 
-  it('CIBLE-01 C1 — autre activité seule : aujourd’hui sans forfait', async () => {
+  it('CIBLE-01 C1 — autre activité seule : le forfait, comme Aujourd’hui (spec §6 C1)', async () => {
     const sources = { dailyKcal: [meal(J(-1))], activities: [{ startedAt: atLocal(J(-1), 10) }] };
-    expect(await dayOf(J(-1), sources)).toEqual({ effectiveTarget: 2359, isTrainingDay: false });
+    expect(await dayOf(J(-1), sources)).toEqual({ effectiveTarget: 2659, isTrainingDay: true });
   });
 
-  it('CIBLE-01 C2 — séance planifiée aujourd’hui, pas encore faite : aujourd’hui sans forfait', async () => {
+  it('CIBLE-01 C2 — séance planifiée aujourd’hui, pas encore faite : le forfait anticipé (spec §6 C2, D1)', async () => {
     const sources = { dailyKcal: [meal(TODAY)], plannedSessions: [{ date: TODAY }] };
-    expect(await dayOf(TODAY, sources)).toEqual({ effectiveTarget: 2359, isTrainingDay: false });
+    expect(await dayOf(TODAY, sources)).toEqual({ effectiveTarget: 2659, isTrainingDay: true });
   });
 
-  it('CIBLE-01 C2 — séance `done` sans séance enregistrée, aujourd’hui : sans forfait', async () => {
+  it('CIBLE-01 C2 — séance `done` sans séance enregistrée, aujourd’hui : le forfait (spec §6 C2, C5)', async () => {
     const sources = { dailyKcal: [meal(TODAY)], plannedSessions: [{ date: TODAY, status: 'done' as const }] };
-    expect((await dayOf(TODAY, sources))!.effectiveTarget).toBe(2359);
+    expect((await dayOf(TODAY, sources))!.effectiveTarget).toBe(2659);
   });
 
-  it('CIBLE-01 C3 — repas daté de demain, séance planifiée demain : sans forfait', async () => {
+  it('CIBLE-01 C3 — repas daté de demain, séance planifiée demain : le forfait anticipé (spec §6 C3)', async () => {
     const sources = { dailyKcal: [meal(J(1))], plannedSessions: [{ date: J(1) }] };
-    expect(await dayOf(J(1), sources)).toEqual({ effectiveTarget: 2359, isTrainingDay: false });
+    expect(await dayOf(J(1), sources)).toEqual({ effectiveTarget: 2659, isTrainingDay: true });
   });
 
   it('séance sautée aujourd’hui : jamais de forfait', async () => {
@@ -217,14 +217,14 @@ describe('mode `auto`', () => {
     expect((await dayOf(J(-1), sources))!.effectiveTarget).toBe(2659);
   });
 
-  it('CIBLE-01 C1 — autre activité seule : aujourd’hui sans forfait', async () => {
+  it('CIBLE-01 C1 — autre activité seule : le forfait (spec §6 C1)', async () => {
     const sources = { nutrition: auto, dailyKcal: [meal(J(-1))], activities: [{ startedAt: atLocal(J(-1), 10) }] };
-    expect((await dayOf(J(-1), sources))!.effectiveTarget).toBe(2359);
+    expect((await dayOf(J(-1), sources))!.effectiveTarget).toBe(2659);
   });
 
-  it('CIBLE-01 C2 — séance planifiée aujourd’hui : aujourd’hui sans forfait', async () => {
+  it('CIBLE-01 C2 — séance planifiée aujourd’hui : le forfait anticipé (spec §6 C2)', async () => {
     const sources = { nutrition: auto, dailyKcal: [meal(TODAY)], plannedSessions: [{ date: TODAY }] };
-    expect((await dayOf(TODAY, sources))!.effectiveTarget).toBe(2359);
+    expect((await dayOf(TODAY, sources))!.effectiveTarget).toBe(2659);
   });
 });
 
@@ -247,19 +247,19 @@ describe('mode `activities`', () => {
     expect(await dayOf(J(-1), sources)).toEqual({ effectiveTarget: 2218, isTrainingDay: true });
   });
 
-  it('CIBLE-01 C4 — autre activité seule : la cible prend sa dépense, mais le jour reste « repos »', async () => {
+  it('CIBLE-01 C4 — autre activité seule : la cible prend sa dépense, et c’est un jour d’entraînement (spec §6 C4)', async () => {
     const sources = {
       nutrition: activities,
       dailyKcal: [meal(J(-1))],
       activities: [{ startedAt: atLocal(J(-1), 10) }],
       energyByDay: { [J(-1)]: 500 },
     };
-    expect(await dayOf(J(-1), sources)).toEqual({ effectiveTarget: 2548, isTrainingDay: false });
+    expect(await dayOf(J(-1), sources)).toEqual({ effectiveTarget: 2548, isTrainingDay: true });
   });
 
-  it('CIBLE-01 C4 — séance planifiée aujourd’hui : cible de base, jour « repos »', async () => {
+  it('CIBLE-01 C4 — séance planifiée aujourd’hui : cible de base, mais un jour d’entraînement (spec §6 C4, D5)', async () => {
     const sources = { nutrition: activities, dailyKcal: [meal(TODAY)], plannedSessions: [{ date: TODAY }] };
-    expect(await dayOf(TODAY, sources)).toEqual({ effectiveTarget: 2048, isTrainingDay: false });
+    expect(await dayOf(TODAY, sources)).toEqual({ effectiveTarget: 2048, isTrainingDay: true });
   });
 });
 
@@ -271,7 +271,7 @@ describe('adhérence et bilan (`useGoalAdherenceForRange`)', () => {
     return rest;
   };
 
-  it('CIBLE-01 C1 et C2 — un jour à autre activité seule et aujourd’hui à séance prévue, jugés sans forfait', async () => {
+  it('CIBLE-01 C1 et C2 — un jour à autre activité seule et aujourd’hui à séance prévue, jugés avec le forfait (spec §6)', async () => {
     // 2 650 kcal : au-dessus de 2 359 (+ 10 % = 2 595), dans la marge de 2 659.
     const sources = {
       dailyKcal: [meal(J(-1), 2650), meal(TODAY, 2650)],
@@ -280,13 +280,13 @@ describe('adhérence et bilan (`useGoalAdherenceForRange`)', () => {
     };
     expect(await adherenceOf(J(-7), sources)).toEqual({
       loggedDays: 2,
-      daysInTarget: 0,
-      pct: 0,
+      daysInTarget: 2,
+      pct: 100,
       marginPct: 10,
       hasTarget: true,
-      balanceKcal: 582,
-      daysAbove: 2,
-      daysBelow: 0,
+      balanceKcal: -18,
+      daysAbove: 0,
+      daysBelow: 2,
     });
   });
 
@@ -327,20 +327,20 @@ describe('APPORT-01 — les groupes (`useTrainingNutritionCross`)', () => {
     plannedSessions: [{ date: TODAY }],
   };
 
-  it('CIBLE-01 C4 — l’autre activité et la séance prévue d’aujourd’hui comptent en « repos »', async () => {
+  it('CIBLE-01 C4 — l’autre activité et la séance prévue d’aujourd’hui comptent en « séance » (spec §6 C4, D5)', async () => {
     const { energy } = await crossOf(base);
     expect(energy).toEqual({
-      trainingAvgKcal: 2600,
-      restAvgKcal: 2400,
-      deltaKcal: 200,
-      trainingDays: 3,
-      restDays: 5,
+      trainingAvgKcal: 2760,
+      restAvgKcal: 2000,
+      deltaKcal: 760,
+      trainingDays: 5,
+      restDays: 3,
     });
   });
 
   it('CIBLE-01 C4 — mêmes groupes en mode `activities`', async () => {
     const { energy } = await crossOf({ ...base, nutrition: { trainingBonusMode: 'activities' } });
-    expect(energy?.trainingDays).toBe(3);
-    expect(energy?.restDays).toBe(5);
+    expect(energy?.trainingDays).toBe(5);
+    expect(energy?.restDays).toBe(3);
   });
 });

@@ -3,9 +3,9 @@
  * dans `useDayCalorieTarget` (Aujourd'hui, « Ta journée en énergie », Noryn) et dans
  * `useDailyCalorieTargets` (calendrier, page d'un jour passé, adhérence, bilans, APPORT-01).
  *
- * Sur le jeu de la recette (spec §14.1), dans les trois modes. Avant CIBLE-01, deux jours divergent en
- * Forfait et en Auto — l'autre activité seule (C1) et aujourd'hui à séance prévue (C2) : le filet
- * affirme cet écart tel qu'il est ; l'étape qui aligne l'historique le fait disparaître.
+ * Sur le jeu de la recette (spec §14.1), dans les trois modes. Avant CIBLE-01, deux jours divergeaient
+ * en Forfait et en Auto — l'autre activité seule (C1) et aujourd'hui à séance prévue (C2), que
+ * l'historique comptait sans forfait : le filet affirmait cet écart ; l'étape 3 l'a fait disparaître.
  */
 
 import { renderHook } from '@testing-library/react-native';
@@ -58,30 +58,12 @@ async function bothSides(mode: Mode): Promise<Map<string, { today: number | null
   return out;
 }
 
-/**
- * Les jours où l'historique diverge encore d'Aujourd'hui, et de combien (le forfait).
- * CIBLE-01 C1 (J−5, autre activité seule) et C2 (J, séance prévue) — en Forfait et en Auto.
- */
-const DIVERGING: Record<Mode, readonly string[]> = {
-  fixed: [J(-5), J(0)],
-  auto: [J(-5), J(0)],
-  activities: [],
-};
-
 describe.each(MODES)('mode `%s`', (mode) => {
-  it('les jours témoins : la même cible des deux côtés', async () => {
+  it('CIBLE-01 C1 et C2 — chaque jour noté : la même cible des deux côtés (spec R2)', async () => {
     const sides = await bothSides(mode);
+    expect(sides.size).toBe(CIBLE01_MEALS.length);
     for (const [day, { today, history }] of sides) {
-      if (DIVERGING[mode].includes(day)) continue;
       expect({ day, history }).toEqual({ day, history: today });
-    }
-  });
-
-  it('CIBLE-01 C1 et C2 — l’historique compte encore ces jours sans forfait', async () => {
-    const sides = await bothSides(mode);
-    for (const day of DIVERGING[mode]) {
-      const { today, history } = sides.get(day)!;
-      expect({ day, history }).toEqual({ day, history: (today ?? 0) - 300 });
     }
   });
 });

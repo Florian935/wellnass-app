@@ -142,7 +142,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `feature/cible01-cible-du-jour` (modifications non commitées) |
-| Commits | 1370 · `main` a **1366** commits de retard sur `dev` |
+| Commits | 1371 · `main` a **1366** commits de retard sur `dev` |
 | Specs d'US | 191 au total — 92 clôturées, 99 en cours |
 | Migrations | 115/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -153,11 +153,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `115a339`  feat(cible): CIBLE-01 étape 2 — la cible d'une plage de jours, par les compositions de NORYN-02
 - `50a4723`  test(cible): CIBLE-01 étape 1 — le filet, figé sur le code actuel
 - `aeefbf6`  docs(cible): CIBLE-01 cadrée, relue et validée (D1 à D12) — spec, plan, BACKLOG
 - `9a3ca22`  docs(noryn): NORYN-02 recettée et clôturée — §93 purgée
 - `cac23e8`  docs(prisme): PRISME-01 recettée et clôturée — §91 purgée, 8 et 18 au BACKLOG
-- `3ffe3fd`  docs(noryn): NORYN-02 en recette — jeu de données relatif à aujourd'hui, RECETTES §93, 9.18 livrée
 
 ---
 
