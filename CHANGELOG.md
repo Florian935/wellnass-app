@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 22/10/2026 — CIBLE-01, étape 4 : le planning repas sur la cible d'Aujourd'hui (`feature/cible01-cible-du-jour`)
+
+> Plan CIBLE-01, étape 4. Le planning repas ne recalcule plus la cible : chaque jour de la semaine affichée
+> prend celle d'Aujourd'hui et de Noryn. Commit précédent : `8b4fc48c`.
+
+### Modifié
+- `app/meal-plan/index.tsx` : `useCalorieTargetsForDays(weekDayKeys)` remplace `tdee`, `baseTargetFor`,
+  le forfait seul et `useWeekPlan` ; « aujourd'hui » et la semaine courante viennent de `useTodayKey`
+  (DD8) ; piliers par `resolveActivePillars` (DD12). D7-B gardée : ni muscu ni course actif → cible de
+  base, aucune pastille.
+- `MealPlanDayCard.tsx` : prop `bonusKind` ; libellé et icône de la pastille selon l'origine du bonus
+  (haltère, marche, flamme) ; même place, même style.
+- `meal-plan.ts` (shared) : `dayTargetKcal` **retiré** (DD5) ; `mealPlanDayTarget` (la cible affichée et
+  la pastille, une règle écrite une fois) et le type `MealPlanBonusKind`.
+- i18n FR + EN : `mealPlan.day.trainingDone`, `runBonus`, `energyBonus`, `energyLater`.
+- **Chiffres qui bougent (spec §6, §14.2)** : C7 (socle hors sport en « Selon ce que tu fais »), C8 (plus de
+  forfait dans ce mode ; dépense réelle pour les jours passés), C9 (séance sautée : plus de forfait), C10
+  (séance passée non faite : plus de forfait), C11 (fait sans planification : forfait ou dépense), C12
+  (`auto` : dépense de la course), C13 (sans ligne de réglages : piliers par défaut), C14 (libellés).
+
+### Technique / Notes
+- **Filet** : seuls les tests étiquetés C7 à C13 de `meal-plan-targets.test.tsx` ont changé d'attendu
+  (le tableau « après » du §14.2, mode par mode, avec l'origine de chaque pastille) ; les 7 tests « objectif
+  du jour » de `meal-plan-screen.test.tsx` passent **sans modification** (seul son en-tête est mis à jour) ;
+  le test « sans pilier d'entraînement » reste vert tel quel (D7-B).
+- Ajoutés : `mealPlanDayTarget` en Vitest (remplace les tests de `dayTargetKcal`) ;
+  `meal-plan-day-card-bonus.test.tsx` (libellés et icônes, vraies traductions FR et EN) ; parité
+  « planning = `useDayCalorieTarget` » sur J−6 → J+5, trois modes (`day-target-parity.test.tsx`).
+- Sans cible calculable, la pastille ne s'affiche plus (un bonus ne s'ajoute à rien) ; avant, elle
+  pouvait s'afficher sous une carte sans objectif.
+
 ## 22/10/2026 — CIBLE-01, étape 3 : l'historique sur la cible d'Aujourd'hui (`feature/cible01-cible-du-jour`)
 
 > Plan CIBLE-01, étape 3. `useDailyCalorieTargets` ne calcule plus rien : il lit les jours notés et

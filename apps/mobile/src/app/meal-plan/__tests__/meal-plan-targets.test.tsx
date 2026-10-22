@@ -2,9 +2,9 @@
  * US CIBLE-01 — le **filet** de la cible du jour dans le planning repas, sur le jeu de la recette
  * (spec §14.1), dans les trois modes.
  *
- * Écrit et vert **avant** que le planning ne passe par la composition de NORYN-02 : il fige ce que
- * l'écran affiche aujourd'hui (la colonne « Avant » du §14.2). Les tests étiquetés `CIBLE-01 C<n>`
- * portent un cas que la spec annonce comme changé : seul leur attendu bouge, à l'étape du planning.
+ * Écrit et vert **avant** que le planning ne passe par la composition de NORYN-02 : il figeait ce que
+ * l'écran affichait (la colonne « Avant » du §14.2). Les tests étiquetés `CIBLE-01 C<n>` portaient un cas
+ * que la spec annonce comme changé : seul leur attendu a bougé, à l'étape 4 (le planning).
  *
  * Les sources sont celles du harnais (`day-target-sources.ts`) : un scénario décrit une fois nourrit
  * aussi bien la lecture d'aujourd'hui (`useWeekPlan`) que celles de demain (séances, courses,
@@ -146,26 +146,44 @@ async function cards(sources: Sources): Promise<Map<string, Card>> {
 const DAYS = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5] as const;
 
 /**
- * Ce que le planning affiche, jour par jour, dans chaque mode : [cible, bonus].
+ * Ce que le planning affiche, jour par jour, dans chaque mode : [cible, bonus, origine du bonus].
  *
- * CIBLE-01 C7 à C12 — **avant** : le planning prend le socle `tdee` quel que soit le mode, et donne le
- * forfait à toute séance planifiée du jour, sautée ou manquée comprise, jamais à ce qui a été fait.
+ * CIBLE-01 C7 à C12 (spec §6, §14.2) — **après** : la cible d'Aujourd'hui pour chaque jour. Avant, les trois
+ * modes donnaient la même colonne (socle `tdee`, forfait de toute séance planifiée du jour, sautée ou
+ * manquée comprise, rien pour ce qui avait été fait) : 2 359, 2 359, 2 359, 2 659, 2 659, 2 359, 2 659,
+ * 2 659, 2 659, 2 359, 3 059, 2 759.
  */
-const BEFORE: [number, number][] = [
-  [2359, 0], // J−6 : séance de muscu faite, sans séance planifiée
-  [2359, 0], // J−5 : autre activité seule
-  [2359, 0], // J−4 : rien
-  [2659, 300], // J−3 : séance sautée
-  [2659, 300], // J−2 : séance manquée
-  [2359, 0], // J−1 : course faite
-  [2659, 300], // J   : séance prévue, pas faite
-  [2659, 300], // J+1 : séance prévue
-  [2659, 300], // J+2 : séance sautée
-  [2359, 0], // J+3 : rien
-  [3059, 300], // J+4 : vie réelle, séance prévue
-  [2759, 0], // J+5 : vie réelle
+type Row = [number, number, string];
+const FIXED: Row[] = [
+  [2659, 300, 'done'], // J−6 : séance de muscu faite, sans séance planifiée (C11)
+  [2659, 300, 'done'], // J−5 : autre activité seule (C11)
+  [2359, 0, 'null'], // J−4 : rien
+  [2359, 0, 'null'], // J−3 : séance sautée (C9)
+  [2359, 0, 'null'], // J−2 : séance manquée (C10)
+  [2659, 300, 'done'], // J−1 : course faite (C11)
+  [2659, 300, 'planned'], // J   : séance prévue, pas faite
+  [2659, 300, 'planned'], // J+1 : séance prévue
+  [2359, 0, 'null'], // J+2 : séance sautée (C9)
+  [2359, 0, 'null'], // J+3 : rien
+  [3059, 300, 'planned'], // J+4 : vie réelle, séance prévue
+  [2759, 0, 'null'], // J+5 : vie réelle
 ];
-const EXPECTED: Record<Mode, [number, number][]> = { fixed: BEFORE, auto: BEFORE, activities: BEFORE };
+const AUTO: Row[] = FIXED.map((row, i) => (i === 5 ? [3016, 657, 'run'] : row)); // J−1 : la course (C12)
+const ACTIVITIES: Row[] = [
+  [2218, 170, 'energy'], // J−6 (C7, C8)
+  [2548, 500, 'energy'], // J−5
+  [2048, 0, 'null'], // J−4
+  [2048, 0, 'null'], // J−3
+  [2048, 0, 'null'], // J−2
+  [2608, 560, 'energy'], // J−1
+  [2048, 0, 'energyLater'], // J   : séance prévue, rien de dépensé (D3)
+  [2048, 0, 'energyLater'], // J+1
+  [2048, 0, 'null'], // J+2 : sautée
+  [2048, 0, 'null'], // J+3
+  [2448, 0, 'energyLater'], // J+4 : vie réelle (socle hors sport au maintien), séance prévue
+  [2448, 0, 'null'], // J+5
+];
+const EXPECTED: Record<Mode, Row[]> = { fixed: FIXED, auto: AUTO, activities: ACTIVITIES };
 
 beforeEach(() => jest.useFakeTimers(FROZEN_CLOCK));
 afterEach(() => jest.useRealTimers());
@@ -175,7 +193,7 @@ describe.each(MODES)('mode `%s`', (mode) => {
     const read = await cards(cible01Sources(mode));
     const got = DAYS.map((n) => {
       const card = read.get(J(n))!;
-      return [card.cible, card.bonus];
+      return [card.cible, card.bonus, card.kind];
     });
     expect(got).toEqual(EXPECTED[mode]);
   });
@@ -188,9 +206,9 @@ describe('les piliers', () => {
     expect(read.get(J(1))).toMatchObject({ cible: 2359, bonus: 0 });
   });
 
-  it('CIBLE-01 C13 — aucune ligne de réglages : aucun bonus', async () => {
+  it('CIBLE-01 C13 — aucune ligne de réglages : les piliers par défaut (tous), donc le forfait (DD12)', async () => {
     const read = await cards(cible01Sources('fixed', { activePillars: null }));
-    expect(read.get(J(1))).toMatchObject({ cible: 2359, bonus: 0 });
+    expect(read.get(J(1))).toMatchObject({ cible: 2659, bonus: 300 });
   });
 });
 

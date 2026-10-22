@@ -3650,6 +3650,10 @@
     "day": {
       "plannedOnly": "{{kcal}} kcal planned",
       "trainingBonus": "Workout planned — target +{{kcal}} kcal",
+      "trainingDone": "Training day — target +{{kcal}} kcal",
+      "runBonus": "Run done — target +{{kcal}} kcal",
+      "energyBonus": "Energy used — target +{{kcal}} kcal",
+      "energyLater": "Workout planned — its energy use will be added",
       "otherMeal": "Other",
       "add": "Add",
       "addToMealA11y": "Add to {{meal}}, {{day}}"

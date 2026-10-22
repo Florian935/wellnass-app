@@ -5,18 +5,13 @@ import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
   addDays,
-  computeAge,
-  dayTargetKcal,
   DEFAULT_MEAL_KEYS,
-  effectiveNutritionObjective,
-  isRealLifeDay,
   localDateFromDayKey,
   localDayKey,
-  objectiveFromGoal,
+  mealPlanDayTarget,
+  resolveActivePillars,
   resolveMealConfig,
   startOfWeek,
-  targetCalories,
-  tdee,
   weekDayKeys,
   type PlannedMealEntry,
 } from '@wellness/shared';
@@ -25,11 +20,9 @@ import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { MealPlanDayCard } from '@/components/nutrition/MealPlanDayCard';
 import { MealPlanWeekGrid } from '@/components/nutrition/MealPlanWeekGrid';
+import { useCalorieTargetsForDays } from '@/data/repositories/day-targets-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
-import { useProfile } from '@/data/repositories/profile-repository';
-import { useRealLifePeriods } from '@/data/repositories/real-life-repository';
 import { useSettings } from '@/data/repositories/settings-repository';
-import { useWeekPlan } from '@/data/repositories/planned-session-repository';
 import { useRecipes } from '@/data/repositories/recipe-repository';
 import { useFoods } from '@/data/repositories/food-repository';
 import { TextField } from '@/components/TextField';
@@ -46,6 +39,7 @@ import {
   useWeekMealPlan,
   useWeekMealPlanCount,
 } from '@/data/repositories/meal-plan-repository';
+import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -68,7 +62,11 @@ export default function MealPlanScreen() {
   const { colors } = useTheme();
   const router = useRouter();
 
-  const [weekStart, setWeekStart] = useState(() => localDayKey(startOfWeek(new Date())));
+  // « Aujourd'hui » réactif (US CIBLE-01, DD8) : `new Date()` lu au rendu restait sur la veille si
+  // l'écran passait minuit ouvert, et React Compiler peut figer une horloge lue dans le corps.
+  const todayKey = useTodayKey();
+  const currentWeekStart = localDayKey(startOfWeek(localDateFromDayKey(todayKey)));
+  const [weekStart, setWeekStart] = useState(currentWeekStart);
   /**
    * Vue par défaut : la **grille** (US NUTRI-UX01, R7.2).
    *
@@ -81,7 +79,6 @@ export default function MealPlanScreen() {
   const [busy, setBusy] = useState(false);
 
   const { entries } = useWeekMealPlan(weekStart);
-  const { items: sessions } = useWeekPlan(weekStart);
   // Semaine source de la duplication : on ne propose l'action que si elle a du contenu.
   const previousWeekStart = useMemo(
     () => localDayKey(addDays(localDateFromDayKey(weekStart), -7)),
@@ -89,11 +86,8 @@ export default function MealPlanScreen() {
   );
   const { count: previousWeekCount } = useWeekMealPlanCount(previousWeekStart);
   const { nutritionProfile } = useNutritionProfile();
-  const { profile } = useProfile();
-  const { periods: realLifePeriods } = useRealLifePeriods();
   const { settings } = useSettings();
 
-  const todayKey = localDayKey(new Date());
   const dayKeys = useMemo(() => weekDayKeys(weekStart), [weekStart]);
 
   // Repas configurés (clé + libellé d'affichage) — même résolution que le journal, pour que le
@@ -114,44 +108,20 @@ export default function MealPlanScreen() {
     return labels;
   }, [mealConfig, t]);
 
-  // Objectif calorique de base — même chaîne de calcul que le hub nutrition et `useDayCalorieTarget`.
-  const objective = nutritionProfile?.objective ?? objectiveFromGoal(profile?.mainGoal ?? null);
-  const age = profile?.birthDate ? computeAge(new Date(profile.birthDate)) : undefined;
-  const tdeeValue = tdee({
-    sex: profile?.sex ?? 'unspecified',
-    weightKg: profile?.weightKg ?? undefined,
-    heightCm: profile?.heightCm ?? undefined,
-    age,
-    activityLevel: nutritionProfile?.activityLevel ?? 'moderate',
-  });
-  // US VIE-01 (R4) : objectif au maintien pendant une période « vie réelle », **jour par jour** — la
-  // semaine affichée peut mêler jours en période et jours normaux, et une cible unique aurait aligné
-  // toute la semaine sur le premier cas rencontré.
-  const baseTargetFor = (dayKey: string): number | null =>
-    tdeeValue != null && objective != null
-      ? targetCalories(
-          tdeeValue,
-          effectiveNutritionObjective(objective, isRealLifeDay(realLifePeriods, dayKey)),
-          nutritionProfile?.manualCalories ?? null,
-        )
-      : null;
-
   /**
-   * Bonus des jours d'entraînement : **forfait fixe uniquement** ici, jamais le mode `auto` de
-   * RN-02. Ce mode dérive le bonus de la dépense d'une course **déjà enregistrée** — une notion
-   * qui n'existe pas pour un jour futur, qui est tout l'objet d'un planning.
+   * La cible de chaque jour de la semaine — **celle d'Aujourd'hui et de Noryn** (US CIBLE-01) : les mêmes
+   * compositions que `useDayCalorieTarget`, jour par jour (vie réelle, surcharge, socle selon le mode,
+   * forfait, dépense des courses en `auto`, dépense réelle en « Selon ce que tu fais »). Les jours passés
+   * de la semaine prennent ce qui a été fait ; aujourd'hui et après, aussi la séance prévue (`planned` /
+   * `done`, jamais une séance sautée). Un jour futur en « Selon ce que tu fais » n'anticipe aucune dépense
+   * (D3) : sa pastille dit qu'elle viendra.
    */
-  const trainingBonus = nutritionProfile?.trainingDayBonus ?? 0;
+  const { byDay } = useCalorieTargetsForDays(dayKeys);
 
-  // Décision H : sans pilier d'entraînement actif, le planning repas ne parle pas d'entraînement.
-  const activePillars = settings?.activePillars ?? [];
-  const trainingPillarsActive =
-    activePillars.includes('strength') || activePillars.includes('running');
-
-  const trainingDays = useMemo(
-    () => new Set(sessions.map((s) => s.scheduledDate)),
-    [sessions],
-  );
+  // Décision H (REPAS-01 R5, CIBLE-01 D7-B) : sans pilier d'entraînement actif, le planning repas ne
+  // parle pas d'entraînement — la cible de base, aucune pastille.
+  const activePillars = resolveActivePillars(settings?.activePillars);
+  const trainingPillarsActive = activePillars.includes('strength') || activePillars.includes('running');
 
   const entriesByDay = useMemo(() => {
     const map = new Map<string, PlannedMealEntry[]>();
@@ -176,7 +146,6 @@ export default function MealPlanScreen() {
     });
   }, [weekStart, t]);
 
-  const currentWeekStart = localDayKey(startOfWeek(new Date()));
   const weekSubtitle =
     weekStart === currentWeekStart
       ? t('mealPlan.week.current')
@@ -267,9 +236,12 @@ export default function MealPlanScreen() {
 
         {view === 'list' ? dayKeys.map((dayKey, index) => {
           const dayEntries = entriesByDay.get(dayKey) ?? [];
-          const hasTrainingSession = trainingDays.has(dayKey);
-          const appliedBonus =
-            hasTrainingSession && trainingPillarsActive ? Math.max(0, trainingBonus) : 0;
+          const { targetKcal, badge } = mealPlanDayTarget({
+            dayKey,
+            todayKey,
+            day: byDay.get(dayKey),
+            trainingPillarsActive,
+          });
 
           return (
             <MealPlanDayCard
@@ -280,13 +252,9 @@ export default function MealPlanScreen() {
               entries={dayEntries}
               mealConfig={mealConfig}
               mealLabels={mealLabels}
-              targetKcal={dayTargetKcal({
-                targetKcal: baseTargetFor(dayKey),
-                trainingBonusKcal: trainingBonus,
-                hasTrainingSession,
-                trainingPillarsActive,
-              })}
-              trainingBonusKcal={appliedBonus}
+              targetKcal={targetKcal}
+              trainingBonusKcal={badge?.kcal ?? 0}
+              bonusKind={badge?.kind ?? null}
               onAdd={(mealKey) => setAddTarget({ dayKey, mealKey })}
               onConsume={(entry) => void consumePlannedEntry(entry.id)}
               onUndoConsume={(entry) => void undoConsumedEntry(entry.id)}

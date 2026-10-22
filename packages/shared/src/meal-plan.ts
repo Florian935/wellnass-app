@@ -10,7 +10,8 @@
  */
 
 import { addDays, localDateFromDayKey, localDayKey } from './date';
-import { OTHER_MEAL_KEY, trainingDayCalories, type MealConfigItem } from './nutrition';
+import type { RangeDayTarget } from './day-target-range';
+import { OTHER_MEAL_KEY, type MealConfigItem } from './nutrition';
 
 /** Ce qu'on peut déposer dans une case du planning (décision D1). */
 /**
@@ -107,26 +108,65 @@ export function sumPlannedDay(entries: readonly PlannedMealEntry[]): PlannedDayT
 }
 
 /**
- * Objectif calorique du jour affiché face au total planifié (règle R5).
- *
- * Rend **`null`** quand aucune cible n'est connue (profil nutritionnel absent) : l'écran masque
- * alors la ligne d'objectif. Afficher « / 0 kcal » ferait croire à un dépassement permanent.
- *
- * Le bonus des jours d'entraînement n'est ajouté que si un pilier d'entraînement est réellement
- * actif — intégration opt-in, décision H : sans muscu ni course, le planning repas ne parle pas
- * d'entraînement.
+ * D'où vient le bonus d'un jour du planning — ce que dit sa pastille (US CIBLE-01, DD7) :
+ * - `planned` : le forfait d'une séance **seulement prévue** (« Séance prévue — objectif +X kcal ») ;
+ * - `done` : le forfait d'un jour d'entraînement **fait** (séance, course, autre activité) ;
+ * - `run` : la dépense d'une course terminée (mode `auto`, RN-02) ;
+ * - `energy` : la dépense réelle retenue du jour (mode « Selon ce que tu fais », DEPENSE-00) ;
+ * - `energyLater` : mode « Selon ce que tu fais », une séance prévue aujourd'hui ou après, rien de dépensé
+ *   encore — sa dépense s'ajoutera (D3).
  */
-export function dayTargetKcal(input: {
-  targetKcal: number | null;
-  trainingBonusKcal: number;
-  hasTrainingSession: boolean;
+export type MealPlanBonusKind = 'planned' | 'done' | 'run' | 'energy' | 'energyLater';
+export type MealPlanBonusBadge = { kind: MealPlanBonusKind; kcal: number };
+
+/**
+ * Ce que la carte d'un jour du planning affiche face au total planifié : la cible du jour (règle R5) et la
+ * pastille de son bonus.
+ *
+ * US CIBLE-01 — la cible est celle d'Aujourd'hui et de Noryn, pour ce jour (`RangeDayTarget`, composée par
+ * `composeCalorieTargetsForDays`) : socle hors sport et dépense réelle en mode « Selon ce que tu fais »,
+ * dépense de la course en mode `auto`, forfait des jours d'entraînement — faits, ou prévus aujourd'hui et
+ * après. Plus de calcul propre au planning : il recopiait la formule, avec le socle `tdee` quel que soit le
+ * mode et le forfait de toute séance planifiée, sautée ou manquée comprise.
+ *
+ * **Une seule règle reste propre au planning (D7-B)** : sans pilier d'entraînement actif (ni muscu, ni
+ * course), il ne parle pas d'entraînement (REPAS-01 R5, décision H) — la cible **de base**, aucune
+ * pastille. Éteindre un pilier ne supprime pas ses séances planifiées : sans cette règle, « Séance prévue
+ * +300 » s'afficherait pour un pilier masqué. Aujourd'hui leur donne le forfait (BACKLOG CIBLE-02).
+ *
+ * `null` sans cible calculable (profil incomplet) : l'écran masque la ligne d'objectif, et ne montre pas
+ * de pastille — un bonus ne s'ajoute à rien. Afficher « / 0 kcal » ferait croire à un dépassement.
+ */
+export function mealPlanDayTarget(input: {
+  dayKey: string;
+  todayKey: string;
+  day: Pick<RangeDayTarget, 'target' | 'effectiveTarget' | 'trainingBonus' | 'bonusSource' | 'socleKind' | 'trainedBy'> | null | undefined;
   trainingPillarsActive: boolean;
-}): number | null {
-  const { targetKcal, trainingBonusKcal, hasTrainingSession, trainingPillarsActive } = input;
-  if (targetKcal === null) return null;
-  if (!hasTrainingSession || !trainingPillarsActive) return Math.round(targetKcal);
-  // `trainingDayCalories` borne déjà le bonus à >= 0 (US RN-02).
-  return trainingDayCalories(targetKcal, trainingBonusKcal);
+}): { targetKcal: number | null; badge: MealPlanBonusBadge | null } {
+  const { dayKey, todayKey, day, trainingPillarsActive } = input;
+  if (!day || day.effectiveTarget == null) return { targetKcal: null, badge: null };
+  if (!trainingPillarsActive) return { targetKcal: day.target, badge: null };
+  return { targetKcal: day.effectiveTarget, badge: bonusBadge(day, dayKey >= todayKey) };
+}
+
+function bonusBadge(
+  day: Pick<RangeDayTarget, 'trainingBonus' | 'bonusSource' | 'socleKind' | 'trainedBy'>,
+  todayOrLater: boolean,
+): MealPlanBonusBadge | null {
+  switch (day.bonusSource) {
+    case 'forfait':
+      return { kind: day.trainedBy === 'done' ? 'done' : 'planned', kcal: day.trainingBonus };
+    case 'run':
+      return { kind: 'run', kcal: day.trainingBonus };
+    case 'activities':
+      return { kind: 'energy', kcal: day.trainingBonus };
+    case 'none':
+      // Le socle hors sport est celui du mode « Selon ce que tu fais » (`nutritionSocle`) : aucune
+      // anticipation de la dépense (DEPENSE-00 §6), mais la pastille dit qu'elle viendra.
+      return day.socleKind === 'sportFree' && todayOrLater && day.trainedBy === 'planned'
+        ? { kind: 'energyLater', kcal: 0 }
+        : null;
+  }
 }
 
 /**

@@ -10,10 +10,12 @@
  *  1. **L'objectif calorique est calculé JOUR PAR JOUR.** Une semaine peut mêler des jours en
  *     période « vie réelle » (objectif au maintien, R4) et des jours normaux : une cible unique
  *     alignerait toute la semaine sur le premier cas rencontré.
- *  2. **Le bonus d'entraînement est un FORFAIT, jamais le mode `auto`.** Ce mode dérive le bonus de
- *     la dépense d'une course **déjà enregistrée** — une notion qui n'existe pas pour un jour futur,
- *     qui est tout l'objet d'un planning.
- *  3. **Sans pilier d'entraînement actif, le planning ne parle pas d'entraînement** (décision H).
+ *  2. **Un jour futur reçoit le FORFAIT d'une séance prévue, jamais une dépense estimée.** Depuis
+ *     l'US CIBLE-01, la cible de chaque jour est celle d'Aujourd'hui (compositions de NORYN-02) : un jour
+ *     passé prend ce qui a été fait (dépense d'une course en mode `auto`) ; un jour futur, aucune dépense
+ *     — elle n'existe pas encore. Le détail, mode par mode, vit dans `meal-plan-targets.test.tsx`.
+ *  3. **Sans pilier d'entraînement actif, le planning ne parle pas d'entraînement** (décision H,
+ *     CIBLE-01 D7-B).
  *  4. **Une recette est ajoutée AU PRORATA des portions** (R8) : ses macros portent la totalité du
  *     rendement. Un repas type, lui, n'a pas cette notion (décision D1).
  *  5. **Dupliquer n'est proposé que si la semaine source a du contenu.** Sans cette garde, l'appel

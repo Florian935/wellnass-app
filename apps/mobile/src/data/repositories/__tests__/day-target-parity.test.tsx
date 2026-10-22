@@ -11,6 +11,7 @@
 import { renderHook } from '@testing-library/react-native';
 
 import { useDailyCalorieTargets, useDayCalorieTarget } from '../dashboard-repository';
+import { useCalorieTargetsForDays } from '../day-targets-repository';
 import { FROZEN_CLOCK, setSources } from '@/test-utils/day-target-sources';
 import { CIBLE01_MEALS, J, MODES, cible01Sources, type Mode } from '@/test-utils/cible01-dataset';
 
@@ -64,6 +65,23 @@ describe.each(MODES)('mode `%s`', (mode) => {
     expect(sides.size).toBe(CIBLE01_MEALS.length);
     for (const [day, { today, history }] of sides) {
       expect({ day, history }).toEqual({ day, history: today });
+    }
+  });
+});
+
+/**
+ * Le planning repas lit la même cible pour **chaque** jour de la semaine, noté ou non, passé ou futur
+ * (`useCalorieTargetsForDays`, puis `mealPlanDayTarget`, qui garde la cible effective quand un pilier
+ * d'entraînement est actif) : J−6 → J+5 du jeu, trois modes.
+ */
+describe.each(MODES)('planning repas, mode `%s`', (mode) => {
+  it('chaque jour de J−6 à J+5 : la cible d’Aujourd’hui', async () => {
+    setSources(cible01Sources(mode));
+    const days = [-6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5].map(J);
+    const { result: plan } = await renderHook(() => useCalorieTargetsForDays(days));
+    for (const day of days) {
+      const { result } = await renderHook(() => useDayCalorieTarget(day));
+      expect({ day, plan: plan.current.byDay.get(day)!.effectiveTarget }).toEqual({ day, plan: result.current.effectiveTarget });
     }
   });
 });

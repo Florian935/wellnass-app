@@ -5,10 +5,30 @@ import {
   groupEntriesByMeal,
   sumPlannedDay,
   type MealConfigItem,
+  type MealPlanBonusKind,
   type PlannedMealEntry,
 } from '@wellness/shared';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+
+/**
+ * Le libellé et l'icône de la pastille, selon l'origine du bonus (US CIBLE-01, DD7). « Séance prévue »
+ * ne vaut que pour une séance seulement prévue ; un jour passé dit ce qui a été fait.
+ */
+const BONUS_LABELS: Record<MealPlanBonusKind, string> = {
+  planned: 'mealPlan.day.trainingBonus',
+  done: 'mealPlan.day.trainingDone',
+  run: 'mealPlan.day.runBonus',
+  energy: 'mealPlan.day.energyBonus',
+  energyLater: 'mealPlan.day.energyLater',
+};
+const BONUS_ICONS: Record<MealPlanBonusKind, keyof typeof Ionicons.glyphMap> = {
+  planned: 'barbell-outline',
+  done: 'barbell-outline',
+  run: 'walk-outline',
+  energy: 'flame-outline',
+  energyLater: 'flame-outline',
+};
 
 type MealPlanDayCardProps = {
   dayKey: string;
@@ -23,6 +43,11 @@ type MealPlanDayCardProps = {
   targetKcal: number | null;
   /** Bonus appliqué ce jour-là (0 si aucun) — affiché pour que la majoration soit explicite. */
   trainingBonusKcal: number;
+  /**
+   * D'où vient le bonus (US CIBLE-01) : il donne le libellé et l'icône de la pastille. Absent : un bonus
+   * positif est le forfait d'une séance prévue, comme avant.
+   */
+  bonusKind?: MealPlanBonusKind | null;
   onAdd: (mealKey: string) => void;
   onConsume: (entry: PlannedMealEntry) => void;
   onUndoConsume: (entry: PlannedMealEntry) => void;
@@ -48,6 +73,7 @@ export function MealPlanDayCard({
   mealLabels,
   targetKcal,
   trainingBonusKcal,
+  bonusKind,
   onAdd,
   onConsume,
   onUndoConsume,
@@ -58,6 +84,7 @@ export function MealPlanDayCard({
 
   const totals = sumPlannedDay(entries);
   const groups = groupEntriesByMeal(entries, mealConfig);
+  const kind: MealPlanBonusKind | null = bonusKind ?? (trainingBonusKcal > 0 ? 'planned' : null);
   const ratio = targetKcal && targetKcal > 0 ? Math.min(1, totals.kcal / targetKcal) : 0;
 
   return (
@@ -95,11 +122,11 @@ export function MealPlanDayCard({
         </View>
       )}
 
-      {trainingBonusKcal > 0 && (
+      {kind !== null && (
         <View style={[styles.bonus, { backgroundColor: colors.warn, borderColor: colors.warnBorder }]}>
-          <Ionicons name="barbell-outline" size={14} color={colors.warnText} />
+          <Ionicons name={BONUS_ICONS[kind]} size={14} color={colors.warnText} />
           <Text style={[styles.bonusText, { color: colors.warnText }]}>
-            {t('mealPlan.day.trainingBonus', { kcal: trainingBonusKcal })}
+            {t(BONUS_LABELS[kind], { kcal: trainingBonusKcal })}
           </Text>
         </View>
       )}

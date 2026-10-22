@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import type { RangeDayTarget } from './day-target-range';
 import {
-  dayTargetKcal,
   groupEntriesByMeal,
+  mealPlanDayTarget,
   portionFactor,
   sumPlannedDay,
   weekDayKeys,
@@ -86,63 +87,67 @@ describe('sumPlannedDay', () => {
   });
 });
 
-describe('dayTargetKcal (R5)', () => {
-  it('rend null sans profil nutritionnel — jamais 0', () => {
+/** Un jour composé (`composeCalorieTargetsForDays`) — seuls les champs lus par le planning. */
+function day(over: Partial<RangeDayTarget> = {}): RangeDayTarget {
+  return {
+    socle: 2759,
+    socleKind: 'tdee',
+    target: 2359,
+    effectiveTarget: 2359,
+    trainingBonus: 0,
+    bonusSource: 'none',
+    isTrainingDay: false,
+    trainedThatDay: false,
+    trainedBy: null,
+    ...over,
+  };
+}
+const TODAY = '2026-10-08';
+const show = (d: RangeDayTarget | null, dayKey = TODAY, trainingPillarsActive = true) =>
+  mealPlanDayTarget({ dayKey, todayKey: TODAY, day: d, trainingPillarsActive });
+
+describe('mealPlanDayTarget (R5, US CIBLE-01)', () => {
+  it('rend null sans cible calculable — jamais 0, et aucune pastille', () => {
     // Afficher « / 0 kcal » ferait croire à un objectif atteint en permanence.
-    expect(
-      dayTargetKcal({
-        targetKcal: null,
-        trainingBonusKcal: 300,
-        hasTrainingSession: true,
-        trainingPillarsActive: true,
-      }),
-    ).toBeNull();
+    expect(show(null)).toEqual({ targetKcal: null, badge: null });
+    expect(show(day({ target: null, effectiveTarget: null, trainingBonus: 300, bonusSource: 'forfait', trainedBy: 'planned' }))).toEqual({
+      targetKcal: null,
+      badge: null,
+    });
   });
 
-  it('rend la cible nue un jour sans séance', () => {
-    expect(
-      dayTargetKcal({
-        targetKcal: 2350,
-        trainingBonusKcal: 300,
-        hasTrainingSession: false,
-        trainingPillarsActive: true,
-      }),
-    ).toBe(2350);
+  it('un jour sans bonus : la cible nue, sans pastille', () => {
+    expect(show(day())).toEqual({ targetKcal: 2359, badge: null });
   });
 
-  it('ajoute le bonus un jour de séance', () => {
-    expect(
-      dayTargetKcal({
-        targetKcal: 2350,
-        trainingBonusKcal: 300,
-        hasTrainingSession: true,
-        trainingPillarsActive: true,
-      }),
-    ).toBe(2650);
+  it('le forfait d’une séance seulement prévue, puis d’un jour d’entraînement fait', () => {
+    const planned = day({ effectiveTarget: 2659, trainingBonus: 300, bonusSource: 'forfait', trainedThatDay: true, trainedBy: 'planned' });
+    expect(show(planned)).toEqual({ targetKcal: 2659, badge: { kind: 'planned', kcal: 300 } });
+    expect(show({ ...planned, trainedBy: 'done' })).toEqual({ targetKcal: 2659, badge: { kind: 'done', kcal: 300 } });
   });
 
-  it("n'ajoute aucun bonus si les piliers d'entraînement sont inactifs (décision H)", () => {
-    // Intégration opt-in : sans muscu ni course activée, le planning repas ne parle pas
-    // d'entraînement du tout.
+  it('la dépense d’une course (mode `auto`) et la dépense réelle (« Selon ce que tu fais »)', () => {
+    expect(show(day({ effectiveTarget: 3016, trainingBonus: 657, bonusSource: 'run', trainedBy: 'done' })).badge).toEqual({ kind: 'run', kcal: 657 });
     expect(
-      dayTargetKcal({
-        targetKcal: 2350,
-        trainingBonusKcal: 300,
-        hasTrainingSession: true,
-        trainingPillarsActive: false,
-      }),
-    ).toBe(2350);
+      show(day({ socleKind: 'sportFree', target: 2048, effectiveTarget: 2548, trainingBonus: 500, bonusSource: 'activities', trainedBy: 'done' })).badge,
+    ).toEqual({ kind: 'energy', kcal: 500 });
   });
 
-  it('ignore un bonus négatif', () => {
-    expect(
-      dayTargetKcal({
-        targetKcal: 2350,
-        trainingBonusKcal: -500,
-        hasTrainingSession: true,
-        trainingPillarsActive: true,
-      }),
-    ).toBe(2350);
+  it('« Selon ce que tu fais », séance prévue aujourd’hui ou après, rien de dépensé : « sa dépense s’ajoutera »', () => {
+    const later = day({ socleKind: 'sportFree', target: 2048, effectiveTarget: 2048, trainedThatDay: true, trainedBy: 'planned' });
+    expect(show(later)).toEqual({ targetKcal: 2048, badge: { kind: 'energyLater', kcal: 0 } });
+    expect(show(later, '2026-10-09').badge).toEqual({ kind: 'energyLater', kcal: 0 });
+    // Un jour passé n'est jamais anticipé ; une séance faite sans dépense estimée ne promet rien ; hors de
+    // ce mode, pas de pastille sans bonus.
+    expect(show(later, '2026-10-07').badge).toBeNull();
+    expect(show({ ...later, trainedBy: 'done' }).badge).toBeNull();
+    expect(show({ ...later, socleKind: 'tdee' }).badge).toBeNull();
+  });
+
+  it("sans pilier d'entraînement actif : la cible de base, aucune pastille (décision H, D7-B)", () => {
+    // Intégration opt-in : sans muscu ni course activée, le planning repas ne parle pas d'entraînement.
+    const planned = day({ effectiveTarget: 2659, trainingBonus: 300, bonusSource: 'forfait', trainedThatDay: true, trainedBy: 'planned' });
+    expect(show(planned, TODAY, false)).toEqual({ targetKcal: 2359, badge: null });
   });
 });
 
