@@ -10,6 +10,36 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — CARDIO-02 cadrée : les quatre portes vers l'allure de référence (`feature/cardio02-allure-reference`)
+
+> `/us` jusqu'à `etape: validation` : spec, plan et toile, en attente de la validation de Florian ou
+> Damien. **Aucun code applicatif.** Session parallèle du 23/10/2026 (worktree `cardio-02`).
+> Commit précédent : `d604dec2` (CIBLE-01).
+
+### Ajouté
+- Spec [cardio02-allure-reference.md](docs/specs/functional/us/cardio02-allure-reference.md) : quatre portes
+  (chrono de course, test de 12 minutes guidé, allure connue, « je ne sais pas encore ») sur un écran
+  `/running-pace`, aperçu des allures avant de retenir, accueil du pilier en trois questions
+  (`/running-welcome`), profil coureur sans « Retour » en double (F39), huit décisions D1-D8 à valider.
+  Relue par un agent de revue : quinze constats intégrés, dont deux bloquants (mesure du test sur la trace
+  filtrée, sans auto-pause ; accueil réservé à un appareil en ligne et synchronisé, sans quoi un second
+  téléphone créerait une seconde ligne de profil et bloquerait sa synchro).
+- Plan [cardio02-allure-reference.md](docs/plans/cardio02-allure-reference.md) : sept étapes TDD, aucune
+  migration, aucune sync rule, aucune dépendance native.
+- Maquette [design/cardio02-allure-reference/](design/cardio02-allure-reference/) : prototype jouable et
+  17 planches (toile https://claude.ai/artifact/JR2N3eLrm1HJsJzn3DXWGm).
+
+### Modifié
+- Roadmap : ligne **5.45** (⬜, hors cadrage), renvoi en **5.40** (R2b, R2c), Récapitulatif 282 → 283 au
+  total, 2 → 3 à faire, entrée au journal.
+- BACKLOG : CARDIO-02 retiré (entré au pipeline).
+- ETAT régénéré.
+
+### Technique / Notes
+- **Défaut latent trouvé au cadrage, non corrigé ici** : `detectAndStoreRunRecords` écrase l'allure de
+  référence à chaque record 5 km inséré ou battu, même plus lent qu'une allure donnée (et le même chemin
+  passe par `backfillRunningRecords`). Correction prévue au plan (étape 2, test vu rouge d'abord).
+
 ## 23/10/2026 — Dev direct : plus de spec, plan ni maquette à valider avant le code (`chore/dev-direct` → `dev`)
 
 > Suite de la fin de la recette consignée (`25c741f9`). Commit précédent : `8df7a1b1` (ACCES-IA, autre session). Florian, le 23/10/2026 : « on

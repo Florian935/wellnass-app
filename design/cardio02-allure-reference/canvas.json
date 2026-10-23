@@ -1,0 +1,249 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-23T10:30:00Z"
+  },
+  "title": "CARDIO-02 · Allure de référence",
+  "launch": {
+    "view": "canvas"
+  },
+  "pages": [],
+  "designSystems": [],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 904,
+      "title": "Prototype jouable · accueil, portes, profil, test",
+      "is_interactive": true
+    },
+    "A1Objectif.dc.html": {
+      "x": 0,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Accueil 1/3 · Ce que tu vises",
+      "is_interactive": true
+    },
+    "A2Allure.dc.html": {
+      "x": 470,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Accueil 2/3 · À quelle vitesse cours-tu ?",
+      "is_interactive": true
+    },
+    "A3Voix.dc.html": {
+      "x": 940,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Accueil 3/3 · La voix pendant la course",
+      "is_interactive": true
+    },
+    "H1PremiersPas.dc.html": {
+      "x": 1410,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Hub · Premiers pas, « La donner » ouvre les portes",
+      "is_interactive": true
+    },
+    "P1Chrono.dc.html": {
+      "x": 0,
+      "y": 2588,
+      "w": 390,
+      "h": 844,
+      "title": "Portes · j'ai un chrono récent",
+      "is_interactive": true
+    },
+    "P2Test.dc.html": {
+      "x": 470,
+      "y": 2588,
+      "w": 390,
+      "h": 844,
+      "title": "Portes · le test de 12 minutes",
+      "is_interactive": true
+    },
+    "P3Connue.dc.html": {
+      "x": 940,
+      "y": 2588,
+      "w": 390,
+      "h": 844,
+      "title": "Portes · allure connue, avec « Avant »",
+      "is_interactive": true
+    },
+    "P4NeSaisPas.dc.html": {
+      "x": 1410,
+      "y": 2588,
+      "w": 390,
+      "h": 844,
+      "title": "Portes · je ne sais pas encore",
+      "is_interactive": true
+    },
+    "P5HorsBornes.dc.html": {
+      "x": 1880,
+      "y": 2588,
+      "w": 390,
+      "h": 844,
+      "title": "Portes · hors bornes (2:30–12:00 /km)",
+      "is_interactive": true
+    },
+    "P6Records.dc.html": {
+      "x": 2350,
+      "y": 2588,
+      "w": 390,
+      "h": 844,
+      "title": "Portes · changer, depuis un meilleur temps",
+      "is_interactive": true
+    },
+    "R1Profil.dc.html": {
+      "x": 0,
+      "y": 3852,
+      "w": 390,
+      "h": 844,
+      "title": "Profil coureur · la carte en tête",
+      "is_interactive": true
+    },
+    "T1Depart.dc.html": {
+      "x": 0,
+      "y": 5116,
+      "w": 390,
+      "h": 844,
+      "title": "Test · le départ",
+      "is_interactive": true
+    },
+    "T2EnCours.dc.html": {
+      "x": 470,
+      "y": 5116,
+      "w": 390,
+      "h": 844,
+      "title": "Test · en course, reste 4:18",
+      "is_interactive": true
+    },
+    "T3Termine.dc.html": {
+      "x": 940,
+      "y": 5116,
+      "w": 390,
+      "h": 844,
+      "title": "Test · 12:00 passées",
+      "is_interactive": true
+    },
+    "T4Resultat.dc.html": {
+      "x": 1410,
+      "y": 5116,
+      "w": 390,
+      "h": 844,
+      "title": "Test · l'arrivée propose l'allure",
+      "is_interactive": true
+    },
+    "T5Incomplet.dc.html": {
+      "x": 1880,
+      "y": 5116,
+      "w": 390,
+      "h": 844,
+      "title": "Test · arrêté avant 12:00",
+      "is_interactive": true
+    },
+    "H2Seance.dc.html": {
+      "x": 1880,
+      "y": 1324,
+      "w": 390,
+      "h": 844,
+      "title": "Hub · séance du jour sans allure cible",
+      "is_interactive": true
+    }
+  },
+  "order": [
+    "Main.dc.html",
+    "A1Objectif.dc.html",
+    "A2Allure.dc.html",
+    "A3Voix.dc.html",
+    "H1PremiersPas.dc.html",
+    "H2Seance.dc.html",
+    "P1Chrono.dc.html",
+    "P2Test.dc.html",
+    "P3Connue.dc.html",
+    "P4NeSaisPas.dc.html",
+    "P5HorsBornes.dc.html",
+    "P6Records.dc.html",
+    "R1Profil.dc.html",
+    "T1Depart.dc.html",
+    "T2EnCours.dc.html",
+    "T3Termine.dc.html",
+    "T4Resultat.dc.html",
+    "T5Incomplet.dc.html"
+  ],
+  "notes": {
+    "s-main": {
+      "x": 470,
+      "y": 0,
+      "w": 380,
+      "fill": "orange",
+      "size": "m",
+      "text": "Prototype jouable de CARDIO-02 (spec et plan du 23/10/2026, à valider).\n\nLa bande SIMULER change la situation : Neuf (l'accueil s'ouvre), Premiers pas et Séance (le hub sans allure de référence), Profil (avec une allure tirée d'un record), Test (le test de 12 minutes). Pendant le test, la bande règle le chrono : 7:42, 9:40, 11:20, 12:40 ; Pause et Terminer y sont actifs.\n\nLes chiffres sont ceux du code : Riegel 1,06, bandes de sessionTargetPace. Un 10 km en 52:30 donne 5:02 /km ; un test de 2 400 m, 5:14 /km."
+    },
+    "t-accueil": {
+      "kind": "title1",
+      "x": 0,
+      "y": 1064,
+      "text": "L'accueil du pilier, trois questions",
+      "maxW": 2270
+    },
+    "s-accueil": {
+      "x": 2350,
+      "y": 1324,
+      "w": 380,
+      "fill": "yellow",
+      "size": "m",
+      "text": "S'ouvre UNE fois, à l'ouverture de l'onglet Course, pour un compte sans profil coureur : en ligne, après une synchro de ce lancement, hors course en cours. Le profil vide est écrit à l'ouverture : c'est le marqueur, sans migration (un second téléphone hors ligne n'ouvre rien : il créerait une seconde ligne et bloquerait sa synchro).\n\nChaque « Continuer » écrit sa page ; « Plus tard » et « Passer » n'écrivent rien. Le niveau n'est pas demandé : il n'est lu nulle part.\n\n« La donner » ouvre les portes depuis la carte Premiers pas ET depuis la séance du jour quand elle n'a pas d'allure cible."
+    },
+    "t-portes": {
+      "kind": "title1",
+      "x": 0,
+      "y": 2328,
+      "text": "Les quatre portes vers l'allure de référence",
+      "maxW": 2740
+    },
+    "s-portes": {
+      "x": 2820,
+      "y": 2588,
+      "w": 380,
+      "fill": "yellow",
+      "size": "m",
+      "text": "Rien n'est écrit avant « Retenir cette allure » (le champ actuel écrit à chaque frappe), et la valeur est arrondie à la seconde.\n\nL'aperçu montre l'allure, l'équivalent 5 km et les quatre allures d'entraînement AVANT de valider ; « Avant : 5:20 » quand on en change.\n\nBornes uniques 2:30–12:00 /km, celles de parsePaceToSPerKm, appliquées à la valeur brute. L'exemple du temps suit la distance (1:45:00 pour un semi).\n\n« Je ne sais pas encore » n'existe que sans allure. « Le faire maintenant » n'existe que sur cet écran, pas dans l'accueil."
+    },
+    "t-profil": {
+      "kind": "title1",
+      "x": 0,
+      "y": 3592,
+      "text": "Le profil coureur",
+      "maxW": 1330
+    },
+    "s-profil": {
+      "x": 470,
+      "y": 3852,
+      "w": 380,
+      "fill": "yellow",
+      "size": "m",
+      "text": "La carte « Ton allure de référence » monte sous le guidage et remplace le champ de saisie : la valeur, sa provenance (déduite, jamais stockée : allure = record 5 km ÷ 5 → « D'après ton record » ; sinon « Donnée par toi »), les quatre allures, « Changer ».\n\nLe bouton « Retour » du pied disparaît (F39). Le reste du profil ne bouge pas."
+    },
+    "t-test": {
+      "kind": "title1",
+      "x": 0,
+      "y": 4856,
+      "text": "Le test de 12 minutes, guidé",
+      "maxW": 2270
+    },
+    "s-test": {
+      "x": 2350,
+      "y": 5116,
+      "w": 380,
+      "fill": "yellow",
+      "size": "m",
+      "text": "Une course GPS ordinaire, titrée « Test de 12 minutes », SANS auto-pause : pas de bascule sans GPS, pas de fantôme, le mode retenu n'est ni lu ni modifié.\n\nVoix et vibration à 11:00 et 12:00, même si les annonces vocales sont coupées ; écran éteint, pas d'annonce (comme toutes les annonces de course). Une pause avant 12:00 interrompt le test.\n\nÀ l'arrivée, la distance à 12:00 est mesurée sur la trace (distance filtrée des records, à t = 720 s), quel que soit le moment du Stop. Sans choix, la mesure reste proposée dans la porte du test. La course reste une course : historique, semaine, records."
+    }
+  }
+}
