@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — IDENT-01 cadrée, relue et validée (`fix/ident01-identite-pilier-ecran` → `dev`)
+
+> L'identité de pilier appartient à l'écran, pas à l'onglet : les 32 écrans empilés de Musculation et de
+> Nutrition qui héritent de la couleur du dernier onglet visité déclareront leur pilier. Cadrage seul,
+> **aucun code**. Validée par Florian le 23/10/2026 (D1 à D12 telles que proposées). Commit précédent :
+> `25c741f9` (fin de la recette consignée, autre session).
+
+### Ajouté
+- Spec `docs/specs/functional/us/ident01-identite-pilier-ecran.md` (`etape: code`) : inventaire des **66**
+  écrans empilés (23 Musculation dont 22 à corriger, 11 Nutrition dont 10, 10 Course déjà corrigés par
+  CARDIO-UX02, 15 transverses, 5 Bien-être / Labo hors périmètre, 2 spikes) avec leurs portes d'entrée ;
+  décisions D1-D12 ; critères d'acceptation prouvés par les tests et parcours d'entrée à dérouler à la
+  demande. Maquette sans objet (aucun écran ne change de forme).
+- Plan `docs/plans/ident01-identite-pilier-ecran.md` : six étapes — le hook d'abord (filet vert, puis
+  règles rouges), le garde exhaustif (32 échecs nommés), Musculation, Nutrition, commentaires et D12.
+
+### Modifié
+- BACKLOG : **IDENT-01** quitte le backlog (entrée dans le pipeline) ; constats ajoutés en P1 —
+  **IDENT-02** (identité des écrans empilés Bien-être et Labo, dont `pain.tsx` et `lab-link.tsx`),
+  **BARRE-01** (la barre d'état suit le dernier `StatusBar` monté : séance immersive et brief en thème
+  clair, onglet Labo, fiche d'un lien), **VIE-02** (la « reprise en douceur » de l'Accueil pousse vers
+  `/real-life`, route qui n'existe pas).
+- ETAT.md régénéré.
+
+### Technique / Notes
+- **« Une ligne par écran » ne suffit pas**, établi dans le code installé : le `useFocusEffect`
+  d'`expo-router` est une copie qui attend `useOptionalNavigation()` (posée par un effet, donc au rendu
+  suivant) — un écran empilé qui se déclare laisse `focusedMenu` posé **quelle que soit la porte**, d'où
+  une barre d'état claire sur fond clair en thème clair et les boucles DASH-01 qui tournent sous l'écran.
+  Déjà vrai pour les dix écrans Course. **D7** : seul un onglet pose `focusedMenu`. **D8** : un écran
+  empilé se déclare au montage (effet de mise en page) et rend en partant l'identité trouvée, via une
+  pile avec legs — juste pour `router.replace` (brief → séance → fin de séance) et pour les démontages
+  frères, que React fait de bas en haut. **D12** (hors périmètre, validée) : retrait du
+  `<StatusBar style="light" />` de `(tabs)/lab.tsx`, qui l'emporte pour toute la session.
+- **Relecture** par un agent de revue (spec §15) : §1.3 réécrit (mauvais `useFocusEffect` lu d'abord),
+  D8 refaite (lecture au rendu fausse à chaque remplacement), D12 ajoutée, portes inventées retirées
+  (« Accueil › record récent », section croisée de l'Alim), `pain.tsx` reclassé Bien-être.
+- **Alignée sur la recette à la demande** (décision du 23/10/2026) : le RECETTES §98 réservé n'est pas
+  utilisé ; l'US passera de `code` à `close` dans le commit qui livre.
+- Pas de ligne de roadmap neuve (rattachée à 3.63 et 4.46) ; aucun statut ne bouge.
+- Base mesurée dans le worktree après `npm install` (Node 24) : typecheck et lint à 0 ; tests verts —
+  admin 587, mobile **5 353** (308 suites), shared 4 118.
 ## 23/10/2026 — Fin de la recette consignée (`chore/fin-recette-consignee` → `dev`)
 
 > Décision de Florian le 23/10/2026 : « je perds trop de temps à faire les recettages ». Plus de fichier de
