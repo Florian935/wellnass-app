@@ -8,7 +8,8 @@
  *     recalcule les meilleurs temps par distance atteignable et met à jour les records
  *     battus (strictement plus rapides). **Idempotent** : rejouer ne change rien.
  *  3. **Backfill** (`backfillRunningRecords`) : rejoue la détection sur tout l'historique
- *     GPS terminé (migration / réconciliation), protégé par un verrou d'exécution.
+ *     GPS terminé (migration / réconciliation), jamais deux à la fois, et **sans toucher à
+ *     l'allure de référence** (US CARDIO-02, R19).
  *
  * Règles offline-first (voir docs/specs/technical/offline-sync.md) :
  *  - UUID généré côté client (via `insertWithSyncFields`).
@@ -27,7 +28,9 @@ import { useQuery } from '@powersync/react';
 import {
   computeRunRecords,
   decodeTrack,
+  referencePaceFromRecord5k,
   RUNNING_RECORD_DISTANCES,
+  shouldRecordUpdateReference,
   type RecordDistanceKey,
 } from '@wellness/shared';
 import { powerSync } from '@/powersync/system';
@@ -145,15 +148,23 @@ function currentUserId(): string {
  * **Idempotent** : rejouer sur la même course ne bat plus rien (comparaison stricte) et
  * retourne `[]`.
  *
- * Si le 5 km est battu, l'allure de référence du profil coureur est mise à jour
- * (`ref5kPaceSPerKm = temps_5k / 5` s/km, arrondi à l'entier) — c'est l'allure de
- * référence servant aux zones et prédictions (voir running-profile-repository).
+ * Si le 5 km est battu **à la fin de la course** (`updateReference`, vrai par défaut), l'allure de
+ * référence du profil coureur suit — mais **seulement si elle est plus rapide** que l'allure actuelle,
+ * ou s'il n'y en a pas (US CARDIO-02, R18, `shouldRecordUpdateReference`).
  *
+ * ⚠️ Avant CARDIO-02, tout record 5 km inséré ou battu **écrasait** l'allure, même plus lent : le
+ * premier footing de 5 km remplaçait l'allure qu'un coureur venait de donner (un 10 km en 52:30, soit
+ * 5:02 /km, devenait 6:30 /km), et toutes ses allures cibles ralentissaient sans un mot.
+ *
+ * @param opts.updateReference `false` pour un recalcul (`backfillRunningRecords`) : un record
+ *   réinséré après une suppression n'est pas une performance neuve (R19).
  * @returns les clés de distance dont le record a été battu (insertion ou amélioration).
  */
 export async function detectAndStoreRunRecords(
   runId: string,
+  opts: { updateReference?: boolean } = {},
 ): Promise<RecordDistanceKey[]> {
+  const updateReference = opts.updateReference ?? true;
   const run = await powerSync.getOptional<{
     source: string;
     status: string;
@@ -247,12 +258,15 @@ export async function detectAndStoreRunRecords(
     }
   }
 
-  // Record 5 km battu → met à jour l'allure de référence (s/km) du profil coureur,
-  // dérivée du temps ARRONDI retenu (cohérence avec le record stocké).
-  if (rounded5k != null) {
-    await upsertRunnerProfile({
-      ref5kPaceSPerKm: Math.round(rounded5k / 5),
-    });
+  // Record 5 km battu → l'allure de référence (s/km) suit s'il est plus rapide (R18), dérivée du
+  // temps ARRONDI retenu (cohérence avec le record stocké).
+  if (updateReference && rounded5k != null) {
+    const profile = await powerSync.getOptional<{ ref_5k_pace_s_per_km: number | null }>(
+      `SELECT ref_5k_pace_s_per_km FROM running_profiles WHERE deleted_at IS NULL LIMIT 1`,
+    );
+    if (shouldRecordUpdateReference(profile?.ref_5k_pace_s_per_km ?? null, rounded5k)) {
+      await upsertRunnerProfile({ ref5kPaceSPerKm: referencePaceFromRecord5k(rounded5k) });
+    }
   }
 
   return beaten;
@@ -263,30 +277,50 @@ export async function detectAndStoreRunRecords(
 // ---------------------------------------------------------------------------
 
 /**
- * Verrou d'exécution : empêche deux backfills concurrents (double lecture-écriture
- * entrelacée sur les mêmes records). Un second appel pendant qu'un premier tourne
- * retourne immédiatement (no-op).
+ * Le recalcul en cours, et celui qui le suivra. Deux recalculs ne tournent jamais ensemble (double
+ * lecture-écriture entrelacée sur les mêmes records).
+ *
+ * US CARDIO-02 (R19) — un appel pendant un recalcul **attend sa fin puis recalcule à son tour**.
+ * Avant, il rendait la main tout de suite : `deleteRun`, appelé pendant que « Toutes tes stats »
+ * recalculait, lisait alors un état d'avant la suppression et pouvait effacer l'allure de référence
+ * en croyant qu'il ne restait aucun 5 km.
  */
-let backfilling = false;
+let running: Promise<void> | null = null;
+let queued: Promise<void> | null = null;
+
+async function runBackfill(): Promise<void> {
+  const rows = await powerSync.getAll<{ id: string }>(
+    `SELECT id FROM runs WHERE status = 'completed' AND source != 'manual' AND deleted_at IS NULL`,
+  );
+  for (const row of rows) {
+    // Un recalcul ne touche jamais l'allure de référence (R19) : un record réinséré après une
+    // suppression n'est pas une performance neuve. `deleteRun` règle l'allure lui-même (R20).
+    await detectAndStoreRunRecords(row.id, { updateReference: false });
+  }
+}
 
 /**
- * Rejoue la détection de records sur tout l'historique GPS terminé.
+ * Rejoue la détection de records sur tout l'historique GPS terminé, **sans écrire l'allure de
+ * référence** (R19).
  *
- * **Idempotent** (repose sur `detectAndStoreRunRecords`) et protégé par un verrou
- * d'exécution (`backfilling`) pour éviter les exécutions concurrentes. Les courses
- * manuelles sont exclues côté SQL (GPS-only).
+ * **Idempotent** (repose sur `detectAndStoreRunRecords`). Les courses manuelles sont exclues côté SQL
+ * (GPS-only). Un appel pendant un recalcul en cours attend puis repasse ; les appels suivants
+ * partagent ce second passage.
  */
-export async function backfillRunningRecords(): Promise<void> {
-  if (backfilling) return;
-  backfilling = true;
-  try {
-    const rows = await powerSync.getAll<{ id: string }>(
-      `SELECT id FROM runs WHERE status = 'completed' AND source != 'manual' AND deleted_at IS NULL`,
-    );
-    for (const row of rows) {
-      await detectAndStoreRunRecords(row.id);
-    }
-  } finally {
-    backfilling = false;
+export function backfillRunningRecords(): Promise<void> {
+  if (!running) {
+    running = runBackfill().finally(() => {
+      running = null;
+    });
+    return running;
   }
+  if (!queued) {
+    queued = running
+      .catch(() => undefined)
+      .then(() => {
+        queued = null;
+        return backfillRunningRecords();
+      });
+  }
+  return queued;
 }

@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — CARDIO-02 socle : les portes calculent, et l'allure ne recule plus au premier footing (`feature/cardio02-allure-reference`)
+
+> Validée par Florian le 23/10/2026 (D1 à D8 telles que proposées) : `etape: code`. Étapes 1 et 2 du plan.
+> Commit précédent : le cadrage.
+
+### Ajouté
+- `packages/shared/src/reference-pace.ts` (42 tests) : ce que rend chaque porte (`evaluateReferenceDoor`,
+  une seule borne 2:30–12:00 /km, valeur arrondie), les quatre allures (`trainingPaceBands`), la règle
+  « record plus rapide seulement » (`shouldRecordUpdateReference`), la provenance déduite
+  (`referencePaceOrigin`), le déroulé et la mesure du test de 12 minutes (`cooperPhase`, `cooperCue`,
+  `measureCooperTest` sur la distance filtrée des records à t = 720 s), la condition d'ouverture de
+  l'accueil (`shouldOpenRunningWelcome`) et le choix de voix (`voiceChoicePatch`).
+- `stores/cooper-test-store.ts` : le marqueur du test (`secureStorage`, aucune migration), effacé au choix
+  seulement.
+
+### Corrigé
+- **Un premier record 5 km écrasait l'allure de référence donnée, même couru en footing** (défaut latent
+  trouvé au cadrage) : `detectAndStoreRunRecords` ne la remplace plus que par une allure plus rapide (R18).
+- **Le recalcul des records ne touche plus l'allure** (R19) ; un appel pendant un recalcul en cours attend
+  puis repasse, au lieu de rendre la main sur un état périmé.
+- **`deleteRun`** lit l'allure avant le recalcul : si elle venait du record supprimé, elle suit le record
+  5 km suivant, ou s'efface ; une allure donnée reste intacte, même face à un record plus rapide (R20).
+
+### Modifié
+- `units.ts` : la borne d'allure devient une constante partagée (`PLAUSIBLE_PACE_S_PER_KM`), et
+  `parsePaceText` lit une allure sans borne ; `parseNumberLoose` exportée.
+
+### Technique / Notes
+- 9 tests SQLite (`cardio02-reference-pace-sql.test.ts`) **vus rouges** sur l'ancien code (5 échecs) avant
+  le correctif. Aucune migration.
+
 ## 23/10/2026 — CARDIO-02 cadrée : les quatre portes vers l'allure de référence (`feature/cardio02-allure-reference`)
 
 > `/us` jusqu'à `etape: validation` : spec, plan et toile, en attente de la validation de Florian ou

@@ -16,8 +16,8 @@ avant de pouvoir publier.
 
 | US | Étape | Branche | Roadmap |
 |---|---|---|---|
+| **CARDIO-02** — Les quatre portes vers l'allure de référence, et l'accueil du pilier Course | `code` | `feature/cardio02-allure-reference` | [5.40, 5.45] |
 | **IDENT-01** — L'identité de pilier appartient à l'écran, pas à l'onglet — les écrans empilés de Musculation et de Nutrition déclarent leur pilier | `code` | `fix/ident01-identite-pilier-ecran` | [3.63, 4.46] |
-| **CARDIO-02** — Les quatre portes vers l'allure de référence, et l'accueil du pilier Course | `validation` | `feature/cardio02-allure-reference` | [5.40, 5.45] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
 ⏸️ **1 US en pause sur une dépendance externe** :
@@ -45,7 +45,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `HEAD` (modifications non commitées) |
-| Commits | 1386 · `main` a **1383** commits de retard sur `dev` |
+| Commits | 1387 · `main` a **1383** commits de retard sur `dev` |
 | Specs d'US | 197 au total — 194 clôturées, 3 en cours |
 | Migrations | 115/116 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -57,11 +57,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `f02b9a6`  docs(course): CARDIO-02 cadrée — les quatre portes vers l'allure de référence
 - `3deb60c`  chore(workflow): dev direct — plus de spec, plan ni maquette à valider avant le code
 - `8df7a1b`  feat(ia): ACCES-IA — l'IA réservée aux testeurs : interrupteur serveur AI_ACCESS et table ai_testers tenue au back-office
 - `ae9db4f`  fix(course): CARDIO-08 — l'analyse d'une sortie dit le même « X sur Y dans la plage » que le hub
 - `b599bf8`  fix(labo): CIBLE-04 — le Labo « Et si… » et le Conseil des trois partent du socle de la cible du jour
-- `9bcebe5`  docs(cardio): CARDIO-08 cadrée, relue et validée (D1 à D4) — spec, plan, BACKLOG
 
 ---
 

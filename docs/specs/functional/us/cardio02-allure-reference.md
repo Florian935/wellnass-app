@@ -3,7 +3,7 @@ id: CARDIO-02
 titre: "Les quatre portes vers l'allure de référence, et l'accueil du pilier Course"
 roadmap: [5.40, 5.45]
 catalogue: []
-etape: validation
+etape: code
 branche: feature/cardio02-allure-reference
 maj: 23/10/2026
 ---
@@ -21,6 +21,7 @@ maj: 23/10/2026
 > - Roadmap : **5.40** (R2b et R2c de CARDIO-UX01) et ligne neuve **5.45** (hors cadrage).
 > - **Relue par un agent de revue le 23/10/2026** : quinze constats, dont deux bloquants (la mesure
 >   du test, l'accueil sur un second téléphone), tous intégrés.
+> - ✅ **Validée par Florian le 23/10/2026** : les décisions D1 à D8 telles que proposées.
 > - Sessions parallèles du 23/10/2026 (ACCES-IA, IDENT-01, CIBLE-04, CARDIO-08) : cette US ne touche
 >   ni `run/analysis.tsx` ni `summarizeIntervalSeries` (CARDIO-08), ni les écrans Muscu et
 >   Nutrition, ni Prisme, ni `lab-repository.ts` (CIBLE-04).

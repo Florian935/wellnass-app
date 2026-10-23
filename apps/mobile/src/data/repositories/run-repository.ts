@@ -51,6 +51,7 @@ import {
   decodeTrack,
   buildGhostProfile,
   isGhostCandidate,
+  referencePaceFromRecord5k,
   type GhostProfile,
   type Polarisation,
   // US RUN-F4 (lot F) — réalisé par répétition.
@@ -1193,13 +1194,17 @@ export async function unlinkPlannedSession(runId: string): Promise<void> {
  *  3. la **séance planifiée** qu'elle avait cochée redevient à faire (sinon on perdrait la séance
  *     en même temps que la course) ;
  *  4. les records sont **recalculés** depuis l'historique restant (`backfillRunningRecords`, qui
- *     réinsère le meilleur temps restant par distance et met à jour l'allure de référence).
+ *     réinsère le meilleur temps restant par distance, **sans toucher à l'allure de référence**) ;
+ *     puis l'allure de référence est réglée ici, et seulement ici (US CARDIO-02, R20).
  *
- * ⚠️ **L'allure de référence n'est effacée que si elle venait manifestement du record supprimé**
- * (elle vaut exactement le temps 5 km supprimé ÷ 5). Le profil ne stocke pas la provenance de
- * cette valeur : elle peut avoir été **saisie à la main**. L'effacer inconditionnellement
- * détruirait une saisie utilisateur ; la garder toujours laisserait une référence fantôme. Le test
- * d'égalité tranche les deux cas courants sans jamais écraser une saisie.
+ * ⚠️ **L'allure de référence ne bouge que si elle venait manifestement du record supprimé** (elle
+ * vaut exactement le temps 5 km supprimé ÷ 5, lue **avant** le recalcul) : elle prend alors le
+ * nouveau record 5 km ÷ 5, ou s'efface s'il n'en reste aucun. Le profil ne stocke pas la provenance
+ * de cette valeur : elle peut avoir été **donnée par le coureur** (une des quatre portes). La toucher
+ * sans cette égalité détruirait une saisie — même face à un record restant plus rapide.
+ *
+ * Avant CARDIO-02, c'était le recalcul qui réécrivait l'allure (tout record réinséré l'écrasait), et
+ * une suppression pendant un recalcul déjà en cours pouvait l'effacer à tort.
  *
  * Idempotent : une course déjà supprimée est un no-op.
  */
@@ -1226,6 +1231,18 @@ export async function deleteRun(runId: string): Promise<void> {
     [runId],
   );
   const held5k = held.find((r) => r.distance_key === '5k') ?? null;
+
+  // L'allure venait-elle de ce record ? Lu AVANT tout recalcul (R20).
+  let heldReferenceFrom5k = false;
+  if (held5k !== null) {
+    const profile = await powerSync.getOptional<{ ref_5k_pace_s_per_km: number | null }>(
+      `SELECT ref_5k_pace_s_per_km FROM running_profiles WHERE deleted_at IS NULL LIMIT 1`,
+    );
+    heldReferenceFrom5k =
+      profile?.ref_5k_pace_s_per_km != null &&
+      profile.ref_5k_pace_s_per_km === referencePaceFromRecord5k(held5k.best_time_seconds);
+  }
+
   for (const record of held) {
     await softDelete('running_pace_records', record.id);
   }
@@ -1251,25 +1268,18 @@ export async function deleteRun(runId: string): Promise<void> {
     }
   }
 
-  // 4. Records recalculés depuis ce qui reste.
+  // 4. Records recalculés depuis ce qui reste, puis l'allure de référence (R20).
   if (held.length > 0) {
     await backfillRunningRecords();
 
-    if (held5k !== null) {
-      const remaining5k = await powerSync.getOptional<{ id: string }>(
-        `SELECT id FROM running_pace_records
+    if (heldReferenceFrom5k) {
+      const next5k = await powerSync.getOptional<{ best_time_seconds: number }>(
+        `SELECT best_time_seconds FROM running_pace_records
          WHERE distance_key = '5k' AND deleted_at IS NULL`,
       );
-      if (!remaining5k) {
-        // Aucun 5 km restant : on n'efface la référence que si elle dérivait de celle-ci.
-        const derived = Math.round(held5k.best_time_seconds / 5);
-        const profile = await powerSync.getOptional<{ ref_5k_pace_s_per_km: number | null }>(
-          `SELECT ref_5k_pace_s_per_km FROM running_profiles WHERE deleted_at IS NULL`,
-        );
-        if (profile && profile.ref_5k_pace_s_per_km === derived) {
-          await upsertRunnerProfile({ ref5kPaceSPerKm: null });
-        }
-      }
+      await upsertRunnerProfile({
+        ref5kPaceSPerKm: next5k ? referencePaceFromRecord5k(next5k.best_time_seconds) : null,
+      });
     }
   }
 }

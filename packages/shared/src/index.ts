@@ -109,6 +109,8 @@ export * from './running-paces';
 export * from './run-clock';
 export * from './run-segment-banner';
 export * from './running-hub';
+// US CARDIO-02 — les quatre portes vers l'allure de référence, le test de 12 minutes, l'accueil Course.
+export * from './reference-pace';
 export * from './session-line';
 export * from './running-intervals';
 // US RUN-F4 — seances de course structurees (lots E, F, G/H, J).

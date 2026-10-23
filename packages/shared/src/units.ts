@@ -103,7 +103,7 @@ export function formatPaceMMSS(secondsPerUnit: number | null, noData: string): s
 }
 
 /** Parse un nombre tolérant (virgule ou point) ; null si vide/invalide/notation scientifique. */
-function parseNumberLoose(text: string): number | null {
+export function parseNumberLoose(text: string): number | null {
   const t = text.trim().replace(',', '.');
   if (t === '') return null;
   if (!/^-?\d+(\.\d+)?$/.test(t)) return null; // rejette 1e2, "abc", "Infinity", "1.2.3", etc.
@@ -142,17 +142,36 @@ export function heightPartsToCm(a: string, b: string, system: UnitSystem): numbe
 }
 
 /**
- * Parse "M:SS" (secondes 0-59) saisi dans l'unité `system` -> s/km (SI).
- * Retourne null si vide, invalide, ou hors plage de course à pied (2:30 à 12:00 /km).
+ * Plage d'allure plausible en course à pied, en s/km : 2:30 à 12:00 /km.
+ *
+ * **Une seule borne pour toutes les saisies d'allure** (US CARDIO-02, R4) : la saisie directe ci-dessous
+ * et les quatre portes vers l'allure de référence (`reference-pace.ts`). Un test de garde vérifie que
+ * les deux disent la même chose — deux bornes divergentes feraient accepter par une porte ce que
+ * l'autre refuse.
  */
-export function parsePaceToSPerKm(text: string, system: UnitSystem): number | null {
-  const t = text.trim();
-  const m = /^(\d{1,3}):([0-5]\d)$/.exec(t); // M:SS, secondes 00-59
+export const PLAUSIBLE_PACE_S_PER_KM = { min: 150, max: 720 } as const;
+
+/**
+ * Lit "M:SS" (secondes 0-59) saisi dans l'unité `system` -> s/km (SI), **sans borne de plausibilité**.
+ *
+ * US CARDIO-02 : séparé de `parsePaceToSPerKm` pour que l'écran distingue « illisible » de « hors
+ * bornes » — le second mérite un message qui dit la borne, le premier un exemple de saisie.
+ */
+export function parsePaceText(text: string, system: UnitSystem): number | null {
+  const m = /^(\d{1,3}):([0-5]\d)$/.exec(text.trim()); // M:SS, secondes 00-59
   if (!m) return null;
   const perDisplayUnit = Number(m[1]) * 60 + Number(m[2]);
-  const sPerKm = system === 'imperial' ? perDisplayUnit * MI_PER_KM : perDisplayUnit;
-  // Garde de plausibilité (course à pied) : 2:30 à 12:00 /km.
-  if (sPerKm < 150 || sPerKm > 720) return null;
+  return system === 'imperial' ? perDisplayUnit * MI_PER_KM : perDisplayUnit;
+}
+
+/**
+ * Parse "M:SS" (secondes 0-59) saisi dans l'unité `system` -> s/km (SI).
+ * Retourne null si vide, invalide, ou hors plage de course à pied (`PLAUSIBLE_PACE_S_PER_KM`).
+ */
+export function parsePaceToSPerKm(text: string, system: UnitSystem): number | null {
+  const sPerKm = parsePaceText(text, system);
+  if (sPerKm === null) return null;
+  if (sPerKm < PLAUSIBLE_PACE_S_PER_KM.min || sPerKm > PLAUSIBLE_PACE_S_PER_KM.max) return null;
   return sPerKm;
 }
 
