@@ -10,6 +10,60 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — CIBLE-04 : le Labo « Et si… » et le Conseil des trois partent du socle de la cible du jour (`fix/cible04-socle-labo` → `dev`)
+
+> US CIBLE-04 (BACKLOG P2, constat D10 de CIBLE-01) cadrée (spec, plan, relecture par un agent), validée par
+> Florian le 23/10/2026 (D1-A, D2-A, D3-A), codée et **clôturée** dans ce commit (règle « recette à la
+> demande » du 23/10/2026 : pas de section RECETTES, la §99 réservée est caduque). Commit précédent : `9bcebe5e`.
+
+### Corrigé
+- **La dépense de référence du Labo et du Conseil était remontée, pas lue.** `useLabComposer` calculait
+  `tdeeKcal` par « cible de base − delta de l'objectif ». Faux pendant une pause « vie réelle » (la cible est
+  déjà au maintien : en sèche, 3 159 au lieu de 2 759, et **toutes** les projections +400 kcal) et avec une
+  cible saisie à la main (« surcharge − delta » : 2 400 pour une cible à 2 000, la dépense de personne). Il
+  lit désormais le `socle` de `useDayCalorieTarget(aujourd'hui)`, celui que `composeDayCalorieTarget` rend
+  à Aujourd'hui et à Noryn. Profil A, mode Forfait : Composer 2 359 / 2 509 / 2 759 / 3 059 kcal (sèche,
+  perte progressive, maintien, prise de masse), Conseil « 2 359 pour une dépense de 2 759 », issues 3 059 et
+  2 359 — **quels que soient la pause et la surcharge** (D1-A : la simulation chiffre l'objectif réglé, règle
+  VIE-01 des écrans de réglage ; D2-A : la surcharge n'entre pas dans la simulation). Mode « Selon ce que tu
+  fais » : 2 048 / 2 198 / 2 448 / 2 748, inchangé hors pause. Poids (−2,9 / +2,2 kg) et protéines (144 g)
+  inchangés.
+
+### Modifié
+- **Deux libellés, FR + EN** (D3-A) : la carte calories du Composer « Cible du jour » → « Cible de cette
+  formule » (« Target for this formula ») ; la voix Nutrition du Conseil « Ta cible est à… » → « Ton réglage
+  nutrition vise… » (« Your nutrition setting aims for… »). Pendant une pause ou avec une surcharge, ces
+  chiffres ne sont plus la cible d'Aujourd'hui : les phrases ne le prétendent plus. Aucune clé ajoutée ni
+  retirée, aucun composant touché.
+- `useLabComposer` ne monte plus `useNutritionSummary` (une lecture des totaux du jour en moins) ; son
+  `isLoading` suit celui de la cible du jour. Le commentaire « l'écran le dit » (faux : aucun écran ne le
+  disait) disparaît avec l'inversion. `useLabHistory` garde `useNutritionSummary` (CIBLE-05).
+
+### Ajouté
+- `lab-composer-socle.test.tsx` — test d'**assemblage** : vrais `useLabComposer`, `useDayCalorieTarget` et
+  briques pures, sources simulées (`day-target-sources.ts`, inchangé). Six cas (S0 à S5) + profil incomplet :
+  socle attendu, **parité** avec le socle d'Aujourd'hui, cible d'Aujourd'hui (preuve que la pause ou la
+  surcharge est bien posée), puis tous les chiffres du Composer et du Conseil, écrits en dur.
+- `lab-sql.test.tsx` : le socle est lu (pas la cible), son chargement est relayé, et ni une pause ni une
+  surcharge ne le déplacent ; trois tests adaptés (dont le relais du chargement), deux ajoutés.
+
+### Technique / Notes
+- **Rouge constaté avant la correction** : 13 tests — S1, S2, S3, S5 (socle 3 159 / 2 400 / 2 400 / 2 848
+  au lieu de 2 759 / 2 759 / 2 759 / 2 448, et leurs projections), plus les cinq tests de câblage ; S0, S4 et
+  le profil incomplet verts. Après : `lint`, `typecheck`, `agents:check` à 0 ; **10 075 tests verts**
+  (587 admin + 5 370 mobile + 4 118 shared).
+- **Noryn ne bouge pas** : aucun fichier de `packages/shared` ni de `supabase/` modifié (`git diff --stat`
+  vide sur ces chemins) — `composeDayCalorieTarget` est lue, jamais modifiée. Aucun redéploiement, aucune
+  migration, aucune sync rule, aucune action cloud.
+- **Constats ouverts** (spec §12, non portés au BACKLOG faute de décision) : avec une cible saisie à la main,
+  « Garder mon objectif » n'écrit que l'objectif et la cible du jour ne bouge pas ; en mode « Selon ce que tu
+  fais », la « dépense estimée » du Conseil est le socle hors sport ; les commentaires de `council.ts:41` et
+  `:54` (`packages/shared`, non modifiable ici) décrivent encore l'ancienne lecture.
+- Fichiers : `apps/mobile/src/data/repositories/lab-repository.ts`, `__tests__/lab-composer-socle.test.tsx`
+  (neuf), `__tests__/lab-sql.test.tsx`, `i18n/locales/{fr,en}.json` ; spec et plan `cible04-socle-labo` (neufs),
+  roadmap (remarques 7.30 et 7.34, journal ; statuts et compteurs inchangés), BACKLOG (ligne CIBLE-04
+  retirée), ETAT.
+
 ## 23/10/2026 — CARDIO-08 cadrée et validée : « X sur Y dans la plage » sans l'échauffement (`fix/cardio08-fractions-analyse` → `dev`)
 
 > US CARDIO-08 entrée au pipeline par `/us` (constat de la relecture CARDIO-UX03, BACKLOG P2), relue par un

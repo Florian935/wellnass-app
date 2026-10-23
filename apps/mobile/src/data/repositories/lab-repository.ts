@@ -34,7 +34,6 @@ import {
   isHeavyLegSession,
   localDateFromDayKey,
   localDayKey,
-  objectiveCalorieDelta,
   objectiveFromGoal,
   projectSbd,
   resolveActivePillars,
@@ -57,6 +56,7 @@ import {
 import { useTodayKey, useWindowStartKey } from '@/hooks/useTodayKey';
 import { useLatestWeight, useWeightEntries } from './bodyweight-repository';
 import {
+  useDayCalorieTarget,
   useDeficitVolumeAlert,
   useNutritionSummary,
   useOvertrainingGuardAlert,
@@ -439,7 +439,7 @@ export function useLabComposer(): { context: LabComposerContext; isLoading: bool
   const { latest, isLoading: weightLoading } = useLatestWeight();
   const { entries: nights, isLoading: nightsLoading } = useWellbeingEntries(sevenDaysKey);
   const { history, isLoading: strengthLoading } = useStrengthSection();
-  const { target, isLoading: summaryLoading } = useNutritionSummary();
+  const { socle, isLoading: targetLoading } = useDayCalorieTarget(todayKey);
   const { runs, isLoading: runsLoading } = useRunHistory();
   const load = useTrainingLoadAlert();
   const objective = useLabObjective();
@@ -478,10 +478,10 @@ export function useLabComposer(): { context: LabComposerContext; isLoading: bool
       activePillars: resolveActivePillars(settings?.activePillars),
       baseline,
       weightKg,
-      // La cible calorique est TDEE + delta de l'objectif : on remonte au TDEE pour pouvoir
-      // recalculer la cible d'un autre objectif. ⚠️ Avec une cible saisie à la main, cette inversion
-      // est approximative — l'écran le dit.
-      tdeeKcal: target === null ? null : target - objectiveCalorieDelta(objective),
+      // US CIBLE-04 — le socle de la cible du jour (`composeDayCalorieTarget`), lu et non remonté : la
+      // cible, elle, suit la pause « vie réelle » et la surcharge, et « cible − delta » donnait alors
+      // +400 kcal en sèche. Chaque objectif se chiffre sur ce socle (spec D1-A, D2-A).
+      tdeeKcal: socle,
       sbd: projection.ok
         ? { lastTotalKg: projection.projectedKg - projection.slopePerWeek * projection.weeks, slopePerWeek: projection.slopePerWeek }
         : null,
@@ -490,7 +490,7 @@ export function useLabComposer(): { context: LabComposerContext; isLoading: bool
     },
     isLoading:
       settingsLoading || planLoading || runnerLoading || nutritionLoading || weightLoading || nightsLoading ||
-      strengthLoading || summaryLoading || runsLoading,
+      strengthLoading || targetLoading || runsLoading,
   };
 }
 

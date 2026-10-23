@@ -5106,7 +5106,7 @@
     "voice": {
       "strengthSlope": "Current total {{totalKg}} kg, gaining {{perWeekKg}} kg per week at this rate.",
       "strengthUnknown": "Not enough sessions yet to say where your strength is going.",
-      "nutritionTarget": "Your target is {{kcal}} kcal/day, for an estimated {{tdee}} kcal burned.",
+      "nutritionTarget": "Your nutrition setting aims for {{kcal}} kcal/day, for an estimated {{tdee}} kcal burned.",
       "runningVolume": "You run {{perWeek}} times a week: that weighs on the other two."
     }
   },
@@ -5466,7 +5466,7 @@
         "watch": "worth watching",
         "risk": "above the threshold"
       },
-      "kcal": "Daily target",
+      "kcal": "Target for this formula",
       "weightChange": "{{value}} kg expected in {{weeks}} weeks",
       "protein": "Protein",
       "gPerDay": "{{value}} g / day",

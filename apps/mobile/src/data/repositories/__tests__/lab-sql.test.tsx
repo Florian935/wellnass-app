@@ -67,6 +67,7 @@ jest.mock('../bodyweight-repository', () => ({
 }));
 jest.mock('../dashboard-repository', () => ({
   useNutritionSummary: jest.fn(),
+  useDayCalorieTarget: jest.fn(),
   useOvertrainingGuardAlert: jest.fn(),
   useTrainingLoadAlert: jest.fn(),
   useDeficitVolumeAlert: jest.fn(),
@@ -88,6 +89,7 @@ import { useProfile } from '../profile-repository';
 import { useCarbsPerKg, useNutritionProfile } from '../nutrition-repository';
 import { useLatestWeight, useWeightEntries } from '../bodyweight-repository';
 import {
+  useDayCalorieTarget,
   useDeficitVolumeAlert,
   useNutritionSummary,
   useOvertrainingGuardAlert,
@@ -110,6 +112,7 @@ const m = {
   latestWeight: useLatestWeight as jest.Mock,
   weights: useWeightEntries as jest.Mock,
   summary: useNutritionSummary as jest.Mock,
+  dayTarget: useDayCalorieTarget as jest.Mock,
   overtraining: useOvertrainingGuardAlert as jest.Mock,
   load: useTrainingLoadAlert as jest.Mock,
   deficit: useDeficitVolumeAlert as jest.Mock,
@@ -126,6 +129,18 @@ const m = {
 
 const mockedQuery = useQuery as unknown as jest.Mock;
 
+/** La cible du jour : objectif `maintain` (repli du but principal), delta 0 — socle et cible de base se confondent. */
+const DAY_TARGET = {
+  socle: 2400,
+  socleKind: 'tdee',
+  target: 2400,
+  effectiveTarget: 2400,
+  trainingBonus: 0,
+  bonusSource: 'none',
+  isTrainingDay: false,
+  isLoading: false,
+};
+
 /**
  * Les valeurs par défaut suivent les **types réels** des hooks sources, pas une forme simplifiée :
  * un `null` passé là où le moteur lit un champ ferait planter le rendu, ou pire, passerait dans un
@@ -139,6 +154,7 @@ function setupAll() {
   m.latestWeight.mockReturnValue({ latest: { logDate: TODAY, weightKg: 70 }, isLoading: false });
   m.weights.mockReturnValue({ entries: [], isLoading: false });
   m.summary.mockReturnValue({ target: 2400, isLoading: false });
+  m.dayTarget.mockReturnValue(DAY_TARGET);
   m.overtraining.mockReturnValue({ show: false, severity: null, streakDays: 0 });
   m.load.mockReturnValue({ show: false, ratio: null });
   m.deficit.mockReturnValue({ show: false, deficitPct: 0, loggedDays: 0 });
@@ -638,18 +654,34 @@ describe('useLabComposer', () => {
     expect(result.current.context.baseline.sleep).toBe('long');
   });
 
-  it('remonte au TDEE depuis la cible, pour pouvoir recalculer un autre objectif', async () => {
+  it('lit le socle de la cible du jour, pour pouvoir recalculer un autre objectif (CIBLE-04)', async () => {
     const { result } = await renderHook(() => useLabComposer());
 
-    expect(result.current.context.tdeeKcal).not.toBeNull();
+    expect(m.dayTarget).toHaveBeenCalledWith(TODAY);
+    expect(result.current.context.tdeeKcal).toBe(2400);
   });
 
-  it('laisse le TDEE à null quand aucune cible n’est connue', async () => {
-    m.summary.mockReturnValue({ target: null, isLoading: false });
+  it('laisse le socle à null quand le profil n’en permet pas', async () => {
+    m.dayTarget.mockReturnValue({ ...DAY_TARGET, socle: null, target: null, effectiveTarget: null });
 
     const { result } = await renderHook(() => useLabComposer());
 
     expect(result.current.context.tdeeKcal).toBeNull();
+  });
+
+  // 🔴 CIBLE-04 — l'ancienne inversion « cible − delta de l'objectif » : en sèche, 2 759 + 400 = 3 159
+  // pendant une pause (la cible est déjà au maintien), 2 000 + 400 = 2 400 avec une cible saisie à la main.
+  it.each([
+    ['une pause « vie réelle » (cible au maintien)', 2759],
+    ['une cible saisie à la main', 2000],
+  ])('ni %s ne déplace le socle', async (_cas, baseTarget) => {
+    m.nutritionProfile.mockReturnValue({ nutritionProfile: { objective: 'cut' }, isLoading: false });
+    m.summary.mockReturnValue({ target: baseTarget, isLoading: false });
+    m.dayTarget.mockReturnValue({ ...DAY_TARGET, socle: 2759, target: baseTarget, effectiveTarget: baseTarget });
+
+    const { result } = await renderHook(() => useLabComposer());
+
+    expect(result.current.context.tdeeKcal).toBe(2759);
   });
 
   it('moyenne la durée des courses des sept derniers jours', async () => {
@@ -690,7 +722,7 @@ describe('useLabComposer', () => {
     ['plan', () => m.weekPlan.mockReturnValue({ items: [], isLoading: true })],
     ['profil coureur', () => m.runner.mockReturnValue({ runnerProfile: null, isLoading: true })],
     ['profil nutrition', () => m.nutritionProfile.mockReturnValue({ nutritionProfile: null, isLoading: true })],
-    ['résumé nutrition', () => m.summary.mockReturnValue({ target: null, isLoading: true })],
+    ['cible du jour', () => m.dayTarget.mockReturnValue({ ...DAY_TARGET, socle: null, isLoading: true })],
   ])('relaie le chargement de la source « %s »', async (_label, arrange) => {
     arrange();
 

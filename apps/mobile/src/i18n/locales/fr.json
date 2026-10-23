@@ -5106,7 +5106,7 @@
     "voice": {
       "strengthSlope": "Total actuel {{totalKg}} kg, et tu progresses de {{perWeekKg}} kg par semaine à ce rythme.",
       "strengthUnknown": "Pas encore assez de séances pour dire où va ta force.",
-      "nutritionTarget": "Ta cible est à {{kcal}} kcal/jour, pour une dépense estimée à {{tdee}} kcal.",
+      "nutritionTarget": "Ton réglage nutrition vise {{kcal}} kcal/jour, pour une dépense estimée à {{tdee}} kcal.",
       "runningVolume": "Tu cours {{perWeek}} fois par semaine : ça pèse sur les deux autres."
     }
   },
@@ -5466,7 +5466,7 @@
         "watch": "à surveiller",
         "risk": "au-dessus du seuil"
       },
-      "kcal": "Cible du jour",
+      "kcal": "Cible de cette formule",
       "weightChange": "{{value}} kg attendus en {{weeks}} semaines",
       "protein": "Protéines",
       "gPerDay": "{{value}} g / jour",
