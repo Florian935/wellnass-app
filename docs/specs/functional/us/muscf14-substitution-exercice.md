@@ -3,9 +3,9 @@ id: MUSC-F14
 titre: "Suggestion de substitution d'exercice"
 roadmap: [3.52]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/muscf14-substitution-exercice
-maj: 29/07/2026
+maj: 23/10/2026
 ---
 
 # US MUSC-F14 — Suggestion de substitution d'exercice

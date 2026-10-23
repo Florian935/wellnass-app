@@ -3,9 +3,9 @@ id: NARR-01
 titre: "L'IA raconte le dossier d'enquête — et ne peut pas inventer un chiffre"
 roadmap: [7.33]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
-maj: 19/09/2026
+maj: 23/10/2026
 ---
 
 # US NARR-01 — La narration du dossier d'enquête

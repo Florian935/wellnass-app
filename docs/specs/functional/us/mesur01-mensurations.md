@@ -3,9 +3,9 @@ id: MESUR-01
 titre: "Mensurations corporelles"
 roadmap: [3.51]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/mesur01-mensurations
-maj: 29/07/2026
+maj: 23/10/2026
 ---
 
 # US MESUR-01 — Mensurations corporelles

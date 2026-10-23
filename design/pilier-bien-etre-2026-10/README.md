@@ -15,7 +15,6 @@ seule vague**.
   [BIEN-05](../../docs/specs/functional/us/bien05-ce-qui-compte.md) ·
   [BIEN-06](../../docs/specs/functional/us/bien06-nuit-health-connect.md) ·
   [BIEN-07](../../docs/specs/functional/us/bien07-modules.md)
-- Recette : [RECETTES.md](../../RECETTES.md) §90.
 
 ## Contenu
 

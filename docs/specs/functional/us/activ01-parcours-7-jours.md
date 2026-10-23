@@ -3,9 +3,9 @@ id: ACTIV-01
 titre: "Parcours « 7 jours pour démarrer »"
 roadmap: [1.27]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/activ01-parcours-7-jours
-maj: 03/08/2026
+maj: 23/10/2026
 ---
 
 # US ACTIV-01 — Parcours « 7 jours pour démarrer »

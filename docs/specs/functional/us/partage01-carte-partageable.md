@@ -3,9 +3,9 @@ id: PARTAGE-01
 titre: "Carte de séance / course partageable"
 roadmap: [7.17]
 catalogue: [META-41]
-etape: recette
+etape: close
 branche: feature/partage01-carte-partageable
-maj: 30/07/2026
+maj: 23/10/2026
 ---
 
 # US PARTAGE-01 — Carte de séance / course partageable

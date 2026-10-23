@@ -3,9 +3,9 @@ id: EXEC-01
 titre: "Écart entre le prévu et le réalisé — lot d'analyses d'exécution muscu"
 roadmap: [3.58]
 catalogue: [MUSC-33, MUSC-26, MUSC-13, MUSC-21]
-etape: recette
+etape: close
 branche: feature/exec01-prevu-vs-realise
-maj: 07/08/2026
+maj: 23/10/2026
 ---
 
 # EXEC-01 — Écart entre le prévu et le réalisé

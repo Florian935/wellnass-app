@@ -3,9 +3,9 @@ id: STREAK-01
 titre: "Joker de série (gel d'un jour manqué)"
 roadmap: [7.14]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/streak01-joker
-maj: 29/07/2026
+maj: 23/10/2026
 ---
 
 # US STREAK-01 — Joker de série

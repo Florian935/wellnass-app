@@ -3,9 +3,9 @@ id: ALLURE-01
 titre: "La courbe d'allure — ce que ta façon de courir dit"
 roadmap: [5.35]
 catalogue: [RUN-11, RUN-20, RUN-17, RUN-08]
-etape: recette
+etape: close
 branche: feature/allure01-courbe-allure
-maj: 07/08/2026
+maj: 23/10/2026
 ---
 
 # ALLURE-01 — La courbe d'allure

@@ -3,9 +3,9 @@ id: CARDIO-UX02
 titre: "Refonte du hub Course — le bleu partout, et un écran qui sait où en est le coureur"
 roadmap: [5.42]
 catalogue: [RUN-03, RUN-05, RUN-08, RUN-13]
-etape: recette
+etape: close
 branche: dev
-maj: 19/09/2026
+maj: 23/10/2026
 ---
 
 # US CARDIO-UX02 — Refonte du hub Course

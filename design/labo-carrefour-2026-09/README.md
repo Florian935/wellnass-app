@@ -4,7 +4,7 @@
 le même jour en une vague** : [LIENS-01](../../docs/specs/functional/us/liens01-registre-liens.md),
 [LABO-02](../../docs/specs/functional/us/labo02-croiser.md), [LABO-03](../../docs/specs/functional/us/labo03-fiche-lien.md),
 [ECHO-01](../../docs/specs/functional/us/echo01-echos-liens.md), [LABO-04](../../docs/specs/functional/us/labo04-apprendre.md)
-— en recette ([RECETTES.md](../../RECETTES.md) §89). Écarts entre la toile et le code : voir le dernier § de
+— livré le 30/09/2026. Écarts entre la toile et le code : voir le dernier § de
 chaque spec (Q8 a été tranché « tout le chantier avant le Play Store », pas seulement LIENS-01).
 
 - Toile en ligne (privée, à partager depuis son menu Partager) :

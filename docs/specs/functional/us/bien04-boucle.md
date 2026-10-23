@@ -3,9 +3,9 @@ id: BIEN-04
 titre: "La boucle — la nuit et « malade » changent la forme du jour, la séance et le bilan"
 roadmap: [1.33]
 catalogue: [BW-02, BW-03]
-etape: recette
+etape: close
 branche: dev
-maj: 01/10/2026
+maj: 23/10/2026
 ---
 
 # US BIEN-04 — La boucle

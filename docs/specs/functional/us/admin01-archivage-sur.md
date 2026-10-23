@@ -3,9 +3,9 @@ id: ADMIN-01
 titre: "Archivage sûr du contenu éditorial (back-office)"
 roadmap: [8.11]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/admin01-archivage-sur
-maj: 29/07/2026
+maj: 23/10/2026
 ---
 
 # US ADMIN-01 — Archivage sûr du contenu éditorial

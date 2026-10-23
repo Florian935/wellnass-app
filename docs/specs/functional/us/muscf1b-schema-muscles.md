@@ -3,9 +3,9 @@ id: MUSC-F1b
 titre: "Muscles ciblés sur schéma corporel — anatomie fine"
 roadmap: [6.2]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/muscf1b-schema-muscles
-maj: 02/08/2026
+maj: 23/10/2026
 ---
 
 # US MUSC-F1b — Muscles ciblés sur schéma corporel (Voie B)

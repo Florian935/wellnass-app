@@ -3,9 +3,9 @@ id: MUSCU-UX02
 titre: "Bilan de séance — 3 niveaux de lecture, écran unique récap/historique"
 roadmap: [3.35]
 catalogue: [MUSC-05, MUSC-13, MUSC-15, MUSC-16, MUSC-26, MUSC-33]
-etape: recette
+etape: close
 branche: feature/muscu-ux02-bilan-seance
-maj: 12/09/2026
+maj: 23/10/2026
 ---
 
 # US MUSCU-UX02 — Bilan de séance

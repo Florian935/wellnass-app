@@ -3,9 +3,9 @@ id: BIEN-02
 titre: "Le pilier Bien-être — pilier activable, hub en trois onglets, garde-fou « humeur basse »"
 roadmap: [1.31]
 catalogue: [BW-01, BW-07]
-etape: recette
+etape: close
 branche: dev
-maj: 01/10/2026
+maj: 23/10/2026
 ---
 
 # US BIEN-02 — Le pilier Bien-être : la maison

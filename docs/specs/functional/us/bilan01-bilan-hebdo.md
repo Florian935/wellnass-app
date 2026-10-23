@@ -3,9 +3,9 @@ id: BILAN-01
 titre: "Bilan hebdomadaire automatique"
 roadmap: [7.16]
 catalogue: [MR-22, TRI-07, NUTR-18]
-etape: recette
+etape: close
 branche: feature/bilan01-bilan-hebdo
-maj: 29/07/2026
+maj: 23/10/2026
 ---
 
 # US BILAN-01 — Bilan hebdomadaire automatique

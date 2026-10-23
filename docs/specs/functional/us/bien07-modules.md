@@ -3,9 +3,9 @@ id: BIEN-07
 titre: "Les modules du pilier Bien-être — alcool, café tardif, sieste, fringales"
 roadmap: [1.36]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
-maj: 01/10/2026
+maj: 23/10/2026
 ---
 
 # US BIEN-07 — Les modules

@@ -3,9 +3,9 @@ id: CARDIO-UX01
 titre: "Refonte UX du pilier Course — justesse, hub, course, après-course, préparation"
 roadmap: [5.40]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/cardio-refonte-ux
-maj: 10/09/2026
+maj: 23/10/2026
 ---
 # US CARDIO-UX01 — Refonte UX du pilier Course
 

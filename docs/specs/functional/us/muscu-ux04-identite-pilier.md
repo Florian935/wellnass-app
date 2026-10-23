@@ -3,9 +3,9 @@ id: MUSCU-UX04
 titre: "L'identité d'un pilier tenue par toute la page — accent, surfaces, et la scène qui coule"
 roadmap: [3.59]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
-maj: 19/09/2026
+maj: 23/10/2026
 ---
 
 # US MUSCU-UX04 — L'identité d'un pilier, tenue par toute la page

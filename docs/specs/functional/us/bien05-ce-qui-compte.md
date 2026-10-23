@@ -3,9 +3,9 @@ id: BIEN-05
 titre: "Ce qui compte — les croisements Bien-être, un lien du Labo et l'onglet du pilier"
 roadmap: [1.34]
 catalogue: [BW-04, BW-05, BW-06]
-etape: recette
+etape: close
 branche: dev
-maj: 01/10/2026
+maj: 23/10/2026
 ---
 
 # US BIEN-05 — Ce qui compte

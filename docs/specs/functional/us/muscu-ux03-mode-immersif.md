@@ -3,9 +3,9 @@ id: MUSCU-UX03
 titre: "Mode immersif de la séance de musculation — la séance vivante, en plus du mode classique"
 roadmap: [3.61]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/muscu-ux03-mode-immersif
-maj: 13/09/2026
+maj: 23/10/2026
 ---
 # US MUSCU-UX03 — Mode immersif de la séance de musculation
 

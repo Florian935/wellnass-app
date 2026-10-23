@@ -3,9 +3,9 @@ id: META-19
 titre: "Garde-fou surentraînement (ACWR combiné)"
 roadmap: []
 catalogue: [META-19]
-etape: recette
+etape: close
 branche: feature/meta19-acwr-garde-fou
-maj: 02/08/2026
+maj: 23/10/2026
 ---
 
 # US META-19 — Garde-fou surentraînement (ACWR combiné)

@@ -3,9 +3,9 @@ id: EFFORT-01
 titre: "Les meilleurs efforts d'une sortie, et les médailles posées sur la carte"
 roadmap: [5.43]
 catalogue: [RUN-03]
-etape: recette
+etape: close
 branche: dev
-maj: 21/09/2026
+maj: 23/10/2026
 ---
 
 # US EFFORT-01 — Les meilleurs efforts d'une sortie

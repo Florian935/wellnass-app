@@ -4,7 +4,7 @@
  * Le montage du hook (abonnement → `setState` → rendu) n'est pas testé ici, pour la raison écrite en
  * tête de `keyboard-event-names.test.ts` : sous RNTL v14, une mise à jour déclenchée depuis un
  * abonnement natif simulé ne se propage pas au rendu. La règle est testée ; le comportement réel
- * relève de la recette device (RECETTES §95).
+ * se vérifie sur device.
  */
 
 import { Keyboard } from 'react-native';

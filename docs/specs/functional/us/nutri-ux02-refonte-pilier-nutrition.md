@@ -3,9 +3,9 @@ id: NUTRI-UX02
 titre: "Refonte du pilier Nutrition — la bibliothèque qui arrive, deux moments, le vert qui existe"
 roadmap: [4.46]
 catalogue: [NUTR-07, NUTR-10, NUTR-16, NUTR-17, NUTR-18, MN-06, MN-03]
-etape: recette
+etape: close
 branche: dev
-maj: 20/09/2026
+maj: 23/10/2026
 ---
 
 # US NUTRI-UX02 — Refonte du pilier Nutrition

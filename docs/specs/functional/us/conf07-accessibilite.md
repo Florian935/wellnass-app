@@ -3,9 +3,9 @@ id: CONF-07
 titre: "Accessibilité — solde des non-conformités WCAG AA"
 roadmap: [9.11, 9.12]
 catalogue: []
-etape: recette
+etape: close
 branche: fix/conf07-accessibilite
-maj: 30/07/2026
+maj: 23/10/2026
 ---
 
 # US CONF-07 — Accessibilité : solde des non-conformités WCAG AA

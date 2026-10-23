@@ -3,9 +3,9 @@ id: MUSCU-UX07
 titre: "Hub Musculation en trois onglets — S'entraîner, Historique, Progrès"
 roadmap: [3.65]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/muscu-ux07-hub-trois-onglets
-maj: 25/09/2026
+maj: 23/10/2026
 ---
 
 # US MUSCU-UX07 — Hub Musculation en trois onglets

@@ -3,9 +3,9 @@ id: AUTRE-01
 titre: "Les autres activités : vélo, natation, rando… saisies à la main"
 roadmap: [4.42]
 catalogue: [TRI-05]
-etape: recette
+etape: close
 branche: dev
-maj: 15/09/2026
+maj: 23/10/2026
 ---
 
 # US AUTRE-01 — Les autres activités

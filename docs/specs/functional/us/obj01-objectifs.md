@@ -3,9 +3,9 @@ id: OBJ-01
 titre: "Objectifs personnels à échéance"
 roadmap: [7.15]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/obj01-objectifs
-maj: 29/07/2026
+maj: 23/10/2026
 ---
 
 # US OBJ-01 — Objectifs personnels à échéance

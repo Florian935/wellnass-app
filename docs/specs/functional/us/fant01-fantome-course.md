@@ -3,9 +3,9 @@ id: FANT-01
 titre: "Le Fantôme — courir contre soi-même sur le même parcours"
 roadmap: [5.41]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
-maj: 18/09/2026
+maj: 23/10/2026
 ---
 
 # US FANT-01 — Le Fantôme

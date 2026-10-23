@@ -3,9 +3,9 @@ id: RUN-F4
 titre: "La séance de course porte enfin sa consigne"
 roadmap: [5.36, 5.37, 5.38, 5.39]
 catalogue: [RUN-07, RUN-13, RUN-19]
-etape: recette
+etape: close
 branche: feature/run-seances-structurees
-maj: 09/09/2026
+maj: 23/10/2026
 ---
 
 # US RUN-F4 — La séance de course porte enfin sa consigne

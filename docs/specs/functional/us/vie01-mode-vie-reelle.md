@@ -3,9 +3,9 @@ id: VIE-01
 titre: "Mode « vie réelle » — dégradation gracieuse des objectifs"
 roadmap: [1.28]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/vie01-mode-vie-reelle
-maj: 06/08/2026
+maj: 23/10/2026
 ---
 
 # VIE-01 — Mode « vie réelle »

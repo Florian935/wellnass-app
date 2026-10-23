@@ -3,9 +3,9 @@ id: DASH-01
 titre: "Dashboards immersifs — une atmosphère par pilier, des écrans vivants, une app qui comprend"
 roadmap: [7.29]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/dash01-dashboards-immersifs
-maj: 13/09/2026
+maj: 23/10/2026
 ---
 
 # US DASH-01 — Dashboards immersifs

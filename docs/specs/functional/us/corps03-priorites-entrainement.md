@@ -3,9 +3,9 @@ id: CORPS-03
 titre: "Priorités confirmées et lecture du programme"
 roadmap: [6.6]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/corps03-priorites-entrainement
-maj: 14/09/2026
+maj: 23/10/2026
 ---
 
 # CORPS-03 — De la silhouette à l'entraînement

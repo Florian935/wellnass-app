@@ -3,9 +3,9 @@ id: INSIGHTS-02
 titre: "Dégonflage du Tier 0 — ramener l'accueil au plafond d'ADR-007"
 roadmap: [7.21]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/insights02-degonflage-tier0
-maj: 05/08/2026
+maj: 23/10/2026
 ---
 
 # INSIGHTS-02 — Dégonflage du Tier 0

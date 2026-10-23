@@ -3,9 +3,9 @@ id: UX-LOT-01
 titre: "Lot de finitions remontées en recette (UX-02, UX-03, UX-04)"
 roadmap: [3.53, 3.54, 7.18]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/uxlot01-finitions-recette
-maj: 29/07/2026
+maj: 23/10/2026
 ---
 
 # US UX-LOT-01 — Lot de finitions remontées en recette

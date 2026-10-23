@@ -3,9 +3,9 @@ id: MUSC-F8
 titre: "Notifications muscu — push de record agrégé, célébration animée, rappel de séance"
 roadmap: [3.42, 2.7, 2.4]
 catalogue: [META-07]
-etape: recette
+etape: close
 branche: feature/muscf8-notifications-muscu
-maj: 30/07/2026
+maj: 23/10/2026
 ---
 # US MUSC-F8 — Notifications muscu
 

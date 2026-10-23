@@ -3,9 +3,9 @@ id: ECHO-01
 titre: "Les échos des liens — ce que les piliers gardent d'un croisement"
 roadmap: [7.40]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/labo-carrefour
-maj: 30/09/2026
+maj: 23/10/2026
 ---
 # US ECHO-01 — Les échos des liens
 

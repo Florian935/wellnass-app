@@ -3,9 +3,9 @@ id: RUN-F2b
 titre: "Prolonger ou raccourcir — cible visible en direct"
 roadmap: [5.23]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/runf2b-cible-en-direct
-maj: 02/08/2026
+maj: 23/10/2026
 ---
 
 # US RUN-F2b — Prolonger ou raccourcir (cible en direct)

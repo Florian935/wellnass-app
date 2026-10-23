@@ -3,9 +3,9 @@ id: MUSC-09
 titre: "Record personnel par plage de répétitions"
 roadmap: [3.56]
 catalogue: [MUSC-09]
-etape: recette
+etape: close
 branche: feature/musc09-record-plage-reps
-maj: 02/08/2026
+maj: 23/10/2026
 ---
 
 # US MUSC-09 — Record personnel par plage de répétitions

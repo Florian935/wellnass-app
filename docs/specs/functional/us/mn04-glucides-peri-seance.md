@@ -3,9 +3,9 @@ id: MN-04
 titre: "Macros ajustées jours muscu (glucides péri-séance)"
 roadmap: []
 catalogue: [MN-04]
-etape: recette
+etape: close
 branche: feature/mn04-glucides-peri-seance
-maj: 04/08/2026
+maj: 23/10/2026
 ---
 
 # US MN-04 — Macros ajustées jours muscu (glucides péri-séance)

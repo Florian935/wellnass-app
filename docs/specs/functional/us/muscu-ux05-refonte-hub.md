@@ -3,9 +3,9 @@ id: MUSCU-UX05
 titre: "Refonte du hub Musculation — un écran qui a quelque chose à dire"
 roadmap: [3.63]
 catalogue: [MUSC-05, MUSC-19, MUSC-21]
-etape: recette
+etape: close
 branche: dev
-maj: 19/09/2026
+maj: 23/10/2026
 ---
 
 # US MUSCU-UX05 — Refonte du hub Musculation

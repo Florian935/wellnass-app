@@ -3,9 +3,9 @@ id: RESERV-01
 titre: "Le Réservoir — la jauge de glucides de la journée"
 roadmap: [4.45]
 catalogue: [RN-07, RN-08]
-etape: recette
+etape: close
 branche: dev
-maj: 18/09/2026
+maj: 23/10/2026
 ---
 
 # US RESERV-01 — Le Réservoir

@@ -3,9 +3,9 @@ id: MUSCPWR-01
 titre: "Module force — intensité relative (%1RM), force relative (DOTS) et total SBD avec projection"
 roadmap: []
 catalogue: [MUSC-16, MUSC-27, MUSC-29]
-etape: recette
+etape: close
 branche: feature/muscpwr01-module-force
-maj: 04/08/2026
+maj: 23/10/2026
 ---
 
 # MUSCPWR-01 — Module force

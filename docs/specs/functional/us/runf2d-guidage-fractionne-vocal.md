@@ -3,9 +3,9 @@ id: RUN-F2d
 titre: "Guidage fractionné vocal"
 roadmap: [5.18]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/runf2d-guidage-fractionne-vocal
-maj: 03/08/2026
+maj: 23/10/2026
 ---
 
 # US RUN-F2d — Guidage fractionné vocal

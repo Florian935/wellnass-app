@@ -3,9 +3,9 @@ id: FUEL-01
 titre: "Socle glucidique du coureur — besoin g/kg selon la charge et périodisation jours durs / faciles"
 roadmap: []
 catalogue: [RN-05, RN-06]
-etape: recette
+etape: close
 branche: feature/fuel01-socle-glucidique-coureur
-maj: 07/08/2026
+maj: 23/10/2026
 ---
 
 # US FUEL-01 — Socle glucidique du coureur

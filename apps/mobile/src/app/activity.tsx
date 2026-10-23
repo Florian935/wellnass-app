@@ -143,7 +143,7 @@ export default function ActivityScreen() {
         });
         // ⚠️ Health Connect n'est pas réécrit à l'édition : `clientRecordId` rendrait l'opération
         // idempotente, mais la permission peut avoir été révoquée entre-temps et l'écriture est
-        // déjà fire-and-forget. Limite assumée, notée dans RECETTES.md.
+        // déjà fire-and-forget. Limite assumée.
         router.back();
         return;
       }

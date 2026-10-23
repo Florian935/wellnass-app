@@ -3,9 +3,9 @@ id: LETTRE-01
 titre: "Lettre à ton futur toi — un message écrit en fixant un objectif, rouvert à l'échéance"
 roadmap: [7.32]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
-maj: 18/09/2026
+maj: 23/10/2026
 ---
 
 > ℹ️ **Numéro de roadmap corrigé le 16/09/2026** : cette spec revendiquait `7.31`, déjà pris par

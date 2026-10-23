@@ -3,9 +3,9 @@ id: LABO-04
 titre: "Le Labo › Apprendre — enquêtes, expériences, et un verdict qui ne se désapprend pas"
 roadmap: [7.41]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/labo-carrefour
-maj: 30/09/2026
+maj: 23/10/2026
 ---
 # US LABO-04 — Apprendre, et le verdict figé
 

@@ -3,9 +3,9 @@ id: LIENS-01
 titre: "Le registre des liens — un lien, une question, un calcul, une phrase"
 roadmap: [7.37]
 catalogue: [MR-17, MR-18, MN-18, META-11, META-12]
-etape: recette
+etape: close
 branche: feature/labo-carrefour
-maj: 30/09/2026
+maj: 23/10/2026
 ---
 # US LIENS-01 — Le registre des liens
 

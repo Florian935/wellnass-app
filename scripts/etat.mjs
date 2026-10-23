@@ -30,7 +30,9 @@ const git = (cmd, fallback = '?') => {
 
 // ─── 1. Specs d'US (front-matter) ────────────────────────────────────────────
 const US_DIR = 'docs/specs/functional/us';
-const ETAPES = ['spec', 'plan', 'design', 'validation', 'code', 'recette', 'relecture', 'close'];
+// Pas d'étape `recette` depuis le 23/10/2026 : une US passe de `code` à `close` dans le commit qui
+// livre le code complet ; une vérification sur device se demande à la volée, rien n'est consigné.
+const ETAPES = ['spec', 'plan', 'design', 'validation', 'code', 'close'];
 
 const specs = readdirSync(p(US_DIR))
   .filter((f) => f.endsWith('.md'))
@@ -157,18 +159,14 @@ const renvoiBloquees = bloquees.length
     '\n'
   : '';
 
-// Les US à `recette` attendent une validation **humaine** : c'est la seule étape que le pipeline ne
-// peut pas franchir seul, donc celle qui se perd le plus facilement d'une session à l'autre.
-const enRecette = ouvertes.filter((s) => s.etape === 'recette');
-const renvoiRecettes = enRecette.length
-  ? `\n⏳ **${enRecette.length} US ${enRecette.length > 1 ? 'attendent' : 'attend'} une recette humaine** ` +
-    `(${enRecette.map((s) => s.id).join(', ')}) — critères cochables dans [RECETTES.md](RECETTES.md).\n`
-  : '';
-
 const liste = (arr) => (arr.length ? arr.map((x) => `- ${x}`).join('\n') : '- _(vide)_');
+
+const etapeInconnue = ouvertes.filter((s) => !ETAPES.includes(s.etape));
 
 const alertes = [];
 if (sansFm.length) alertes.push(`⚠️ ${sansFm.length} spec(s) sans front-matter : ${sansFm.map((s) => s.fichier).join(', ')}`);
+if (etapeInconnue.length)
+  alertes.push(`⚠️ ${etapeInconnue.length} spec(s) à une étape inconnue : ${etapeInconnue.map((s) => `${s.fichier} (\`${s.etape}\`)`).join(', ')}`);
 if (migAbsentes.length) alertes.push(`⚠️ ${migAbsentes.length} migration(s) absente(s) du registre : ${migAbsentes.join(', ')}`);
 if (migPoussees !== migFiles.length) alertes.push(`⚠️ ${migFiles.length - migPoussees} migration(s) non poussée(s) sur le cloud`);
 if (proprete !== 'propre') alertes.push(`⚠️ Working tree : ${proprete}`);
@@ -195,7 +193,7 @@ avant de pouvoir publier.
 ## 🔨 En cours
 
 ${tableauOuvertes}
-${renvoiBloquees}${renvoiRecettes}
+${renvoiBloquees}
 ## ➡️ Prochain — P0 bloquant (${p0.length})
 
 ${liste(p0)}

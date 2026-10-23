@@ -3,9 +3,9 @@ id: HORAIRE-01
 titre: "Heure d'une séance planifiée — et le rappel « ça commence bientôt »"
 roadmap: [2.4]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/horaire01-heure-seance
-maj: 12/08/2026
+maj: 23/10/2026
 ---
 
 # US HORAIRE-01 — Heure d'une séance planifiée, et le rappel « ça commence bientôt »

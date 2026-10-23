@@ -3,9 +3,9 @@ id: LABO-02
 titre: "Le Labo › Croiser — tous tes liens, à un seul endroit"
 roadmap: [7.38]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/labo-carrefour
-maj: 30/09/2026
+maj: 23/10/2026
 ---
 # US LABO-02 — L'onglet Croiser
 

@@ -3,9 +3,9 @@ id: SERIE-01
 titre: "La régularité dite en semaines — série hebdomadaire et objectif récurrent transverse"
 roadmap: [7.36]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
-maj: 21/09/2026
+maj: 23/10/2026
 ---
 
 # US SERIE-01 — La régularité, dite en semaines

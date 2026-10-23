@@ -3,9 +3,9 @@ id: GUID-01
 titre: "Objectif utile et régime de guidage"
 roadmap: [1.30]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/guid01-objectif-regime-guidage
-maj: 13/09/2026
+maj: 23/10/2026
 ---
 
 # US GUID-01 — Objectif utile et régime de guidage

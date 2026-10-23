@@ -3,9 +3,9 @@ id: LABO-01
 titre: "Le Labo — là où tes piliers se croisent"
 roadmap: [7.30]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
-maj: 15/09/2026
+maj: 23/10/2026
 ---
 # US LABO-01 — Le Labo
 

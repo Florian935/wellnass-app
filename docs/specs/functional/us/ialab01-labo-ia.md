@@ -3,9 +3,9 @@ id: IA-LAB-01
 titre: "Labo IA — évaluer un modèle sur des données factices, avec un fournisseur gratuit"
 roadmap: [7.31]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
-maj: 15/09/2026
+maj: 23/10/2026
 ---
 
 # US IA-LAB-01 — Labo IA

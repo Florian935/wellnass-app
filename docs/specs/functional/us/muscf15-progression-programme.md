@@ -3,9 +3,9 @@ id: MUSC-F15
 titre: "Progression au niveau du programme"
 roadmap: [3.7]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/muscf15-progression-programme
-maj: 02/08/2026
+maj: 23/10/2026
 ---
 
 # US MUSC-F15 — Progression au niveau du programme

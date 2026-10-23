@@ -3,9 +3,9 @@ id: DOUL-01
 titre: "Journal des zones douloureuses — déclaration, historique et signal factuel"
 roadmap: [1.29]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/doul01-journal-zones-douloureuses
-maj: 06/08/2026
+maj: 23/10/2026
 ---
 
 # DOUL-01 — Journal des zones douloureuses

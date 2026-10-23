@@ -81,8 +81,7 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   ❗ Pas P0 : après LANCE-01, et **après** le Labo et la dépense.
 
 - [15/09/2026] ✅ **La dépense d'une séance, et l'activité qu'on note à la main** — **promue en US et
-  livrée le jour même** (DEPENSE-01 · AUTRE-01 · DEPENSE-00/02/03, roadmap 4.42-4.44, recette
-  [RECETTES.md §65](RECETTES.md)). Demande de Florian, 15/09 — deux idées qui se rejoignent : **(1)** estimer la dépense calorique à la fin
+  livrée le jour même** (DEPENSE-01 · AUTRE-01 · DEPENSE-00/02/03, roadmap 4.42-4.44). Demande de Florian, 15/09 — deux idées qui se rejoignent : **(1)** estimer la dépense calorique à la fin
   d'une séance de muscu ou de course, d'après son contenu et le profil (âge, taille, poids, sexe),
   et la croiser avec la nutrition du jour ; **(2)** saisir une **autre activité** (vélo, natation…)
   avec type, durée et intensité, pour la même estimation. _État vérifié dans le code :_ la course a
@@ -791,7 +790,6 @@ puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors
   ([design/pilier-bien-etre-2026-10/](design/pilier-bien-etre-2026-10/)) et les décisions D1 à D8 du
   01/10/2026. Renverse deux arbitrages antérieurs : « dimension transverse, pas un 4ᵉ pilier » (BIEN-01,
   catalogue) et « pas de sommeil Health Connect » (LABO-01, 28/07). Prolonge [[journal-bien-etre]].
-  En recette : RECETTES §90.
 
 - [25/07/2026] ✅ **Simulateur « What-If / Et si… »** → **promu et livré en deux temps** :
   d'abord le moteur (`projectWhatIf`, [DASH-01](docs/specs/functional/us/dash01-dashboards-immersifs.md),

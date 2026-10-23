@@ -3,9 +3,9 @@ id: BIEN-06
 titre: "La nuit lue dans Health Connect — durée, coucher, lever, régularité"
 roadmap: [1.35]
 catalogue: [BW-06]
-etape: recette
+etape: close
 branche: dev
-maj: 01/10/2026
+maj: 23/10/2026
 ---
 
 # US BIEN-06 — La nuit lue dans Health Connect

@@ -3,9 +3,9 @@ id: CONS-01
 titre: "Le Conseil des trois — les deux issues d'une contradiction, chiffrées"
 roadmap: [7.34]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
-maj: 19/09/2026
+maj: 23/10/2026
 ---
 
 # US CONS-01 — Le Conseil des trois

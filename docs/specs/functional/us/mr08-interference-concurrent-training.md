@@ -3,9 +3,9 @@ id: MR-08
 titre: "Interférence concurrent training"
 roadmap: []
 catalogue: [MR-08]
-etape: recette
+etape: close
 branche: feature/mr08-interference-concurrent-training
-maj: 04/08/2026
+maj: 23/10/2026
 ---
 
 # US MR-08 — Interférence concurrent training

@@ -3,10 +3,9 @@ id: REPAS-01
 titre: "Planning repas à la semaine, liste de courses générée et partage"
 roadmap: [4.27, 4.28, 4.29]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/repas01-planning-repas-liste-courses
-maj: 04/08/2026
-recette: RECETTES.md §28
+maj: 23/10/2026
 ---
 
 # REPAS-01 — Planning repas à la semaine, liste de courses générée et partage

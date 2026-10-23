@@ -1,8 +1,8 @@
 /**
- * US CIBLE-01 — **les chiffres de la recette** (spec §14.2, RECETTES §94), figés sur le jeu de
+ * US CIBLE-01 — **les chiffres de la recette** (spec §14.2), figés sur le jeu de
  * `supabase/scripts/cible01-recette-donnees.sql`, décrit pour les tests par `cible01-dataset.ts`.
  *
- * Le tableau de RECETTES est copié de ce fichier : il ne peut pas dériver du code. Chaque bloc correspond
+ * Les chiffres attendus à l'écran sont ceux de ce fichier : ils ne peuvent pas dériver du code. Chaque bloc correspond
  * à un écran — l'historique (calendrier, liste, page d'un jour passé), Statistiques 7 et 30 jours, le Labo
  * (APPORT-01), le planning repas, la carte de régularité — dans les trois modes. Le widget, lui, a ses
  * chiffres dans `home-widget-data.test.ts` (harnais SQLite).

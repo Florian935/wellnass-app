@@ -39,8 +39,7 @@ Détail mobile, par ordre de volume de code non couvert :
 tester ces couches autrement qu'en mockant `powerSync` de bout en bout — ce qui vérifie *qu'on a
 appelé une fonction*, jamais *que la requête est juste*.
 
-Conséquence concrète et vérifiable : **31 US attendent une recette humaine** ([RECETTES.md](../../../RECETTES.md)),
-et le bug de la recette du 31/07/2026 (`cycle_tracking_enabled` absent du schéma PowerSync local,
+Conséquence concrète et vérifiable : le bug trouvé sur device le 31/07/2026 (`cycle_tracking_enabled` absent du schéma PowerSync local,
 écriture avalée en silence, interrupteur qui reste éteint) était **invisible** pour la suite de
 tests. C'est exactement le type de panne que la §3 rend désormais détectable sans device.
 
@@ -54,13 +53,13 @@ capable de l'attraper.**
 | **1. Pur** | calcul métier, formats, règles, conversions | Vitest — `packages/shared` | **100 %**, tenu (99,2 %) |
 | **2. Base locale** | requêtes SQL des repositories, écritures, soft delete, idempotence, transactions | Jest + **harness SQLite en mémoire** (§3) | **80 %** sur `data/repositories` |
 | **3. Rendu** | états d'un écran/composant : vide, chargement, erreur, i18n, accessibilité | Jest + `@testing-library/react-native` | pas de % cible — **cibler les écrans à état** |
-| **4. Device** | ce qu'aucun test ne peut simuler (§6) | Le téléphone, via [RECETTES.md](../../../RECETTES.md) | **la plus courte liste possible** |
+| **4. Device** | ce qu'aucun test ne peut simuler (§6) | Le téléphone, **à la demande** (pas de recette consignée depuis le 23/10/2026) | **la plus courte liste possible** |
 
 Le but du plan n'est pas « monter le pourcentage ». C'est de **faire descendre du niveau 4 vers les
-niveaux 2 et 3** tout ce qui peut l'être, pour que la recette sur téléphone ne porte plus que sur
-ce qui l'exige vraiment. Aujourd'hui la recette absorbe des vérifications (une ligne bien écrite,
-un doublon évité, une date refusée) qui coûtent une manipulation à Damien ou Florian alors
-qu'elles coûteraient 3 secondes de CI.
+niveaux 2 et 3** tout ce qui peut l'être : il n'y a plus de recette consignée, une US est clôturée
+dès que son code est livré et ses tests verts — **les tests sont donc le seul filet systématique**.
+Une vérification sur téléphone (une ligne bien écrite, un doublon évité, une date refusée) coûte
+une manipulation à Damien ou Florian alors qu'elle coûterait 3 secondes de CI.
 
 ## 3. Le socle technique — en place
 
@@ -307,7 +306,7 @@ gardait rien** (voir la correction du 07/08/2026, §3.2).
 - **Une règle métier se teste une seule fois, dans `packages/shared`.** Le test de repository ne
   rejoue pas la règle : il vérifie la **plomberie** (bonnes colonnes, bon `id`, bonne ligne).
 - **Chaque test cite sa règle de spec** (`R2`, `R16`…) dans son libellé ou son en-tête. C'est ce
-  qui permet, plus tard, de rayer une ligne de RECETTES.md en sachant laquelle.
+  qui permet de savoir quelle règle un test prouve — et donc ce qu'il reste à vérifier à la main.
 - **Tout bug corrigé = un test de non-régression** posé avec le fix, au niveau le plus bas
   possible (règle déjà en vigueur, [bonnes-pratiques §4](./bonnes-pratiques.md)).
 - **Pas de `--silent | tail`** pour juger d'une suite : le pipe renvoie 0 même en échec. Lire le
@@ -316,7 +315,7 @@ gardait rien** (voir la correction du 07/08/2026, §3.2).
 
 ## 5. Plan par lots
 
-Priorisé par **risque × coût de la recette manuelle**, pas par taille.
+Priorisé par **risque × coût de la vérification manuelle**, pas par taille.
 
 | Lot | Périmètre | Pourquoi d'abord | Effort |
 |---|---|---|---|
@@ -405,8 +404,8 @@ Trois principes derrière ces chiffres :
 
 ## 6. Ce qui reste au téléphone — et pourquoi
 
-À garder en recette humaine, définitivement : **aucun de ces points n'est simulable**, et prétendre
-le contraire donnerait un vert mensonger.
+À vérifier sur téléphone — **à la demande**, quand Florian ou Damien le souhaite — définitivement :
+**aucun de ces points n'est simulable**, et prétendre le contraire donnerait un vert mensonger.
 
 - **Permissions Android** réelles (localisation en arrière-plan, notifications, Health Connect).
 - **GPS en conditions réelles** : dérive, perte de signal, tunnel, écran éteint, veille système.

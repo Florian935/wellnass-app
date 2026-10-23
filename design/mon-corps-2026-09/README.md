@@ -15,7 +15,6 @@ Les planches contiennent quatre écrans au total. Elles restent des images stati
 
 - [Éditeur FR/EN, clair/sombre et petit écran](morphology-editor-qa.png), issu du vrai JSX.
 - [Vingt états de silhouette](morphology-qa.png) et [détail](morphology-detail.png).
-- [Validation globale sur téléphone et scénarios archivés](../../docs/recette/mon-corps-2026-09.md).
 
 ## Priorités et entraînement — CORPS-03
 

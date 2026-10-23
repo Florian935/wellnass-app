@@ -3,9 +3,9 @@ id: RUN-14
 titre: "Prédiction de temps de course (formule de Riegel)"
 roadmap: [5.34]
 catalogue: [RUN-14]
-etape: recette
+etape: close
 branche: feature/run14-prediction-riegel
-maj: 02/08/2026
+maj: 23/10/2026
 ---
 
 # US RUN-14 — Prédiction de temps de course (formule de Riegel)

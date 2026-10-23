@@ -16,7 +16,7 @@ cloud appliquée, types régénérés. Revue indépendante et planches issues du
 [silhouettes](../../../../design/mon-corps-2026-09/morphology-qa.png).
 APK release compilé sur les quatre ABI et signature vérifiée après correction des chemins
 CMake Windows. **Version testée sur téléphone et validée par Florian le 13/09/2026** ; US
-clôturée sur cette validation globale. [Trace et scénarios archivés](../../../recette/mon-corps-2026-09.md).
+clôturée sur cette validation globale.
 
 Suite de l'analyse et des maquettes validées par Florian, puis « ok continue » après CORPS-01. La direction reprend [la deuxième planche](../../../../design/mon-corps-2026-09/02-morphologie-objectifs.png). Ce lot architectural ajoute un profil visuel personnel, un renderer paramétrique et un éditeur. La préférence 2D/3D a été proposée pendant l'analyse ; en l'absence de réponse après un délai de travail indépendant, premier renderer 2D modulable retenu, sans dépendance native nouvelle. La rotation 3D et le moteur de programmation restent séparés.
 

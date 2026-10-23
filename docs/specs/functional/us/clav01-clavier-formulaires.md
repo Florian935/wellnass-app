@@ -3,7 +3,7 @@ id: CLAV-01
 titre: "Le clavier ne recouvre plus aucun formulaire — une seule règle d'évitement, sur Android edge-to-edge comme sur iOS"
 roadmap: []
 catalogue: []
-etape: recette
+etape: close
 branche: fix/clav01-clavier-formulaires
 maj: 23/10/2026
 ---

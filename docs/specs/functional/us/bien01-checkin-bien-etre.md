@@ -3,9 +3,9 @@ id: BIEN-01
 titre: "Check-in quotidien & journal de bien-être"
 roadmap: [1.24]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/bien01-checkin-bien-etre
-maj: 28/07/2026
+maj: 23/10/2026
 ---
 
 # US BIEN-01 — Check-in quotidien & journal de bien-être

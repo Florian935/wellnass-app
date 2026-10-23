@@ -3,9 +3,9 @@ id: CONTENU-01
 titre: "Seed des bibliothèques de programmes (muscu + course)"
 roadmap: [3.1, 5.2]
 catalogue: []
-etape: recette
+etape: close
 branche: docs/contenu-01-spec
-maj: 29/07/2026
+maj: 23/10/2026
 ---
 # US CONTENU-01 — Seed des bibliothèques de programmes (muscu + course)
 

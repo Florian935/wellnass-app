@@ -3,9 +3,9 @@ id: MUSC-19
 titre: "Tonnage cumulé (lifetime/annuel)"
 roadmap: []
 catalogue: [MUSC-19]
-etape: recette
+etape: close
 branche: feature/musc19-tonnage-cumule
-maj: 04/08/2026
+maj: 23/10/2026
 ---
 
 # US MUSC-19 — Tonnage cumulé (lifetime/annuel)

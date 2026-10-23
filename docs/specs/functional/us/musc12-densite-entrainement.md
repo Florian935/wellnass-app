@@ -3,9 +3,9 @@ id: MUSC-12
 titre: "Densité d'entraînement (volume/temps)"
 roadmap: []
 catalogue: [MUSC-12]
-etape: recette
+etape: close
 branche: feature/musc12-densite-entrainement
-maj: 04/08/2026
+maj: 23/10/2026
 ---
 
 # US MUSC-12 — Densité d'entraînement (volume/temps)

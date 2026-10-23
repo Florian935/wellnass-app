@@ -3,9 +3,9 @@ id: LABO-03
 titre: "La fiche d'un lien — tout ce que le Labo sait d'une question"
 roadmap: [7.39]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/labo-carrefour
-maj: 30/09/2026
+maj: 23/10/2026
 ---
 # US LABO-03 — La fiche d'un lien
 

@@ -3,9 +3,9 @@ id: LAUNCHER-01
 titre: "Widget écran d'accueil Android"
 roadmap: [7.19]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/launcher01-widget-ecran-accueil
-maj: 03/08/2026
+maj: 23/10/2026
 ---
 
 # US LAUNCHER-01 — Widget écran d'accueil Android

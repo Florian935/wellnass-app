@@ -10,6 +10,62 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — Fin de la recette consignée (`chore/fin-recette-consignee` → `dev`)
+
+> Décision de Florian le 23/10/2026 : « je perds trop de temps à faire les recettages ». Plus de fichier de
+> critères cochables ni d'étape `recette` : une US passe de `code` à `close` dans le commit qui livre le
+> code complet (lint, typecheck, tests verts). Une vérification sur device se demande **à la volée**, dans
+> la session qui a implémenté, et rien n'est consigné. Objectif : accélérer le dev et la mise sur le Play
+> Store. Commit précédent : `d604dec2`.
+
+### Supprimé
+- `RECETTES.md` (89 sections, 5 947 lignes) et `docs/recette/` (`mon-corps-2026-09.md`, `muscf10c-recette.md`).
+- Les étapes `recette` et `relecture` du front-matter (`relecture` n'était plus utilisée ; une relecture
+  croisée reste possible à la demande, sans étape).
+
+### Modifié
+- **CLAUDE.md** : nouvelle section « Recette à la demande (depuis le 23/10/2026) » ; étape 6 du workflow
+  = clôture au commit qui livre ; étapes `spec → plan → design → validation → code → close` ; plus aucune
+  référence à RECETTES.md (résumé, tableau « Où se trouve quoi », modèle de suivi, structure). Note
+  PowerSync : chaque collage de sync rules se coche dans MIGRATIONS.md.
+- **Skills** : `/us` (critères d'acceptation au lieu de critères de recette, rappel `code → close`) et
+  workflow partagé `docs/agent-workflows/commit.md` étape 7 (passage direct à `close`).
+- **`scripts/etat.mjs`** : `ETAPES` sans `recette` ni `relecture`, encart « US en attente de recette »
+  retiré, **nouvelle alerte** pour toute spec ouverte à une étape inconnue.
+- **98 specs d'US** : `etape: recette` → `close`, `maj: 23/10/2026` ; clé `recette:` retirée du
+  front-matter de REPAS-01. Liens morts vers `docs/recette/` retirés de CORPS-01, CORPS-02 et du plan CORPS-02.
+- **Roadmap** : règle d'en-tête réécrite, mentions « en recette », « recette device à faire », « Reste la
+  recette device » et liens vers RECETTES.md retirés des lignes (aucun statut ni compteur modifié), note
+  « Ce tableau mesure le code, pas la recette » retirée du récapitulatif, entrée au journal.
+- **BACKLOG** : ligne P1 « PRISME-01 — deux critères de recette à repasser », dette « Recette 2 appareils du
+  `signOut` » et note des « 15 US en recette sans critères » retirées ; formulations « à recetter » → « à
+  vérifier » ; déclaration Health portée à **7 types** (`READ_SLEEP`, BIEN-06).
+- **Stratégie de tests** (niveau 4 « à la demande », les tests = seul filet systématique), **plan de test**
+  (référentiel, plus de renvoi à RECETTES), IDEAS, READMEs de design (labo-carrefour, pilier-bien-etre,
+  mon-corps), analyse Strava : renvois à RECETTES retirés.
+- Commentaires de code sans renvoi à RECETTES : `app/activity.tsx`, `useKeyboardFrame.test.ts`,
+  `cible01-recette.test.tsx` (aucun changement de comportement).
+
+### Ajouté
+- **Constats ouverts que RECETTES.md était seul à porter, reportés au BACKLOG** (inventaire complet du
+  fichier avant suppression) : **LANCE-03** (P0 — l'écran du spike 3D, non traduit, est visible dans Mon
+  corps), prérequis hors-code n° 5 (relecture du garde-fou « humeur basse » 3114 + numéro d'aide hors France)
+  et n° 6 (sync rule `cross_link_weeks` jamais confirmée), **TRAD-01** (3 164 aliments CIQUAL sans
+  traduction EN — contredit la décision G), **SIGNOUT-01** (la déconnexion ne vide pas la base locale),
+  **LABO-05** (constats n° 3 et 5 de LABO-01 §4 bis), **CONTENU-02** (programmes PPL / Half Body et 7 jours
+  ACTIV-01 à relire), **CALIB-01** (seuils posés sans mesure), **MUSC-F14b**, **MUSCU-UX01b**.
+- **`supabase/MIGRATIONS.md`** : section « Déploiements des sync rules PowerSync », reprise de RECETTES.md
+  (seul journal de ces collages), avec le collage `cross_link_weeks` non coché.
+
+### Technique / Notes
+- **Gardés volontairement** : les mentions de recette dans les specs, plans, CHANGELOG et `docs/journal/`
+  (historique figé), les migrations déjà appliquées, et les scripts `supabase/scripts/*recette*` — dont les
+  scripts de nettoyage (`cible01-recette-nettoyage.sql` reste à jouer).
+- Les cinq sessions parallèles du 23/10 (ACCES-IA, CARDIO-02, IDENT-01, CIBLE-04, CARDIO-08) ont été
+  prévenues : à leur rebase, garder la suppression de RECETTES.md.
+- Vérifié avant commit : lint, typecheck, `npm run agents:check` et `npm run test` verts (codes de sortie
+  lus sans pipe) — Vitest 4 118 + 587, Jest 5 353 (308 suites) ; `node scripts/etat.mjs --check` à jour.
+
 ## 23/10/2026 — CIBLE-01 recettée et clôturée (`feature/cible01-cible-du-jour` → `dev`)
 
 > Recette RECETTES §94 validée par Florian le 23/10/2026 (validation d'ensemble des 12 critères, trois

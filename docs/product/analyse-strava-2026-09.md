@@ -89,8 +89,8 @@ intégrer dans l'application, comme font un peu toutes les applications du march
   à suivre trois personnes dès le premier jour (O8). Et notre obstacle d'architecture est intact :
   **chaque table** porte une RLS `user_id = auth.uid()`.
 
-- **Rien de tout ça n'est P0.** 3 candidats P0 avant publication ([BACKLOG.md](../../BACKLOG.md)),
-  80 US en attente de recette ([RECETTES.md](../../RECETTES.md)). Ce chantier se place **après
+- **Rien de tout ça n'est P0.** 3 candidats P0 avant publication ([BACKLOG.md](../../BACKLOG.md)).
+  Ce chantier se place **après
   LANCE-01**.
 
 ---

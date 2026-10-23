@@ -3,9 +3,9 @@ id: MUSC-F9
 titre: "Décalage d'une séance planifiée en glisser-déposer"
 roadmap: [3.10]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/muscf9-planning-glisser-deposer
-maj: 01/08/2026
+maj: 23/10/2026
 ---
 
 # US MUSC-F9 — Décalage d'une séance planifiée en glisser-déposer

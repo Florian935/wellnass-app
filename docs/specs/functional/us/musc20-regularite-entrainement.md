@@ -3,9 +3,9 @@ id: MUSC-20
 titre: "Régularité & consistance d'entraînement"
 roadmap: []
 catalogue: [MUSC-20]
-etape: recette
+etape: close
 branche: feature/musc20-regularite-entrainement
-maj: 04/08/2026
+maj: 23/10/2026
 ---
 
 # US MUSC-20 — Régularité & consistance d'entraînement

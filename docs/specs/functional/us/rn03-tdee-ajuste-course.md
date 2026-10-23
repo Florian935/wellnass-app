@@ -3,9 +3,9 @@ id: RN-03
 titre: "Ajustement auto du TDEE selon le volume de course"
 roadmap: []
 catalogue: [RN-03]
-etape: recette
+etape: close
 branche: feature/rn03-tdee-ajuste-course
-maj: 04/08/2026
+maj: 23/10/2026
 ---
 
 # US RN-03 — Ajustement auto du TDEE selon le volume de course

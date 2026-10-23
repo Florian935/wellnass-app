@@ -3,9 +3,9 @@ id: CYCLE-01
 titre: "Suivi du cycle menstruel — journal, prédiction et croisement"
 roadmap: [1.25, 1.26]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/cycle01-suivi-menstruel
-maj: 01/08/2026
+maj: 23/10/2026
 reste: "Code complet. **Deux bloquants levés en recette device du 01/08/2026** : (a) le suivi était impossible à activer — les colonnes cycle_tracking_enabled / cycle_health_connect_enabled manquaient au schéma PowerSync local, l'écriture échouait et l'erreur était avalée ; (b) les routes wellness://cycle et /cycle/insights s'ouvraient suivi éteint (critère 1), désormais fermées par CycleTrackingGuard. Le manifest embarque bien READ/WRITE_MENSTRUATION après un prebuild --clean (le dossier android/ local était antérieur à l'US). Vérifiés sur device : opt-in, saisie, calendrier, R8, R13, R16 bis, R17, R20, widget d'accueil. Reste hors code : recette device complète (RECETTES.md #15 — dont Health Connect de bout en bout, non testé faute de validation des permissions système), relecture juridique de la politique de confidentialité, et dépôt de la déclaration Play Health apps à 6 types."
 ---
 

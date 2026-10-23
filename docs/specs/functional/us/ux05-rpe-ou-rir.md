@@ -3,9 +3,9 @@ id: UX-05
 titre: "Intensité en RPE ou en RIR, au choix"
 roadmap: [3.55]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/ux05-rpe-ou-rir
-maj: 29/07/2026
+maj: 23/10/2026
 ---
 
 # US UX-05 — Intensité en RPE ou en RIR, au choix

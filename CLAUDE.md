@@ -11,11 +11,9 @@ En résumé, au 06/08/2026 : **le code du périmètre de lancement est écrit à
 roadmap livrées sur 223). Les 3 piliers (Musculation, Running, Nutrition) sont fonctionnels, l'app
 tourne **offline avec synchro cloud réelle** (PowerSync + Supabase), le **back-office** existe
 (15 écrans), le dev build EAS et le build local Android fonctionnent. **Health Connect (9.9) est
-recetté depuis le 28/07 et l'accessibilité (9.11/9.12) livrée le 01/08** : il ne reste plus qu'**un
+livré depuis le 28/07 et l'accessibilité (9.11/9.12) le 01/08** : il ne reste plus qu'**un
 seul item bloquant**, la **publication Play Store (9.2)** — dont tout le chemin critique est
 hors-code (compte développeur, déclaration « Health apps » à 6 types, relecture juridique).
-⚠️ **95 % de code écrit ≠ validé** : **49 US attendent une recette humaine sur device**
-([RECETTES.md](RECETTES.md)) — c'est la seule étape qu'un agent ne peut pas franchir.
 
 ### Où se trouve quoi
 
@@ -23,7 +21,6 @@ hors-code (compte développeur, déclaration « Health apps » à 6 types, relec
 |---|---|---|
 | **Où on en est, maintenant** | [ETAT.md](ETAT.md) | 🤖 **généré** — ne jamais éditer à la main |
 | **Ce qu'il reste à faire** | [BACKLOG.md](BACKLOG.md) | candidats priorisés P0/P1/P2, **sans spec encore** |
-| **Ce qui attend une recette humaine** | [RECETTES.md](RECETTES.md) | critères cochables des US à `etape: recette` |
 | **État d'une US précise** | le **front-matter** de sa [spec](docs/specs/functional/us/) | source de vérité par US |
 | **Le périmètre complet** | [roadmap](docs/roadmap/roadmap.md) | 223 fonctionnalités, colonne Statut |
 | **Les analyses de données** | [catalogue](docs/product/analyses-donnees.md) | 2ᵉ backlog, 220 items |
@@ -91,8 +88,18 @@ ordre.** Toute nouvelle fonctionnalité / user story suit ce parcours :
    **Pas de code tant que ce n'est pas validé.**
 5. **Implémentation** — seulement après validation, sur une branche dédiée (voir ci-dessous),
    par incréments bornés.
-6. **Clôture** — **la recette validée par Florian ou Damien suffit à clôturer l'US.** La relecture
-   croisée par l'autre dev **n'est pas requise** : elle reste possible à la demande, jamais bloquante.
+6. **Clôture** — l'US passe à `etape: close` **dans le commit qui livre le code complet**, dès que
+   lint, typecheck et tests sont verts. Pas d'étape de recette entre le code et la clôture.
+
+### Recette à la demande (depuis le 23/10/2026)
+
+Il n'y a **plus de recette consignée** : ni fichier de critères cochables, ni étape `recette` dans le
+front-matter, ni US bloquée en attente de validation sur device. Quand Florian ou Damien veut
+vérifier une fonctionnalité, il le demande **dans la session qui l'a implémentée** (à défaut, dans
+une session qui lit sa spec) ; l'agent lui donne alors, dans la conversation, **quoi dérouler** :
+prérequis (build, sync rules, migration, données de test), parcours pas à pas, résultat attendu.
+Rien n'est écrit dans le dépôt pour l'occasion. Un écart trouvé devient un correctif direct, ou
+une ligne de [BACKLOG.md](BACKLOG.md) s'il ne se traite pas tout de suite.
 
 ### Branches
 Chaque US = **une nouvelle branche** créée depuis `dev`, préfixée par type :
@@ -135,7 +142,7 @@ tout ça : **chaque information a un seul endroit, et cet endroit se remplace au
    (skill [`/etat`](.claude/commands/etat.md)). **Ne jamais l'éditer à la main** : si une ligne est
    fausse, la source est fausse. C'est le premier fichier à lire dans une session.
 2. **Le front-matter de chaque [spec d'US](docs/specs/functional/us/)** — *l'état d'une US*.
-   Champ `etape:` ∈ `spec` `plan` `design` `validation` `code` `recette` `relecture` `close`,
+   Champ `etape:` ∈ `spec` `plan` `design` `validation` `code` `close`,
    plus `id`, `titre`, `roadmap:`, `catalogue:`, `branche`, `maj`. C'est ce que le générateur lit.
 3. **[BACKLOG.md](BACKLOG.md)** — *ce qu'il reste à faire*. Une ligne par candidat **sans spec
    encore**, priorisé P0 (bloquant lancement) / P1 (finition visible) / P2 (confort). Dès qu'un
@@ -144,12 +151,7 @@ tout ça : **chaque information a un seul endroit, et cet endroit se remplace au
    **MVP1 = V1.0 complète**). Colonne Statut ✅ 🟡 ⬜ ⏳ ❌. Audit périodique par
    [`/reconcilier`](.claude/commands/reconcilier.md).
 
-À côté : **[RECETTES.md](RECETTES.md)** — les critères cochables des US bloquées à `etape: recette`.
-La recette est la **seule étape qu'un agent ne peut pas franchir** : sans ce fichier, la liste de ce
-qu'il reste à vérifier sur device meurt avec la session qui l'a produite. Il obéit à la même règle
-que les autres : **une section disparaît dès que l'US est clôturée**.
-
-Puis le **[catalogue d'analyses](docs/product/analyses-donnees.md)** (2ᵉ backlog, 220 items,
+À côté : le **[catalogue d'analyses](docs/product/analyses-donnees.md)** (2ᵉ backlog, 220 items,
 source de vérité des US META/MN/MR/NUTR/RN — ne pas les dupliquer dans la roadmap), le
 **[CHANGELOG](CHANGELOG.md)** (historique par commit, a vocation à grossir), et
 **[docs/journal/](docs/journal/)** (archives gelées).
@@ -204,16 +206,14 @@ Cycle **sans Docker** :
 - Travailler par **incréments bornés** (une fonctionnalité de la roadmap = une user story + tests + PR).
 - Respecter la **Definition of Done** et les standards de
   [docs/specs/technical/bonnes-pratiques.md](docs/specs/technical/bonnes-pratiques.md).
-- Découpage fin. **Une seule validation suffit** (Florian ou Damien) : pas de relecture croisée
-  obligatoire pour clôturer.
+- Découpage fin. **Une seule validation suffit** (Florian ou Damien) sur les livrables d'amont ;
+  une relecture croisée reste possible à la demande, jamais bloquante.
 
 ## Structure de la documentation
 
 ```
 /ETAT.md                    → 🤖 GÉNÉRÉ — où on en est (scripts/etat.mjs, skill /etat). NE PAS ÉDITER
 /BACKLOG.md                 → reste-à-faire priorisé P0/P1/P2 (candidats sans spec)
-/RECETTES.md                → recettes humaines en attente (cochables). Se VIDE : une section
-                              disparaît dès que l'US est clôturée
 /IDEAS.md                   → boîte de dépôt des idées brutes à trier (avant cadrage en US)
 /CHANGELOG.md               → trace des modifications par commit (tenu par /commit)
 /supabase/MIGRATIONS.md     → registre coché des migrations poussées sur le cloud
@@ -307,7 +307,8 @@ chez les devs) ; les commandes `db:start`/`db:stop`/`db:reset` visent une stack 
 > versionnées côté outil** : après une migration qui ajoute une table synchronisée, coller
 > [powersync-sync-rules.yaml](docs/specs/technical/powersync-sync-rules.yaml) dans le dashboard
 > PowerSync et déployer — **étape manuelle, déjà oubliée une fois** (une note d'exercice n'aurait
-> pas survécu à une resynchro).
+> pas survécu à une resynchro). Chaque collage se coche dans
+> [MIGRATIONS.md](supabase/MIGRATIONS.md#déploiements-des-sync-rules-powersync).
 
 ## Langue
 

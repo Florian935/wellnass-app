@@ -3,10 +3,10 @@
 > **But.** Recenser **tous** les écrans de l'app et, pour chacun, ce qu'on attend de lui — afin de
 > pouvoir tester le produit de façon exhaustive, et pas seulement les US du moment.
 >
-> **Différence avec [RECETTES.md](../RECETTES.md)** : RECETTES.md est **temporaire et rétrécit** (les
-> critères des US en attente de validation, une section disparaît à la clôture). Ce fichier-ci est
-> **permanent et stable** : il décrit le produit tel qu'il est censé fonctionner, US ou pas. Les deux
-> sont complémentaires — on recette une US dans RECETTES.md, on teste l'app avec ce plan.
+> **Un référentiel, pas une obligation.** Il n'y a plus de recette consignée (23/10/2026) : une US
+> est clôturée dès que son code est livré et ses tests verts. Ce fichier est **permanent et stable** :
+> il décrit le produit tel qu'il est censé fonctionner, US ou pas, et sert de base quand Florian ou
+> Damien demande quoi vérifier sur device.
 >
 > **Source.** Construit le 30/07/2026 depuis le code réel : arborescence de
 > [apps/mobile/src/app/](../apps/mobile/src/app/), déclarations de routes de
@@ -138,8 +138,8 @@ avec les autres.
 
 Les cases ne sont **pas** cochées et ne doivent pas l'être ici de façon permanente : ce fichier est
 un **modèle** de campagne de test. Pour une campagne, copie la section qui t'intéresse dans une note
-de travail, ou coche puis remets à blanc. Ce qui doit rester durablement coché va dans
-[RECETTES.md](../RECETTES.md) (par US) ou devient une entrée de [BACKLOG.md](../BACKLOG.md).
+de travail, ou coche puis remets à blanc. Un écart trouvé se corrige directement ou devient une
+entrée de [BACKLOG.md](../BACKLOG.md).
 
 **Ordre conseillé pour une passe complète** : §1 transverse d'abord (un défaut transverse fausse tout
 le reste), puis §2 parcours d'entrée, puis les piliers §4→§6, puis §7 transverse-compte, puis §8
@@ -608,8 +608,7 @@ chacun doit afficher une donnée juste, un état vide propre, et ouvrir le bon �
 - [ ] Journal des jours avec « non renseigné ».
 - [ ] Moyenne sur la fenêtre ; fenêtres (N jours / tout) ; « pas assez de points pour une courbe ».
 - [ ] Renvoi vers la courbe de poids des stats nutrition (pas de doublon).
-- [ ] ⚠️ **Point ouvert** : aucun CTA pour lancer un check-in depuis cet écran (cf.
-      [RECETTES.md](../RECETTES.md)).
+- [ ] ⚠️ **Point ouvert** : aucun CTA pour lancer un check-in depuis cet écran.
 
 ### 8.8 `measurements` — Mensurations (MESUR-01) 🟠
 - [ ] Saisie de plusieurs mesures ; feuille **pré-remplie** au dernier relevé.
@@ -627,8 +626,7 @@ chacun doit afficher une donnée juste, un état vide propre, et ouvrir le bon �
 - [ ] Progression recalculée à l'affichage, donc juste hors ligne.
 - [ ] Suppression avec confirmation.
 - [ ] Pourcentage **et** valeur lisibles sans l'anneau.
-- [ ] ⚠️ **Point ouvert** : « Nouvel objectif » apparaît **deux fois** sur l'état vide (cf.
-      [RECETTES.md](../RECETTES.md)).
+- [ ] ⚠️ **Point ouvert** : « Nouvel objectif » apparaît **deux fois** sur l'état vide.
 
 ### 8.10 `review` — Bilan hebdomadaire (BILAN-01) 🟠
 - [ ] Période affichée (semaine complète précédente).
@@ -697,7 +695,6 @@ Source : [apps/admin/src/screens/](../apps/admin/src/screens/).
 
 ---
 
-**Voir aussi** · [RECETTES.md](../RECETTES.md) recettes d'US en attente ·
-[BACKLOG.md](../BACKLOG.md) reste-à-faire · [roadmap](roadmap/roadmap.md) périmètre complet ·
+**Voir aussi** · [BACKLOG.md](../BACKLOG.md) reste-à-faire · [roadmap](roadmap/roadmap.md) périmètre complet ·
 [ETAT.md](../ETAT.md) où on en est · [specs d'US](specs/functional/us/) règles détaillées par
 fonctionnalité.

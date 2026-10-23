@@ -3,9 +3,9 @@ id: MUSC-F7
 titre: "Progression assistée — deload sur stagnation"
 roadmap: [3.8]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/muscf7-deload
-maj: 01/08/2026
+maj: 23/10/2026
 ---
 
 # US MUSC-F7 — Progression assistée

@@ -3,9 +3,9 @@ id: CORPS-04
 titre: "Choisir un programme compatible avec mes priorités"
 roadmap: [6.7]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/corps04-programme-compatible
-maj: 16/09/2026
+maj: 23/10/2026
 ---
 
 # CORPS-04 — Un programme compatible, expliqué avant d'être choisi

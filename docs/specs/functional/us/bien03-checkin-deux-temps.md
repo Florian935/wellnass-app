@@ -3,9 +3,9 @@ id: BIEN-03
 titre: "Le check-in en deux temps — matin et soir, qualité de nuit, envie, étiquettes"
 roadmap: [1.32]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
-maj: 01/10/2026
+maj: 23/10/2026
 ---
 
 # US BIEN-03 — Le check-in en deux temps

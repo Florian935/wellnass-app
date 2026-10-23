@@ -3,9 +3,9 @@ id: TRI-03
 titre: "Score de forme / readiness global"
 roadmap: []
 catalogue: [TRI-03]
-etape: recette
+etape: close
 branche: feature/tri03-score-readiness
-maj: 03/08/2026
+maj: 23/10/2026
 ---
 
 # US TRI-03 — Score de forme / readiness global

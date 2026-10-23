@@ -3,9 +3,9 @@ id: NUTRI-UX03
 titre: "Hub Nutrition en trois onglets — Aujourd'hui, Historique, Progrès"
 roadmap: [4.47]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/nutri-ux03-hub-onglets
-maj: 26/09/2026
+maj: 23/10/2026
 ---
 
 # US NUTRI-UX03 — Hub Nutrition en trois onglets

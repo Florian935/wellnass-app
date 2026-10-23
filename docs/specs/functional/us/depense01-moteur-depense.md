@@ -3,9 +3,9 @@ id: DEPENSE-01
 titre: "Le moteur de dépense énergétique (muscu, course, activité)"
 roadmap: [4.41]
 catalogue: [RN-01, TRI-06]
-etape: recette
+etape: close
 branche: dev
-maj: 15/09/2026
+maj: 23/10/2026
 ---
 
 # US DEPENSE-01 — Le moteur de dépense

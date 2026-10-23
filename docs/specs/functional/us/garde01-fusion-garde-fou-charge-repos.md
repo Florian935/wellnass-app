@@ -3,9 +3,9 @@ id: GARDE-01
 titre: "Garde-fou unifié charge & récupération (fusion TRI-12 + MR-14)"
 roadmap: []
 catalogue: [TRI-12, MR-14]
-etape: recette
+etape: close
 branche: refactor/garde01-fusion-garde-fou
-maj: 04/08/2026
+maj: 23/10/2026
 ---
 
 # US GARDE-01 — Garde-fou unifié charge & récupération (fusion TRI-12 + MR-14)

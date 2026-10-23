@@ -19,9 +19,7 @@ intermédiaires natifs doivent être placés dans un répertoire plus court, san
   Correctif et procédure documentés, regroupés dans le commit de clôture de l'US.
 
 **Recette humaine — 13/09/2026 :** Florian a testé sur téléphone et validé la version
-« Mon corps » dans la conversation. CORPS-01 et CORPS-02 sont clôturés ; les scénarios de
-recette sont archivés dans `docs/recette/mon-corps-2026-09.md`, sans inventer un passage
-individuel de chaque cas. Autorisation de poursuivre le lot entraînement.
+« Mon corps » dans la conversation. CORPS-01 et CORPS-02 sont clôturés sur cette validation globale. Autorisation de poursuivre le lot entraînement.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development. Steps use checkbox syntax.
 

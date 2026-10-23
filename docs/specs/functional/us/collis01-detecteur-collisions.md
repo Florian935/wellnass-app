@@ -3,9 +3,9 @@ id: COLLIS-01
 titre: "Détecteur de collisions entre séances — séquençage muscu ↔ course"
 roadmap: [3.57]
 catalogue: []
-etape: recette
+etape: close
 branche: fix/collis01-conflit-veille-hors-semaine
-maj: 07/08/2026
+maj: 23/10/2026
 ---
 
 # COLLIS-01 — Détecteur de collisions entre séances

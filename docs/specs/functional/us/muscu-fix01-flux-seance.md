@@ -3,9 +3,9 @@ id: MUSCU-FIX01
 titre: "Les flux de la séance de musculation — séance libre, ajout d'exercice, annuaire, silhouette"
 roadmap: [3.59]
 catalogue: []
-etape: recette
+etape: close
 branche: dev
-maj: 23/09/2026
+maj: 23/10/2026
 ---
 
 # US MUSCU-FIX01 — Les flux de la séance de musculation

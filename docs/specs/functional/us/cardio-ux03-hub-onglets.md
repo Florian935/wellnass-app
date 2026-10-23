@@ -3,9 +3,9 @@ id: CARDIO-UX03
 titre: "Hub Course en trois onglets — Courir, Historique, Progrès"
 roadmap: [5.44]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/cardio-ux03-hub-onglets
-maj: 26/09/2026
+maj: 23/10/2026
 ---
 
 # US CARDIO-UX03 — Hub Course en trois onglets

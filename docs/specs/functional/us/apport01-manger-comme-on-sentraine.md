@@ -3,9 +3,9 @@ id: APPORT-01
 titre: "Manges-tu comme tu t'entraînes ? — lot d'analyses croisées muscu × nutrition"
 roadmap: [4.40]
 catalogue: [MN-20, MN-16, MN-15, MN-10]
-etape: recette
+etape: close
 branche: feature/apport01-manger-comme-on-sentraine
-maj: 08/08/2026
+maj: 23/10/2026
 ---
 
 # APPORT-01 — Manges-tu comme tu t'entraînes ?

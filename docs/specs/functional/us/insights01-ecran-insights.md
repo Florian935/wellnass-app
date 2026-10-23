@@ -3,9 +3,9 @@ id: INSIGHTS-01
 titre: "Écran « Insights » — moteur de sélection des analyses pertinentes (Tier 3)"
 roadmap: [7.20]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/insights01-ecran-insights
-maj: 05/08/2026
+maj: 23/10/2026
 ---
 
 # INSIGHTS-01 — Écran « Insights » (Tier 3, ADR-007)

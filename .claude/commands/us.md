@@ -44,7 +44,8 @@ d'amont (spec, plan, maquette) et s'arrête à la validation humaine — c'est l
    ```
 
    Contenu : périmètre, règles métier, cas limites, **i18n FR+EN**, **comportement offline**,
-   critères de recette. Fais-toi relire (agent de revue) avant de la soumettre.
+   critères d'acceptation (ce que les tests devront prouver). Fais-toi relire (agent de revue)
+   avant de la soumettre.
 
 5. **Écris le plan** dans `docs/plans/<slug>.md` : découpage en tâches TDD, fichiers touchés, tests
    prévus, ordre de build, **migration éventuelle** (et si oui : sync rules PowerSync à redéployer ?).
@@ -58,6 +59,8 @@ d'amont (spec, plan, maquette) et s'arrête à la validation humaine — c'est l
 
 ## Après validation (rappel, hors périmètre de cette commande)
 
-`etape: code` → implémentation par incréments → `etape: recette` → recette device →
-`etape: relecture` si une relecture croisée est demandée → `etape: close`.
+`etape: code` → implémentation par incréments → `etape: close` dans le commit qui livre le code
+complet (lint, typecheck et tests verts). **Pas d'étape de recette** : une vérification sur device
+se demande à la volée, dans la session qui a implémenté
+([CLAUDE.md](../../CLAUDE.md#recette-à-la-demande-depuis-le-23102026)).
 Chaque transition passe par [`/commit`](commit.md), qui régénère [ETAT.md](../../ETAT.md).

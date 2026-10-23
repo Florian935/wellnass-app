@@ -3,9 +3,9 @@ id: MOTION-01
 titre: "Langage de mouvement — une physique par pilier, socle partagé, 19 effets livrés"
 roadmap: [3.60]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/motion01-langage-mouvement
-maj: 12/09/2026
+maj: 23/10/2026
 ---
 
 # US MOTION-01 — Langage de mouvement

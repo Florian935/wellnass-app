@@ -3,9 +3,9 @@ id: NUTRI-UX01
 titre: "Refonte UX du pilier Nutrition — objectif juste, geste de saisie, journal, suivi, planning"
 roadmap: [4.41]
 catalogue: [NUTR-12, NUTR-15, NUTR-17, NUTR-21]
-etape: recette
+etape: close
 branche: feature/nutri-refonte-ux
-maj: 13/09/2026
+maj: 23/10/2026
 ---
 # US NUTRI-UX01 — Refonte UX du pilier Nutrition
 

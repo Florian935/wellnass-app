@@ -3,9 +3,9 @@ id: RUN-F3
 titre: "Résumé de course enrichi — objectif atteint et conditions"
 roadmap: [5.24, 5.25]
 catalogue: []
-etape: recette
+etape: close
 branche: feature/runf3-resume-course-enrichi
-maj: 01/08/2026
+maj: 23/10/2026
 ---
 
 # US RUN-F3 — Résumé de course enrichi

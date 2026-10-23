@@ -3,9 +3,9 @@ id: NUTR-F1
 titre: "Rappels programmés nutrition — repas et pesée, à l'échéance apprise"
 roadmap: [1.14, 2.5]
 catalogue: [META-07]
-etape: recette
+etape: close
 branche: feature/nutrf1-rappels-nutrition
-maj: 30/07/2026
+maj: 23/10/2026
 ---
 # US NUTR-F1 — Rappels programmés nutrition (repas + pesée)
 

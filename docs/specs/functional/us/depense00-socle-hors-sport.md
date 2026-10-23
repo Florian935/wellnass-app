@@ -3,9 +3,9 @@ id: DEPENSE-00
 titre: "La cible calorique qui suit les dépenses réelles (fin du double comptage)"
 roadmap: [4.43]
 catalogue: [RN-02, RN-04, NUTR-23]
-etape: recette
+etape: close
 branche: dev
-maj: 15/09/2026
+maj: 23/10/2026
 ---
 
 # US DEPENSE-00 — Le socle hors sport
