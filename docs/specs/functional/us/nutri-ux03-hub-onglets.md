@@ -137,7 +137,8 @@ la saisie, un jour à la fois.
     cette US.
   - ✅ **22/10/2026 — écart réparé par [CIBLE-01](cible01-cible-du-jour.md)** : `useDailyCalorieTargets`
     passe par les compositions de `useDayCalorieTarget` ; le calendrier, la liste et la page d'un jour
-    comptent les autres activités, et la case d'aujourd'hui la séance prévue (RECETTES §94).
+    comptent les autres activités, et la case d'aujourd'hui la séance prévue (recettée et clôturée le
+    23/10/2026).
 - **D10 — Les repas habituels (Q4).** Un repas habituel, ce sont **les mêmes aliments** notés au
   moins deux fois dans le même repas, sur les 60 derniers jours. Il se reprend avec les quantités de
   la dernière fois (R9).

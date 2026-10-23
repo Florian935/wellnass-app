@@ -11,8 +11,9 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **23/10/2026** — **90 sections** (§95 CLAV-01 « le clavier ne recouvre plus
-> aucun formulaire » ajoutée ; le 22/10/2026 : §94 CIBLE-01 « une seule cible du jour » ajoutée ;
+> Dernière mise à jour : **23/10/2026** — **89 sections** (§94 CIBLE-01 « une seule cible du jour »
+> recettée et clôturée, section purgée ; §95 CLAV-01 « le clavier ne recouvre plus aucun formulaire »
+> ajoutée ; le 22/10/2026 : §94 CIBLE-01 « une seule cible du jour » ajoutée ;
 > le 21/10/2026 : §93 NORYN-02 « Noryn reçoit les cibles et le verdict de forme »
 > recettée et clôturée, section purgée ; le 16/10/2026 : §91 PRISME-01 « Prisme raconte » recettée et
 > clôturée, section purgée — 8 et 18 reportés au BACKLOG ; le 12/10/2026 : §93 NORYN-02 « Noryn reçoit les cibles et le verdict de forme » ajoutée ; §92 NORYN-01 « Noryn lit la journée et la semaine »
@@ -5816,115 +5817,6 @@ la sieste lue dans Health Connect ; fréquence cardiaque au repos et VFC ; « ce
 pas » et la passerelle vers l'enquête du Labo ; l'historique figé du lien Bien-être ; une version courte
 **écrite** d'une séance de muscu (aujourd'hui un conseil) ; aucun croisement ne lit encore la sieste ni
 les fringales.
-
-## 94. CIBLE-01 — Une seule « cible du jour » dans tout le pilier Nutrition (`feature/cible01-cible-du-jour` → `dev`)
-
-📄 [spec](docs/specs/functional/us/cible01-cible-du-jour.md) (§6 : ce qui bouge, §14 : la recette) ·
-[plan](docs/plans/cible01-cible-du-jour.md) · roadmap **4.7, 4.27, 4.40, 4.44, 7.19** (pas de ligne neuve) ·
-**📱 device** · ✅ **aucune migration, aucune sync rule, aucun déploiement** — un APK neuf suffit.
-
-L'historique (calendrier, page d'un jour passé, Statistiques, Progrès, bilan hebdo, Labo APPORT-01), le
-planning repas, la carte de régularité et le widget d'écran d'accueil prennent **la cible d'Aujourd'hui**
-(et de Noryn), jour par jour, dans les trois modes. Décisions D1 à D12 validées par Florian le 22/10/2026.
-
-> 🔴 **Préparation — un compte de test vierge** (spec D11). Le jeu pose le profil A et le profil nutritionnel
-> du compte ; il refuse de jouer si le compte porte déjà des repas, séances, courses, activités, séances
-> planifiées ou périodes « vie réelle » autour d'aujourd'hui, ou une pesée.
-> 1. Sur le téléphone : se connecter au compte de test, **couper l'import Health Connect des pesées**,
->    activer Musculation, Course et Nutrition.
-> 2. SQL Editor : `supabase/scripts/cible01-recette-donnees.sql`, UUID du compte de test dans `v_user`
->    (ne jamais le commiter). Rouvrir l'app, laisser synchroniser.
-> 3. Le mode se change dans Réglages › Nutrition entre deux passes : **Forfait**, puis **Auto**, puis
->    **« Selon ce que tu fais »**. Remettre Forfait à la fin.
-> 4. Le jeu vaut **un jour** (dates relatives à aujourd'hui à Paris) : le lendemain, nettoyer
->    (`cible01-recette-nettoyage.sql`) puis rejouer. Les chiffres valent jusqu'au 14/01/2027.
->
-> Le jeu (J = aujourd'hui) : J−10 700 kcal ; J−6 séance de muscu faite, 2 650 ; J−5 **vélo seul**, 2 650 ;
-> J−4 2 300 ; J−3 séance **sautée**, 2 300 ; J−2 séance **manquée**, 2 300 ; J−1 course de 8 km, 2 650 ;
-> J séance **prévue**, pas faite, 2 620 ; J+1 séance prévue ; J+2 séance sautée ; J+4 → J+5 « vie réelle »
-> (séance prévue à J+4).
-
-> ⚠️ **À lire avant de recetter — des sections en attente dont un critère change** (spec §6). Les recetter
-> **après** cette US, avec les chiffres d'ici :
->
-> | Section | Ce qui change |
-> |---|---|
-> | **§27 LAUNCHER-01** | Le « Restant » du widget est enfin celui d'Aujourd'hui, bonus du jour compris (critère « mêmes chiffres que l'app ») ; socle hors sport en « Selon ce que tu fais » ; poids du profil |
-> | **§28 REPAS-01** | Critère 5 : vrai en Forfait et en Auto ; en « Selon ce que tu fais », un jour futur à séance n'a plus de forfait (« sa dépense s'ajoutera »). Séances sautées ou manquées : plus de forfait. La règle « aucun pilier d'entraînement → aucun bonus » est **gardée** |
-> | **§53 APPORT-01** | Une sortie vélo seule et la séance prévue d'aujourd'hui comptent en « jours de séance » |
-> | **§47 NUTR-18** et **§8 BILAN-01** | Bilans et jours dans la cible : un jour à autre activité seule prend le forfait (Forfait, Auto) |
-> | **§88 NUTRI-UX03** | Critère 13 : la case d'aujourd'hui se remplit face à la cible d'Aujourd'hui (séance prévue comprise) |
-> | **§65 DEPENSE / AUTRE-01** | La ligne d'état d'un jour passé à autre activité seule dit la même cible que « Ta journée en énergie » |
-
-**Ce qu'on doit lire** (figé par `cible01-recette.test.tsx`) — ✓ dans la cible, + au-dessus, − en dessous :
-
-| Historique (cible) | Forfait | Auto | « Selon ce que tu fais » |
-|---|---|---|---|
-| J−10 | 2 359 − | 2 359 − | 2 048 − |
-| J−6 | 2 659 ✓ | 2 659 ✓ | 2 218 + |
-| J−5 | **2 659 ✓** (avant : 2 359 +) | **2 659 ✓** (avant : 2 359 +) | 2 548 ✓ |
-| J−4, J−3, J−2 | 2 359 ✓ | 2 359 ✓ | 2 048 + |
-| J−1 | 2 659 ✓ | 3 016 − | 2 608 ✓ |
-| J (remplie, sans statut) | **2 659** (avant : 2 359) | **2 659** (avant : 2 359) | 2 048 |
-
-| Statistiques | Forfait | Auto | « Selon ce que tu fais » |
-|---|---|---|---|
-| 7 j | **7/7 (100 %), −243** (avant : 5/7, +357) | **6/7 (86 %), −600** (avant : 4/7, 0) | 2/7 (29 %), +1 904 |
-| 30 j | **7/8 (88 %), −1 902** (avant : 5/8, −1 302) | **6/8 (75 %), −2 259** (avant : 4/8, −1 659) | 2/8 (25 %), +556 |
-
-| Planning repas | Forfait | Auto | « Selon ce que tu fais » |
-|---|---|---|---|
-| J−6 | 2 659 « Jour d'entraînement +300 » | idem | 2 218 « Dépense du jour +170 » |
-| J−5 | 2 659 « Jour d'entraînement +300 » | idem | 2 548 « Dépense du jour +500 » |
-| J−4 | 2 359 | 2 359 | 2 048 |
-| J−3 (sautée), J−2 (manquée) | 2 359 | 2 359 | 2 048 |
-| J−1 | 2 659 « Jour d'entraînement +300 » | 3 016 « Course faite +657 » | 2 608 « Dépense du jour +560 » |
-| J, J+1 | 2 659 « Séance prévue +300 » | idem | 2 048 « Séance prévue — sa dépense s'ajoutera » |
-| J+2 (sautée), J+3 | 2 359 | 2 359 | 2 048 |
-| J+4 (vie réelle, séance) | 3 059 « Séance prévue +300 » | idem | 2 448 « … sa dépense s'ajoutera » |
-| J+5 (vie réelle) | 2 759 | 2 759 | 2 448 |
-
-Labo › « Manges-tu assez pour ta muscu ? » : **4 jours de séance / 4 de repos**, 2 643 / 1 900, **+743 kcal** ;
-adhérence séance / repos 100 % / 75 % (Forfait), 75 % / 75 % (Auto), 50 % / 0 % (« Selon ce que tu
-fais »). Avant : ni cette carte ni l'adhérence par groupe (2 jours de séance seulement). Widget (« Restant »,
-2 620 mangées) : **39** (Forfait), **39** (Auto), **−572** (« Selon ce que tu fais ») ; avant : −261 partout.
-
-### A — L'historique
-
-- [ ] 1. **Calendrier** (Nutrition › Historique) : les verres et statuts du tableau, dans les trois modes ;
-      la case d'aujourd'hui remplie face à la cible d'Aujourd'hui.
-- [ ] 2. **Page de J−5** : la ligne d'état dit « 2 650 kcal · dans ta cible » en Forfait et en Auto, et
-      « Ta journée en énergie » donne la même cible, dans les trois modes ; J−6 et J−1 inchangés.
-- [ ] 3. **Statistiques** : jours dans la cible et bilan (7 j, 30 j) du tableau ; dans la carte de
-      régularité 30 j, la case de J−10 est **partielle** en Forfait et en Auto, **complète** en « Selon ce
-      que tu fais ».
-- [ ] 4. **Progrès** : le verdict de la semaine reprend les chiffres de Statistiques 7 j ; la carte de
-      régularité montre les mêmes cases que celle de Statistiques 7 j.
-- [ ] 5. **Bilan hebdo** : ses jours dans la cible = les jours du jeu tombés dans la semaine close, comptés
-      avec le tableau de l'historique (jamais J).
-- [ ] 6. **Labo › « Manges-tu assez pour ta muscu ? »** : la carte « Jours de séance vs repos » apparaît,
-      4 / 4, +743 kcal ; adhérences par groupe du tableau, trois modes.
-
-### B — Le planning repas et le widget
-
-- [ ] 7. **Planning repas** (vue liste) : les cibles et pastilles du tableau, sur **toutes** les semaines qui
-      couvrent J−6 → J+5 (deux ou trois selon le jour), trois modes ; en **anglais** aussi (« Training day —
-      target +300 kcal », « Run done — target +657 kcal », « Energy used — target +170 kcal », « Workout
-      planned — its energy use will be added ») ; TalkBack lit la pastille ; icônes haltère, marche, flamme.
-- [ ] 8. **Widget** : le « Restant » du tableau, trois modes, après rafraîchissement du widget.
-- [ ] 9. **Témoins** : Aujourd'hui (2 659 en Forfait et Auto, 2 048 en « Selon ce que tu fais »), « Ta
-      journée en énergie » de chaque jour, carte Nutrition de l'accueil, Réglages › Nutrition : mêmes chiffres
-      qu'avant.
-- [ ] 10. **Piliers éteints** (D7-B) : Musculation et Course éteintes, le planning ne montre plus aucune
-      pastille et prend la cible de base (2 359 à J en Forfait) ; Aujourd'hui garde 2 659 (l'écart connu,
-      BACKLOG CIBLE-02). Rallumer les piliers.
-- [ ] 11. **Hors ligne — en dernier** : en mode avion, Forfait, saisir une autre activité sur J−4 : la case de
-      J−4, la page de J−4 et le planning prennent le forfait aussitôt. Puis **supprimer cette activité** (le
-      nettoyage ne la connaît pas).
-- [ ] 12. **Noryn** : rien à faire — le bundle de `noryn-context` est identique octet pour octet, aucun test
-      de NORYN-02 modifié (spec §7, vérifié à l'étape 7) ; aucun redéploiement.
-
-Après la recette : `cible01-recette-nettoyage.sql`, puis remettre le compte de test comme on veut.
 
 ## 95. CLAV-01 — Le clavier ne recouvre plus aucun formulaire (`fix/clav01-clavier-formulaires` → `dev`)
 

@@ -3,12 +3,20 @@ id: CIBLE-01
 titre: "Une seule « cible du jour » dans tout le pilier Nutrition — l'historique, le planning repas et le widget passent par la composition de NORYN-02"
 roadmap: [4.7, 4.27, 4.40, 4.44, 7.19]
 catalogue: [NUTR-10, NUTR-18, MN-20, MN-16]
-etape: recette
+etape: close
 branche: feature/cible01-cible-du-jour
-maj: 22/10/2026
+maj: 23/10/2026
 ---
 
 # US CIBLE-01 — Une seule « cible du jour » dans tout le pilier Nutrition
+
+> ✅ **Clôturée le 23/10/2026** : recette RECETTES §94 validée par Florian (validation d'ensemble des 12
+> critères, dans les trois modes), section purgée. L'historique, le planning repas, la carte de régularité
+> et le widget disent la cible d'Aujourd'hui ; Noryn n'a pas bougé (bundle identique, aucun redéploiement).
+> Reste à retirer le jeu de recette (`supabase/scripts/cible01-recette-nettoyage.sql`, compte de test).
+> Restent au [BACKLOG](../../../../BACKLOG.md) : **CIBLE-02** (pilier éteint), **CIBLE-03** (séance marquée
+> faite), **CIBLE-04** (socle du Labo), **CIBLE-05** (fenêtres jugées sur la cible d'aujourd'hui),
+> **CIBLE-06** (cible du contexte du Labo IA).
 
 > **Demande** : Florian, 21/10/2026 — la cible calorique d'un jour est calculée à plusieurs endroits qui
 > ne disent pas la même chose ; les faire passer par les compositions pures extraites par NORYN-02.
@@ -31,7 +39,7 @@ maj: 22/10/2026
 > C19 ont changé d'attendu, chacun à l'étape qui le touche ; les filets de NORYN-02 et
 > `goal-adherence-assembly` sont restés verts sans une ligne modifiée. Tous les chiffres du §14.2 sont
 > affirmés par `cible01-recette.test.tsx`. Écarts au plan — des moyens, pas des règles — en fin de plan.
-> En recette : [RECETTES.md](../../../../RECETTES.md) §94. Aucune migration, aucun appel au projet, aucun
+> Recettée (§94, purgée) et clôturée le 23/10/2026. Aucune migration, aucun appel au projet, aucun
 > déploiement.
 
 ## 0. Le besoin

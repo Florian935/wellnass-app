@@ -10,6 +10,23 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — CIBLE-01 recettée et clôturée (`feature/cible01-cible-du-jour` → `dev`)
+
+> Recette RECETTES §94 validée par Florian le 23/10/2026 (validation d'ensemble des 12 critères, trois
+> modes). US clôturée (`etape: close`), §94 purgée. Commit précédent : `a4bd489e` (CLAV-01, autre session).
+
+### Modifié
+- Spec : `etape: close`, note de clôture en tête (ce qui reste : le nettoyage du jeu, CIBLE-02 à CIBLE-06
+  au BACKLOG). Note de NUTRI-UX03 (D9) mise à jour.
+- RECETTES : §94 purgée (89 sections), en-tête à jour.
+- Roadmap : remarques de 4.7, 4.27, 4.40, 4.44 et 7.19 (« recettée et clôturée »), statuts inchangés (✅),
+  entrée au journal.
+
+### Technique / Notes
+- **Reste à faire, côté Florian** : jouer `supabase/scripts/cible01-recette-nettoyage.sql` sur le compte de
+  test (le profil posé par le jeu n'est pas rétabli, à dessein). Aucun redéploiement de Noryn.
+- La branche est avancée sur `a4bd489e` (CLAV-01) avant ce commit. Aucun code.
+
 ## 23/10/2026 — CLAV-01 : une seule règle d'évitement du clavier pour les 45 surfaces de saisie (`fix/clav01-clavier-formulaires` → `dev`)
 
 > US CLAV-01 cadrée (spec, plan, relecture par un agent), validée par Florian le 23/10/2026 (D1 à D12 telles
