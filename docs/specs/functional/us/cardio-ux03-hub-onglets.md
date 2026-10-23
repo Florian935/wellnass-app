@@ -244,7 +244,7 @@ d'allure, records d'allure, objectifs estimés, charge, polarisation. Un record 
   l'échauffement, les éducatifs et le retour au calme sont eux aussi développés en phases « rapides »
   (`running-intervals.ts`) : les compter ferait lire un échauffement comme une fraction ratée. Le
   « X sur Y dans la plage » de la dernière fois **et** de l'arrivée se calcule sur ces pastilles, pas
-  sur `summarizeIntervalSeries` (qui compte tout). Une répétition sans réalisé mesurable (rattrapage
+  sur `summarizeIntervalSeries` (qui comptait tout — même filtre depuis CARDIO-08, 23/10/2026). Une répétition sans réalisé mesurable (rattrapage
   silencieux, RUN-F2d R8 bis) est affichée « — ».
 - **R5. Recourir** : proposé si la course est GPS et fait au moins 500 m (`GHOST_MIN_DISTANCE_M`).
   Ouvre `/run?ghostRunId=…`. Aucune écriture avant « Démarrer » ; le fantôme est posé sur la course au
@@ -473,7 +473,8 @@ au moins une séance de fractionné déjà courue, une sortie GPS et une sortie 
 - **« X sur Y dans la plage »** (dernière fois et arrivée) se calcule sur `lastTimeReps` (segment
   `work` seul). Le tableau « fraction par fraction » de l'analyse, lui, garde
   `summarizeIntervalSeries`, qui compte aussi l'échauffement : écart **connu, non corrigé** ici
-  (l'analyse n'est pas dans le périmètre), à porter au backlog.
+  (l'analyse n'est pas dans le périmètre), à porter au backlog. → **Corrigé par
+  [CARDIO-08](cardio08-fractions-analyse.md) le 23/10/2026** : l'analyse dit le même chiffre que le hub.
 - **Une séance du jour sans type** (programme ancien) prend son **nom** comme titre, à défaut « Course
   libre » ; l'écran de départ dit alors « Séance du jour ».
 - **Suppressions** : `RunStage` (+ test, 13 tests), `RunDirectorySheet`, et les clés i18n qu'ils étaient

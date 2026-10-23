@@ -3,7 +3,7 @@ id: CARDIO-08
 titre: "« X sur Y dans la plage » sans l'échauffement — l'analyse d'une sortie et le hub Course disent le même chiffre"
 roadmap: [5.44]
 catalogue: []
-etape: code
+etape: close
 branche: fix/cardio08-fractions-analyse
 maj: 23/10/2026
 ---
@@ -27,6 +27,11 @@ maj: 23/10/2026
 > ✅ **Validée par Florian le 23/10/2026** : D1 à D4 **telles que proposées** (filtre dans la fonction partagée,
 > libellés D2 inclus, seul le commentaire de `run-last-time.ts` retouché, test de comparaison) ; le régime de
 > recette est celui du 23/10/2026 : **recette à la demande**, l'US passe à `close` dans le commit du code.
+> 🛠️ **Codée et clôturée le 23/10/2026**, en un lot, sur le plan : filet rouge d'abord (7 Vitest, 4 Jest,
+> tous rouges pour la bonne raison), correctif d'une ligne, libellés FR/EN, commentaire de `run-last-time.ts`.
+> Écarts au plan — des moyens, pas des règles — en fin de plan. Aucune migration, aucune sync rule, aucune
+> dépendance native, aucune action sur le cloud. Jeu de vérification rejoué sur un Postgres jetable, non
+> commité (recette à la demande).
 
 ## 0. Le besoin
 

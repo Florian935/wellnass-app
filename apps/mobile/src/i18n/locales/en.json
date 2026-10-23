@@ -2812,7 +2812,12 @@
       "inRange": "{{done}} of {{total}} on target",
       "slowest": "Slowest rep: #{{rep}}",
       "fastest": "Fastest rep: #{{rep}}",
-      "recoveryRow": "Rec."
+      "recoveryRow": "Rec.",
+      "segmentRow": {
+        "warmup": "Warm-up",
+        "drills": "Drills",
+        "cooldown": "Cool-down"
+      }
     },
     "prepa": {
       "title": "Goal",

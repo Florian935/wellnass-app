@@ -10,6 +10,48 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — CARDIO-08 : l'analyse d'une sortie dit le même « X sur Y dans la plage » que le hub (`fix/cardio08-fractions-analyse` → `dev`)
+
+> US CARDIO-08 codée en un lot sur le plan validé (D1 à D4) et clôturée (`etape: close`, recette à la
+> demande). Commit précédent : `b599bf8b` (CIBLE-04, autre session) ; cadrage : `9bcebe5e`.
+
+### Corrigé
+- **L'analyse comptait l'échauffement comme une fraction.** `summarizeIntervalSeries` ne gardait que
+  `phaseKind === 'fast'` ; or `expandIntervalPhases` développe l'échauffement, les gammes, le retour au calme
+  et un segment de nature « récupération » en phases rapides (RUN-F4 lot B). Elle garde désormais
+  `phaseKind === 'fast' && segmentKind === 'work'`, le filtre de `lastTimeReps` (hub). Sur la sortie de
+  référence 6 × 400 m : « 6 sur 8 · 4:21 · ± 61 s/km » devient « **5 sur 6 · 3:58 · ± 6 s/km** », le chiffre
+  du hub. L'allure moyenne et la régularité, qui mêlaient toutes les phases mesurées, étaient les plus
+  abîmées. Un seul appelant (`run/analysis.tsx`) : aucun autre écran ne bouge. Une sortie sans nature de
+  segment (RUN-F2c, lue `'work'`) garde ses chiffres.
+
+### Modifié
+- `run/analysis.tsx` (D2) : une ligne hors corps de séance porte le nom de son segment — « Échauf. »,
+  « Gammes n », « Ret. calme », « Récup » pour un segment de récupération — au lieu de « Fraction 1 » ; nom
+  complet (`running.segmentKind.*`) pour le lecteur d'écran, « Récup » entre fractions compris. Une nature
+  inconnue garde « Fraction n ». La couleur « hors plage » reste sur toutes les lignes.
+- i18n FR/EN : `running.realise.segmentRow.{warmup,drills,cooldown}`.
+- `run-last-time.ts` : **commentaire seulement** (D3), qui disait que `summarizeIntervalSeries` ne filtrait
+  que le type de phase.
+- Spec CARDIO-08 (`etape: close`, bandeau, relecture), plan (écarts), spec CARDIO-UX03 (l'écart « connu, non
+  corrigé » renvoie à CARDIO-08), roadmap 5.44 (remarque, journal ; statut et compteurs inchangés).
+
+### Tests
+- `run-interval-results.test.ts` : +12 — A1 (quatre natures écartées), A2 (la sortie de référence par le
+  chemin du tracker, `expandIntervalPhases` → `buildIntervalDraft`), A3 (`it.each`, 9 sorties : le résumé
+  égale `repsInRange(lastTimeReps(…))`), R3. Rouges avant le correctif : A1, A2 et 5 cas d'A3.
+- `run-analysis-screen.test.tsx` : +4 — en-tête 5 sur 6, ligne d'allure moyenne et de régularité (regex sur
+  la ligne : trois lignes du tableau affichent aussi 3:58), libellés (6 « Fraction » au lieu de 11), noms
+  pour le lecteur d'écran. Rouges avant.
+- Suite entière verte : Vitest 4 130, Jest 5 357 ; lint, typecheck, `agents:check`.
+
+### Technique / Notes
+- Aucune migration, aucune sync rule, aucune dépendance native, aucune action sur le cloud.
+- Jeu de vérification sur device (recette à la demande) : écrit et rejoué sur un Postgres 13 jetable, **non
+  commité** ; se donne dans la conversation si la vérification est demandée (préfixe `ca2d1008-…`).
+- Hors périmètre, constaté : sur deux blocs de corps de séance, l'analyse renumérote « Fraction 1 » à chaque
+  bloc quand le hub numérote en continu ; l'en-tête anglais dit « on target », le hub « in range ».
+
 ## 23/10/2026 — CIBLE-04 : le Labo « Et si… » et le Conseil des trois partent du socle de la cible du jour (`fix/cible04-socle-labo` → `dev`)
 
 > US CIBLE-04 (BACKLOG P2, constat D10 de CIBLE-01) cadrée (spec, plan, relecture par un agent), validée par

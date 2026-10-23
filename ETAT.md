@@ -16,7 +16,6 @@ avant de pouvoir publier.
 
 | US | Étape | Branche | Roadmap |
 |---|---|---|---|
-| **CARDIO-08** — « X sur Y dans la plage » sans l'échauffement — l'analyse d'une sortie et le hub Course disent le même chiffre | `code` | `fix/cardio08-fractions-analyse` | [5.44] |
 | **IDENT-01** — L'identité de pilier appartient à l'écran, pas à l'onglet — les écrans empilés de Musculation et de Nutrition déclarent leur pilier | `code` | `fix/ident01-identite-pilier-ecran` | [3.63, 4.46] |
 | **IMPORT-01** — Import de données depuis d'autres apps — GPX (Strava), CSV (Hevy, Strong, MyFitnessPal) ⏸️ | `validation` *(en pause)* | `feature/import01-import-donnees-externes` | [1.20] |
 
@@ -45,8 +44,8 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `HEAD` (modifications non commitées) |
-| Commits | 1382 · `main` a **1379** commits de retard sur `dev` |
-| Specs d'US | 195 au total — 192 clôturées, 3 en cours |
+| Commits | 1383 · `main` a **1380** commits de retard sur `dev` |
+| Specs d'US | 195 au total — 193 clôturées, 2 en cours |
 | Migrations | 115/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -56,11 +55,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `b599bf8`  fix(labo): CIBLE-04 — le Labo « Et si… » et le Conseil des trois partent du socle de la cible du jour
 - `9bcebe5`  docs(cardio): CARDIO-08 cadrée, relue et validée (D1 à D4) — spec, plan, BACKLOG
 - `788baac`  docs(identite): IDENT-01 cadrée, relue et validée (D1 à D12) — spec, plan, BACKLOG
 - `25c741f`  chore(suivi): fin de la recette consignée — RECETTES.md supprimé, une US passe de code à close
 - `d604dec`  docs(cible): CIBLE-01 recettée et clôturée — §94 purgée
-- `a4bd489`  fix(clavier): CLAV-01 — une seule règle d'évitement du clavier pour les 45 surfaces de saisie
 
 ---
 

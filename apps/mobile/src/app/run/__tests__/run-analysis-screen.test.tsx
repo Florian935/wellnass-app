@@ -16,6 +16,7 @@
 import React from 'react';
 import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
+import { buildIntervalDraft, expandIntervalPhases, type IntervalPhaseBlockInput } from '@wellness/shared';
 
 import RunAnalysisScreen from '../analysis';
 import {
@@ -227,6 +228,93 @@ describe('fraction par fraction (US RUN-F4, corrigé par CARDIO-UX01)', () => {
     await render(<RunAnalysisScreen />);
 
     expect(screen.getAllByText('running.realise.noData').length).toBeGreaterThan(0);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US CARDIO-08 — le même chiffre que le hub, sans l'échauffement
+// ---------------------------------------------------------------------------
+
+describe('fraction par fraction : le corps de séance seul (US CARDIO-08)', () => {
+  /**
+   * La sortie de référence de la spec (§5), construite par le chemin du tracker — la même que dans
+   * `run-interval-results.test.ts` (les deux espaces de travail ne partagent pas de fixtures).
+   */
+  const bloc = (overrides: Partial<IntervalPhaseBlockInput>): IntervalPhaseBlockInput => ({
+    reps: 1,
+    fastDistanceM: null,
+    fastDurationSeconds: null,
+    fastPacePctVma: null,
+    recoveryDistanceM: null,
+    recoveryDurationSeconds: null,
+    ...overrides,
+  });
+
+  function sortieDeReference() {
+    const blocks = [
+      bloc({ kind: 'warmup', fastDurationSeconds: 900, fastPaceMinSPerKm: 340, fastPaceMaxSPerKm: 370 }),
+      bloc({ kind: 'drills', reps: 3, fastDistanceM: 80 }),
+      bloc({ kind: 'work', reps: 6, fastDistanceM: 400, fastPaceMinSPerKm: 230, fastPaceMaxSPerKm: 240, recoveryDistanceM: 200 }),
+      bloc({ kind: 'cooldown', fastDurationSeconds: 600, fastPaceMinSPerKm: 360, fastPaceMaxSPerKm: 390 }),
+    ];
+    const realises: [number, number][] = [
+      [2500, 900],
+      [80, 18],
+      [80, 17],
+      [80, 19],
+      ...[94, 93, 95, 94, 95, 100].flatMap((s): [number, number][] => [
+        [400, s],
+        [200, 75],
+      ]),
+      [1450, 600],
+    ];
+    return expandIntervalPhases(blocks).map((phase, phaseIndex) =>
+      buildIntervalDraft({
+        phaseIndex,
+        phase,
+        actualDistanceM: realises[phaseIndex]![0],
+        actualDurationSeconds: realises[phaseIndex]![1],
+      }),
+    );
+  }
+
+  beforeEach(() => {
+    mockUseRunIntervals.mockReturnValue({ intervals: sortieDeReference(), isLoading: false });
+  });
+
+  it('🔴 l’en-tête dit 5 sur 6, comme le hub — pas 6 sur 8', async () => {
+    await render(<RunAnalysisScreen />);
+
+    expect(screen.getByText('running.realise.inRange:{"done":5,"total":6}')).toBeTruthy();
+  });
+
+  it('🔴 l’allure moyenne et la régularité ne portent que sur les fractions : 3:58 et ± 6', async () => {
+    await render(<RunAnalysisScreen />);
+
+    // Trois lignes du tableau affichent aussi « 3:58 » (gamme 3, fractions 3 et 5) : on vise la
+    // ligne sous le tableau, un seul `Text` aux enfants concaténés. Avant : 4:21 et ± 61.
+    expect(screen.getByText(/running\.realise\.avgPace : 3:58/)).toBeTruthy();
+    expect(screen.getByText(/running\.realise\.regularityValue:\{"value":6\}/)).toBeTruthy();
+  });
+
+  it('🔴 une ligne qui n’est pas une fraction porte le nom de son segment', async () => {
+    await render(<RunAnalysisScreen />);
+
+    expect(screen.getByText('running.realise.segmentRow.warmup')).toBeTruthy();
+    expect(screen.getByText('running.realise.segmentRow.drills 2')).toBeTruthy();
+    expect(screen.getByText('running.realise.segmentRow.cooldown')).toBeTruthy();
+    // Ancrée : l'en-tête de colonne vaut exactement `running.realise.rep`. Avant : onze lignes.
+    expect(screen.getAllByText(/^running\.realise\.rep \d+$/)).toHaveLength(6);
+  });
+
+  it('le lecteur d’écran entend le nom complet des lignes abrégées', async () => {
+    await render(<RunAnalysisScreen />);
+
+    expect(screen.getByLabelText('running.segmentKind.warmup')).toBeTruthy();
+    expect(screen.getByLabelText('running.segmentKind.drills 3')).toBeTruthy();
+    expect(screen.getByLabelText('running.segmentKind.cooldown')).toBeTruthy();
+    // « Récup » est abrégé aussi : les six récupérations entre fractions.
+    expect(screen.getAllByLabelText('running.segmentKind.recovery')).toHaveLength(6);
   });
 });
 

@@ -175,4 +175,26 @@ vérification est demandée. Pas de section RECETTES (le §100 réservé est cad
 
 ## Écarts au plan
 
-*(à tenir pendant l'implémentation)*
+Tenus pendant l'implémentation du 23/10/2026. Aucune règle de la spec ne change.
+
+- **Le filet rouge** (étape 1), relevé avant le correctif :
+  - Vitest, 7 rouges : A1 (`fastCount` 6 au lieu de 2), A2 (11 au lieu de 6), et cinq cas d'A3 —
+    la sortie de référence (`{6,8}` contre `{5,6}`), l'arrêt après l'échauffement (`{1,1}` contre `null`),
+    **le rattrapage silencieux** (`{5,7}` contre `{4,5}`), le segment récupération avec plage (`{4,5}`
+    contre `{3,4}`), l'échauffement hors plage (`{5,8}` contre `{5,6}`). Le rattrapage n'était pas annoncé
+    rouge : il est construit sur la sortie de référence, qui porte un échauffement. Verts avant comme
+    après : fractions sans plage, séries groupées (segment récupération **sans** plage), RUN-F2c, bornes.
+  - Jest, 4 rouges : l'en-tête, la ligne d'allure moyenne et de régularité, les libellés, les noms pour le
+    lecteur d'écran. A6 est écrit en deux tests (libellés ; `accessibilityLabel`).
+- **Un test de plus** : R3 explicite (une sortie RUN-F2c garde `2 sur 3` et sa moyenne), vert avant et
+  après — la non-régression ne reposait que sur les tests existants.
+- **Étape 3** : la logique `rowLabel` est écrite en ligne dans le `map` (trois constantes), pas en fonction
+  séparée ; même règle. Les lignes « Récup » reçoivent `running.segmentKind.recovery` pour le lecteur
+  d'écran, sans rang.
+- **Étape 4, le jeu de vérification** : `cardio08-verif-{donnees,nettoyage}.sql`, dans le scratchpad de la
+  session, **non commités** (recette à la demande). Rejoués sur un Postgres 13 jetable, sur un schéma
+  minimal recopié des migrations : 17 phases, 5 sur 6, 238 s/km, ± 6 (6 sur 8 avant) ; rejeu refusé tant
+  que le jeu est posé ; nettoyage complet ; les trois gardes (course en cours, autre course terminée
+  aujourd'hui, séance de course prévue aujourd'hui) refusent, une séance de muscu prévue ne bloque pas.
+  Les triggers `noryn_sync_receipt` (absents du schéma minimal) font voir la sortie à Noryn sur le vrai
+  projet : signalé en tête du script, le nettoyage la retire.

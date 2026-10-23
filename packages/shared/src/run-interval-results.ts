@@ -96,7 +96,7 @@ export type RunIntervalRow = {
 };
 
 export type IntervalSeriesSummary = {
-  /** Nombre de fractions rapides effectivement realisees. */
+  /** Nombre de fractions du corps de seance effectivement realisees. */
   fastCount: number;
   /** Allure moyenne des fractions rapides (s/km), `null` si aucune n'est mesurable. */
   avgFastPaceSPerKm: number | null;
@@ -106,18 +106,27 @@ export type IntervalSeriesSummary = {
   inRangeCount: number;
   /** Fractions pour lesquelles une plage prevue existait — le denominateur du « X sur Y ». */
   ratedCount: number;
-  /** Index (1-based dans la serie rapide) de la fraction la plus lente, `null` si < 2. */
+  /**
+   * Index (1-based dans les fractions MESURABLES du corps de seance) de la plus lente, `null` si
+   * moins de 2.
+   */
   slowestRep: number | null;
-  /** Index (1-based) de la plus rapide, `null` si < 2. */
+  /** Index (1-based, meme serie) de la plus rapide, `null` si moins de 2. */
   fastestRep: number | null;
 };
 
 /**
  * Resume d'une serie de fractions.
  *
- * ⚠️ Ne porte QUE sur les phases rapides. Inclure les recuperations melangerait deux populations
- * (4:00/km et 6:30/km) et rendrait la moyenne comme l'ecart-type illisibles — c'est le meme
- * piege que la polarisation ponderee par les courses plutot que par les kilometres (RUN-08).
+ * ⚠️ Ne porte QUE sur les phases rapides **du corps de seance**. Deux filtres :
+ *  - les recuperations : les inclure melangerait deux populations (4:00/km et 6:30/km) et rendrait
+ *    la moyenne comme l'ecart-type illisibles — c'est le meme piege que la polarisation ponderee
+ *    par les courses plutot que par les kilometres (RUN-08) ;
+ *  - l'echauffement, les gammes, le retour au calme et un segment de nature « recuperation » :
+ *    depuis RUN-F4 lot B, `expandIntervalPhases` les developpe en phases RAPIDES. Sans ce second
+ *    filtre, un echauffement de 15 min comptait comme une fraction dans « X sur Y dans la plage »
+ *    et tirait la moyenne vers 6:00/km — l'analyse disait « 6 sur 8 » quand le hub
+ *    (`lastTimeReps`, meme filtre) disait « 5 sur 6 » pour la meme sortie (US CARDIO-08).
  *
  * L'ecart-type est **population** (divise par n) et non echantillon (n-1) : on decrit LA serie
  * realisee, on n'estime pas la variance d'une population dont elle serait un tirage.
@@ -126,7 +135,7 @@ export function summarizeIntervalSeries(
   rows: readonly RunIntervalRow[],
   toleranceSPerKm = 0,
 ): IntervalSeriesSummary {
-  const fast = rows.filter((r) => r.phaseKind === 'fast');
+  const fast = rows.filter((r) => r.phaseKind === 'fast' && r.segmentKind === 'work');
   const paced = fast.filter(
     (r): r is RunIntervalRow & { actualPaceSPerKm: number } =>
       r.actualPaceSPerKm != null && Number.isFinite(r.actualPaceSPerKm) && r.actualPaceSPerKm > 0,

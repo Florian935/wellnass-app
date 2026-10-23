@@ -2812,7 +2812,12 @@
       "inRange": "{{done}} sur {{total}} dans la plage",
       "slowest": "Fraction la plus lente : n° {{rep}}",
       "fastest": "Fraction la plus rapide : n° {{rep}}",
-      "recoveryRow": "Récup"
+      "recoveryRow": "Récup",
+      "segmentRow": {
+        "warmup": "Échauf.",
+        "drills": "Gammes",
+        "cooldown": "Ret. calme"
+      }
     },
     "prepa": {
       "title": "Objectif",

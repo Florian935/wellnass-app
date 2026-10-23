@@ -74,9 +74,9 @@ export type LastTimeRep = {
  *
  * Deux filtres, et le second est le piège : les récupérations sont écartées (mêlées aux fractions,
  * elles rendraient la série illisible), **et** l'échauffement, les éducatifs et le retour au calme
- * aussi — `expandIntervalPhases` les développe en phases « rapides », si bien que
- * `summarizeIntervalSeries`, qui ne filtre que le type de phase, les compte comme des fractions. Un
- * échauffement de 15 minutes se lirait alors comme une répétition ratée.
+ * aussi — `expandIntervalPhases` les développe en phases « rapides ». Un échauffement de 15 minutes
+ * se lirait sinon comme une répétition ratée. `summarizeIntervalSeries`, qui ne filtrait que le type
+ * de phase, les comptait comme des fractions ; elle applique ce même filtre depuis CARDIO-08.
  *
  * Une répétition franchie lors d'un rattrapage silencieux n'a pas de réalisé (RUN-F2d R8 bis) : sa
  * pastille dit « — », on n'invente rien.

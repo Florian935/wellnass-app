@@ -318,7 +318,25 @@ export default function RunAnalysisScreen() {
           </View>
 
           {intervalRows.map((row) => {
-            const isFast = row.phaseKind === 'fast';
+            // US CARDIO-08 — une ligne qui n'est pas une fraction du corps de séance porte le nom de
+            // son segment : l'échauffement s'appelait « Fraction 1 », et l'on comptait onze
+            // « Fraction » sous « 5 sur 6 ». Libellés courts (colonne de 84 px), nom complet pour le
+            // lecteur d'écran. Une nature inconnue garde « Fraction n » plutôt qu'une clé brute.
+            const rank = row.totalReps > 1 ? ` ${row.rep}` : '';
+            const isRecovery = row.phaseKind === 'recovery' || row.segmentKind === 'recovery';
+            const isSegment =
+              !isRecovery &&
+              (row.segmentKind === 'warmup' || row.segmentKind === 'drills' || row.segmentKind === 'cooldown');
+            const rowLabel = isRecovery
+              ? t('running.realise.recoveryRow')
+              : isSegment
+                ? `${t(`running.realise.segmentRow.${row.segmentKind}`)}${rank}`
+                : `${t('running.realise.rep')} ${row.rep}`;
+            const rowA11yLabel = isRecovery
+              ? t('running.segmentKind.recovery')
+              : isSegment
+                ? `${t(`running.segmentKind.${row.segmentKind}`)}${rank}`
+                : undefined;
             const min = row.plannedPaceMinSPerKm;
             const max = row.plannedPaceMaxSPerKm;
             const plannedLabel =
@@ -338,10 +356,12 @@ export default function RunAnalysisScreen() {
 
             return (
               <View key={row.phaseIndex} style={styles.tableRow}>
-                <Text style={[styles.tdFraction, { color: colors.text }]} numberOfLines={1}>
-                  {isFast
-                    ? `${t('running.realise.rep')} ${row.rep}`
-                    : t('running.realise.recoveryRow')}
+                <Text
+                  style={[styles.tdFraction, { color: colors.text }]}
+                  numberOfLines={1}
+                  accessibilityLabel={rowA11yLabel}
+                >
+                  {rowLabel}
                 </Text>
                 <Text style={[styles.tdPlanned, { color: colors.textMuted }]} numberOfLines={1}>
                   {plannedLabel}
