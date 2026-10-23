@@ -4,7 +4,7 @@ Idées brutes captées au fil de l'eau, **sans cadrage**. Le but est de ne rien 
 on note vite ici, on trie plus tard.
 
 Ce fichier n'est **pas** le pipeline de travail. Une idée retenue devient une US via
-[`/us`](.claude/commands/us.md) (spec → plan → design → validation, voir [CLAUDE.md](CLAUDE.md))
+[`/us`](.claude/commands/us.md) (implémentée directement, spec écrite avec le code — voir [CLAUDE.md](CLAUDE.md))
 puis rejoint la [roadmap](docs/roadmap/roadmap.md) ; son avancement se lit alors dans
 [ETAT.md](ETAT.md). Si elle est retenue mais pas encore démarrée, elle atterrit dans
 [BACKLOG.md](BACKLOG.md). Ici, c'est le brouillon d'avant.

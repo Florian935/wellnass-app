@@ -54,10 +54,12 @@ Exécute ces étapes dans l'ordre, et arrête-toi en cas de doute :
 
 7. **Front-matter de l'US** : si le commit fait avancer une US, ouvre sa spec dans
    [`docs/specs/functional/us/`](../../docs/specs/functional/us/) et **fais avancer le champ
-   `etape`** (`spec` → `plan` → `design` → `validation` → `code` → `close`) + la date `maj`.
-   C'est **la** source de vérité de l'avancement d'une US — pas un commentaire dans un fichier de
-   suivi. Le commit qui livre le code complet (étape 4 verte) passe l'US **directement** à `close` :
-   il n'y a plus d'étape de recette, et aucun fichier de critères à tenir. Si l'US vient d'être
+   `etape`** + la date `maj`. Chemin courant : `code` → `close` (on code directement depuis le
+   23/10/2026) ; `spec` → `plan` → `design` → `validation` ne servent que si un cadrage préalable a été
+   demandé. C'est **la** source de vérité de l'avancement d'une US — pas un commentaire dans un
+   fichier de suivi. Le commit qui livre le code complet (étape 4 verte) passe l'US **directement** à
+   `close` : il n'y a ni validation ni recette, et aucun fichier de critères à tenir. Vérifie que la
+   spec dit ce qui a été décidé en route et **ce qui n'est pas fait**. Si l'US vient d'être
    clôturée, retire aussi son entrée de [`BACKLOG.md`](../../BACKLOG.md) le cas échéant.
 
 8. **Roadmap — statut** (obligatoire si le commit touche une fonctionnalité de la roadmap) :

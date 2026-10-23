@@ -44,7 +44,7 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 | | |
 |---|---|
 | Branche courante | `HEAD` (modifications non commitées) |
-| Commits | 1384 · `main` a **1381** commits de retard sur `dev` |
+| Commits | 1385 · `main` a **1382** commits de retard sur `dev` |
 | Specs d'US | 196 au total — 194 clôturées, 2 en cours |
 | Migrations | 115/116 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
@@ -56,11 +56,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `8df7a1b`  feat(ia): ACCES-IA — l'IA réservée aux testeurs : interrupteur serveur AI_ACCESS et table ai_testers tenue au back-office
 - `ae9db4f`  fix(course): CARDIO-08 — l'analyse d'une sortie dit le même « X sur Y dans la plage » que le hub
 - `b599bf8`  fix(labo): CIBLE-04 — le Labo « Et si… » et le Conseil des trois partent du socle de la cible du jour
 - `9bcebe5`  docs(cardio): CARDIO-08 cadrée, relue et validée (D1 à D4) — spec, plan, BACKLOG
 - `788baac`  docs(identite): IDENT-01 cadrée, relue et validée (D1 à D12) — spec, plan, BACKLOG
-- `25c741f`  chore(suivi): fin de la recette consignée — RECETTES.md supprimé, une US passe de code à close
 
 ---
 

@@ -10,6 +10,33 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — Dev direct : plus de spec, plan ni maquette à valider avant le code (`chore/dev-direct` → `dev`)
+
+> Suite de la fin de la recette consignée (`25c741f9`). Commit précédent : `8df7a1b1` (ACCES-IA, autre session). Florian, le 23/10/2026 : « on
+> fait les devs directement » — tout l'amont tombe aussi. Une demande se code tout de suite ; la spec
+> s'écrit avec le code ; plan et maquette seulement sur demande.
+
+### Modifié
+- **CLAUDE.md** : « Workflow obligatoire par fonctionnalité (PRIMORDIAL) » devient « Workflow par
+  fonctionnalité — dev direct (depuis le 23/10/2026) » : cadrer vite sans livrable → implémenter (tests
+  d'abord) → spec écrite avec le code (règles, cas limites, i18n, offline, décisions, ce qui n'est pas fait)
+  → `close` au commit qui livre. **Une seule porte avant le code** : une question qui change le produit
+  (règle métier ambiguë, donnée de santé, coût d'IA, texte légal, action cloud). Plan seulement si le
+  chantier dépasse une session ; maquette seulement si demandée ; cadrage préalable seulement sur demande
+  explicite (`etape: validation`, puis attente). Mis en cohérence : modèle de suivi (chemin courant
+  `code` → `close`), IDEAS, méthode de travail (plus de validation préalable), structure (`/design`,
+  `/plans`), tableau des skills.
+- **`/us`** réécrit : il **implémente** l'US (identifiant, branche, front-matter `etape: code`, porte
+  produit, code + tests, spec complétée, `/commit`) ; `allowed-tools` élargi (`npm`, `npx`, `git log/diff`,
+  `Task`). La branche « cadrage demandé d'abord » garde l'arrêt à `validation`.
+- **Workflow commit partagé** (étape 7) : chemin courant `code` → `close`, étapes d'amont seulement sur
+  cadrage demandé ; vérifier que la spec dit les décisions prises et ce qui n'est pas fait.
+- **IDEAS.md** (en-tête) : une idée retenue devient une US implémentée directement.
+
+### Technique / Notes
+- `scripts/etat.mjs` inchangé : il garde les six étapes (IMPORT-01 est toujours à `validation`, en pause).
+- Roadmap non touchée : aucune fonctionnalité livrée par ce commit.
+
 ## 23/10/2026 — ACCES-IA : l'IA réservée aux testeurs — interrupteur serveur `AI_ACCESS` et table `ai_testers` tenue au back-office (`feature/acces-ia-testeurs` → `dev`)
 
 > US ACCES-IA (roadmap **7.43**, BACKLOG P1, suite de PRISME-01 §11) cadrée (spec, plan, toile Design, relecture

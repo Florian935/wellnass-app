@@ -72,24 +72,30 @@ streak) + back-office d'administration. Détail : [docs/specs/functional/](docs/
 Ordre de build : muscu d'abord (zéro dépendance externe), **running en dernier** (GPS arrière-plan
 = plus gros risque avec la synchro).
 
-## Workflow obligatoire par fonctionnalité (PRIMORDIAL)
+## Workflow par fonctionnalité — dev direct (depuis le 23/10/2026)
 
-**Aucune ligne de code applicatif n'est écrite avant d'avoir franchi ces étapes, dans cet
-ordre.** Toute nouvelle fonctionnalité / user story suit ce parcours :
+**On code directement.** Quand Florian ou Damien demande une fonctionnalité, un correctif ou une
+US, l'agent l'implémente tout de suite : pas de spec, de plan ni de maquette à faire valider avant
+la première ligne de code (décision de Florian, 23/10/2026 — accélérer le dev et la sortie sur le
+Play Store). Le skill [`/us`](.claude/commands/us.md) déroule ce parcours :
 
-1. **Spec** — rédiger la spécification du dev : ce que fait la fonctionnalité, règles métier,
-   cas limites, i18n (FR+EN), comportement offline. Vit dans
-   [docs/specs/functional/](docs/specs/functional/) ou [docs/specs/technical/](docs/specs/technical/).
-2. **Plan d'implémentation** — rédiger le plan : découpage en étapes, fichiers touchés, tests
-   prévus, ordre de build.
-3. **Design / maquette** — produire la maquette dans `design/<fonctionnalité>/`, **créée et
-   exportée depuis Claude Design**.
-4. **Validation** — les 3 livrables ci-dessus sont **validés par Damien ou Florian**.
-   **Pas de code tant que ce n'est pas validé.**
-5. **Implémentation** — seulement après validation, sur une branche dédiée (voir ci-dessous),
-   par incréments bornés.
-6. **Clôture** — l'US passe à `etape: close` **dans le commit qui livre le code complet**, dès que
-   lint, typecheck et tests sont verts. Pas d'étape de recette entre le code et la clôture.
+1. **Cadrer vite, sans livrable** — lire le code concerné, le BACKLOG, la roadmap et les specs
+   voisines ; attribuer l'identifiant et le numéro de roadmap. Une question **qui change le
+   produit** (règle métier ambiguë, donnée de santé, coût d'IA, texte légal, action sur le cloud)
+   se pose **avant** de coder ; tout le reste se tranche et se note dans la spec.
+2. **Implémenter** par incréments bornés, tests d'abord, sur une branche dédiée (voir ci-dessous).
+3. **Écrire la spec avec le code** dans [docs/specs/functional/us/](docs/specs/functional/us/) :
+   front-matter (`etape: code`) dès le début, puis règles métier, cas limites, i18n (FR+EN),
+   comportement offline, décisions prises en route et **ce qui n'est pas fait**. Courte, mais
+   jamais absente : c'est la seule trace de l'US qui survit à la session.
+4. **Clôture** — l'US passe à `etape: close` **dans le commit qui livre le code complet**, dès que
+   lint, typecheck et tests sont verts. Ni validation ni recette entre le code et la clôture.
+
+**Plan et maquette ne sont plus obligatoires.** Un plan (`docs/plans/`) seulement si le chantier
+dépasse une session ou se partage entre plusieurs sessions ; une maquette (`design/<slug>/`)
+seulement si Florian ou Damien la demande. S'il demande explicitement un cadrage d'abord
+(« analyse », « propose-moi », « fais une maquette »), livrer ce cadrage, passer
+`etape: validation` et attendre son retour avant de coder.
 
 ### Recette à la demande (depuis le 23/10/2026)
 
@@ -142,7 +148,8 @@ tout ça : **chaque information a un seul endroit, et cet endroit se remplace au
    (skill [`/etat`](.claude/commands/etat.md)). **Ne jamais l'éditer à la main** : si une ligne est
    fausse, la source est fausse. C'est le premier fichier à lire dans une session.
 2. **Le front-matter de chaque [spec d'US](docs/specs/functional/us/)** — *l'état d'une US*.
-   Champ `etape:` ∈ `spec` `plan` `design` `validation` `code` `close`,
+   Champ `etape:` ∈ `spec` `plan` `design` `validation` `code` `close` — chemin courant
+   `code` → `close`, les étapes d'amont ne servant que si un cadrage préalable a été demandé —
    plus `id`, `titre`, `roadmap:`, `catalogue:`, `branche`, `maj`. C'est ce que le générateur lit.
 3. **[BACKLOG.md](BACKLOG.md)** — *ce qu'il reste à faire*. Une ligne par candidat **sans spec
    encore**, priorisé P0 (bloquant lancement) / P1 (finition visible) / P2 (confort). Dès qu'un
@@ -163,8 +170,8 @@ source de vérité des US META/MN/MR/NUTR/RN — ne pas les dupliquer dans la ro
 [IDEAS.md](IDEAS.md) à la racine est la **boîte de dépôt** des idées brutes captées au fil de
 l'eau, **avant** tout cadrage. Ce n'est pas le pipeline : on y note vite, on relit
 régulièrement pour trier. Une idée retenue devient une US via [`/us`](.claude/commands/us.md)
-(spec → plan → design → validation) et rejoint la roadmap ; l'idée est alors archivée dans
-IDEAS.md avec la décision.
+(implémentée directement, spec écrite avec le code) et rejoint la roadmap ; l'idée est alors
+archivée dans IDEAS.md avec la décision.
 
 ### Migrations base de données (OBLIGATOIRE)
 
@@ -206,8 +213,8 @@ Cycle **sans Docker** :
 - Travailler par **incréments bornés** (une fonctionnalité de la roadmap = une user story + tests + PR).
 - Respecter la **Definition of Done** et les standards de
   [docs/specs/technical/bonnes-pratiques.md](docs/specs/technical/bonnes-pratiques.md).
-- Découpage fin. **Une seule validation suffit** (Florian ou Damien) sur les livrables d'amont ;
-  une relecture croisée reste possible à la demande, jamais bloquante.
+- Découpage fin. **Pas de validation préalable** au code ; une relecture croisée reste possible à
+  la demande, jamais bloquante.
 
 ## Structure de la documentation
 
@@ -219,7 +226,7 @@ Cycle **sans Docker** :
 /supabase/MIGRATIONS.md     → registre coché des migrations poussées sur le cloud
 /SYNTHESE-CADRAGE.md        → arbitrages tranchés (décisions A→H)
 /scripts/etat.mjs           → générateur de ETAT.md (`node scripts/etat.mjs [--check]`)
-/design                     → maquettes par fonctionnalité (exportées de Claude Design)
+/design                     → maquettes par fonctionnalité (seulement quand une maquette est demandée)
 /apps
   /mobile                   → app Expo (React Native, Expo Router, Zustand, i18n) — 3 piliers livrés
   /admin                    → back-office web React+Vite (15 écrans : exercices, programmes,
@@ -236,7 +243,7 @@ Cycle **sans Docker** :
     /functional             → specs par pilier + /us : 129 specs d'US (front-matter = état de l'US)
     /technical              → architecture, offline-sync, modele-donnees, i18n, bonnes-pratiques,
                               powersync-sync-rules.yaml, dev-build-android-local, environnement-dev-local
-  /plans                    → 120 plans d'implémentation (1 par US)
+  /plans                    → 120 plans d'implémentation (historiques ; un plan n'est plus obligatoire)
   /adr                      → ADR-001 (sync) … ADR-007 (surfaçage des analyses)
   /roadmap                  → roadmap.md (V0.1 → V1.1 + hors cadrage)
 ```
@@ -246,7 +253,7 @@ Cycle **sans Docker** :
 | Skill | Quand |
 |---|---|
 | [`/etat`](.claude/commands/etat.md) | **Début de session** — régénère ETAT.md et dit où on en est. |
-| [`/us`](.claude/commands/us.md) | Démarrer une US : branche + spec + plan + maquette + front-matter. S'arrête à la validation. |
+| [`/us`](.claude/commands/us.md) | Démarrer **et implémenter** une US : identifiant, branche, spec écrite avec le code, tests. Pas de validation préalable. |
 | [`/commit`](docs/agent-workflows/commit.md) | Commiter : revue de diff, CHANGELOG, front-matter, roadmap, ETAT, push sur `dev`. Workflow partagé avec Codex (`$commit`). |
 | [`/reconcilier`](.claude/commands/reconcilier.md) | Mensuel / avant jalon — audite l'écart code ↔ documentation. |
 
