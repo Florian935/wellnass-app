@@ -1,37 +1,23 @@
-import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   RUNNER_OBJECTIVES,
   RUNNER_LEVELS,
-  sessionTargetPace,
   type RunnerObjective,
   type RunnerLevel,
-  type SessionType,
 } from '@wellness/shared';
-import { Button } from '@/components/Button';
-import { Card } from '@/components/Card';
 import { GuidanceSelector } from '@/components/guidance/GuidanceSelector';
+import { ReferencePaceCard } from '@/components/running/ReferencePaceCard';
 import { useGuidance } from '@/data/guidance';
-import { TextField } from '@/components/TextField';
 import {
   upsertRunnerProfile,
   useRunnerProfile,
 } from '@/data/repositories/running-profile-repository';
-import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { KeyboardAwareScrollView } from '@/components/keyboard';
-
-/** Types de séance affichés dans la section "Mes allures" (course_libre exclue). */
-const PACE_SESSION_TYPES: readonly SessionType[] = [
-  'endurance',
-  'sortie_longue',
-  'recuperation',
-  'fractionne',
-] as const;
 
 /** Intervalles d'annonce proposés (US RUN-F2a, spec R1), en mètres. */
 const ANNOUNCEMENT_INTERVALS_M = [500, 1000, 2000] as const;
@@ -47,16 +33,10 @@ export default function RunnerProfileScreen() {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
-  const units = useUnits();
 
   const { runnerProfile } = useRunnerProfile();
   // US GUID-01 — le régime vit dans le pilier qu'il gouverne, jamais dans la liste des réglages.
   const guidance = useGuidance('running');
-
-  // État local pour le champ allure de référence (saisie libre M:SS).
-  // Offline-first : démarre null ; la valeur affichée retombe sur la valeur persistée
-  // (résolue de façon asynchrone par PowerSync) tant que l'utilisateur n'a pas édité.
-  const [paceText, setPaceText] = useState<string | null>(null);
 
   const objective: RunnerObjective | null = runnerProfile?.objective ?? null;
   const level: RunnerLevel | null = runnerProfile?.level ?? null;
@@ -67,14 +47,6 @@ export default function RunnerProfileScreen() {
   const voiceAnnouncementIntervalM = runnerProfile?.voiceAnnouncementIntervalM ?? 1000;
   // US RUN-F2d : désactivé par défaut, réglage indépendant du précédent (spec R3).
   const intervalGuidanceEnabled = runnerProfile?.intervalGuidanceEnabled ?? false;
-
-  const onPaceChange = (v: string) => {
-    setPaceText(v);
-    const p = units.parsePace(v);
-    if (p != null) {
-      void upsertRunnerProfile({ ref5kPaceSPerKm: p });
-    }
-  };
 
   return (
     <KeyboardAwareScrollView
@@ -91,6 +63,12 @@ export default function RunnerProfileScreen() {
         onChange={guidance.setRegime}
         colors={colors}
       />
+
+      {/* US CARDIO-02 (§3.4, D8) — l'allure de référence, premier réglage du pilier : la valeur, d'où
+          elle vient, les quatre allures qu'elle produit, et les portes pour la changer. Elle remplace
+          le champ « allure actuelle sur 5 km », écrit à chaque frappe sans rien montrer (F2). */}
+      <Text style={[styles.section, { color: colors.textMuted }]}>{t('running.refPace.title')}</Text>
+      <ReferencePaceCard refSPerKm={ref5kPaceSPerKm} onChange={() => router.push('/running-pace')} />
 
       {/* Objectif */}
       <Text style={[styles.section, { color: colors.textMuted }]}>
@@ -113,24 +91,6 @@ export default function RunnerProfileScreen() {
         onChange={(l) => void upsertRunnerProfile({ level: l })}
         label={(l) => t(`running.level.${l}`)}
       />
-
-      {/* Allure de référence */}
-      <Card>
-        <TextField
-          label={`${t('running.profile.ref5k')} (/${units.distanceSymbol})`}
-          value={paceText ?? units.paceInputValue(runnerProfile?.ref5kPaceSPerKm)}
-          onChangeText={onPaceChange}
-          keyboardType="numbers-and-punctuation"
-          placeholder={t(
-            units.system === 'imperial'
-              ? 'running.profile.ref5kPlaceholderImperial'
-              : 'running.profile.ref5kPlaceholderMetric',
-          )}
-        />
-        <Text style={[styles.hint, { color: colors.textMuted }]}>
-          {t('running.profile.ref5kHint')}
-        </Text>
-      </Card>
 
       {/* Fréquence hebdo */}
       <Text style={[styles.section, { color: colors.textMuted }]}>
@@ -165,47 +125,6 @@ export default function RunnerProfileScreen() {
           );
         })}
       </View>
-
-      {/* Mes allures d'entraînement */}
-      <Text style={[styles.section, { color: colors.textMuted }]}>
-        {t('running.profile.paces')}
-      </Text>
-      {ref5kPaceSPerKm == null ? (
-        <Card>
-          <Text style={[styles.cardText, { color: colors.textMuted }]}>
-            {t('running.profile.pacesEmpty')}
-          </Text>
-        </Card>
-      ) : (
-        <View style={[styles.paceCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-          {PACE_SESSION_TYPES.map((type, i) => {
-            const range = sessionTargetPace(type, ref5kPaceSPerKm);
-            if (range == null) return null;
-            return (
-              <View
-                key={type}
-                style={[
-                  styles.paceRow,
-                  i < PACE_SESSION_TYPES.length - 1 && {
-                    borderBottomWidth: 1,
-                    borderBottomColor: colors.border,
-                  },
-                ]}
-              >
-                <Text style={[styles.paceType, { color: colors.text }]}>
-                  {t(`running.sessionType.${type}`)}
-                </Text>
-                <Text style={[styles.paceRange, { color: colors.accent }]}>
-                  {t('running.paces.range', {
-                    min: units.formatPace(range.minSPerKm),
-                    max: units.formatPace(range.maxSPerKm),
-                  })}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-      )}
 
       {/* Annonces vocales (US RUN-F2a, roadmap 5.19) */}
       <Text style={[styles.section, { color: colors.textMuted }]}>
@@ -292,9 +211,7 @@ export default function RunnerProfileScreen() {
         </View>
       </View>
 
-      <View style={styles.footer}>
-        <Button label={t('common.back')} onPress={() => router.back()} />
-      </View>
+      {/* US CARDIO-02 (F39) — plus de bouton « Retour » en pied : la flèche de l'en-tête suffit. */}
     </KeyboardAwareScrollView>
   );
 }
@@ -344,7 +261,6 @@ const styles = StyleSheet.create({
     letterSpacing: 0.5,
     marginTop: 12,
   },
-  cardText: { fontFamily: fontFamily.body, fontSize: 15, lineHeight: 21 },
   list: { borderRadius: 18, borderWidth: 1, overflow: 'hidden' },
   listItem: {
     flexDirection: 'row',
@@ -372,19 +288,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   freqLabel: { fontFamily: fontFamily.monoBold, fontSize: 15 },
-  paceCard: { borderRadius: 18, borderWidth: 1, overflow: 'hidden' },
-  paceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    gap: 12,
-  },
-  paceType: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 14 },
-  paceRange: { fontFamily: fontFamily.monoBold, fontSize: 14 },
   hint: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18, marginTop: 4 },
-  footer: { marginTop: 20 },
   announceCard: { borderRadius: 18, borderWidth: 1, padding: 16, gap: 12 },
   announceRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   announceGrow: { flex: 1, gap: 2 },

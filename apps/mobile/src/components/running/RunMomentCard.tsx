@@ -12,6 +12,9 @@
  *    disparaît : la semaine est juste en dessous (D9) ;
  *  - une course **sans GPS** en cours dit sa durée, pas « 0,00 km » ;
  *  - en premiers pas, l'allure de référence manquante est signalée : sans elle, aucune allure cible.
+ *
+ * US CARDIO-02 (D7) — « La donner » ouvre directement les quatre portes (`onRefPace`), et la séance
+ * du jour porte la même ligne quand elle n'a pas d'allure cible faute d'allure de référence.
  */
 
 import { Ionicons } from '@expo/vector-icons';
@@ -42,6 +45,8 @@ export type RunMoment =
       estimatedLabel: string | null;
       paceLabel: string | null;
       instructions: string | null;
+      /** US CARDIO-02 (§3.5) — la séance aurait une allure cible, si l'allure de référence existait. */
+      needsRefPace: boolean;
     }
   | {
       kind: 'arrival';
@@ -69,7 +74,8 @@ type Props = {
   onFreeRun: () => void;
   onPlanning: () => void;
   onPrograms: () => void;
-  onProfile: () => void;
+  /** US CARDIO-02 (D7) — ouvre les quatre portes vers l'allure de référence. */
+  onRefPace: () => void;
 };
 
 export function RunMomentCard(props: Props) {
@@ -145,6 +151,13 @@ export function RunMomentCard(props: Props) {
               {moment.instructions}
             </Text>
           ) : null}
+          {moment.needsRefPace ? (
+            <RefPaceNudge
+              testID="run-moment-today-ref-pace"
+              body={t('running.refPace.todayNudge')}
+              onPress={props.onRefPace}
+            />
+          ) : null}
           {props.lastTime}
         </View>
       );
@@ -200,20 +213,7 @@ export function RunMomentCard(props: Props) {
       title = t('running.hub.onboardingTitle');
       meta = t('running.hub.onboardingBody');
       body = moment.needsRefPace ? (
-        <View style={[styles.refPace, { backgroundColor: colors.surfaceAlt }]}>
-          <View style={styles.refPaceTexts}>
-            <Text style={[styles.refPaceTitle, { color: colors.text }]}>{t('runningHub.moment.refPace.title')}</Text>
-            <Text style={[styles.refPaceBody, { color: colors.textMuted }]}>{t('runningHub.moment.refPace.body')}</Text>
-          </View>
-          <PressableScale
-            testID="run-moment-ref-pace"
-            onPress={props.onProfile}
-            accessibilityRole="button"
-            style={[styles.refPaceCta, { borderColor: colors.accent }]}
-          >
-            <Text style={[styles.refPaceCtaLabel, { color: colors.accent }]}>{t('runningHub.moment.refPace.cta')}</Text>
-          </PressableScale>
-        </View>
+        <RefPaceNudge testID="run-moment-ref-pace" body={t('runningHub.moment.refPace.body')} onPress={props.onRefPace} />
       ) : null;
       primary = { label: t('runningHub.moment.primary.onboarding'), onPress: props.onPrograms };
       secondary = { label: t('runningHub.moment.freeRun'), onPress: props.onFreeRun };
@@ -265,6 +265,29 @@ export function RunMomentCard(props: Props) {
           </PressableScale>
         ) : null}
       </View>
+    </View>
+  );
+}
+
+/** « Ton allure de référence · La donner » — la même ligne en premiers pas et sur la séance du jour. */
+function RefPaceNudge({ testID, body, onPress }: { testID: string; body: string; onPress: () => void }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
+  return (
+    <View style={[styles.refPace, { backgroundColor: colors.surfaceAlt }]}>
+      <View style={styles.refPaceTexts}>
+        <Text style={[styles.refPaceTitle, { color: colors.text }]}>{t('runningHub.moment.refPace.title')}</Text>
+        <Text style={[styles.refPaceBody, { color: colors.textMuted }]}>{body}</Text>
+      </View>
+      <PressableScale
+        testID={testID}
+        onPress={onPress}
+        accessibilityRole="button"
+        accessibilityLabel={`${t('runningHub.moment.refPace.title')} · ${t('runningHub.moment.refPace.cta')}`}
+        style={[styles.refPaceCta, { borderColor: colors.accent }]}
+      >
+        <Text style={[styles.refPaceCtaLabel, { color: colors.accent }]}>{t('runningHub.moment.refPace.cta')}</Text>
+      </PressableScale>
     </View>
   );
 }

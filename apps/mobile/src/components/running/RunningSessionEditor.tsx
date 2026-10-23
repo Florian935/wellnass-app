@@ -21,6 +21,7 @@ import {
 } from '@/data/repositories/program-repository';
 import { useRunnerProfile } from '@/data/repositories/running-profile-repository';
 import { IntervalBlockEditor } from '@/components/running/IntervalBlockEditor';
+import { RefPaceBanner } from '@/components/running/RefPaceBanner';
 import { Button } from '@/components/Button';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -256,10 +257,12 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
   // ---------------------------------------------------------------------------
 
   let paceDisplay: string | null = null;
+  // US CARDIO-02 (§3.5) — sans allure de référence, le message mène aux portes au lieu de le dire.
+  let needsRefPace = false;
   if (sessionType) {
     const ref5k = runnerProfile?.ref5kPaceSPerKm ?? null;
     if (ref5k == null) {
-      paceDisplay = t('running.program.noProfileHint');
+      needsRefPace = true;
     } else {
       const range = sessionTargetPace(sessionType, ref5k);
       if (range) {
@@ -422,6 +425,7 @@ export function RunningSessionEditor({ session, fallbackName }: RunningSessionEd
       ) : null}
 
       {/* Allure calculée */}
+      {needsRefPace ? <RefPaceBanner testID="editor-ref-pace" /> : null}
       {paceDisplay ? (
         <Text style={[styles.paceDisplay, { color: colors.textMuted }]}>
           {paceDisplay}

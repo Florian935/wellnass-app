@@ -35,6 +35,7 @@ import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { sessionPaceLabelText } from '@/running/session-pace-label';
 import { KeyboardAwareScrollView } from '@/components/keyboard';
+import { RefPaceBanner } from '@/components/running/RefPaceBanner';
 
 /** Clés i18n des jours de semaine, indexées 0 = lundi … 6 = dimanche. */
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
@@ -64,7 +65,7 @@ function PlanView({ programId }: { programId: string }) {
   const units = useUnits();
 
   const { detail, isLoading } = useProgramDetail(programId);
-  const { runnerProfile } = useRunnerProfile();
+  const { runnerProfile, isLoading: profileLoading } = useRunnerProfile();
   const { program: activeProgram } = useActiveProgram(detail?.pillar ?? 'strength');
   const hasOtherActive = !!activeProgram && activeProgram.id !== programId;
 
@@ -285,6 +286,14 @@ function PlanView({ programId }: { programId: string }) {
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
           {t('running.program.sessions')}
         </Text>
+
+        {/* US CARDIO-02 (§3.5) — une seule entrée vers les portes, en tête de la liste. */}
+        {detail.pillar === 'running' &&
+        !profileLoading &&
+        runnerProfile?.ref5kPaceSPerKm == null &&
+        sessions.some((session) => session.sessionType != null) ? (
+          <RefPaceBanner />
+        ) : null}
 
         <View style={styles.sessionList}>
           {sessions.map((session, index) => (

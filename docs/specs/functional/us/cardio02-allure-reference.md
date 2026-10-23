@@ -3,7 +3,7 @@ id: CARDIO-02
 titre: "Les quatre portes vers l'allure de référence, et l'accueil du pilier Course"
 roadmap: [5.40, 5.45]
 catalogue: []
-etape: code
+etape: close
 branche: feature/cardio02-allure-reference
 maj: 23/10/2026
 ---
@@ -246,10 +246,13 @@ séances n'ont pas d'allure cible », et **La donner**. Le bouton « Retour » d
 
 ### L'accueil
 
-- **R14 — Condition d'ouverture** (D4), évaluée à l'affichage du hub Course : appareil **en ligne**,
+- **R14 — Condition d'ouverture** (D4), évaluée **quand le hub Course a le focus** (il reste monté
+  sous les autres onglets et écrans) : appareil **en ligne**,
   une synchronisation **terminée pendant ce lancement** (`lastSyncedAt` postérieur au démarrage de
-  l'app), profil chargé, **aucune ligne** `running_profiles`, aucune course en cours. Ouverture **une
-  fois par lancement** au plus (garde en mémoire). Hors ligne, l'accueil attend : rien n'est écrit.
+  l'app), profil chargé, **aucune ligne** `running_profiles` — **relue en base au moment d'ouvrir**,
+  le statut de synchro pouvant précéder la relecture de la requête réactive —, aucune course en cours.
+  Ouverture **une fois par lancement** au plus (garde en mémoire). Hors ligne, l'accueil attend : rien
+  n'est écrit.
 - **R15 — Marqueur.** À l'ouverture, une ligne de profil vide est écrite (`upsertRunnerProfile({})`,
   qui insère le seul `user_id`). C'est une **route** (`/running-welcome`), pas une `Modal` : le retour
   Android ferme l'écran comme « Passer ». Quitter de n'importe quelle façon ne la fait pas revenir.
@@ -449,3 +452,46 @@ saisie deviennent des tests de la carte, et celui du bouton « Retour » vérifi
   tête de liste, sans effet sur la couleur de l'écran.
 - **CARDIO-03** (départ en un geste) reprendra `run/index.tsx` après cette US ; le paramètre `test` est
   additif et ne change aucun autre chemin de départ.
+
+## 11. Notes d'implémentation (23/10/2026)
+
+Livrée en une vague, sur la branche `feature/cardio02-allure-reference`, après la validation de
+Florian (D1 à D8 telles que proposées). Pas d'étape de recette (règle du 23/10/2026) : l'US passe à
+`close` avec le code complet, tests verts.
+
+- **Le socle** (`packages/shared/src/reference-pace.ts`, 42 tests) porte toute la décision : les
+  portes, la borne unique (`PLAUSIBLE_PACE_S_PER_KM`, extraite de `units.ts`, que `parsePaceToSPerKm`
+  lit désormais), les quatre allures, la règle de record, la provenance, le déroulé et la mesure du
+  test, la condition d'accueil, le choix de voix. Les écrans n'en recopient aucune règle.
+- **R18-R20** : `detectAndStoreRunRecords(runId, { updateReference })` ; `backfillRunningRecords`
+  passe `false`, n'écrit plus jamais l'allure, et chaîne un second passage au lieu de rendre la main
+  pendant un recalcul ; `deleteRun` lit l'allure avant le recalcul. Neuf tests SQLite
+  (`cardio02-reference-pace-sql.test.ts`) **vus rouges** sur l'ancien code (5 échecs) avant le correctif.
+- **L'arrondi** (R1) vaut pour toutes les portes, impérial compris : une allure saisie à 8:00 /mi
+  s'enregistre 298 s/km, plus 298,26.
+- **Le marqueur du test** est une préférence locale (`stores/cooper-test-store.ts`), comme le dernier
+  mode de départ ; `running/cooper-measure.ts` le relie à la course (`useRun`, qui ignore une course
+  supprimée) et à sa trace. La porte du test retrouve une mesure non retenue (`usePendingCooperTest`).
+- **L'accueil** est une route ; l'ouverture et le marqueur vivent dans `hooks/useRunningWelcome.ts`
+  (garde de module « une fois par lancement », `lastSyncedAt` comparé à l'heure de démarrage de l'app).
+  `OnboardingScaffold` gagne des libellés et un « Passer » facultatifs, sans rien changer à
+  l'onboarding de l'app.
+- **Les entrées** : `RefPaceNudge` (dans `RunMomentCard`, Premiers pas et séance du jour),
+  `RefPaceBanner` (planning, plan, détail de programme, éditeur de séance), zones d'allure. Le bandeau
+  utilise un `Pressable` simple plutôt que `PressableScale`, dont l'animation n'est pas chargée par les
+  mocks du planning.
+- **Clés i18n retirées** : `running.profile.ref5k`, `ref5kHint`, `pacesEmpty`, `paces` (plus aucun
+  écran ne les lit) ; les placeholders `ref5kPlaceholder*` restent, repris par la porte « allure
+  connue ».
+- **Garde clavier** : `running-pace.tsx` et `running-welcome.tsx` en `self`, `ReferencePaceDoors.tsx`
+  couvert par ses deux importeurs ; `running-profile.tsx` sort de l'inventaire (il n'a plus de champ).
+- **Relue par un agent de revue** (code, 23/10/2026) : treize constats, tous traités. Les principaux :
+  l'accueil ne s'ouvre plus que **hub au premier plan** (il pouvait se poser sur l'écran d'arrivée ou sur
+  un autre onglet), l'heure de lancement est retenue par le layout racine (`lib/app-launch.ts` ;
+  `inlineRequires` aurait daté le premier affichage du hub), la table est relue avant d'ouvrir, deux
+  appuis rapides ne sautent plus de question ni ne ferment deux fois (un second `router.back()`
+  quittait le hub) ; le bandeau du test ne s'annonce au lecteur d'écran qu'aux changements de phase,
+  l'aperçu laisse lire ses quatre allures ; la borne compare la valeur brute (4:01 /mi refusé partout),
+  la mesure retrouvée s'évalue en mètres, le message de distance suit l'unité ; « Passer » et la ligne
+  des zones d'allure font 44 px ; la barre de progression de l'accueil est posée
+  (`OnboardingScaffold`, `showProgressBar`) ; les bandeaux des listes attendent le chargement du profil.

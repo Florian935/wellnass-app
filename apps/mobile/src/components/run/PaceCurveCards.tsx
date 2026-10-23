@@ -163,7 +163,8 @@ export function PaceCurveCards({ splits }: { splits: readonly KmSplit[] }) {
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('run.summary.zones.needsRef')}
-            onPress={() => router.push('/running-profile')}
+            // US CARDIO-02 (D7) — directement aux portes, pas au profil.
+            onPress={() => router.push('/running-pace')}
             style={styles.needsRefRow}
           >
             <Text style={[styles.needsRef, { color: colors.textMuted }]}>
@@ -192,6 +193,7 @@ const styles = StyleSheet.create({
   zoneRow: { flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 3 },
   zoneLabel: { fontFamily: fontFamily.body, fontSize: 13, flexShrink: 1 },
   zonePercent: { fontFamily: fontFamily.bodyBold, fontSize: 12, marginLeft: 'auto' },
-  needsRefRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 2 },
+  // US CARDIO-02 (D7) — devenue une entrée vers les portes : une cible de 44 px au moins.
+  needsRefRow: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 2, minHeight: 44 },
   needsRef: { fontFamily: fontFamily.body, fontSize: 12.5, fontStyle: 'italic', flexShrink: 1 },
 });

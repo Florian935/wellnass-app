@@ -16,7 +16,7 @@
  *    l'affichage doit suivre le sens, pas le signe.
  */
 
-import { render } from '@testing-library/react-native';
+import { act, fireEvent, render } from '@testing-library/react-native';
 
 import { PaceCurveCards } from '../run/PaceCurveCards';
 
@@ -141,6 +141,14 @@ describe('PaceCurveCards — 🔴 allure de référence absente (spec R4)', () =
     const { getByText } = await render(<PaceCurveCards splits={km(12, 375)} />);
     expect(getByText('run.summary.zones.title')).toBeTruthy();
     expect(getByText('run.summary.zones.needsRef')).toBeTruthy();
+  });
+
+  it('US CARDIO-02 (D7) — le remède mène directement aux quatre portes', async () => {
+    const { getByLabelText } = await render(<PaceCurveCards splits={km(12, 375)} />);
+    await act(async () => {
+      fireEvent.press(getByLabelText('run.summary.zones.needsRef'));
+    });
+    expect(mockPush).toHaveBeenCalledWith('/running-pace');
   });
 
   it('n’affiche aucune zone chiffrée — pas de répartition inventée', async () => {

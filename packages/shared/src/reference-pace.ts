@@ -59,14 +59,15 @@ export type ReferencePaceEvaluation =
   | { status: 'ok' | 'tooFast' | 'tooSlow'; sPerKm: number };
 
 /**
- * Classe une allure **brute** (R4) et l'arrondit à la seconde (R1) — l'arrondi vaut aussi en impérial,
- * où l'ancienne saisie stockait 8:00 /mi comme 298,26 s/km.
+ * Classe une allure **brute** (R4) — exactement comme `parsePaceToSPerKm`, sans quoi 4:01 /mi
+ * (149,75 s/km) passerait ici et pas là — puis l'arrondit à la seconde (R1). L'arrondi vaut aussi en
+ * impérial, où l'ancienne saisie stockait 8:00 /mi comme 298,26 s/km.
  */
 export function classifyReferencePace(sPerKm: number | null): ReferencePaceEvaluation {
   if (sPerKm == null || !Number.isFinite(sPerKm) || sPerKm <= 0) return { status: 'empty' };
   const rounded = Math.round(sPerKm);
-  if (rounded < PLAUSIBLE_PACE_S_PER_KM.min) return { status: 'tooFast', sPerKm: rounded };
-  if (rounded > PLAUSIBLE_PACE_S_PER_KM.max) return { status: 'tooSlow', sPerKm: rounded };
+  if (sPerKm < PLAUSIBLE_PACE_S_PER_KM.min) return { status: 'tooFast', sPerKm: rounded };
+  if (sPerKm > PLAUSIBLE_PACE_S_PER_KM.max) return { status: 'tooSlow', sPerKm: rounded };
   return { status: 'ok', sPerKm: rounded };
 }
 
@@ -117,7 +118,7 @@ export function evaluateReferenceDoor(input: ReferenceDoorInput): ReferencePaceE
       return classifyReferencePace(referencePaceFromRaceTime(meters, seconds));
     }
     case 'test': {
-      const text = input.distanceText.replace(/[\s  ]/g, '');
+      const text = input.distanceText.replace(/\s/g, ''); // `\s` couvre aussi U+00A0 et U+202F
       if (text === '') return { status: 'empty' };
       const value = parseNumberLoose(text);
       if (value === null || value <= 0) return { status: 'unreadable' };

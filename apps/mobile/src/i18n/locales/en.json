@@ -2393,13 +2393,9 @@
       "title": "Runner profile",
       "objective": "Goal",
       "level": "Level",
-      "ref5k": "Reference pace (5 km)",
-      "ref5kHint": "Your current pace over 5 km",
       "ref5kPlaceholderMetric": "5:00",
       "ref5kPlaceholderImperial": "8:03",
       "frequency": "Target weekly frequency",
-      "paces": "My training paces",
-      "pacesEmpty": "Enter your reference pace to see your target paces.",
       "announcements": "Voice announcements",
       "announcementsToggle": "Voice announcements during the run",
       "announcementsHint": "Distance, time, and pace announced out loud at a regular interval. May interrupt music playing in the background.",
@@ -2949,6 +2945,160 @@
         "overtaken": "Your ghost just passed you."
       },
       "a11y": "Ghost from {{date}}, {{gap}}"
+    },
+    "refPace": {
+      "title": "Your reference pace",
+      "subtitle": "It sets all your target paces. Pick what you know.",
+      "doorsLabel": "What you know about your pace",
+      "door": {
+        "race": {
+          "title": "I have a recent race time",
+          "body": "Any distance: we work out the rest."
+        },
+        "test": {
+          "title": "The 12-minute test",
+          "body": "Run as far as you can for 12 minutes; the app measures."
+        },
+        "known": {
+          "title": "I know my 5K pace",
+          "body": "Your pace when you run 5K as fast as you can, not your easy pace."
+        },
+        "unknown": {
+          "title": "I don't know yet",
+          "body": "Nothing to enter. You can set it later.",
+          "detail": "Run by feel: you should be able to talk while running. We'll work it out from your first 5K GPS run, or from the 12-minute test whenever you like."
+        }
+      },
+      "records": "Your best recorded times",
+      "recordChip": "{{distance}} · {{time}} · {{date}}",
+      "recordChipA11y": "Use your best recorded {{distance}}: {{time}}, on {{date}}",
+      "distance": "Distance",
+      "distanceOther": "Other",
+      "customDistance": "Distance ({{unit}})",
+      "time": "Your time (m:ss or h:mm:ss)",
+      "testDone": "I've done it",
+      "testNow": "Do it now",
+      "testDistance": "Distance covered in 12 minutes ({{unit}})",
+      "testPending": "Measured during your test on {{date}}, not used yet.",
+      "testLater": "Not done yet? Start it from your runner profile whenever you like.",
+      "protocol": {
+        "warmup": "Warm up with 10 minutes of easy jogging before you start the test.",
+        "run": "On flat ground, run as far as you can for 12 minutes — steady rather than explosive.",
+        "screen": "Keep the screen on: the app alerts you at 11:00 and 12:00, then measures your distance. A pause stops the test."
+      },
+      "startTest": "Start the test",
+      "knownField": "5K pace (/{{unit}})",
+      "preview": {
+        "eyebrow": "Your reference pace",
+        "equivalent": "≈ {{time}} for 5K",
+        "a11y": "Your reference pace: {{pace}}, about {{time}} for 5K."
+      },
+      "before": "Before: {{pace}}",
+      "save": "Use this pace",
+      "error": {
+        "tooFast": "Faster than {{min}}: check the distance and the time (h:mm:ss past one hour).",
+        "tooSlow": "Slower than {{max}}: check the distance and the time.",
+        "knownTooFast": "Faster than {{min}}: check your pace.",
+        "knownTooSlow": "Slower than {{max}}: check your pace.",
+        "testTooFast": "Faster than {{min}}: check the distance.",
+        "testTooSlow": "Slower than {{max}}: check the distance.",
+        "badDistance": "Between 1 km and a marathon distance.",
+        "unreadableTime": "Write your time as minutes:seconds, for example {{example}}.",
+        "unreadablePace": "Write your pace as minutes:seconds, for example {{example}}.",
+        "unreadableMeters": "Write the distance in meters, for example 2400.",
+        "unreadableMiles": "Write the distance in miles, for example 1.49.",
+        "badDistanceImperial": "Between 0.63 and 26.2 mi."
+      },
+      "origin": {
+        "record": "From your 5K record: {{time}}, on {{date}}",
+        "declared": "Set by you"
+      },
+      "card": {
+        "emptyTitle": "No reference pace yet",
+        "emptyBody": "Without it, your sessions have no target pace.",
+        "change": "Change",
+        "give": "Set it"
+      },
+      "missingBanner": "Without a reference pace, your sessions have no target pace.",
+      "give": "Set it",
+      "todayNudge": "Not set yet: this session has no target pace."
+    },
+    "cooper": {
+      "startTitle": "12-minute test",
+      "startSubtitle": "Warm-up done? Run as far as you can for 12 minutes.",
+      "howTitle": "How it works",
+      "how": {
+        "go": "The test starts when you tap, and is run in one go: a pause stops it.",
+        "screen": "Keep the screen on: it alerts you at 11:00, then at 12:00, by voice and vibration.",
+        "after": "After 12:00, slow down and cool down; end the run whenever you like. The app measures your distance at 12:00."
+      },
+      "gpsTitle": "GPS tracking",
+      "gpsBody": "The test needs GPS to measure the distance.",
+      "startCta": "Start the test",
+      "permissionTitle": "No GPS, no test",
+      "permissionBody": "The test needs GPS to measure the distance.",
+      "band": {
+        "eyebrow": "12-minute test",
+        "remaining": "{{time}} left",
+        "elapsed": "{{time}} / 12:00",
+        "lastMinute": "One minute to go",
+        "done": "Test complete",
+        "doneBody": "You can ease off. End the run whenever you like: your distance is waiting at the finish.",
+        "interrupted": "Test interrupted by the pause",
+        "interruptedBody": "The run carries on as usual. You can redo the test whenever you like."
+      },
+      "voice": {
+        "lastMinute": "One minute to go.",
+        "done": "Twelve minutes, test complete. You can ease off."
+      },
+      "result": {
+        "eyebrow": "Your 12-minute test",
+        "caption": "in 12 minutes, measured on your track",
+        "pace": "Reference pace",
+        "dismiss": "Not this time",
+        "saved": "Pace saved: {{pace}}. Your target paces follow.",
+        "incompleteTitle": "Test incomplete",
+        "incomplete": "Stopped at {{time}} of 12:00. Run the full 12 minutes to get a pace.",
+        "interruptedTitle": "Test interrupted by the pause",
+        "interrupted": "A 12-minute test is run in one go: the pause skews the distance, so no pace is taken from it.",
+        "noTrack": "Not enough GPS points to measure the test.",
+        "outOfRange": "This measurement gives an out-of-range pace ({{pace}}): no pace is taken from it.",
+        "recorded": "Your run is saved like any other. You can redo the test from your reference pace."
+      }
+    },
+    "welcome": {
+      "step": "Question {{current}} of {{total}}",
+      "skipAll": "Skip",
+      "later": "Later",
+      "finish": "Done",
+      "goal": {
+        "title": "What you're aiming for",
+        "subtitle": "To set up your week and your tips. You can change everything in your runner profile.",
+        "objective": "Your goal",
+        "frequency": "How many runs a week?",
+        "frequencyHint": "Your week will be counted against this number: “1 run of 3”.",
+        "frequencyA11y_one": "{{count}} run a week",
+        "frequencyA11y_other": "{{count}} runs a week"
+      },
+      "pace": {
+        "title": "How fast do you run?"
+      },
+      "voice": {
+        "title": "Voice while you run",
+        "subtitle": "It may cut into your music for a moment. You can change your mind in your runner profile.",
+        "all": {
+          "title": "Yes, guide me",
+          "body": "Distance and pace at regular intervals, every interval and pace alerts."
+        },
+        "intervals": {
+          "title": "Only intervals and pace alerts",
+          "body": "A cue at every segment, and an alert if you drift from your target pace."
+        },
+        "none": {
+          "title": "No, silent",
+          "body": "Everything stays on screen. You can turn it on later."
+        }
+      }
     }
   },
   "planning": {

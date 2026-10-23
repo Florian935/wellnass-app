@@ -437,6 +437,30 @@ describe('ligne de séance', () => {
     expect(screen.getByText('planning.noProfileHint')).toBeTruthy();
   });
 
+  it('US CARDIO-02 — un seul bandeau en tête, qui mène aux quatre portes', async () => {
+    await afficher({
+      items: [
+        seance({ pillar: 'running', sessionType: 'endurance' }),
+        seance({ id: 'p-2', pillar: 'running', sessionType: 'fractionne' }),
+      ],
+    });
+
+    expect(screen.getAllByTestId('ref-pace-banner')).toHaveLength(1);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('ref-pace-banner-cta'));
+    });
+    expect(push).toHaveBeenCalledWith('/running-pace');
+  });
+
+  it('US CARDIO-02 — pas de bandeau sans séance de course, ni avec une allure', async () => {
+    await afficher({ items: [seance({ pillar: 'strength' })] });
+    expect(screen.queryByTestId('ref-pace-banner')).toBeNull();
+
+    mockRunner.mockReturnValue({ runnerProfile: { ref5kPaceSPerKm: 300 } });
+    await afficher({ items: [seance({ pillar: 'running', sessionType: 'endurance' })] });
+    expect(screen.queryByTestId('ref-pace-banner')).toBeNull();
+  });
+
   it('🔴 le nombre d’exercices n’apparaît PAS sur une séance running', async () => {
     await afficher({ items: [seance({ pillar: 'running', exerciseCount: 5 })] });
 

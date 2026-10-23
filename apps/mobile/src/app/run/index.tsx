@@ -22,6 +22,7 @@ import { powerSync } from '@/powersync/system';
 import { startManualClock, startTracking } from '@/running/tracker';
 import { formatIntervalBlockSummary } from '@/running/interval-summary';
 import { useRunStartMode } from '@/stores/run-start-mode-store';
+import { useCooperTest } from '@/stores/cooper-test-store';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useActionLock } from '@/hooks/useActionLock';
@@ -42,6 +43,9 @@ import { useMenuFocus } from '@/hooks/useMenuFocus';
  * - US CARDIO-UX03 : l'écran porte le nom de ce qu'on lance (la séance, « Recourir ta sortie du … »,
  *   ou « Course libre ») et rappelle la séance ; il **retient le dernier mode** (R6) ; `ghostRunId`
  *   (Recourir) présélectionne ce fantôme, posé en GPS seulement (R5).
+ * - US CARDIO-02 (§3.2, R8, R9) : `test=cooper` lance le **test de 12 minutes guidé** — titré, en GPS
+ *   imposé et **sans auto-pause**, sans fantôme ni séance ; le mode retenu n'est ni lu ni écrit. Le
+ *   marqueur local désigne la course, pour le bandeau de l'écran de course et la mesure à l'arrivée.
  */
 export default function RunStartScreen() {
   // US CARDIO-UX02 — **l'identité du pilier appartient à l'écran, pas à l'onglet d'où l'on vient.**
@@ -55,11 +59,15 @@ export default function RunStartScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const units = useUnits();
-  const { plannedSessionId, ghostRunId: againId } = useLocalSearchParams<{
+  const { plannedSessionId, ghostRunId: againId, test } = useLocalSearchParams<{
     plannedSessionId?: string;
     /** US CARDIO-UX03 (D4) — « Recourir » : la sortie passée à affronter, présélectionnée. */
     ghostRunId?: string;
+    /** US CARDIO-02 — `cooper` : le test de 12 minutes guidé. */
+    test?: string;
   }>();
+  const isCooper = test === 'cooper' && !plannedSessionId && !againId;
+  const markCooper = useCooperTest((s) => s.mark);
 
   const { run: active, isLoading } = useActiveRun();
 
@@ -81,7 +89,8 @@ export default function RunStartScreen() {
     void hydrateMode();
   }, [hydrateMode]);
   const [pickedSource, setSource] = useState<RunSource | null>(null);
-  const source: RunSource = pickedSource ?? (again ? 'gps' : storedSource);
+  // US CARDIO-02 (R9) — le test a besoin d'une distance : GPS imposé, et le mode retenu n'est pas lu.
+  const source: RunSource = isCooper ? 'gps' : (pickedSource ?? (again ? 'gps' : storedSource));
 
   // US FANT-01 — le fantôme choisi avant le départ, écrit une seule fois sur la course (R8).
   // `undefined` = rien touché encore : la sortie à recourir, si elle est valable, est présélectionnée.
@@ -97,7 +106,9 @@ export default function RunStartScreen() {
   const lockStart = useActionLock();
 
   const againDate = again ? new Date(again.finishedAt ?? again.startedAt) : null;
-  const header = again
+  const header = isCooper
+    ? { title: t('running.cooper.startTitle'), subtitle: t('running.cooper.startSubtitle') }
+    : again
     ? {
         title: t('running.start.ghostTitle', {
           date: `${new Intl.DateTimeFormat(i18n.language, { weekday: 'short' }).format(againDate!)} ${String(
@@ -116,7 +127,9 @@ export default function RunStartScreen() {
         }
       : { title: t('running.start.title'), subtitle: t('running.start.subtitle') };
 
-  const startLabel = plannedSessionId
+  const startLabel = isCooper
+    ? t('running.cooper.startCta')
+    : plannedSessionId
     ? t('running.start.startSessionCta')
     : source === 'gps' && ghostRunId !== null
       ? t('running.start.startGhostCta')
@@ -161,6 +174,21 @@ export default function RunStartScreen() {
           // aucun tracker ne tournait : `duration_seconds` restait `null` et les minutes que le
           // coureur regardait défiler n'étaient enregistrées **nulle part** (constat F15).
           startManualClock(id, startedAtMs);
+        }
+
+        if (isCooper) {
+          // US CARDIO-02 (R9) — sans auto-pause : un feu rouge ne doit pas retrancher de temps aux
+          // douze minutes, et la mesure lit la trace sur le temps écoulé depuis le départ.
+          const res = await startTracking(id, startedAtMs, { autoPause: false });
+          if (!res.ok && res.reason === 'foreground-denied') {
+            // Pas de repli sans GPS : un test sans distance ne mesure rien.
+            await cancelRun(id);
+            Alert.alert(t('running.cooper.permissionTitle'), t('running.cooper.permissionBody'));
+            return;
+          }
+          markCooper(id);
+          router.push('/run/active');
+          return;
         }
 
         if (source === 'gps') {
@@ -257,27 +285,50 @@ export default function RunStartScreen() {
             </Card>
           ) : null}
 
-          <Card>
-            <ModeOption
-              selected={source === 'gps'}
-              icon="navigate-outline"
-              label={t('running.start.gpsMode')}
-              hint={t('running.start.gpsModeHint')}
-              onPress={() => setSource('gps')}
-            />
-            <ModeOption
-              selected={source === 'manual'}
-              icon="create-outline"
-              label={t('running.start.manualMode')}
-              hint={t('running.start.manualModeHint')}
-              onPress={() => setSource('manual')}
-            />
-          </Card>
+          {isCooper ? (
+            <>
+              {/* US CARDIO-02 (§3.2) — le protocole, et le GPS sans bascule. */}
+              <Card>
+                <Text style={[styles.cardTitle, { color: colors.text }]}>{t('running.cooper.howTitle')}</Text>
+                {(['go', 'screen', 'after'] as const).map((step, i) => (
+                  <Text key={step} style={[styles.cardText, { color: colors.text }]}>
+                    {`${i + 1}. ${t(`running.cooper.how.${step}`)}`}
+                  </Text>
+                ))}
+              </Card>
+              <Card>
+                <View style={styles.cardHeader} testID="run-start-cooper-gps">
+                  <Ionicons name="navigate-outline" size={18} color={colors.accent} />
+                  <Text style={[styles.cardTitle, { color: colors.text }]}>{t('running.cooper.gpsTitle')}</Text>
+                </View>
+                <Text style={[styles.cardText, { color: colors.textMuted }]}>{t('running.cooper.gpsBody')}</Text>
+              </Card>
+            </>
+          ) : (
+            <>
+              <Card>
+                <ModeOption
+                  selected={source === 'gps'}
+                  icon="navigate-outline"
+                  label={t('running.start.gpsMode')}
+                  hint={t('running.start.gpsModeHint')}
+                  onPress={() => setSource('gps')}
+                />
+                <ModeOption
+                  selected={source === 'manual'}
+                  icon="create-outline"
+                  label={t('running.start.manualMode')}
+                  hint={t('running.start.manualModeHint')}
+                  onPress={() => setSource('manual')}
+                />
+              </Card>
 
-          {/* US FANT-01 — proposé, jamais imposé (D1) : sans choix, la course démarre comme avant. */}
-          {source === 'gps' ? (
-            <GhostPicker selectedId={ghostRunId} onSelect={setGhostRunId} pinned={pinnedGhost} />
-          ) : null}
+              {/* US FANT-01 — proposé, jamais imposé (D1) : sans choix, la course démarre comme avant. */}
+              {source === 'gps' ? (
+                <GhostPicker selectedId={ghostRunId} onSelect={setGhostRunId} pinned={pinnedGhost} />
+              ) : null}
+            </>
+          )}
 
           <Button
             testID="run-start-cta"

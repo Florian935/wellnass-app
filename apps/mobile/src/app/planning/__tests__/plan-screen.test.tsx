@@ -652,6 +652,17 @@ describe('cartes de séance', () => {
     );
 
     expect(screen.getByText('planning.noProfileHint')).toBeTruthy();
+    // US CARDIO-02 — un seul bandeau en tête de liste, vers les quatre portes.
+    expect(screen.getAllByTestId('ref-pace-banner')).toHaveLength(1);
+  });
+
+  it('US CARDIO-02 — pas de bandeau quand l’allure existe', async () => {
+    mockRunner.mockReturnValue({ runnerProfile: { ref5kPaceSPerKm: 300 } });
+    await afficher(
+      programme({ pillar: 'running', sessions: [seance({ sessionType: 'endurance' })] }),
+    );
+
+    expect(screen.queryByTestId('ref-pace-banner')).toBeNull();
   });
 
   it('la cible en durée est arrondie à la minute, la distance prime', async () => {

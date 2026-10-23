@@ -45,6 +45,7 @@ import {
   resolveRunWeek,
   runDayKey,
   startOfWeek,
+  TRAINING_PACE_TYPES,
   type RunHubSection,
   type RunHubTodaySession,
 } from '@wellness/shared';
@@ -78,6 +79,7 @@ import { useAuthStore } from '@/stores/auth-store';
 import { useRunSection } from '@/stores/run-section-store';
 import { useCurrentHour, useTodayDate, useTodayKey } from '@/hooks/useTodayKey';
 import { useUnits } from '@/hooks/useUnits';
+import { useRunningWelcome } from '@/hooks/useRunningWelcome';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -98,6 +100,8 @@ function formatDayKeyShort(key: string): string {
 
 export default function RunningScreen() {
   useMenuFocus('running');
+  // US CARDIO-02 (R14) — l'accueil du pilier, une seule fois, pour un compte sans profil coureur.
+  useRunningWelcome();
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -123,7 +127,7 @@ export default function RunningScreen() {
 
   const { run: active } = useActiveRun();
   const { session: todaySession } = useTodayRunSession();
-  const { runnerProfile } = useRunnerProfile();
+  const { runnerProfile, isLoading: profileLoading } = useRunnerProfile();
   const userId = useAuthStore((st) => st.session?.user.id ?? null);
   const { program: activeProgram } = useActiveProgram('running');
   const programData = useRunProgram(
@@ -335,6 +339,13 @@ export default function RunningScreen() {
           : null,
       paceLabel: todayPaceLabel,
       instructions: hubState.session.instructions,
+      // US CARDIO-02 (§3.5) — une séance qui aurait une allure dérivée, sans allure explicite, et
+      // pas d'allure de référence : la carte le dit, et y mène.
+      needsRefPace:
+        !profileLoading &&
+        runnerProfile?.ref5kPaceSPerKm == null &&
+        todayPaceLabel == null &&
+        (TRAINING_PACE_TYPES as readonly string[]).includes(hubState.session.sessionType ?? ''),
     };
   } else if (hubState.kind === 'rest') {
     moment = { kind: 'rest', doneToday: !!hubState.doneToday, nextLabel };
@@ -377,7 +388,7 @@ export default function RunningScreen() {
       onFreeRun={openFreeRun}
       onPlanning={() => router.push('/planning')}
       onPrograms={() => router.push('/running-programs')}
-      onProfile={() => router.push('/running-profile')}
+      onRefPace={() => router.push('/running-pace')}
     />
   );
 

@@ -2393,13 +2393,9 @@
       "title": "Profil coureur",
       "objective": "Objectif",
       "level": "Niveau",
-      "ref5k": "Allure de référence (5 km)",
-      "ref5kHint": "Ton allure actuelle sur 5 km",
       "ref5kPlaceholderMetric": "5:00",
       "ref5kPlaceholderImperial": "8:03",
       "frequency": "Fréquence hebdo visée",
-      "paces": "Mes allures d'entraînement",
-      "pacesEmpty": "Renseigne ton allure de référence pour voir tes allures cibles.",
       "announcements": "Annonces vocales",
       "announcementsToggle": "Annonces vocales pendant la course",
       "announcementsHint": "Distance, temps et allure annoncés à voix haute à intervalle régulier. Peut interrompre une musique en cours.",
@@ -2949,6 +2945,160 @@
         "overtaken": "Ton fantôme vient de passer devant."
       },
       "a11y": "Fantôme du {{date}}, {{gap}}"
+    },
+    "refPace": {
+      "title": "Ton allure de référence",
+      "subtitle": "Elle règle toutes tes allures cibles. Choisis ce que tu sais.",
+      "doorsLabel": "Ce que tu sais de ton allure",
+      "door": {
+        "race": {
+          "title": "J'ai un chrono récent",
+          "body": "Sur n'importe quelle distance : on en déduit le reste."
+        },
+        "test": {
+          "title": "Le test de 12 minutes",
+          "body": "Tu cours 12 minutes le plus loin possible, l'app mesure."
+        },
+        "known": {
+          "title": "Je connais mon allure sur 5 km",
+          "body": "Ton allure quand tu cours 5 km le plus vite possible, pas celle de ton footing."
+        },
+        "unknown": {
+          "title": "Je ne sais pas encore",
+          "body": "Rien à saisir. Tu pourras la donner plus tard.",
+          "detail": "Cours à la sensation : tu dois pouvoir parler en courant. On la déduira de ta première sortie GPS de 5 km, ou du test de 12 minutes quand tu voudras."
+        }
+      },
+      "records": "Tes meilleurs temps enregistrés",
+      "recordChip": "{{distance}} · {{time}} · {{date}}",
+      "recordChipA11y": "Utiliser ton meilleur {{distance}} enregistré : {{time}}, le {{date}}",
+      "distance": "Distance",
+      "distanceOther": "Autre",
+      "customDistance": "Distance ({{unit}})",
+      "time": "Ton temps (m:ss ou h:mm:ss)",
+      "testDone": "Je l'ai déjà fait",
+      "testNow": "Le faire maintenant",
+      "testDistance": "Distance couverte en 12 minutes ({{unit}})",
+      "testPending": "Mesuré lors de ton test du {{date}}, pas encore retenu.",
+      "testLater": "Pas encore fait ? Tu le lanceras depuis ton profil coureur, quand tu voudras.",
+      "protocol": {
+        "warmup": "Échauffe-toi 10 minutes en trottinant, avant de lancer le test.",
+        "run": "Sur du plat, cours 12 minutes le plus loin possible, régulier plutôt qu'explosif.",
+        "screen": "Garde l'écran allumé : l'app te prévient à 11:00 et à 12:00, puis mesure ta distance. Une pause arrête le test."
+      },
+      "startTest": "Lancer le test",
+      "knownField": "Allure sur 5 km (/{{unit}})",
+      "preview": {
+        "eyebrow": "Ton allure de référence",
+        "equivalent": "≈ {{time}} sur 5 km",
+        "a11y": "Ton allure de référence : {{pace}}, environ {{time}} sur 5 km."
+      },
+      "before": "Avant : {{pace}}",
+      "save": "Retenir cette allure",
+      "error": {
+        "tooFast": "Plus rapide que {{min}} : vérifie la distance et le temps (h:mm:ss au-delà de l'heure).",
+        "tooSlow": "Plus lent que {{max}} : vérifie la distance et le temps.",
+        "knownTooFast": "Plus rapide que {{min}} : vérifie ton allure.",
+        "knownTooSlow": "Plus lent que {{max}} : vérifie ton allure.",
+        "testTooFast": "Plus rapide que {{min}} : vérifie la distance.",
+        "testTooSlow": "Plus lent que {{max}} : vérifie la distance.",
+        "badDistance": "Entre 1 km et la distance d'un marathon.",
+        "unreadableTime": "Écris ton temps en minutes:secondes, par exemple {{example}}.",
+        "unreadablePace": "Écris ton allure en minutes:secondes, par exemple {{example}}.",
+        "unreadableMeters": "Écris la distance en mètres, par exemple 2400.",
+        "unreadableMiles": "Écris la distance en miles, par exemple 1.49.",
+        "badDistanceImperial": "Entre 0,63 et 26,2 mi."
+      },
+      "origin": {
+        "record": "D'après ton record sur 5 km : {{time}}, le {{date}}",
+        "declared": "Donnée par toi"
+      },
+      "card": {
+        "emptyTitle": "Pas encore d'allure de référence",
+        "emptyBody": "Sans elle, tes séances n'ont pas d'allure cible.",
+        "change": "Changer",
+        "give": "La donner"
+      },
+      "missingBanner": "Sans allure de référence, tes séances n'ont pas d'allure cible.",
+      "give": "La donner",
+      "todayNudge": "Pas encore donnée : cette séance n'a pas d'allure cible."
+    },
+    "cooper": {
+      "startTitle": "Test de 12 minutes",
+      "startSubtitle": "Échauffement fait ? Cours 12 minutes le plus loin possible.",
+      "howTitle": "Comment ça se passe",
+      "how": {
+        "go": "Le test commence quand tu appuies, et se court d'une traite : une pause l'arrête.",
+        "screen": "Garde l'écran allumé : il te prévient à 11:00, puis à 12:00, à la voix et en vibrant.",
+        "after": "Après 12:00, ralentis et rentre au calme ; termine la course quand tu veux. L'app mesure ta distance à 12:00."
+      },
+      "gpsTitle": "Suivi GPS",
+      "gpsBody": "Le test a besoin du GPS pour mesurer la distance.",
+      "startCta": "Lancer le test",
+      "permissionTitle": "Pas de GPS, pas de test",
+      "permissionBody": "Le test a besoin du GPS pour mesurer la distance.",
+      "band": {
+        "eyebrow": "Test de 12 minutes",
+        "remaining": "reste {{time}}",
+        "elapsed": "{{time}} / 12:00",
+        "lastMinute": "Plus qu'une minute",
+        "done": "Test terminé",
+        "doneBody": "Tu peux ralentir. Termine la course quand tu veux : ta distance t'attend à l'arrivée.",
+        "interrupted": "Test interrompu par la pause",
+        "interruptedBody": "La course continue normalement. Tu pourras refaire le test quand tu voudras."
+      },
+      "voice": {
+        "lastMinute": "Plus qu'une minute.",
+        "done": "Douze minutes, test terminé. Tu peux ralentir."
+      },
+      "result": {
+        "eyebrow": "Ton test de 12 minutes",
+        "caption": "en 12 minutes, mesurés sur ta trace",
+        "pace": "Allure de référence",
+        "dismiss": "Pas cette fois",
+        "saved": "Allure retenue : {{pace}}. Tes allures cibles suivent.",
+        "incompleteTitle": "Test incomplet",
+        "incomplete": "Arrêté à {{time}} sur 12:00. Il faut aller au bout pour en tirer une allure.",
+        "interruptedTitle": "Test interrompu par la pause",
+        "interrupted": "Un test de 12 minutes se court d'une traite : la pause fausse la distance, l'app n'en tire pas d'allure.",
+        "noTrack": "Pas assez de points GPS pour mesurer le test.",
+        "outOfRange": "Cette mesure donne une allure hors bornes ({{pace}}) : l'app n'en tire pas d'allure.",
+        "recorded": "Ta course est enregistrée comme les autres. Tu pourras refaire le test depuis ton allure de référence."
+      }
+    },
+    "welcome": {
+      "step": "Question {{current}} sur {{total}}",
+      "skipAll": "Passer",
+      "later": "Plus tard",
+      "finish": "Terminer",
+      "goal": {
+        "title": "Ce que tu vises",
+        "subtitle": "Pour régler ta semaine et tes conseils. Tu pourras tout changer dans ton profil coureur.",
+        "objective": "Ton objectif",
+        "frequency": "Combien de sorties par semaine ?",
+        "frequencyHint": "Ta semaine se comptera sur ce nombre : « 1 sortie sur 3 ».",
+        "frequencyA11y_one": "{{count}} sortie par semaine",
+        "frequencyA11y_other": "{{count}} sorties par semaine"
+      },
+      "pace": {
+        "title": "À quelle vitesse cours-tu ?"
+      },
+      "voice": {
+        "title": "La voix pendant la course",
+        "subtitle": "Elle peut couper ta musique un instant. Tu pourras changer d'avis dans ton profil coureur.",
+        "all": {
+          "title": "Oui, guide-moi",
+          "body": "Distance et allure régulièrement, chaque fraction et les alertes d'allure."
+        },
+        "intervals": {
+          "title": "Seulement les fractions et les alertes d'allure",
+          "body": "Une consigne à chaque segment, et un signal si tu sors de ton allure cible."
+        },
+        "none": {
+          "title": "Non, en silence",
+          "body": "Tout reste à l'écran. Tu pourras l'activer plus tard."
+        }
+      }
     }
   },
   "planning": {

@@ -54,6 +54,14 @@ describe('classifyReferencePace', () => {
     expect(classifyReferencePace(298.26)).toEqual({ status: 'ok', sPerKm: 298 });
   });
 
+  it('🔴 compare la valeur BRUTE, comme parsePaceToSPerKm : 4:01 /mi est refusé par les deux', () => {
+    const raw = parsePaceText('4:01', 'imperial')!;
+    expect(raw).toBeCloseTo(149.75, 1);
+    expect(parsePaceToSPerKm('4:01', 'imperial')).toBeNull();
+    expect(classifyReferencePace(raw).status).toBe('tooFast');
+    expect(classifyReferencePace(720.4).status).toBe('tooSlow');
+  });
+
   it('rend « vide » sur une valeur absente ou absurde, jamais une allure', () => {
     expect(classifyReferencePace(null)).toEqual({ status: 'empty' });
     expect(classifyReferencePace(0)).toEqual({ status: 'empty' });

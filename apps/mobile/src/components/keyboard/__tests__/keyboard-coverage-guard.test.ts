@@ -102,7 +102,12 @@ const INVENTORY: Record<string, Coverage> = {
   'src/app/nutrition-stats.tsx': 'self',
   'src/app/profile.tsx': 'self',
   'src/app/recipe-edit.tsx': 'self',
-  'src/app/running-profile.tsx': 'self',
+  // US CARDIO-02 — les quatre portes, sur leur écran et dans l'accueil du pilier (`OnboardingScaffold`).
+  'src/app/running-pace.tsx': 'self',
+  'src/app/running-welcome.tsx': 'self',
+  'src/components/running/ReferencePaceDoors.tsx': {
+    coveredBy: ['src/app/running-pace.tsx', 'src/app/running-welcome.tsx'],
+  },
   'src/app/planning/plan.tsx': 'self',
   'src/app/programs/edit.tsx': 'self',
   'src/components/programs/SessionEditor.tsx': { coveredBy: ['src/app/programs/edit.tsx'] },

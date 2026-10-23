@@ -37,6 +37,7 @@ import { useAuthDeepLink } from '@/hooks/useAuthDeepLink';
 import { PowerSyncProvider } from '@/powersync/PowerSyncProvider';
 import { CrossLinksProvider } from '@/data/repositories/cross-links-repository';
 import { useAuthStore } from '@/stores/auth-store';
+import { markAppLaunched } from '@/lib/app-launch';
 import { useMenuAccent } from '@/stores/menu-accent-store';
 import { useMotionPreference } from '@/stores/motion-store';
 import { useImmersivePrefs } from '@/stores/immersive-prefs-store';
@@ -48,6 +49,9 @@ import { useSyncColorScheme, useTheme } from '@/theme/useTheme';
 
 // Garde le splash affiché tant que les polices ne sont pas chargées.
 void SplashScreen.preventAutoHideAsync();
+// US CARDIO-02 (R14) — l'heure de lancement, retenue ici : c'est le seul module évalué à coup sûr au
+// démarrage (`inlineRequires` ne charge les autres qu'au premier usage).
+markAppLaunched();
 
 type NavTheme = typeof DefaultTheme;
 
@@ -426,6 +430,20 @@ function RootNavigator() {
             headerTintColor: colors.accent,
           }}
         />
+        {/* US CARDIO-02 — les quatre portes vers l'allure de référence. */}
+        <Stack.Screen
+          name="running-pace"
+          options={{
+            presentation: 'modal',
+            headerShown: true,
+            title: t('running.refPace.title'),
+            headerStyle: { backgroundColor: colors.surface },
+            headerTitleStyle: { color: colors.text, fontFamily: typography.title.fontFamily },
+            headerTintColor: colors.accent,
+          }}
+        />
+        {/* US CARDIO-02 — l'accueil du pilier Course, trois questions, une seule fois. */}
+        <Stack.Screen name="running-welcome" options={{ presentation: 'modal', headerShown: false }} />
         <Stack.Screen
           name="food-picker"
           options={{

@@ -658,3 +658,71 @@ describe('suppression depuis le panneau d’issues (R1d / constat F18)', () => {
     alerte.mockRestore();
   });
 });
+
+// ---------------------------------------------------------------------------
+// US CARDIO-02 — le bandeau du test de 12 minutes (§3.2, R10)
+// ---------------------------------------------------------------------------
+
+describe('US CARDIO-02 — le test de 12 minutes', () => {
+  const { useCooperTest } = require('@/stores/cooper-test-store') as typeof import('@/stores/cooper-test-store');
+
+  afterEach(() => {
+    useCooperTest.setState({ marker: null, hydrated: true });
+  });
+
+  it('🔴 le bandeau n’existe que pour la course du test', async () => {
+    useCooperTest.setState({ marker: { runId: 'autre-course', interrupted: false }, hydrated: true });
+    await render(<RunActiveScreen />);
+    expect(screen.queryByTestId(/^cooper-band-/)).toBeNull();
+  });
+
+  it('la course du test porte le bandeau, sur le chrono de l’écran', async () => {
+    useCooperTest.setState({ marker: { runId: 'run-1', interrupted: false }, hydrated: true });
+    mockUseActiveRun.mockReturnValue({ run: courseGps({ durationSeconds: 462 }), isLoading: false });
+
+    await render(<RunActiveScreen />);
+
+    expect(screen.getByTestId('cooper-band-running')).toBeTruthy();
+    expect(screen.getByText('running.cooper.band.remaining:{"time":"4:18"}')).toBeTruthy();
+  });
+
+  it('après 12:00, le bandeau dit « terminé » sans distance', async () => {
+    useCooperTest.setState({ marker: { runId: 'run-1', interrupted: false }, hydrated: true });
+    mockUseActiveRun.mockReturnValue({ run: courseGps({ durationSeconds: 760 }), isLoading: false });
+
+    await render(<RunActiveScreen />);
+
+    expect(screen.getByTestId('cooper-band-done')).toBeTruthy();
+    expect(screen.getByText('running.cooper.band.doneBody')).toBeTruthy();
+  });
+});
+
+describe('US CARDIO-02 — une pause avant 12:00 interrompt le test (R10, critère 17)', () => {
+  const { useCooperTest } = require('@/stores/cooper-test-store') as typeof import('@/stores/cooper-test-store');
+
+  afterEach(() => {
+    useCooperTest.setState({ marker: null, hydrated: true });
+  });
+
+  it('🔴 la course du test en pause à 5:00 : le test est marqué interrompu, et le bandeau le dit', async () => {
+    useCooperTest.setState({ marker: { runId: 'run-1', interrupted: false }, hydrated: true });
+    mockGetPaused.mockReturnValue(true);
+    mockUseActiveRun.mockReturnValue({ run: courseGps({ durationSeconds: 300 }), isLoading: false });
+
+    await render(<RunActiveScreen />);
+
+    expect(useCooperTest.getState().marker).toEqual({ runId: 'run-1', interrupted: true });
+    expect(screen.getByTestId('cooper-band-interrupted')).toBeTruthy();
+  });
+
+  it('après 12:00, une pause ne change rien au test', async () => {
+    useCooperTest.setState({ marker: { runId: 'run-1', interrupted: false }, hydrated: true });
+    mockGetPaused.mockReturnValue(true);
+    mockUseActiveRun.mockReturnValue({ run: courseGps({ durationSeconds: 760 }), isLoading: false });
+
+    await render(<RunActiveScreen />);
+
+    expect(useCooperTest.getState().marker?.interrupted).toBe(false);
+    expect(screen.getByTestId('cooper-band-done')).toBeTruthy();
+  });
+});

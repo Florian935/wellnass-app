@@ -563,3 +563,60 @@ describe('Recourir une sortie (D4, R5)', () => {
     expect(mockSetGhost).not.toHaveBeenCalled();
   });
 });
+
+// ---------------------------------------------------------------------------
+// US CARDIO-02 — le test de 12 minutes guidé (§3.2, R8, R9)
+// ---------------------------------------------------------------------------
+
+describe('US CARDIO-02 — le départ du test de 12 minutes', () => {
+  const { useCooperTest } = require('@/stores/cooper-test-store') as typeof import('@/stores/cooper-test-store');
+
+  beforeEach(() => {
+    useCooperTest.setState({ marker: null, hydrated: true });
+  });
+
+  it('titré, GPS imposé : pas de bascule de mode, pas de fantôme', async () => {
+    await afficher({ params: { test: 'cooper' } });
+
+    expect(screen.getByText('running.cooper.startTitle')).toBeTruthy();
+    expect(screen.getByTestId('run-start-cooper-gps')).toBeTruthy();
+    expect(screen.queryByText('running.start.manualMode')).toBeNull();
+    expect(mockGhostPicker).not.toHaveBeenCalled();
+    expect(screen.getByText('running.cooper.startCta')).toBeTruthy();
+  });
+
+  it('🔴 lance le suivi SANS auto-pause, pose le marqueur, et ne retient pas le mode', async () => {
+    useRunStartMode.setState({ source: 'manual', hydrated: true });
+    await afficher({ params: { test: 'cooper' } });
+
+    await demarrer();
+
+    expect(mockStartRun).toHaveBeenCalledWith('gps', undefined);
+    expect(mockStartTracking).toHaveBeenCalledWith('run-1', expect.any(Number), { autoPause: false });
+    expect(useCooperTest.getState().marker).toEqual({ runId: 'run-1', interrupted: false });
+    // Le dernier mode choisi par le coureur reste le sien : un test ne le réécrit pas.
+    expect(useRunStartMode.getState().source).toBe('manual');
+    expect(secureStorage.setItem).not.toHaveBeenCalledWith('run_start_source', expect.anything());
+    expect(push).toHaveBeenCalledWith('/run/active');
+  });
+
+  it('🔴 refus du GPS : la course est annulée, sans repli sans GPS', async () => {
+    mockStartTracking.mockResolvedValue({ ok: false, reason: 'foreground-denied' });
+    await afficher({ params: { test: 'cooper' } });
+
+    await demarrer();
+
+    expect(mockCancelRun).toHaveBeenCalledWith('run-1');
+    expect(Alert.alert).toHaveBeenCalledWith('running.cooper.permissionTitle', 'running.cooper.permissionBody');
+    expect(useCooperTest.getState().marker).toBeNull();
+    expect(push).not.toHaveBeenCalled();
+    expect(mockStartRun).toHaveBeenCalledTimes(1);
+  });
+
+  it('un test demandé pendant une course en cours propose de la reprendre', async () => {
+    await afficher({ active: { id: 'run-en-cours' }, params: { test: 'cooper' } });
+
+    expect(screen.getByText('running.resume.title')).toBeTruthy();
+    expect(mockStartRun).not.toHaveBeenCalled();
+  });
+});

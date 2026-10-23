@@ -10,6 +10,54 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — CARDIO-02 livrée : les quatre portes vers l'allure de référence, l'accueil du pilier Course, le test de 12 minutes (`feature/cardio02-allure-reference` → `dev`)
+
+> Étapes 3 à 7 du plan, en une vague, après la validation de Florian (D1 à D8). US **close** dans ce commit
+> (dev direct, pas de recette consignée). Commit précédent : le socle (même branche), rebasée sur
+> `3deb60ca` (dev direct, autre session).
+
+### Ajouté
+- **« Ton allure de référence »** (`/running-pace`) : quatre portes — chrono de course (pastilles 5 km, 10 km,
+  semi, marathon, autre ; meilleurs temps enregistrés en un geste), test de 12 minutes (déjà fait, ou à
+  lancer), allure connue, « je ne sais pas encore » — et l'aperçu des quatre allures **avant** de retenir ;
+  « Avant : … » quand on change. Rien n'est écrit avant « Retenir cette allure ».
+- **L'accueil du pilier Course** (`/running-welcome`) : ce que tu vises (objectif, sorties par semaine), ton
+  allure, la voix pendant la course ; « Plus tard » à chaque question, « Passer », barre de progression.
+  S'ouvre une fois, hub au premier plan, en ligne et synchronisé pendant ce lancement, la table relue au
+  moment d'ouvrir ; marqueur = la ligne de profil, sans migration (`hooks/useRunningWelcome.ts`).
+- **Le test de 12 minutes guidé** : départ titré, GPS imposé, **sans auto-pause**, mode retenu inchangé ;
+  bandeau en course, voix et vibration à 11:00 et 12:00 même annonces coupées ; une pause avant 12:00
+  l'interrompt ; à l'arrivée, la distance à 12:00 mesurée sur la trace et l'allure proposée (« Retenir » /
+  « Pas cette fois ») ; sans choix, la mesure reste proposée dans la porte du test.
+- Composants `ReferencePaceDoors`, `ReferencePaceCard`, `TrainingPaceList`, `RefPaceBanner`, `CooperBand`,
+  `CooperResultCard` ; `running/cooper-measure.ts`, `running/cooper-guidance.ts`, `lib/app-launch.ts` ;
+  `hasRunnerProfile` au repository du profil.
+- i18n FR + EN : `running.refPace.*`, `running.cooper.*`, `running.welcome.*`.
+
+### Modifié
+- **Profil coureur** : la carte « Ton allure de référence » (valeur, provenance déduite, quatre allures,
+  « Changer ») remplace le champ écrit à chaque frappe ; **plus de bouton « Retour » en pied** (F39).
+- **« La donner »** mène aux portes : carte Premiers pas, **carte de la séance du jour** sans allure cible,
+  un bandeau unique en tête du planning, du plan et du détail de programme, l'éditeur de séance, les zones
+  d'allure (cible de 44 px).
+- `OnboardingScaffold` : libellés, « Passer » et barre de progression facultatifs ; « Passer » à 44 px.
+- `reference-pace.ts` : la borne compare la valeur brute (comme `parsePaceToSPerKm`).
+
+### Supprimé
+- Clés i18n `running.profile.ref5k`, `ref5kHint`, `pacesEmpty`, `paces` (plus lues).
+
+### Technique / Notes
+- Relu par un agent de revue : treize constats traités (focus du hub, heure de lancement sous
+  `inlineRequires`, relecture de la table, double appui dans l'accueil, régions annoncées, borne brute,
+  mesure retrouvée en mètres, message impérial, cibles de 44 px, barre de progression, gardes de
+  chargement, tests manquants). Détail au §11 de la spec.
+- Gardes mises à jour : identité du pilier (`running-pace`, `running-welcome`), routes, couverture clavier
+  (`running-profile.tsx` sort de l'inventaire, il n'a plus de champ).
+- `check-i18n-parity.mjs` signale toujours les 4 valeurs vides `coach.*.verdict.warmup`, déjà présentes sur
+  `dev`. Aucune migration, aucune sync rule, aucune dépendance native.
+- Roadmap 5.45 ✅ (272 livrés, 2 à faire, total 284) ; BACKLOG : **CARDIO-09** (l'arrivée dit quand l'allure
+  change).
+
 ## 23/10/2026 — CARDIO-02 socle : les portes calculent, et l'allure ne recule plus au premier footing (`feature/cardio02-allure-reference`)
 
 > Validée par Florian le 23/10/2026 (D1 à D8 telles que proposées) : `etape: code`. Étapes 1 et 2 du plan.

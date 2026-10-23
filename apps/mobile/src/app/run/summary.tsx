@@ -20,6 +20,7 @@ import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { WellbeingContextLine } from '@/components/wellbeing/WellbeingContextLine';
 import { CelebrationCard } from '@/components/CelebrationCard';
+import { CooperResultCard } from '@/components/running/CooperResultCard';
 import { RunEnergySection } from '@/components/energy/RunEnergySection';
 import { FormScreen } from '@/components/FormScreen';
 import { ScreenHeader } from '@/components/ScreenHeader';
@@ -328,6 +329,10 @@ export default function RunSummaryScreen() {
         title={t('running.summary.doneTitle')}
         subtitle={formatDayFull(run.startedAt)}
       />
+
+      {/* US CARDIO-02 (§3.2) — le test de 12 minutes, mesuré sur la trace : l'allure proposée. Rien
+          ne s'affiche pour une course qui n'est pas celle du test. */}
+      <CooperResultCard runId={run.id} />
 
       {/* US FANT-01 — la course affrontée, rappelée une fois la course finie (spec §3). */}
       {ghost !== null ? (

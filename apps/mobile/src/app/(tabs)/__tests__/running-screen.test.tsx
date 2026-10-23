@@ -32,12 +32,16 @@ import { useRunProgram } from '@/data/repositories/run-hub-repository';
 import { useRunningRecords } from '@/data/repositories/running-record-repository';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useRunSection } from '@/stores/run-section-store';
+import { useRunningWelcome } from '@/hooks/useRunningWelcome';
 
 // ---------------------------------------------------------------------------
 // Mocks
 // ---------------------------------------------------------------------------
 
 jest.mock('@/hooks/useMenuFocus', () => ({ useMenuFocus: jest.fn() }));
+// US CARDIO-02 — la condition d'accueil vit dans son hook, testé à part. Sans ce mock, le profil
+// `null` de ce fichier ouvrirait l'accueil dans tous les tests du hub.
+jest.mock('@/hooks/useRunningWelcome', () => ({ useRunningWelcome: jest.fn() }));
 
 jest.mock('@/data/repositories/run-repository', () => ({
   useActiveRun: jest.fn(() => ({ run: null, isLoading: false })),
@@ -435,9 +439,46 @@ describe('la carte du moment', () => {
 
     expect(screen.getByTestId('run-moment-onboarding')).toBeTruthy();
     await taper(screen.getByTestId('run-moment-ref-pace'));
-    expect(push).toHaveBeenCalledWith('/running-profile');
+    // US CARDIO-02 (D7) — « La donner » ouvre les quatre portes, plus le profil coureur.
+    expect(push).toHaveBeenCalledWith('/running-pace');
+    expect(push).not.toHaveBeenCalledWith('/running-profile');
     await taper(screen.getByTestId('run-moment-primary'));
     expect(push).toHaveBeenCalledWith('/running-programs');
+  });
+
+  it('US CARDIO-02 — la séance du jour sans allure cible mène aux portes', async () => {
+    mockToday.mockReturnValue({ session: SEANCE_DU_JOUR, isLoading: false });
+    mockProfile.mockReturnValue({ runnerProfile: null, isLoading: false });
+
+    await render(<RunningScreen />);
+
+    await taper(screen.getByTestId('run-moment-today-ref-pace'));
+    expect(push).toHaveBeenCalledWith('/running-pace');
+  });
+
+  it('US CARDIO-02 — une allure SAISIE sur la séance suffit, même sans allure de référence', async () => {
+    mockToday.mockReturnValue({
+      session: { ...SEANCE_DU_JOUR, targetPaceMinSPerKm: 245, targetPaceMaxSPerKm: 250 },
+      isLoading: false,
+    });
+    mockProfile.mockReturnValue({ runnerProfile: null, isLoading: false });
+
+    await render(<RunningScreen />);
+
+    expect(screen.queryByTestId('run-moment-today-ref-pace')).toBeNull();
+  });
+
+  it('US CARDIO-02 — la séance du jour qui a son allure ne dit rien', async () => {
+    mockToday.mockReturnValue({ session: SEANCE_DU_JOUR, isLoading: false });
+
+    await render(<RunningScreen />);
+
+    expect(screen.queryByTestId('run-moment-today-ref-pace')).toBeNull();
+  });
+
+  it('US CARDIO-02 — le hub demande l’accueil du pilier', async () => {
+    await render(<RunningScreen />);
+    expect(useRunningWelcome).toHaveBeenCalled();
   });
 });
 

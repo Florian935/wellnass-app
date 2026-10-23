@@ -6,11 +6,10 @@
  * erreur ici ne se voit pas ici : elle se voit dans une fourchette d'allure fausse, trois écrans
  * plus loin.
  *
- *  1. **La saisie d'allure n'écrit QUE si elle parse.** « 4:3 » en cours de frappe n'est pas une
- *     allure : écrire à chaque caractère enregistrerait des valeurs absurdes entre deux touches,
- *     et chacune recalculerait les quatre allures cibles.
- *  2. **Le champ affiche la saisie en cours, sinon la valeur persistée.** Sans cet état local,
- *     PowerSync réécrirait le champ sous les doigts de l'utilisateur à chaque flush.
+ *  1. **L'allure de référence ne se saisit plus ici** (US CARDIO-02, D8) : la carte dit la valeur,
+ *     d'où elle vient, et mène aux quatre portes (`/running-pace`). L'ancien champ écrivait à chaque
+ *     frappe lisible, sans rien montrer de ce qu'il produisait.
+ *  2. **La provenance est déduite** : égale au record 5 km ÷ 5, elle vient du record ; sinon, du coureur.
  *  3. **Les allures ne s'affichent que si la référence existe** — les calculer sans elle
  *     donnerait quatre fourchettes dérivées de rien.
  *  4. **Les deux réglages vocaux sont indépendants et éteints par défaut** (R1/R3), et le
@@ -25,6 +24,7 @@ import {
   useRunnerProfile,
 } from '@/data/repositories/running-profile-repository';
 import { useRouter } from 'expo-router';
+import { useRunningRecords } from '@/data/repositories/running-record-repository';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -39,11 +39,10 @@ jest.mock('@/data/repositories/running-profile-repository', () => ({
   useRunnerProfile: jest.fn(() => ({ runnerProfile: null })),
   upsertRunnerProfile: jest.fn(),
 }));
+jest.mock('@/data/repositories/running-record-repository', () => ({
+  useRunningRecords: jest.fn(() => ({ records: [], isLoading: false })),
+}));
 
-jest.mock('@/components/Card', () => {
-  const { View } = require('react-native');
-  return { Card: ({ children }: { children: React.ReactNode }) => <View>{children}</View> };
-});
 jest.mock('@/components/Button', () => {
   const { Pressable, Text } = require('react-native');
   return {
@@ -51,29 +50,6 @@ jest.mock('@/components/Button', () => {
       <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress}>
         <Text>{label}</Text>
       </Pressable>
-    ),
-  };
-});
-jest.mock('@/components/TextField', () => {
-  const { TextInput } = require('react-native');
-  return {
-    TextField: ({
-      label,
-      value,
-      onChangeText,
-      placeholder,
-    }: {
-      label: string;
-      value: string;
-      onChangeText: (v: string) => void;
-      placeholder?: string;
-    }) => (
-      <TextInput
-        accessibilityLabel={label}
-        value={value}
-        placeholder={placeholder}
-        onChangeText={onChangeText}
-      />
     ),
   };
 });
@@ -109,6 +85,8 @@ jest.mock('@/hooks/useUnits', () => ({ useUnits: jest.fn() }));
 const mockProfile = useRunnerProfile as jest.Mock;
 const mockUpsert = upsertRunnerProfile as jest.Mock;
 const mockUseRouter = useRouter as jest.Mock;
+const mockRecords = useRunningRecords as jest.Mock;
+const push = jest.fn();
 const mockUnits = jest.requireMock('@/hooks/useUnits').useUnits as jest.Mock;
 
 const back = jest.fn();
@@ -129,8 +107,6 @@ const unites = (system: 'metric' | 'imperial' = 'metric') => ({
   formatPace: (s: number) => `${Math.floor(s / 60)}:${String(Math.round(s % 60)).padStart(2, '0')}`,
 });
 
-const CHAMP_ALLURE = 'running.profile.ref5k (/km)';
-
 const afficher = async ({
   runnerProfile = null as Record<string, unknown> | null,
   system = 'metric' as 'metric' | 'imperial',
@@ -146,12 +122,6 @@ const taper = async (element: Parameters<typeof fireEvent.press>[0]) => {
   });
 };
 
-const saisir = async (label: string, valeur: string) => {
-  await act(async () => {
-    fireEvent.changeText(screen.getByLabelText(label), valeur);
-  });
-};
-
 const basculer = async (label: string, valeur: boolean) => {
   await act(async () => {
     fireEvent(screen.getByLabelText(label), 'valueChange', valeur);
@@ -163,8 +133,9 @@ const option = (cle: string) => screen.getByText(cle).parent!;
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockUseRouter.mockReturnValue({ back });
+  mockUseRouter.mockReturnValue({ back, push });
   mockUpsert.mockResolvedValue(undefined);
+  mockRecords.mockReturnValue({ records: [], isLoading: false });
 });
 
 // ---------------------------------------------------------------------------
@@ -230,65 +201,39 @@ describe('objectif, niveau et fréquence', () => {
 // Allure de référence
 // ---------------------------------------------------------------------------
 
-describe('allure de référence', () => {
-  it('🔴 une saisie INCOMPLÈTE n’écrit RIEN', async () => {
-    await afficher();
-
-    await saisir(CHAMP_ALLURE, '4:3');
-
-    // « 4:3 » est un état transitoire de frappe. L'écrire enregistrerait une allure absurde entre
-    // deux touches — et chacune recalculerait les quatre allures cibles de l'app.
-    expect(mockUpsert).not.toHaveBeenCalled();
-  });
-
-  it('🔴 mais le champ AFFICHE quand même la frappe en cours', async () => {
-    await afficher();
-
-    await saisir(CHAMP_ALLURE, '4:3');
-
-    // Refuser d'écrire ne doit pas refuser d'afficher : un champ qui n'avance pas sous les doigts
-    // se lit comme un clavier bloqué.
-    expect(screen.getByLabelText(CHAMP_ALLURE).props.value).toBe('4:3');
-  });
-
-  it('une allure complète est enregistrée en secondes', async () => {
-    await afficher();
-
-    await saisir(CHAMP_ALLURE, '4:30');
-
-    expect(mockUpsert).toHaveBeenCalledWith({ ref5kPaceSPerKm: 270 });
-  });
-
-  it.each(['abc', '4:99', '', '430'])('🔴 « %s » n’écrit rien', async (saisie) => {
-    await afficher();
-
-    await saisir(CHAMP_ALLURE, saisie);
-
-    // `4:99` n'existe pas ; `430` est ambigu (7 min 10 ou 4 min 30 ?). Deviner à la place de
-    // l'utilisateur produirait une référence fausse dont il ne verrait jamais l'origine.
-    expect(mockUpsert).not.toHaveBeenCalled();
-  });
-
-  it('🔴 la saisie LOCALE prime sur la valeur persistée', async () => {
+describe('allure de référence — la carte (US CARDIO-02, D8)', () => {
+  it('🔴 l’écran ne la saisit plus : aucun champ, aucune écriture', async () => {
     await afficher({ runnerProfile: { ref5kPaceSPerKm: 270 } });
-    expect(screen.getByLabelText(CHAMP_ALLURE).props.value).toBe('4:30');
 
-    await saisir(CHAMP_ALLURE, '4:1');
-
-    // Sans cet état local, PowerSync réécrirait le champ à chaque flush — sous les doigts de
-    // l'utilisateur, au milieu de sa frappe.
-    expect(screen.getByLabelText(CHAMP_ALLURE).props.value).toBe('4:1');
+    // L'ancien champ écrivait à chaque frappe lisible, sans montrer ce qu'il produisait (F2).
+    expect(screen.queryByLabelText(/running.profile.ref5k/)).toBeNull();
+    expect(mockUpsert).not.toHaveBeenCalled();
   });
 
-  it('🔴 l’unité est dans le LIBELLÉ et le placeholder suit le système', async () => {
-    await afficher({ system: 'imperial' });
+  it('sans allure : la carte le dit, et « La donner » ouvre les portes', async () => {
+    await afficher();
 
-    // Une allure « 4:30 » ne veut pas dire la même chose au kilomètre et au mile : sans l'unité,
-    // l'écart est de 60 %.
-    expect(screen.getByLabelText('running.profile.ref5k (/mi)')).toBeTruthy();
-    expect(screen.getByLabelText('running.profile.ref5k (/mi)').props.placeholder).toBe(
-      'running.profile.ref5kPlaceholderImperial',
-    );
+    expect(screen.getByText('running.refPace.card.emptyTitle')).toBeTruthy();
+    await taper(screen.getByTestId('ref-card-change'));
+    expect(push).toHaveBeenCalledWith('/running-pace');
+  });
+
+  it('avec une allure donnée : la valeur, « Donnée par toi », et « Changer »', async () => {
+    await afficher({ runnerProfile: { ref5kPaceSPerKm: 270 } });
+
+    expect(screen.getByTestId('ref-card-value').props.children).toBe('4:30');
+    expect(screen.getByText('running.refPace.origin.declared')).toBeTruthy();
+    expect(screen.getByText('running.refPace.card.change')).toBeTruthy();
+  });
+
+  it('🔴 égale au record 5 km ÷ 5, elle vient du record — provenance déduite, jamais stockée', async () => {
+    mockRecords.mockReturnValue({
+      records: [{ distanceKey: '5k', bestTimeSeconds: 1350, runId: 'r1', achievedAt: '2026-10-12T08:00:00Z' }],
+      isLoading: false,
+    });
+    await afficher({ runnerProfile: { ref5kPaceSPerKm: 270 } });
+
+    expect(screen.getByTestId('ref-card-origin').props.children).toMatch(/running.refPace.origin.record.*"time":"22:30"/);
   });
 });
 
@@ -302,7 +247,7 @@ describe('allures d’entraînement', () => {
 
     // Quatre fourchettes dérivées de rien seraient quatre chiffres faux, présentés comme des
     // consignes d'entraînement.
-    expect(screen.getByText('running.profile.pacesEmpty')).toBeTruthy();
+    expect(screen.getByText('running.refPace.card.emptyBody')).toBeTruthy();
     expect(screen.queryByText(/running\.sessionType\./)).toBeNull();
   });
 
@@ -419,11 +364,10 @@ describe('guidage fractionné', () => {
     expect(mockUpsert).toHaveBeenCalledTimes(1);
   });
 
-  it('le retour referme l’écran', async () => {
+  it('🔴 plus de bouton « Retour » en pied : la flèche de l’en-tête suffit (F39)', async () => {
     await afficher();
 
-    await taper(screen.getByLabelText('common.back'));
-
-    expect(back).toHaveBeenCalled();
+    expect(screen.queryByLabelText('common.back')).toBeNull();
+    expect(screen.queryByText('common.back')).toBeNull();
   });
 });

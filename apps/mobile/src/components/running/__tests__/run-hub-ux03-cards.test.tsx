@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { StyleSheet } from 'react-native';
-import { render, screen } from '@testing-library/react-native';
+import { fireEvent, render, screen } from '@testing-library/react-native';
 
 import { RunProgramCard } from '../RunProgramCard';
 import { RunLastTime } from '../RunLastTime';
@@ -148,6 +148,7 @@ describe('La carte du moment : des boutons sur une ligne (retour de recette du 2
         estimatedLabel: null,
         paceLabel: null,
         instructions: null,
+        needsRefPace: false,
       },
       'runningHub.moment.primary.today',
       null,
@@ -184,7 +185,7 @@ describe('La carte du moment : des boutons sur une ligne (retour de recette du 2
           onFreeRun={jest.fn()}
           onPlanning={jest.fn()}
           onPrograms={jest.fn()}
-          onProfile={jest.fn()}
+          onRefPace={jest.fn()}
         />,
       );
 
@@ -205,4 +206,54 @@ describe('La carte du moment : des boutons sur une ligne (retour de recette du 2
       expect(secondaryStyle.flexShrink).toBe(0);
     },
   );
+});
+
+describe('US CARDIO-02 — « Ton allure de référence · La donner » sur la carte du moment', () => {
+  const today = (needsRefPace: boolean): RunMoment => ({
+    kind: 'today',
+    typeLabel: 'Endurance fondamentale',
+    scheduledTime: null,
+    countdownLabel: null,
+    segments: [],
+    volumeLabel: null,
+    estimatedLabel: null,
+    paceLabel: null,
+    instructions: null,
+    needsRefPace,
+  });
+  const card = (moment: RunMoment, onRefPace = jest.fn()) =>
+    render(
+      <RunMomentCard
+        moment={moment}
+        weekLabel={null}
+        onResume={jest.fn()}
+        onStart={jest.fn()}
+        onAnalysis={jest.fn()}
+        onShare={jest.fn()}
+        onFreeRun={jest.fn()}
+        onPlanning={jest.fn()}
+        onPrograms={jest.fn()}
+        onRefPace={onRefPace}
+      />,
+    );
+
+  it('la séance du jour sans allure cible mène aux portes', async () => {
+    const onRefPace = jest.fn();
+    await card(today(true), onRefPace);
+    expect(screen.getByText('running.refPace.todayNudge')).toBeTruthy();
+    fireEvent.press(screen.getByTestId('run-moment-today-ref-pace'));
+    expect(onRefPace).toHaveBeenCalledTimes(1);
+  });
+
+  it('se tait quand la séance a son allure', async () => {
+    await card(today(false));
+    expect(screen.queryByTestId('run-moment-today-ref-pace')).toBeNull();
+  });
+
+  it('les premiers pas gardent leur ligne, qui mène aussi aux portes', async () => {
+    const onRefPace = jest.fn();
+    await card({ kind: 'onboarding', needsRefPace: true }, onRefPace);
+    fireEvent.press(screen.getByTestId('run-moment-ref-pace'));
+    expect(onRefPace).toHaveBeenCalledTimes(1);
+  });
 });

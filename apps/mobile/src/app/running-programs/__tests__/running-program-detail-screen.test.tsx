@@ -506,6 +506,26 @@ describe('cartes de séance', () => {
     expect(screen.getByText('running.program.noProfileHint')).toBeTruthy();
   });
 
+  it('US CARDIO-02 — un seul bandeau en tête de liste, qui mène aux quatre portes', async () => {
+    await afficher(
+      programme({ sessions: [seance({ sessionType: 'endurance' }), seance({ id: 's-2', sessionType: 'fractionne' })] }),
+    );
+
+    // Un lien par ligne répéterait la même invite à chaque séance.
+    expect(screen.getAllByTestId('ref-pace-banner')).toHaveLength(1);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('ref-pace-banner-cta'));
+    });
+    expect(push).toHaveBeenCalledWith('/running-pace');
+  });
+
+  it('US CARDIO-02 — pas de bandeau quand l’allure existe', async () => {
+    mockRunner.mockReturnValue({ runnerProfile: { ref5kPaceSPerKm: 300 } });
+    await afficher(programme({ sessions: [seance({ sessionType: 'endurance' })] }));
+
+    expect(screen.queryByTestId('ref-pace-banner')).toBeNull();
+  });
+
   it('avec un profil, l’allure cible est une FOURCHETTE', async () => {
     mockRunner.mockReturnValue({ runnerProfile: { ref5kPaceSPerKm: 300 } });
     await afficher(programme({ sessions: [seance({ sessionType: 'endurance' })] }));

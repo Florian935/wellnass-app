@@ -423,3 +423,34 @@ describe('distance manuelle', () => {
 // ---------------------------------------------------------------------------
 // US RUN-F4 (lot F) — le réalisé par répétition
 // ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// US CARDIO-02 — le test de 12 minutes à l'arrivée (§3.2, R8)
+// ---------------------------------------------------------------------------
+
+describe('US CARDIO-02 — le test de 12 minutes', () => {
+  const { useCooperTest } = require('@/stores/cooper-test-store') as typeof import('@/stores/cooper-test-store');
+
+  afterEach(() => {
+    useCooperTest.setState({ marker: null, hydrated: true });
+  });
+
+  it('une course qui n’est pas celle du test n’a pas de carte', async () => {
+    useCooperTest.setState({ marker: { runId: 'autre', interrupted: false }, hydrated: true });
+    await render(<RunSummaryScreen />);
+    expect(screen.queryByTestId('cooper-result')).toBeNull();
+  });
+
+  it('🔴 la course du test a sa carte, et quitter sans choisir GARDE le marqueur (R8)', async () => {
+    useCooperTest.setState({ marker: { runId: 'run-1', interrupted: false }, hydrated: true });
+    await render(<RunSummaryScreen />);
+
+    // Trace absente dans ce fichier : la carte dit pourquoi elle ne propose rien.
+    expect(screen.getByTestId('cooper-result')).toBeTruthy();
+    await act(async () => {
+      fireEvent.press(screen.getByText('running.summary.save'));
+    });
+
+    expect(useCooperTest.getState().marker).toEqual({ runId: 'run-1', interrupted: false });
+  });
+});

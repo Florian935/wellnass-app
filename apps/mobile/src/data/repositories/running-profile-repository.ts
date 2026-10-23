@@ -171,6 +171,16 @@ async function getCurrentRow(): Promise<RunnerProfileDbRow | null> {
 }
 
 /**
+ * Une ligne de profil coureur existe-t-elle, **lue en base maintenant** (US CARDIO-02, R14) ?
+ *
+ * L'accueil du pilier relit la table au moment d'ouvrir : le statut de synchronisation peut annoncer
+ * une synchro terminée avant que la requête réactive du profil ait relu la ligne qu'elle a apportée.
+ */
+export async function hasRunnerProfile(): Promise<boolean> {
+  return (await getCurrentRow()) !== null;
+}
+
+/**
  * Crée ou met à jour le profil coureur de l'utilisateur courant.
  * Patch la ligne existante si elle existe, sinon l'insère (avec `user_id`).
  */

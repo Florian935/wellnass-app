@@ -52,6 +52,10 @@ jest.mock('@/components/running/IntervalBlockEditor', () => {
   };
 });
 
+// US CARDIO-02 — sans allure de référence, le message mène aux portes (`RefPaceBanner`).
+const mockPush = jest.fn();
+jest.mock('expo-router', () => ({ useRouter: () => ({ push: mockPush }) }));
+
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
     t: (k: string, opts?: Record<string, unknown>) => (opts ? `${k}:${JSON.stringify(opts)}` : k),
@@ -281,7 +285,16 @@ describe('allure calculée', () => {
 
     // Une allure cible se dérive du record de 5 km : sans référence, en afficher une serait une
     // consigne d'entraînement fabriquée.
-    expect(screen.getByText('running.program.noProfileHint')).toBeTruthy();
+    expect(screen.getByText('running.refPace.missingBanner')).toBeTruthy();
+  });
+
+  it('US CARDIO-02 — et le message mène aux quatre portes', async () => {
+    await afficher(seance({ sessionType: 'endurance' }));
+
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('editor-ref-pace-cta'));
+    });
+    expect(mockPush).toHaveBeenCalledWith('/running-pace');
   });
 
   it('affiche la fourchette d’allure quand le profil existe', async () => {
@@ -299,7 +312,7 @@ describe('allure calculée', () => {
 
     // L'allure dépend du type : l'afficher avant le choix donnerait un chiffre qui change tout
     // seul dès qu'on sélectionne quelque chose.
-    expect(screen.queryByText('running.program.noProfileHint')).toBeNull();
+    expect(screen.queryByText('running.refPace.missingBanner')).toBeNull();
     expect(screen.queryByText(/s\/km/)).toBeNull();
   });
 });

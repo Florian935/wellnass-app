@@ -54,6 +54,7 @@ import {
   useActiveWorkout,
 } from '@/data/repositories/workout-repository';
 import { useUnits } from '@/hooks/useUnits';
+import { RefPaceBanner } from '@/components/running/RefPaceBanner';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -105,7 +106,7 @@ export default function PlanningScreen() {
 
   const { items } = useWeekPlan(weekStart);
   const { items: missed } = useMissedSessions();
-  const { runnerProfile } = useRunnerProfile();
+  const { runnerProfile, isLoading: profileLoading } = useRunnerProfile();
   // `isLoading` compte ici : tant que la requête n'a pas répondu, `active` vaut `null` comme
   // quand il n'y a pas de séance. Le bouton affichait donc « Démarrer » puis basculait sur
   // « Reprendre » sous le doigt. Même cause racine que l'« écran noir » de /workout (19/09/2026) ;
@@ -114,6 +115,12 @@ export default function PlanningScreen() {
 
   const todayKey = localDayKey(new Date());
   const ref5kPaceSPerKm = runnerProfile?.ref5kPaceSPerKm ?? null;
+  // US CARDIO-02 (§3.5) — une seule entrée vers les portes, en tête, dès qu'une séance de course de
+  // la liste attend une allure cible. Le message de chaque ligne reste, non touchable.
+  const needsRefPace =
+    !profileLoading &&
+    ref5kPaceSPerKm == null &&
+    [...items, ...missed].some((item) => item.pillar === 'running' && item.sessionType != null);
 
   const onPrevWeek = () => setWeekStart(localDayKey(addDays(dateFromKey(weekStart), -7)));
   const onNextWeek = () => setWeekStart(localDayKey(addDays(dateFromKey(weekStart), 7)));
@@ -403,6 +410,8 @@ export default function PlanningScreen() {
           contentContainerStyle={styles.scroll}
           showsVerticalScrollIndicator={false}
         >
+          {needsRefPace ? <RefPaceBanner /> : null}
+
           {/* Bannière séances manquées */}
           {missed.length > 0 ? (
             <View

@@ -49,6 +49,9 @@ const PILIERS: readonly { chemin: string[]; pilier: string }[] = [
 /** Écrans de premier niveau (hors dossier) qui appartiennent aussi à un pilier. */
 const FICHIERS: readonly { fichier: string; pilier: string }[] = [
   { fichier: 'running-profile.tsx', pilier: 'running' },
+  // US CARDIO-02 — les quatre portes et l'accueil du pilier.
+  { fichier: 'running-pace.tsx', pilier: 'running' },
+  { fichier: 'running-welcome.tsx', pilier: 'running' },
 ];
 
 /** Un `_layout.tsx` ne rend pas d'écran : il monte un `Stack`, il n'a pas de couleur à poser. */

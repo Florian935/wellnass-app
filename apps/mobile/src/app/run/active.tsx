@@ -24,6 +24,7 @@ import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { Card } from '@/components/Card';
 import { GhostBand } from '@/components/running/GhostBand';
+import { CooperBand } from '@/components/running/CooperBand';
 import { RouteMap } from '@/components/running/RouteMap';
 import { SegmentBanner } from '@/components/running/SegmentBanner';
 import { SyncStatus } from '@/components/SyncStatus';
@@ -40,6 +41,7 @@ import { pauseTracking, resumeTracking, stopTracking } from '@/running/tracker';
 import { getLiveNetSeconds, getPaused, subscribePaused } from '@/running/tracker-task';
 import { useDistanceAnnouncements } from '@/running/announcements';
 import { useGhostGuidance } from '@/running/ghost-guidance';
+import { useCooperGuidance } from '@/running/cooper-guidance';
 import { useIntervalGuidance, toPhaseBlockInput } from '@/running/interval-guidance';
 import { usePaceGuidance } from '@/running/pace-guidance';
 import { fontFamily } from '@/theme/fonts';
@@ -167,6 +169,8 @@ export default function RunActiveScreen() {
           avgPaceSPerKm: avgPaceValue,
         });
   useGhostGuidance({ gap, netSeconds, ghostDate: ghost?.finishedAt ?? null });
+  // US CARDIO-02 (R10) — le test de 12 minutes : le bandeau, les deux annonces, l'interruption.
+  const cooper = useCooperGuidance({ runId: active?.id ?? null, netSeconds, paused });
   const instantPaceValue = isGps ? instantPace(points) : null;
 
   // US RUN-F2a (5.19) : annonces vocales périodiques, GPS uniquement (spec R4). Hook appelé
@@ -505,6 +509,8 @@ export default function RunActiveScreen() {
           </View>
         </View>
       ) : null}
+
+      {cooper.active ? <CooperBand phase={cooper.phase} remainingS={cooper.remainingS} /> : null}
 
       {/* US CARDIO-UX01 (R5 / F10) — le bandeau qui manquait. */}
       <SegmentBanner banner={banner} paused={paused} />

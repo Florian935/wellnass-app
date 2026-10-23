@@ -33,6 +33,7 @@ import { useActionLock } from '@/hooks/useActionLock';
 import { useUnits } from '@/hooks/useUnits';
 import { sessionPaceLabelText } from '@/running/session-pace-label';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
+import { RefPaceBanner } from '@/components/running/RefPaceBanner';
 
 export default function RunningProgramDetailScreen() {
   // US CARDIO-UX02 — **l'identité du pilier appartient à l'écran, pas à l'onglet d'où l'on vient.**
@@ -56,7 +57,7 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
   const { detail, isLoading } = useProgramDetail(programId);
   const { statuses: plannedStatuses } = useProgramSessionStatuses(programId);
   const todayKey = useTodayKey();
-  const { runnerProfile } = useRunnerProfile();
+  const { runnerProfile, isLoading: profileLoading } = useRunnerProfile();
   const { programs: myPrograms } = useMyPrograms();
   // Un programme éditorial (non possédé) ne peut pas être planifié/activé directement : il
   // doit d'abord être dupliqué (sinon activation de l'éditorial → divergence local↔cloud).
@@ -192,6 +193,12 @@ function RunningProgramDetailView({ programId }: { programId: string }) {
           </Card>
         ) : (
           <View style={styles.sessionList}>
+            {/* US CARDIO-02 (§3.5) — une seule entrée vers les portes, en tête de la liste. */}
+            {!profileLoading &&
+            runnerProfile?.ref5kPaceSPerKm == null &&
+            detail.sessions.some((session) => session.sessionType != null) ? (
+              <RefPaceBanner />
+            ) : null}
             {detail.sessions.map((session, index) => (
               <RunningSessionCard
                 key={session.id}
