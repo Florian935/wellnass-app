@@ -7,8 +7,12 @@
  * dans le bundle et la dépenser. Elle vit donc dans les secrets du projet Supabase, et l'app n'a
  * jamais que son propre JWT.
  *
- * Quatre gardes, dans cet ordre, et aucun appel au modèle avant que les quatre soient passés :
+ * Cinq gardes, dans cet ordre, et aucun appel au modèle avant que les cinq soient passés :
  *   1. **JWT** — qui appelle ? (Supabase vérifie déjà la signature ; on relit l'utilisateur.)
+ *   1 bis. **Bêta fermée** (ACCES-IA) — avec `AI_ACCESS=testers` (ou rien), seuls les comptes de
+ *      `ai_testers` passent ; les autres reçoivent « bêta fermée » à `status` et `ai_closed` partout
+ *      ailleurs, **avant** le fournisseur et le quota. Restent ouverts : `status` et le retrait d'un
+ *      accord. La règle vit dans `access.ts`, copie vérifiée de `packages/shared/src/ai-access.ts`.
  *   2. **Consentement** — `ai_consent_at` pour le Labo IA, `prisme_consent_at` **et le fournisseur
  *      auquel il a été donné** pour Prisme (PRISME-01 R6). Sans consentement, rien ne sort.
  *   3. **Taille** — une photo, un texte ou un contexte trop lourds sont refusés avant d'atteindre le
@@ -30,6 +34,11 @@
  *    n'y est jamais autorisé ; Mistral seulement avec `MISTRAL_TRAINING_OPTOUT=verified`.
  *
  * ── Déploiement (manuel, par un humain) ──────────────────────────────────────────────────────────
+ *   # ACCES-IA — la bêta fermée. ABSENT = testeurs : seuls les comptes de `ai_testers` (back-office ›
+ *   # Testeurs IA) ont l'IA. Remplir la liste AVANT de déployer cette version, sinon l'IA s'éteint pour
+ *   # tous. Changer de mode ne demande pas de redéploiement :
+ *   npx supabase secrets set AI_ACCESS=open        # ouvre à tous (la liste est ignorée)
+ *   npx supabase secrets set AI_ACCESS=testers     # referme
  *   npx supabase secrets set PRISME_PROVIDER=groq GROQ_API_KEY=...   # Prisme — console.groq.com
  *   # …ou Mistral (en service depuis le 05/10/2026), APRÈS avoir coupé dans admin.mistral.ai ›
  *   # API › Confidentialité « Autoriser l'utilisation de vos appels API pour entraîner… » :
@@ -43,6 +52,7 @@
  */
 
 import { createClient } from 'npm:@supabase/supabase-js@2.116.0';
+import { aiGate, parseAiAccess, prismeStatusReason, type AiAccessMode } from './access.ts';
 import {
   callProvider,
   readPrismeProviderConfig,
@@ -251,6 +261,31 @@ async function readAgeYears(admin: Admin, userId: string): Promise<number | null
   return age;
 }
 
+/**
+ * ACCES-IA — le compte est-il dans la liste des testeurs ? `'error'` si la liste est illisible : la
+ * fonction ferme alors en « indisponible », jamais en « bêta fermée » (spec D16) — dire « pas ouvert sur
+ * ton compte » à un testeur à cause d'une panne serait faux. Rien du contenu n'est journalisé.
+ */
+async function readIsTester(admin: Admin, userId: string): Promise<boolean | 'error'> {
+  const { data, error } = await admin
+    .from('ai_testers')
+    .select('id')
+    .eq('user_id', userId)
+    .is('deleted_at', null)
+    .limit(1);
+  if (error) {
+    console.error('[ai-assist] liste des testeurs illisible', error.message);
+    return 'error';
+  }
+  return Array.isArray(data) && data.length > 0;
+}
+
+/**
+ * ACCES-IA — ce que `status` doit savoir de la bêta : le mode, si ce compte en est exclu, et si la liste a
+ * pu être lue (sinon, la réponse d'un retrait d'accord ne doit pas dire « bêta fermée » — D16).
+ */
+type AccessView = { mode: AiAccessMode; closed: boolean; statusReadable: boolean };
+
 async function readPrismeConsent(admin: Admin, userId: string): Promise<{ at: string | null; provider: string | null }> {
   const { data } = await admin
     .from('user_settings')
@@ -265,8 +300,12 @@ async function readPrismeConsent(admin: Admin, userId: string): Promise<{ at: st
  * PRISME-01 (DD6) — le statut de Prisme : disponibilité, fournisseur, accord, restes du jour.
  * **Gratuit et non décompté** : il n'appelle aucun modèle. Le texte d'accord de l'app est composé à
  * partir d'ici, jamais écrit en dur (R6).
+ *
+ * ACCES-IA (D4, D5) — la raison suit l'ordre bêta fermée → âge → fournisseur (`prismeStatusReason`) : à un
+ * non-testeur on ne dit rien d'autre. `access` porte le mode de l'interrupteur, pour les Réglages d'un
+ * testeur et pour le back-office.
  */
-async function prismeStatus(admin: Admin, userId: string, usageDate: string): Promise<Response> {
+async function prismeStatus(admin: Admin, userId: string, usageDate: string, access: AccessView): Promise<Response> {
   const prisme = readPrismeProviderConfig(env);
   const [consent, age, usage] = await Promise.all([
     readPrismeConsent(admin, userId),
@@ -281,13 +320,15 @@ async function prismeStatus(admin: Admin, userId: string, usageDate: string): Pr
     meal_text: Math.max(0, DAILY_QUOTA.meal_text - used('meal_text')),
   };
 
-  if (age !== null && age < ADULT_AGE_YEARS) {
-    return json({ available: false, reason: 'age', provider: null, consent, remaining }, 200);
+  const reason = prismeStatusReason({
+    closed: access.closed,
+    minor: age !== null && age < ADULT_AGE_YEARS,
+    provider: prisme.ok ? 'ok' : prisme.reason,
+  });
+  if (reason !== null || !prisme.ok) {
+    return json({ available: false, reason, provider: null, consent, remaining, access: access.mode }, 200);
   }
-  if (!prisme.ok) {
-    return json({ available: false, reason: prisme.reason, provider: null, consent, remaining }, 200);
-  }
-  return json({ available: true, reason: null, provider: prisme.info, consent, remaining }, 200);
+  return json({ available: true, reason: null, provider: prisme.info, consent, remaining, access: access.mode }, 200);
 }
 
 /**
@@ -295,7 +336,13 @@ async function prismeStatus(admin: Admin, userId: string, usageDate: string): Pr
  * remonte par PowerSync en différé : le premier « Prisme raconte » juste après « Activer » prendrait
  * un refus. L'accord porte le fournisseur courant ; le retrait efface les deux colonnes.
  */
-async function prismeConsent(admin: Admin, userId: string, body: AiRequest, usageDate: string): Promise<Response> {
+async function prismeConsent(
+  admin: Admin,
+  userId: string,
+  body: AiRequest,
+  usageDate: string,
+  access: AccessView,
+): Promise<Response> {
   let patch: { prisme_consent_at: string | null; prisme_consent_provider: string | null };
 
   if (body.grant === false) {
@@ -324,7 +371,10 @@ async function prismeConsent(admin: Admin, userId: string, body: AiRequest, usag
   // Aucune ligne de réglages côté serveur : l'app ne l'a pas encore synchronisée. Rien à accorder.
   if (!data || data.length === 0) return json({ error: 'settings_missing' }, 409);
 
-  return prismeStatus(admin, userId, usageDate);
+  // ACCES-IA (D16) — liste des testeurs illisible : le retrait est écrit, mais le statut ne peut pas être
+  // dit honnêtement. « Indisponible » plutôt qu'un « bêta fermée » qui pourrait être faux.
+  if (!access.statusReadable) return json({ error: 'ai_unavailable' }, 503);
+  return prismeStatus(admin, userId, usageDate, access);
 }
 
 Deno.serve(async (request: Request) => {
@@ -368,11 +418,24 @@ Deno.serve(async (request: Request) => {
   // restitution, même si minuit tombe entre les deux.
   const usageDate = new Date().toISOString().slice(0, 10);
 
+  // ── ACCES-IA : la bêta fermée, avant le fournisseur et avant le quota (R3) ─────────────────────
+  // `AI_ACCESS` absent ou mal écrit vaut `testers` : un oubli ferme, il n'ouvre jamais (D1). La liste
+  // n'est lue qu'en mode `testers`.
+  // Le verdict vient de `aiGate` (règle pure, testée en `shared`) : ouverts à tous, `status` et le retrait
+  // d'un accord ; le reste — l'accord compris, avant même de juger sa forme — exige d'être testeur (R4).
+  // Liste illisible : « indisponible », jamais « bêta fermée » (D16).
+  const mode = parseAiAccess(env('AI_ACCESS'));
+  const tester = mode === 'testers' ? await readIsTester(admin, userId) : true;
+  const gate = aiGate(body, mode, tester);
+  if (gate.verdict === 'unavailable') return json({ error: 'ai_unavailable' }, 503);
+  if (gate.verdict === 'closed') return json({ error: 'ai_closed' }, 403);
+  const access: AccessView = { mode, closed: gate.closed, statusReadable: gate.statusReadable };
+
   // ── PRISME-01 : statut et accord, avant tout contrôle de fournisseur ───────────────────────────
   // `status` doit pouvoir répondre « indisponible » quand rien n'est configuré : c'est justement ce
   // que l'app a besoin de savoir pour ne pas afficher de bouton mort (DD6).
-  if (kind === 'status') return prismeStatus(admin, userId, usageDate);
-  if (kind === 'consent') return prismeConsent(admin, userId, body, usageDate);
+  if (kind === 'status') return prismeStatus(admin, userId, usageDate, access);
+  if (kind === 'consent') return prismeConsent(admin, userId, body, usageDate, access);
 
   // ── ② Le fournisseur et le consentement, lus côté serveur ─────────────────────────────────────
   let providerConfig: ProviderConfig;

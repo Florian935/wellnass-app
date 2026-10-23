@@ -39,6 +39,16 @@ jest.mock('@/powersync/system', () => ({
 }));
 
 import { useAuthStore } from '../auth-store';
+import { usePrismeStore } from '../prisme-store';
+
+/**
+ * L'écouteur de session posé par le store au chargement du module. Capturé **avant** le premier
+ * `clearAllMocks` : il efface les appels enregistrés.
+ */
+const authListener = (supabase.auth.onAuthStateChange as unknown as jest.Mock).mock.calls[0]?.[0] as (
+  event: string,
+  session: unknown,
+) => void;
 
 /**
  * Méthodes d'auth utilisées par le store, projetées en mocks.
@@ -355,5 +365,37 @@ describe('drapeaux d’affichage', () => {
       deepLinkError: null,
       passwordJustReset: false,
     });
+  });
+});
+
+describe('US ACCES-IA — le statut de Prisme suit le compte (D17)', () => {
+  const STATUS = { available: false, reason: 'closed' } as never;
+  const sessionOf = (id: string) => ({ user: { id } }) as never;
+
+  it('déconnexion : le statut de Prisme est effacé', () => {
+    useAuthStore.setState({ session: sessionOf('user-a') });
+    usePrismeStore.setState({ status: STATUS });
+
+    authListener('SIGNED_OUT', null);
+
+    expect(usePrismeStore.getState().status).toBeNull();
+  });
+
+  it('🔴 un autre compte sur le même téléphone : il n’hérite pas de l’accès du précédent', () => {
+    useAuthStore.setState({ session: sessionOf('user-a') });
+    usePrismeStore.setState({ status: STATUS });
+
+    authListener('SIGNED_IN', sessionOf('user-b'));
+
+    expect(usePrismeStore.getState().status).toBeNull();
+  });
+
+  it('jeton rafraîchi, même compte : le statut reste', () => {
+    useAuthStore.setState({ session: sessionOf('user-a') });
+    usePrismeStore.setState({ status: STATUS });
+
+    authListener('TOKEN_REFRESHED', sessionOf('user-a'));
+
+    expect(usePrismeStore.getState().status).toBe(STATUS);
   });
 });

@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>App — Prisme et la bêta fermée</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&amp;family=Hanken+Grotesk:wght@400;500;600;700&amp;family=Space+Mono:wght@400;700&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 390px; height: {{rootH}}px; overflow: hidden; display: flex; flex-direction: column; background: #f7eede; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+
+  <sc-if value="{{chrome}}" hint-placeholder-val="{{yes}}">
+    <div style="flex: 0 0 60px; box-sizing: border-box; height: 60px; background: #241a12; display: flex; align-items: center; gap: 6px; padding: 0 8px;">
+      <span style="font-family: 'Space Mono', monospace; font-size: 9.5px; font-weight: 700; letter-spacing: 0.08em; color: #c9b79a;">SIMULER</span>
+      <sc-for list="{{situations}}" as="s" hint-placeholder-count="4">
+        <button type="button" onClick="{{s.pick}}" aria-pressed="{{s.pressed}}" style="flex: 1 1 auto; min-height: 36px; padding: 0 6px; border-radius: 9px; border: 1px solid {{s.border}}; background: {{s.bg}}; color: {{s.ink}}; font-family: 'Hanken Grotesk', sans-serif; font-size: 11.5px; font-weight: 700;">{{s.label}}</button>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <div style="flex: 1 1 auto; position: relative; overflow: hidden; display: flex; flex-direction: column;">
+
+    <sc-if value="{{onHome}}" hint-placeholder-val="{{yes}}">
+      <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 14px; padding: 22px 18px 0;">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;">
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 13px; color: #786a59; font-weight: 600;">Jeudi 23 octobre · 19 h 12</span>
+            <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.01em;">Bonsoir Florian</h1>
+          </div>
+          <button type="button" onClick="{{goSettings}}" aria-label="Réglages" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #e3d3ba; background: #fffaf2; display: flex; align-items: center; justify-content: center; padding: 0;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3.2"></circle><path d="M12 2.8v2.6M12 18.6v2.6M4.2 7.5l2.2 1.3M17.6 15.2l2.2 1.3M4.2 16.5l2.2-1.3M17.6 8.8l2.2-1.3"></path></svg>
+          </button>
+        </div>
+
+        <section aria-label="Ta journée" style="border-radius: 20px; border: 1px solid #e3d3ba; background: #fffaf2; padding: 16px; display: flex; flex-direction: column; gap: 10px;">
+          <h2 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; font-size: 18px;">Ta journée</h2>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <b style="font-size: 13.5px;">Séance de musculation</b>
+            <span style="font-size: 13px; color: #786a59; line-height: 18px;">52 min · 6 840 kg soulevés · 1 record</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <b style="font-size: 13.5px;">Ton assiette</b>
+            <span style="font-size: 13px; color: #786a59; line-height: 18px;">1 860 kcal sur 2 300 · 118 g de protéines sur 150 g · 3 repas</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <b style="font-size: 13.5px;">Ta semaine</b>
+            <span style="font-size: 13px; color: #786a59; line-height: 18px;">3 activités sur 4</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <b style="font-size: 13.5px;">Demain</b>
+            <span style="font-size: 13px; color: #786a59; line-height: 18px;">Course à pied à 7 h 30 · 8 km</span>
+          </div>
+
+          <sc-if value="{{showTell}}" hint-placeholder-val="{{yes}}">
+            <div style="border-radius: 18px; border: 1px solid #e3d3ba; background: #fffaf2; padding: 14px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 7px;">
+                <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="10" fill="#1c140c"></rect><path d="M3 17 H11" stroke="#f4ecdd" stroke-width="1.6" stroke-linecap="round" opacity="0.7"></path><path d="M10 23 L16 9 L22 23 Z" fill="none" stroke="#f2d28a" stroke-width="2" stroke-linejoin="round"></path><path d="M20 17 L29 13.5" stroke="#ff6b5e" stroke-width="1.8" stroke-linecap="round"></path><path d="M20.5 18.6 L29 18.6" stroke="#6fa8ef" stroke-width="1.8" stroke-linecap="round"></path><path d="M21 20.2 L29 23.6" stroke="#9ed16a" stroke-width="1.8" stroke-linecap="round"></path></svg>
+                <b style="font-family: 'Bricolage Grotesque', sans-serif; font-size: 15px;">Prisme</b>
+                <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 10px; color: #786a59; border: 1px solid #786a59; border-radius: 4px; padding: 0 4px;">IA</span>
+              </div>
+              <button type="button" onClick="{{tell}}" style="align-self: flex-start; min-height: 48px; padding: 0 16px; border-radius: 12px; border: 1.5px solid #33291f; background: transparent; color: #33291f; font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 13.5px;">Prisme raconte</button>
+              <sc-if value="{{closedMsg}}" hint-placeholder-val="{{no}}">
+                <p aria-live="polite" style="margin: 0; font-size: 12px; line-height: 16px; color: #786a59;">Prisme est en bêta fermée : il n’est pas ouvert sur ton compte.</p>
+              </sc-if>
+            </div>
+          </sc-if>
+        </section>
+
+        <section aria-label="Tes liens" style="border-radius: 20px; border: 1px solid #e3d3ba; background: #fffaf2; padding: 14px 16px; display: flex; flex-direction: column; gap: 4px;">
+          <b style="font-size: 13.5px;">Tes liens</b>
+          <span style="font-size: 13px; color: #786a59; line-height: 18px;">Deux liens demandent un regard cette semaine.</span>
+        </section>
+      </div>
+
+      <nav aria-label="Navigation principale" style="flex: 0 0 64px; border-top: 1px solid #e3d3ba; background: #fffaf2; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); align-items: center;">
+        <a href="#" aria-current="page" style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; color: #b14f2b; text-decoration: none;"><span aria-hidden="true" style="width: 18px; height: 18px; border-radius: 6px; background: #b14f2b;"></span>Accueil</a>
+        <a href="#" style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: #786a59; text-decoration: none;"><span aria-hidden="true" style="width: 18px; height: 18px; border-radius: 6px; border: 2px solid #786a59; box-sizing: border-box;"></span>Muscu</a>
+        <a href="#" style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: #786a59; text-decoration: none;"><span aria-hidden="true" style="width: 18px; height: 18px; border-radius: 6px; border: 2px solid #786a59; box-sizing: border-box;"></span>Course</a>
+        <a href="#" style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: #786a59; text-decoration: none;"><span aria-hidden="true" style="width: 18px; height: 18px; border-radius: 6px; border: 2px solid #786a59; box-sizing: border-box;"></span>Nutrition</a>
+        <a href="#" style="display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; color: #786a59; text-decoration: none;"><span aria-hidden="true" style="width: 18px; height: 18px; border-radius: 6px; border: 2px solid #786a59; box-sizing: border-box;"></span>Labo</a>
+      </nav>
+    </sc-if>
+
+    <sc-if value="{{onSettings}}" hint-placeholder-val="{{no}}">
+      <div style="flex: 1 1 auto; display: flex; flex-direction: column; padding: 14px 18px 18px; gap: 0;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button type="button" onClick="{{goHome}}" aria-label="Retour à l’accueil" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #e3d3ba; background: #fffaf2; display: flex; align-items: center; justify-content: center; padding: 0;">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#33291f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 5l-7 7 7 7"></path></svg>
+          </button>
+          <h1 style="margin: 0; font-family: 'Bricolage Grotesque', sans-serif; font-weight: 800; font-size: 26px;">Réglages</h1>
+        </div>
+        <p style="margin: 10px 0 0; font-size: 12px; color: #786a59;">… plus haut : profil, piliers, apparence, Health Connect.</p>
+
+        <h2 style="margin: 18px 0 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #786a59;">Suivi du cycle</h2>
+        <div style="border: 1px solid #e3d3ba; border-radius: 16px; background: #fffaf2; padding: 12px 14px; display: flex; align-items: center; gap: 12px; min-height: 48px;">
+          <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 15px; font-weight: 600;">Suivi du cycle</span>
+            <span style="font-size: 12.5px; line-height: 17px; color: #786a59;">Accessible à tout le monde. Désactivé par défaut.</span>
+          </div>
+          <button type="button" role="switch" aria-checked="false" aria-label="Suivi du cycle" style="flex: 0 0 auto; width: 44px; height: 26px; border-radius: 13px; border: none; background: #e3d3ba; position: relative; padding: 0;"><span aria-hidden="true" style="position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 10px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25);"></span></button>
+        </div>
+
+        <sc-if value="{{showPrismeFull}}" hint-placeholder-val="{{yes}}">
+          <div style="display: flex; flex-direction: column;">
+            <h2 style="margin: 24px 0 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #786a59;">Prisme</h2>
+            <div style="border: 1px solid #e3d3ba; border-radius: 16px; background: #fffaf2; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" style="flex: 0 0 auto;"><rect width="32" height="32" rx="10" fill="#1c140c"></rect><path d="M3 17 H11" stroke="#f4ecdd" stroke-width="1.6" stroke-linecap="round" opacity="0.7"></path><path d="M10 23 L16 9 L22 23 Z" fill="none" stroke="#f2d28a" stroke-width="2" stroke-linejoin="round"></path><path d="M20 17 L29 13.5" stroke="#ff6b5e" stroke-width="1.8" stroke-linecap="round"></path><path d="M20.5 18.6 L29 18.6" stroke="#6fa8ef" stroke-width="1.8" stroke-linecap="round"></path><path d="M21 20.2 L29 23.6" stroke="#9ed16a" stroke-width="1.8" stroke-linecap="round"></path></svg>
+                <span style="font-size: 12.5px; line-height: 17px; color: #786a59;">L’assistant IA de l’app : il raconte tes bilans et t’aide à saisir tes repas. Rien ne part sans ton accord.</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 8px; background: #f7eede; border-radius: 10px; padding: 7px 10px;">
+                <span style="font-family: 'Space Mono', monospace; font-weight: 700; font-size: 10px; color: #7a5714; border: 1px solid #7a5714; border-radius: 4px; padding: 0 4px;">BÊTA</span>
+                <span style="font-size: 12.5px; line-height: 17px; color: #33291f; font-weight: 600;">Bêta fermée — tu fais partie des testeurs.</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 12px; min-height: 48px;">
+                <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px;">
+                  <span style="font-size: 15px; font-weight: 600;">Activer Prisme</span>
+                  <span style="font-size: 12.5px; line-height: 17px; color: #786a59;">Accord donné le jeudi 16 octobre 2026 à Mistral AI (en France).</span>
+                </div>
+                <button type="button" role="switch" aria-checked="true" aria-label="Activer Prisme" style="flex: 0 0 auto; width: 44px; height: 26px; border-radius: 13px; border: none; background: #b14f2b; position: relative; padding: 0;"><span aria-hidden="true" style="position: absolute; right: 3px; top: 3px; width: 20px; height: 20px; border-radius: 10px; background: #fff;"></span></button>
+              </div>
+              <span style="font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: #786a59; margin-top: 2px;">Fournisseur</span>
+              <span style="font-size: 12.5px; line-height: 17px;">Mistral AI, en France. Il ne s’en sert pas pour entraîner ses modèles.</span>
+            </div>
+
+            <h2 style="margin: 24px 0 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #786a59;">Labo IA</h2>
+            <div style="border: 1px solid #e3d3ba; border-radius: 16px; background: #fffaf2; padding: 12px 14px; display: flex; align-items: center; gap: 12px; min-height: 48px;">
+              <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px;">
+                <span style="font-size: 15px; font-weight: 600;">Activer le labo IA</span>
+                <span style="font-size: 12.5px; line-height: 17px; color: #786a59;">Envoie un résumé chiffré de tes données à un modèle, pour évaluer ses réponses.</span>
+              </div>
+              <button type="button" role="switch" aria-checked="false" aria-label="Activer le labo IA" style="flex: 0 0 auto; width: 44px; height: 26px; border-radius: 13px; border: none; background: #e3d3ba; position: relative; padding: 0;"><span aria-hidden="true" style="position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 10px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25);"></span></button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showPrismeOrphan}}" hint-placeholder-val="{{no}}">
+          <div style="display: flex; flex-direction: column;">
+            <h2 style="margin: 24px 0 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #786a59;">Prisme</h2>
+            <div style="border: 1px solid #e3d3ba; border-radius: 16px; background: #fffaf2; padding: 12px 14px; display: flex; flex-direction: column; gap: 10px;">
+              <div style="display: flex; align-items: flex-start; gap: 10px;">
+                <svg width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" style="flex: 0 0 auto;"><rect width="32" height="32" rx="10" fill="#1c140c"></rect><path d="M3 17 H11" stroke="#f4ecdd" stroke-width="1.6" stroke-linecap="round" opacity="0.7"></path><path d="M10 23 L16 9 L22 23 Z" fill="none" stroke="#f2d28a" stroke-width="2" stroke-linejoin="round"></path><path d="M20 17 L29 13.5" stroke="#ff6b5e" stroke-width="1.8" stroke-linecap="round"></path><path d="M20.5 18.6 L29 18.6" stroke="#6fa8ef" stroke-width="1.8" stroke-linecap="round"></path><path d="M21 20.2 L29 23.6" stroke="#9ed16a" stroke-width="1.8" stroke-linecap="round"></path></svg>
+                <span style="font-size: 13px; line-height: 18px; color: #33291f;">Prisme est en bêta fermée et n’est pas ouvert sur ton compte. Ton accord du 16 octobre 2026 reste enregistré : tu peux le retirer.</span>
+              </div>
+              <button type="button" onClick="{{withdraw}}" style="align-self: flex-start; min-height: 48px; padding: 0 16px; border-radius: 12px; border: 1.5px solid #b14f2b; background: transparent; color: #b14f2b; font-family: 'Hanken Grotesk', sans-serif; font-weight: 700; font-size: 13.5px;">Retirer mon accord</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <h2 style="margin: 24px 0 8px; font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: #786a59;">Séquençage des séances</h2>
+        <div style="border: 1px solid #e3d3ba; border-radius: 16px; background: #fffaf2; padding: 12px 14px; display: flex; align-items: center; gap: 12px; min-height: 48px;">
+          <div style="flex: 1 1 auto; display: flex; flex-direction: column; gap: 2px;">
+            <span style="font-size: 15px; font-weight: 600;">Détecter les enchaînements difficiles</span>
+            <span style="font-size: 12.5px; line-height: 17px; color: #786a59;">Signale une grosse séance de jambes la veille d’une sortie longue, et propose un autre jour.</span>
+          </div>
+          <button type="button" role="switch" aria-checked="false" aria-label="Détecter les enchaînements difficiles" style="flex: 0 0 auto; width: 44px; height: 26px; border-radius: 13px; border: none; background: #e3d3ba; position: relative; padding: 0;"><span aria-hidden="true" style="position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 10px; background: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.25);"></span></button>
+        </div>
+
+        <sc-if value="{{withdrawnNote}}" hint-placeholder-val="{{no}}">
+          <p role="status" style="margin: 16px 0 0; font-size: 12px; color: #786a59; line-height: 16px;">Accord retiré. La section Prisme a disparu : il n’y a plus rien à y faire.</p>
+        </sc-if>
+      </div>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"situation":{"editor":"enum","options":["testeur","nonTesteur","orphelin","retire"],"default":"testeur"},"screen":{"editor":"enum","options":["accueil","reglages"],"default":"accueil"},"chrome":{"editor":"boolean","default":true},"tapped":{"editor":"boolean","default":false},"$preview":{"width":390,"height":904}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { situation: null, screen: null, tapped: null, withdrawn: false };
+  }
+  renderVals() {
+    const situation = this.state.situation ?? (this.props.situation ?? 'testeur');
+    const screen = this.state.screen ?? (this.props.screen ?? 'accueil');
+    const tapped = this.state.tapped ?? (this.props.tapped ?? false);
+    const chrome = this.props.chrome ?? true;
+    const withdrawn = this.state.withdrawn;
+    const labels = [
+      ['testeur', 'Testeur'],
+      ['nonTesteur', 'Non-testeur'],
+      ['orphelin', 'Accord restant'],
+      ['retire', 'Retiré']
+    ];
+    const isTesterLike = situation === 'testeur' || situation === 'retire';
+    return {
+      yes: true,
+      no: false,
+      chrome,
+      rootH: chrome ? 904 : 844,
+      situations: labels.map(([id, label]) => {
+        const on = id === situation;
+        return {
+          label,
+          pressed: on ? 'true' : 'false',
+          bg: on ? '#f2d28a' : 'transparent',
+          ink: on ? '#241a12' : '#f0e4d0',
+          border: on ? '#f2d28a' : '#6b5a45',
+          pick: () => this.setState({ situation: id, tapped: false, withdrawn: false })
+        };
+      }),
+      onHome: screen === 'accueil',
+      onSettings: screen === 'reglages',
+      goSettings: () => this.setState({ screen: 'reglages' }),
+      goHome: () => this.setState({ screen: 'accueil' }),
+      showTell: isTesterLike,
+      closedMsg: situation === 'retire' && tapped,
+      tell: () => { if (situation === 'retire') this.setState({ tapped: true }); },
+      showPrismeFull: isTesterLike,
+      showPrismeOrphan: situation === 'orphelin' && !withdrawn,
+      withdrawnNote: situation === 'orphelin' && withdrawn,
+      withdraw: () => this.setState({ withdrawn: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

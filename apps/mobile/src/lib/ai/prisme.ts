@@ -45,14 +45,27 @@ export type PrismeMealOutcome =
  */
 const SIMULATED_INVENTION = ' (9 999 kg)';
 
-/** Relit le statut. Un échec (hors ligne) **garde** le dernier statut connu (DD7). */
+/**
+ * Relit le statut. Un échec (hors ligne) **garde** le dernier statut connu (DD7).
+ *
+ * US ACCES-IA (D17) — si le compte a changé pendant la demande (déconnexion, autre compte), la réponse
+ * ne vaut plus : elle n'est pas écrite. Sinon le statut du compte précédent deviendrait celui du suivant,
+ * et ne serait plus jamais redemandé de la session.
+ */
 export async function refreshPrismeStatus(): Promise<PrismeServiceResult> {
+  const epoch = usePrismeStore.getState().epoch;
   const result = await callPrismeService({ kind: 'status' });
-  if (result.ok) usePrismeStore.getState().setStatus(result.status);
+  if (result.ok && usePrismeStore.getState().epoch === epoch) usePrismeStore.getState().setStatus(result.status);
   return result;
 }
 
-/** Après un refus `consent_required` : relire le statut, pour rouvrir la feuille au bon fournisseur. */
+/**
+ * Après un refus `consent_required` : relire le statut, pour rouvrir la feuille au bon fournisseur.
+ *
+ * US ACCES-IA (R10) — **pas** après `closed` : relire le statut éteindrait aussitôt la surface du geste,
+ * et son message « bêta fermée » avec elle — le bouton disparaîtrait sans un mot. Le message reste ;
+ * tout disparaît au démarrage suivant.
+ */
 async function afterServerFailure(code: AiErrorCode): Promise<void> {
   if (code === 'consent-required') await refreshPrismeStatus();
 }
@@ -113,8 +126,11 @@ export async function askMeal(text: string, lang: PrismeLang): Promise<PrismeMea
  * suite, sans attendre que PowerSync redescende la ligne. Un refus n'écrit rien.
  */
 export async function grantPrismeConsent(adult: boolean): Promise<PrismeServiceResult> {
+  const epoch = usePrismeStore.getState().epoch;
   const result = await callPrismeService({ kind: 'consent', grant: true, adult });
   if (!result.ok) return result;
+  // US ACCES-IA (D17) — le compte a changé pendant l'appel : rien n'est recopié chez le suivant.
+  if (usePrismeStore.getState().epoch !== epoch) return result;
   usePrismeStore.getState().setStatus(result.status);
   await updateSettings({
     prismeConsentAt: result.status.consent.at,

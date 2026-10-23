@@ -67,10 +67,11 @@ import { nextMondayKey, useLabComposer, useLabObjective, useLabPillars } from '@
 import { applyAdaptationForToday, reschedulePlannedSession } from '@/data/repositories/planned-session-repository';
 import { upsertNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { upsertRunnerProfile } from '@/data/repositories/running-profile-repository';
-// US NARR-01 : le consentement IA décide de la présence du bouton « Résumer », et de rien d'autre.
-import { useSettings } from '@/data/repositories/settings-repository';
 import { useActionLock } from '@/hooks/useActionLock';
 import { useAppReducedMotion } from '@/hooks/useAppReducedMotion';
+// US NARR-01 puis ACCES-IA : l'accord au Labo IA et l'accès à l'IA décident de la présence du bouton
+// « Résumer », et de rien d'autre.
+import { useLabNarrationAllowed } from '@/hooks/useLabNarrationAllowed';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useTodayKey } from '@/hooks/useTodayKey';
 import { hapticConfirm, hapticSelect } from '@/lib/haptics';
@@ -101,7 +102,8 @@ export default function LabScreen() {
   const params = useLocalSearchParams<{ section?: string }>();
   const todayKey = useTodayKey();
   const reducedMotion = useAppReducedMotion();
-  const { settings } = useSettings();
+  // US ACCES-IA — « Résumer le dossier » (NARR-01) : accord au Labo IA ET accès à l'IA confirmé.
+  const canNarrate = useLabNarrationAllowed();
   const lockApply = useActionLock();
   const shared = useCrossLinks();
   const activePillars = useLabPillars();
@@ -442,7 +444,7 @@ export default function LabScreen() {
               questions={questions}
               selectedId={question?.id ?? null}
               runningExperiments={runningKinds}
-              canNarrate={settings?.aiConsentAt != null}
+              canNarrate={canNarrate}
               onSelect={(id) => {
                 setQuestionId(id);
                 setFocus(null);

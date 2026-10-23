@@ -25,18 +25,26 @@ const FUNCTION_NAME = 'ai-assist';
  * US PRISME-01 — `not-allowed` (compte de moins de 18 ans, R13), `adult-required` (la feuille d'accord
  * doit faire confirmer « 18 ans ou plus », DD15), `settings-missing` (accord demandé avant la première
  * synchro des réglages).
+ *
+ * US ACCES-IA — `closed` : la bêta est fermée et ce compte n'en fait pas partie (`ai_closed`).
+ *
+ * Exportée en tableau pour que le test-garde des messages (`ai-error-messages.test.ts`) lise **cette**
+ * liste : chaque code doit avoir son texte dans `prisme.errors` et `aiLab.errors`, en FR et en EN.
  */
-export type AiErrorCode =
-  | 'consent-required'
-  | 'quota-exceeded'
-  | 'offline'
-  | 'unavailable'
-  | 'refused'
-  | 'misconfigured'
-  | 'not-allowed'
-  | 'adult-required'
-  | 'settings-missing'
-  | 'failed';
+export const AI_ERROR_CODES = [
+  'consent-required',
+  'quota-exceeded',
+  'offline',
+  'unavailable',
+  'refused',
+  'misconfigured',
+  'not-allowed',
+  'adult-required',
+  'settings-missing',
+  'closed',
+  'failed',
+] as const;
+export type AiErrorCode = (typeof AI_ERROR_CODES)[number];
 
 export type AiResult =
   | { ok: true; text: string; used: number; quota: number; provider: string; model: string }
@@ -91,6 +99,8 @@ function codeFromServer(error: string | undefined, status: number | undefined): 
       return 'adult-required';
     case 'settings_missing':
       return 'settings-missing';
+    case 'ai_closed':
+      return 'closed';
     default:
       return status === 401 ? 'unavailable' : 'failed';
   }

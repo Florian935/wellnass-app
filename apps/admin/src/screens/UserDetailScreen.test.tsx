@@ -43,6 +43,12 @@ vi.mock('../data/users', async (importOriginal) => {
   };
 });
 
+// US ACCES-IA — le bloc « Bêta IA » a son propre test (`AiBetaSection.test.tsx`) ; ici, on vérifie
+// seulement qu'il est monté, au bon endroit, pour le bon compte.
+vi.mock('../components/AiBetaSection', () => ({
+  AiBetaSection: ({ userId }: { userId: string }) => <div data-testid="ai-beta-section" data-user-id={userId} />,
+}));
+
 const currentUser = { id: 'admin-1', email: 'admin@wellness.app' };
 vi.mock('../auth/useAuth', () => ({ useAuth: () => ({ user: currentUser }) }));
 
@@ -414,5 +420,24 @@ describe('historique de modération', () => {
     // La résolution est un N+1 assumé (volume faible) : il ne doit au moins pas être un N+N.
     // 1 appel pour la fiche + 1 pour l'acteur unique.
     await waitFor(() => expect(mockGetUser).toHaveBeenCalledTimes(2));
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US ACCES-IA — le bloc « Bêta IA »
+// ---------------------------------------------------------------------------
+
+describe('bloc « Bêta IA » (US ACCES-IA)', () => {
+  it('est monté pour ce compte, entre Profil et Modération', async () => {
+    await afficher();
+
+    const bloc = screen.getByTestId('ai-beta-section');
+    expect(bloc).toHaveAttribute('data-user-id', 'user-1');
+
+    const profil = screen.getByRole('heading', { name: fr.users.detail.profileSection });
+    const moderation = screen.getByRole('heading', { name: fr.users.ban.section });
+    // Ordre du document : Profil → Bêta IA → Modération.
+    expect(profil.compareDocumentPosition(bloc) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(bloc.compareDocumentPosition(moderation) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });

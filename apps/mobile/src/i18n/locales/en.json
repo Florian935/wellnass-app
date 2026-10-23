@@ -6634,6 +6634,10 @@
       "unavailable": "No provider key is set on the server.",
       "refused": "The model declined to answer this question.",
       "misconfigured": "The provider configuration is invalid.",
+      "not-allowed": "The AI lab is for people aged 18 and over.",
+      "adult-required": "Confirm that you’re 18 or older.",
+      "settings-missing": "Your settings aren’t synced yet. Try again in a moment.",
+      "closed": "The AI lab is for beta testers only.",
       "failed": "The request failed."
     },
     "settings": {
@@ -6645,8 +6649,12 @@
       "confirmTitle": "Enable the AI lab?",
       "confirmBody": "A numeric summary of your data will leave the device for a third-party provider on every question. The free tier used for testing may use it to train its models. Only enable this on fake data.",
       "cancel": "Cancel",
-      "accept": "Enable"
-    }
+      "accept": "Enable",
+      "closed": "The AI lab is for beta testers only. Your consent is still on record: you can withdraw it.",
+      "withdraw": "Withdraw my consent"
+    },
+    "closed": "The AI lab is for beta testers only.",
+    "unknown": "A connection is needed to check your access to the AI lab."
   },
   "prisme": {
     "name": "Prisme",
@@ -6713,7 +6721,11 @@
       "unavailable": "Prisme isn’t available right now.",
       "unknown": "A connection is needed to check whether Prisme is available.",
       "adultOnly": "Prisme is for people aged 18 and over.",
-      "refresh": "Check again"
+      "refresh": "Check again",
+      "betaBadge": "BETA",
+      "betaTester": "Closed beta — you’re one of the testers.",
+      "closed": "Prisme is in closed beta and isn’t open on your account. Your consent from {{date}} is still on record: you can withdraw it.",
+      "withdraw": "Withdraw my consent"
     },
     "errors": {
       "offline": "Prisme needs a connection. Your numbers are still here.",
@@ -6725,6 +6737,7 @@
       "not-allowed": "Prisme is for people aged 18 and over.",
       "adult-required": "Confirm that you’re 18 or older.",
       "settings-missing": "Your settings aren’t synced yet. Try again in a moment.",
+      "closed": "Prisme is in closed beta: it isn’t open on your account.",
       "failed": "Prisme couldn’t answer. Try again later."
     },
     "dossier": {

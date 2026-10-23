@@ -1,0 +1,44 @@
+{
+  "v": 3,
+  "createdOnFiles": { "v": 1, "at": "2026-10-23T07:26:35Z" },
+  "title": "ACCES-IA · Prisme réservé aux testeurs",
+  "launch": { "view": "canvas" },
+  "pages": [],
+  "boards": {
+    "Main.dc.html": { "x": 0, "y": 300, "w": 1280, "h": 980, "title": "Back-office · Testeurs IA (jouable)", "expand": "fill", "is_interactive": true },
+    "FicheUtilisateur.dc.html": { "x": 1360, "y": 300, "w": 1280, "h": 980, "title": "Back-office · Fiche utilisateur, bloc « Bêta IA »", "expand": "fill", "is_interactive": true },
+    "Journal.dc.html": { "x": 2720, "y": 300, "w": 1280, "h": 760, "title": "Back-office · Journal d'audit", "expand": "fill" },
+    "App.dc.html": { "x": 0, "y": 1700, "w": 390, "h": 904, "title": "App · prototype jouable (bande SIMULER)", "is_interactive": true },
+    "AccueilTesteur.dc.html": { "x": 470, "y": 1700, "w": 390, "h": 844, "title": "Accueil, 19 h · testeur" },
+    "AccueilNonTesteur.dc.html": { "x": 940, "y": 1700, "w": 390, "h": 844, "title": "Accueil, 19 h · non-testeur" },
+    "AccueilRetire.dc.html": { "x": 1410, "y": 1700, "w": 390, "h": 844, "title": "Accueil · testeur retiré pendant la session" },
+    "ReglagesTesteur.dc.html": { "x": 1880, "y": 1700, "w": 390, "h": 844, "title": "Réglages · testeur" },
+    "ReglagesNonTesteur.dc.html": { "x": 2350, "y": 1700, "w": 390, "h": 844, "title": "Réglages · non-testeur" },
+    "ReglagesOrphelin.dc.html": { "x": 2820, "y": 1700, "w": 390, "h": 844, "title": "Réglages · accord restant, non-testeur" }
+  },
+  "order": [
+    "Main.dc.html",
+    "FicheUtilisateur.dc.html",
+    "Journal.dc.html",
+    "App.dc.html",
+    "AccueilTesteur.dc.html",
+    "AccueilNonTesteur.dc.html",
+    "AccueilRetire.dc.html",
+    "ReglagesTesteur.dc.html",
+    "ReglagesNonTesteur.dc.html",
+    "ReglagesOrphelin.dc.html"
+  ],
+  "notes": {
+    "t-bo": { "x": 0, "y": 0, "text": "Back-office — la liste des testeurs", "kind": "title1", "maxW": 4000 },
+    "t-app": { "x": 0, "y": 1400, "text": "App — ce que voit chacun", "kind": "title1", "maxW": 3210 },
+    "s-bo": {
+      "x": 4080, "y": 300, "w": 380, "fill": "orange", "size": "m",
+      "text": "Back-office (spec D6 à D12) :\n\n· Écran « Testeurs IA » sous « Utilisateurs », pour super_admin et modérateur (D8).\n· Le bandeau dit le mode réellement en service, lu dans la réponse de ai-assist (champ access). Tweak « mode » : testers / open / inconnu.\n· Ajout par e-mail d'un compte existant ; rien n'est envoyé à la personne. Essaie : jeanne.martin@exemple.fr (ajout), claire.b@exemple.fr (déjà testeur), inconnu@exemple.fr (aucun compte).\n· Retirer : confirmation ; l'accord de la personne n'est pas touché.\n· Journal d'audit : deux actions de plus, rien n'est journalisé quand rien n'est écrit.\n\nCouleurs du back-office existant (accent #dd6e40, gris #8a7a68) : sous 4,5:1 pour le petit texte — dette commune à tout apps/admin, non traitée ici."
+    },
+    "s-app": {
+      "x": 3290, "y": 1700, "w": 380, "fill": "blue", "size": "m",
+      "text": "App (spec §4) :\n\n· Non-testeur : rien de Prisme ni du Labo IA. La carte « Ta journée » garde ses faits — ils ne sont pas de l'IA.\n· Testeur : tout comme PRISME-01, plus une ligne « Bêta fermée — tu fais partie des testeurs ».\n· Accord restant (donné avant ACCES-IA, ou testeur retiré) : une carte réduite au retrait de l'accord.\n· Retiré pendant la session : le geste suivant dit « bêta fermée » ; tout disparaît au prochain démarrage.\n\nPrototype : la bande SIMULER change la situation, les onglets Accueil / Réglages changent d'écran. Les planches figées importent ce prototype."
+    }
+  },
+  "designSystems": []
+}

@@ -10,13 +10,14 @@ import {
   type UserBanRow,
 } from '../data/users';
 import { useAuth } from '../auth/useAuth';
+import { AiBetaSection } from '../components/AiBetaSection';
 import { fr } from '../i18n/fr';
 import { theme } from '../theme';
 
 /**
  * Fiche d'un compte utilisateur (US 8.8a lecture seule + US 8.8b modération). Sections :
- * Compte, Configuration, Profil, puis Modération (bannir/débannir + historique) réservée aux
- * comptes modérables. Sobriété RGPD : aucune donnée de santé.
+ * Compte, Configuration, Profil, Bêta IA (US ACCES-IA), puis Modération (bannir/débannir +
+ * historique) réservée aux comptes modérables. Sobriété RGPD : aucune donnée de santé.
  */
 export function UserDetailScreen() {
   const { id } = useParams<{ id: string }>();
@@ -203,6 +204,8 @@ export function UserDetailScreen() {
           />
         </dl>
       </section>
+
+      {user.id ? <AiBetaSection userId={user.id} /> : null}
 
       <section style={styles.panel}>
         <h2 style={styles.h2}>{fr.users.ban.section}</h2>

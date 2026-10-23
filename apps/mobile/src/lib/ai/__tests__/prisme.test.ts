@@ -105,6 +105,16 @@ describe('tellBilan — raconter, puis vérifier', () => {
     expect(usePrismeStore.getState().status).toEqual(STATUS);
   });
 
+  it('🔴 US ACCES-IA — « bêta fermée » : le code passe, et le statut n’est PAS relu (R10)', async () => {
+    // Relire le statut éteindrait aussitôt la surface du geste, et son message avec elle : le bouton
+    // disparaîtrait sans un mot. Le message reste ; tout disparaît au démarrage suivant.
+    ai.mockResolvedValue({ ok: false, code: 'closed' });
+
+    await expect(tellBilan(DOSSIER, 'evening', 'fr')).resolves.toEqual({ ok: false, code: 'closed' });
+    await expect(askMeal('le reste du plat', 'fr')).resolves.toEqual({ ok: false, code: 'closed' });
+    expect(service).not.toHaveBeenCalled();
+  });
+
   it('les autres échecs du serveur passent tels quels (hors ligne, quota)', async () => {
     ai.mockResolvedValue({ ok: false, code: 'offline' });
     await expect(tellBilan(DOSSIER, 'evening', 'fr')).resolves.toEqual({ ok: false, code: 'offline' });
@@ -196,5 +206,31 @@ describe('l’accord (DD3)', () => {
     await refreshPrismeStatus();
 
     expect(usePrismeStore.getState().status).toEqual(STATUS);
+  });
+
+  it('🔴 US ACCES-IA (D17) — déconnexion pendant la demande : la réponse n’est pas écrite', async () => {
+    let answer: (value: unknown) => void = () => undefined;
+    service.mockReturnValue(new Promise((resolve) => (answer = resolve)));
+
+    const pending = refreshPrismeStatus();
+    usePrismeStore.getState().reset(); // le compte A se déconnecte
+    answer({ ok: true, status: STATUS });
+    await pending;
+
+    // Le statut de A ne devient pas celui du compte suivant.
+    expect(usePrismeStore.getState().status).toBeNull();
+  });
+
+  it('🔴 US ACCES-IA (D17) — déconnexion pendant l’accord : rien n’est recopié en local', async () => {
+    let answer: (value: unknown) => void = () => undefined;
+    service.mockReturnValue(new Promise((resolve) => (answer = resolve)));
+
+    const pending = grantPrismeConsent(true);
+    usePrismeStore.getState().reset();
+    answer({ ok: true, status: STATUS });
+    await pending;
+
+    expect(updateSettings).not.toHaveBeenCalled();
+    expect(usePrismeStore.getState().status).toBeNull();
   });
 });

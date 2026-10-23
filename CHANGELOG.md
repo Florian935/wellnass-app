@@ -10,6 +10,87 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — ACCES-IA : l'IA réservée aux testeurs — interrupteur serveur `AI_ACCESS` et table `ai_testers` tenue au back-office (`feature/acces-ia-testeurs` → `dev`)
+
+> US ACCES-IA (roadmap **7.43**, BACKLOG P1, suite de PRISME-01 §11) cadrée (spec, plan, toile Design, relecture
+> par un agent : 1 bloquant et 20 constats intégrés), validée par Florian le 23/10/2026 (« Je valide, go » — QA1
+> et QA2 telles que proposées), codée et **clôturée** dans ce commit (règle « recette à la demande » : la §96
+> réservée est caduque). Commit précédent : `ae9db4f9`. **Rien n'est déployé** : migration et fonction à pousser
+> par Florian, dans l'ordre (spec §12).
+
+### Ajouté
+- **Le verrou serveur.** `ai-assist` lit le secret `AI_ACCESS` : absent, vide ou mal écrit = `testers` (fermé
+  par défaut), seule la valeur `open` ouvre. En mode `testers`, seuls les comptes de `ai_testers` passent :
+  les autres reçoivent « bêta fermée » à `status` (`reason: 'closed'`) et `403 ai_closed` à tout appel au
+  modèle et à tout accord — **avant** le fournisseur et **avant** le quota. Restent ouverts : `status` et le
+  retrait d'un accord. `status` dit dans l'ordre fermé → âge → fournisseur, et porte `access` (le mode).
+  Liste illisible : refus en `503 ai_unavailable`, jamais « fermé » (D16). Couvre **Prisme et le Labo IA**
+  (QA1 : le Labo IA envoyait de vraies données à Gemini gratuit sous un accord « données factices »).
+- **La règle, pure et testée** : `packages/shared/src/ai-access.ts` (`parseAiAccess`, `aiAccessAllows`,
+  `prismeStatusReason`), et sa **copie vérifiée** `supabase/functions/ai-assist/access.ts` — un test-garde
+  compare les deux fichiers au caractère près sous un repère (la fonction ne partage pas le bundle de l'app).
+- **Migration `20261023101905_acces_ia_ai_testers`** (non poussée) : table **dédiée** `ai_testers` — jamais
+  `user_roles`, où toute ligne rend `is_admin()` vrai —, une ligne active par compte (index unique partiel),
+  retrait en soft delete, `user_id` en cascade, `added_by` en `set null` ; RLS **sans politique**, `select`
+  explicite à `service_role` seul. Trois fonctions `security definer` gardées par `can_manage_users()` :
+  `grant_ai_tester`, `grant_ai_tester_by_email` (égalité sur l'e-mail, jamais de motif `ilike` — `*` est un
+  joker PostgREST), `revoke_ai_tester`. Vue `admin_ai_testers` (e-mail, prénom, ajouteur, dernière
+  utilisation, appels sur 7 jours). **Ni publication, ni sync rule, ni schéma PowerSync** (D9).
+- **Back-office** : écran **Testeurs IA** (`/ai-testers`, super_admin et modérateur) — mode en service lu
+  dans `status`, ajout par e-mail, liste, retrait confirmé ; bloc **Bêta IA** dans la fiche utilisateur
+  (`AiBetaSection`) ; deux actions d'audit `ai_tester.grant` / `ai_tester.revoke`, ciblées par
+  **l'identifiant du compte, jamais son e-mail** (`audit_log` est en ajout seul et survit à la suppression).
+- **App** : `useAiAccess` — trois états `allowed` / `closed` / `unknown` ; tant que le statut est inconnu,
+  chaque écran qui en a besoin le redemande (une requête en vol, pas de boucle hors ligne). Réglages ›
+  Prisme : absente hors accès, **réduite à « Retirer mon accord »** s'il reste un accord orphelin, ligne
+  « Bêta fermée — tu fais partie des testeurs » pour un testeur. Labo IA (section, « Résumer » de NARR-01,
+  récit du Conseil, écran `/ai-lab`) : seulement sur accès confirmé (`useLabNarrationAllowed`, un crochet
+  pour les deux appelants). Code d'échec `closed` et ses messages FR/EN.
+- Toile Design `design/acces-ia-testeurs/` (10 planches, dont deux jouables) — https://claude.ai/artifact/28oTXd2EK8pFvm2ZKXRyUZ
+
+### Modifié
+- `prisme-store` : `statusRequested` (« une fois par session ») devient `statusLoading` (« une requête en
+  vol ») ; `reset()` appelé par `auth-store` à **tout changement de compte** (D17 : téléphone partagé).
+- `prisme.ts` : un refus `closed` **ne relit pas** le statut (R10) — relire démonterait la surface du geste
+  avec son message ; tout disparaît au démarrage suivant.
+- `aiLab.errors` gagne `not-allowed`, `adult-required` et `settings-missing`, absents depuis PRISME-01 (ils
+  s'affichaient en clé brute au Labo).
+- Docs : spec PRISME-01 §4 et §11 annotées ; brouillon de politique LANCE-00 (ligne « Bêta de l'IA », §7) ;
+  BACKLOG : ligne ACCES-IA retirée, **dette « export RGPD et tables serveur »** ajoutée (QA2) ;
+  `MIGRATIONS.md` : ligne non cochée ; roadmap 7.43 ✅ (271 livrés, 2 à faire, total 283).
+
+### Technique / Notes
+- **Tests** : `ai-access.test.ts` (69, dont la matrice d’`aiGate` et la garde de la copie, vérifiée en la faisant échouer),
+  `ai-testers.test.ts` (21, dont « l'entrée d'audit ne contient l'e-mail nulle part »),
+  `AiTestersScreen` (15), `AiBetaSection` (5), `AdminLayout` (2, premier test du menu), `useAiAccess`,
+  `useLabNarrationAllowed`, `AiLabSection`, `ai-lab-screen`, `ai-error-messages` (test-garde : chaque code
+  d'échec a son message dans `prisme.errors` **et** `aiLab.errors`, FR et EN), cas ajoutés à
+  `usePrismeVisibility`, `PrismeSettingsSection`, `ai-client`, `prisme`, `auth-store`, `CouncilSheet`,
+  `ai-assist`, `audit`. Après rebase sur `origin/dev` (`ae9db4f9`) : `lint`, `typecheck`, `agents:check` à 0 ;
+  **10 250 tests verts** (633 admin + 5 414 mobile + 4 203 shared). ⚠️ `health-connect-push.test.ts` (non
+  touché) a échoué une fois en suite complète — 41 cas, « Platform not supported » : vert seul (50/50) et au
+  relancement de la suite. Test instable sous exécution parallèle, à surveiller.
+- ⚠️ **Seuils de couverture déjà rouges sur `origin/dev`**, sans lien avec cette US : `test:coverage` échoue
+  sur le global mobile (72,9 % < 74 %) et le 100 % de `packages/shared` (fichiers non touchés ici :
+  `explain.ts`, `cross-links.ts`, `health-connect.ts`…). Les fichiers de l'US sont à 100 % côté `shared`.
+- **`database.types.ts` écrit à la main** au format du générateur (table, vue, trois fonctions) : à régénérer
+  par `npm run db:types` après le push — le diff doit être vide, sinon corriger le code.
+- **Déploiement — gestes de Florian, dans l'ordre** : `npm run db:push` + `db:types` ; ajouter les testeurs au
+  back-office ; **puis** `npx supabase functions deploy ai-assist --use-api`. Sans `AI_ACCESS`, la fonction
+  ferme à tous ceux qui ne sont pas listés ; `npx supabase secrets set AI_ACCESS=open` rouvre sans
+  redéploiement. Une **ancienne** app (APK de la famille) face à la nouvelle fonction : rien ne part pour un
+  non-testeur, mais ses Réglages restent sur « il faut le réseau » jusqu'à la mise à jour.
+- **Revue de code (agent `superpowers:code-reviewer`)** : aucun bloquant ; corrigés avant ce commit — le
+  verdict du verrou sort de `index.ts` vers la règle pure (`aiGate`, testée sur toute la matrice, copie gardée) ;
+  liste illisible + retrait d'accord → `503` au lieu d'un statut « fermé » ; **époque** dans le store de
+  Prisme (une réponse partie avant un changement de compte n'écrit plus rien) ; délai de 10 s sur une demande
+  de statut qui pend, et `loading` pour `/ai-lab` ; `select … into strict` sur l'e-mail ; messages « déjà
+  testeur / déjà retiré » et erreur de retrait dédiée au back-office ; casse « Labo IA ». Laissé tel quel,
+  et assumé : l'US est close **avant** le déploiement (règle du 23/10/2026 : close dès que le code est complet) —
+  ETAT signale la migration non poussée tant que Florian ne l'a pas jouée.
+- Écarts au plan (moyens, pas règles) : fin du plan — colonne de sortie `target_user_id`, comptes SSO écartés,
+  bloc de la fiche en composant, remise à zéro au changement de compte, `aiGate`, époque, délai.
+
 ## 23/10/2026 — CARDIO-08 : l'analyse d'une sortie dit le même « X sur Y dans la plage » que le hub (`fix/cardio08-fractions-analyse` → `dev`)
 
 > US CARDIO-08 codée en un lot sur le plan validé (D1 à D4) et clôturée (`etape: close`, recette à la

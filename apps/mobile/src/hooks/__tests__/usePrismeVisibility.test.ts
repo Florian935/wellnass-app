@@ -2,8 +2,10 @@
  * US PRISME-01 — quand une entrée Prisme est-elle visible ? (spec DD7, R13)
  *
  * Visible si le dernier statut connu dit « disponible » ; sans statut (hors ligne au démarrage), si un
- * accord local existe. Jamais pour un compte de moins de 18 ans. Et le statut n'est demandé qu'une
- * fois par session.
+ * accord local existe. Jamais pour un compte de moins de 18 ans. Une fois connu, le statut n'est plus
+ * redemandé dans la session (le détail de la demande est testé dans `useAiAccess.test.ts`).
+ *
+ * US ACCES-IA — « bêta fermée » éteint tout, accord local ou non (spec §14, critère 8).
  */
 import { renderHook } from '@testing-library/react-native';
 import type { PrismeStatus } from '@wellness/shared';
@@ -36,20 +38,35 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockSettings.prismeConsentAt = null;
   mockBirthDate = null;
-  usePrismeStore.setState({ status: null, statusRequested: false });
+  usePrismeStore.getState().reset();
 });
 
 describe('usePrismeVisibility', () => {
-  it('demande le statut une seule fois par session', async () => {
+  it('demande le statut tant qu’il est inconnu, plus jamais une fois connu', async () => {
     const first = await renderHook(() => usePrismeVisibility());
-    await renderHook(() => usePrismeVisibility());
-    first.unmount();
+    expect(refreshPrismeStatus).toHaveBeenCalledTimes(1);
+    await first.unmount();
 
+    usePrismeStore.setState({ status: STATUS });
+    await renderHook(() => usePrismeVisibility());
     expect(refreshPrismeStatus).toHaveBeenCalledTimes(1);
   });
 
+  it('🔴 US ACCES-IA — « bêta fermée » : rien de Prisme, même avec un accord local', async () => {
+    usePrismeStore.setState({
+      status: { ...STATUS, available: false, reason: 'closed', provider: null, access: 'testers' },
+    });
+    mockSettings.prismeConsentAt = '2026-10-03T19:00:00.000Z';
+
+    const { result } = await renderHook(() => usePrismeVisibility());
+
+    expect(result.current.visible).toBe(false);
+    expect(result.current.access).toBe('closed');
+    expect(result.current.mode).toBe('testers');
+  });
+
   it('statut « disponible » : visible, même sans accord (le geste ouvrira la feuille)', async () => {
-    usePrismeStore.setState({ status: STATUS, statusRequested: true });
+    usePrismeStore.setState({ status: STATUS });
 
     const { result } = await renderHook(() => usePrismeVisibility());
 
@@ -57,7 +74,7 @@ describe('usePrismeVisibility', () => {
   });
 
   it('🔴 statut « indisponible » (fournisseur non autorisé) : rien de Prisme', async () => {
-    usePrismeStore.setState({ status: { ...STATUS, available: false, reason: 'provider', provider: null }, statusRequested: true });
+    usePrismeStore.setState({ status: { ...STATUS, available: false, reason: 'provider', provider: null } });
     mockSettings.prismeConsentAt = '2026-10-03T19:00:00.000Z';
 
     const { result } = await renderHook(() => usePrismeVisibility());
@@ -66,8 +83,6 @@ describe('usePrismeVisibility', () => {
   });
 
   it('statut inconnu (hors ligne au démarrage) : l’accord local fait foi', async () => {
-    usePrismeStore.setState({ status: null, statusRequested: true });
-
     const off = await renderHook(() => usePrismeVisibility());
     expect(off.result.current.visible).toBe(false);
 
@@ -77,7 +92,7 @@ describe('usePrismeVisibility', () => {
   });
 
   it('🔴 moins de 18 ans d’après la date de naissance : rien de Prisme, quoi que dise le statut (R13)', async () => {
-    usePrismeStore.setState({ status: STATUS, statusRequested: true });
+    usePrismeStore.setState({ status: STATUS });
     mockBirthDate = '2010-05-01';
 
     const { result } = await renderHook(() => usePrismeVisibility());
@@ -87,7 +102,7 @@ describe('usePrismeVisibility', () => {
   });
 
   it('dix-huit ans le jour même : majeur', async () => {
-    usePrismeStore.setState({ status: STATUS, statusRequested: true });
+    usePrismeStore.setState({ status: STATUS });
     mockBirthDate = '2008-10-03';
 
     const { result } = await renderHook(() => usePrismeVisibility());

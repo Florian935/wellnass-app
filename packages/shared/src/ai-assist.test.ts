@@ -137,6 +137,22 @@ describe('prismeStatusSchema — ce que le serveur dit de Prisme (DD6)', () => {
     const off = { ...GROQ, available: false, reason: 'provider', provider: null };
     expect(prismeStatusSchema.parse(off).provider).toBeNull();
   });
+
+  it('US ACCES-IA — « bêta fermée » : raison `closed` et mode de l’interrupteur', () => {
+    const closed = { ...GROQ, available: false, reason: 'closed', provider: null, access: 'testers' };
+    const parsed = prismeStatusSchema.parse(closed);
+    expect(parsed.reason).toBe('closed');
+    expect(parsed.access).toBe('testers');
+  });
+
+  it('US ACCES-IA — sans `access` (fonction pas encore redéployée), le statut reste valide', () => {
+    expect(prismeStatusSchema.parse(GROQ).access).toBeUndefined();
+    expect(prismeStatusSchema.parse({ ...GROQ, access: 'open' }).access).toBe('open');
+  });
+
+  it('US ACCES-IA — un mode inconnu est refusé', () => {
+    expect(prismeStatusSchema.safeParse({ ...GROQ, access: 'ouvert' }).success).toBe(false);
+  });
 });
 
 describe('needsPrismeConsent — on consent à un destinataire précis (R6)', () => {

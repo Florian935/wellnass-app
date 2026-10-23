@@ -1,7 +1,10 @@
 /**
- * US PRISME-01 — Réglages › Prisme. Toujours visible, pour pouvoir retirer l'accord (spec §4) ; le
- * retrait marche hors ligne (DD3) ; activer ouvre la feuille d'accord ; un compte de moins de 18 ans
- * lit « réservé aux 18 ans et plus » (R13).
+ * US PRISME-01 — Réglages › Prisme. Le retrait marche hors ligne (DD3) ; activer ouvre la feuille
+ * d'accord ; un compte de moins de 18 ans lit « réservé aux 18 ans et plus » (R13).
+ *
+ * US ACCES-IA (spec §4.1, §14 critère 9) — la section n'est plus « toujours » là : bêta fermée → rien,
+ * ou une carte réduite au retrait s'il reste un accord ; accès inconnu → rien sans accord ; accès
+ * confirmé en mode `testers` → la ligne « tu fais partie des testeurs ».
  */
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
@@ -24,7 +27,15 @@ const STATUS: PrismeStatus = {
   remaining: { narrate: 6, meal_text: 6 },
 };
 
-let mockVisibility: { visible: boolean; minor: boolean; status: PrismeStatus | null } = { visible: true, minor: false, status: STATUS };
+type Visibility = {
+  visible: boolean;
+  minor: boolean;
+  status: PrismeStatus | null;
+  access: 'allowed' | 'closed' | 'unknown';
+  mode: 'testers' | 'open' | null;
+};
+const ALLOWED: Visibility = { visible: true, minor: false, status: STATUS, access: 'allowed', mode: null };
+let mockVisibility: Visibility = ALLOWED;
 jest.mock('@/hooks/usePrismeVisibility', () => ({ usePrismeVisibility: () => mockVisibility }));
 
 const mockSettings = { prismeConsentAt: null as string | null, prismeConsentProvider: null as string | null };
@@ -53,7 +64,7 @@ const toggle = () => screen.getByTestId('prisme-settings-switch');
 
 beforeEach(() => {
   jest.clearAllMocks();
-  mockVisibility = { visible: true, minor: false, status: STATUS };
+  mockVisibility = ALLOWED;
   mockSettings.prismeConsentAt = null;
   mockSettings.prismeConsentProvider = null;
 });
@@ -93,7 +104,7 @@ describe('PrismeSettingsSection', () => {
   });
 
   it('statut inconnu (hors ligne) : le dit, propose de vérifier, et laisse retirer un accord existant', async () => {
-    mockVisibility = { visible: true, minor: false, status: null };
+    mockVisibility = { visible: true, minor: false, status: null, access: 'unknown', mode: null };
     mockSettings.prismeConsentAt = '2026-10-03T19:00:00.000Z';
     mockSettings.prismeConsentProvider = 'groq';
 
@@ -111,7 +122,7 @@ describe('PrismeSettingsSection', () => {
   });
 
   it('🔴 moins de 18 ans : « réservé aux 18 ans et plus », sans interrupteur', async () => {
-    mockVisibility = { visible: false, minor: true, status: STATUS };
+    mockVisibility = { ...ALLOWED, visible: false, minor: true };
 
     await render(<PrismeSettingsSection />);
 
@@ -120,7 +131,7 @@ describe('PrismeSettingsSection', () => {
   });
 
   it('🔴 moins de 18 ans AVEC un accord déjà stocké : on peut toujours le retirer', async () => {
-    mockVisibility = { visible: false, minor: true, status: STATUS };
+    mockVisibility = { ...ALLOWED, visible: false, minor: true };
     mockSettings.prismeConsentAt = '2026-10-03T19:00:00.000Z';
     mockSettings.prismeConsentProvider = 'groq';
 
@@ -135,11 +146,74 @@ describe('PrismeSettingsSection', () => {
   });
 
   it('Prisme indisponible et aucun accord : le dit, sans interrupteur', async () => {
-    mockVisibility = { visible: false, minor: false, status: { ...STATUS, available: false, reason: 'provider', provider: null } };
+    mockVisibility = { ...ALLOWED, visible: false, status: { ...STATUS, available: false, reason: 'provider', provider: null } };
 
     await render(<PrismeSettingsSection />);
 
     expect(screen.getByText('prisme.settings.unavailable')).toBeTruthy();
     expect(screen.queryByTestId('prisme-settings-switch')).toBeNull();
+  });
+
+  // ── US ACCES-IA ─────────────────────────────────────────────────────────────────────────────
+
+  const CLOSED: Visibility = {
+    visible: false,
+    minor: false,
+    status: { ...STATUS, available: false, reason: 'closed', provider: null, access: 'testers' },
+    access: 'closed',
+    mode: 'testers',
+  };
+
+  it('🔴 bêta fermée, sans accord : rien de Prisme dans les Réglages', async () => {
+    mockVisibility = CLOSED;
+
+    await render(<PrismeSettingsSection />);
+
+    expect(screen.queryByText('prisme.settings.title')).toBeNull();
+    expect(screen.queryByTestId('prisme-settings-switch')).toBeNull();
+    expect(screen.queryByTestId('prisme-settings-closed')).toBeNull();
+  });
+
+  it('🔴 bêta fermée avec un accord orphelin : une carte réduite, et le bouton retire l’accord', async () => {
+    mockVisibility = CLOSED;
+    mockSettings.prismeConsentAt = '2026-10-03T19:00:00.000Z';
+    mockSettings.prismeConsentProvider = 'mistral';
+
+    await render(<PrismeSettingsSection />);
+
+    expect(screen.getByTestId('prisme-settings-closed')).toBeTruthy();
+    expect(screen.getByText(/prisme\.settings\.closed .*"date"/)).toBeTruthy();
+    // Pas d'interrupteur allumé qui laisserait croire que Prisme marche.
+    expect(screen.queryByTestId('prisme-settings-switch')).toBeNull();
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('prisme-settings-withdraw'));
+    });
+    expect(revokePrismeConsent).toHaveBeenCalled();
+  });
+
+  it('accès inconnu (hors ligne au démarrage) sans accord : rien de Prisme', async () => {
+    mockVisibility = { visible: false, minor: false, status: null, access: 'unknown', mode: null };
+
+    await render(<PrismeSettingsSection />);
+
+    expect(screen.queryByText('prisme.settings.title')).toBeNull();
+  });
+
+  it('testeur, serveur en mode « testers » : la ligne « tu fais partie des testeurs »', async () => {
+    mockVisibility = { ...ALLOWED, status: { ...STATUS, access: 'testers' }, mode: 'testers' };
+
+    await render(<PrismeSettingsSection />);
+
+    expect(screen.getByTestId('prisme-settings-beta')).toBeTruthy();
+    expect(screen.getByText('prisme.settings.betaTester')).toBeTruthy();
+    expect(screen.getByTestId('prisme-settings-switch')).toBeTruthy();
+  });
+
+  it('serveur ouvert à tous : pas de ligne « bêta »', async () => {
+    mockVisibility = { ...ALLOWED, status: { ...STATUS, access: 'open' }, mode: 'open' };
+
+    await render(<PrismeSettingsSection />);
+
+    expect(screen.queryByTestId('prisme-settings-beta')).toBeNull();
   });
 });

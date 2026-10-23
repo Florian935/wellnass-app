@@ -20,6 +20,8 @@
 
 import { z } from 'zod';
 
+import { AI_ACCESS_MODES } from './ai-access';
+
 /**
  * Plafonds quotidiens par utilisateur, appliqués côté serveur (la vérité) et affichés côté client.
  *
@@ -59,8 +61,11 @@ export const AI_PROVIDER_LABELS: Record<string, string> = {
  */
 export const prismeStatusSchema = z.object({
   available: z.boolean(),
-  /** Pourquoi Prisme n'est pas disponible : fournisseur non autorisé, âge, rien de configuré. */
-  reason: z.enum(['provider', 'age', 'unconfigured']).nullable(),
+  /**
+   * Pourquoi Prisme n'est pas disponible : fournisseur non autorisé, âge, rien de configuré — ou, US
+   * ACCES-IA, **bêta fermée** (`closed`) : le compte n'est pas testeur. Fermé l'emporte sur le reste (D4).
+   */
+  reason: z.enum(['provider', 'age', 'unconfigured', 'closed']).nullable(),
   provider: z
     .object({
       id: z.string().min(1),
@@ -74,6 +79,11 @@ export const prismeStatusSchema = z.object({
     .nullable(),
   consent: z.object({ at: z.string().nullable(), provider: z.string().nullable() }),
   remaining: z.object({ narrate: z.number().int().min(0), meal_text: z.number().int().min(0) }),
+  /**
+   * US ACCES-IA (D5) — le mode de l'interrupteur serveur `AI_ACCESS`. **Facultatif** : une app à jour
+   * doit pouvoir lire une fonction pas encore redéployée, qui ne l'envoie pas.
+   */
+  access: z.enum(AI_ACCESS_MODES).optional(),
 });
 export type PrismeStatus = z.infer<typeof prismeStatusSchema>;
 

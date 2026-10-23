@@ -9,6 +9,7 @@ import { AUTH_REDIRECT_URL, PASSWORD_RESET_REDIRECT_URL } from '@/lib/auth-redir
 import { mapGoogleSignInError } from '@/lib/google-auth-errors';
 import { supabase } from '@/lib/supabase';
 import { powerSync } from '@/powersync/system';
+import { usePrismeStore } from '@/stores/prisme-store';
 import {
   requestAccountDeletion as requestAccountDeletionRpc,
   cancelAccountDeletion as cancelAccountDeletionRpc,
@@ -218,6 +219,13 @@ void supabase.auth
   });
 
 supabase.auth.onAuthStateChange((_event, session) => {
+  // US ACCES-IA (D17) — le statut de Prisme appartient au compte : déconnexion ou changement de compte,
+  // il part. Sur un téléphone partagé, le compte suivant hériterait sinon de l'accès du précédent
+  // (« bêta fermée » ou non) jusqu'à son premier geste. Un simple rafraîchissement de jeton, même compte,
+  // ne touche à rien.
+  if (session?.user?.id !== useAuthStore.getState().session?.user?.id) {
+    usePrismeStore.getState().reset();
+  }
   // Filet de sécurité : toute perte de session éteint le mode récupération. Sans ça, un drapeau resté
   // levé (déconnexion pour une autre raison, expiration) referait apparaître l'écran « nouveau mot de
   // passe » à la prochaine connexion, alors qu'aucun lien de récupération n'a été suivi.

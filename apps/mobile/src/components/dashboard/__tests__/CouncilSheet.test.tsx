@@ -15,11 +15,13 @@ import { useLabComposer } from '@/data/repositories/lab-repository';
 import type { GoalConflict, LabComposerContext } from '@wellness/shared';
 
 jest.mock('@/data/repositories/lab-repository', () => ({ useLabComposer: jest.fn() }));
-jest.mock('@/data/repositories/settings-repository', () => ({
-  // Pas de consentement IA : le bloc « Résumer » ne doit pas apparaître.
-  useSettings: () => ({ settings: null, isLoading: false }),
+// US ACCES-IA — la règle (accord au Labo IA ET accès confirmé) vit dans `useLabNarrationAllowed`, testée
+// à part ; ici, on vérifie seulement que le Conseil la suit. Par défaut : pas de récit.
+let mockNarrationAllowed = false;
+jest.mock('@/hooks/useLabNarrationAllowed', () => ({ useLabNarrationAllowed: () => mockNarrationAllowed }));
+jest.mock('@/components/lab/LabNarration', () => ({
+  LabNarration: () => require('react').createElement(require('react-native').Text, { testID: 'council-narration' }, 'récit'),
 }));
-jest.mock('@/components/lab/LabNarration', () => ({ LabNarration: () => null }));
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({
@@ -79,6 +81,7 @@ const afficher = () =>
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockNarrationAllowed = false;
   mockComposer.mockReturnValue({ context: CONTEXTE, isLoading: false });
 });
 
@@ -129,5 +132,14 @@ describe('CouncilSheet', () => {
     await afficher();
 
     expect(screen.getByText('council.notEnough')).toBeTruthy();
+  });
+
+  it('US ACCES-IA — le récit (CONS-01) n’apparaît que si le crochet l’autorise', async () => {
+    await afficher();
+    expect(screen.queryByTestId('council-narration')).toBeNull();
+
+    mockNarrationAllowed = true;
+    await afficher();
+    expect(screen.getByTestId('council-narration')).toBeTruthy();
   });
 });

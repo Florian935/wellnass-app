@@ -198,6 +198,16 @@ export function createSupabaseMock(options?: { user?: { id: string; email?: stri
         return { data: null, error: null };
       },
     ),
+    // US ACCES-IA — appels de fonctions Edge (`ai-assist`, `kind: 'status'`, pour lire le mode de la
+    // bêta). Même usage que `rpc` : la réponse se programme par `mockResolvedValueOnce`.
+    functions: {
+      invoke: vi.fn(
+        async (...args: [fn: string, options?: Record<string, unknown>]): Promise<MockResponse> => {
+          void args;
+          return { data: null, error: null };
+        },
+      ),
+    },
   };
 
   // ── Aides d'assertion ──────────────────────────────────────────────────────

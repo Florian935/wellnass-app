@@ -89,6 +89,7 @@ n'apparaît qu'à l'upload.
 | Nutrition | aliments, quantités, repas, recettes, profil nutritionnel | la fonction principale |
 | Santé | poids, mensurations, bien-être quotidien (humeur, énergie, stress, nuit et sa qualité, envie de s'entraîner, étiquettes comme « malade » ; si tu les actives : alcool, café tardif, sieste, fringales), **pas quotidiens**, **nuit lue dans Health Connect** | suivi demandé par l'utilisateur ; le pilier Bien-être est **désactivé par défaut** et s'active avec ton accord explicite |
 | Usage | écrans consultés, fonctionnalités utilisées | améliorer l'app — **désactivable** |
+| Bêta de l'IA | si ton compte fait partie des testeurs de l'assistant IA (Prisme, Labo IA) : ce statut, sa date, et le nombre de demandes faites à l'IA par jour | réserver l'IA aux testeurs pendant la bêta, et en borner le coût ; **aucun contenu** de tes demandes ni des réponses n'est conservé |
 
 **3. Ce que nous ne faisons pas**
 Nous ne vendons aucune donnée. Nous ne les partageons avec aucun annonceur. Nous n'affichons pas de
@@ -114,7 +115,9 @@ Tant que ton compte existe. À la suppression du compte, l'ensemble est effacé.
 
 **7. Tes droits**
 Accès, rectification, **export** et **suppression** — tous disponibles directement depuis les
-réglages de l'app, sans avoir à nous écrire. Réclamation possible auprès de la CNIL.
+réglages de l'app, sans avoir à nous écrire. Ton statut de testeur de la bêta IA s'affiche dans
+Réglages › Prisme ; il n'entre pas dans l'export (c'est une décision de notre part, pas une donnée que
+tu nous fournis) et t'est communiqué sur simple demande. Réclamation possible auprès de la CNIL.
 
 **8. Âge minimum**
 16 ans.

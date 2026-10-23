@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Button } from '@/components/Button';
 import { updateSettings } from '@/data/repositories/settings-repository';
+import { useAiAccess } from '@/hooks/useAiAccess';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -24,6 +25,12 @@ import { useTheme } from '@/theme/useTheme';
  *
  * 🔴 Le texte de l'interrupteur dit **ce qui part et où** — y compris que le fournisseur gratuit
  * peut s'en servir pour s'entraîner. Un consentement qui tairait ça n'en serait pas un.
+ *
+ * ── US ACCES-IA : réservé aux testeurs (spec §4.1, QA1) ──────────────────────────────────────────
+ * L'accord au labo s'écrit **en local**, sans le serveur : hors ligne, un non-testeur pourrait sinon
+ * s'en créer un seul. La section ne s'**offre** donc qu'à un accès confirmé (`allowed`). Ailleurs, elle
+ * ne reste que pour **retirer** un accord existant : carte réduite si la bêta est fermée, interrupteur
+ * (qu'on ne peut qu'éteindre) si l'accès est encore inconnu. Sans accord, rien.
  */
 export function AiLabSection({ consentedAt }: { consentedAt: string | null }) {
   const { t } = useTranslation();
@@ -32,6 +39,7 @@ export function AiLabSection({ consentedAt }: { consentedAt: string | null }) {
   const [busy, setBusy] = useState(false);
 
   const consented = Boolean(consentedAt);
+  const { access } = useAiAccess();
 
   const onToggle = (next: boolean) => {
     if (!next) {
@@ -53,6 +61,26 @@ export function AiLabSection({ consentedAt }: { consentedAt: string | null }) {
       },
     ]);
   };
+
+  if (access !== 'allowed' && !consented) return null;
+  if (access === 'closed') {
+    return (
+      <>
+        <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>
+          {t('aiLab.settings.title')}
+        </Text>
+        <View testID="ai-lab-settings-closed" style={[styles.card, styles.closedCard, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.desc, { color: colors.text }]}>{t('aiLab.settings.closed')}</Text>
+          <Button
+            testID="ai-lab-settings-withdraw"
+            label={t('aiLab.settings.withdraw')}
+            variant="ghost"
+            onPress={() => void updateSettings({ aiConsentAt: null })}
+          />
+        </View>
+      </>
+    );
+  }
 
   return (
     <>
@@ -83,7 +111,7 @@ export function AiLabSection({ consentedAt }: { consentedAt: string | null }) {
 
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('aiLab.settings.disclaimer')}</Text>
 
-      {consented && (
+      {consented && access === 'allowed' && (
         <View style={styles.stack}>
           <Button
             label={t('aiLab.settings.open')}
@@ -112,4 +140,5 @@ const styles = StyleSheet.create({
   desc: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 17 },
   hint: { fontFamily: fontFamily.body, fontSize: 12, marginTop: 8, lineHeight: 17 },
   stack: { marginTop: 12, gap: 8 },
+  closedCard: { paddingVertical: 12, gap: 10 },
 });

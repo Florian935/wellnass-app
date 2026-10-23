@@ -480,6 +480,26 @@ export const fr = {
       performance: 'Performance',
       health: 'Santé',
     },
+    // US ACCES-IA — le bloc « Bêta IA » de la fiche.
+    aiBeta: {
+      section: 'Bêta IA',
+      allTesters: 'Tous les testeurs',
+      loading: 'Chargement…',
+      testerSince: 'Testeur depuis le {date}',
+      details: 'Ajouté par {addedBy} · dernière utilisation : {lastUse} · {calls} appel(s) sur 7 jours',
+      notTester: 'Pas testeur',
+      notTesterHint: 'En mode bêta fermée, ce compte ne voit ni Prisme ni le Labo IA.',
+      add: 'Ajouter aux testeurs',
+      remove: 'Retirer des testeurs',
+      removeConfirm:
+        'Retirer ce compte des testeurs ? Prisme et le Labo IA disparaîtront de son app au prochain démarrage. Son accord n’est pas touché.',
+      added: 'Ajouté aux testeurs. Prisme apparaîtra sur son téléphone au prochain démarrage de l’app.',
+      already: 'Ce compte faisait déjà partie des testeurs.',
+      absent: 'Ce compte n’était déjà plus testeur.',
+      removed: 'Retiré des testeurs. Prisme disparaîtra de son app au prochain démarrage ; son accord n’est pas touché.',
+      error: 'Action impossible (droits ou réseau). Réessaie.',
+      footnote: 'Être testeur ne donne aucun accès à ce back-office. Le changement vaut au prochain démarrage de l’app.',
+    },
     ban: {
       section: 'Modération',
       banAction: 'Bannir',
@@ -536,7 +556,61 @@ export const fr = {
       'food.import': 'Import d’aliments',
       'user.ban': 'Bannissement d’utilisateur',
       'user.unban': 'Débannissement d’utilisateur',
+      'ai_tester.grant': 'Ajout d’un testeur IA',
+      'ai_tester.revoke': 'Retrait d’un testeur IA',
     },
+  },
+
+  // US ACCES-IA — la liste des testeurs de l'IA (bêta fermée de Prisme et du Labo IA).
+  aiTesters: {
+    title: 'Testeurs IA',
+    nav: 'Testeurs IA',
+    intro:
+      'Les comptes qui ont accès à Prisme et au Labo IA pendant la bêta fermée. Être testeur ne donne aucun droit sur ce back-office.',
+    modeLoading: 'Lecture du mode en service…',
+    modeTestersTitle: 'Mode en service : bêta fermée',
+    modeTestersBody:
+      'Seuls les comptes ci-dessous ont accès à l’IA. Mode lu auprès de la fonction ai-assist (réglage serveur AI_ACCESS).',
+    modeOpenTitle: 'Mode en service : ouvert à tous',
+    modeOpenBody:
+      'La liste est ignorée : tout compte qui donne son accord a accès à l’IA. Pour refermer : AI_ACCESS=testers.',
+    modeUnknownTitle: 'Mode inconnu',
+    modeUnknownBody:
+      'La fonction ai-assist n’a pas répondu, ou n’est pas encore redéployée. La liste peut être tenue quand même : elle servira dès le déploiement.',
+    addTitle: 'Ajouter un testeur',
+    emailLabel: 'E-mail du compte',
+    emailPlaceholder: 'prenom.nom@exemple.fr',
+    emailHint:
+      'Un compte qui existe déjà dans l’app. Rien n’est envoyé à la personne ; Prisme apparaît sur son téléphone au prochain démarrage de l’app.',
+    emailRequired: 'Saisis l’e-mail d’un compte.',
+    addCta: 'Ajouter',
+    adding: 'Ajout…',
+    added:
+      '{email} fait maintenant partie des testeurs. Prisme apparaîtra sur son téléphone au prochain démarrage de l’app.',
+    already: 'Ce compte fait déjà partie des testeurs.',
+    notFound: 'Aucun compte avec cet e-mail. Rien n’a été ajouté.',
+    error: 'Action impossible (droits ou réseau). Réessaie.',
+    listTitle: 'Testeurs actifs · {count}',
+    loading: 'Chargement des testeurs…',
+    listError: 'Erreur de chargement des testeurs.',
+    empty: 'Aucun testeur. En mode bêta fermée, personne n’a accès à l’IA.',
+    colEmail: 'E-mail',
+    colFirstName: 'Prénom',
+    colSince: 'Testeur depuis',
+    colAddedBy: 'Ajouté par',
+    colLastUse: 'Dernière utilisation',
+    colCalls: 'Appels 7 j',
+    colActions: 'Actions',
+    never: 'Jamais',
+    none: '—',
+    remove: 'Retirer',
+    removing: 'Retrait…',
+    removeLabel: 'Retirer {email} des testeurs',
+    removeError: 'Retrait impossible (droits ou réseau). Réessaie.',
+    removeConfirm:
+      'Retirer {email} des testeurs ? Prisme et le Labo IA disparaîtront de son app au prochain démarrage. Son accord n’est pas touché.',
+    footnote:
+      '« Appels 7 j » compte les demandes à l’IA des sept derniers jours (Prisme et Labo IA). Retirer un testeur ne retire pas son accord : la personne garde de quoi le retirer dans ses Réglages.',
   },
 
   placeholder: {

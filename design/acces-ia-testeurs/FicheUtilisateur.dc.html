@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Fiche utilisateur — bloc Bêta IA</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#2b2019}a:hover{color:#000}
+</style>
+</helmet>
+<div style="min-height: 980px; display: flex; flex-wrap: wrap; align-items: stretch; background: #f6f4f1; color: #2b2019; font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;">
+
+  <nav aria-label="Menu du back-office" style="flex: 1 1 200px; box-sizing: border-box; background: #241a12; color: #f4ecdd; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px;">
+    <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 18px;">
+      <span style="width: 30px; height: 30px; border-radius: 8px; background: #dd6e40; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px;">W</span>
+      <b style="font-size: 14px; color: #fff;">Wellness Admin</b>
+    </div>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Accueil</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Exercices</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Programmes</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Aliments</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Rôles</a>
+    <a href="Journal.dc.html" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Journal d’audit</a>
+    <a href="#" aria-current="page" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #fff; text-decoration: none; background: rgba(221,110,64,.22); font-weight: 600;">Utilisateurs</a>
+    <a href="Main.dc.html" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Testeurs IA</a>
+  </nav>
+
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+    <header style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 18px; background: #fff; border-bottom: 1px solid #e7e1d8;">
+      <span style="font-weight: 700; font-size: 15px;">Utilisateurs</span>
+      <div style="display: flex; align-items: center; gap: 12px; font-size: 12.5px; color: #5e5142;">
+        <span>florian@exemple.fr</span>
+        <button type="button" style="border: 1px solid #e7e1d8; background: #fff; border-radius: 8px; padding: 6px 11px; font-size: 12px; font-weight: 600; color: #2b2019; font-family: inherit;">Déconnexion</button>
+      </div>
+    </header>
+
+    <main style="padding: 24px 18px 40px; display: flex; flex-direction: column; gap: 16px; max-width: 760px; box-sizing: border-box; width: 100%;">
+      <a href="#" style="font-size: 13px; text-decoration: none;">← Retour à la liste</a>
+
+      <section style="background: #fff; border: 1px solid #e7e1d8; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px;">
+        <h2 style="margin: 0 0 6px; font-size: 15px;">Compte</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; font-size: 13px;">
+          <span style="color: #5e5142;">E-mail</span><span style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px;">paul.d@exemple.fr</span>
+          <span style="color: #5e5142;">Inscrit le</span><span>02/09/2026</span>
+          <span style="color: #5e5142;">Dernière connexion</span><span>22/10/2026</span>
+          <span style="color: #5e5142;">Statut</span><span>Actif</span>
+        </div>
+      </section>
+
+      <section style="background: #fff; border: 1px solid #e7e1d8; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 8px;">
+        <h2 style="margin: 0 0 6px; font-size: 15px;">Configuration</h2>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; font-size: 13px;">
+          <span style="color: #5e5142;">Piliers actifs</span><span>Muscu, Nutrition</span>
+          <span style="color: #5e5142;">Langue</span><span>Français</span>
+        </div>
+      </section>
+
+      <section aria-labelledby="beta-title" style="background: #fff; border: 2px solid #dd6e40; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 12px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: baseline; justify-content: space-between;">
+          <h2 id="beta-title" style="margin: 0; font-size: 15px;">Bêta IA</h2>
+          <a href="Main.dc.html" style="font-size: 12.5px;">Tous les testeurs</a>
+        </div>
+        <sc-if value="{{isTester}}" hint-placeholder-val="{{yes}}">
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+              <b style="font-size: 14px;">Testeur depuis le 23/10/2026</b>
+              <span style="font-size: 12.5px; color: #5e5142;">Ajouté par florian@exemple.fr · dernière utilisation : jamais · 0 appel sur 7 jours</span>
+            </div>
+            <button type="button" onClick="{{toggle}}" style="border: 1px solid #e7b9ab; background: #fff; border-radius: 9px; padding: 8px 14px; font-size: 13px; font-weight: 600; color: #a33a22; font-family: inherit; min-height: 40px;">Retirer des testeurs</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{notTester}}" hint-placeholder-val="{{no}}">
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; align-items: center; justify-content: space-between;">
+            <div style="display: flex; flex-direction: column; gap: 3px;">
+              <b style="font-size: 14px;">Pas testeur</b>
+              <span style="font-size: 12.5px; color: #5e5142;">En mode bêta fermée, ce compte ne voit ni Prisme ni le Labo IA.</span>
+            </div>
+            <button type="button" onClick="{{toggle}}" style="border: none; background: #dd6e40; border-radius: 9px; padding: 9px 16px; font-size: 13px; font-weight: 700; color: #fff; font-family: inherit; min-height: 40px;">Ajouter aux testeurs</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{hasNotice}}" hint-placeholder-val="{{no}}">
+          <div role="status" style="background: #fdfcfb; border: 1px solid #e7e1d8; font-size: 12.5px; border-radius: 8px; padding: 8px 10px;">{{notice}}</div>
+        </sc-if>
+        <p style="margin: 0; font-size: 11.5px; color: #5e5142;">Être testeur ne donne aucun accès à ce back-office. Le changement vaut au prochain démarrage de l’app.</p>
+      </section>
+
+      <section style="background: #fff; border: 1px solid #e7e1d8; border-radius: 12px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+        <h2 style="margin: 0; font-size: 15px;">Modération</h2>
+        <div><button type="button" style="border: 1px solid #e7b9ab; background: #fff; border-radius: 9px; padding: 8px 14px; font-size: 13px; font-weight: 600; color: #a33a22; font-family: inherit; min-height: 40px;">Bannir</button></div>
+        <span style="font-size: 12.5px; color: #5e5142;">Historique de modération : aucun événement.</span>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"tester":{"editor":"boolean","default":true},"$preview":{"width":1280,"height":980}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { tester: null, notice: null };
+  }
+  renderVals() {
+    const tester = this.state.tester ?? (this.props.tester ?? true);
+    return {
+      yes: true,
+      no: false,
+      isTester: tester,
+      notTester: !tester,
+      notice: this.state.notice ?? '',
+      hasNotice: this.state.notice !== null,
+      toggle: () => this.setState({
+        tester: !tester,
+        notice: tester
+          ? 'Retiré des testeurs. Prisme disparaîtra de son app au prochain démarrage ; son accord n’est pas touché.'
+          : 'Ajouté aux testeurs. Prisme apparaîtra sur son téléphone au prochain démarrage de l’app.'
+      })
+    };
+  }
+}
+</script>
+</body>
+</html>

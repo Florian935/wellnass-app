@@ -131,7 +131,7 @@ notification du soir, le streaming, iOS.
 | Accueil, zone 1, dès 18 h | Carte « Ta journée » : les faits ; bouton « Prisme raconte » | Au moins un fait ; bouton si Prisme est visible (DD7) et la carte « humeur basse » n'est pas en cours (R12) |
 | Bilan hebdo | Bloc « Prisme raconte ta semaine », **sous les chiffres** | Semaine non vide ; Prisme visible |
 | Saisie rapide d'un repas | « Demander à Prisme » sous les lignes non reconnues | Au moins une ligne non reconnue ; Prisme visible |
-| Réglages | Section **Prisme** : accord, fournisseur et pays, « ce qui part », retrait | Toujours (pour pouvoir retirer l'accord) ; dit « réservé aux 18 ans et plus » si besoin |
+| Réglages | Section **Prisme** : accord, fournisseur et pays, « ce qui part », retrait | Toujours (pour pouvoir retirer l'accord) ; dit « réservé aux 18 ans et plus » si besoin. ➜ **Modifié par [ACCES-IA](acces-ia-testeurs.md) §4.1 (23/10/2026)** : absente pour un compte hors de la bêta fermée, réduite au retrait s'il lui reste un accord |
 | Première utilisation | **Feuille d'accord** au premier geste | Accord absent ou donné à un autre fournisseur |
 
 **Aucun widget, aucune notification, aucun texte généré d'office.**
@@ -309,8 +309,10 @@ n'est mis en file. L'accord se **retire** hors ligne ; il ne s'**accorde** qu'en
 
 🔴 **Couplé à LANCE-00 et LANCE-01.** Avant que le build soumis contienne Prisme :
 
-- **ACCES-IA livrée** (bêta réservée aux testeurs) — sinon, une fois publiée, l'app ouvrirait l'IA à
-  tous (~240 $/mois pour 1 000 utilisateurs, analyse §8) ;
+- ✅ **ACCES-IA livrée** le 23/10/2026 (bêta réservée aux testeurs, [spec](acces-ia-testeurs.md)) —
+  interrupteur serveur `AI_ACCESS` (fermé par défaut) et table `ai_testers` tenue au back-office ;
+  **à déployer** (migration, liste remplie, fonction `ai-assist`) avant le build de soumission. Sans
+  elle, une fois publiée, l'app ouvrirait l'IA à tous (~240 $/mois pour 1 000 utilisateurs, analyse §8) ;
 - **politique de confidentialité** (texte publié **et** `legal.privacy` dans l'app) : Prisme est
   facultatif ; ce qui part (R4), vers qui, dans quel pays, sans entraînement ; la base du transfert hors
   UE si le fournisseur est américain (à faire trancher par la relecture juridique) ;

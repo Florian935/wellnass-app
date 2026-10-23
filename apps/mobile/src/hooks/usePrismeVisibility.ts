@@ -10,17 +10,18 @@
  *   le refuse aussi ; ce contrôle-ci évite seulement d'afficher un bouton qui mènerait à un refus.
  *
  * « Visible » n'est pas « appelable » : le réseau ne se sait qu'au geste (le client renvoie `offline`).
- * Le statut est demandé **une fois par session**, au premier montage qui en a besoin.
+ *
+ * US ACCES-IA — un statut « bêta fermée » est `available: false` : la règle ci-dessus éteint déjà
+ * tout. Le statut est lu par `useAiAccess` (redemandé tant qu'il est inconnu, plus jamais une fois
+ * connu), qui rend aussi l'état d'accès en trois valeurs (spec D15).
  */
 
-import { useEffect } from 'react';
-import type { PrismeStatus } from '@wellness/shared';
+import type { AiAccessMode, PrismeStatus } from '@wellness/shared';
 
 import { useProfile } from '@/data/repositories/profile-repository';
 import { useSettings } from '@/data/repositories/settings-repository';
+import { useAiAccess, type AiAccessState } from '@/hooks/useAiAccess';
 import { useTodayKey } from '@/hooks/useTodayKey';
-import { refreshPrismeStatus } from '@/lib/ai/prisme';
-import { usePrismeStore } from '@/stores/prisme-store';
 
 const ADULT_AGE_YEARS = 18;
 
@@ -34,20 +35,19 @@ function isMinor(birthDate: string | null | undefined, todayKey: string): boolea
   return age < ADULT_AGE_YEARS;
 }
 
-export function usePrismeVisibility(): { visible: boolean; minor: boolean; status: PrismeStatus | null } {
-  const status = usePrismeStore((s) => s.status);
-  const requested = usePrismeStore((s) => s.statusRequested);
+export function usePrismeVisibility(): {
+  visible: boolean;
+  minor: boolean;
+  status: PrismeStatus | null;
+  access: AiAccessState;
+  mode: AiAccessMode | null;
+} {
+  const { access, mode, status } = useAiAccess();
   const { settings } = useSettings();
   const { profile } = useProfile();
   const todayKey = useTodayKey();
 
-  useEffect(() => {
-    if (requested) return;
-    usePrismeStore.getState().markStatusRequested();
-    void refreshPrismeStatus();
-  }, [requested]);
-
   const minor = isMinor(profile?.birthDate, todayKey);
   const visible = minor ? false : status !== null ? status.available : Boolean(settings?.prismeConsentAt);
-  return { visible, minor, status };
+  return { visible, minor, status, access, mode };
 }

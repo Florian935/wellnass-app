@@ -19,12 +19,14 @@ import { FoodsScreen } from './screens/FoodsScreen';
 import { FoodEditScreen } from './screens/FoodEditScreen';
 import { UsersScreen } from './screens/UsersScreen';
 import { UserDetailScreen } from './screens/UserDetailScreen';
+import { AiTestersScreen } from './screens/AiTestersScreen';
 
 /**
  * Point d'entrée de l'app admin. Routes : `/login` public ; groupe protégé
  * (RequireAuth → RequireAdmin → AdminLayout). `/` → accueil ; `/roles` →
  * gestion des rôles ; `/audit` → journal d'audit (super_admin uniquement,
- * sinon redirection vers `/`). Toute autre route retombe sur `/`.
+ * sinon redirection vers `/`) ; `/ai-testers` → testeurs de l'IA (US ACCES-IA,
+ * gestionnaires d'utilisateurs). Toute autre route retombe sur `/`.
  */
 export function App() {
   return (
@@ -130,6 +132,14 @@ export function App() {
                     element={
                       <RequireCanManageUsers>
                         <UserDetailScreen />
+                      </RequireCanManageUsers>
+                    }
+                  />
+                  <Route
+                    path="/ai-testers"
+                    element={
+                      <RequireCanManageUsers>
+                        <AiTestersScreen />
                       </RequireCanManageUsers>
                     }
                   />

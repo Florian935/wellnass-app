@@ -119,6 +119,19 @@ export function AdminLayout() {
               👤 {fr.layout.nav.users}
             </NavLink>
           )}
+          {/* US ACCES-IA — la liste des testeurs de l'IA, même accès que les utilisateurs. */}
+          {canManageUsers && (
+            <NavLink
+              to="/ai-testers"
+              style={({ isActive }) => ({
+                ...styles.navItem,
+                ...styles.navLink,
+                ...(isActive ? styles.navActive : null),
+              })}
+            >
+              🧪 {fr.aiTesters.nav}
+            </NavLink>
+          )}
         </nav>
       </aside>
 

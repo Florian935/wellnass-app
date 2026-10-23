@@ -2,8 +2,14 @@
  * US PRISME-01 — Réglages › Prisme (spec §4).
  *
  * ── Ce que la section tient ───────────────────────────────────────────────────────────────────
- * 1. **Toujours visible**, pour pouvoir retirer l'accord — même hors ligne, même si Prisme est devenu
- *    indisponible entre-temps (DD3). Le retrait s'écrit en local et remonte à la synchronisation.
+ * 1. **Visible tant qu'il y a quelque chose à y faire** — accorder, ou retirer un accord, même hors
+ *    ligne, même si Prisme est devenu indisponible entre-temps (DD3). Le retrait s'écrit en local et
+ *    remonte à la synchronisation. US ACCES-IA (spec §4.1) : la section n'est plus « toujours » là —
+ *    - **bêta fermée** (`closed`) : absente, ou réduite à « Retirer mon accord » s'il en reste un ;
+ *    - **accès inconnu** (`unknown`, pas encore de statut) : absente sans accord ; avec un accord,
+ *      celle d'aujourd'hui (« il faut le réseau », « Vérifier à nouveau ») ;
+ *    - **accès confirmé** (`allowed`) : celle d'aujourd'hui, plus « Bêta fermée — tu fais partie des
+ *      testeurs » quand le serveur est en mode `testers`.
  * 2. **Allumer ouvre la feuille d'accord** : l'accord s'accorde par le serveur, au nom du vrai
  *    fournisseur (R6). Un accord donné à un autre fournisseur se lit éteint : il sera redemandé.
  * 3. **Dire à qui et quand** l'accord a été donné, et ce qui part.
@@ -33,7 +39,7 @@ import { PrismeMark } from './PrismeMark';
 export function PrismeSettingsSection() {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const { minor, status } = usePrismeVisibility();
+  const { minor, status, access, mode } = usePrismeVisibility();
   const { settings } = useSettings();
   const devSimulate = usePrismeStore((s) => s.devSimulateInvented);
   const setDevSimulate = usePrismeStore((s) => s.setDevSimulateInvented);
@@ -54,6 +60,30 @@ export function PrismeSettingsSection() {
     else void revokePrismeConsent();
   };
 
+  // US ACCES-IA — rien de Prisme pour qui n'y a pas accès, sauf de quoi retirer un accord (§4.3).
+  if (access !== 'allowed' && consentAt === null) return null;
+  if (access === 'closed' && consentAt !== null) {
+    return (
+      <>
+        <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>{t('prisme.settings.title')}</Text>
+        <View testID="prisme-settings-closed" style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={styles.head}>
+            <PrismeMark size={28} />
+            <Text style={[styles.label, styles.grow, styles.closedText, { color: colors.text }]}>
+              {t('prisme.settings.closed', { date: formatDayFull(localDayKey(new Date(consentAt))) })}
+            </Text>
+          </View>
+          <Button
+            testID="prisme-settings-withdraw"
+            label={t('prisme.settings.withdraw')}
+            variant="ghost"
+            onPress={() => void revokePrismeConsent()}
+          />
+        </View>
+      </>
+    );
+  }
+
   return (
     <>
       <Text style={[styles.sectionTitle, { color: colors.textMuted }]}>{t('prisme.settings.title')}</Text>
@@ -63,6 +93,13 @@ export function PrismeSettingsSection() {
           <PrismeMark size={28} />
           <Text style={[styles.desc, styles.grow, { color: colors.textMuted }]}>{t('prisme.settings.intro')}</Text>
         </View>
+
+        {access === 'allowed' && mode === 'testers' ? (
+          <View testID="prisme-settings-beta" style={[styles.beta, { backgroundColor: colors.background }]}>
+            <Text style={[styles.betaBadge, { color: colors.textMuted, borderColor: colors.textMuted }]}>{t('prisme.settings.betaBadge')}</Text>
+            <Text style={[styles.desc, styles.grow, { color: colors.text }]}>{t('prisme.settings.betaTester')}</Text>
+          </View>
+        ) : null}
 
         {minor ? (
           <Text style={[styles.label, { color: colors.text }]}>{t('prisme.settings.adultOnly')}</Text>
@@ -157,4 +194,7 @@ const styles = StyleSheet.create({
   subtitle: { fontFamily: fontFamily.bodySemi, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.6, marginTop: 4 },
   desc: { fontFamily: fontFamily.body, fontSize: 12.5, lineHeight: 17 },
   stack: { gap: 8 },
+  closedText: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
+  beta: { flexDirection: 'row', alignItems: 'center', gap: 8, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 7 },
+  betaBadge: { fontFamily: fontFamily.monoBold, fontSize: 10, borderWidth: 1, borderRadius: 4, paddingHorizontal: 4, overflow: 'hidden' },
 });

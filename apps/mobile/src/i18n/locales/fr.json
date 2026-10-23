@@ -6634,6 +6634,10 @@
       "unavailable": "Aucune clé de fournisseur n'est posée côté serveur.",
       "refused": "Le modèle a refusé de répondre à cette question.",
       "misconfigured": "La configuration du fournisseur est invalide.",
+      "not-allowed": "Le Labo IA est réservé aux 18 ans et plus.",
+      "adult-required": "Confirme que tu as 18 ans ou plus.",
+      "settings-missing": "Tes réglages ne sont pas encore synchronisés. Réessaie dans un instant.",
+      "closed": "Le Labo IA est réservé aux testeurs de la bêta.",
       "failed": "La demande a échoué."
     },
     "settings": {
@@ -6645,8 +6649,12 @@
       "confirmTitle": "Activer le labo IA ?",
       "confirmBody": "Un résumé chiffré de tes données quittera l'appareil vers un fournisseur tiers à chaque question. Le palier gratuit utilisé pour les tests peut s'en servir pour entraîner ses modèles. À n'activer que sur des données factices.",
       "cancel": "Annuler",
-      "accept": "J'active"
-    }
+      "accept": "J'active",
+      "closed": "Le Labo IA est réservé aux testeurs de la bêta. Ton accord reste enregistré : tu peux le retirer.",
+      "withdraw": "Retirer mon accord"
+    },
+    "closed": "Le Labo IA est réservé aux testeurs de la bêta.",
+    "unknown": "Il faut le réseau pour vérifier ton accès au Labo IA."
   },
   "prisme": {
     "name": "Prisme",
@@ -6713,7 +6721,11 @@
       "unavailable": "Prisme n’est pas disponible pour l’instant.",
       "unknown": "Il faut le réseau pour vérifier si Prisme est disponible.",
       "adultOnly": "Prisme est réservé aux 18 ans et plus.",
-      "refresh": "Vérifier à nouveau"
+      "refresh": "Vérifier à nouveau",
+      "betaBadge": "BÊTA",
+      "betaTester": "Bêta fermée — tu fais partie des testeurs.",
+      "closed": "Prisme est en bêta fermée et n’est pas ouvert sur ton compte. Ton accord du {{date}} reste enregistré : tu peux le retirer.",
+      "withdraw": "Retirer mon accord"
     },
     "errors": {
       "offline": "Prisme a besoin du réseau. Tes chiffres, eux, sont là.",
@@ -6725,6 +6737,7 @@
       "not-allowed": "Prisme est réservé aux 18 ans et plus.",
       "adult-required": "Confirme que tu as 18 ans ou plus.",
       "settings-missing": "Tes réglages ne sont pas encore synchronisés. Réessaie dans un instant.",
+      "closed": "Prisme est en bêta fermée : il n’est pas ouvert sur ton compte.",
       "failed": "Prisme n’a pas pu répondre. Réessaie plus tard."
     },
     "dossier": {

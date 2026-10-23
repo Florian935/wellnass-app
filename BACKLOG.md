@@ -60,7 +60,8 @@ avec son front-matter, **disparaît d'ici** et apparaît dans [ETAT.md](ETAT.md)
 > qui l'active. Avant que Prisme entre dans le build soumis : politique de confidentialité (publiée et
 > `legal.privacy`), formulaire « Sécurité des données », base du transfert hors UE, et **accès réservé
 > aux testeurs (ACCES-IA, table dédiée — pas `user_roles`, où toute ligne rend administrateur)** — spec
-> [§11](docs/specs/functional/us/prisme01-prisme-raconte.md). À défaut, l'exclure du build comme LANCE-02.
+> [§11](docs/specs/functional/us/prisme01-prisme-raconte.md). ACCES-IA est entrée dans le pipeline le 23/10/2026 →
+> [spec](docs/specs/functional/us/acces-ia-testeurs.md) (roadmap 7.43). À défaut, l'exclure du build comme LANCE-02.
 > 🟠 **Décision de charte en attente** : l'écran de démarrage est resté au **bleu du gabarit Expo**
 > (`#208AEF`), ainsi que le fond de l'icône adaptative (`#E6F4FE`), alors que la palette est
 > crème/terracotta. C'est la première chose vue à chaque lancement, et c'est l'icône de la fiche
@@ -78,7 +79,6 @@ avec son front-matter, **disparaît d'ici** et apparaît dans [ETAT.md](ETAT.md)
 
 | Candidat | # | Contenu | Point dur |
 |---|---|---|---|
-| **ACCES-IA — Prisme réservé aux testeurs** *(suite de PRISME-01, 03/10/2026)* | — | Un interrupteur serveur `AI_ACCESS` (`open` / `testers`) et une **table dédiée** `ai_testers`, gérée depuis le back-office. `status` répond « bêta fermée » aux autres ; l'app n'affiche alors rien de Prisme. | 🔴 **Avant que Prisme entre dans le build Play** (PRISME-01 §11) : sinon l'IA s'ouvre à tous (~240 $/mois pour 1 000 utilisateurs). ⚠️ **Pas un rôle de `user_roles`** : `is_admin()` vaut vrai pour n'importe quelle ligne de cette table — un testeur deviendrait administrateur (constat de la relecture du 02/10/2026). |
 | **PRISME-01b — Les résumés du Labo dans la voix de Prisme** *(Q1 de PRISME-01, tranchée par Florian le 03/10/2026)* | 7.33, 7.34 | NARR-01 et CONS-01 passent sur l'accord et le fournisseur de Prisme (type `narrate`), **sans les suspects bien-être** (`sleepShort`) tant que le second accord n'existe pas ; libellé « Prisme raconte ». | 🔴 **Ils envoient aujourd'hui de vraies données sous l'accord du Labo IA**, dont le texte dit « à n'activer que sur des données factices » (limité aux comptes qui ont activé le Labo IA). Rien n’attend plus : NARR-01 et CONS-01 sont clôturées (23/10/2026) ; leurs critères (« aucun bouton sans consentement ») changent. |
 | **RUN-F3b — Météo de course** *(scindé de RUN-F3)* | 5.24 | Conditions météo au moment de la course, et avant une sortie planifiée. | 🔴 **À trancher AVANT de soumettre la fiche Play.** Une requête météo transmet des **coordonnées à un service externe** — ce qui contredit la politique de confidentialité et le formulaire « Sécurité des données » rédigés pour [LANCE-00](docs/specs/technical/lance00-fiche-play-et-confidentialite.md), qui affirment aujourd'hui qu'aucune donnée n'est partagée. Trois questions ouvertes (spec RUN-F3 §4 D2) : fournisseur (Open-Meteo = le seul sans clé à stocker), moment de l'appel, et **assumer qu'une course hors réseau n'aura jamais de météo** — on ne récupère pas une météo passée gratuitement. Le **terrain**, lui, ne demande aucun réseau et est livré depuis le 01/08/2026. |
 | **CARDIO-02 — Les quatre portes vers l'allure de référence** *(audit Course F2, F3, F39)* | 5.40 | Les quatre chemins pour donner son allure de référence (chrono de course, test Cooper, allure connue, « je ne sais pas ») + accueil du pilier en 3 questions. | 🟢 **Les briques de calcul sont livrées et testées** (`referencePaceFromRaceTime` — Riegel inversé — et `referencePaceFromCooperTest`, 8 tests dans `packages/shared/src/running-hub.ts`). Il ne reste que les **écrans**. Sans allure de référence, **toutes** les allures cibles du pilier sont absentes : c'est la porte d'entrée de tout le reste, donc le premier des six à reprendre. |
@@ -135,6 +135,16 @@ avec son front-matter, **disparaît d'ici** et apparaît dans [ETAT.md](ETAT.md)
 ## 🧹 Dette & suivi technique
 
 Petits sujets hors US, à traiter à l'occasion. Ne bloquent rien.
+
+> 🆕 **Ouvert le 23/10/2026 par ACCES-IA (spec D10, QA2) — export RGPD et tables serveur.** L'export de
+> l'app ([data-export.ts](apps/mobile/src/lib/data-export.ts)) lit la **base locale** ; son test de
+> complétude ne voit donc que le schéma PowerSync. Cinq tables serveur portent pourtant une donnée
+> personnelle et n'y entrent pas : `ai_testers` (statut de testeur de l'IA), `ai_usage` (compteur de
+> demandes à l'IA), `user_bans` (motif de bannissement), `account_deletion_requests`, `sync_receipts`.
+> Position prise pour `ai_testers` : hors de la portabilité (art. 20 — ce n'est pas une donnée fournie par
+> l'utilisateur), dite dans l'app et la politique, servie sur demande (art. 15). **À arbitrer d'ensemble**
+> pour les cinq, avec la relecture juridique de LANCE-00 : les lister explicitement quelque part (un
+> registre des tables serveur, gardé par un test comme `EXPORT_EXCLUSIONS`), et décider pour chacune.
 
 > 🆕 **Ouvert le 12/09/2026 — code devenu orphelin par MUSCU-UX02.** Le bilan de séance passant par `useWorkoutReport`, trois hooks de `records-repository.ts` n'ont plus **aucun appelant de production** : `useWorkoutRecords` (l. 538), `useWorkoutDetail` (l. 1026) et `useExerciseDeltas` (l. 1445) — seuls `records-sql.test.ts` les touche encore. Même chose pour les clés i18n `workout.summary.records.*`, `workout.summary.density`, `workout.summary.minuteSymbol` et tout le bloc `history.detail.set*/record*/meta*`, à zéro usage dans les deux locales.
 > ⚠️ **Volontairement pas supprimés dans le lot MUSCU-UX02** : la suppression touche un fichier de 1 500 lignes et ses tests — un dégât collatéral y aurait coûté plus cher que le ménage n'y rapportait. MUSCU-UX02 est clôturée (23/10/2026) : à faire d'un seul geste, avec la suite de tests en filet.

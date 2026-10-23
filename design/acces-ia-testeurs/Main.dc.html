@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Testeurs IA — back-office</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#2b2019}a:hover{color:#000}
+</style>
+</helmet>
+<div style="min-height: 980px; display: flex; flex-wrap: wrap; align-items: stretch; background: #f6f4f1; color: #2b2019; font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;">
+
+  <nav aria-label="Menu du back-office" style="flex: 1 1 200px; box-sizing: border-box; background: #241a12; color: #f4ecdd; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px;">
+    <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 18px;">
+      <span style="width: 30px; height: 30px; border-radius: 8px; background: #dd6e40; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px;">W</span>
+      <b style="font-size: 14px; color: #fff;">Wellness Admin</b>
+    </div>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Accueil</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Exercices</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Programmes</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Aliments</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Rôles</a>
+    <a href="Journal.dc.html" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Journal d’audit</a>
+    <a href="FicheUtilisateur.dc.html" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Utilisateurs</a>
+    <a href="#" aria-current="page" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #fff; text-decoration: none; background: rgba(221,110,64,.22); font-weight: 600;">Testeurs IA</a>
+  </nav>
+
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+    <header style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 18px; background: #fff; border-bottom: 1px solid #e7e1d8;">
+      <span style="font-weight: 700; font-size: 15px;">Testeurs IA</span>
+      <div style="display: flex; align-items: center; gap: 12px; font-size: 12.5px; color: #5e5142;">
+        <span>florian@exemple.fr</span>
+        <button type="button" style="border: 1px solid #e7e1d8; background: #fff; border-radius: 8px; padding: 6px 11px; font-size: 12px; font-weight: 600; color: #2b2019; font-family: inherit;">Déconnexion</button>
+      </div>
+    </header>
+
+    <main style="padding: 24px 18px 40px; display: flex; flex-direction: column; gap: 20px; max-width: 980px; box-sizing: border-box; width: 100%;">
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <h1 style="margin: 0; font-size: 22px;">Testeurs IA</h1>
+        <p style="margin: 0; font-size: 13.5px; color: #5e5142; line-height: 1.45;">Les comptes qui ont accès à Prisme et au Labo IA pendant la bêta fermée. Être testeur ne donne aucun droit sur ce back-office.</p>
+      </div>
+
+      <sc-if value="{{isTesters}}" hint-placeholder-val="{{yes}}">
+        <section aria-label="Mode en service" style="display: flex; gap: 12px; align-items: flex-start; background: #fff; border: 1px solid #e7e1d8; border-radius: 12px; padding: 14px 16px;">
+          <span aria-hidden="true" style="flex: 0 0 auto; width: 10px; height: 10px; border-radius: 5px; background: #4f7a2a; margin-top: 5px;"></span>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <b style="font-size: 14px;">Mode en service : bêta fermée</b>
+            <span style="font-size: 13px; color: #5e5142; line-height: 1.45;">Seuls les comptes ci-dessous ont accès à l’IA. Mode lu à l’instant auprès de la fonction ai-assist (réglage serveur AI_ACCESS).</span>
+          </div>
+        </section>
+      </sc-if>
+      <sc-if value="{{isOpen}}" hint-placeholder-val="{{no}}">
+        <section aria-label="Mode en service" style="display: flex; gap: 12px; align-items: flex-start; background: #fbeae5; border: 1px solid #e7b9ab; border-radius: 12px; padding: 14px 16px;">
+          <span aria-hidden="true" style="flex: 0 0 auto; width: 10px; height: 10px; border-radius: 5px; background: #c0492f; margin-top: 5px;"></span>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <b style="font-size: 14px; color: #8f2f1c;">Mode en service : ouvert à tous</b>
+            <span style="font-size: 13px; color: #6b2414; line-height: 1.45;">La liste est ignorée : tout compte qui donne son accord a accès à l’IA. Pour refermer : AI_ACCESS=testers.</span>
+          </div>
+        </section>
+      </sc-if>
+      <sc-if value="{{isUnknown}}" hint-placeholder-val="{{no}}">
+        <section aria-label="Mode en service" style="display: flex; gap: 12px; align-items: flex-start; background: #fff; border: 1px dashed #b9a88f; border-radius: 12px; padding: 14px 16px;">
+          <span aria-hidden="true" style="flex: 0 0 auto; width: 10px; height: 10px; border-radius: 5px; background: #8a7a68; margin-top: 5px;"></span>
+          <div style="display: flex; flex-direction: column; gap: 3px;">
+            <b style="font-size: 14px;">Mode inconnu</b>
+            <span style="font-size: 13px; color: #5e5142; line-height: 1.45;">La fonction ai-assist n’a pas répondu, ou n’est pas encore redéployée. La liste peut être tenue quand même : elle servira dès le déploiement.</span>
+          </div>
+        </section>
+      </sc-if>
+
+      <section style="background: #fff; border: 1px solid #e7e1d8; border-radius: 12px; padding: 20px;">
+        <h2 style="margin: 0 0 14px; font-size: 15px;">Ajouter un testeur</h2>
+        <form onSubmit="{{onAdd}}" style="display: flex; flex-direction: column; gap: 10px;">
+          <sc-if value="{{msgAdded}}" hint-placeholder-val="{{no}}">
+            <div role="status" style="background: #eef4e6; border: 1px solid #b9cfa0; color: #33521a; font-size: 12.5px; border-radius: 8px; padding: 8px 10px;">{{msgText}}</div>
+          </sc-if>
+          <sc-if value="{{msgAlready}}" hint-placeholder-val="{{no}}">
+            <div role="status" style="background: #fdfcfb; border: 1px solid #e7e1d8; color: #2b2019; font-size: 12.5px; border-radius: 8px; padding: 8px 10px;">{{msgText}}</div>
+          </sc-if>
+          <sc-if value="{{msgUnknown}}" hint-placeholder-val="{{no}}">
+            <div role="alert" style="background: #fbeae5; border: 1px solid #e7b9ab; color: #9c3420; font-size: 12.5px; border-radius: 8px; padding: 8px 10px;">{{msgText}}</div>
+          </sc-if>
+          <label for="tester-email" style="display: block; font-size: 12px; color: #5e5142; font-weight: 600;">E-mail du compte</label>
+          <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center;">
+            <input id="tester-email" type="email" autocomplete="off" value="{{email}}" onChange="{{onEmail}}" placeholder="prenom.nom@exemple.fr" style="flex: 1 1 260px; min-width: 0; border: 1px solid #b9a88f; border-radius: 9px; padding: 10px 11px; font-size: 14px; background: #fdfcfb; color: #2b2019; font-family: inherit;">
+            <button type="submit" style="border: none; border-radius: 9px; padding: 10px 18px; font-size: 13px; font-weight: 700; background: #dd6e40; color: #fff; font-family: inherit; min-height: 40px;">Ajouter</button>
+          </div>
+          <div style="font-size: 11.5px; color: #5e5142;">Un compte qui existe déjà dans l’app. Rien n’est envoyé à la personne ; Prisme apparaît sur son téléphone au prochain démarrage de l’app.</div>
+        </form>
+      </section>
+
+      <section style="background: #fff; border: 1px solid #e7e1d8; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 12px;">
+        <h2 style="margin: 0; font-size: 15px;">Testeurs actifs · {{count}}</h2>
+
+        <sc-if value="{{hasConfirm}}" hint-placeholder-val="{{no}}">
+          <div role="alertdialog" aria-label="Confirmer le retrait" style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; background: #fbeae5; border: 1px solid #e7b9ab; border-radius: 10px; padding: 12px 14px;">
+            <span style="font-size: 13px; color: #6b2414; line-height: 1.45; flex: 1 1 320px;">Retirer <b>{{confirmEmail}}</b> des testeurs ? Prisme et le Labo IA disparaîtront de son app au prochain démarrage. Son accord n’est pas touché.</span>
+            <div style="display: flex; gap: 8px;">
+              <button type="button" onClick="{{doRemove}}" style="border: none; border-radius: 8px; padding: 8px 14px; font-size: 12.5px; font-weight: 700; background: #c0492f; color: #fff; font-family: inherit; min-height: 36px;">Retirer</button>
+              <button type="button" onClick="{{cancelRemove}}" style="border: 1px solid #e7e1d8; border-radius: 8px; padding: 8px 14px; font-size: 12.5px; font-weight: 600; background: #fff; color: #2b2019; font-family: inherit; min-height: 36px;">Annuler</button>
+            </div>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isEmpty}}" hint-placeholder-val="{{no}}">
+          <p style="margin: 0; font-size: 13px; color: #5e5142;">Aucun testeur. En mode bêta fermée, personne n’a accès à l’IA.</p>
+        </sc-if>
+
+        <div style="overflow-x: auto;">
+          <div role="table" aria-label="Testeurs actifs" style="min-width: 860px; display: flex; flex-direction: column; font-size: 13px;">
+            <div role="row" style="display: grid; grid-template-columns: 2.2fr 1fr 1.1fr 1.8fr 1.3fr 0.8fr 0.9fr; gap: 10px; padding: 8px 10px; border-bottom: 1px solid #e7e1d8; color: #5e5142; font-size: 11.5px; font-weight: 600;">
+              <span role="columnheader">E-mail</span>
+              <span role="columnheader">Prénom</span>
+              <span role="columnheader">Testeur depuis</span>
+              <span role="columnheader">Ajouté par</span>
+              <span role="columnheader">Dernière utilisation</span>
+              <span role="columnheader">Appels 7 j</span>
+              <span role="columnheader"><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0);">Actions</span></span>
+            </div>
+            <sc-for list="{{rows}}" as="row" hint-placeholder-count="5">
+              <div role="row" style="display: grid; grid-template-columns: 2.2fr 1fr 1.1fr 1.8fr 1.3fr 0.8fr 0.9fr; gap: 10px; padding: 9px 10px; border-bottom: 1px solid #efe9e1; align-items: center;">
+                <span role="cell" style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere;">{{row.email}}</span>
+                <span role="cell">{{row.firstName}}</span>
+                <span role="cell">{{row.since}}</span>
+                <span role="cell" style="font-size: 12px; color: #5e5142; overflow-wrap: anywhere;">{{row.addedBy}}</span>
+                <span role="cell">{{row.lastUse}}</span>
+                <span role="cell" style="font-variant-numeric: tabular-nums;">{{row.calls}}</span>
+                <span role="cell"><button type="button" onClick="{{row.ask}}" aria-label="{{row.removeLabel}}" style="border: 1px solid #e7b9ab; background: #fff; border-radius: 8px; padding: 5px 10px; font-size: 12px; font-weight: 600; color: #a33a22; font-family: inherit; min-height: 32px;">Retirer</button></span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 11.5px; color: #5e5142; line-height: 1.45;">« Appels 7 j » compte les demandes à l’IA des sept derniers jours (Prisme et Labo IA). Retirer un testeur ne retire pas son accord : la personne garde de quoi le retirer dans ses Réglages.</p>
+      </section>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"mode":{"editor":"enum","options":["testers","open","inconnu"],"default":"testers"},"$preview":{"width":1280,"height":980}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = {
+      email: '',
+      msg: null,
+      msgKind: null,
+      confirm: null,
+      rows: [
+        { email: 'florian@exemple.fr', firstName: 'Florian', since: '23/10/2026', addedBy: 'florian@exemple.fr', lastUse: '22/10/2026', calls: 14 },
+        { email: 'damien@exemple.fr', firstName: 'Damien', since: '23/10/2026', addedBy: 'florian@exemple.fr', lastUse: '21/10/2026', calls: 3 },
+        { email: 'claire.b@exemple.fr', firstName: 'Claire', since: '23/10/2026', addedBy: 'florian@exemple.fr', lastUse: '22/10/2026', calls: 9 },
+        { email: 'marc.r@exemple.fr', firstName: 'Marc', since: '23/10/2026', addedBy: 'damien@exemple.fr', lastUse: '19/10/2026', calls: 2 },
+        { email: 'paul.d@exemple.fr', firstName: 'Paul', since: '23/10/2026', addedBy: 'florian@exemple.fr', lastUse: 'Jamais', calls: 0 }
+      ]
+    };
+    this.accounts = {
+      'florian@exemple.fr': 'Florian', 'damien@exemple.fr': 'Damien', 'claire.b@exemple.fr': 'Claire',
+      'marc.r@exemple.fr': 'Marc', 'paul.d@exemple.fr': 'Paul', 'jeanne.martin@exemple.fr': 'Jeanne', 'lea_v@exemple.fr': 'Léa'
+    };
+  }
+  renderVals() {
+    const mode = this.props.mode ?? 'testers';
+    const s = this.state;
+    const confirmRow = s.confirm;
+    return {
+      yes: true,
+      no: false,
+      isTesters: mode === 'testers',
+      isOpen: mode === 'open',
+      isUnknown: mode !== 'testers' && mode !== 'open',
+      email: s.email,
+      onEmail: (e) => this.setState({ email: e.target.value }),
+      onAdd: (e) => {
+        e.preventDefault();
+        const wanted = s.email.trim().toLowerCase();
+        if (!wanted) return;
+        const first = this.accounts[wanted];
+        if (!first) {
+          this.setState({ msg: 'Aucun compte avec cet e-mail. Rien n’a été ajouté.', msgKind: 'unknown' });
+          return;
+        }
+        if (s.rows.some((r) => r.email === wanted)) {
+          this.setState({ msg: 'Ce compte fait déjà partie des testeurs.', msgKind: 'already' });
+          return;
+        }
+        const row = { email: wanted, firstName: first, since: '23/10/2026', addedBy: 'florian@exemple.fr', lastUse: 'Jamais', calls: 0 };
+        this.setState({
+          rows: [row].concat(s.rows),
+          email: '',
+          msg: wanted + ' fait maintenant partie des testeurs. Prisme apparaîtra sur son téléphone au prochain démarrage de l’app.',
+          msgKind: 'added'
+        });
+      },
+      msgText: s.msg ?? '',
+      msgAdded: s.msgKind === 'added',
+      msgAlready: s.msgKind === 'already',
+      msgUnknown: s.msgKind === 'unknown',
+      count: s.rows.length,
+      isEmpty: s.rows.length === 0,
+      hasConfirm: confirmRow !== null,
+      confirmEmail: confirmRow ?? '',
+      doRemove: () => this.setState({ rows: s.rows.filter((r) => r.email !== confirmRow), confirm: null, msg: null, msgKind: null }),
+      cancelRemove: () => this.setState({ confirm: null }),
+      rows: s.rows.map((r) => ({
+        ...r,
+        removeLabel: 'Retirer ' + r.email + ' des testeurs',
+        ask: () => this.setState({ confirm: r.email })
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

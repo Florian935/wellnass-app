@@ -130,6 +130,48 @@ export type Database = {
           },
         ]
       }
+      ai_testers: {
+        Row: {
+          added_by: string | null
+          created_at: string
+          deleted_at: string | null
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          added_by?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          added_by?: string | null
+          created_at?: string
+          deleted_at?: string | null
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_testers_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_testers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_usage: {
         Row: {
           count: number
@@ -3400,6 +3442,19 @@ export type Database = {
       }
     }
     Views: {
+      admin_ai_testers: {
+        Row: {
+          added_by_email: string | null
+          calls_7d: number | null
+          created_at: string | null
+          email: string | null
+          first_name: string | null
+          id: string | null
+          last_used_on: string | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
       admin_users: {
         Row: {
           active_pillars: Json | null
@@ -3436,12 +3491,21 @@ export type Database = {
         Args: { p_id: string; p_kind: string }
         Returns: Json
       }
+      grant_ai_tester: { Args: { target_user_id: string }; Returns: string }
+      grant_ai_tester_by_email: {
+        Args: { target_email: string }
+        Returns: {
+          outcome: string
+          target_user_id: string
+        }[]
+      }
       is_admin: { Args: never; Returns: boolean }
       is_content_editor: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
       note_sync_receipt_for: { Args: { row_owner: string }; Returns: undefined }
       purge_expired_accounts: { Args: never; Returns: number }
       request_account_deletion: { Args: never; Returns: string }
+      revoke_ai_tester: { Args: { target_user_id: string }; Returns: string }
       unban_user: { Args: { target_user_id: string }; Returns: undefined }
     }
     Enums: {

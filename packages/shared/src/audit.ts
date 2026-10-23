@@ -30,6 +30,10 @@ export const AUDIT_ACTIONS = [
   'food.import',
   'user.ban',
   'user.unban',
+  // US ACCES-IA — la liste des testeurs de l'IA. Cible : l'identifiant du compte (`auth.users`), jamais
+  // son e-mail — le journal est en ajout seul et survit à la suppression du compte (spec D12).
+  'ai_tester.grant',
+  'ai_tester.revoke',
 ] as const;
 export const auditActionSchema = z.enum(AUDIT_ACTIONS);
 export type AuditAction = z.infer<typeof auditActionSchema>;

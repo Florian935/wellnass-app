@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Journal d’audit — testeurs IA</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#2b2019}a:hover{color:#000}
+</style>
+</helmet>
+<div style="min-height: 760px; display: flex; flex-wrap: wrap; align-items: stretch; background: #f6f4f1; color: #2b2019; font-family: 'Segoe UI', system-ui, -apple-system, Roboto, sans-serif;">
+
+  <nav aria-label="Menu du back-office" style="flex: 1 1 200px; box-sizing: border-box; background: #241a12; color: #f4ecdd; padding: 16px 12px; display: flex; flex-direction: column; gap: 2px;">
+    <div style="display: flex; align-items: center; gap: 9px; margin-bottom: 18px;">
+      <span style="width: 30px; height: 30px; border-radius: 8px; background: #dd6e40; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 16px;">W</span>
+      <b style="font-size: 14px; color: #fff;">Wellness Admin</b>
+    </div>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Accueil</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Exercices</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Programmes</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Aliments</a>
+    <a href="#" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Rôles</a>
+    <a href="#" aria-current="page" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #fff; text-decoration: none; background: rgba(221,110,64,.22); font-weight: 600;">Journal d’audit</a>
+    <a href="FicheUtilisateur.dc.html" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Utilisateurs</a>
+    <a href="Main.dc.html" style="padding: 9px 10px; border-radius: 8px; font-size: 13px; color: #d9cbb3; text-decoration: none;">Testeurs IA</a>
+  </nav>
+
+  <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column;">
+    <header style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 18px; background: #fff; border-bottom: 1px solid #e7e1d8;">
+      <span style="font-weight: 700; font-size: 15px;">Journal d’audit</span>
+      <div style="display: flex; align-items: center; gap: 12px; font-size: 12.5px; color: #5e5142;">
+        <span>florian@exemple.fr</span>
+        <button type="button" style="border: 1px solid #e7e1d8; background: #fff; border-radius: 8px; padding: 6px 11px; font-size: 12px; font-weight: 600; color: #2b2019; font-family: inherit;">Déconnexion</button>
+      </div>
+    </header>
+
+    <main style="padding: 24px 18px 40px; display: flex; flex-direction: column; gap: 16px; max-width: 980px; box-sizing: border-box; width: 100%;">
+      <section style="background: #fff; border: 1px solid #e7e1d8; border-radius: 12px; padding: 16px 20px; display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end;">
+        <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 200px;">
+          <label for="f-actor" style="font-size: 12px; color: #5e5142; font-weight: 600;">Acteur</label>
+          <select id="f-actor" style="border: 1px solid #b9a88f; border-radius: 9px; padding: 8px 10px; font-size: 13px; background: #fdfcfb; color: #2b2019; font-family: inherit;">
+            <option>Tous les acteurs</option>
+          </select>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4px; flex: 1 1 240px;">
+          <label for="f-action" style="font-size: 12px; color: #5e5142; font-weight: 600;">Action</label>
+          <select id="f-action" style="border: 1px solid #b9a88f; border-radius: 9px; padding: 8px 10px; font-size: 13px; background: #fdfcfb; color: #2b2019; font-family: inherit;">
+            <option>Toutes les actions</option>
+            <option>Ajout d’un testeur IA</option>
+            <option>Retrait d’un testeur IA</option>
+          </select>
+        </div>
+        <button type="button" style="border: 1px solid #e7e1d8; background: #fff; border-radius: 9px; padding: 8px 14px; font-size: 13px; font-weight: 600; color: #2b2019; font-family: inherit; min-height: 38px;">Réinitialiser</button>
+      </section>
+
+      <section style="background: #fff; border: 1px solid #e7e1d8; border-radius: 12px; padding: 12px 20px 16px;">
+        <div style="overflow-x: auto;">
+          <div role="table" aria-label="Journal d’audit" style="min-width: 760px; display: flex; flex-direction: column; font-size: 13px;">
+            <div role="row" style="display: grid; grid-template-columns: 1.2fr 1.6fr 1.6fr 2fr; gap: 10px; padding: 8px 10px; border-bottom: 1px solid #e7e1d8; color: #5e5142; font-size: 11.5px; font-weight: 600;">
+              <span role="columnheader">Date</span>
+              <span role="columnheader">Acteur</span>
+              <span role="columnheader">Action</span>
+              <span role="columnheader">Cible</span>
+            </div>
+            <sc-for list="{{rows}}" as="row" hint-placeholder-count="6">
+              <div role="row" style="display: grid; grid-template-columns: 1.2fr 1.6fr 1.6fr 2fr; gap: 10px; padding: 9px 10px; border-bottom: 1px solid #efe9e1; align-items: center;">
+                <span role="cell" style="font-variant-numeric: tabular-nums;">{{row.date}}</span>
+                <span role="cell" style="font-size: 12.5px; overflow-wrap: anywhere;">{{row.actor}}</span>
+                <span role="cell"><span style="display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 600; background: {{row.chipBg}}; color: {{row.chipInk}};">{{row.action}}</span></span>
+                <span role="cell" style="font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; overflow-wrap: anywhere;">{{row.target}}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+      <p style="margin: 0; font-size: 11.5px; color: #5e5142; line-height: 1.45;">Deux actions de plus : « Ajout d’un testeur IA » et « Retrait d’un testeur IA ». La cible est l’identifiant du compte, jamais son e-mail : le journal ne s’efface pas et survit à la suppression du compte. Un ajout d’un compte déjà testeur, ou un retrait d’un compte déjà retiré, n’écrit rien et ne journalise rien.</p>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":760}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const ai = { chipBg: '#efe4f7', chipInk: '#4d2a7a' };
+    const other = { chipBg: '#f3ede5', chipInk: '#4a3d2f' };
+    return {
+      rows: [
+        { date: '23/10/2026 18:42', actor: 'florian@exemple.fr', action: 'Retrait d’un testeur IA', target: 'auth.users 7c41e0b2-5d3a-4f8e-9b16-2a0c8e5f1d47', ...ai },
+        { date: '23/10/2026 18:40', actor: 'damien@exemple.fr', action: 'Ajout d’un testeur IA', target: 'auth.users 7c41e0b2-5d3a-4f8e-9b16-2a0c8e5f1d47', ...ai },
+        { date: '23/10/2026 18:31', actor: 'florian@exemple.fr', action: 'Ajout d’un testeur IA', target: 'auth.users 1e9b3f60-8a27-4c55-b0d4-6f2e91c7a3b8', ...ai },
+        { date: '23/10/2026 18:30', actor: 'florian@exemple.fr', action: 'Ajout d’un testeur IA', target: 'auth.users 5a0d8c12-47e9-4b3a-8f61-c2d7e4b90a15', ...ai },
+        { date: '23/10/2026 18:29', actor: 'florian@exemple.fr', action: 'Ajout d’un testeur IA', target: 'auth.users b82f4e07-1c6d-4a95-a3e8-90d1f5c26b74', ...ai },
+        { date: '23/10/2026 18:28', actor: 'florian@exemple.fr', action: 'Ajout d’un testeur IA', target: 'auth.users 3f2a9c1e-6b48-4d07-8e25-d9a1c4f70e63', ...ai },
+        { date: '22/10/2026 09:12', actor: 'damien@exemple.fr', action: 'Modification d’aliment', target: 'Skyr nature', ...other }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -31,7 +31,7 @@ import {
 import { Button } from '@/components/Button';
 import { LabNarration } from '@/components/lab/LabNarration';
 import { useLabComposer } from '@/data/repositories/lab-repository';
-import { useSettings } from '@/data/repositories/settings-repository';
+import { useLabNarrationAllowed } from '@/hooks/useLabNarrationAllowed';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -78,7 +78,8 @@ function CouncilBody({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { context, isLoading } = useLabComposer();
-  const { settings } = useSettings();
+  // US ACCES-IA — le récit (CONS-01) : accord au Labo IA ET accès à l'IA confirmé.
+  const canNarrate = useLabNarrationAllowed();
 
   const council = isLoading ? null : buildCouncil(conflict, context);
 
@@ -127,7 +128,7 @@ function CouncilBody({
           <Text style={[styles.note, { color: colors.textMuted }]}>{t('council.noPace')}</Text>
 
           {/* US NARR-01 réutilisée telle quelle, garde-fou compris : le modèle raconte, il ne calcule pas. */}
-          {settings?.aiConsentAt != null ? (
+          {canNarrate ? (
             <LabNarration dossier={councilDossier(council, t)} />
           ) : null}
         </>

@@ -98,6 +98,15 @@ describe('les refus du serveur', () => {
     });
   });
 
+  it('🔴 US ACCES-IA — la bêta fermée a son code, distinct de « indisponible » et de « pas d’accord »', async () => {
+    invoke.mockResolvedValue({ data: null, error: httpError(403, { error: 'ai_closed' }) });
+
+    await expect(callAiAssist({ kind: 'narrate', context: '', question: 'x' })).resolves.toEqual({
+      ok: false,
+      code: 'closed',
+    });
+  });
+
   it('un refus du modèle reste un refus, pas une panne', async () => {
     invoke.mockResolvedValue({ data: null, error: httpError(422, { error: 'refused' }) });
 

@@ -20,6 +20,10 @@
  * entraîner ses modèles (analyse §7.2). L'avertissement en tête d'écran n'est pas une précaution de
  * style : c'est la condition d'usage de cette surface. Remise à plat :
  * `supabase/scripts/ia-purge-et-dataset.sql`.
+ *
+ * US ACCES-IA (QA1) — réservé aux testeurs de la bêta : sans accès confirmé, l'écran le dit (« réservé
+ * aux testeurs », ou « il faut le réseau » tant que l'accès est inconnu) au lieu du formulaire. On n'y
+ * arrive plus depuis les Réglages dans ce cas ; c'est le garde d'un lien direct.
  */
 
 import { useState } from 'react';
@@ -39,6 +43,7 @@ import { Button } from '@/components/Button';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { AI_CONTEXT_WINDOW_DAYS, useAiSnapshot } from '@/data/repositories/ai-context-repository';
 import { useSettings } from '@/data/repositories/settings-repository';
+import { useAiAccess } from '@/hooks/useAiAccess';
 import { callAiAssist, type AiResult } from '@/lib/ai/ai-client';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -50,6 +55,7 @@ export default function AiLabScreen() {
   const router = useRouter();
 
   const { settings } = useSettings();
+  const { access, loading: accessLoading } = useAiAccess();
   const { snapshot, context, isLoading } = useAiSnapshot();
 
   const [question, setQuestion] = useState('');
@@ -78,7 +84,21 @@ export default function AiLabScreen() {
     setBusy(false);
   };
 
-  if (isLoading) return null;
+  // Pendant la toute première demande de statut, ni formulaire ni « il faut le réseau » : on attend.
+  if (isLoading || (access === 'unknown' && accessLoading)) return null;
+
+  if (access !== 'allowed') {
+    return (
+      <KeyboardAwareScrollView contentContainerStyle={styles.page}>
+        <ScreenHeader title={t('aiLab.title')} subtitle={t('aiLab.subtitle')} />
+        <View testID={`ai-lab-${access}`} style={[styles.card, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <Text style={[styles.body, { color: colors.text }]}>
+            {t(access === 'closed' ? 'aiLab.closed' : 'aiLab.unknown')}
+          </Text>
+        </View>
+      </KeyboardAwareScrollView>
+    );
+  }
 
   return (
     <KeyboardAwareScrollView contentContainerStyle={styles.page}>
