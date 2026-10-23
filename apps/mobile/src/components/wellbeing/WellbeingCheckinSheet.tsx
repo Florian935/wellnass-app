@@ -29,6 +29,7 @@ import {
 } from '@wellness/shared';
 
 import { Button } from '@/components/Button';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 // US LABO-01 : le bouton rond du Labo, réutilisé ici — la note de nuit est une brique du Labo
 // posée dans le check-in, pas un quatrième indicateur de bien-être.
 import { Stepper } from '@/components/lab/Stepper';
@@ -59,26 +60,31 @@ export function WellbeingCheckinSheet({ visible, onClose, logDate, existing }: P
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable
-        style={styles.backdrop}
-        onPress={onClose}
-        accessibilityRole="button"
-        accessibilityLabel={t('wellbeing.closeSheet')}
-      />
-      <View
-        style={[styles.sheet, { backgroundColor: colors.background, borderColor: colors.border }]}
-      >
-        {/* Monté seulement à l'ouverture, et remonté si le jour visé change : l'état initial vient
-            des props, sans effet de réamorçage. */}
-        {visible && (
-          <CheckinForm
-            key={`${logDate}:${existing?.id ?? 'new'}`}
-            logDate={logDate}
-            existing={existing}
-            onDone={onClose}
-          />
-        )}
-      </View>
+      {/* US CLAV-01 : le conteneur `kind="sheet"` fait remonter la feuille au-dessus du clavier (une
+          `Modal` est une autre fenêtre : il reste actif même dans un écran qui a le sien). Le fond est
+          en remplissage absolu pour assombrir aussi la zone de padding. */}
+      <KeyboardAvoidingContainer kind="sheet" style={styles.sheetLayer}>
+        <Pressable
+          style={styles.backdrop}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t('wellbeing.closeSheet')}
+        />
+        <View
+          style={[styles.sheet, { backgroundColor: colors.background, borderColor: colors.border }]}
+        >
+          {/* Monté seulement à l'ouverture, et remonté si le jour visé change : l'état initial vient
+              des props, sans effet de réamorçage. */}
+          {visible && (
+            <CheckinForm
+              key={`${logDate}:${existing?.id ?? 'new'}`}
+              logDate={logDate}
+              existing={existing}
+              onDone={onClose}
+            />
+          )}
+        </View>
+      </KeyboardAvoidingContainer>
     </Modal>
   );
 }
@@ -150,7 +156,7 @@ function CheckinForm({
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.content}>
+    <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <Text style={[styles.title, { color: colors.text }]}>{t('wellbeing.checkinTitle')}</Text>
       <Text style={[styles.day, { color: colors.textMuted }]}>{formatDayFull(logDate)}</Text>
 
@@ -249,7 +255,8 @@ function CheckinForm({
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
+  sheetLayer: { flex: 1, justifyContent: 'flex-end' },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.4)' },
   sheet: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,

@@ -26,6 +26,7 @@ import {
 } from '@wellness/shared';
 
 import { Button } from '@/components/Button';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { setGoalLetter, type GoalWithProgress } from '@/data/repositories/goal-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -57,22 +58,27 @@ export function GoalLetterSheet({ goal, onClose }: Props) {
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable
-        style={styles.backdrop}
-        onPress={onClose}
-        accessibilityRole="button"
-        accessibilityLabel={t('goals.letter.close')}
-      />
-      <View
-        style={[styles.sheet, { backgroundColor: colors.background, borderColor: colors.border }]}
-      >
-        {/*
-          Monté à l'ouverture, avec une `key` par objectif : c'est ce qui remet l'édition à zéro
-          entre deux lettres. Sans cela, rouvrir la feuille sur un autre objectif afficherait le
-          brouillon du précédent — même patron que `GoalFormSheet`.
-        */}
-        {visible && goal !== null && <LetterBody key={goal.id} goal={goal} onClose={onClose} />}
-      </View>
+      {/* US CLAV-01 : le conteneur `kind="sheet"` fait remonter la feuille au-dessus du clavier (une
+          `Modal` est une autre fenêtre : il reste actif même dans un écran qui a le sien). Le fond est
+          en remplissage absolu pour assombrir aussi la zone de padding. */}
+      <KeyboardAvoidingContainer kind="sheet" style={styles.sheetLayer}>
+        <Pressable
+          style={styles.backdrop}
+          onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel={t('goals.letter.close')}
+        />
+        <View
+          style={[styles.sheet, { backgroundColor: colors.background, borderColor: colors.border }]}
+        >
+          {/*
+            Monté à l'ouverture, avec une `key` par objectif : c'est ce qui remet l'édition à zéro
+            entre deux lettres. Sans cela, rouvrir la feuille sur un autre objectif afficherait le
+            brouillon du précédent — même patron que `GoalFormSheet`.
+          */}
+          {visible && goal !== null && <LetterBody key={goal.id} goal={goal} onClose={onClose} />}
+        </View>
+      </KeyboardAvoidingContainer>
     </Modal>
   );
 }
@@ -178,7 +184,8 @@ function LetterBody({ goal, onClose }: { goal: GoalWithProgress; onClose: () => 
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
+  sheetLayer: { flex: 1, justifyContent: 'flex-end' },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.4)' },
   sheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, borderWidth: 1, maxHeight: '85%' },
   content: { padding: 20, gap: 12 },
   title: { fontFamily: fontFamily.displayBold, fontSize: 20 },

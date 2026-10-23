@@ -2,8 +2,8 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Alert, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { TemplateComposer } from '@/components/templates/TemplateComposer';
 import { useActionLock } from '@/hooks/useActionLock';
 import { briefRouteForTemplate } from '@/components/workout/immersive/brief-entry';
@@ -113,9 +113,11 @@ function TemplateDetailView({ templateId }: { templateId: string }) {
   };
 
   return (
-    <View style={styles.flex}>
+    // US CLAV-01 : la colonne est le conteneur — le pied remonte au-dessus du clavier (D4b), le
+    // défilement du composeur reste passif, l'arête basse du pied est reprise par le conteneur.
+    <KeyboardAvoidingContainer safeAreaBottom>
       <TemplateComposer templateId={templateId} />
-      <SafeAreaView edges={['bottom']} style={styles.actions}>
+      <View style={styles.actions}>
         <Button
           label={starting ? t('templates.starting') : t('templates.start')}
           onPress={() => void onStart()}
@@ -136,12 +138,11 @@ function TemplateDetailView({ templateId }: { templateId: string }) {
           loading={deleting}
           disabled={deleting}
         />
-      </SafeAreaView>
-    </View>
+      </View>
+    </KeyboardAvoidingContainer>
   );
 }
 
 const styles = StyleSheet.create({
-  flex: { flex: 1 },
   actions: { paddingHorizontal: 20, paddingTop: 12, gap: 10 },
 });

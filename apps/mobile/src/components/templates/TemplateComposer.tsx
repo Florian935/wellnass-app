@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
@@ -16,6 +16,7 @@ import {
 } from '@/data/repositories/workout-template-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 type TemplateComposerProps = {
   templateId: string;
@@ -98,10 +99,9 @@ function TemplateComposerBody({
 
   return (
     <Screen edges={['top']}>
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.nameField}>
           <TextField
@@ -137,7 +137,7 @@ function TemplateComposerBody({
             onPress={() => setPickerVisible(true)}
           />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
 
       <ExercisePicker
         visible={pickerVisible}

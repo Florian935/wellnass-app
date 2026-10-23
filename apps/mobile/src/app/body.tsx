@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -12,6 +12,7 @@ import { BodyMusclePicker } from '@/components/body/BodyMusclePicker';
 import { useBodyExercises } from '@/data/repositories/body-explorer-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 function readMuscles(value: unknown): FineMuscle[] {
   if (typeof value !== 'string') return [];
@@ -48,7 +49,7 @@ function BodyExplorerContent({ incoming, context, full, reduced }: {
   };
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+      <KeyboardAwareScrollView contentContainerStyle={styles.content}>
         <Pressable accessibilityRole="button" accessibilityLabel={t('common.back')} style={styles.back}
           onPress={() => router.canGoBack() ? router.back() : router.replace('/(tabs)/strength')}>
           <Ionicons name="arrow-back" size={22} color={colors.text} />
@@ -87,7 +88,7 @@ function BodyExplorerContent({ incoming, context, full, reduced }: {
         {selected ? <BodyMuscleDetail muscle={selected} exercises={exercises} isLoading={isLoading} error={error} query={query} onQueryChange={setQuery}
           onOpenExercise={(id) => router.push(`/exercises/${id}`)} />
           : <Text style={[styles.empty, { color: colors.textMuted }]}>{t('bodyExplorer.chooseMuscle')}</Text>}
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </Screen>
   );
 }

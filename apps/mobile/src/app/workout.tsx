@@ -88,7 +88,7 @@ import {
   useSessionMuscles,
   useSessionReferences,
 } from '@/data/repositories/immersive-repository';
-import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { useProgressionSuggestion } from '@/hooks/useProgressionSuggestion';
 import { formatProgressionSuggestion, formatSetDuration } from '@/lib/progression-suggestion';
 import { useIsAppActive } from '@/hooks/useIsAppActive';
@@ -326,10 +326,6 @@ function useElapsed(startedAt: string | undefined, stoppedAt: number | null): st
 export default function WorkoutScreen() {
   useKeepAwake();
 
-  // Le clavier se superpose à l'écran depuis que l'edge-to-edge est forcé (SDK 54+) : `adjustResize`
-  // est toujours au manifeste mais ne redimensionne plus rien. Sans ce décalage, la barre de saisie
-  // passe SOUS le clavier — on tape une charge sans voir ce qu'on tape (recette §57.19).
-  const keyboardHeight = useKeyboardHeight();
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const units = useUnits();
@@ -1254,217 +1250,220 @@ export default function WorkoutScreen() {
 
   return (
     <>
-      <SafeAreaView
-        style={[
-          styles.safe,
-          { backgroundColor: colors.background },
-          // `additive` : l'inset de safe-area s'AJOUTE au padding du style. On coupe donc l'arête
-          // basse quand le clavier est là, sinon la barre flotterait à `inset + clavier` du bord.
-          keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : null,
-        ]}
-        edges={keyboardHeight > 0 ? ['top'] : ['top', 'bottom']}
-      >
-        {/* ── Barre haute : sortie, chrono, avancement, menu ─────────────────────────────────── */}
-        <View style={styles.header}>
-          <View style={styles.headerRow}>
-            <Pressable onPress={onLeave} hitSlop={10} accessibilityLabel={t('workout.leave.later')}>
-              <Ionicons name="close" size={26} color={colors.text} />
-            </Pressable>
-            <Text style={[styles.timer, { color: colors.text }]}>{elapsed}</Text>
-            <Pressable
-              onPress={() => setMenuOpen(true)}
-              hitSlop={10}
-              accessibilityLabel={t('workout.menu.title')}
-            >
-              <Ionicons name="ellipsis-vertical" size={22} color={colors.text} />
-            </Pressable>
-          </View>
-          {/* L'avancement réel : l'écran disait le rang dans l'exercice, jamais où on en était
-              dans la séance. */}
-          {totalSets > 0 ? (
-            <View style={styles.progressRow}>
-              <View
-                style={[styles.progressTrack, { backgroundColor: colors.track }]}
-                accessibilityRole="progressbar"
-                accessibilityValue={{ min: 0, max: totalSets, now: doneSets }}
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
+        {/* US CLAV-01 : la colonne (en-tête, défilement, barre) est posée dans le conteneur commun,
+            qui reprend l'arête basse (`safeAreaBottom`) : clavier fermé, l'inset comme avant ;
+            clavier ouvert, la barre s'arrête **exactement** au haut du clavier. L'ancien décalage
+            (`useKeyboardHeight`) posait la hauteur du clavier **au-dessus de la barre de navigation**
+            sur une vue qui descend jusqu'au bas de l'écran : d'après le code, la barre restait d'un
+            inset sous le clavier — ~24 dp en gestuelle (jugé visible en recette §57.19, la barre a
+            12 dp de marge), 48 dp en navigation à 3 boutons (jamais vérifié). */}
+        <KeyboardAvoidingContainer safeAreaBottom testID="workout-keyboard-area">
+          {/* ── Barre haute : sortie, chrono, avancement, menu ─────────────────────────────────── */}
+          <View style={styles.header}>
+            <View style={styles.headerRow}>
+              <Pressable onPress={onLeave} hitSlop={10} accessibilityLabel={t('workout.leave.later')}>
+                <Ionicons name="close" size={26} color={colors.text} />
+              </Pressable>
+              <Text style={[styles.timer, { color: colors.text }]}>{elapsed}</Text>
+              <Pressable
+                onPress={() => setMenuOpen(true)}
+                hitSlop={10}
+                accessibilityLabel={t('workout.menu.title')}
               >
+                <Ionicons name="ellipsis-vertical" size={22} color={colors.text} />
+              </Pressable>
+            </View>
+            {/* L'avancement réel : l'écran disait le rang dans l'exercice, jamais où on en était
+                dans la séance. */}
+            {totalSets > 0 ? (
+              <View style={styles.progressRow}>
                 <View
+                  style={[styles.progressTrack, { backgroundColor: colors.track }]}
+                  accessibilityRole="progressbar"
+                  accessibilityValue={{ min: 0, max: totalSets, now: doneSets }}
+                >
+                  <View
+                    style={[
+                      styles.progressFill,
+                      {
+                        width: `${Math.round(progressRatio * 100)}%`,
+                        backgroundColor: doneSets === totalSets ? colors.success : colors.accent,
+                      },
+                    ]}
+                  />
+                </View>
+                <Text
                   style={[
-                    styles.progressFill,
-                    {
-                      width: `${Math.round(progressRatio * 100)}%`,
-                      backgroundColor: doneSets === totalSets ? colors.success : colors.accent,
-                    },
+                    styles.progressLabel,
+                    { color: doneSets === totalSets ? colors.success : colors.textMuted },
                   ]}
-                />
+                >
+                  {t('workout.setsProgress', { done: doneSets, total: totalSets })}
+                </Text>
               </View>
-              <Text
-                style={[
-                  styles.progressLabel,
-                  { color: doneSets === totalSets ? colors.success : colors.textMuted },
-                ]}
-              >
-                {t('workout.setsProgress', { done: doneSets, total: totalSets })}
-              </Text>
-            </View>
-          ) : null}
-        </View>
+            ) : null}
+          </View>
 
-        {/* ── Zone scrollable : le contexte, jamais l'action ─────────────────────────────────── */}
-        <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
-          {entries.length === 0 ? (
-            <Text style={[styles.hint, { color: colors.textMuted }]}>{t('workout.empty')}</Text>
-          ) : current ? (
-            <CurrentSetCard
-              key={current.entry.exerciseId}
-              level={displayLevel}
-              exerciseName={current.entry.exerciseName}
-              sets={currentSetChips}
-              currentRang={current.rang}
-              restSeconds={currentRest}
-              lastPerfLabel={formatLastPerf(lastPerf, units)}
-              suggestionLabel={suggestionLabel}
-              plannedLabel={plannedLabel}
-              deltaLabel={deltaLabel}
-              deltaPositive={(deltaRounded ?? 0) >= 0}
-              setType={current.set.setType}
-              onSetType={(tp) => void updateSet(current.set.id, { setType: tp })}
-              rpe={current.set.rpe}
-              onSetRpe={(v) => void updateSet(current.set.id, { rpe: v })}
-              note={displayNote}
-              onChangeNote={onChangeNote}
-              onBlurNote={onBlurNote}
-              supersetLink={supersetLink}
-              onRequestLinkSuperset={() => setSupersetPickerOpen(true)}
-              onUnlinkSuperset={() => {
-                if (current) void unlinkSupersetPair(workoutId, current.entry.exerciseId);
-              }}
-              onAddSet={() => void addSet(workoutId, current.entry.exerciseId)}
-              colors={colors}
-            />
-          ) : (
-            <View
-              style={[styles.doneCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
-            >
-              <View style={[styles.doneIcon, { backgroundColor: `${colors.success}29` }]}>
-                <Ionicons name="checkmark" size={26} color={colors.success} />
-              </View>
-              <Text style={[styles.doneTitle, { color: colors.text }]}>
-                {t('workout.sessionDone')}
-              </Text>
-              <Text style={[styles.doneHint, { color: colors.textMuted }]}>
-                {t('workout.sessionDoneHint')}
-              </Text>
-            </View>
-          )}
-
-          {entries.length > 0 ? (
-            <ExerciseList
-              entries={entries}
-              currentExerciseId={currentExerciseId}
-              onSelect={(exerciseId) => setFocusOverride({ exerciseId })}
-              onToggleSetDone={onToggleSetDone}
-              onRemoveSet={(setId) => void removeSet(setId)}
-              onAddSet={(exerciseId) => void addSet(workoutId, exerciseId)}
-              onReorder={(exerciseId, direction) =>
-                void reorderExercise(workoutId, exerciseId, direction)
-              }
-              onSendLater={(exerciseId) => void sendExerciseToEnd(workoutId, exerciseId)}
-              onReplace={(exerciseId) =>
-                router.push({ pathname: '/exercises', params: { replaceExerciseId: exerciseId } })
-              }
-              exerciseNotes={allExerciseNotes}
-              supersetPairs={supersetPairs}
-              colors={colors}
-            />
-          ) : null}
-        </ScrollView>
-
-        {/* ── Barre d'action, fixe. Devient la clôture quand tout est validé. ────────────────── */}
-        {current ? (
-          <SetActionBar
-            exerciseName={current.entry.exerciseName}
-            currentIndex={current.rang + 1}
-            totalSets={current.entry.sets.length}
-            setType={current.set.setType}
-            repsValue={displayReps}
-            onChangeReps={(v) => applyEdit({ reps: v })}
-            onStepReps={(delta) => {
-              const base = Number(displayReps);
-              const next = Math.max(0, (Number.isNaN(base) ? 0 : base) + delta);
-              applyEdit({ reps: String(next) });
-            }}
-            weightValue={units.weightInputValue(displayWeightKg)}
-            weightSymbol={units.weightSymbol}
-            onChangeWeight={onChangeWeightText}
-            onStepWeight={(deltaKg) => stepWeight(deltaKg > 0 ? 1 : -1)}
-            durationValue={durationValue}
-            onChangeDuration={(v) => applyEdit({ durationSeconds: parseMmSs(v) })}
-            onStepDuration={(d) =>
-              applyEdit({ durationSeconds: Math.max(0, (displayDurationSeconds ?? 0) + d) })
-            }
-            onValidate={onValidate}
-            chainsToSuperset={chainsToSuperset}
-            colors={colors}
-          />
-        ) : entries.length > 0 ? (
-          <View
-            style={[
-              styles.finishBar,
-              { backgroundColor: colors.surface, borderTopColor: colors.borderStrong },
-            ]}
-          >
-            <View style={styles.finishStats}>
-              <FinishStat value={elapsed} label={t('workout.summary.duration')} colors={colors} />
-              <View style={[styles.finishSep, { backgroundColor: colors.border }]} />
-              <FinishStat
-                value={String(doneSets)}
-                label={t('workout.summary.sets')}
+          {/* ── Zone scrollable : le contexte, jamais l'action ─────────────────────────────────── */}
+          <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
+            {entries.length === 0 ? (
+              <Text style={[styles.hint, { color: colors.textMuted }]}>{t('workout.empty')}</Text>
+            ) : current ? (
+              <CurrentSetCard
+                key={current.entry.exerciseId}
+                level={displayLevel}
+                exerciseName={current.entry.exerciseName}
+                sets={currentSetChips}
+                currentRang={current.rang}
+                restSeconds={currentRest}
+                lastPerfLabel={formatLastPerf(lastPerf, units)}
+                suggestionLabel={suggestionLabel}
+                plannedLabel={plannedLabel}
+                deltaLabel={deltaLabel}
+                deltaPositive={(deltaRounded ?? 0) >= 0}
+                setType={current.set.setType}
+                onSetType={(tp) => void updateSet(current.set.id, { setType: tp })}
+                rpe={current.set.rpe}
+                onSetRpe={(v) => void updateSet(current.set.id, { rpe: v })}
+                note={displayNote}
+                onChangeNote={onChangeNote}
+                onBlurNote={onBlurNote}
+                supersetLink={supersetLink}
+                onRequestLinkSuperset={() => setSupersetPickerOpen(true)}
+                onUnlinkSuperset={() => {
+                  if (current) void unlinkSupersetPair(workoutId, current.entry.exerciseId);
+                }}
+                onAddSet={() => void addSet(workoutId, current.entry.exerciseId)}
                 colors={colors}
               />
-            </View>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onFinish}
-              style={({ pressed }) => [
-                styles.finishBtn,
-                { backgroundColor: colors.accent },
-                pressed && styles.pressed,
-              ]}
-            >
-              <Text style={[styles.finishLabel, { color: colors.accentText }]}>
-                {t('workout.finishSession')}
-              </Text>
-            </Pressable>
-          </View>
-        ) : (
-          /* Séance sans exercice — l'état d'arrivée de TOUTE séance libre. La barre n'avait que
-             deux branches et rendait `null` ici : l'écran n'offrait alors aucune action, et le seul
-             « + Ajouter un exercice » était caché derrière les trois points (recette du 19/09/2026).
-             La barre est le contrat de cet écran : elle porte toujours le geste suivant. */
-          <View
-            style={[
-              styles.finishBar,
-              { backgroundColor: colors.surface, borderTopColor: colors.borderStrong },
-            ]}
-          >
-            <Pressable
-              accessibilityRole="button"
-              testID="workout-add-exercise"
-              onPress={() => router.push('/exercises')}
-              style={({ pressed }) => [
-                styles.finishBtn,
-                { backgroundColor: colors.accent },
-                pressed && styles.pressed,
-              ]}
-            >
-              <Text style={[styles.finishLabel, { color: colors.accentText }]}>
-                {t('workout.addExercise')}
-              </Text>
-            </Pressable>
-          </View>
-        )}
+            ) : (
+              <View
+                style={[styles.doneCard, { backgroundColor: colors.surface, borderColor: colors.border }]}
+              >
+                <View style={[styles.doneIcon, { backgroundColor: `${colors.success}29` }]}>
+                  <Ionicons name="checkmark" size={26} color={colors.success} />
+                </View>
+                <Text style={[styles.doneTitle, { color: colors.text }]}>
+                  {t('workout.sessionDone')}
+                </Text>
+                <Text style={[styles.doneHint, { color: colors.textMuted }]}>
+                  {t('workout.sessionDoneHint')}
+                </Text>
+              </View>
+            )}
 
+            {entries.length > 0 ? (
+              <ExerciseList
+                entries={entries}
+                currentExerciseId={currentExerciseId}
+                onSelect={(exerciseId) => setFocusOverride({ exerciseId })}
+                onToggleSetDone={onToggleSetDone}
+                onRemoveSet={(setId) => void removeSet(setId)}
+                onAddSet={(exerciseId) => void addSet(workoutId, exerciseId)}
+                onReorder={(exerciseId, direction) =>
+                  void reorderExercise(workoutId, exerciseId, direction)
+                }
+                onSendLater={(exerciseId) => void sendExerciseToEnd(workoutId, exerciseId)}
+                onReplace={(exerciseId) =>
+                  router.push({ pathname: '/exercises', params: { replaceExerciseId: exerciseId } })
+                }
+                exerciseNotes={allExerciseNotes}
+                supersetPairs={supersetPairs}
+                colors={colors}
+              />
+            ) : null}
+          </ScrollView>
+
+          {/* ── Barre d'action, fixe. Devient la clôture quand tout est validé. ────────────────── */}
+          {current ? (
+            <SetActionBar
+              exerciseName={current.entry.exerciseName}
+              currentIndex={current.rang + 1}
+              totalSets={current.entry.sets.length}
+              setType={current.set.setType}
+              repsValue={displayReps}
+              onChangeReps={(v) => applyEdit({ reps: v })}
+              onStepReps={(delta) => {
+                const base = Number(displayReps);
+                const next = Math.max(0, (Number.isNaN(base) ? 0 : base) + delta);
+                applyEdit({ reps: String(next) });
+              }}
+              weightValue={units.weightInputValue(displayWeightKg)}
+              weightSymbol={units.weightSymbol}
+              onChangeWeight={onChangeWeightText}
+              onStepWeight={(deltaKg) => stepWeight(deltaKg > 0 ? 1 : -1)}
+              durationValue={durationValue}
+              onChangeDuration={(v) => applyEdit({ durationSeconds: parseMmSs(v) })}
+              onStepDuration={(d) =>
+                applyEdit({ durationSeconds: Math.max(0, (displayDurationSeconds ?? 0) + d) })
+              }
+              onValidate={onValidate}
+              chainsToSuperset={chainsToSuperset}
+              colors={colors}
+            />
+          ) : entries.length > 0 ? (
+            <View
+              style={[
+                styles.finishBar,
+                { backgroundColor: colors.surface, borderTopColor: colors.borderStrong },
+              ]}
+            >
+              <View style={styles.finishStats}>
+                <FinishStat value={elapsed} label={t('workout.summary.duration')} colors={colors} />
+                <View style={[styles.finishSep, { backgroundColor: colors.border }]} />
+                <FinishStat
+                  value={String(doneSets)}
+                  label={t('workout.summary.sets')}
+                  colors={colors}
+                />
+              </View>
+              <Pressable
+                accessibilityRole="button"
+                onPress={onFinish}
+                style={({ pressed }) => [
+                  styles.finishBtn,
+                  { backgroundColor: colors.accent },
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Text style={[styles.finishLabel, { color: colors.accentText }]}>
+                  {t('workout.finishSession')}
+                </Text>
+              </Pressable>
+            </View>
+          ) : (
+            /* Séance sans exercice — l'état d'arrivée de TOUTE séance libre. La barre n'avait que
+               deux branches et rendait `null` ici : l'écran n'offrait alors aucune action, et le seul
+               « + Ajouter un exercice » était caché derrière les trois points (recette du 19/09/2026).
+               La barre est le contrat de cet écran : elle porte toujours le geste suivant. */
+            <View
+              style={[
+                styles.finishBar,
+                { backgroundColor: colors.surface, borderTopColor: colors.borderStrong },
+              ]}
+            >
+              <Pressable
+                accessibilityRole="button"
+                testID="workout-add-exercise"
+                onPress={() => router.push('/exercises')}
+                style={({ pressed }) => [
+                  styles.finishBtn,
+                  { backgroundColor: colors.accent },
+                  pressed && styles.pressed,
+                ]}
+              >
+                <Text style={[styles.finishLabel, { color: colors.accentText }]}>
+                  {t('workout.addExercise')}
+                </Text>
+              </Pressable>
+            </View>
+          )}
+        </KeyboardAvoidingContainer>
+
+        {/* Le voile de repos est en `absoluteFill` : il se pose sur la boîte de padding de son parent.
+            Il reste donc HORS du conteneur clavier (dont le padding bas varie) et directement dans le
+            `SafeAreaView` : il couvre toute la fenêtre, barre d'état comprise, comme avant CLAV-01. */}
         {restEndsAt !== null ? (
           <RestOverlay
             secondsLeft={restLeft}

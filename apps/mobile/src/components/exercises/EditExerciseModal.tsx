@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import {
-  KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, View,
+  Modal, Pressable, ScrollView, StyleSheet, Text, View,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { EQUIPMENTS, MUSCLE_GROUPS, type Equipment, type MuscleGroup } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
 import { updateCustomExercise, type ExerciseDetail } from '@/data/repositories/exercise-repository';
@@ -90,13 +91,16 @@ export function EditExerciseModal({ visible, onClose, exercise }: CreateExercise
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
-      <Pressable
-        style={styles.backdrop}
-        onPress={close}
-        accessibilityRole="button"
-        accessibilityLabel={t('common.cancel')}
-      />
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      {/* US CLAV-01 : le conteneur `kind="sheet"` fait remonter la feuille au-dessus du clavier (une
+          `Modal` est une autre fenêtre : il reste actif même dans un écran qui a le sien). Le fond est
+          en remplissage absolu pour assombrir aussi la zone de padding. */}
+      <KeyboardAvoidingContainer kind="sheet" style={styles.sheetLayer}>
+        <Pressable
+          style={styles.backdrop}
+          onPress={close}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.cancel')}
+        />
         <View style={[styles.sheet, { backgroundColor: colors.background, borderColor: colors.border }]}>
           <ScrollView
             style={styles.scroll}
@@ -187,13 +191,14 @@ export function EditExerciseModal({ visible, onClose, exercise }: CreateExercise
             </View>
           </View>
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAvoidingContainer>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
+  sheetLayer: { flex: 1, justifyContent: 'flex-end' },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.4)' },
   sheet: {
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,

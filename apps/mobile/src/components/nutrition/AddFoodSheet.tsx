@@ -27,6 +27,7 @@ import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { scaleMicronutrients, scaleNutrition } from '@wellness/shared';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { TextField } from '@/components/TextField';
 import {
   SEARCH_RESULT_LIMIT,
@@ -161,159 +162,164 @@ export function AddFoodSheet({
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityElementsHidden />
-      <View style={[styles.sheet, { backgroundColor: colors.background }]}>
-        <View style={[styles.grab, { backgroundColor: colors.borderStrong }]} />
+      {/* US CLAV-01 : le conteneur `kind="sheet"` fait remonter la feuille au-dessus du clavier (une
+          `Modal` est une autre fenêtre : il reste actif même dans un écran qui a le sien). Le fond est
+          en remplissage absolu pour assombrir aussi la zone de padding. */}
+      <KeyboardAvoidingContainer kind="sheet" style={styles.sheetLayer}>
+        <Pressable style={styles.backdrop} onPress={onClose} accessibilityElementsHidden />
+        <View style={[styles.sheet, { backgroundColor: colors.background }]}>
+          <View style={[styles.grab, { backgroundColor: colors.borderStrong }]} />
 
-        {/* En-tête : le repas visé est nommé, et il vient de l'heure (R2.6) */}
-        <View style={styles.head}>
-          <View style={styles.headTexts}>
-            <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
-              {t('journal.addSheet.title', { meal: mealLabel })}
-            </Text>
-            <Text style={[styles.subtitle, { color: colors.textMuted }]}>
-              {t('journal.addSheet.subtitle')}
-            </Text>
-          </View>
-          <Pressable
-            onPress={onClose}
-            hitSlop={10}
-            accessibilityRole="button"
-            accessibilityLabel={t('common.close')}
-            style={[styles.closeBtn, { backgroundColor: colors.track }]}
-          >
-            <Ionicons name="close" size={20} color={colors.text} />
-          </Pressable>
-        </View>
-
-        {/* R2.4 — le budget ne quitte plus l'écran */}
-        {kcalRemaining != null ? (
-          <View style={[styles.budget, { backgroundColor: colors.panel }]}>
-            <View style={[styles.budgetRing, { borderColor: colors.panelAccent }]}>
-              <Text style={[styles.budgetPct, { color: colors.panelAccent }]}>
-                {Math.round(Math.min(1, Math.max(0, consumedRatio)) * 100)}
+          {/* En-tête : le repas visé est nommé, et il vient de l'heure (R2.6) */}
+          <View style={styles.head}>
+            <View style={styles.headTexts}>
+              <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>
+                {t('journal.addSheet.title', { meal: mealLabel })}
+              </Text>
+              <Text style={[styles.subtitle, { color: colors.textMuted }]}>
+                {t('journal.addSheet.subtitle')}
               </Text>
             </View>
-            <View style={styles.budgetTexts}>
-              <Text style={[styles.budgetLabel, { color: colors.panelMuted }]}>
-                {t('journal.addSheet.remainingLabel')}
-              </Text>
-              <Text style={[styles.budgetValue, { color: colors.panelText }]}>
-                {t('journal.addSheet.remainingValue', {
-                  kcal: Math.max(0, kcalRemaining),
-                  protein: Math.max(0, proteinRemaining ?? 0),
-                })}
-              </Text>
-            </View>
+            <Pressable
+              onPress={onClose}
+              hitSlop={10}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+              style={[styles.closeBtn, { backgroundColor: colors.track }]}
+            >
+              <Ionicons name="close" size={20} color={colors.text} />
+            </Pressable>
           </View>
-        ) : null}
 
-        {/* R2.1 — les 3 modes */}
-        <View style={styles.modes}>
-          {modes.map((m) => {
-            const active = m.key === 'search';
-            return (
-              <Pressable
-                key={m.key}
-                onPress={m.onPress}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                style={[
-                  styles.mode,
-                  {
-                    backgroundColor: active ? colors.accent : colors.surface,
-                    borderColor: active ? colors.accent : colors.border,
-                  },
-                ]}
-              >
-                <Ionicons name={m.icon} size={20} color={active ? colors.accentText : colors.text} />
-                <Text
-                  style={[styles.modeLabel, { color: active ? colors.accentText : colors.text }]}
-                >
-                  {t(`journal.addSheet.modes.${m.key}`)}
+          {/* R2.4 — le budget ne quitte plus l'écran */}
+          {kcalRemaining != null ? (
+            <View style={[styles.budget, { backgroundColor: colors.panel }]}>
+              <View style={[styles.budgetRing, { borderColor: colors.panelAccent }]}>
+                <Text style={[styles.budgetPct, { color: colors.panelAccent }]}>
+                  {Math.round(Math.min(1, Math.max(0, consumedRatio)) * 100)}
                 </Text>
-              </Pressable>
-            );
-          })}
-        </View>
-
-        {/* R2.3 — une seule recherche, sur les trois familles */}
-        <View style={styles.searchField}>
-          <TextField
-            label={t('journal.addSheet.searchLabel')}
-            value={term}
-            onChangeText={setTerm}
-            placeholder={t('journal.addSheet.searchPlaceholder')}
-            autoCapitalize="none"
-            autoCorrect={false}
-          />
-        </View>
-
-        <View style={styles.listHead}>
-          <Text style={[styles.listHeadLabel, { color: colors.textMuted }]}>
-            {searching ? t('journal.addSheet.results') : t('journal.addSheet.habits')}
-          </Text>
-          <Pressable onPress={() => goTo('/food-picker')} hitSlop={8} accessibilityRole="button">
-            <Text style={[styles.listHeadAction, { color: colors.accent }]}>
-              {t('journal.addSheet.wholeBase')}
-            </Text>
-          </Pressable>
-        </View>
-
-        <ScrollView
-          style={styles.list}
-          contentContainerStyle={styles.listContent}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {loading && list.length === 0 ? (
-            <ActivityIndicator color={colors.accent} style={styles.loader} />
-          ) : list.length === 0 && library.isEmpty ? (
-            /*
-             * US NUTRI-UX02 — la feuille est la porte d'entrée la plus fréquente de la recherche :
-             * c'est donc ici, avant l'écran plein, qu'une bibliothèque absente doit se dire. Vaut
-             * pour les deux listes : sans base, « tes habitudes » est vide pour la même raison que
-             * « tes résultats ».
-             */
-            <LibraryNotice count={library.count} />
-          ) : list.length === 0 ? (
-            <Text style={[styles.empty, { color: colors.textMuted }]}>
-              {searching ? t('journal.addSheet.noResult') : t('journal.addSheet.noHabit')}
-            </Text>
-          ) : (
-            list.map((entry) => (
-              <EntryRow
-                key={`${entry.kind}-${entry.id}`}
-                entry={entry}
-                busy={busyId === entry.id}
-                onQuickAdd={() => void quickAdd(entry)}
-                onOpen={() =>
-                  goTo('/food-picker', { focusId: entry.id, focusKind: entry.kind })
-                }
-              />
-            ))
-          )}
-          {searching && list.length >= SEARCH_RESULT_LIMIT ? (
-            <Text style={[styles.more, { color: colors.textMuted }]}>
-              {t('journal.addSheet.refine')}
-            </Text>
+              </View>
+              <View style={styles.budgetTexts}>
+                <Text style={[styles.budgetLabel, { color: colors.panelMuted }]}>
+                  {t('journal.addSheet.remainingLabel')}
+                </Text>
+                <Text style={[styles.budgetValue, { color: colors.panelText }]}>
+                  {t('journal.addSheet.remainingValue', {
+                    kcal: Math.max(0, kcalRemaining),
+                    protein: Math.max(0, proteinRemaining ?? 0),
+                  })}
+                </Text>
+              </View>
+            </View>
           ) : null}
-        </ScrollView>
 
-        {/* Les deux actions rares, et elles seules */}
-        <View style={[styles.footer, { borderTopColor: colors.border }]}>
-          <Pressable onPress={() => goTo('/food-picker', { quick: '1' })} accessibilityRole="button">
-            <Text style={[styles.footerAction, { color: colors.accent }]}>
-              {t('journal.quickAdd')}
+          {/* R2.1 — les 3 modes */}
+          <View style={styles.modes}>
+            {modes.map((m) => {
+              const active = m.key === 'search';
+              return (
+                <Pressable
+                  key={m.key}
+                  onPress={m.onPress}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  style={[
+                    styles.mode,
+                    {
+                      backgroundColor: active ? colors.accent : colors.surface,
+                      borderColor: active ? colors.accent : colors.border,
+                    },
+                  ]}
+                >
+                  <Ionicons name={m.icon} size={20} color={active ? colors.accentText : colors.text} />
+                  <Text
+                    style={[styles.modeLabel, { color: active ? colors.accentText : colors.text }]}
+                  >
+                    {t(`journal.addSheet.modes.${m.key}`)}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
+
+          {/* R2.3 — une seule recherche, sur les trois familles */}
+          <View style={styles.searchField}>
+            <TextField
+              label={t('journal.addSheet.searchLabel')}
+              value={term}
+              onChangeText={setTerm}
+              placeholder={t('journal.addSheet.searchPlaceholder')}
+              autoCapitalize="none"
+              autoCorrect={false}
+            />
+          </View>
+
+          <View style={styles.listHead}>
+            <Text style={[styles.listHeadLabel, { color: colors.textMuted }]}>
+              {searching ? t('journal.addSheet.results') : t('journal.addSheet.habits')}
             </Text>
-          </Pressable>
-          <Pressable onPress={() => goTo('/food-custom')} accessibilityRole="button">
-            <Text style={[styles.footerAction, { color: colors.accent }]}>
-              {t('journal.createFood')}
-            </Text>
-          </Pressable>
+            <Pressable onPress={() => goTo('/food-picker')} hitSlop={8} accessibilityRole="button">
+              <Text style={[styles.listHeadAction, { color: colors.accent }]}>
+                {t('journal.addSheet.wholeBase')}
+              </Text>
+            </Pressable>
+          </View>
+
+          <ScrollView
+            style={styles.list}
+            contentContainerStyle={styles.listContent}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            {loading && list.length === 0 ? (
+              <ActivityIndicator color={colors.accent} style={styles.loader} />
+            ) : list.length === 0 && library.isEmpty ? (
+              /*
+               * US NUTRI-UX02 — la feuille est la porte d'entrée la plus fréquente de la recherche :
+               * c'est donc ici, avant l'écran plein, qu'une bibliothèque absente doit se dire. Vaut
+               * pour les deux listes : sans base, « tes habitudes » est vide pour la même raison que
+               * « tes résultats ».
+               */
+              <LibraryNotice count={library.count} />
+            ) : list.length === 0 ? (
+              <Text style={[styles.empty, { color: colors.textMuted }]}>
+                {searching ? t('journal.addSheet.noResult') : t('journal.addSheet.noHabit')}
+              </Text>
+            ) : (
+              list.map((entry) => (
+                <EntryRow
+                  key={`${entry.kind}-${entry.id}`}
+                  entry={entry}
+                  busy={busyId === entry.id}
+                  onQuickAdd={() => void quickAdd(entry)}
+                  onOpen={() =>
+                    goTo('/food-picker', { focusId: entry.id, focusKind: entry.kind })
+                  }
+                />
+              ))
+            )}
+            {searching && list.length >= SEARCH_RESULT_LIMIT ? (
+              <Text style={[styles.more, { color: colors.textMuted }]}>
+                {t('journal.addSheet.refine')}
+              </Text>
+            ) : null}
+          </ScrollView>
+
+          {/* Les deux actions rares, et elles seules */}
+          <View style={[styles.footer, { borderTopColor: colors.border }]}>
+            <Pressable onPress={() => goTo('/food-picker', { quick: '1' })} accessibilityRole="button">
+              <Text style={[styles.footerAction, { color: colors.accent }]}>
+                {t('journal.quickAdd')}
+              </Text>
+            </Pressable>
+            <Pressable onPress={() => goTo('/food-custom')} accessibilityRole="button">
+              <Text style={[styles.footerAction, { color: colors.accent }]}>
+                {t('journal.createFood')}
+              </Text>
+            </Pressable>
+          </View>
         </View>
-      </View>
+      </KeyboardAvoidingContainer>
     </Modal>
   );
 }
@@ -384,6 +390,7 @@ function EntryRow({
 }
 
 const styles = StyleSheet.create({
+  sheetLayer: { flex: 1, justifyContent: 'flex-end' },
   backdrop: {
     position: 'absolute',
     top: 0,
@@ -392,11 +399,10 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: 'rgba(0,0,0,0.45)',
   },
+  // US CLAV-01 : la feuille quitte le positionnement absolu pour le flux, en bas du conteneur — un
+  // enfant absolu ne suit pas le padding de son parent, elle serait restée sous le clavier. Mêmes
+  // dimensions, même rendu clavier fermé.
   sheet: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
     maxHeight: '92%',
     borderTopLeftRadius: 24,
     borderTopRightRadius: 24,

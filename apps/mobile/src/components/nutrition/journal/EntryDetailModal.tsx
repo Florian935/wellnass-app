@@ -12,6 +12,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { rescaleEntryNutrition } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { MicronutrientDetails } from '@/components/MicronutrientDetails';
 import { TextField } from '@/components/TextField';
 import type { MacroKey } from '@/components/nutrition/MacroTriple';
@@ -128,166 +129,173 @@ function EntryDetailContent({
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.modalBackdrop} onPress={onClose}>
-        <Pressable style={[styles.modalSheet, { backgroundColor: colors.background }]} onPress={() => {}}>
-          <View style={styles.modalHead}>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.modalTitle, { color: colors.text }]} numberOfLines={2}>{entry.name}</Text>
-              {!editing ? (
-                <Text style={[styles.modalSub, { color: colors.textMuted }]}>
-                  {entry.quantityG != null ? `${t('journal.detail.quantity', { grams: entry.quantityG })} · ` : ''}
-                  {t('journal.detail.loggedAt', { time: loggedTime })}
-                </Text>
+      {/* US CLAV-01 : le conteneur `kind="sheet"` fait remonter la feuille au-dessus du clavier (une
+          `Modal` est une autre fenêtre : il reste actif dans le hub, qui a le sien). Il porte le voile
+          sombre, pour que la zone de padding soit assombrie elle aussi ; le fond pressable reste le
+          parent de la feuille. */}
+      <KeyboardAvoidingContainer kind="sheet" style={styles.modalDim}>
+        <Pressable style={styles.modalBackdrop} onPress={onClose}>
+          <Pressable style={[styles.modalSheet, { backgroundColor: colors.background }]} onPress={() => {}}>
+            <View style={styles.modalHead}>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.modalTitle, { color: colors.text }]} numberOfLines={2}>{entry.name}</Text>
+                {!editing ? (
+                  <Text style={[styles.modalSub, { color: colors.textMuted }]}>
+                    {entry.quantityG != null ? `${t('journal.detail.quantity', { grams: entry.quantityG })} · ` : ''}
+                    {t('journal.detail.loggedAt', { time: loggedTime })}
+                  </Text>
+                ) : null}
+              </View>
+              {canReorder ? (
+                <View style={styles.reorderRow}>
+                  <Pressable
+                    onPress={onMoveUp}
+                    disabled={onMoveUp == null}
+                    hitSlop={8}
+                    accessibilityLabel={t('journal.detail.moveUp')}
+                  >
+                    <Ionicons name="chevron-up" size={22} color={onMoveUp ? colors.text : colors.border} />
+                  </Pressable>
+                  <Pressable
+                    onPress={onMoveDown}
+                    disabled={onMoveDown == null}
+                    hitSlop={8}
+                    accessibilityLabel={t('journal.detail.moveDown')}
+                  >
+                    <Ionicons name="chevron-down" size={22} color={onMoveDown ? colors.text : colors.border} />
+                  </Pressable>
+                </View>
               ) : null}
+              <Pressable onPress={onClose} hitSlop={10} accessibilityLabel={t('journal.detail.close')}>
+                <Ionicons name="close" size={26} color={colors.textMuted} />
+              </Pressable>
             </View>
-            {canReorder ? (
-              <View style={styles.reorderRow}>
-                <Pressable
-                  onPress={onMoveUp}
-                  disabled={onMoveUp == null}
-                  hitSlop={8}
-                  accessibilityLabel={t('journal.detail.moveUp')}
-                >
-                  <Ionicons name="chevron-up" size={22} color={onMoveUp ? colors.text : colors.border} />
-                </Pressable>
-                <Pressable
-                  onPress={onMoveDown}
-                  disabled={onMoveDown == null}
-                  hitSlop={8}
-                  accessibilityLabel={t('journal.detail.moveDown')}
-                >
-                  <Ionicons name="chevron-down" size={22} color={onMoveDown ? colors.text : colors.border} />
-                </Pressable>
-              </View>
-            ) : null}
-            <Pressable onPress={onClose} hitSlop={10} accessibilityLabel={t('journal.detail.close')}>
-              <Ionicons name="close" size={26} color={colors.textMuted} />
-            </Pressable>
-          </View>
 
-          <ScrollView
-            contentContainerStyle={styles.modalBody}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            {/* Champs en mode édition — grammes (règle de trois) ou saisie directe (quick add) */}
-            {editing ? (
-              hasQuantity ? (
-                <TextField
-                  label={t('journal.grams')}
-                  value={grams}
-                  onChangeText={setGrams}
-                  keyboardType="decimal-pad"
-                  autoFocus
-                />
-              ) : (
-                <>
-                  <TextField label={t('journal.name')} value={name} onChangeText={setName} autoFocus />
+            <ScrollView
+              contentContainerStyle={styles.modalBody}
+              showsVerticalScrollIndicator={false}
+              keyboardShouldPersistTaps="handled"
+            >
+              {/* Champs en mode édition — grammes (règle de trois) ou saisie directe (quick add) */}
+              {editing ? (
+                hasQuantity ? (
                   <TextField
-                    label={t('journal.detail.calories')}
-                    value={kcal}
-                    onChangeText={setKcal}
+                    label={t('journal.grams')}
+                    value={grams}
+                    onChangeText={setGrams}
                     keyboardType="decimal-pad"
+                    autoFocus
                   />
-                  <TextField
-                    label={`${t('nutrition.macros.protein')} (g)`}
-                    value={protein}
-                    onChangeText={setProtein}
-                    keyboardType="decimal-pad"
-                  />
-                  <TextField
-                    label={`${t('nutrition.macros.carbs')} (g)`}
-                    value={carbs}
-                    onChangeText={setCarbs}
-                    keyboardType="decimal-pad"
-                  />
-                  <TextField
-                    label={`${t('nutrition.macros.fat')} (g)`}
-                    value={fat}
-                    onChangeText={setFat}
-                    keyboardType="decimal-pad"
-                  />
-                </>
-              )
-            ) : null}
+                ) : (
+                  <>
+                    <TextField label={t('journal.name')} value={name} onChangeText={setName} autoFocus />
+                    <TextField
+                      label={t('journal.detail.calories')}
+                      value={kcal}
+                      onChangeText={setKcal}
+                      keyboardType="decimal-pad"
+                    />
+                    <TextField
+                      label={`${t('nutrition.macros.protein')} (g)`}
+                      value={protein}
+                      onChangeText={setProtein}
+                      keyboardType="decimal-pad"
+                    />
+                    <TextField
+                      label={`${t('nutrition.macros.carbs')} (g)`}
+                      value={carbs}
+                      onChangeText={setCarbs}
+                      keyboardType="decimal-pad"
+                    />
+                    <TextField
+                      label={`${t('nutrition.macros.fat')} (g)`}
+                      value={fat}
+                      onChangeText={setFat}
+                      keyboardType="decimal-pad"
+                    />
+                  </>
+                )
+              ) : null}
 
-            {/* Macros de la quantité (aperçu live en édition ; masqué en édition quick add) */}
-            {!editing || hasQuantity ? (
-              <View style={[styles.detailMacros, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-                <View style={styles.detailKcalRow}>
-                  <Text style={[styles.detailKcal, { color: colors.text }]}>{preview.kcal}</Text>
-                  <Text style={[styles.kcalUnit, { color: colors.textMuted }]}>{t('nutrition.kcal')}</Text>
-                </View>
-                <View style={styles.detailMacroRow}>
-                  {macros.map((mm) => (
-                    <View key={mm.key} style={styles.detailMacro}>
-                      <Text style={[styles.macroName, { color: colors.textMuted }]}>{t(`nutrition.macros.${mm.key}`)}</Text>
-                      <Text style={[styles.detailMacroVal, { color: colors.text }]}>{mm.value} g</Text>
-                    </View>
-                  ))}
-                </View>
-              </View>
-            ) : null}
-
-            {/* Micronutriments de la quantité (snapshot déjà mis à l'échelle) */}
-            <MicronutrientDetails micronutrients={previewMicros} grams={100} showPer100={false} defaultOpen />
-
-            {/* Déplacer l'entrée vers un autre repas (récupération des orphelines incluse). */}
-            {!editing && meals.length > 0 ? (
-              <View style={styles.moveBlock}>
-                <Text style={[styles.moveLabel, { color: colors.textMuted }]}>{t('journal.detail.moveTo')}</Text>
-                <View style={styles.moveChips}>
-                  {meals
-                    .filter((m) => m.key !== entry.mealType)
-                    .map((m) => (
-                      <Pressable
-                        key={m.key}
-                        onPress={() => onReassign(entry.id, m.key)}
-                        style={[styles.moveChip, { borderColor: colors.border, backgroundColor: colors.surface }]}
-                        accessibilityRole="button"
-                        accessibilityLabel={t('journal.detail.moveToMeal', { meal: m.label })}
-                      >
-                        <Text style={[styles.moveChipLabel, { color: colors.text }]} numberOfLines={1}>
-                          {m.label}
-                        </Text>
-                      </Pressable>
+              {/* Macros de la quantité (aperçu live en édition ; masqué en édition quick add) */}
+              {!editing || hasQuantity ? (
+                <View style={[styles.detailMacros, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+                  <View style={styles.detailKcalRow}>
+                    <Text style={[styles.detailKcal, { color: colors.text }]}>{preview.kcal}</Text>
+                    <Text style={[styles.kcalUnit, { color: colors.textMuted }]}>{t('nutrition.kcal')}</Text>
+                  </View>
+                  <View style={styles.detailMacroRow}>
+                    {macros.map((mm) => (
+                      <View key={mm.key} style={styles.detailMacro}>
+                        <Text style={[styles.macroName, { color: colors.textMuted }]}>{t(`nutrition.macros.${mm.key}`)}</Text>
+                        <Text style={[styles.detailMacroVal, { color: colors.text }]}>{mm.value} g</Text>
+                      </View>
                     ))}
+                  </View>
                 </View>
-              </View>
-            ) : null}
+              ) : null}
 
-            {/* Actions : modifier la quantité / supprimer (4.34) */}
-            {editing ? (
-              <View style={styles.detailActions}>
-                <Button label={t('common.cancel')} variant="ghost" onPress={() => setEditing(false)} />
-                <Button label={t('journal.detail.save')} onPress={() => void onSave()} loading={saving} disabled={!canSave} />
-              </View>
-            ) : (
-              <View style={styles.detailActions}>
-                <Pressable
-                  onPress={onDelete}
-                  style={styles.deleteAction}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('journal.delete')}
-                >
-                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
-                  <Text style={[styles.deleteLabel, { color: colors.danger }]}>{t('journal.delete')}</Text>
-                </Pressable>
-                <Button
-                  label={hasQuantity ? t('journal.detail.edit') : t('journal.swipeEdit')}
-                  onPress={() => setEditing(true)}
-                />
-              </View>
-            )}
-          </ScrollView>
+              {/* Micronutriments de la quantité (snapshot déjà mis à l'échelle) */}
+              <MicronutrientDetails micronutrients={previewMicros} grams={100} showPer100={false} defaultOpen />
+
+              {/* Déplacer l'entrée vers un autre repas (récupération des orphelines incluse). */}
+              {!editing && meals.length > 0 ? (
+                <View style={styles.moveBlock}>
+                  <Text style={[styles.moveLabel, { color: colors.textMuted }]}>{t('journal.detail.moveTo')}</Text>
+                  <View style={styles.moveChips}>
+                    {meals
+                      .filter((m) => m.key !== entry.mealType)
+                      .map((m) => (
+                        <Pressable
+                          key={m.key}
+                          onPress={() => onReassign(entry.id, m.key)}
+                          style={[styles.moveChip, { borderColor: colors.border, backgroundColor: colors.surface }]}
+                          accessibilityRole="button"
+                          accessibilityLabel={t('journal.detail.moveToMeal', { meal: m.label })}
+                        >
+                          <Text style={[styles.moveChipLabel, { color: colors.text }]} numberOfLines={1}>
+                            {m.label}
+                          </Text>
+                        </Pressable>
+                      ))}
+                  </View>
+                </View>
+              ) : null}
+
+              {/* Actions : modifier la quantité / supprimer (4.34) */}
+              {editing ? (
+                <View style={styles.detailActions}>
+                  <Button label={t('common.cancel')} variant="ghost" onPress={() => setEditing(false)} />
+                  <Button label={t('journal.detail.save')} onPress={() => void onSave()} loading={saving} disabled={!canSave} />
+                </View>
+              ) : (
+                <View style={styles.detailActions}>
+                  <Pressable
+                    onPress={onDelete}
+                    style={styles.deleteAction}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('journal.delete')}
+                  >
+                    <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                    <Text style={[styles.deleteLabel, { color: colors.danger }]}>{t('journal.delete')}</Text>
+                  </Pressable>
+                  <Button
+                    label={hasQuantity ? t('journal.detail.edit') : t('journal.swipeEdit')}
+                    onPress={() => setEditing(true)}
+                  />
+                </View>
+              )}
+            </ScrollView>
+          </Pressable>
         </Pressable>
-      </Pressable>
+      </KeyboardAvoidingContainer>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  modalBackdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)', justifyContent: 'flex-end' },
+  modalDim: { flex: 1, backgroundColor: 'rgba(0,0,0,0.45)' },
+  modalBackdrop: { flex: 1, justifyContent: 'flex-end' },
   modalSheet: { maxHeight: '85%', borderTopLeftRadius: 24, borderTopRightRadius: 24, paddingTop: 8 },
   modalHead: { flexDirection: 'row', alignItems: 'flex-start', gap: 12, paddingHorizontal: 20, paddingVertical: 12 },
   modalTitle: { fontFamily: fontFamily.displayBold, fontSize: 20 },

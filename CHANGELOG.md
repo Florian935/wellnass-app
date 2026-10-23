@@ -10,6 +10,110 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — CLAV-01 : une seule règle d'évitement du clavier pour les 45 surfaces de saisie (`fix/clav01-clavier-formulaires` → `dev`)
+
+> US CLAV-01 cadrée (spec, plan, relecture par un agent), validée par Florian le 23/10/2026 (D1 à D12 telles
+> que proposées), codée en un lot et passée à `etape: recette`. Commit précédent : `3a3cda89`.
+
+### Corrigé
+- **Le clavier recouvrait les formulaires sur Android.** Depuis Expo SDK 54, l'edge-to-edge est forcé :
+  `adjustResize` (toujours au manifeste) ne redimensionne plus la fenêtre. L'inventaire (spec §2) a trouvé
+  **45 surfaces de saisie** : une seule évitait vraiment le clavier (la séance), **31 n'avaient aucun
+  mécanisme**, trois feuilles passaient `behavior={undefined}` à `KeyboardAvoidingView` (rien), et
+  `FormScreen` (`'height'` depuis le 18/07) restait **court de la hauteur de l'en-tête natif** — son calcul
+  compare un cadre relatif au parent à un bord de clavier absolu. **24 surfaces** ne pouvaient pas amener
+  leur dernier champ ou leur bouton au-dessus du clavier, même en faisant défiler.
+- **La séance était, d'après le code, courte d'un inset** : `useKeyboardHeight` posait la hauteur du clavier
+  au-dessus de la barre de navigation sur une vue qui descend jusqu'au bas de l'écran (~24 dp en gestuelle,
+  jugé visible le 13/09 ; 48 dp en navigation à 3 boutons, jamais vérifié). Elle passe sur la règle commune
+  (D7) : la barre s'arrête exactement au haut du clavier.
+- **Premier appui sur « Enregistrer » clavier ouvert** : il fermait le clavier sans enregistrer sur dix
+  surfaces sans `keyboardShouldPersistTaps` (D8). `KeyboardAwareScrollView` l'impose ; la pesée des
+  Statistiques ferme le clavier une fois enregistrée.
+
+### Ajouté
+- **`apps/mobile/src/components/keyboard/`** — la règle, à un seul endroit (spec §4) :
+  - `keyboard-overlap.ts` (pur) : `keyboardOverlap` = `max(0, bas du conteneur − haut du clavier)`,
+    `bottomPadding` (padding de l'appelant **additionné**, jamais écrasé ; `safeAreaBottom` = reprise de
+    l'arête basse, `max(inset, recouvrement)`), `resolveBottomPadding` ;
+  - `useKeyboardFrame` (successeur de `useKeyboardHeight`) : `{ visible, height, screenY }`, mêmes événements
+    (`keyboardEventNames` déplacé, attendus inchangés), état initial lu dans `Keyboard`, animation sur iOS
+    (`Keyboard.scheduleLayoutAnimation`) ;
+  - `useMeasuredBottom` : `measureInWindow` (appel protégé), repli sur `useSafeAreaFrame()` ;
+  - `KeyboardAvoidingContainer` : la colonne qui décale ; **imbriqué = passif** (le plus extérieur décale),
+    **`kind="sheet"` toujours actif** (une `Modal` est une autre fenêtre et le contexte React la traverse) ;
+    clavier fermé, il ne change rien ;
+  - `KeyboardAwareScrollView` : conteneur + `ScrollView`, props, style et `ref` transmis, fond repris.
+- **Test-garde** `keyboard-coverage-guard.test.ts`, qui lit le code avec l'analyseur TypeScript : G1 aucun
+  `KeyboardAvoidingView` de `react-native` hors du module ; G2 tout fichier à champ inventorié, couverture
+  `self` ou `coveredBy` vérifiée dans les deux sens (importeurs réels = `coveredBy`, chaîne jusqu'à un
+  `self`), enveloppes déclarées (`FormScreen`, `OnboardingScaffold`, `StageScrollView`) ; G3 une `Modal` à
+  champ pose un conteneur `kind="sheet"` ; D8 tout défilement vertical d'un fichier couvert porte
+  `keyboardShouldPersistTaps`.
+- Tests de la brique (`keyboard-overlap`, conteneur, `KeyboardAwareScrollView`, `useKeyboardFrame`,
+  `useMeasuredBottom` avec une `View` mesurable) ; filet **K2** (`FormScreen.keyboard.test.tsx`), **K3**
+  (`keyboard-sheets.test.tsx` : plus de KAV, la feuille remonte même rendue dans un écran qui a son
+  conteneur), **K4 / K5** (séance classique et immersive : inset fermé, 324 ouvert là où l'ancien calcul
+  posait 300). `src/test-utils/host-tree.ts` : lecture de l'arbre hôte (`toJSON`), `hasBottomEdge`.
+- `RECETTES.md` **§95** : 52 critères (porte « une feuille remonte » d'abord, une surface par critère en
+  petite et grande police, TalkBack et 3 boutons par famille, non-régression de la séance, iOS à venir).
+- BACKLOG : CLAV-01 sort (entrée dans le pipeline) ; **CLAV-02** entre en P2 (défilement vers le champ actif
+  sur iOS, avec le portage).
+
+### Modifié
+- **`FormScreen`** (9 écrans) : `KeyboardAwareScrollView safeAreaBottom`, l'arête basse quitte le
+  `SafeAreaView` ; API et rendu inchangés.
+- **Écrans défilants** (18) : `account-delete`, `ai-lab`, `food-custom`, `meal-quick-entry`,
+  `nutrition-meals`, `nutrition-profile`, `nutrition-stats`, `profile`, `recipe-edit`, `running-profile`,
+  `planning/plan`, `programs/edit`, `running-programs/edit`, `TemplateComposer`, `history/[id]`, `body` →
+  `KeyboardAwareScrollView` ; `templates/edit` et `templates/[id]` : la colonne « composeur + pied » est
+  le conteneur (`safeAreaBottom`), le pied remonte ; `StageScrollView` (les quatre hubs) pose le conteneur —
+  couvre la recherche de Musculation › Historique.
+- **Listes et panneaux** : `exercises` et `food-picker` (racine = conteneur, `padding` conservé), panneaux
+  « portions » et « ajout rapide » devenus défilants (grande police), `FlatList` Recettes / Modèles en
+  `handled` ; `QuantityPanel` (le pied Annuler / Ajouter remonte) ; `ExercisePicker` (`kind="sheet"`).
+- **Feuilles** (11) : `CreateExerciseModal`, `EditExerciseModal`, `SaveTemplateSheet` (leurs trois KAV
+  disparaissent), `EntryDetailModal` (le voile sombre passe au conteneur), `AddFoodSheet` (la feuille quitte
+  le positionnement absolu pour le flux, même rendu), feuille d'ajout du planning repas (la liste reçoit
+  `flexShrink: 1`), `GoalFormSheet`, `GoalLetterSheet`, `MeasurementSheet`, `WellbeingCheckinSheet`,
+  `MomentCheckinSheet` : conteneur `kind="sheet"` en premier enfant de la `Modal`, fond en remplissage
+  absolu (la zone de padding est assombrie aussi).
+- **Séance** : `workout.tsx` et `ImmersiveWorkout.tsx` sur le conteneur (`safeAreaBottom`, `testID`) ; le
+  voile de repos (`RestOverlay`, `absoluteFill`) reste un enfant direct du `SafeAreaView`.
+- `node-fs.d.ts` : `statSync`, `dirname`, `relative`.
+
+### Supprimé
+- `hooks/useKeyboardHeight.ts` (plus d'appelant) ; son test devient
+  `components/keyboard/__tests__/keyboard-event-names.test.ts`, attendus identiques.
+
+### Technique / Notes
+- **Aucune migration, aucune sync rule, aucune dépendance native, aucun appel au projet, aucun build** :
+  recettable sur le dev build installé via Metro. `react-native-keyboard-controller` reste le **repli écrit**
+  (spec D6) si le critère 1 (« une feuille remonte ») échoue — l'incertitude est de savoir si la vue racine
+  de l'activité voit le clavier d'une fenêtre `Dialog`.
+- La mesure sous un en-tête natif est juste parce que react-native-screens corrige l'origine de l'écran
+  dans l'arbre d'ombre (`RNSScreenShadowNode::applyFrameCorrections`) : prémisse nommée en spec §1.5,
+  recettée par les écrans sous en-tête.
+- `StyleSheet.absoluteFillObject` n'existe plus en RN 0.86 : les fonds étalent `StyleSheet.absoluteFill`.
+- **Revue de code** (agent `superpowers:code-reviewer`) — corrigé avant le commit : 🔴 le voile de repos de
+  la séance, passé dans le conteneur posé sous l'inset haut, aurait commencé un inset plus bas et laissé la
+  barre d'état découverte après chaque série (test K4 ajouté) ; la mesure du conteneur n'était vérifiée
+  par aucun test (trois tests : `layout`, ouverture du clavier, jamais pour un passif) ; un passif avec
+  `safeAreaBottom` ne garde plus l'inset clavier ouvert ; recouvrement borné à la hauteur du conteneur ;
+  `LayoutAnimation` iOS programmée par les seules instances actives ; `ref` de mesure après la
+  décomposition ; garde : balises résolues par leur import, `kind="sheet"` cherché **dans** la `Modal`,
+  `horizontal={false}` vertical, limites restantes écrites en tête (vérifié par mutation : retirer
+  `kind="sheet"` d'une feuille fait échouer G3). Le critère 1 de la recette couvre aussi `ExercisePicker`.
+- Un commit au lieu des neuf du plan, à la demande de Florian ; le filet a d'abord été passé au vert sur le
+  code d'avant, et le garde lancé sur le code non migré (il échouait sur exactement ce qui était attendu).
+  Détail en fin de plan.
+- Vérifié : typecheck 3 workspaces à 0, lint à 0, agents:check à 0, mobile **308 suites / 5 353 tests**, `shared` 199 fichiers / 4 118 tests
+  verts (300 / 5 230 avant). ⚠️ Deux échecs **sans lien avec ce lot** : `check-i18n-parity.mjs` (quatre
+  valeurs vides `coach.*.verdict.warmup` — aucun fichier i18n touché ici, donc le même résultat sur la base)
+  et `expo export --platform web` (`better-sqlite3` introuvable depuis le build node
+  d'`@op-engineering/op-sqlite`, importé par `powersync/system.ts`, que ce lot ne touche pas — **non
+  vérifié sur la base**).
+
 ## 22/10/2026 — CIBLE-01 en recette : jeu de données, chiffres figés, RECETTES §94 (`feature/cible01-cible-du-jour` → `dev`)
 
 > Plan CIBLE-01, étape 8. US passée à `etape: recette`. Commit précédent : `416c5df8`.

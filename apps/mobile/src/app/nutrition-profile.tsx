@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   ACTIVITY_LEVELS,
@@ -39,6 +39,7 @@ import { useTrackedMicros } from '@/stores/tracked-micros';
 import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 const MACRO_KEYS = ['protein', 'carbs', 'fat'] as const;
 type MacroKey = (typeof MACRO_KEYS)[number];
@@ -174,10 +175,9 @@ export default function NutritionProfileScreen() {
   };
 
   return (
-    <ScrollView
+    <KeyboardAwareScrollView
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
     >
       {/* Guidage (US GUID-01) — en tête : il décide de ce que les réglages du dessous produiront. */}
       <Text style={[styles.section, { color: colors.textMuted }]}>{t('guidance.sectionTitle')}</Text>
@@ -483,7 +483,7 @@ export default function NutritionProfileScreen() {
       <View style={styles.footer}>
         <Button label={t('nutrition.done')} onPress={() => router.back()} />
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

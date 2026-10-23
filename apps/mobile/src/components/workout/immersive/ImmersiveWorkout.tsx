@@ -41,7 +41,7 @@ import { RepDial } from '@/components/workout/immersive/RepDial';
 import { SessionClosing } from '@/components/workout/immersive/SessionClosing';
 import { SessionPlanSheet } from '@/components/workout/immersive/SessionPlanSheet';
 import { ghostDayLabel } from '@/components/workout/immersive/day-label';
-import { useKeyboardHeight } from '@/hooks/useKeyboardHeight';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { RECORD_AMBER } from '@/components/workout/immersive/theme';
 import type { ImmersiveRuntime } from '@/components/workout/immersive/types';
 import { fontFamily } from '@/theme/fonts';
@@ -55,11 +55,6 @@ type Phase = 'ready' | 'effort' | 'dial';
 export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
   const { t, i18n } = useTranslation();
   const { colors, current, entries, units, prefs } = runtime;
-
-  // Le pont suit le clavier (règle R4-1 de MUSCU-UX01, conservée) : depuis l'edge-to-edge forcé
-  // du SDK 54, `adjustResize` ne redimensionne plus rien et la zone de saisie passerait SOUS le
-  // clavier — on taperait une charge sans voir ce qu'on tape.
-  const keyboardHeight = useKeyboardHeight();
 
   const [phase, setPhase] = useState<Phase>('ready');
   const [effortStartedAt, setEffortStartedAt] = useState<number | null>(null);
@@ -305,405 +300,402 @@ export function ImmersiveWorkout({ runtime }: { runtime: ImmersiveRuntime }) {
   }
 
   return (
-    <SafeAreaView
-      style={[
-        styles.safe,
-        { backgroundColor: colors.background },
-        keyboardHeight > 0 ? { paddingBottom: keyboardHeight } : null,
-      ]}
-      edges={keyboardHeight > 0 ? ['top'] : ['top', 'bottom']}
-    >
-      {header}
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]} edges={['top']}>
+      {/* US CLAV-01 : la scène et le pont sont posés dans le conteneur commun, qui reprend l'arête
+          basse — même règle et même raison que l'écran de séance classique (`workout.tsx`). */}
+      <KeyboardAvoidingContainer safeAreaBottom testID="immersive-keyboard-area">
+        {header}
 
-      {current ? (
-        <>
-          <ScrollView contentContainerStyle={styles.stage} keyboardShouldPersistTaps="handled">
-            <View>
-              <Text
-                style={[
-                  styles.eyebrow,
-                  { color: isLastExercise || isLastSet ? colors.accent : colors.textMuted },
-                ]}
-              >
-                {eyebrow}
-              </Text>
-              <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={2}>
-                {current.entry.exerciseName}
-              </Text>
-            </View>
+        {current ? (
+          <>
+            <ScrollView contentContainerStyle={styles.stage} keyboardShouldPersistTaps="handled">
+              <View>
+                <Text
+                  style={[
+                    styles.eyebrow,
+                    { color: isLastExercise || isLastSet ? colors.accent : colors.textMuted },
+                  ]}
+                >
+                  {eyebrow}
+                </Text>
+                <Text style={[styles.exerciseName, { color: colors.text }]} numberOfLines={2}>
+                  {current.entry.exerciseName}
+                </Text>
+              </View>
 
-            {/* Frise des séries : ce qui est fait, où l'on en est, ce qui reste. */}
-            <View style={styles.chips}>
-              {runtime.setChips.map((chip, index) => {
-                const isCurrent = index === current.rang;
-                if (chip.done) {
+              {/* Frise des séries : ce qui est fait, où l'on en est, ce qui reste. */}
+              <View style={styles.chips}>
+                {runtime.setChips.map((chip, index) => {
+                  const isCurrent = index === current.rang;
+                  if (chip.done) {
+                    return (
+                      <View key={chip.id} style={[styles.chipDone, { backgroundColor: `${colors.success}24` }]}>
+                        <Ionicons name="checkmark" size={12} color={colors.success} />
+                        <Text style={[styles.chipDoneText, { color: colors.success }]}>
+                          {chip.label ?? '—'}
+                        </Text>
+                      </View>
+                    );
+                  }
                   return (
-                    <View key={chip.id} style={[styles.chipDone, { backgroundColor: `${colors.success}24` }]}>
-                      <Ionicons name="checkmark" size={12} color={colors.success} />
-                      <Text style={[styles.chipDoneText, { color: colors.success }]}>
-                        {chip.label ?? '—'}
+                    <View
+                      key={chip.id}
+                      style={[
+                        isCurrent ? styles.chipCurrent : styles.chipTodo,
+                        isCurrent ? { borderColor: colors.accent } : { backgroundColor: colors.surfaceAlt },
+                      ]}
+                    >
+                      <Text style={[styles.chipText, { color: isCurrent ? colors.accent : colors.textMuted }]}>
+                        {isCurrent
+                          ? t('workout.setProgress', { current: index + 1, total: runtime.setChips.length })
+                          : String(index + 1)}
                       </Text>
                     </View>
                   );
-                }
-                return (
-                  <View
-                    key={chip.id}
-                    style={[
-                      isCurrent ? styles.chipCurrent : styles.chipTodo,
-                      isCurrent ? { borderColor: colors.accent } : { backgroundColor: colors.surfaceAlt },
-                    ]}
-                  >
-                    <Text style={[styles.chipText, { color: isCurrent ? colors.accent : colors.textMuted }]}>
-                      {isCurrent
-                        ? t('workout.setProgress', { current: index + 1, total: runtime.setChips.length })
-                        : String(index + 1)}
-                    </Text>
-                  </View>
-                );
-              })}
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('workout.addSet')}
-                hitSlop={8}
-                onPress={() => runtime.onAddSet(current.entry.exerciseId)}
-                style={styles.chipAdd}
-              >
-                <Ionicons name="add" size={16} color={colors.textMuted} />
-              </Pressable>
-            </View>
-
-            {/* Repères : la dernière fois, la consigne du plan, la suggestion — par niveau. */}
-            <View style={styles.refs}>
-              {runtime.lastPerfLabel ? (
-                <Ref label={t('workout.lastTimeShort')} value={runtime.lastPerfLabel} colors={colors} />
-              ) : null}
-              {runtime.plannedLabel ? (
-                <Ref
-                  label={t('workout.plannedShort')}
-                  value={runtime.plannedLabel}
-                  delta={runtime.deltaLabel}
-                  deltaPositive={runtime.deltaPositive}
-                  colors={colors}
-                />
-              ) : null}
-              {runtime.suggestionLabel ? (
-                <Ref
-                  label={t('workout.suggestionShort')}
-                  value={runtime.suggestionLabel}
-                  valueColor={colors.success}
-                  colors={colors}
-                />
-              ) : null}
-              {/* La consigne se lit ici, avant de se placer : elle n'était visible que sur
-                  l'écran d'effort, disparu des séries en reps (MUSCU-FIX02, passe 3). */}
-              {runtime.cue && runtime.level !== 'simplified' ? (
-                <Ref label={t('immersive.stage.cue')} value={runtime.cue} colors={colors} />
-              ) : null}
-            </View>
-
-            {/* La barre chargée : ce qu'il faut mettre de chaque côté. Exercices à la barre
-                seulement — sur une machine ou des haltères, il n'y a rien à charger. */}
-            {runtime.showBarbell ? (
-              <BarbellLoad
-                totalKg={runtime.displayWeightKg}
-                barKg={prefs.barKg}
-                imperial={units.system === 'imperial'}
-                colors={colors}
-              />
-            ) : null}
-
-            {/* Ce qui change depuis la série d'avant : on ajoute ou on retire, on ne recharge
-                pas de zéro (MUSCU-FIX02, passe 3). */}
-            {runtime.showBarbell && runtime.barChange ? (
-              <View style={styles.barChange}>
-                <Ionicons
-                  name={
-                    runtime.barChange.direction === 'add'
-                      ? 'add-circle-outline'
-                      : runtime.barChange.direction === 'remove'
-                        ? 'remove-circle-outline'
-                        : 'checkmark-circle-outline'
-                  }
-                  size={20}
-                  color={runtime.barChange.direction === 'same' ? colors.textMuted : colors.accent}
-                />
-                <Text
-                  testID="bar-change"
-                  style={[
-                    styles.barChangeText,
-                    {
-                      color: runtime.barChange.direction === 'same' ? colors.textMuted : colors.text,
-                    },
-                  ]}
-                >
-                  {describeBarChange({
-                    change: runtime.barChange,
-                    imperial: units.system === 'imperial',
-                    t,
-                    language: i18n.language,
-                  })}
-                </Text>
-              </View>
-            ) : null}
-
-            {/* L'enjeu : l'app prévient AVANT de soulever. */}
-            {stakeOn && recordWeight !== null ? (
-              <View style={[styles.stake, { borderColor: `${RECORD_AMBER}58`, backgroundColor: `${RECORD_AMBER}14` }]}>
-                <Ionicons name="trophy-outline" size={20} color={RECORD_AMBER} />
-                <Text style={[styles.stakeText, { color: colors.text }]}>
-                  {t('immersive.stage.stake', {
-                    weight: units.formatWeight(runtime.displayWeightKg ?? 0),
-                    record: units.formatWeight(recordWeight),
-                  })}
-                </Text>
-              </View>
-            ) : null}
-
-            {/* Le défi : « 6 reps à 82,5 kg et mardi est battu ». Chiffré, atteignable, ou tu. */}
-            {challenge.kind !== 'none' ? (
-              <View style={[styles.stake, { borderColor: `${colors.success}58`, backgroundColor: `${colors.success}14` }]}>
-                <Ionicons name="flash-outline" size={20} color={colors.success} />
-                <Text style={[styles.stakeText, { color: colors.text }]}>
-                  {challenge.kind === 'challenge'
-                    ? t('immersive.challenge.reach', {
-                        count: challenge.reps,
-                        weight: units.formatWeight(runtime.displayWeightKg ?? 0),
-                        day: dayLabel,
-                      })
-                    : t('immersive.challenge.ahead', {
-                        weight: units.formatWeight(challenge.aheadKg),
-                        day: dayLabel,
-                      })}
-                </Text>
-              </View>
-            ) : null}
-
-            {/* Échauffement et options : exactement les contrôles du mode classique. */}
-            <View style={styles.chipsRow}>
-              {runtime.level !== 'simplified' ? (
+                })}
                 <Pressable
                   accessibilityRole="button"
-                  accessibilityState={{ selected: runtime.currentSetType === 'warmup' }}
-                  onPress={() =>
-                    runtime.onSetType(runtime.currentSetType === 'warmup' ? 'normal' : 'warmup')
-                  }
-                  style={[
-                    styles.warmup,
-                    {
-                      backgroundColor:
-                        runtime.currentSetType === 'warmup' ? colors.accent : colors.surfaceAlt,
-                    },
-                  ]}
+                  accessibilityLabel={t('workout.addSet')}
+                  hitSlop={8}
+                  onPress={() => runtime.onAddSet(current.entry.exerciseId)}
+                  style={styles.chipAdd}
                 >
+                  <Ionicons name="add" size={16} color={colors.textMuted} />
+                </Pressable>
+              </View>
+
+              {/* Repères : la dernière fois, la consigne du plan, la suggestion — par niveau. */}
+              <View style={styles.refs}>
+                {runtime.lastPerfLabel ? (
+                  <Ref label={t('workout.lastTimeShort')} value={runtime.lastPerfLabel} colors={colors} />
+                ) : null}
+                {runtime.plannedLabel ? (
+                  <Ref
+                    label={t('workout.plannedShort')}
+                    value={runtime.plannedLabel}
+                    delta={runtime.deltaLabel}
+                    deltaPositive={runtime.deltaPositive}
+                    colors={colors}
+                  />
+                ) : null}
+                {runtime.suggestionLabel ? (
+                  <Ref
+                    label={t('workout.suggestionShort')}
+                    value={runtime.suggestionLabel}
+                    valueColor={colors.success}
+                    colors={colors}
+                  />
+                ) : null}
+                {/* La consigne se lit ici, avant de se placer : elle n'était visible que sur
+                    l'écran d'effort, disparu des séries en reps (MUSCU-FIX02, passe 3). */}
+                {runtime.cue && runtime.level !== 'simplified' ? (
+                  <Ref label={t('immersive.stage.cue')} value={runtime.cue} colors={colors} />
+                ) : null}
+              </View>
+
+              {/* La barre chargée : ce qu'il faut mettre de chaque côté. Exercices à la barre
+                  seulement — sur une machine ou des haltères, il n'y a rien à charger. */}
+              {runtime.showBarbell ? (
+                <BarbellLoad
+                  totalKg={runtime.displayWeightKg}
+                  barKg={prefs.barKg}
+                  imperial={units.system === 'imperial'}
+                  colors={colors}
+                />
+              ) : null}
+
+              {/* Ce qui change depuis la série d'avant : on ajoute ou on retire, on ne recharge
+                  pas de zéro (MUSCU-FIX02, passe 3). */}
+              {runtime.showBarbell && runtime.barChange ? (
+                <View style={styles.barChange}>
                   <Ionicons
-                    name="flame-outline"
-                    size={14}
-                    color={runtime.currentSetType === 'warmup' ? colors.accentText : colors.textMuted}
+                    name={
+                      runtime.barChange.direction === 'add'
+                        ? 'add-circle-outline'
+                        : runtime.barChange.direction === 'remove'
+                          ? 'remove-circle-outline'
+                          : 'checkmark-circle-outline'
+                    }
+                    size={20}
+                    color={runtime.barChange.direction === 'same' ? colors.textMuted : colors.accent}
                   />
                   <Text
+                    testID="bar-change"
                     style={[
-                      styles.warmupLabel,
+                      styles.barChangeText,
                       {
-                        color:
-                          runtime.currentSetType === 'warmup' ? colors.accentText : colors.textMuted,
+                        color: runtime.barChange.direction === 'same' ? colors.textMuted : colors.text,
                       },
                     ]}
                   >
-                    {t('workout.warmupToggle')}
+                    {describeBarChange({
+                      change: runtime.barChange,
+                      imperial: units.system === 'imperial',
+                      t,
+                      language: i18n.language,
+                    })}
                   </Text>
-                </Pressable>
+                </View>
               ) : null}
-            </View>
-            <SetOptions
-              level={runtime.level}
-              setType={runtime.currentSetType}
-              onSetType={runtime.onSetType}
-              rpe={runtime.rpe}
-              onSetRpe={runtime.onSetRpe}
-              note={runtime.note}
-              onChangeNote={runtime.onChangeNote}
-              onBlurNote={runtime.onBlurNote}
-              supersetLink={runtime.supersetLink}
-              onRequestLinkSuperset={runtime.onRequestLinkSuperset}
-              onUnlinkSuperset={runtime.onUnlinkSuperset}
-              colors={colors}
-            />
-          </ScrollView>
 
-          {/* Repos replié : il se pose **au-dessus** du pont au lieu de le recouvrir (spec §5.9),
-              ce qui laisse la série suivante réglable pendant que le temps tourne. */}
-          {runtime.rest.active ? <RestBar runtime={runtime} /> : null}
+              {/* L'enjeu : l'app prévient AVANT de soulever. */}
+              {stakeOn && recordWeight !== null ? (
+                <View style={[styles.stake, { borderColor: `${RECORD_AMBER}58`, backgroundColor: `${RECORD_AMBER}14` }]}>
+                  <Ionicons name="trophy-outline" size={20} color={RECORD_AMBER} />
+                  <Text style={[styles.stakeText, { color: colors.text }]}>
+                    {t('immersive.stage.stake', {
+                      weight: units.formatWeight(runtime.displayWeightKg ?? 0),
+                      record: units.formatWeight(recordWeight),
+                    })}
+                  </Text>
+                </View>
+              ) : null}
 
-          {/* ── Le pont : « Ensuite », la saisie, l'action. Jamais ailleurs qu'ici. ───────────── */}
-          <View style={[styles.deck, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => setPlanOpen(true)}
-              style={[styles.peek, { borderBottomColor: colors.border }]}
-            >
-              <Ionicons name="list-outline" size={18} color={colors.textMuted} />
-              <Text style={[styles.peekText, { color: colors.text }]} numberOfLines={1}>
-                <Text style={[styles.peekLabel, { color: colors.textMuted }]}>
-                  {`${t('workout.restNext')} · `}
+              {/* Le défi : « 6 reps à 82,5 kg et mardi est battu ». Chiffré, atteignable, ou tu. */}
+              {challenge.kind !== 'none' ? (
+                <View style={[styles.stake, { borderColor: `${colors.success}58`, backgroundColor: `${colors.success}14` }]}>
+                  <Ionicons name="flash-outline" size={20} color={colors.success} />
+                  <Text style={[styles.stakeText, { color: colors.text }]}>
+                    {challenge.kind === 'challenge'
+                      ? t('immersive.challenge.reach', {
+                          count: challenge.reps,
+                          weight: units.formatWeight(runtime.displayWeightKg ?? 0),
+                          day: dayLabel,
+                        })
+                      : t('immersive.challenge.ahead', {
+                          weight: units.formatWeight(challenge.aheadKg),
+                          day: dayLabel,
+                        })}
+                  </Text>
+                </View>
+              ) : null}
+
+              {/* Échauffement et options : exactement les contrôles du mode classique. */}
+              <View style={styles.chipsRow}>
+                {runtime.level !== 'simplified' ? (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: runtime.currentSetType === 'warmup' }}
+                    onPress={() =>
+                      runtime.onSetType(runtime.currentSetType === 'warmup' ? 'normal' : 'warmup')
+                    }
+                    style={[
+                      styles.warmup,
+                      {
+                        backgroundColor:
+                          runtime.currentSetType === 'warmup' ? colors.accent : colors.surfaceAlt,
+                      },
+                    ]}
+                  >
+                    <Ionicons
+                      name="flame-outline"
+                      size={14}
+                      color={runtime.currentSetType === 'warmup' ? colors.accentText : colors.textMuted}
+                    />
+                    <Text
+                      style={[
+                        styles.warmupLabel,
+                        {
+                          color:
+                            runtime.currentSetType === 'warmup' ? colors.accentText : colors.textMuted,
+                        },
+                      ]}
+                    >
+                      {t('workout.warmupToggle')}
+                    </Text>
+                  </Pressable>
+                ) : null}
+              </View>
+              <SetOptions
+                level={runtime.level}
+                setType={runtime.currentSetType}
+                onSetType={runtime.onSetType}
+                rpe={runtime.rpe}
+                onSetRpe={runtime.onSetRpe}
+                note={runtime.note}
+                onChangeNote={runtime.onChangeNote}
+                onBlurNote={runtime.onBlurNote}
+                supersetLink={runtime.supersetLink}
+                onRequestLinkSuperset={runtime.onRequestLinkSuperset}
+                onUnlinkSuperset={runtime.onUnlinkSuperset}
+                colors={colors}
+              />
+            </ScrollView>
+
+            {/* Repos replié : il se pose **au-dessus** du pont au lieu de le recouvrir (spec §5.9),
+                ce qui laisse la série suivante réglable pendant que le temps tourne. */}
+            {runtime.rest.active ? <RestBar runtime={runtime} /> : null}
+
+            {/* ── Le pont : « Ensuite », la saisie, l'action. Jamais ailleurs qu'ici. ───────────── */}
+            <View style={[styles.deck, { backgroundColor: colors.surface, borderTopColor: colors.border }]}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => setPlanOpen(true)}
+                style={[styles.peek, { borderBottomColor: colors.border }]}
+              >
+                <Ionicons name="list-outline" size={18} color={colors.textMuted} />
+                <Text style={[styles.peekText, { color: colors.text }]} numberOfLines={1}>
+                  <Text style={[styles.peekLabel, { color: colors.textMuted }]}>
+                    {`${t('workout.restNext')} · `}
+                  </Text>
+                  {nextLabel}
                 </Text>
-                {nextLabel}
-              </Text>
-              <Ionicons name="chevron-up" size={16} color={colors.accent} />
-            </Pressable>
+                <Ionicons name="chevron-up" size={16} color={colors.accent} />
+              </Pressable>
 
-            <View style={styles.deckMeta}>
-              <Text style={[styles.deckMetaText, { color: colors.textMuted }]}>
-                {t('workout.setProgress', {
-                  current: current.rang + 1,
-                  total: current.entry.sets.length,
-                })}
-              </Text>
-              <Text style={[styles.deckMetaText, { color: colors.textMuted }]}>
-                {t('workout.restSeconds', { count: runtime.rest.restSeconds })}
-              </Text>
-            </View>
+              <View style={styles.deckMeta}>
+                <Text style={[styles.deckMetaText, { color: colors.textMuted }]}>
+                  {t('workout.setProgress', {
+                    current: current.rang + 1,
+                    total: current.entry.sets.length,
+                  })}
+                </Text>
+                <Text style={[styles.deckMetaText, { color: colors.textMuted }]}>
+                  {t('workout.restSeconds', { count: runtime.rest.restSeconds })}
+                </Text>
+              </View>
 
-            <View style={styles.fields}>
-              <Field
-                value={
-                  runtime.currentSetType === 'duration' ? runtime.durationValue : runtime.displayReps
-                }
-                unit={
-                  runtime.currentSetType === 'duration' ? t('workout.durationLabel') : t('workout.reps')
-                }
-                a11yLabel={
-                  runtime.currentSetType === 'duration' ? t('workout.durationLabel') : t('workout.reps')
-                }
-                keyboardType={runtime.currentSetType === 'duration' ? 'default' : 'number-pad'}
-                sameValue={runtime.currentSetType === 'duration' ? sameDuration : sameNumber}
-                onChangeText={
-                  runtime.currentSetType === 'duration'
-                    ? runtime.onChangeDuration
-                    : runtime.onChangeReps
-                }
-                onStep={(delta) => {
-                  if (runtime.currentSetType === 'duration') {
+              <View style={styles.fields}>
+                <Field
+                  value={
+                    runtime.currentSetType === 'duration' ? runtime.durationValue : runtime.displayReps
+                  }
+                  unit={
+                    runtime.currentSetType === 'duration' ? t('workout.durationLabel') : t('workout.reps')
+                  }
+                  a11yLabel={
+                    runtime.currentSetType === 'duration' ? t('workout.durationLabel') : t('workout.reps')
+                  }
+                  keyboardType={runtime.currentSetType === 'duration' ? 'default' : 'number-pad'}
+                  sameValue={runtime.currentSetType === 'duration' ? sameDuration : sameNumber}
+                  onChangeText={
+                    runtime.currentSetType === 'duration'
+                      ? runtime.onChangeDuration
+                      : runtime.onChangeReps
+                  }
+                  onStep={(delta) => {
+                    if (runtime.currentSetType === 'duration') {
+                      runtime.applyEdit({
+                        durationSeconds: Math.max(0, (runtime.displayDurationSeconds ?? 0) + delta * 5),
+                      });
+                      return;
+                    }
+                    const base = Number(runtime.displayReps);
                     runtime.applyEdit({
-                      durationSeconds: Math.max(0, (runtime.displayDurationSeconds ?? 0) + delta * 5),
+                      reps: String(Math.max(0, (Number.isNaN(base) ? 0 : base) + delta)),
                     });
+                  }}
+                  colors={colors}
+                />
+                <Field
+                  value={units.weightInputValue(runtime.displayWeightKg)}
+                  unit={units.weightSymbol}
+                  a11yLabel={t('workout.weight')}
+                  keyboardType="decimal-pad"
+                  sameValue={sameNumber}
+                  onChangeText={runtime.onChangeWeight}
+                  highlight={stakeOn}
+                  // À la barre : la charge chargeable voisine (MUSCU-FIX02, passe 2).
+                  onStep={(delta) => runtime.onStepWeight(delta > 0 ? 1 : -1)}
+                  colors={colors}
+                />
+              </View>
+
+              {/* Série en reps : « Série faite » ouvre le cadran tout de suite. L'écran d'effort
+                  intermédiaire (qui respirait) ne servait à rien — on ne regarde ni ne touche son
+                  téléphone en soulevant (recette du 23/09/2026, MUSCU-FIX02 passe 3). Il ne reste
+                  que pour une série chronométrée, où son compte à rebours sert vraiment. */}
+              <PressableScale
+                accessibilityRole="button"
+                testID="deck-primary"
+                onPress={() => {
+                  if (runtime.currentSetType !== 'duration') {
+                    setEffortStartedAt(null);
+                    setPhase('dial');
                     return;
                   }
-                  const base = Number(runtime.displayReps);
-                  runtime.applyEdit({
-                    reps: String(Math.max(0, (Number.isNaN(base) ? 0 : base) + delta)),
-                  });
+                  setEffortStartedAt(Date.now());
+                  setPhase('effort');
+                  // La seule parole autorisée pendant l'effort : la consigne, dite au moment où l'on
+                  // se met en place. Sans instructions sur la fiche, le coach se tait.
+                  if (runtime.cue) {
+                    runtime.speak(
+                      pickCoachLine({
+                        event: 'setCue',
+                        character: prefs.coach,
+                        vars: { cue: runtime.cue },
+                      }),
+                    );
+                  }
                 }}
-                colors={colors}
-              />
-              <Field
-                value={units.weightInputValue(runtime.displayWeightKg)}
-                unit={units.weightSymbol}
-                a11yLabel={t('workout.weight')}
-                keyboardType="decimal-pad"
-                sameValue={sameNumber}
-                onChangeText={runtime.onChangeWeight}
-                highlight={stakeOn}
-                // À la barre : la charge chargeable voisine (MUSCU-FIX02, passe 2).
-                onStep={(delta) => runtime.onStepWeight(delta > 0 ? 1 : -1)}
-                colors={colors}
-              />
+                style={[styles.primary, { backgroundColor: colors.accent }]}
+              >
+                <Ionicons
+                  name={runtime.currentSetType === 'duration' ? 'play' : 'checkmark'}
+                  size={20}
+                  color={colors.accentText}
+                />
+                <Text style={[styles.primaryLabel, { color: colors.accentText }]}>
+                  {runtime.currentSetType === 'duration'
+                    ? t('immersive.deck.launch')
+                    : t('immersive.deck.done')}
+                </Text>
+              </PressableScale>
+
+              {/* Le chemin court des habitués : valider sans passer par l'effort ni le cadran. */}
+              <Pressable accessibilityRole="button" onPress={() => runtime.onValidate()} style={styles.secondary}>
+                <Text style={[styles.secondaryLabel, { color: colors.textMuted }]}>
+                  {runtime.chainsToSuperset
+                    ? t('workout.validateAndChain')
+                    : t('immersive.deck.validateDirectly')}
+                </Text>
+              </Pressable>
             </View>
-
-            {/* Série en reps : « Série faite » ouvre le cadran tout de suite. L'écran d'effort
-                intermédiaire (qui respirait) ne servait à rien — on ne regarde ni ne touche son
-                téléphone en soulevant (recette du 23/09/2026, MUSCU-FIX02 passe 3). Il ne reste
-                que pour une série chronométrée, où son compte à rebours sert vraiment. */}
-            <PressableScale
-              accessibilityRole="button"
-              testID="deck-primary"
-              onPress={() => {
-                if (runtime.currentSetType !== 'duration') {
-                  setEffortStartedAt(null);
-                  setPhase('dial');
-                  return;
-                }
-                setEffortStartedAt(Date.now());
-                setPhase('effort');
-                // La seule parole autorisée pendant l'effort : la consigne, dite au moment où l'on
-                // se met en place. Sans instructions sur la fiche, le coach se tait.
-                if (runtime.cue) {
-                  runtime.speak(
-                    pickCoachLine({
-                      event: 'setCue',
-                      character: prefs.coach,
-                      vars: { cue: runtime.cue },
-                    }),
-                  );
-                }
-              }}
-              style={[styles.primary, { backgroundColor: colors.accent }]}
+          </>
+        ) : (
+          // Séance sans exercice : le pont porte le geste suivant, comme en classique (MUSCU-FIX01,
+          // R2). Il n'y avait ici qu'une phrase — « ajoute un premier exercice » — sans rien pour le
+          // faire : l'écran noir de la recette du 23/09/2026 (MUSCU-FIX02, passe 1).
+          <>
+            <View style={styles.doneStage}>
+              <Text style={[styles.doneHint, { color: colors.textMuted }]}>{t('workout.empty')}</Text>
+            </View>
+            <View
+              style={[
+                styles.deck,
+                styles.deckSolo,
+                { backgroundColor: colors.surface, borderTopColor: colors.border },
+              ]}
             >
-              <Ionicons
-                name={runtime.currentSetType === 'duration' ? 'play' : 'checkmark'}
-                size={20}
-                color={colors.accentText}
-              />
-              <Text style={[styles.primaryLabel, { color: colors.accentText }]}>
-                {runtime.currentSetType === 'duration'
-                  ? t('immersive.deck.launch')
-                  : t('immersive.deck.done')}
-              </Text>
-            </PressableScale>
+              <PressableScale
+                accessibilityRole="button"
+                testID="immersive-add-exercise"
+                onPress={runtime.onAddExercise}
+                style={[styles.primary, { backgroundColor: colors.accent }]}
+              >
+                <Ionicons name="add" size={20} color={colors.accentText} />
+                <Text style={[styles.primaryLabel, { color: colors.accentText }]}>
+                  {t('workout.addExercise')}
+                </Text>
+              </PressableScale>
+            </View>
+          </>
+        )}
 
-            {/* Le chemin court des habitués : valider sans passer par l'effort ni le cadran. */}
-            <Pressable accessibilityRole="button" onPress={() => runtime.onValidate()} style={styles.secondary}>
-              <Text style={[styles.secondaryLabel, { color: colors.textMuted }]}>
-                {runtime.chainsToSuperset
-                  ? t('workout.validateAndChain')
-                  : t('immersive.deck.validateDirectly')}
-              </Text>
-            </Pressable>
-          </View>
-        </>
-      ) : (
-        // Séance sans exercice : le pont porte le geste suivant, comme en classique (MUSCU-FIX01,
-        // R2). Il n'y avait ici qu'une phrase — « ajoute un premier exercice » — sans rien pour le
-        // faire : l'écran noir de la recette du 23/09/2026 (MUSCU-FIX02, passe 1).
-        <>
-          <View style={styles.doneStage}>
-            <Text style={[styles.doneHint, { color: colors.textMuted }]}>{t('workout.empty')}</Text>
-          </View>
-          <View
-            style={[
-              styles.deck,
-              styles.deckSolo,
-              { backgroundColor: colors.surface, borderTopColor: colors.border },
-            ]}
-          >
-            <PressableScale
-              accessibilityRole="button"
-              testID="immersive-add-exercise"
-              onPress={runtime.onAddExercise}
-              style={[styles.primary, { backgroundColor: colors.accent }]}
-            >
-              <Ionicons name="add" size={20} color={colors.accentText} />
-              <Text style={[styles.primaryLabel, { color: colors.accentText }]}>
-                {t('workout.addExercise')}
-              </Text>
-            </PressableScale>
-          </View>
-        </>
-      )}
+        {phase === 'dial' && current ? (
+          <RepDial
+            runtime={runtime}
+            startedAt={effortStartedAt}
+            onCancel={() => setPhase('ready')}
+            onValidate={(override) => {
+              setPhase('ready');
+              runtime.onValidate(override);
+            }}
+          />
+        ) : null}
 
-      {phase === 'dial' && current ? (
-        <RepDial
-          runtime={runtime}
-          startedAt={effortStartedAt}
-          onCancel={() => setPhase('ready')}
-          onValidate={(override) => {
-            setPhase('ready');
-            runtime.onValidate(override);
-          }}
-        />
-      ) : null}
-
-      <SessionPlanSheet visible={planOpen} onClose={() => setPlanOpen(false)} runtime={runtime} />
+        <SessionPlanSheet visible={planOpen} onClose={() => setPlanOpen(false)} runtime={runtime} />
+      </KeyboardAvoidingContainer>
     </SafeAreaView>
   );
 }

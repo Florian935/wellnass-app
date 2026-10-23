@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
-import { Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Switch, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   RUNNER_OBJECTIVES,
@@ -23,6 +23,7 @@ import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 /** Types de séance affichés dans la section "Mes allures" (course_libre exclue). */
 const PACE_SESSION_TYPES: readonly SessionType[] = [
@@ -76,10 +77,9 @@ export default function RunnerProfileScreen() {
   };
 
   return (
-    <ScrollView
+    <KeyboardAwareScrollView
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
     >
       {/* Guidage — en tête : il décide de ce que tous les réglages du dessous produiront à l'écran. */}
       <Text style={[styles.section, { color: colors.textMuted }]}>
@@ -295,7 +295,7 @@ export default function RunnerProfileScreen() {
       <View style={styles.footer}>
         <Button label={t('common.back')} onPress={() => router.back()} />
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

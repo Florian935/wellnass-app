@@ -10,6 +10,7 @@ import {
   type Micronutrients,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { MicronutrientDetails } from '@/components/MicronutrientDetails';
 import { TextField } from '@/components/TextField';
 import { getLastQuantityFor } from '@/data/repositories/food-catalog-repository';
@@ -111,8 +112,10 @@ export function QuantityPanel({
     { key: 'fiber', label: t('food.custom.fiber'), value: scaleG(target.fiberPer100g) },
   ].filter((e) => e.value != null);
 
+  // US CLAV-01 : le panneau est le conteneur d'évitement du clavier — son pied Annuler / Ajouter
+  // remonte au-dessus du clavier, et le défilement des détails rétrécit (le champ actif remonte seul).
   return (
-    <View style={[styles.panel, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingContainer style={[styles.panel, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
         <Text style={[styles.panelTitle, { color: colors.text }]}>{target.name}</Text>
         <Text style={[styles.per100, { color: colors.textMuted }]}>
@@ -257,7 +260,7 @@ export function QuantityPanel({
           disabled={g <= 0}
         />
       </View>
-    </View>
+    </KeyboardAvoidingContainer>
   );
 }
 

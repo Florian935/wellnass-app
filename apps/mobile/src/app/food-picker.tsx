@@ -15,6 +15,7 @@ import { Button } from '@/components/Button';
 import { QuantityPanel, type PickTarget } from '@/components/QuantityPanel';
 import { Segment } from '@/components/Segment';
 import { TextField } from '@/components/TextField';
+import { KeyboardAvoidingContainer, KeyboardAwareScrollView } from '@/components/keyboard';
 import {
   deleteFood,
   findFoodByBarcode,
@@ -197,8 +198,10 @@ const meal = params.meal ?? mealForHour(hour);
     );
   }
 
+  // US CLAV-01 : l'écran est le conteneur d'évitement du clavier — pendant la recherche, la liste
+  // s'arrête au-dessus du clavier, et ses actions de pied (« Créer un aliment »…) restent atteignables.
   return (
-    <View style={[styles.screen, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingContainer style={[styles.screen, { backgroundColor: colors.background }]}>
       {tab === 'all' ? (
         <TextField
           label={t('journal.searchFood')}
@@ -227,6 +230,7 @@ const meal = params.meal ?? mealForHour(hour);
         <FlatList
           data={recipes}
           keyExtractor={(r) => r.id}
+          keyboardShouldPersistTaps="handled"
           style={styles.list}
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => {
@@ -248,6 +252,7 @@ const meal = params.meal ?? mealForHour(hour);
         <FlatList
           data={templates}
           keyExtractor={(tpl) => tpl.id}
+          keyboardShouldPersistTaps="handled"
           style={styles.list}
           contentContainerStyle={styles.listContent}
           renderItem={({ item }) => (
@@ -335,7 +340,7 @@ const meal = params.meal ?? mealForHour(hour);
         ) : null}
         <Button label={t('journal.createFood')} variant="ghost" onPress={() => router.push('/food-custom')} />
       </View>
-    </View>
+    </KeyboardAvoidingContainer>
   );
 }
 
@@ -370,7 +375,12 @@ function RecipeServingsPanel({ recipe, onCancel, onConfirm }: { recipe: RecipeLi
   const kcal = Math.round(one.kcal * c);
 
   return (
-    <View style={[styles.screen, styles.panel, { backgroundColor: colors.background }]}>
+    // US CLAV-01 (C2b) : défilant, pour qu'en grande police les macros et « Ajouter » restent
+    // atteignables au-dessus du clavier. Même rendu : le style du panneau passe au contenu.
+    <KeyboardAwareScrollView
+      style={{ backgroundColor: colors.background }}
+      contentContainerStyle={styles.panelContent}
+    >
       <Text style={[styles.panelTitle, { color: colors.text }]}>{recipe.name}</Text>
       <Text style={[styles.panelKcal, { color: colors.accent }]}>{kcal} {t('nutrition.kcal')}</Text>
       <TextField label={t('recipes.servingsToAdd')} value={count} onChangeText={setCount} keyboardType="decimal-pad" />
@@ -378,7 +388,7 @@ function RecipeServingsPanel({ recipe, onCancel, onConfirm }: { recipe: RecipeLi
         <Button label={t('common.cancel')} variant="ghost" onPress={onCancel} />
         <Button label={t('journal.add')} onPress={() => void onConfirm(c)} disabled={c <= 0} />
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -393,7 +403,12 @@ function QuickAddPanel({ onCancel, onConfirm }: { onCancel: () => void; onConfir
   const num = (s: string) => Math.max(0, Math.round(Number(s.replace(',', '.')) || 0));
 
   return (
-    <View style={[styles.screen, styles.panel, { backgroundColor: colors.background }]}>
+    // US CLAV-01 (C2b) : défilant, pour qu'en grande police les macros et « Ajouter » restent
+    // atteignables au-dessus du clavier. Même rendu : le style du panneau passe au contenu.
+    <KeyboardAwareScrollView
+      style={{ backgroundColor: colors.background }}
+      contentContainerStyle={styles.panelContent}
+    >
       <Text style={[styles.panelTitle, { color: colors.text }]}>{t('journal.quickAdd')}</Text>
       <TextField label={t('journal.name')} value={name} onChangeText={setName} />
       <TextField label={`${t('nutrition.calories.title')} (${t('nutrition.kcal')})`} value={kcal} onChangeText={setKcal} keyboardType="number-pad" />
@@ -406,7 +421,7 @@ function QuickAddPanel({ onCancel, onConfirm }: { onCancel: () => void; onConfir
         <Button label={t('common.cancel')} variant="ghost" onPress={onCancel} />
         <Button label={t('journal.add')} disabled={num(kcal) <= 0} onPress={() => void onConfirm({ foodId: null, name: name.trim() || t('journal.quickAdd'), quantityG: null, kcal: num(kcal), proteinG: num(protein), carbsG: num(carbs), fatG: num(fat) })} />
       </View>
-    </View>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -424,7 +439,7 @@ const styles = StyleSheet.create({
   addedBannerText: { flex: 1, fontFamily: fontFamily.bodySemi, fontSize: 14 },
   addedBannerDone: { fontFamily: fontFamily.bodyBold, fontSize: 14 },
   footer: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, borderTopWidth: 1, paddingTop: 12 },
-  panel: { gap: 16 },
+  panelContent: { flexGrow: 1, padding: 16, gap: 16 },
   panelTitle: { fontFamily: fontFamily.displayBold, fontSize: 22 },
   panelKcal: { fontFamily: fontFamily.monoBold, fontSize: 20 },
   panelActions: { flexDirection: 'row', gap: 12, marginTop: 8 },

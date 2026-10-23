@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_MEAL_KEYS, resolveMealConfig, type MealConfigItem } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -9,6 +9,7 @@ import { TextField } from '@/components/TextField';
 import { upsertNutritionProfile, useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 export default function NutritionMealsScreen() {
   const { t } = useTranslation();
@@ -81,7 +82,7 @@ export default function NutritionMealsScreen() {
   }
 
   return (
-    <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
+    <KeyboardAwareScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('meals.hint')}</Text>
 
       {meals.map((m, i) => (
@@ -134,7 +135,7 @@ export default function NutritionMealsScreen() {
       <View style={styles.footer}>
         <Button label={t('meals.done')} onPress={() => void save()} />
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

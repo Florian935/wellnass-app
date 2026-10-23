@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { perServing } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -19,6 +19,7 @@ import {
 } from '@/data/repositories/recipe-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 export default function RecipeEditScreen() {
   const { t } = useTranslation();
@@ -41,7 +42,7 @@ export default function RecipeEditScreen() {
   // Étape 1 : création (nom requis) → passe en mode édition.
   if (!id) {
     return (
-      <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
+      <KeyboardAwareScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
         <Text style={[styles.hint, { color: colors.textMuted }]}>{t('recipes.createHint')}</Text>
         <TextField label={t('recipes.name')} value={name} onChangeText={setName} autoCapitalize="sentences" />
         <View style={styles.footer}>
@@ -51,7 +52,7 @@ export default function RecipeEditScreen() {
             onPress={async () => setId(await createRecipe(name, 1))}
           />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     );
   }
 
@@ -60,7 +61,7 @@ export default function RecipeEditScreen() {
   const one = perServing(total, servings);
 
   return (
-    <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
+    <KeyboardAwareScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
       {/* R7.4 — la recette etait **impossible a renommer** apres sa creation, et impossible a
           supprimer depuis cet ecran. */}
       {renaming ? (
@@ -223,7 +224,7 @@ export default function RecipeEditScreen() {
       <View style={styles.footer}>
         <Button label={t('recipes.done')} onPress={() => router.back()} />
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

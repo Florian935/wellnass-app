@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { type MuscleGroup, type Equipment } from '@wellness/shared';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { CreateExerciseModal } from '@/components/exercises/CreateExerciseModal';
 import { SubstitutionSection } from '@/components/exercises/SubstitutionSection';
 import { ExerciseFilterDrawer } from '@/components/programs/ExerciseFilterDrawer';
@@ -141,8 +142,10 @@ export default function ExercisesScreen() {
       }
     });
 
+  // US CLAV-01 : l'écran est le conteneur d'évitement du clavier — la liste s'arrête au-dessus du
+  // clavier pendant la recherche, et le pied « Commencer » du mode composer remonte avec elle.
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
+    <KeyboardAvoidingContainer style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={styles.searchRow}>
         <View style={styles.searchField}>
           <TextField
@@ -296,7 +299,7 @@ export default function ExercisesScreen() {
       />
 
       <CreateExerciseModal visible={createOpen} onClose={() => setCreateOpen(false)} />
-    </View>
+    </KeyboardAvoidingContainer>
   );
 }
 

@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, Keyboard, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Keyboard, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   RUNNER_OBJECTIVES,
@@ -27,6 +27,7 @@ import { useActionLock } from '@/hooks/useActionLock';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 // ---------------------------------------------------------------------------
 // Niveaux de programme de course — mêmes valeurs que ProgramLevel de @wellness/shared
@@ -125,10 +126,9 @@ function RunningProgramCreateForm({ onCreated }: { onCreated: (id: string) => vo
         title={t('running.program.createTitle')}
         subtitle={t('running.program.createSubtitle')}
       />
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.form}>
           <TextField
@@ -185,7 +185,7 @@ function RunningProgramCreateForm({ onCreated }: { onCreated: (id: string) => vo
             disabled={!canCreate}
           />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </Screen>
   );
 }
@@ -350,10 +350,9 @@ function RunningProgramComposer({ programId }: { programId: string }) {
         title={detail?.name ? detail.name : t('running.program.editTitle')}
         subtitle={t('running.program.editSubtitle')}
       />
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
         {/* Champs de métadonnées éditables */}
         <View style={styles.metaSection}>
@@ -493,7 +492,7 @@ function RunningProgramComposer({ programId }: { programId: string }) {
             }}
           />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </Screen>
   );
 }

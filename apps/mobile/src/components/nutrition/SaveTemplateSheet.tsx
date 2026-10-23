@@ -8,9 +8,10 @@
  */
 
 import { useState } from 'react';
-import { KeyboardAvoidingView, Modal, Platform, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { TextField } from '@/components/TextField';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -37,7 +38,10 @@ function SheetContent({ meal, onCancel, onSave }: Props & { meal: NonNullable<Pr
 
   return (
     <Modal visible transparent animationType="slide" onRequestClose={onCancel}>
-      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={styles.fill}>
+      {/* US CLAV-01 : `behavior` restait indéfini sur Android — c'est-à-dire rien, et la feuille,
+          courte et sans défilement, passait entière sous le clavier. Le conteneur `kind="sheet"` la
+          fait remonter (une `Modal` est une autre fenêtre : il reste actif dans le hub). */}
+      <KeyboardAvoidingContainer kind="sheet" style={styles.fill}>
         <Pressable style={styles.backdrop} onPress={onCancel} accessibilityElementsHidden importantForAccessibility="no" />
         <View style={[styles.sheet, { backgroundColor: colors.background }]} testID="save-template-sheet">
           <Text style={[styles.title, { color: colors.text }]} accessibilityRole="header">
@@ -67,7 +71,7 @@ function SheetContent({ meal, onCancel, onSave }: Props & { meal: NonNullable<Pr
             />
           </View>
         </View>
-      </KeyboardAvoidingView>
+      </KeyboardAvoidingContainer>
     </Modal>
   );
 }

@@ -39,6 +39,7 @@ import {
 } from '@wellness/shared';
 
 import { Button } from '@/components/Button';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { Stepper } from '@/components/lab/Stepper';
 import { formatMinutes } from '@/components/lab/lab-format';
 import { WellbeingScale } from '@/components/wellbeing/WellbeingScale';
@@ -76,19 +77,24 @@ export function MomentCheckinSheet({ visible, onClose, logDate, moment, existing
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" accessibilityLabel={t('wellbeing.closeSheet')} />
-      <View style={[styles.sheet, { backgroundColor: colors.background, borderColor: colors.border }]}>
-        {visible && (
-          <MomentForm
-            key={`${logDate}:${moment}:${existing?.id ?? 'new'}`}
-            logDate={logDate}
-            moment={moment}
-            existing={existing}
-            onDone={onClose}
-            onCatchUpYesterday={onCatchUpYesterday}
-          />
-        )}
-      </View>
+      {/* US CLAV-01 : le conteneur `kind="sheet"` fait remonter la feuille au-dessus du clavier (une
+          `Modal` est une autre fenêtre : il reste actif même dans un écran qui a le sien). Le fond est
+          en remplissage absolu pour assombrir aussi la zone de padding. */}
+      <KeyboardAvoidingContainer kind="sheet" style={styles.sheetLayer}>
+        <Pressable style={styles.backdrop} onPress={onClose} accessibilityRole="button" accessibilityLabel={t('wellbeing.closeSheet')} />
+        <View style={[styles.sheet, { backgroundColor: colors.background, borderColor: colors.border }]}>
+          {visible && (
+            <MomentForm
+              key={`${logDate}:${moment}:${existing?.id ?? 'new'}`}
+              logDate={logDate}
+              moment={moment}
+              existing={existing}
+              onDone={onClose}
+              onCatchUpYesterday={onCatchUpYesterday}
+            />
+          )}
+        </View>
+      </KeyboardAvoidingContainer>
     </Modal>
   );
 }
@@ -443,7 +449,8 @@ function MomentForm({
 }
 
 const styles = StyleSheet.create({
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)' },
+  sheetLayer: { flex: 1, justifyContent: 'flex-end' },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.4)' },
   sheet: { borderTopLeftRadius: 20, borderTopRightRadius: 20, borderWidth: 1, maxHeight: '92%' },
   content: { padding: 20, gap: 14 },
   overline: { fontFamily: fontFamily.bodyBold, fontSize: 11, textTransform: 'uppercase', letterSpacing: 0.6 },

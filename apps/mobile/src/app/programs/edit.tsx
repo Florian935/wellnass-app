@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { PROGRAM_LEVELS, type ProgramLevel } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -17,6 +17,7 @@ import { useActionLock } from '@/hooks/useActionLock';
 import { SessionEditor } from '@/components/programs/SessionEditor';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 // Valeur sentinelle « niveau non précisé » pour le sélecteur segmenté.
 const NO_LEVEL = 'none' as const;
@@ -100,10 +101,9 @@ function ProgramCreateForm({ onCreated }: { onCreated: (id: string) => void }) {
         title={t('programs.edit.createTitle')}
         subtitle={t('programs.edit.createSubtitle')}
       />
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.form}>
           <TextField
@@ -153,7 +153,7 @@ function ProgramCreateForm({ onCreated }: { onCreated: (id: string) => void }) {
             disabled={!canCreate}
           />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </Screen>
   );
 }
@@ -205,10 +205,9 @@ function ProgramComposer({ programId }: { programId: string }) {
         title={detail?.name ? detail.name : t('programs.edit.editTitle')}
         subtitle={t('programs.edit.editSubtitle')}
       />
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
         <Text style={[styles.sectionTitle, { color: colors.text }]}>
           {t('programs.edit.sectionSessions')}
@@ -244,7 +243,7 @@ function ProgramComposer({ programId }: { programId: string }) {
         <View style={styles.done}>
           <Button label={t('programs.edit.done')} onPress={() => router.back()} />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </Screen>
   );
 }

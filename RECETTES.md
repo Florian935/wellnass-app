@@ -11,7 +11,8 @@
 > **Règle de purge — elle compte.** Dès qu'une US est recettée et clôturée (`etape: close`), on
 > **supprime sa section**. Ce fichier doit **rétrécir**, sinon il redevient l'ancien `TODO.md`.
 >
-> Dernière mise à jour : **22/10/2026** — **89 sections** (§94 CIBLE-01 « une seule cible du jour » ajoutée ;
+> Dernière mise à jour : **23/10/2026** — **90 sections** (§95 CLAV-01 « le clavier ne recouvre plus
+> aucun formulaire » ajoutée ; le 22/10/2026 : §94 CIBLE-01 « une seule cible du jour » ajoutée ;
 > le 21/10/2026 : §93 NORYN-02 « Noryn reçoit les cibles et le verdict de forme »
 > recettée et clôturée, section purgée ; le 16/10/2026 : §91 PRISME-01 « Prisme raconte » recettée et
 > clôturée, section purgée — 8 et 18 reportés au BACKLOG ; le 12/10/2026 : §93 NORYN-02 « Noryn reçoit les cibles et le verdict de forme » ajoutée ; §92 NORYN-01 « Noryn lit la journée et la semaine »
@@ -5924,3 +5925,131 @@ fais »). Avant : ni cette carte ni l'adhérence par groupe (2 jours de séance 
       de NORYN-02 modifié (spec §7, vérifié à l'étape 7) ; aucun redéploiement.
 
 Après la recette : `cible01-recette-nettoyage.sql`, puis remettre le compte de test comme on veut.
+
+## 95. CLAV-01 — Le clavier ne recouvre plus aucun formulaire (`fix/clav01-clavier-formulaires` → `dev`)
+
+📄 [spec](docs/specs/functional/us/clav01-clavier-formulaires.md) (§2 : l'inventaire, §14 : la recette) ·
+[plan](docs/plans/clav01-clavier-formulaires.md) · pas de ligne roadmap (correction cadrée en US) ·
+**📱 device** · ✅ **aucune migration, aucune sync rule, aucune dépendance native** — le dev build déjà
+installé, branché sur Metro, suffit (pas de build EAS).
+
+Les **45 surfaces de saisie** de l'app passent par une seule règle : un conteneur qui mesure sa position
+dans la fenêtre et pose en bas exactement ce que le clavier recouvre. Décisions D1 à D12 validées par
+Florian le 23/10/2026.
+
+> **Préparation.** Pixel 6a, navigation **gestuelle**. Deux passes : taille de police **minimale**, puis
+> **maximale** (Paramètres › Affichage › Taille d'affichage et texte ; la « taille d'affichage » reste par
+> défaut). Pour chaque surface, toucher le champ **le plus bas**, **sans faire défiler avant**. Attendu
+> commun :
+> - (a) le champ remonte **seul**, entièrement visible au-dessus du clavier ;
+> - (b) on peut faire défiler jusqu'au bouton de validation et le voir au-dessus du clavier (ou il y est
+>   déjà, s'il est fixe) ;
+> - (c) un appui sur ce bouton, clavier ouvert, le **déclenche** (pas seulement fermer le clavier) ;
+> - (d) clavier fermé, **rien n'a bougé** par rapport à avant — aucune bande en bas d'écran, au-dessus de
+>   la barre d'onglets ou sous une feuille.
+>
+> Un critère coché = les deux passes (petite **et** grande police) faites.
+
+### La porte — à faire en premier
+
+- [ ] 1. 🔴 **Une feuille remonte.** Objectifs › une lettre : toucher la lettre → **la feuille entière
+      remonte** au-dessus du clavier. Puis Choisir un exercice (depuis un programme) : rechercher → la
+      liste s'arrête au-dessus du clavier (même mécanisme : une `Modal`). ⚠️ **Si l'une ne bouge pas,
+      s'arrêter et me le dire** : c'est le seul point invérifiable sans téléphone (spec E4) — l'app ne
+      verrait pas le clavier d'une `Modal`. Rien n'aurait régressé (ces feuilles ne remontaient pas
+      non plus avant), mais le repli (`react-native-keyboard-controller`, spec D6) serait une décision à
+      part.
+
+### A — Les formulaires `FormScreen`
+
+- [ ] 2. Connexion — mot de passe, « Se connecter ».
+- [ ] 3. Inscription — année de naissance, puis case CGU et bouton (sous en-tête : c'était court).
+- [ ] 4. Mot de passe oublié — e-mail, bouton.
+- [ ] 5. Nouveau mot de passe — confirmation, bouton.
+- [ ] 6. Onboarding › Infos — taille, pied Retour / Suivant (métrique, puis impérial : pieds / pouces).
+- [ ] 7. Saisir une activité — kcal de la montre, « Enregistrer » (sous en-tête : c'était court).
+- [ ] 8. Fin de séance — « Enregistrer comme modèle », toucher le nom (le plus bas) ; puis ouvrir la note de
+      ressenti et la toucher.
+- [ ] 9. Fin de course — note, « Enregistrer » ; puis distance et durée manuelles.
+- [ ] 10. Analyse d'une course — distance corrigée, « Enregistrer la correction ».
+
+### B — Les écrans qui défilent
+
+- [ ] 11. Supprimer mon compte — mot de passe, « Supprimer » visible. **Ne pas appuyer.**
+- [ ] 12. Labo IA — question (taper 4 lignes), « Envoyer ».
+- [ ] 13. Créer un aliment — déplier les micronutriments, toucher le dernier, « Enregistrer » : **un appui
+      suffit**. Annuler sans enregistrer.
+- [ ] 14. Saisie en phrase — « 2 œufs, 1 banane, 100 g de riz » puis les grammes de la **dernière** ligne.
+- [ ] 15. Mes repas — le nom du dernier repas.
+- [ ] 16. Réglages › Nutrition — allergènes.
+- [ ] 17. Statistiques nutrition — pesée et « Enregistrer » : un appui suffit, **et le clavier se ferme**.
+- [ ] 18. Mon profil — poids cible, « Enregistrer » : un appui suffit.
+- [ ] 19. Recette — modifier les grammes du dernier ingrédient, « Enregistrer », puis « Terminé ».
+- [ ] 20. Réglages › Course — allure de référence, après avoir fait défiler pour la placer en bas.
+- [ ] 21. Planifier un programme — durée.
+- [ ] 22. Programme muscu — étape 2, au moins 3 exercices : charge et repos du **dernier**, puis « Terminé ».
+- [ ] 23. Programme course — étape 2 : le dernier champ du dernier bloc de fractionné, puis « Terminé ».
+- [ ] 24. Nouveau modèle (étape 2) et un modèle existant — la cible du dernier exercice : le pied
+      (« Terminé » ; Démarrer / Dupliquer / Supprimer) est **au-dessus** du clavier, et en **grande police**
+      il reste de la place pour lire le champ.
+- [ ] 25. Une séance passée — note de ressenti. (Le bouton « Refaire », en surimpression, reste sous le
+      clavier : ce n'est pas la validation de la note — attendu.)
+- [ ] 26. Mon corps — choisir un muscle, rechercher : la recherche et les premiers résultats au-dessus du
+      clavier.
+- [ ] 27. Musculation › Historique › Exercices — recherche : la liste se lit au-dessus du clavier.
+
+### C — Les listes et les panneaux
+
+- [ ] 28. Exercices — rechercher : le dernier résultat atteignable clavier ouvert. Puis en mode « composer »
+      une séance : le pied « Commencer » au-dessus du clavier (un petit écart entre les deux est attendu).
+- [ ] 29. Choisir un aliment — rechercher : « Créer un aliment » atteignable clavier ouvert.
+- [ ] 30. Ajout rapide : les trois macros et « Ajouter » ; portions d'une recette et « Ajouter ».
+- [ ] 31. Quantité d'un aliment — après un choix **et** après un scan : grammes, le pied Annuler / Ajouter
+      au-dessus du clavier.
+- [ ] 32. Choisir un exercice (depuis un programme, un modèle, Progression) — rechercher : la liste
+      s'arrête au-dessus du clavier.
+
+### D — Les feuilles
+
+- [ ] 33. Créer un exercice — nom : la feuille et son pied au-dessus du clavier.
+- [ ] 34. Modifier un exercice — consignes (4 lignes), pied visible.
+- [ ] 35. Enregistrer comme repas type — le clavier s'ouvre seul : la feuille est **déjà** au-dessus.
+- [ ] 36. Détail d'une entrée — modifier une entrée pesée (grammes), puis une entrée rapide (macros).
+- [ ] 37. Ajouter un aliment — **même aspect qu'avant clavier fermé** (son montage a changé) ; rechercher :
+      résultats au-dessus du clavier.
+- [ ] 38. Planning repas › ajouter — onglet Aliments, choisir un aliment, grammes ; onglet Rapide, kcal. En
+      **grande** police : les grammes et le bouton restent visibles, c'est la liste qui rétrécit.
+- [ ] 39. Nouvel objectif — la lettre en bas du formulaire.
+- [ ] 40. Lettre — en **grande** police, 10 lignes : le curseur reste visible.
+- [ ] 41. Mensurations — la dernière mensuration, « Enregistrer ».
+- [ ] 42. Check-in du jour — poids, « Enregistrer ».
+- [ ] 43. Check-in du matin — poids, « Enregistrer » ; depuis Bien-être **et** depuis le hub.
+
+### E — La séance (non-régression)
+
+- [ ] 44. Séance classique — rejouer les critères 68 et 69 de §57 : la barre (deux champs **et** « Valider la
+      série ») entièrement au-dessus du clavier ; à la fermeture, rien ne saute, pas de bande vide, rien sous
+      la barre gestuelle. Puis la note d'exercice (options).
+- [ ] 45. Séance immersive — idem pour le pont.
+
+### Transverses (une surface par famille)
+
+- [ ] 46. **TalkBack**, clavier ouvert, sur Onboarding › Infos, Mon profil, Quantité, Mensurations et la
+      séance : balayer jusqu'au dernier champ puis jusqu'au bouton — annoncés **et** visibles au-dessus du
+      clavier ; le bouton s'active d'un double appui.
+- [ ] 47. **Navigation à 3 boutons** (Paramètres › Système › Navigation), sur Saisir une activité, Créer un
+      aliment, Quantité, Lettre et la séance : rien sous le clavier, pas de bande vide à la fermeture.
+- [ ] 48. **Passer en emoji** dans la note de fin de course : le contenu suit la nouvelle hauteur du clavier.
+- [ ] 49. **Fermer par le geste retour**, sur Mon profil, Lettre et Check-in du jour : la disposition
+      revient exactement ; sous la feuille, **aucune bande claire** pendant que le clavier descend.
+- [ ] 50. **Écrans `FormScreen` sans champ** — vérification d'e-mail, intro, récapitulatif, Activité,
+      Objectif, Guidage et Piliers de l'onboarding, Activités, CGU, confidentialité : rien n'a changé.
+- [ ] 51. **Clavier fermé, rien n'a bougé** sur les écrans qui ont reçu le conteneur sans arête basse : les
+      quatre hubs (bas de page au-dessus de la barre d'onglets), Mon profil, Créer un aliment, Programme
+      muscu, Mon corps — aucune bande ajoutée en bas.
+
+### iOS — à la première build iOS (spec D5)
+
+- [ ] 52. Une surface par famille (Inscription, Mon profil, Quantité, Lettre, séance) : même attendu, sauf
+      (a) — le champ ne remonte pas seul sur iOS (BACKLOG CLAV-02) ; et Choisir un exercice (`pageSheet`),
+      écart connu.

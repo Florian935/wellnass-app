@@ -1,6 +1,9 @@
 /**
  * `keyboardEventNames` — recette MUSCU-UX01 §57.19.
  *
+ * (US CLAV-01, 23/10/2026 : déplacé avec la fonction de `hooks/useKeyboardHeight.ts` vers
+ * `components/keyboard/useKeyboardFrame.ts`. Les attentes n'ont **pas** changé — K1 du filet.)
+ *
  * ── Le défaut ───────────────────────────────────────────────────────────────────────────────────
  * Sur l'écran de séance, ouvrir le clavier pour saisir une charge le faisait passer **par-dessus**
  * la barre de validation : on tapait sans voir ce qu'on tapait. C'était le geste le plus répété de
@@ -25,7 +28,7 @@
  * `remove` au démontage — est du React standard sans cas limite.
  */
 
-import { keyboardEventNames } from '../useKeyboardHeight';
+import { keyboardEventNames } from '../useKeyboardFrame';
 
 describe('keyboardEventNames', () => {
   it('🔴 sur Android, les `Did*` — la plateforme n’émet JAMAIS les variantes `Will*`', () => {

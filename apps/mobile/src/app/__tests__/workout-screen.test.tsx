@@ -36,6 +36,7 @@ import { maybePushRecords } from '@/data/repositories/notification-repository';
 import { useSessionCards } from '@/data/repositories/immersive-repository';
 import { useRouter } from 'expo-router';
 import { useSessionMode } from '@/stores/session-mode-store';
+import { flatStyle, hasBottomEdge, hostNodes } from '@/test-utils/host-tree';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -173,6 +174,22 @@ jest.mock('@/components/workout/immersive/ImmersiveWorkout', () => {
 jest.mock('@/components/workout/RestOverlay', () => {
   const { Text: T } = require('react-native');
   return { RestOverlay: () => <T testID="repos">repos</T> };
+});
+
+// US CLAV-01 (K4) — le clavier, la mesure et l'inset bas simulés : un abonnement natif ne se propage
+// pas au rendu sous RNTL v14, et `measureInWindow` ne rappelle jamais sous Jest. Écran de 914 dp.
+const mockKeyboard = { visible: false, height: 0, screenY: 0 };
+jest.mock('@/components/keyboard/useKeyboardFrame', () => ({
+  ...jest.requireActual('@/components/keyboard/useKeyboardFrame'),
+  useKeyboardFrame: () => mockKeyboard,
+}));
+jest.mock('@/components/keyboard/useMeasuredBottom', () => ({
+  useMeasuredBottom: () => ({ bottom: 914, measure: () => {} }),
+}));
+const mockInsets = { top: 0, bottom: 0, left: 0, right: 0 };
+jest.mock('react-native-safe-area-context', () => {
+  const mock = jest.requireActual('react-native-safe-area-context/jest/mock');
+  return { ...(mock.default ?? mock), useSafeAreaInsets: () => mockInsets };
 });
 
 jest.mock('@/lib/haptics', () => ({
@@ -1015,5 +1032,53 @@ describe('ce qui change sur la barre (MUSCU-FIX02, passe 3)', () => {
     await render(<WorkoutScreen />);
 
     expect(barre()).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US CLAV-01 — K4 : la barre de saisie au-dessus du clavier (recette §57.19)
+// ---------------------------------------------------------------------------
+
+describe('K4 — clavier (recette §57.19, règle commune de CLAV-01)', () => {
+  // Filet de l'étape 1 : avant CLAV-01, la séance posait `paddingBottom: hauteur` sur son
+  // `SafeAreaView` et retirait l'arête basse clavier ouvert (300 → 300). Depuis l'étape 7, la colonne
+  // est dans le conteneur commun : l'arête basse est **toujours** reprise par lui.
+  afterEach(() => {
+    Object.assign(mockKeyboard, { visible: false, height: 0, screenY: 0 });
+    mockInsets.bottom = 0;
+  });
+  const racine = () =>
+    hostNodes(screen.toJSON()).find((n) => n.type === 'RNCSafeAreaView' && n.props.edges != null)!;
+  const zone = () => flatStyle(screen.getByTestId('workout-keyboard-area') as never);
+
+  it('clavier fermé : l’inset bas comme avant, rendu par le conteneur', async () => {
+    mockInsets.bottom = 24;
+    await render(<WorkoutScreen />);
+    expect(hasBottomEdge(racine())).toBe(false);
+    expect(zone().paddingBottom).toBe(24);
+  });
+
+  it('🔴 clavier ouvert : la barre s’arrête au haut du clavier — un inset de plus qu’avant CLAV-01', async () => {
+    // 300 au-dessus de la barre de navigation (24) : le haut du clavier est à 914 − 324 = 590.
+    // L'ancien calcul posait 300, et laissait le bas de la barre 24 dp sous le clavier (spec §1.3).
+    mockInsets.bottom = 24;
+    Object.assign(mockKeyboard, { visible: true, height: 300, screenY: 590 });
+    await render(<WorkoutScreen />);
+    expect(hasBottomEdge(racine())).toBe(false);
+    expect(zone().paddingBottom).toBe(324);
+  });
+
+  it('🔴 le voile de repos reste hors du conteneur : il couvre toute la fenêtre, barre d’état comprise', async () => {
+    // Constat de la revue du 23/10/2026 : `RestOverlay` est en `absoluteFill`, qui se pose sur la boîte
+    // de padding de son parent. Dans le conteneur (posé sous l'inset haut), il commençait un inset plus
+    // bas et laissait la barre d'état découverte. Il doit rester un enfant direct du `SafeAreaView`.
+    await render(<WorkoutScreen />);
+    await act(async () => {
+      fireEvent.press(screen.getByTestId('valider'));
+    });
+    expect(screen.getByTestId('repos')).toBeTruthy();
+    const zoneNode = hostNodes(screen.toJSON()).find((n) => n.props.testID === 'workout-keyboard-area')!;
+    const dansLaZone = hostNodes(zoneNode).some((n) => n.props.testID === 'repos');
+    expect(dansLaZone).toBe(false);
   });
 });

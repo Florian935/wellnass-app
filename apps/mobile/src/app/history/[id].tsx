@@ -19,7 +19,7 @@
 
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { localDayKey } from '@wellness/shared';
@@ -32,6 +32,7 @@ import { useWorkoutReport } from '@/data/repositories/workout-report-repository'
 import { useRedo } from '@/hooks/useRedo';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 /** JJ/MM/AAAA en date **locale** — un slice de l'ISO UTC décalerait le jour selon le fuseau. */
 function formatDateFr(isoString: string): string {
@@ -89,11 +90,11 @@ export default function WorkoutDetailScreen() {
         subtitle={report.title ?? t('history.freeSession')}
         action={back}
       />
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <KeyboardAwareScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <WorkoutReport report={report} context="history" />
         {/* US BIEN-04 — ce que l'état du jour était (pilier Bien-être activé). */}
         <WellbeingContextLine dayKey={localDayKey(new Date(report.startedAt))} pillar="strength" />
-      </ScrollView>
+      </KeyboardAwareScrollView>
       {report.totals.exercises > 0 ? (
         <View style={[styles.redoBar, { paddingBottom: insets.bottom + 12, backgroundColor: colors.background }]}>
           <PressableScale

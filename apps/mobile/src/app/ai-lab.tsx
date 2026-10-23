@@ -27,7 +27,6 @@ import { useRouter } from 'expo-router';
 import {
   ActivityIndicator,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   TextInput,
@@ -43,6 +42,7 @@ import { useSettings } from '@/data/repositories/settings-repository';
 import { callAiAssist, type AiResult } from '@/lib/ai/ai-client';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 export default function AiLabScreen() {
   const { t } = useTranslation();
@@ -81,7 +81,7 @@ export default function AiLabScreen() {
   if (isLoading) return null;
 
   return (
-    <ScrollView contentContainerStyle={styles.page} keyboardShouldPersistTaps="handled">
+    <KeyboardAwareScrollView contentContainerStyle={styles.page}>
       <ScreenHeader title={t('aiLab.title')} subtitle={t('aiLab.subtitle')} />
 
       {/* L'avertissement est le premier élément de l'écran, et non une note de bas de page : il
@@ -231,7 +231,7 @@ export default function AiLabScreen() {
           )}
         </>
       )}
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

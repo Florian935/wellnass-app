@@ -20,7 +20,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Keyboard, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   DEFAULT_MEAL_KEYS,
@@ -60,6 +60,7 @@ import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 const pad = (n: number) => String(n).padStart(2, '0');
 const isoDay = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -101,7 +102,7 @@ export default function NutritionStatsScreen() {
   }, []);
 
   return (
-    <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
+    <KeyboardAwareScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
       <Segment
         scrollable
         options={TABS}
@@ -114,7 +115,7 @@ export default function NutritionStatsScreen() {
       {tab === 'intake' ? <IntakeTab /> : null}
       {tab === 'weight' ? <WeightTab /> : null}
       {tab === 'quality' ? <QualityTab /> : null}
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
@@ -315,6 +316,9 @@ function WeightTab() {
     if (kg == null || kg <= 0) return;
     await logWeight(isoDay(new Date()), kg);
     setWeightInput('');
+    // US CLAV-01 (D8) : le premier appui enregistre désormais clavier ouvert — l'écran reste
+    // affiché, on ferme donc le clavier une fois la pesée enregistrée.
+    Keyboard.dismiss();
   };
 
   return (

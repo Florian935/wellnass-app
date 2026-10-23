@@ -1,4 +1,4 @@
-# État du projet — 22/10/2026
+# État du projet — 23/10/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -33,6 +33,7 @@ avant de pouvoir publier.
 | **CARDIO-UX02** — Refonte du hub Course — le bleu partout, et un écran qui sait où en est le coureur | `recette` | `dev` | [5.42] |
 | **CARDIO-UX03** — Hub Course en trois onglets — Courir, Historique, Progrès | `recette` | `feature/cardio-ux03-hub-onglets` | [5.44] |
 | **CIBLE-01** — Une seule « cible du jour » dans tout le pilier Nutrition — l'historique, le planning repas et le widget passent par la composition de NORYN-02 | `recette` | `feature/cible01-cible-du-jour` | [4.7, 4.27, 4.40, 4.44, 7.19] |
+| **CLAV-01** — Le clavier ne recouvre plus aucun formulaire — une seule règle d'évitement, sur Android edge-to-edge comme sur iOS | `recette` | `fix/clav01-clavier-formulaires` | — |
 | **COLLIS-01** — Détecteur de collisions entre séances — séquençage muscu ↔ course | `recette` | `fix/collis01-conflit-veille-hors-semaine` | [3.57] |
 | **CONF-07** — Accessibilité — solde des non-conformités WCAG AA | `recette` | `fix/conf07-accessibilite` | [9.11, 9.12] |
 | **CONS-01** — Le Conseil des trois — les deux issues d'une contradiction, chiffrées | `recette` | `dev` | [7.34] |
@@ -119,7 +120,7 @@ avant de pouvoir publier.
 ⏸️ **1 US en pause sur une dépendance externe** :
 - **IMPORT-01** — En attente d'un export réel de Hevy, Strong et MyFitnessPal pour figer les alias de colonnes (D4). Procédure et jeu de données attendu : docs/specs/technical/import-samples/README.md
 
-⏳ **98 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BIEN-02, BIEN-03, BIEN-04, BIEN-05, BIEN-06, BIEN-07, BILAN-01, CARDIO-UX01, CARDIO-UX02, CARDIO-UX03, CIBLE-01, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, ECHO-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LABO-02, LABO-03, LABO-04, LAUNCHER-01, LETTRE-01, LIENS-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX07, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, NUTRI-UX03, OBJ-01, PARTAGE-01, PARTAGE-02, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
+⏳ **99 US attendent une recette humaine** (ACTIV-01, ADMIN-01, ALLURE-01, APPORT-01, AUTRE-01, BIEN-01, BIEN-02, BIEN-03, BIEN-04, BIEN-05, BIEN-06, BIEN-07, BILAN-01, CARDIO-UX01, CARDIO-UX02, CARDIO-UX03, CIBLE-01, CLAV-01, COLLIS-01, CONF-07, CONS-01, CONTENU-01, CORPS-03, CORPS-04, CYCLE-01, DASH-01, DEPENSE-00, DEPENSE-01, DOUL-01, ECHO-01, EFFORT-01, EXEC-01, FANT-01, FUEL-01, GARDE-01, GUID-01, HORAIRE-01, IA-LAB-01, INSIGHTS-01, INSIGHTS-02, LABO-01, LABO-02, LABO-03, LABO-04, LAUNCHER-01, LETTRE-01, LIENS-01, MESUR-01, META-19, MN-04, MOTION-01, MR-08, MUSC-09, MUSC-12, MUSC-19, MUSC-20, MUSC-F14, MUSC-F15, MUSC-F1b, MUSC-F7, MUSC-F8, MUSC-F9, MUSCPWR-01, MUSCU-FIX01, MUSCU-UX01, MUSCU-UX03, MUSCU-UX04, MUSCU-UX05, MUSCU-UX07, MUSCU-UX02, NARR-01, NUTR-16, NUTR-18, NUTR-F1, NUTR-F2, NUTRI-UX01, NUTRI-UX02, NUTRI-UX03, OBJ-01, PARTAGE-01, PARTAGE-02, REPAS-01, RESERV-01, RN-03, RUN-14, RUN-18, RUN-F1b, RUN-F2a, RUN-F2b, RUN-F2c, RUN-F2d, RUN-F3, RUN-F4, SERIE-01, STREAK-01, TRI-03, UX-05, UX-LOT-01, VIE-01) — critères cochables dans [RECETTES.md](RECETTES.md).
 
 ## ➡️ Prochain — P0 bloquant (3)
 
@@ -127,11 +128,11 @@ avant de pouvoir publier.
 - LANCE-01 — Publication Play Store
 - LANCE-02 — Retirer le spike VBT-01 du build de soumission
 
-<details><summary>P1 finitions (11) · P2 confort (9)</summary>
+<details><summary>P1 finitions (10) · P2 confort (10)</summary>
 
-**P1** — ACCES-IA — Prisme réservé aux testeurs · PRISME-01b — Les résumés du Labo dans la voix de Prisme · RUN-F3b — Météo de course · CLAV-01 — Le clavier recouvre les formulaires (edge-to-edge) · CARDIO-02 — Les quatre portes vers l'allure de référence · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect · IDENT-01 — L'identité de pilier appartient à l'écran, pas à l'onglet
+**P1** — ACCES-IA — Prisme réservé aux testeurs · PRISME-01b — Les résumés du Labo dans la voix de Prisme · RUN-F3b — Météo de course · CARDIO-02 — Les quatre portes vers l'allure de référence · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect · IDENT-01 — L'identité de pilier appartient à l'écran, pas à l'onglet
 
-**P2** — PRISME-02 — La photo de repas, avec Prisme · SOCLE-01 — RevenueCat câblé inactif · VBT-01 — Vitesse de barre à la caméra · CIBLE-02 — Une séance planifiée d'un pilier éteint donne-t-elle le forfait ? · CIBLE-03 — La séance marquée faite sans séance enregistrée · CIBLE-04 — Le socle du Labo « Et si… » et du Conseil des trois · CIBLE-05 — Les fenêtres jugées sur la cible d'aujourd'hui · CIBLE-06 — La cible du contexte du Labo IA · CARDIO-08 — « X sur Y dans la plage » sans l’échauffement, dans l’analyse
+**P2** — PRISME-02 — La photo de repas, avec Prisme · SOCLE-01 — RevenueCat câblé inactif · VBT-01 — Vitesse de barre à la caméra · CIBLE-02 — Une séance planifiée d'un pilier éteint donne-t-elle le forfait ? · CIBLE-03 — La séance marquée faite sans séance enregistrée · CIBLE-04 — Le socle du Labo « Et si… » et du Conseil des trois · CIBLE-05 — Les fenêtres jugées sur la cible d'aujourd'hui · CIBLE-06 — La cible du contexte du Labo IA · CARDIO-08 — « X sur Y dans la plage » sans l’échauffement, dans l’analyse · CLAV-02 — Le champ actif remonte seul sur iOS
 
 </details>
 
@@ -141,9 +142,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `feature/cible01-cible-du-jour` (modifications non commitées) |
-| Commits | 1376 · `main` a **1372** commits de retard sur `dev` |
-| Specs d'US | 191 au total — 92 clôturées, 99 en cours |
+| Branche courante | `fix/clav01-clavier-formulaires` (modifications non commitées) |
+| Commits | 1377 · `main` a **1374** commits de retard sur `dev` |
+| Specs d'US | 192 au total — 92 clôturées, 100 en cours |
 | Migrations | 115/115 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -153,11 +154,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `3a3cda8`  docs(cible): CIBLE-01 en recette — jeu de données, chiffres figés, RECETTES §94
 - `416c5df`  refactor(nutrition): CIBLE-01 étape 7 — computeEffectiveTargetForDay retirée, test-garde R1, Noryn intact
 - `266087e`  feat(nutrition): CIBLE-01 étape 6 — la régularité juge chaque jour sur sa cible
 - `2dc06c6`  feat(widget): CIBLE-01 étape 5 — le « Restant » du widget est celui d'Aujourd'hui
 - `15696e7`  feat(nutrition): CIBLE-01 étape 4 — le planning repas prend la cible d'Aujourd'hui
-- `8b4fc48`  feat(nutrition): CIBLE-01 étape 3 — l'historique prend la cible d'Aujourd'hui
 
 ---
 

@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   mealForHour,
@@ -23,6 +23,7 @@ import { addFoodEntry } from '@/data/repositories/journal-repository';
 import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 /** Mots-clés de portion par unité, pour retrouver la portion usuelle de l'aliment. */
 const UNIT_PORTION_KEYWORDS: Record<Exclude<ParsedUnit, null>, string[]> = {
@@ -247,10 +248,9 @@ const meal = params.meal ?? mealForHour(hour);
   };
 
   return (
-    <ScrollView
+    <KeyboardAwareScrollView
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
     >
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('quickList.hint')}</Text>
 
@@ -373,7 +373,7 @@ const meal = params.meal ?? mealForHour(hour);
           <Button label={t('quickList.addCount', { count: matchedCount })} onPress={() => void confirm()} />
         </View>
       ) : null}
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

@@ -16,14 +16,15 @@
 
 import type { ReactElement, ReactNode, RefObject } from 'react';
 import {
-  ScrollView,
   StyleSheet,
   View,
   type RefreshControlProps,
+  type ScrollView,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 import type { StageKey } from '@/theme/stage';
 import { useTheme } from '@/theme/useTheme';
 import { useStageTheme } from './PillarStage';
@@ -64,7 +65,10 @@ export function StageScrollView({
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]} testID={testID}>
-      <ScrollView
+      {/* US CLAV-01 : le défilement des hubs est posé dans le conteneur d'évitement du clavier —
+          un hub peut porter un champ (Musculation › Historique › Exercices, la recherche). Clavier
+          fermé, il ne change rien : le conteneur s'arrête à la barre d'onglets, sans arête basse. */}
+      <KeyboardAwareScrollView
         ref={scrollRef}
         showsVerticalScrollIndicator={false}
         scrollEnabled={scrollEnabled}
@@ -85,7 +89,7 @@ export function StageScrollView({
           />
           {children}
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </View>
   );
 }

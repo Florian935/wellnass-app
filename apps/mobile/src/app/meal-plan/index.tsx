@@ -16,6 +16,7 @@ import {
   type PlannedMealEntry,
 } from '@wellness/shared';
 import { Button } from '@/components/Button';
+import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { MealPlanDayCard } from '@/components/nutrition/MealPlanDayCard';
@@ -210,7 +211,11 @@ export default function MealPlanScreen() {
         </Pressable>
       </View>
 
-      <ScrollView contentContainerStyle={styles.list} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
         {entries.length === 0 && (
           <View style={styles.empty}>
             <Text style={[styles.emptyTitle, { color: colors.text }]}>
@@ -389,242 +394,252 @@ function AddEntrySheet({
 
   return (
     <Modal visible={target !== null} animationType="slide" transparent onRequestClose={close}>
-      <Pressable style={styles.backdrop} onPress={close} accessibilityElementsHidden />
-      <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
-        <View style={[styles.grab, { backgroundColor: colors.borderStrong }]} />
-        <Text style={[styles.sheetTitle, { color: colors.text }]}>
-          {t('mealPlan.add.title', { meal: mealLabel })}
-        </Text>
+      {/* US CLAV-01 : le conteneur `kind="sheet"` fait remonter la feuille au-dessus du clavier (une
+          `Modal` est une autre fenêtre : il reste actif même dans un écran qui a le sien). Le fond est
+          en remplissage absolu pour assombrir aussi la zone de padding. */}
+      <KeyboardAvoidingContainer kind="sheet" style={styles.sheetLayer}>
+        <Pressable style={styles.backdrop} onPress={close} accessibilityElementsHidden />
+        <View style={[styles.sheet, { backgroundColor: colors.surface, borderColor: colors.border }]}>
+          <View style={[styles.grab, { backgroundColor: colors.borderStrong }]} />
+          <Text style={[styles.sheetTitle, { color: colors.text }]}>
+            {t('mealPlan.add.title', { meal: mealLabel })}
+          </Text>
 
-        <View style={[styles.segment, { borderColor: colors.border }]}>
-          {(['recipes', 'templates', 'foods', 'quick'] as const).map((key) => (
-            <Pressable
-              key={key}
-              onPress={() => {
-                setTab(key);
-                setSelectedId(null);
-                setServings(1);
-              }}
-              accessibilityRole="button"
-              accessibilityState={{ selected: tab === key }}
-              accessibilityLabel={t(`mealPlan.add.${key}`)}
-              style={[
-                styles.segmentItem,
-                {
-                  backgroundColor: tab === key ? colors.accent : colors.background,
-                },
-              ]}
-            >
-              <Text
+          <View style={[styles.segment, { borderColor: colors.border }]}>
+            {(['recipes', 'templates', 'foods', 'quick'] as const).map((key) => (
+              <Pressable
+                key={key}
+                onPress={() => {
+                  setTab(key);
+                  setSelectedId(null);
+                  setServings(1);
+                }}
+                accessibilityRole="button"
+                accessibilityState={{ selected: tab === key }}
+                accessibilityLabel={t(`mealPlan.add.${key}`)}
                 style={[
-                  styles.segmentLabel,
-                  { color: tab === key ? colors.accentText : colors.textMuted },
+                  styles.segmentItem,
+                  {
+                    backgroundColor: tab === key ? colors.accent : colors.background,
+                  },
                 ]}
               >
-                {t(`mealPlan.add.${key}`)}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
+                <Text
+                  style={[
+                    styles.segmentLabel,
+                    { color: tab === key ? colors.accentText : colors.textMuted },
+                  ]}
+                >
+                  {t(`mealPlan.add.${key}`)}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
 
-        {tab === 'foods' ? (
-          <TextField
-            label={t('mealPlan.add.searchFood')}
-            value={foodTerm}
-            onChangeText={setFoodTerm}
-            autoCapitalize="none"
-            placeholder={t('journal.searchPlaceholder')}
-          />
-        ) : null}
-
-        {tab === 'quick' ? (
-          <View style={styles.quickForm}>
+          {tab === 'foods' ? (
             <TextField
-              label={t('journal.name')}
-              value={quickLabel}
-              onChangeText={setQuickLabel}
-              placeholder={t('mealPlan.add.quickPlaceholder')}
+              label={t('mealPlan.add.searchFood')}
+              value={foodTerm}
+              onChangeText={setFoodTerm}
+              autoCapitalize="none"
+              placeholder={t('journal.searchPlaceholder')}
             />
+          ) : null}
+
+          {tab === 'quick' ? (
+            <View style={styles.quickForm}>
+              <TextField
+                label={t('journal.name')}
+                value={quickLabel}
+                onChangeText={setQuickLabel}
+                placeholder={t('mealPlan.add.quickPlaceholder')}
+              />
+              <TextField
+                label={`${t('nutrition.calories.title')} (${t('nutrition.kcal')})`}
+                value={quickKcal}
+                onChangeText={setQuickKcal}
+                keyboardType="number-pad"
+              />
+            </View>
+          ) : null}
+
+          <ScrollView
+            style={styles.options}
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {tab === 'recipes' &&
+              recipes.length === 0 && (
+                <Text style={[styles.hint, { color: colors.textMuted }]}>
+                  {t('mealPlan.add.noRecipe')}
+                </Text>
+              )}
+            {tab === 'foods' && foods.length === 0 && (
+              <Text style={[styles.hint, { color: colors.textMuted }]}>{t('journal.noFood')}</Text>
+            )}
+            {tab === 'templates' &&
+              templates.length === 0 && (
+                <Text style={[styles.hint, { color: colors.textMuted }]}>
+                  {t('mealPlan.add.noTemplate')}
+                </Text>
+              )}
+
+            {tab === 'foods'
+              ? foods.slice(0, 40).map((f) => (
+                  <Pressable
+                    key={f.id}
+                    onPress={() => setSelectedId(f.id)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: selectedId === f.id }}
+                    style={[
+                      styles.option,
+                      {
+                        backgroundColor: selectedId === f.id ? colors.surface : colors.background,
+                        borderColor: selectedId === f.id ? colors.accent : colors.border,
+                        borderWidth: selectedId === f.id ? 1.5 : 1,
+                      },
+                    ]}
+                  >
+                    <View style={styles.optionTexts}>
+                      <Text style={[styles.optionName, { color: colors.text }]}>{f.name}</Text>
+                      <Text style={[styles.optionMeta, { color: colors.textMuted }]}>
+                        {t('mealPlan.add.foodMeta', { kcal: Math.round(f.kcalPer100g) })}
+                      </Text>
+                    </View>
+                    {selectedId === f.id && (
+                      <Ionicons name="checkmark" size={20} color={colors.accent} />
+                    )}
+                  </Pressable>
+                ))
+              : tab === 'quick'
+              ? null
+              : tab === 'recipes'
+              ? recipes.map((r) => (
+                  <Pressable
+                    key={r.id}
+                    onPress={() => setSelectedId(r.id)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: selectedId === r.id }}
+                    style={[
+                      styles.option,
+                      {
+                        backgroundColor: selectedId === r.id ? colors.surface : colors.background,
+                        borderColor: selectedId === r.id ? colors.accent : colors.border,
+                        borderWidth: selectedId === r.id ? 1.5 : 1,
+                      },
+                    ]}
+                  >
+                    <View style={styles.optionTexts}>
+                      <Text style={[styles.optionName, { color: colors.text }]}>{r.name}</Text>
+                      <Text style={[styles.optionMeta, { color: colors.textMuted }]}>
+                        {t('mealPlan.add.recipeMeta', {
+                          servings: r.servings,
+                          kcal: Math.round(r.totalKcal / Math.max(1, r.servings)),
+                        })}
+                      </Text>
+                    </View>
+                    {selectedId === r.id && (
+                      <Ionicons name="checkmark" size={20} color={colors.accent} />
+                    )}
+                  </Pressable>
+                ))
+              : templates.map((tpl) => (
+                  <Pressable
+                    key={tpl.id}
+                    onPress={() => setSelectedId(tpl.id)}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: selectedId === tpl.id }}
+                    style={[
+                      styles.option,
+                      {
+                        backgroundColor: selectedId === tpl.id ? colors.surface : colors.background,
+                        borderColor: selectedId === tpl.id ? colors.accent : colors.border,
+                        borderWidth: selectedId === tpl.id ? 1.5 : 1,
+                      },
+                    ]}
+                  >
+                    <View style={styles.optionTexts}>
+                      <Text style={[styles.optionName, { color: colors.text }]}>{tpl.name}</Text>
+                      <Text style={[styles.optionMeta, { color: colors.textMuted }]}>
+                        {t('mealPlan.add.templateMeta', {
+                          count: tpl.itemCount,
+                          kcal: tpl.totalKcal,
+                        })}
+                      </Text>
+                    </View>
+                    {selectedId === tpl.id && (
+                      <Ionicons name="checkmark" size={20} color={colors.accent} />
+                    )}
+                  </Pressable>
+                ))}
+          </ScrollView>
+
+          {tab === 'foods' && selectedId ? (
             <TextField
-              label={`${t('nutrition.calories.title')} (${t('nutrition.kcal')})`}
-              value={quickKcal}
-              onChangeText={setQuickKcal}
+              label={t('journal.grams')}
+              value={grams}
+              onChangeText={setGrams}
               keyboardType="number-pad"
             />
-          </View>
-        ) : null}
+          ) : null}
 
-        <ScrollView style={styles.options} showsVerticalScrollIndicator={false}>
-          {tab === 'recipes' &&
-            recipes.length === 0 && (
-              <Text style={[styles.hint, { color: colors.textMuted }]}>
-                {t('mealPlan.add.noRecipe')}
-              </Text>
-            )}
-          {tab === 'foods' && foods.length === 0 && (
-            <Text style={[styles.hint, { color: colors.textMuted }]}>{t('journal.noFood')}</Text>
-          )}
-          {tab === 'templates' &&
-            templates.length === 0 && (
-              <Text style={[styles.hint, { color: colors.textMuted }]}>
-                {t('mealPlan.add.noTemplate')}
-              </Text>
-            )}
-
-          {tab === 'foods'
-            ? foods.slice(0, 40).map((f) => (
-                <Pressable
-                  key={f.id}
-                  onPress={() => setSelectedId(f.id)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: selectedId === f.id }}
-                  style={[
-                    styles.option,
-                    {
-                      backgroundColor: selectedId === f.id ? colors.surface : colors.background,
-                      borderColor: selectedId === f.id ? colors.accent : colors.border,
-                      borderWidth: selectedId === f.id ? 1.5 : 1,
-                    },
-                  ]}
-                >
-                  <View style={styles.optionTexts}>
-                    <Text style={[styles.optionName, { color: colors.text }]}>{f.name}</Text>
-                    <Text style={[styles.optionMeta, { color: colors.textMuted }]}>
-                      {t('mealPlan.add.foodMeta', { kcal: Math.round(f.kcalPer100g) })}
-                    </Text>
-                  </View>
-                  {selectedId === f.id && (
-                    <Ionicons name="checkmark" size={20} color={colors.accent} />
-                  )}
-                </Pressable>
-              ))
-            : tab === 'quick'
-            ? null
-            : tab === 'recipes'
-            ? recipes.map((r) => (
-                <Pressable
-                  key={r.id}
-                  onPress={() => setSelectedId(r.id)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: selectedId === r.id }}
-                  style={[
-                    styles.option,
-                    {
-                      backgroundColor: selectedId === r.id ? colors.surface : colors.background,
-                      borderColor: selectedId === r.id ? colors.accent : colors.border,
-                      borderWidth: selectedId === r.id ? 1.5 : 1,
-                    },
-                  ]}
-                >
-                  <View style={styles.optionTexts}>
-                    <Text style={[styles.optionName, { color: colors.text }]}>{r.name}</Text>
-                    <Text style={[styles.optionMeta, { color: colors.textMuted }]}>
-                      {t('mealPlan.add.recipeMeta', {
-                        servings: r.servings,
-                        kcal: Math.round(r.totalKcal / Math.max(1, r.servings)),
-                      })}
-                    </Text>
-                  </View>
-                  {selectedId === r.id && (
-                    <Ionicons name="checkmark" size={20} color={colors.accent} />
-                  )}
-                </Pressable>
-              ))
-            : templates.map((tpl) => (
-                <Pressable
-                  key={tpl.id}
-                  onPress={() => setSelectedId(tpl.id)}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: selectedId === tpl.id }}
-                  style={[
-                    styles.option,
-                    {
-                      backgroundColor: selectedId === tpl.id ? colors.surface : colors.background,
-                      borderColor: selectedId === tpl.id ? colors.accent : colors.border,
-                      borderWidth: selectedId === tpl.id ? 1.5 : 1,
-                    },
-                  ]}
-                >
-                  <View style={styles.optionTexts}>
-                    <Text style={[styles.optionName, { color: colors.text }]}>{tpl.name}</Text>
-                    <Text style={[styles.optionMeta, { color: colors.textMuted }]}>
-                      {t('mealPlan.add.templateMeta', {
-                        count: tpl.itemCount,
-                        kcal: tpl.totalKcal,
-                      })}
-                    </Text>
-                  </View>
-                  {selectedId === tpl.id && (
-                    <Ionicons name="checkmark" size={20} color={colors.accent} />
-                  )}
-                </Pressable>
-              ))}
-        </ScrollView>
-
-        {tab === 'foods' && selectedId ? (
-          <TextField
-            label={t('journal.grams')}
-            value={grams}
-            onChangeText={setGrams}
-            keyboardType="number-pad"
-          />
-        ) : null}
-
-        {/* Portions : recettes seulement. Un repas type n'a pas cette notion (décision D1). */}
-        {tab === 'recipes' && selectedRecipe && (
-          <>
-            <View
-              style={[
-                styles.stepper,
-                { backgroundColor: colors.background, borderColor: colors.border },
-              ]}
-            >
-              <Text style={[styles.stepperLabel, { color: colors.text }]}>
-                {t('mealPlan.add.servings')}
-              </Text>
-              <View style={styles.stepperCtl}>
-                <Pressable
-                  onPress={() => setServings((s) => Math.max(1, s - 1))}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('mealPlan.add.servingsMinus')}
-                  hitSlop={8}
-                  style={[styles.stepperBtn, { backgroundColor: colors.accent }]}
-                >
-                  <Ionicons name="remove" size={16} color={colors.accentText} />
-                </Pressable>
-                <Text style={[styles.stepperValue, { color: colors.text }]}>{servings}</Text>
-                <Pressable
-                  onPress={() => setServings((s) => s + 1)}
-                  accessibilityRole="button"
-                  accessibilityLabel={t('mealPlan.add.servingsPlus')}
-                  hitSlop={8}
-                  style={[styles.stepperBtn, { backgroundColor: colors.accent }]}
-                >
-                  <Ionicons name="add" size={16} color={colors.accentText} />
-                </Pressable>
+          {/* Portions : recettes seulement. Un repas type n'a pas cette notion (décision D1). */}
+          {tab === 'recipes' && selectedRecipe && (
+            <>
+              <View
+                style={[
+                  styles.stepper,
+                  { backgroundColor: colors.background, borderColor: colors.border },
+                ]}
+              >
+                <Text style={[styles.stepperLabel, { color: colors.text }]}>
+                  {t('mealPlan.add.servings')}
+                </Text>
+                <View style={styles.stepperCtl}>
+                  <Pressable
+                    onPress={() => setServings((s) => Math.max(1, s - 1))}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('mealPlan.add.servingsMinus')}
+                    hitSlop={8}
+                    style={[styles.stepperBtn, { backgroundColor: colors.accent }]}
+                  >
+                    <Ionicons name="remove" size={16} color={colors.accentText} />
+                  </Pressable>
+                  <Text style={[styles.stepperValue, { color: colors.text }]}>{servings}</Text>
+                  <Pressable
+                    onPress={() => setServings((s) => s + 1)}
+                    accessibilityRole="button"
+                    accessibilityLabel={t('mealPlan.add.servingsPlus')}
+                    hitSlop={8}
+                    style={[styles.stepperBtn, { backgroundColor: colors.accent }]}
+                  >
+                    <Ionicons name="add" size={16} color={colors.accentText} />
+                  </Pressable>
+                </View>
               </View>
-            </View>
-            <Text style={[styles.hint, { color: colors.textMuted }]}>
-              {t('mealPlan.add.portionHint', {
-                servings,
-                total: selectedRecipe.servings,
-              })}
-            </Text>
-          </>
-        )}
+              <Text style={[styles.hint, { color: colors.textMuted }]}>
+                {t('mealPlan.add.portionHint', {
+                  servings,
+                  total: selectedRecipe.servings,
+                })}
+              </Text>
+            </>
+          )}
 
-        <Button
-          label={t('mealPlan.add.confirm', { kcal: previewKcal })}
-          onPress={() => void onConfirm()}
-          disabled={!canConfirm}
-          loading={saving}
-        />
-      </View>
+          <Button
+            label={t('mealPlan.add.confirm', { kcal: previewKcal })}
+            onPress={() => void onConfirm()}
+            disabled={!canConfirm}
+            loading={saving}
+          />
+        </View>
+      </KeyboardAvoidingContainer>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
+  sheetLayer: { flex: 1, justifyContent: 'flex-end' },
   quickForm: { gap: 10 },
   viewToggle: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   weekNav: {
@@ -653,7 +668,7 @@ const styles = StyleSheet.create({
   emptyTitle: { fontFamily: fontFamily.displayBold, fontSize: 16, textAlign: 'center' },
   emptyText: { fontFamily: fontFamily.body, fontSize: 13.5, textAlign: 'center', maxWidth: 300 },
 
-  backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)' },
+  backdrop: { ...StyleSheet.absoluteFill, backgroundColor: 'rgba(0,0,0,0.35)' },
   sheet: {
     borderTopLeftRadius: 18,
     borderTopRightRadius: 18,
@@ -668,7 +683,9 @@ const styles = StyleSheet.create({
   segment: { flexDirection: 'row', borderWidth: 1, borderRadius: 10, overflow: 'hidden' },
   segmentItem: { flex: 1, alignItems: 'center', paddingVertical: 9 },
   segmentLabel: { fontFamily: fontFamily.bodyBold, fontSize: 12.5 },
-  options: { maxHeight: 240 },
+  // US CLAV-01 : la feuille ne défile pas — en grande police, clavier ouvert, c'est la liste qui
+  // cède la place en premier, pour que les grammes et le bouton restent visibles.
+  options: { maxHeight: 240, flexShrink: 1 },
   option: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -1,12 +1,13 @@
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/Button';
 import { TextField } from '@/components/TextField';
 import { useAuthStore } from '@/stores/auth-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 /** Formate une date ISO en JJ/MM/AAAA (convention du projet, cf. history/index.tsx). */
 function formatDateFr(iso: string | Date): string {
@@ -61,10 +62,9 @@ export default function AccountDeleteScreen() {
   };
 
   return (
-    <ScrollView
+    <KeyboardAwareScrollView
       style={{ backgroundColor: colors.background }}
       contentContainerStyle={styles.content}
-      keyboardShouldPersistTaps="handled"
     >
       <View
         style={[
@@ -123,7 +123,7 @@ export default function AccountDeleteScreen() {
           disabled={loading}
         />
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

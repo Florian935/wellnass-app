@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 import { useTheme } from '@/theme/useTheme';
 
 type FormScreenProps = {
@@ -8,29 +9,35 @@ type FormScreenProps = {
   edges?: readonly Edge[];
 };
 
-/** Écran de formulaire : fond thémé, safe area et gestion du clavier. */
+/**
+ * Écran de formulaire : fond thémé, safe area et gestion du clavier.
+ *
+ * Le clavier passe par la règle commune (US CLAV-01) : `KeyboardAvoidingView` en `'height'`
+ * calculait son décalage sur un cadre relatif à son parent, et restait court de la hauteur de
+ * l'en-tête natif (inscription, mot de passe oublié, saisie d'activité). L'arête basse, quand elle
+ * est demandée, est rendue par le conteneur (`safeAreaBottom`) : clavier fermé, rien ne change ;
+ * clavier ouvert, pas d'inset en plus du clavier.
+ */
 export function FormScreen({ children, edges = ['top', 'bottom'] }: FormScreenProps) {
   const { colors } = useTheme();
+  const bottom = edges.includes('bottom');
   return (
-    <SafeAreaView edges={edges} style={[styles.safe, { backgroundColor: colors.background }]}>
-      <KeyboardAvoidingView
-        style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    <SafeAreaView
+      edges={edges.filter((edge) => edge !== 'bottom')}
+      style={[styles.safe, { backgroundColor: colors.background }]}
+    >
+      <KeyboardAwareScrollView
+        safeAreaBottom={bottom}
+        contentContainerStyle={styles.content}
+        showsVerticalScrollIndicator={false}
       >
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          {children}
-        </ScrollView>
-      </KeyboardAvoidingView>
+        {children}
+      </KeyboardAwareScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   safe: { flex: 1 },
-  flex: { flex: 1 },
   content: { padding: 24, gap: 16, flexGrow: 1 },
 });

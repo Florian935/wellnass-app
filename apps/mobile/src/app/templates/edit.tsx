@@ -1,14 +1,14 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '@/components/Button';
 import { Screen } from '@/components/Screen';
 import { ScreenHeader } from '@/components/ScreenHeader';
 import { TextField } from '@/components/TextField';
 import { TemplateComposer } from '@/components/templates/TemplateComposer';
 import { createWorkoutTemplate } from '@/data/repositories/workout-template-repository';
+import { KeyboardAvoidingContainer, KeyboardAwareScrollView } from '@/components/keyboard';
 
 /**
  * Écran de création / édition d'un template de séance libre (US Refonte-D §2).
@@ -65,10 +65,9 @@ function TemplateCreateForm({ onCreated }: { onCreated: (id: string) => void }) 
         title={t('templates.createTitle')}
         subtitle={t('templates.createSubtitle')}
       />
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
         <View style={styles.form}>
           <TextField
@@ -86,7 +85,7 @@ function TemplateCreateForm({ onCreated }: { onCreated: (id: string) => void }) 
             disabled={!canCreate}
           />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </Screen>
   );
 }
@@ -99,19 +98,21 @@ function TemplateEditComposer({ templateId }: { templateId: string }) {
   const { t } = useTranslation();
   const router = useRouter();
 
+  // US CLAV-01 : la colonne « composeur + pied » est le conteneur — le pied remonte au-dessus du
+  // clavier, et le défilement du composeur, posé dedans, reste passif (un seul décalage). Le
+  // conteneur reprend l'arête basse qu'apportait le `SafeAreaView` du pied.
   return (
-    <View style={styles.flex}>
+    <KeyboardAvoidingContainer safeAreaBottom>
       <TemplateComposer templateId={templateId} />
-      <SafeAreaView edges={['bottom']} style={styles.done}>
+      <View style={styles.done}>
         <Button label={t('templates.done')} onPress={() => router.back()} />
-      </SafeAreaView>
-    </View>
+      </View>
+    </KeyboardAvoidingContainer>
   );
 }
 
 const styles = StyleSheet.create({
   scroll: { paddingBottom: 32 },
   form: { gap: 16 },
-  flex: { flex: 1 },
   done: { paddingHorizontal: 20, paddingTop: 12 },
 });

@@ -1,6 +1,6 @@
 import { useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { GOALS, SEXES, toIsoDate, type Goal, type Sex } from '@wellness/shared';
 import { Button } from '@/components/Button';
@@ -15,6 +15,7 @@ import {
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 function splitIso(iso: string | null): { d: string; m: string; y: string } {
   if (!iso) return { d: '', m: '', y: '' };
@@ -96,7 +97,7 @@ function ProfileForm({ profile }: { profile: Profile | null }) {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
+    <KeyboardAwareScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
       <TextField
         label={t('onboarding.infos.firstName')}
         value={firstName}
@@ -201,7 +202,7 @@ function ProfileForm({ profile }: { profile: Profile | null }) {
         ) : null}
         <Button label={t('profile.save')} onPress={onSave} disabled={hasInvalidNumber} />
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 

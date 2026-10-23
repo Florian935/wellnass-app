@@ -4,7 +4,6 @@ import {
   ActivityIndicator,
   Alert,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -35,6 +34,7 @@ import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { sessionPaceLabelText } from '@/running/session-pace-label';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 /** Clés i18n des jours de semaine, indexées 0 = lundi … 6 = dimanche. */
 const WEEKDAY_KEYS = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'] as const;
@@ -190,10 +190,9 @@ function PlanView({ programId }: { programId: string }) {
     <Screen edges={['top']}>
       <ScreenHeader title={t('planning.planCta')} subtitle={detail.name} />
 
-      <ScrollView
+      <KeyboardAwareScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
       >
         {/* Durée */}
         <TextField
@@ -315,7 +314,7 @@ function PlanView({ programId }: { programId: string }) {
             disabled={!canPlan}
           />
         </View>
-      </ScrollView>
+      </KeyboardAwareScrollView>
     </Screen>
   );
 }

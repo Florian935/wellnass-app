@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   FOOD_CATEGORIES,
@@ -16,6 +16,7 @@ import { TextField } from '@/components/TextField';
 import { addCustomFood, getFood, updateFood } from '@/data/repositories/food-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { KeyboardAwareScrollView } from '@/components/keyboard';
 
 /** Formate un nombre en string d'édition (vide si null), virgule non imposée. */
 const numToField = (n: number | null | undefined): string => (n == null ? '' : String(n));
@@ -169,7 +170,7 @@ export default function FoodCustomScreen() {
   };
 
   return (
-    <ScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
+    <KeyboardAwareScrollView style={{ backgroundColor: colors.background }} contentContainerStyle={styles.content}>
       <Text style={[styles.hint, { color: colors.textMuted }]}>{t('food.custom.hint')}</Text>
 
       <TextField label={t('journal.name')} value={name} onChangeText={setName} autoCapitalize="sentences" />
@@ -310,7 +311,7 @@ export default function FoodCustomScreen() {
           disabled={!canSave}
         />
       </View>
-    </ScrollView>
+    </KeyboardAwareScrollView>
   );
 }
 
