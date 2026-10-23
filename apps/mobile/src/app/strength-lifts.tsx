@@ -10,6 +10,7 @@ import { useSettings } from '@/data/repositories/settings-repository';
 import { setSbdLift, useStrengthSection } from '@/data/repositories/strength-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 /**
  * Désignation des trois mouvements de force (US MUSCPWR-01, décision D3).
@@ -19,6 +20,7 @@ import { useTheme } from '@/theme/useTheme';
  * pratiquant de force. Cet écran est aussi **l'opt-in du module** : sans désignation, pas de total.
  */
 export default function StrengthLiftsScreen() {
+  useMenuFocus('strength');
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
 

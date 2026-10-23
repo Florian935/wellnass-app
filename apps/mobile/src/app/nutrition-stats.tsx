@@ -57,6 +57,7 @@ import {
 } from '@/data/repositories/journal-repository';
 import { useDailyCalorieTargets, useGoalAdherence } from '@/data/repositories/dashboard-repository';
 import { useNutritionProfile } from '@/data/repositories/nutrition-repository';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -89,6 +90,7 @@ const TABS = NUTRITION_STATS_TABS;
 type Tab = NutritionStatsTab;
 
 export default function NutritionStatsScreen() {
+  useMenuFocus('nutrition');
   const { t } = useTranslation();
   const { colors } = useTheme();
 

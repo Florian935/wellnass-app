@@ -9,6 +9,7 @@ import { TextField } from '@/components/TextField';
 import { TemplateComposer } from '@/components/templates/TemplateComposer';
 import { createWorkoutTemplate } from '@/data/repositories/workout-template-repository';
 import { KeyboardAvoidingContainer, KeyboardAwareScrollView } from '@/components/keyboard';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 /**
  * Écran de création / édition d'un template de séance libre (US Refonte-D §2).
@@ -22,6 +23,7 @@ import { KeyboardAvoidingContainer, KeyboardAwareScrollView } from '@/components
  *    « Terminé » toujours visible pendant l'ajout d'exercices.
  */
 export default function TemplateEditScreen() {
+  useMenuFocus('strength');
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();
   const templateId = typeof params.id === 'string' ? params.id : '';

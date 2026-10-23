@@ -8,6 +8,7 @@ import { ScreenHeader } from '@/components/ScreenHeader';
 import { useWorkoutTemplates } from '@/data/repositories/workout-template-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 /**
  * Liste des templates de séance libre (US Refonte-D §2). Point d'entrée unique et
@@ -20,6 +21,7 @@ import { useTheme } from '@/theme/useTheme';
  * comportement unique et prévisible quel que soit le point d'entrée.
  */
 export default function TemplatesScreen() {
+  useMenuFocus('strength');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

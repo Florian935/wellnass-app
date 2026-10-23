@@ -17,6 +17,7 @@ import { addCustomFood, getFood, updateFood } from '@/data/repositories/food-rep
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { KeyboardAwareScrollView } from '@/components/keyboard';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 /** Formate un nombre en string d'édition (vide si null), virgule non imposée. */
 const numToField = (n: number | null | undefined): string => (n == null ? '' : String(n));
@@ -46,6 +47,7 @@ const MICRO_GROUPS: { key: string; items: { key: MicronutrientKey; unit: 'mg' | 
 ];
 
 export default function FoodCustomScreen() {
+  useMenuFocus('nutrition');
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

@@ -36,6 +36,7 @@ import {
   useNutritionProfile,
 } from '@/data/repositories/nutrition-repository';
 import { useTrackedMicros } from '@/stores/tracked-micros';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -93,6 +94,7 @@ function parseBonus(value: string): number {
 }
 
 export default function NutritionProfileScreen() {
+  useMenuFocus('nutrition');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

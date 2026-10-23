@@ -32,12 +32,14 @@ import { LibraryNotice } from '@/components/nutrition/LibraryNotice';
 import { addFoodEntry } from '@/data/repositories/journal-repository';
 import { addRecipeIngredient, useRecipes, type RecipeListItem } from '@/data/repositories/recipe-repository';
 import { applyTemplate, useMealTemplates } from '@/data/repositories/meal-template-repository';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 import { searchOpenFoodFacts, type OffFood } from '@/lib/openfoodfacts';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 export default function FoodPickerScreen() {
+  useMenuFocus('nutrition');
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

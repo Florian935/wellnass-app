@@ -16,6 +16,7 @@ import {
 import { useExerciseVariants, removeExerciseVariant } from '@/data/repositories/exercise-variant-repository';
 import { useExerciseFicheRecords } from '@/data/repositories/records-repository';
 import { RelativeIntensityCard } from '@/components/strength/RelativeIntensityCard';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -41,6 +42,7 @@ function formatRecordDate(iso: string): string {
  * enregistrée dans `app/_layout.tsx` : pas de `ScreenHeader` ici.
  */
 export default function ExerciseDetailScreen() {
+  useMenuFocus('strength');
   const { id } = useLocalSearchParams<{ id: string }>();
   const exerciseId = typeof id === 'string' ? id : '';
 

@@ -10,6 +10,77 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — IDENT-01 : l'identité de pilier appartient à l'écran, pas à l'onglet (`fix/ident01-identite-pilier-ecran` → `dev`)
+
+> US IDENT-01 cadrée et validée le 23/10/2026 (D1 à D12 telles que proposées), codée en un lot et clôturée
+> (`etape: close`, pas de recette consignée). Commit précédent : `0cc173e0` (CARDIO-02, autre session).
+
+### Corrigé
+- **Les écrans empilés de Musculation et de Nutrition prenaient la couleur de la porte d'entrée.** Une
+  séance ouverte depuis l'Accueil était terracotta, un sélecteur d'aliment aussi, les stats nutrition
+  ouvertes depuis le Labo étaient dorées. Les **32** écrans concernés (22 Musculation, 10 Nutrition)
+  déclarent leur pilier par une ligne `useMenuFocus('strength' | 'nutrition')` — rien d'autre n'y change.
+- **`focusedMenu` restait posé sous tout écran empilé qui se déclarait** (les dix écrans Course depuis
+  CARDIO-UX02, `session-preview`, `nutrition-day`) : barre d'état à icônes claires sur fond clair en thème
+  clair, et matière de l'onglet (trace de `RunHeader`) animée sous la course en cours. Cause : le
+  `useFocusEffect` d'`expo-router` est une copie qui attend un rendu de plus, donc le `blur` de l'écran du
+  dessous passait avant la déclaration. **D7** : seul un onglet se déclare au premier plan — la règle de
+  DASH-01 R4 redevient vraie, Course comprise, sans toucher à ses fichiers.
+- **Un écran sans déclaration changeait de couleur au retour** (Réglages › Profil course → retour : Réglages
+  bleus ; fiche d'un lien du Labo › stats nutrition → retour : scène dorée, cartes vertes). **D8** : un
+  écran empilé se déclare au montage (`useLayoutEffect`, avant sa première image) et rend en partant
+  l'identité trouvée en arrivant, via une pile avec legs — juste pour `router.replace` (brief → séance →
+  fin de séance) et pour les démontages frères, que React fait de bas en haut.
+- **L'onglet Labo forçait la barre d'état pour toute la session** (**D12**) : son `<StatusBar
+  style="light" />`, jamais démonté, l'emportait sur celui de `(tabs)/_layout.tsx` dès la première visite.
+  Retiré : le layout règle déjà « light » quand le Labo est au premier plan.
+
+### Ajouté
+- `hooks/__tests__/useMenuFocus.test.tsx` : 15 cas — filet de l'onglet (vert sur l'ancien hook), écran
+  empilé (D7, et déclaration **avant la première image** : une sonde en effet de mise en page lit déjà
+  l'identité, vue rouge avec un `useEffect`), pile (D8 : retour, remplacement, deux écrans fermés d'un
+  coup, retrait d'un écran sous un autre). Le mock de `useFocusEffect` capture l'effet sans l'exécuter au
+  rendu, comme le vrai fork.
+
+### Modifié
+- `hooks/useMenuFocus.ts` : D7 et D8, en-tête réécrit (le fork d'`expo-router`, l'ordre des démontages, et
+  l'**hypothèse** de la pile : un effet n'est nettoyé qu'au démontage — pas de gel d'écran, pas
+  d'`<Activity>`, pas de préchargement).
+- `app/__tests__/pillar-identity.test.ts` : garde **exhaustif** — tables Musculation et Nutrition, liste
+  `SANS_PILIER` avec raison (15 transverses, 5 Bien-être / Labo → IDENT-02, 2 spikes), six onglets ; un
+  nouvel écran ou onglet non classé, une entrée disparue ou un écran sans pilier qui déclare fait échouer la
+  suite. Ancré sur l'instruction (`^\s*useMenuFocus('x');`) : un commentaire ne compte pas. Et un test qui
+  échoue si `freezeOnBlur`, `enableFreeze`, `prefetch` ou `<Activity>` apparaissent dans `src/`.
+- 32 écrans : `app/{workout,workout-brief,workout-summary,exercises,strength-lifts,strength-profile,
+  settings-session,body,body-shape,body-training,body-training-programs,measurements}.tsx`,
+  `app/exercises/[id].tsx`, `app/templates/{index,[id],edit}.tsx`, `app/programs/{index,[id],edit}.tsx`,
+  `app/history/{index,[id]}.tsx`, `app/progress/index.tsx` ; `app/{food-picker,food-custom,food-scan,
+  meal-quick-entry,nutrition-meals,nutrition-profile,nutrition-stats,recipe-edit}.tsx`,
+  `app/meal-plan/{index,shopping}.tsx`.
+- 26 tests d'écran : mock de `@/hooks/useMenuFocus` (leur mock d'`expo-router` n'expose ni
+  `useFocusEffect` ni `useNavigation`) ; `useLoopActive.test.tsx` : `useNavigation` (onglet).
+- `app/(tabs)/lab.tsx` : `StatusBar` retiré (D12) ; `lab-screen.test.tsx` perd son mock
+  d'`expo-status-bar`, devenu inutile. `stores/menu-accent-store.ts`, `theme/useTheme.ts` : commentaires
+  seulement.
+- Spec et plan (`etape: close`, écarts au plan) ; roadmap 3.63 et 4.46 (remarques, statuts inchangés),
+  journal ; BACKLOG : BARRE-01 réduit aux cas restants (séance immersive / brief, fiche d'un lien, Labo
+  sans scène).
+
+### Technique / Notes
+- **Rebasé** sur ACCES-IA et CARDIO-02 : les deux écrans neufs de CARDIO-02 (`running-pace`, `running-welcome`)
+  sont classés Course par leur session ; le garde compte désormais **68** écrans empilés.
+- **Non touchés** : écrans Course, transverses (Planning, Réglages, Bilan…), Bien-être, Labo empilé,
+  `lab-repository.ts`, Prisme. `meal-quick-entry.tsx` ne gagne qu'un import et une ligne.
+- **Vérification sur téléphone à la demande** : parcours d'entrée au §14.2 de la spec (thème clair, app
+  relancée).
+- Aucune migration, aucune sync rule, aucune dépendance, aucun déploiement.
+- **Relecture du code** par un agent : rien de bloquant ; ont été intégrés l'hypothèse écrite et gardée,
+  le test « première image », le garde ancré et ses messages, le contrôle complet de `(tabs)`. Relevé à
+  savoir : à l'aller, l'écran du dessous prend déjà la couleur du nouvel écran pendant l'animation
+  (identité globale, déjà le cas pour la Course) — noté au §7 et au §14.2 de la spec.
+- Vérifié après rebase sur ACCES-IA et CARDIO-02 : typecheck 3 workspaces à 0, lint à 0, tests — mobile
+  **5 561** (323 suites), shared 4 246, admin 633 — code de sortie lu sans pipe. L'alerte ETAT « 1 migration
+  non poussée » vient d'ACCES-IA (à pousser par Florian), pas de cette US.
 ## 23/10/2026 — CARDIO-02 livrée : les quatre portes vers l'allure de référence, l'accueil du pilier Course, le test de 12 minutes (`feature/cardio02-allure-reference` → `dev`)
 
 > Étapes 3 à 7 du plan, en une vague, après la validation de Florian (D1 à D8). US **close** dans ce commit

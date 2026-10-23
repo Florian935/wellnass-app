@@ -104,6 +104,7 @@ import { useSessionMode } from '@/stores/session-mode-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useActionLock } from '@/hooks/useActionLock';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useUnits } from '@/hooks/useUnits';
 import {
   applyLiveSet,
@@ -324,6 +325,7 @@ function useElapsed(startedAt: string | undefined, stoppedAt: number | null): st
 }
 
 export default function WorkoutScreen() {
+  useMenuFocus('strength');
   useKeepAwake();
 
   const { t, i18n } = useTranslation();

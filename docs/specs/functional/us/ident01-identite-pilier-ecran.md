@@ -3,7 +3,7 @@ id: IDENT-01
 titre: "L'identité de pilier appartient à l'écran, pas à l'onglet — les écrans empilés de Musculation et de Nutrition déclarent leur pilier"
 roadmap: [3.63, 4.46]
 catalogue: []
-etape: code
+etape: close
 branche: fix/ident01-identite-pilier-ecran
 maj: 23/10/2026
 ---
@@ -38,6 +38,12 @@ maj: 23/10/2026
 > agent de revue (§15), dont les corrections sont intégrées.
 > ✅ **Validée par Florian le 23/10/2026** : D1 à D12 **telles que proposées** (dont D7 et D8 sur le hook,
 > et D12 hors périmètre : le `StatusBar` forcé de l'onglet Labo est retiré).
+> 🛠️ **Codée et clôturée le 23/10/2026**, en un lot sur `dev` (rebasé sur CARDIO-08 et CIBLE-04) : le hook
+> d'abord (filet vert, règles rouges), le garde (32 échecs nommés), puis les 22 écrans Musculation et les
+> 10 écrans Nutrition. Relecture du code par un agent : rien de bloquant ; l'hypothèse de la pile est
+> écrite dans le hook et gardée par un test, la règle « dès la première image » a son test, le garde est
+> ancré sur l'instruction. Écarts au plan en fin de plan. Vérification sur téléphone : à la demande, avec
+> les parcours du §14.2. Aucune migration, aucune sync rule, aucun déploiement.
 
 ## 0. Le besoin
 
@@ -289,7 +295,7 @@ tout fichier Prisme, `(tabs)/_layout.tsx` (sa barre d'état redevient juste par 
 | **Redirection** (`history/index`) | Se déclare, puis est remplacée par l'onglet Muscu, qui se redéclare. Sans effet visible. |
 | Pilier **désactivé** (onglet masqué, décision H) mais écran atteint par un lien | L'écran prend quand même l'identité de son pilier : la palette existe indépendamment de l'onglet. |
 | **Notification** (rappel de repos pendant une séance) | Aucune notification ne route vers un écran : la toucher ramène l'app là où elle était. L'identité est un état mémoire, elle n'a pas bougé. Après un arrêt de l'app par le système, on repart de l'Accueil. |
-| **Transitions** | L'écran qui arrive se déclare avant sa première image (D8) ; celui qui part rend l'identité au moment où il est démonté. Aucun éclair n'est attendu, mais ce n'est pas vérifiable en test : parcours d'observation au §14.2. |
+| **Transitions** | L'écran qui arrive se déclare avant sa première image (D8) ; celui qui part rend l'identité au moment où il est démonté. L'identité étant globale, **à l'aller** l'écran qui reste dessous prend déjà la couleur du nouvel écran pendant l'animation d'arrivée (l'Accueil passe au vert en ouvrant le sélecteur d'aliment) — c'était déjà le cas pour la Course. Au retour, aucun éclair n'est attendu. Rien de cela n'est vérifiable en test : parcours d'observation au §14.2. |
 | **Déconnexion**, session expirée | Inchangé : les écrans de connexion affichent l'identité laissée en dernier, comme aujourd'hui. |
 | **iOS** (plus tard) | Une `presentation: 'modal'` y est une feuille qui laisse voir l'écran du dessous ; l'identité étant globale, cet écran prend la couleur de la feuille tant qu'elle est ouverte. Android d'abord : sans objet aujourd'hui, à revoir à la première build iOS. |
 
@@ -334,8 +340,8 @@ cloud. Un dev build existant suffit (JavaScript seul).
   ont une barre d'état claire en thème clair, avec ou sans IDENT-01 — noté dans IDENT-02.
 - **Barre d'état des écrans à fond sombre fixe** — séance immersive et brief (`immersivePalette`) :
   la barre d'état suit le thème, donc en thème clair des icônes sombres sur fond sombre. Préexistant,
-  ni causé ni corrigé par IDENT-01 (R6) → BACKLOG **BARRE-01** (avec l'onglet Labo si D12 n'est pas
-  retenue).
+  ni causé ni corrigé par IDENT-01 (R6) → BACKLOG **BARRE-01** (l'onglet Labo, lui, est corrigé par
+  D12).
 - **`/real-life`** : la « reprise en douceur » de l'Accueil (`(tabs)/index.tsx:186-187`) pousse vers
   une route qui n'existe pas — constaté à l'inventaire → BACKLOG **VIE-02**.
 - **`meal-quick-entry.tsx`** porte le recours Prisme, qu'ACCES-IA peut modifier en parallèle. IDENT-01
@@ -394,7 +400,7 @@ si Florian demande une vérification ; la session qui aura codé la détaillera 
 | Notification | Séance lancée depuis l'Accueil → arrière-plan → notification de repos → la toucher | séance rouge |
 | Préférence | « Couleurs des menus » activé, une couleur pour Muscu → séance | **cette** couleur (R5) |
 | Thème sombre | Séance depuis l'Accueil, sélecteur d'aliment, fiche de lien | mêmes couleurs, barre d'état claire |
-| *Observation* | Pendant les retours (glissement) | aucun éclair de la couleur de l'écran précédent |
+| *Observation* | Pendant les animations, à l'aller et au retour | à l'aller, l'écran du dessous prend déjà la couleur du nouveau (attendu) ; au retour, aucun éclair de la couleur de l'écran quitté |
 
 ## 15. Relecture (23/10/2026)
 

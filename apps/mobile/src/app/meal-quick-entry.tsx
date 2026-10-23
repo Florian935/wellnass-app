@@ -20,6 +20,7 @@ import { TextField } from '@/components/TextField';
 import { PrismeMealRecourse } from '@/components/prisme/PrismeMealRecourse';
 import { useFoods, type FoodListItem } from '@/data/repositories/food-repository';
 import { addFoodEntry } from '@/data/repositories/journal-repository';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -75,6 +76,7 @@ type Row = {
 };
 
 export default function MealQuickEntryScreen() {
+  useMenuFocus('nutrition');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

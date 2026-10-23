@@ -6,7 +6,8 @@ import { secureStorage } from '@/lib/secure-storage';
  *
  * Contrôlé par le réglage `enabled` (off par défaut → accent unique orange, comme le
  * reste de l'app). Quand activé, chaque onglet peut avoir sa propre couleur secondaire ;
- * le menu actif (`activeMenu`, posé par chaque onglet au focus) détermine l'accent
+ * le menu actif (`activeMenu`, posé par l'écran affiché — onglet ou écran empilé — via
+ * `useMenuFocus`, US IDENT-01) détermine l'accent
  * effectif renvoyé par `useTheme`. `enabled` + les couleurs sont une **préférence locale
  * (device)**, persistée via `secureStorage` — non synchronisée, **aucune migration**
  * (promotion possible vers `user_settings` plus tard).
@@ -93,7 +94,10 @@ type MenuAccentState = {
   enabled: boolean;
   /** Couleur de chaque menu (défauts fusionnés avec le stockage). */
   colors: Record<MenuKey, string>;
-  /** Menu actuellement affiché (piloté par le focus des onglets). */
+  /**
+   * Identité de l'écran affiché, posée par `useMenuFocus` : chaque onglet et chaque écran de pilier la
+   * déclare ; un écran transverse garde celle de l'écran qui l'a ouvert (US IDENT-01).
+   */
   activeMenu: MenuKey;
   /**
    * US DASH-01 (R4) — l'onglet **réellement au premier plan**, `null` quand un écran empilé le recouvre.

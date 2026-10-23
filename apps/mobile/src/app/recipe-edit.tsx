@@ -20,8 +20,10 @@ import {
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { KeyboardAwareScrollView } from '@/components/keyboard';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 export default function RecipeEditScreen() {
+  useMenuFocus('nutrition');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

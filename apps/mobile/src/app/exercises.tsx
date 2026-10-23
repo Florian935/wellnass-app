@@ -25,10 +25,12 @@ import {
   useActiveWorkout,
 } from '@/data/repositories/workout-repository';
 import { useActionLock } from '@/hooks/useActionLock';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 export default function ExercisesScreen() {
+  useMenuFocus('strength');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

@@ -247,4 +247,26 @@ d'état, son attendu change à cette étape et seulement là.
 
 ## Écarts au plan
 
-*(à remplir à l'implémentation)*
+Codé le 23/10/2026, en un lot, après rebase sur CARDIO-08 (`ae9db4f9`) et CIBLE-04. Des moyens, pas des
+règles :
+
+- **Base** : mobile 5 353 tests au cadrage ; 5 430 au départ du code (les deux sessions rebasées en
+  ajoutent). À l'arrivée : voir le CHANGELOG.
+- **Le hook** : la pile s'appelle `pileEmpilee` ; le legs passe par `const dessus = pileEmpilee[i]` au lieu
+  de `pile[i]!` (lint). L'en-tête dit aussi l'**hypothèse** de la pile (un effet n'est nettoyé qu'au
+  démontage : pas de gel d'écran, pas d'`<Activity>`, pas de préchargement) et que le legs rend le
+  résultat juste **quel que soit** l'ordre des démontages — une pile imbriquée peut partir avant ou après.
+- **Tests du hook** : 15 cas au lieu des 10 du tableau — un test « avant la première image » (une sonde en
+  effet de mise en page lit déjà l'identité ; vu rouge avec `useEffect` à la place de `useLayoutEffect`),
+  deux remplacements (même pilier, autre pilier), « même pilier dessus et dessous ».
+- **Le garde** : ancré sur l'instruction (`^\s*useMenuFocus('x');`), pas sur le texte — un commentaire
+  ne suffit plus à faire passer un écran ; messages d'échec qui nomment le geste attendu ; trois tests de
+  plus — chaque onglet de `(tabs)` est dans la table des onglets, aucune entrée ne désigne un écran
+  disparu, et **aucun gel ni préchargement** (`freezeOnBlur`, `enableFreeze`, `prefetch`, `<Activity>`)
+  dans `src/`, l'hypothèse du hook.
+- **Import** : dans les écrans sans import `@/hooks`, il est posé en fin du bloc d'imports.
+- **D12** : un commentaire JSX à la place du `StatusBar` renvoie à `(tabs)/_layout.tsx` ;
+  `lab-screen.test.tsx` perd son mock d'`expo-status-bar`, devenu inutile.
+- **Relecture du code** par un agent (rien de bloquant) : les points ci-dessus en viennent. Constat
+  ajouté à BARRE-01 : le Labo sans scène garde des icônes claires sur fond clair en thème clair
+  (préexistant).

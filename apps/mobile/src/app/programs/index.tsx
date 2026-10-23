@@ -22,6 +22,7 @@ import {
   type ProgramLibraryFilters,
 } from '@/data/repositories/program-repository';
 import { useActionLock } from '@/hooks/useActionLock';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
@@ -32,6 +33,7 @@ type LevelFilter = ProgramLevel | typeof ALL_LEVELS;
 const LEVEL_OPTIONS: readonly LevelFilter[] = [ALL_LEVELS, ...PROGRAM_LEVELS];
 
 export default function ProgramsScreen() {
+  useMenuFocus('strength');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

@@ -30,6 +30,7 @@ import { startWorkoutFromSession } from '@/data/repositories/workout-repository'
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { useActionLock } from '@/hooks/useActionLock';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { briefRouteForSession } from '@/components/workout/immersive/brief-entry';
 import { useUnits } from '@/hooks/useUnits';
 
@@ -38,6 +39,7 @@ import { useUnits } from '@/hooks/useUnits';
 // ---------------------------------------------------------------------------
 
 export default function ProgramDetailScreen() {
+  useMenuFocus('strength');
   const { id } = useLocalSearchParams<{ id: string }>();
   const programId = typeof id === 'string' ? id : '';
 

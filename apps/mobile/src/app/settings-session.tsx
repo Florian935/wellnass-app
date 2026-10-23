@@ -30,6 +30,7 @@ import { useImmersivePrefs } from '@/stores/immersive-prefs-store';
 import { useSessionMode } from '@/stores/session-mode-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 /** Une ligne « libellé + description + interrupteur ». */
 function ToggleRow({
@@ -64,6 +65,7 @@ function ToggleRow({
 }
 
 export default function SessionSettingsScreen() {
+  useMenuFocus('strength');
   const { t } = useTranslation();
   const { colors } = useTheme();
 

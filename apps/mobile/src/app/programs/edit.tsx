@@ -14,6 +14,7 @@ import {
   useProgramDetail,
 } from '@/data/repositories/program-repository';
 import { useActionLock } from '@/hooks/useActionLock';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { SessionEditor } from '@/components/programs/SessionEditor';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -41,6 +42,7 @@ function sessionLetter(index: number): string {
  *    (ajout/suppression) et, par séance, des exercices planifiés avec leurs cibles.
  */
 export default function ProgramEditScreen() {
+  useMenuFocus('strength');
   const router = useRouter();
   const params = useLocalSearchParams<{ id?: string }>();
   const programId = typeof params.id === 'string' ? params.id : '';

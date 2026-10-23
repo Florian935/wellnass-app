@@ -12,6 +12,7 @@ import { QuantityPanel, type PickTarget } from '@/components/QuantityPanel';
 import { findFoodByBarcode, importOpenFoodFactsFood } from '@/data/repositories/food-repository';
 import { addFoodEntry } from '@/data/repositories/journal-repository';
 import { fetchOpenFoodFactsByBarcode } from '@/lib/openfoodfacts';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useCurrentHour, useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -30,6 +31,7 @@ type Failure = 'networkError' | 'notFound' | 'invalidCode' | 'incomplete';
  * et l'ajoute au journal. Nécessite `expo-camera` (module natif → dev build).
  */
 export default function FoodScanScreen() {
+  useMenuFocus('nutrition');
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

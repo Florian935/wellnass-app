@@ -28,6 +28,7 @@ import {
 } from '@/data/repositories/shopping-list-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 /**
  * Liste de courses d'une semaine planifiée (US REPAS-01, roadmap 4.28 + 4.29).
@@ -37,6 +38,7 @@ import { useTheme } from '@/theme/useTheme';
  * explicite, qui **annonce** la perte des cases cochées avant de la provoquer.
  */
 export default function ShoppingListScreen() {
+  useMenuFocus('nutrition');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const params = useLocalSearchParams<{ week?: string }>();

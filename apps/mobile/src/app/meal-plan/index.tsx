@@ -40,6 +40,7 @@ import {
   useWeekMealPlan,
   useWeekMealPlanCount,
 } from '@/data/repositories/meal-plan-repository';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -59,6 +60,7 @@ type AddTarget = { dayKey: string; mealKey: string };
  * « J'ai mangé ça » crée des `food_entries`, et il est réversible (R2/R3).
  */
 export default function MealPlanScreen() {
+  useMenuFocus('nutrition');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

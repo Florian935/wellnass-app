@@ -8,7 +8,9 @@
  */
 
 import { Redirect } from 'expo-router';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 export default function HistoryRedirect() {
+  useMenuFocus('strength');
   return <Redirect href={{ pathname: '/(tabs)/strength', params: { section: 'history' } }} />;
 }

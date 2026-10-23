@@ -199,6 +199,11 @@ jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
   useLocalSearchParams: jest.fn(() => ({})),
 }));
+// US IDENT-01 — chaque écran du pilier déclare son identité (`useMenuFocus`). Le hook s'appuie sur
+// `useFocusEffect` et `useNavigation`, absents du mock d'`expo-router` de ce fichier : on le neutralise
+// ici, comme les tests des onglets et du pilier Course. Son comportement est testé dans
+// `hooks/__tests__/useMenuFocus.test.tsx`.
+jest.mock('@/hooks/useMenuFocus', () => ({ useMenuFocus: jest.fn() }));
 
 jest.mock('react-i18next', () => ({
   useTranslation: () => ({

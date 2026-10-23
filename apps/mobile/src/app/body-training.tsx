@@ -8,6 +8,7 @@ import { useBodyTraining } from '@/data/repositories/body-training-repository';
 import { useBodyVisual } from '@/data/repositories/body-visual-repository';
 import { useAuthStore } from '@/stores/auth-store';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 function BodyTrainingSession() {
   const source = useBodyTraining();
@@ -30,6 +31,7 @@ function BodyTrainingSession() {
 }
 
 export default function BodyTrainingScreen() {
+  useMenuFocus('strength');
   const userId = useAuthStore(state => state.session?.user.id);
   return <Screen>{userId ? <BodyTrainingSession key={userId} /> : null}</Screen>;
 }

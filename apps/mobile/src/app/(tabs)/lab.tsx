@@ -21,7 +21,6 @@
 import { useEffect, useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import { useTranslation } from 'react-i18next';
 import {
   bestLabSteps,
@@ -377,7 +376,9 @@ export default function LabScreen() {
 
   return (
     <View style={[styles.screen, { backgroundColor: colors.background }]}>
-      <StatusBar style="light" />
+      {/* Pas de `StatusBar` ici (IDENT-01 D12) : jamais démonté, il l'emportait sur celui de
+          `(tabs)/_layout.tsx` pour toute la session. Le layout règle déjà « light » quand le Labo est
+          au premier plan. */}
       {scene !== null ? (
         <LabStage
           state={scene}

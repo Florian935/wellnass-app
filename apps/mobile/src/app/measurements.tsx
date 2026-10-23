@@ -35,6 +35,7 @@ import {
   useLatestMeasurements,
   useMeasurements,
 } from '@/data/repositories/body-measurement-repository';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -61,6 +62,7 @@ function shortLabel(dayKey: string): string {
 }
 
 export default function MeasurementsScreen() {
+  useMenuFocus('strength');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

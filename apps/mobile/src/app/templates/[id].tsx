@@ -6,6 +6,7 @@ import { Button } from '@/components/Button';
 import { KeyboardAvoidingContainer } from '@/components/keyboard';
 import { TemplateComposer } from '@/components/templates/TemplateComposer';
 import { useActionLock } from '@/hooks/useActionLock';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { briefRouteForTemplate } from '@/components/workout/immersive/brief-entry';
 import {
   deleteWorkoutTemplate,
@@ -21,6 +22,7 @@ import {
  * (confirmation puis soft delete).
  */
 export default function TemplateDetailScreen() {
+  useMenuFocus('strength');
   const { id } = useLocalSearchParams<{ id: string }>();
   const templateId = typeof id === 'string' ? id : '';
 

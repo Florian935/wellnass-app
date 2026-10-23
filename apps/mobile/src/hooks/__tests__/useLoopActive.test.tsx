@@ -13,7 +13,11 @@ import { useLoopActive } from '../useLoopActive';
 import { useMenuAccent } from '@/stores/menu-accent-store';
 import { useMotionPreference } from '@/stores/motion-store';
 
-jest.mock('expo-router', () => ({ useFocusEffect: jest.fn() }));
+// US IDENT-01 — `useMenuFocus` lit le navigateur de l'écran : seul un onglet se déclare au premier plan.
+jest.mock('expo-router', () => ({
+  useFocusEffect: jest.fn(),
+  useNavigation: () => ({ getState: () => ({ type: 'tab' }) }),
+}));
 jest.mock('../useIsAppActive', () => ({ useIsAppActive: jest.fn(() => true) }));
 
 const { useIsAppActive } = jest.requireMock('../useIsAppActive') as { useIsAppActive: jest.Mock };

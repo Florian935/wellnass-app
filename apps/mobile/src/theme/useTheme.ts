@@ -61,8 +61,9 @@ export function useColorSchemePref(): ColorScheme {
  * 2. **La préférence « Couleurs des menus »** par-dessus, si elle est activée : l'utilisateur
  *    remplace alors l'accent par le sien. Elle ne touche que l'accent, jamais les surfaces.
  *
- * Les écrans empilés au-dessus d'un onglet héritent du pilier : `activeMenu` n'est pas réinitialisé
- * à la poussée (voir `useMenuFocus`), donc toute la branche muscu reste en muscu.
+ * L'identité appartient à l'écran, pas à l'onglet (US IDENT-01) : chaque écran de pilier la déclare
+ * par `useMenuFocus`, quelle que soit la porte d'entrée ; un écran transverse (Planning, Réglages…)
+ * garde celle de l'écran qui l'a ouvert, et la retrouve au retour.
  */
 export function useTheme(): { scheme: ColorScheme; colors: Palette } {
   const scheme = useColorSchemePref();

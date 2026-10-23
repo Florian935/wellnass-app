@@ -29,6 +29,7 @@ import { PressableScale } from '@/components/motion/PressableScale';
 import { WorkoutReport } from '@/components/workout/report/WorkoutReport';
 import { WellbeingContextLine } from '@/components/wellbeing/WellbeingContextLine';
 import { useWorkoutReport } from '@/data/repositories/workout-report-repository';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useRedo } from '@/hooks/useRedo';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -43,6 +44,7 @@ function formatDateFr(isoString: string): string {
 }
 
 export default function WorkoutDetailScreen() {
+  useMenuFocus('strength');
   const { id } = useLocalSearchParams<{ id: string }>();
   const workoutId = typeof id === 'string' ? id : '';
 

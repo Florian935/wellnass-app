@@ -26,6 +26,7 @@ import {
 } from '@/data/repositories/strength-program-recommendation-repository';
 import { prepareCompatibleStrengthProgram } from '@/data/repositories/program-repository';
 import { useActionLock } from '@/hooks/useActionLock';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useAuthStore } from '@/stores/auth-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
@@ -89,6 +90,7 @@ function contextPreferences(context: StrengthProgramContext | null) {
 }
 
 export default function BodyTrainingProgramsScreen() {
+  useMenuFocus('strength');
   const accountId = useAuthStore((state) => state.session?.user.id ?? null);
 
   return <BodyTrainingProgramsSession key={accountId ?? 'signed-out'} accountId={accountId} />;

@@ -39,6 +39,7 @@ import { Card } from '@/components/Card';
 import { upsertProfile, useProfile } from '@/data/repositories/profile-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 const DAYS = Array.from(
   { length: MAX_WEEKLY_AVAILABILITY - MIN_WEEKLY_AVAILABILITY + 1 },
@@ -46,6 +47,7 @@ const DAYS = Array.from(
 );
 
 export default function StrengthProfileScreen() {
+  useMenuFocus('strength');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();

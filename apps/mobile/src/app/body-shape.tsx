@@ -6,6 +6,7 @@ import { BodyShapeEditor } from '@/components/body/BodyShapeEditor';
 import { useBodyVisual } from '@/data/repositories/body-visual-repository';
 import { useAuthStore } from '@/stores/auth-store';
 import { useTheme } from '@/theme/useTheme';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 function BodyShapeSession() {
   const source = useBodyVisual();
@@ -19,6 +20,7 @@ function BodyShapeSession() {
 }
 
 export default function BodyShapeScreen() {
+  useMenuFocus('strength');
   const userId = useAuthStore((state) => state.session?.user.id);
   return <Screen>{userId ? <BodyShapeSession key={userId} /> : null}</Screen>;
 }

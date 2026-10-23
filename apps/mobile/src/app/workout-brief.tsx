@@ -41,11 +41,13 @@ import {
   useWorkoutTemplateDetail,
 } from '@/data/repositories/workout-template-repository';
 import { useActionLock } from '@/hooks/useActionLock';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useUnits } from '@/hooks/useUnits';
 import { useImmersivePrefs } from '@/stores/immersive-prefs-store';
 import { fontFamily } from '@/theme/fonts';
 
 export default function WorkoutBriefScreen() {
+  useMenuFocus('strength');
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const units = useUnits();

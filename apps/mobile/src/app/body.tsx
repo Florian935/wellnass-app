@@ -13,6 +13,7 @@ import { useBodyExercises } from '@/data/repositories/body-explorer-repository';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { KeyboardAwareScrollView } from '@/components/keyboard';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 
 function readMuscles(value: unknown): FineMuscle[] {
   if (typeof value !== 'string') return [];
@@ -21,6 +22,7 @@ function readMuscles(value: unknown): FineMuscle[] {
 
 /** CORPS-01: anatomy and catalogue reads only. Camera and selection are ephemeral. */
 export default function BodyScreen() {
+  useMenuFocus('strength');
   const params = useLocalSearchParams<{ muscle?: string; full?: string; reduced?: string; context?: string }>();
   const incoming = parseBodyMuscle(params.muscle);
   const context = params.context === 'exercise' || params.context === 'session' || params.context === 'week' ? params.context : null;

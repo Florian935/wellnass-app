@@ -24,11 +24,13 @@ import { useWorkoutReport } from '@/data/repositories/workout-report-repository'
 import { useSessionMuscles } from '@/data/repositories/immersive-repository';
 import { useWorkoutHistory } from '@/data/repositories/workout-repository';
 import { createTemplateFromWorkout } from '@/data/repositories/workout-template-repository';
+import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
 export default function WorkoutSummaryScreen() {
+  useMenuFocus('strength');
   const { t } = useTranslation();
   const { colors } = useTheme();
   const units = useUnits();
