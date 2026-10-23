@@ -10,6 +10,37 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 23/10/2026 — CARDIO-08 cadrée et validée : « X sur Y dans la plage » sans l'échauffement (`fix/cardio08-fractions-analyse` → `dev`)
+
+> US CARDIO-08 entrée au pipeline par `/us` (constat de la relecture CARDIO-UX03, BACKLOG P2), relue par un
+> agent de revue, validée par Florian le 23/10/2026 (D1 à D4 telles que proposées). `etape: code`.
+> Commit précédent : `788baace` (IDENT-01, autre session). Aucun code dans ce commit.
+
+### Ajouté
+- **Spec** `docs/specs/functional/us/cardio08-fractions-analyse.md` : recensement des appelants de
+  `summarizeIntervalSeries` (un seul, `run/analysis.tsx:143`) ; cause (`expandIntervalPhases` développe
+  l'échauffement, les gammes, le retour au calme **et un segment « récupération »** en phases `fast`, que le
+  résumé prend pour des fractions) ; preuve qu'à population égale le hub et l'analyse jugent pareil ;
+  décisions **D1** (filtre `segmentKind === 'work'` dans la fonction partagée), **D2** (lignes « Échauf. »,
+  « Gammes n », « Ret. calme »), **D3** (seul le commentaire de `run-last-time.ts` est retouché), **D4** (test
+  de comparaison plutôt qu'un prédicat partagé) ; sortie de référence 6 × 400 m figée : aujourd'hui 6 sur 8 ·
+  4:21 · ± 61 s/km, après 5 sur 6 · 3:58 · ± 6 s/km, comme le hub.
+- **Plan** `docs/plans/cardio08-fractions-analyse.md` : tests rouges d'abord (A1-A3 Vitest, A5-A6 Jest),
+  correctif d'une ligne, libellés FR/EN, jeu SQL de vérification (préfixe `ca2d1008-…`, séance « Fractionné »
+  d'un programme brouillon, garde calquée sur `useTodayRunSession`).
+
+### Modifié
+- `BACKLOG.md` : la ligne CARDIO-08 quitte le backlog (entrée dans le pipeline).
+- `ETAT.md` régénéré.
+
+### Technique / Notes
+- Roadmap : 5.44 reste ✅, pas de nouvelle ligne (correction d'un écart entre deux écrans livrés) ; la remarque
+  viendra avec le code.
+- Recette à la demande (décision de Florian du 23/10/2026) : le §100 réservé à CARDIO-08 dans RECETTES est
+  caduc. La spec garde des critères d'acceptation (§9.1) ; les chiffres attendus sont figés dans la spec (§5)
+  et le seront par le test A2 ; le jeu SQL de vérification ne sera pas commité. L'US passera à `close` dans
+  le commit du code.
+
 ## 23/10/2026 — IDENT-01 cadrée, relue et validée (`fix/ident01-identite-pilier-ecran` → `dev`)
 
 > L'identité de pilier appartient à l'écran, pas à l'onglet : les 32 écrans empilés de Musculation et de
