@@ -29,7 +29,9 @@ export const MENU_KEYS: readonly MenuKey[] = ['home', 'strength', 'running', 'nu
  * ne le signale. Les valeurs ci-dessous sont mesurées par `theme/__tests__/contrast.test.ts`.
  */
 export const DEFAULT_MENU_COLORS: Record<MenuKey, string> = {
-  home: '#e07a4d', // = pillarHome (sombre)
+  // = pillarHome (sombre) — le turquoise d'Aurore depuis ACCUEIL-07 (25/10/2026). Avant : le
+  // terracotta #e07a4d, devenu la couleur de marque (`brand`).
+  home: '#5eead4',
   // = pillarStrength (sombre) — rouge fonte depuis MUSCU-UX06 (23/09/2026). Avant : le rose
   // #e07a98, et encore avant #6b0028 (1,15:1 sur une carte).
   strength: '#ff6b5e',
@@ -41,6 +43,9 @@ export const DEFAULT_MENU_COLORS: Record<MenuKey, string> = {
 
 /** Palette de choix proposée dans les réglages. */
 export const MENU_COLOR_SWATCHES: readonly string[] = [
+  // US ACCUEIL-07 — le turquoise d'Aurore, défaut de l'accueil. `#e07a4d` reste proposé juste après :
+  // c'est l'ancien terracotta de l'accueil, et quelqu'un qui l'avait choisi doit pouvoir le retrouver.
+  '#5eead4',
   '#e07a4d',
   '#ff6b5e',
   // `#e07a98` reste proposé, comme `#a9ba7e` plus bas : c'est l'ancien rose du pilier muscu, et

@@ -53,6 +53,12 @@ export type Palette = {
    * clair (4,39 et 4,23) : elles sont assombries ici, teinte conservée.
    */
   pillarHome: string;
+  /**
+   * US ACCUEIL-07 — **la couleur de marque**, lisible en texte : le terracotta qui était celle de
+   * l'accueil jusqu'au 25/10/2026. L'accueil a pris la teinte Aurore (D1) ; le terracotta reste la
+   * couleur de l'app hors des piliers (réglages, onboarding, écrans transverses — voir `useTheme`).
+   */
+  brand: string;
   pillarStrength: string;
   pillarRunning: string;
   pillarNutrition: string;
@@ -99,7 +105,10 @@ export const palettes: Record<ColorScheme, Palette> = {
     panelText: '#f0e4d0',
     panelMuted: '#c9b79a',
     panelAccent: '#d9a888',
-    pillarHome: '#b14f2b', // 4,53 / fond · 5,0 / surface (= accent)
+    // US ACCUEIL-07 — Aurore : le turquoise sombre de la teinte (D1). 4,75 / fond · 5,26 / surface ·
+    // blanc dessus 5,47. Le terracotta d'avant (`#b14f2b`) est devenu `brand`.
+    pillarHome: '#0f766e',
+    brand: '#b14f2b', // 4,53 / fond · 5,0 / surface (= accent)
     // US MUSCU-UX06 (23/09/2026) — « rouge fonte », choisi par Florian sur planche comparative :
     // le bordeaux `#7c2734` « trop rose, pas adapté » est remplacé. 6,83 / surface · 6,18 / fond
     // teinté · blanc dessus 7,09. Teinte 4°, contre 16° pour l'accueil (`#b14f2b`).
@@ -153,7 +162,9 @@ export const palettes: Record<ColorScheme, Palette> = {
     panelText: '#f0e4d0',
     panelMuted: '#c9b79a',
     panelAccent: '#e0a97f',
-    pillarHome: '#e07a4d', // 4,94 / surface — l'accent sombre #dd6e40 n'y fait que 4,45 (D2)
+    // US ACCUEIL-07 — Aurore : le turquoise clair de la teinte, ≈ 10:1 sur la carte sombre.
+    pillarHome: '#5eead4',
+    brand: '#e07a4d', // 4,94 / surface — l'accent sombre #dd6e40 n'y fait que 4,45 (D2)
     // US MUSCU-UX06 — rouge fonte : 5,21 / surface teintée · 7,06 / fond teinté. Le rose `#e07a98`
     // d'avant (teinte 342°) est écarté : « trop rose » (Florian, 23/09/2026).
     pillarStrength: '#ff6b5e', // 5,24 / surface neutre — #e07a98 : 5,16 · #6b0028 : 1,15

@@ -1165,8 +1165,6 @@
     }
   },
   "home": {
-    "greeting": "Hello 👋",
-    "greetingName": "Hello {{name}} 👋",
     "customize": {
       "edit": "Customize",
       "done": "Done",
@@ -1405,30 +1403,6 @@
       "message": "Your {{up}} is well above your 4-week average, while your {{down}} is well below.",
       "hint": "May explain a plateau on one side — not necessarily an issue if intentional."
     },
-    "greetingMoment": {
-      "morning": "Good morning",
-      "afternoon": "Good afternoon",
-      "evening": "Good evening"
-    },
-    "headline": {
-      "workoutActive": "Workout in progress",
-      "runActive": "Run in progress",
-      "sessionToday": "One session on the plan",
-      "meal": {
-        "breakfast": "Breakfast still to log",
-        "lunch": "Lunch still to log",
-        "dinner": "Dinner still to log",
-        "snack": "A snack still to log"
-      },
-      "weighIn": "Your weigh-in is waiting",
-      "wellbeing": "How did your day go?",
-      "dayDone": "Your day is done",
-      "idle": {
-        "morning": "Nothing planned today",
-        "afternoon": "Nothing planned today",
-        "evening": "A quiet day"
-      }
-    },
     "now": {
       "workoutActive": {
         "eyebrow": "Workout in progress",
@@ -1449,21 +1423,28 @@
         "startRunning": "Start run"
       },
       "meal": {
-        "eyebrow": "To log",
-        "eyebrowUsually": "To log · usually around {{hour}}:00",
-        "meta": "Your day isn't complete",
-        "title": {
-          "breakfast": "Breakfast not logged",
-          "lunch": "Lunch not logged",
-          "dinner": "Dinner not logged",
-          "snack": "Snack not logged"
-        },
         "cta": {
           "breakfast": "Log my breakfast",
           "lunch": "Log my lunch",
           "dinner": "Log my dinner",
           "snack": "Log my snack"
-        }
+        },
+        "name": {
+          "breakfast": "Breakfast",
+          "lunch": "Lunch",
+          "dinner": "Dinner",
+          "snack": "Snack"
+        },
+        "eyebrowDue": "To log · usually around {{time}}",
+        "eyebrowDueDefault": "To log · around {{time}}",
+        "eyebrowNext": "Next meal · around {{time}}",
+        "eyebrowMissed": "Not logged yet",
+        "metaKcal": "{{kcal}} kcal left today",
+        "metaReached": "Today's target is reached",
+        "metaNoTarget": "Scan or search: twenty seconds",
+        "metaMissed": "If you had one, add it to complete your day.",
+        "ctaCustom": "Add: {{label}}",
+        "nameFallback": "Meal"
       },
       "weighIn": {
         "eyebrow": "Weigh-in",
@@ -1492,9 +1473,21 @@
           "afternoon": "This afternoon",
           "evening": "This evening"
         },
-        "title": "Nothing planned today",
-        "meta": "Active rest — or start a free session anytime",
-        "cta": "Create a program"
+        "title": {
+          "program": "No program yet",
+          "meal": "Nothing logged yet",
+          "activity": "Rest day"
+        },
+        "meta": {
+          "program": "Three questions, three minutes: we suggest the one that fits you.",
+          "meal": "Scan or search: twenty seconds.",
+          "activity": "A walk, a ride, some yoga? It all counts toward your streak."
+        },
+        "cta": {
+          "program": "Find my program",
+          "meal": "Add a meal",
+          "activity": "Log an activity"
+        }
       }
     },
     "quick": {
@@ -1522,6 +1515,45 @@
       "title_other": "{{count}} links to adjust this week",
       "lead": "Most pressing: {{short}}",
       "cta": "Open the Lab"
+    },
+    "greet": {
+      "morning": "Good morning {{name}}",
+      "morningAnon": "Good morning",
+      "afternoon": "Good afternoon {{name}}",
+      "afternoonAnon": "Good afternoon",
+      "evening": "Good evening {{name}}",
+      "eveningAnon": "Good evening",
+      "comeback": "Good to see you again, {{name}}",
+      "comebackAnon": "Good to see you again",
+      "welcome": "Welcome, {{name}}",
+      "welcomeAnon": "Welcome"
+    },
+    "sentence": {
+      "workoutActive": "Your session is still running. Pick up where you left off?",
+      "runActive": "Your run is still going.",
+      "session": "A session is waiting for you today.",
+      "sessionIn_one": "Your session is about an hour away. Everything's ready.",
+      "sessionIn_other": "Your session is about {{count}} hours away. Everything's ready.",
+      "sessionNow": "It's time for your session.",
+      "sessionLate": "Your session is still waiting — it's not too late.",
+      "mealDue": "A meal is waiting to be logged.",
+      "mealDueKcal": "You have {{kcal}} kcal left today.",
+      "mealDueReached": "You've reached today's target.",
+      "weighIn": "One weigh-in keeps your curve smooth.",
+      "mealNext": "Everything's logged so far.",
+      "mealNextKcal": "Everything's logged so far — {{kcal}} kcal left.",
+      "wellbeing": "Nice day. Ten seconds for your evening check-in?",
+      "mealMissed": "Almost everything is logged — one meal is missing.",
+      "dayDone": "Day wrapped up. Well-earned rest.",
+      "dayDoneTrained": "Day wrapped up, workout included. Well-earned rest.",
+      "idleProgram": "No program yet — three questions are enough to find yours.",
+      "idleMeal": "Nothing logged yet — your first meal takes twenty seconds.",
+      "idleRest": "Rest day: your body is recovering."
+    },
+    "checkin": {
+      "title": "How are you feeling this morning?",
+      "hint": "Your energy, in one tap.",
+      "groupA11y": "Your energy this morning"
     }
   },
   "activationPath": {
@@ -4804,15 +4836,10 @@
     "home": {
       "timeLeft_one": "Less than an hour left to keep it",
       "timeLeft_other": "About {{count}} h left to keep it",
-      "jokerLeft_one": "One joker left this month — the safety net, not the excuse",
-      "jokerLeft_other": "{{count}} jokers left this month",
-      "jokerNone": "No joker left this month",
-      "saveStreak": "Save my streak",
-      "comeback": "Good to see you again",
       "bestStreak_one": "Your best streak: one day",
       "bestStreak_other": "Your best streak: {{count}} days",
-      "gentleRestart": "Gentle restart",
-      "normalPlan": "Back to the normal plan",
+      "gentleRestart": "Take it easy",
+      "normalPlan": "My usual plan",
       "sinceLastVisit": {
         "title": "Since your last visit",
         "weightDown": "{{delta}} kg down on the scale",
@@ -4852,7 +4879,24 @@
         "runningOnly_other": "Running: {{count}} runs",
         "nutrition_one": "Nutrition: one day logged out of 7",
         "nutrition_other": "Nutrition: {{count}} days logged out of 7"
-      }
+      },
+      "rescue": {
+        "lead": "Nothing active today. Any one of these is enough:",
+        "walk": "Walk for {{minutes}} minutes",
+        "walkSub": "{{steps}} steps, and your step goal keeps the streak",
+        "activity": "Log an activity",
+        "activitySub": "Cycling, yoga, football… it all counts",
+        "joker": "Use my joker",
+        "jokerSub": "It freezes today for your streak",
+        "jokerConfirmTitle": "Freeze today?",
+        "jokerConfirmBody": "Your joker freezes today for your streak. It only comes back next month.",
+        "jokerConfirm": "Use my joker"
+      },
+      "comebackLine_one": "One-day break · nothing is lost",
+      "comebackLine_other": "{{count}}-day break · nothing is lost",
+      "comebackBody": "Your program, records and goals are waiting, untouched.",
+      "gentleDone": "Lighter week until {{date}}. Your streak restarts, no pressure.",
+      "normalDone": "Here we go: your plan resumes today."
     },
     "strength": {
       "session": "Today's session",

@@ -19,12 +19,15 @@
  *     disposition de l'utilisateur.
  */
 import React from 'react';
+import { Alert } from 'react-native';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 
 import HomeScreen from '../index';
 import { useNowAction } from '@/hooks/useNowAction';
 import { useHomeScene } from '@/hooks/useHomeScene';
-import { useRealLifeState } from '@/data/repositories/real-life-repository';
+import { startRealLifePeriod, useRealLifeState } from '@/data/repositories/real-life-repository';
+import { consumeJoker } from '@/data/repositories/streak-joker-repository';
+import { useComebackChoice } from '@/stores/home-comeback-store';
 
 // ---------------------------------------------------------------------------
 // Mocks
@@ -77,8 +80,14 @@ jest.mock('@/data/repositories/goal-repository', () => ({
 jest.mock('@/data/repositories/daily-wellbeing-repository', () => ({
   saveWellbeing: jest.fn(() => Promise.resolve(true)),
 }));
+jest.mock('@/data/repositories/dashboard-repository', () => ({
+  useNutritionSummary: jest.fn(() => ({ kcal: 850, effectiveTarget: 2300 })),
+}));
+jest.mock('@/data/repositories/streak-joker-repository', () => ({
+  consumeJoker: jest.fn(() => Promise.resolve(true)),
+}));
 jest.mock('@/lib/analytics', () => ({
-  ANALYTICS_EVENTS: { dashboardCustomized: 'dashboard_customized' },
+  ANALYTICS_EVENTS: { dashboardCustomized: 'dashboard_customized', streakSavedEvening: 'streak_saved' },
   track: jest.fn(),
 }));
 
@@ -103,10 +112,11 @@ jest.mock('@/components/SyncStatus', () => {
   const { Text } = require('react-native');
   return { SyncStatus: () => <Text>sonde-sync</Text> };
 });
+const mockPush = jest.fn();
 jest.mock('expo-router', () => {
   const { View } = require('react-native');
   return {
-    useRouter: () => ({ push: jest.fn() }),
+    useRouter: () => ({ push: mockPush }),
     Link: ({ children }: { children: React.ReactNode }) => <View>{children}</View>,
   };
 });
@@ -206,18 +216,22 @@ const FAITS_DU_JOUR = {
   },
   checkinDone: true,
   hoursLeft: 5,
-  jokersRemaining: 1,
+  coveredToday: false,
+  rescue: [{ kind: 'walk', stepsLeft: 1900, minutes: 20 }, { kind: 'activity' }, { kind: 'joker' }],
+  daysSinceLastActivity: 1,
+  firstDay: false,
   isLoading: false,
 };
 
 beforeEach(() => {
   jest.clearAllMocks();
   mockUseNowAction.mockReturnValue({
-    action: { kind: 'idle', moment: 'morning' },
+    action: { kind: 'idle', moment: 'morning', suggestion: 'activity' },
     isLoading: false,
   });
   mockRealLife.mockReturnValue({ activePeriod: null, daysRemaining: null });
   mockHomeScene.mockReturnValue(FAITS_DU_JOUR);
+  useComebackChoice.setState({ normalChosenOn: null });
 });
 
 // ---------------------------------------------------------------------------
@@ -252,6 +266,92 @@ describe('les cinq zones', () => {
     // plus visible de l'écran le plus ouvert, pour une information que l'utilisateur possède déjà.
     await render(<HomeScreen />);
     expect(screen.queryByText('common.appName')).toBeNull();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US ACCUEIL-07 — l'en-tête dit vrai
+// ---------------------------------------------------------------------------
+describe('l’en-tête (constat 6)', () => {
+  it('🔴 salue par le PRÉNOM, selon l’heure — il n’apparaissait jamais', async () => {
+    await render(<HomeScreen />);
+    // 9 h (mock de `useCurrentHour`) → « Bonjour Florian ».
+    expect(screen.getByText('home.greet.morning:{"name":"Florian"}')).toBeTruthy();
+  });
+
+  it('🔴 la phrase du jour vient de la décision, pas de la carte', async () => {
+    mockUseNowAction.mockReturnValue({
+      action: { kind: 'meal-due', meal: { key: 'dinner', label: null, hour: 8.5, learned: true, logged: false } },
+      isLoading: false,
+    });
+    await render(<HomeScreen />);
+    // 2300 − 850 = 1450 kcal restantes, mis en forme par la langue.
+    expect(screen.getByText(/home\.sentence\.mealDueKcal:\{"kcal":"1.450"\}/)).toBeTruthy();
+  });
+
+  it('« Content de te revoir » au retour d’une absence', async () => {
+    mockHomeScene.mockReturnValue({ ...FAITS_DU_JOUR, moment: 'comeback', daysSinceLastActivity: 9 });
+    await render(<HomeScreen />);
+    expect(screen.getByText('home.greet.comeback:{"name":"Florian"}')).toBeTruthy();
+  });
+});
+
+describe('la série en jeu (constat 5)', () => {
+  const soir = { ...FAITS_DU_JOUR, moment: 'evening-at-risk' as const };
+
+  it('🔴 marcher ouvre les pas, noter une activité ouvre l’activité — plus jamais le planning', async () => {
+    mockHomeScene.mockReturnValue(soir);
+    await render(<HomeScreen />);
+
+    await act(async () => fireEvent.press(screen.getByTestId('streak-rescue-walk')));
+    await act(async () => fireEvent.press(screen.getByTestId('streak-rescue-activity')));
+    expect(mockPush).toHaveBeenCalledWith('/steps');
+    expect(mockPush).toHaveBeenCalledWith('/activity');
+    expect(mockPush).not.toHaveBeenCalledWith('/planning');
+  });
+
+  it('le joker se confirme avant d’être posé sur AUJOURD’HUI', async () => {
+    mockHomeScene.mockReturnValue(soir);
+    const alert = jest.spyOn(Alert, 'alert');
+    await render(<HomeScreen />);
+
+    await act(async () => fireEvent.press(screen.getByTestId('streak-rescue-joker')));
+    expect(consumeJoker).not.toHaveBeenCalled();
+
+    const buttons = alert.mock.calls[0]![2]!;
+    await act(async () => buttons[1]!.onPress!());
+    expect(consumeJoker).toHaveBeenCalledWith('2026-09-14');
+  });
+});
+
+describe('le retour — VIE-02', () => {
+  const retour = { ...FAITS_DU_JOUR, moment: 'comeback' as const, daysSinceLastActivity: 9 };
+
+  it('🔴 « En douceur » démarre la période et RESTE sur l’accueil (plus de route /real-life)', async () => {
+    mockHomeScene.mockReturnValue(retour);
+    await render(<HomeScreen />);
+
+    await act(async () => fireEvent.press(screen.getByLabelText('stage.home.gentleRestart')));
+    expect(startRealLifePeriod).toHaveBeenCalledWith({ startedOn: '2026-09-14', endsOn: '2026-09-21' });
+    expect(mockPush).not.toHaveBeenCalledWith('/real-life');
+    expect(mockPush).not.toHaveBeenCalled();
+  });
+
+  it('la période en cours se lit sur place, avec sa date de fin', async () => {
+    mockHomeScene.mockReturnValue(retour);
+    mockRealLife.mockReturnValue({ activePeriod: { id: 'p1', endsOn: '2026-09-21' }, daysRemaining: 7 });
+    await render(<HomeScreen />);
+
+    expect(screen.getByText(/stage\.home\.gentleDone:\{"date":"21 septembre"\}/)).toBeTruthy();
+  });
+
+  it('« Mon plan normal » ne pousse plus le planning : la scène le confirme', async () => {
+    mockHomeScene.mockReturnValue(retour);
+    await render(<HomeScreen />);
+
+    await act(async () => fireEvent.press(screen.getByLabelText('stage.home.normalPlan')));
+    expect(mockPush).not.toHaveBeenCalled();
+    expect(screen.getByText('stage.home.normalDone')).toBeTruthy();
   });
 });
 
@@ -322,7 +422,7 @@ describe('cohérence entre zones', () => {
     // L'accroche, la carte et la pastille dérivent de la MÊME décision : elles ne peuvent donc
     // pas se contredire. C'est aussi pourquoi `useNowAction` n'est appelé qu'une fois dans l'écran.
     mockUseNowAction.mockReturnValue({
-      action: { kind: 'meal-due', meal: 'dinner', deadlineHour: 20 },
+      action: { kind: 'meal-due', meal: { key: 'dinner', label: null, hour: 20, learned: true, logged: false } },
       isLoading: false,
     });
     await render(<HomeScreen />);

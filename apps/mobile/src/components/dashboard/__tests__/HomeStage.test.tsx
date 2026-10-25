@@ -2,6 +2,9 @@
  * US DASH-01 — la scène de l'accueil, testée sur son **contrat** : un moment à la fois, et ce que
  * chacun montre. Les quatre moments couvrent des heures très différentes de la journée : c'est le
  * seul endroit où l'on peut vérifier qu'ils ne se mélangent pas.
+ *
+ * US ACCUEIL-07 — la salutation et la phrase du jour en tête, les visages du check-in, les vrais
+ * gestes pour sauver la série, et la reprise en douceur qui ne mène plus nulle part.
  */
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
 import { HomeStage, type HomeScene } from '../HomeStage';
@@ -23,7 +26,15 @@ jest.mock('@/theme/useTheme', () => ({
 }));
 
 const afficher = async (scene: HomeScene) => {
-  await render(<HomeStage scene={scene} greeting="Ta séance t'attend" dateLabel="lundi 14 septembre" />);
+  await render(
+    <HomeStage
+      scene={scene}
+      greeting="Bonjour Florian"
+      sentence="Il te reste 1 450 kcal aujourd'hui."
+      dateLabel="lundi 14 septembre"
+      glowMoment="jour"
+    />,
+  );
 };
 
 const taper = async (element: Parameters<typeof fireEvent.press>[0]) => {
@@ -34,17 +45,43 @@ const taper = async (element: Parameters<typeof fireEvent.press>[0]) => {
 
 beforeEach(() => jest.clearAllMocks());
 
+describe('l’en-tête (constat 6)', () => {
+  it('🔴 la salutation est le titre, la phrase du jour la suit — deux textes distincts', async () => {
+    await afficher({ kind: 'day', streak: 4, verdict: null, rings: [] });
+
+    expect(screen.getByRole('header').props.children).toBe('Bonjour Florian');
+    expect(screen.getByText("Il te reste 1 450 kcal aujourd'hui.")).toBeTruthy();
+  });
+
+  it('pose les lueurs d’Aurore sous le contenu', async () => {
+    await afficher({ kind: 'day', streak: 4, verdict: null, rings: [] });
+    expect(screen.getByTestId('aurora-glows')).toBeTruthy();
+  });
+});
+
 describe('le matin', () => {
-  it('pose UNE question — l’énergie, en cinq pastilles', async () => {
+  it('pose UNE question — l’énergie, en cinq visages', async () => {
     const onCheckin = jest.fn();
     await afficher({ kind: 'morning', checkinDone: false, verdict: null, onCheckin, saving: false });
 
-    expect(screen.getByText('wellbeing.checkinPrompt')).toBeTruthy();
+    expect(screen.getByText('home.checkin.title')).toBeTruthy();
     const pastilles = screen.getAllByRole('radio');
     expect(pastilles).toHaveLength(5);
 
     await taper(pastilles[3]!);
     expect(onCheckin).toHaveBeenCalledWith(4);
+  });
+
+  it('🔴 chaque visage porte son mot à l’écran — plus « 1 2 3 4 5 » (constat 9)', async () => {
+    await afficher({ kind: 'morning', checkinDone: false, verdict: null, onCheckin: jest.fn(), saving: false });
+
+    for (const level of [1, 2, 3, 4, 5]) {
+      expect(screen.getByText(`wellbeing.levels.energy.${level}`)).toBeTruthy();
+    }
+    expect(screen.queryByText('1')).toBeNull();
+    // L'indication annonce ce qui est demandé : l'énergie, pas « humeur, énergie, stress ».
+    expect(screen.getByText('home.checkin.hint')).toBeTruthy();
+    expect(screen.queryByText('wellbeing.checkinHint')).toBeNull();
   });
 
   it('check-in fait : la scène dit le verdict du jour, sans reposer la question', async () => {
@@ -70,45 +107,85 @@ describe('le matin', () => {
   });
 });
 
-describe('le soir, série en danger', () => {
+describe('le soir, série en danger (constat 5)', () => {
+  const handlers = { onWalk: jest.fn(), onActivity: jest.fn(), onJoker: jest.fn() };
   const soir: HomeScene = {
     kind: 'evening-at-risk',
     streak: 12,
     hoursLeft: 3,
-    jokersRemaining: 1,
-    onSave: jest.fn(),
+    rescue: [{ kind: 'walk', stepsLeft: 1900, minutes: 20 }, { kind: 'activity' }, { kind: 'joker' }],
+    ...handlers,
+    busy: false,
+    formatSteps: (n: number) => `${n}`,
   };
 
-  it('la série, le temps restant, et le joker comme filet', async () => {
+  it('la série, le temps restant, et les trois vrais gestes', async () => {
     await afficher(soir);
 
     expect(
       screen.getByTestId('home-streak', { includeHiddenElements: true }).props.defaultValue,
     ).toBe('12');
     expect(screen.getByText('stage.home.timeLeft:{"count":3}')).toBeTruthy();
-    expect(screen.getByText('stage.home.jokerLeft:{"count":1}')).toBeTruthy();
+    expect(screen.getByText('stage.home.rescue.walk:{"minutes":20}')).toBeTruthy();
+    expect(screen.getByText('stage.home.rescue.walkSub:{"steps":"1900"}')).toBeTruthy();
+
+    await taper(screen.getByTestId('streak-rescue-walk'));
+    await taper(screen.getByTestId('streak-rescue-activity'));
+    await taper(screen.getByTestId('streak-rescue-joker'));
+    expect(handlers.onWalk).toHaveBeenCalledTimes(1);
+    expect(handlers.onActivity).toHaveBeenCalledTimes(1);
+    expect(handlers.onJoker).toHaveBeenCalledTimes(1);
   });
 
-  it('🔴 sans joker restant, la scène le dit — elle n’en invente pas un', async () => {
-    await afficher({ ...soir, jokersRemaining: 0 });
+  it('🔴 plus de « Sauver ma série » qui ouvrait le planning', async () => {
+    await afficher(soir);
+    expect(screen.queryByText('stage.home.saveStreak')).toBeNull();
+  });
 
-    expect(screen.getByText('stage.home.jokerNone')).toBeTruthy();
+  it('n’affiche que les sorties proposées — sans joker, pas de joker', async () => {
+    await afficher({ ...soir, rescue: [{ kind: 'activity' }] });
+    expect(screen.queryByTestId('streak-rescue-joker')).toBeNull();
+    expect(screen.queryByTestId('streak-rescue-walk')).toBeNull();
+    expect(screen.getByTestId('streak-rescue-activity')).toBeTruthy();
   });
 });
 
 describe('le retour', () => {
+  const retour = {
+    kind: 'comeback' as const,
+    days: 9,
+    bestStreak: 21,
+    gentleUntil: null,
+    normalChosen: false,
+  };
+
   it('accueille et propose deux reprises, sans reproche', async () => {
     const onGentle = jest.fn();
     const onNormal = jest.fn();
-    await afficher({ kind: 'comeback', bestStreak: 21, onGentle, onNormal });
+    await afficher({ ...retour, onGentle, onNormal });
 
-    expect(screen.getByText('stage.home.comeback')).toBeTruthy();
+    expect(screen.getByText('stage.home.comebackLine:{"count":9}')).toBeTruthy();
     expect(screen.getByText('stage.home.bestStreak:{"count":21}')).toBeTruthy();
 
     await taper(screen.getByLabelText('stage.home.gentleRestart'));
     await taper(screen.getByLabelText('stage.home.normalPlan'));
     expect(onGentle).toHaveBeenCalledTimes(1);
     expect(onNormal).toHaveBeenCalledTimes(1);
+  });
+
+  it('🔴 VIE-02 : une fois la période démarrée, la scène dit jusqu’à quand — sur place', async () => {
+    await afficher({ ...retour, gentleUntil: '1 novembre', onGentle: jest.fn(), onNormal: jest.fn() });
+
+    expect(screen.getByText('stage.home.gentleDone:{"date":"1 novembre"}')).toBeTruthy();
+    // La question n'est plus posée : on ne propose pas deux fois de reprendre.
+    expect(screen.queryByLabelText('stage.home.gentleRestart')).toBeNull();
+  });
+
+  it('« Mon plan normal » choisi : la scène le confirme et ne repose pas la question', async () => {
+    await afficher({ ...retour, normalChosen: true, onGentle: jest.fn(), onNormal: jest.fn() });
+
+    expect(screen.getByText('stage.home.normalDone')).toBeTruthy();
+    expect(screen.queryByLabelText('stage.home.normalPlan')).toBeNull();
   });
 });
 

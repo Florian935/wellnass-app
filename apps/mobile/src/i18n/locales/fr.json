@@ -1165,8 +1165,6 @@
     }
   },
   "home": {
-    "greeting": "Bonjour 👋",
-    "greetingName": "Bonjour {{name}} 👋",
     "customize": {
       "edit": "Personnaliser",
       "done": "Terminé",
@@ -1405,30 +1403,6 @@
       "message": "Ton {{up}} est nettement au-dessus de ta moyenne des 4 dernières semaines, pendant que ton {{down}} est nettement en dessous.",
       "hint": "Peut expliquer une stagnation sur l'un des deux — pas forcément un problème si c'est voulu."
     },
-    "greetingMoment": {
-      "morning": "Bonjour",
-      "afternoon": "Bon après-midi",
-      "evening": "Bonsoir"
-    },
-    "headline": {
-      "workoutActive": "Séance en cours",
-      "runActive": "Course en cours",
-      "sessionToday": "Une séance au programme",
-      "meal": {
-        "breakfast": "Il te reste le petit-déjeuner à saisir",
-        "lunch": "Il te reste le déjeuner à saisir",
-        "dinner": "Il te reste le dîner à saisir",
-        "snack": "Il te reste une collation à saisir"
-      },
-      "weighIn": "Ta pesée du jour t'attend",
-      "wellbeing": "Comment s'est passée ta journée ?",
-      "dayDone": "Ta journée est faite",
-      "idle": {
-        "morning": "Rien de prévu aujourd'hui",
-        "afternoon": "Rien de prévu aujourd'hui",
-        "evening": "Journée tranquille"
-      }
-    },
     "now": {
       "workoutActive": {
         "eyebrow": "Séance en cours",
@@ -1449,21 +1423,28 @@
         "startRunning": "Démarrer la course"
       },
       "meal": {
-        "eyebrow": "À saisir",
-        "eyebrowUsually": "À saisir · d'habitude vers {{hour}} h",
-        "meta": "Ta journée n'est pas complète",
-        "title": {
-          "breakfast": "Petit-déjeuner non enregistré",
-          "lunch": "Déjeuner non enregistré",
-          "dinner": "Dîner non enregistré",
-          "snack": "Collation non enregistrée"
-        },
         "cta": {
           "breakfast": "Ajouter mon petit-déjeuner",
           "lunch": "Ajouter mon déjeuner",
           "dinner": "Ajouter mon dîner",
           "snack": "Ajouter ma collation"
-        }
+        },
+        "name": {
+          "breakfast": "Petit-déjeuner",
+          "lunch": "Déjeuner",
+          "dinner": "Dîner",
+          "snack": "Collation"
+        },
+        "eyebrowDue": "À noter · d'habitude vers {{time}}",
+        "eyebrowDueDefault": "À noter · vers {{time}}",
+        "eyebrowNext": "Prochain repas · vers {{time}}",
+        "eyebrowMissed": "Pas encore noté",
+        "metaKcal": "Il te reste {{kcal}} kcal aujourd'hui",
+        "metaReached": "Ta cible du jour est atteinte",
+        "metaNoTarget": "Scanne ou cherche : vingt secondes",
+        "metaMissed": "Si tu en as pris un, ajoute-le : ta journée sera complète.",
+        "ctaCustom": "Ajouter : {{label}}",
+        "nameFallback": "Repas"
       },
       "weighIn": {
         "eyebrow": "Pesée",
@@ -1492,9 +1473,21 @@
           "afternoon": "Cet après-midi",
           "evening": "Ce soir"
         },
-        "title": "Rien de prévu aujourd'hui",
-        "meta": "Repos actif — ou lance une séance libre quand tu veux",
-        "cta": "Créer un programme"
+        "title": {
+          "program": "Pas encore de programme",
+          "meal": "Rien de noté pour l'instant",
+          "activity": "Jour de repos"
+        },
+        "meta": {
+          "program": "Trois questions, trois minutes : on te propose celui qui te va.",
+          "meal": "Scanne ou cherche : vingt secondes.",
+          "activity": "Une marche, du vélo, du yoga ? Tout compte pour ta série."
+        },
+        "cta": {
+          "program": "Trouver mon programme",
+          "meal": "Ajouter un repas",
+          "activity": "Noter une activité"
+        }
       }
     },
     "quick": {
@@ -1522,6 +1515,45 @@
       "title_other": "{{count}} liens à régler cette semaine",
       "lead": "Le plus pressant : {{short}}",
       "cta": "Ouvrir le Labo"
+    },
+    "greet": {
+      "morning": "Bonjour {{name}}",
+      "morningAnon": "Bonjour",
+      "afternoon": "Bon après-midi {{name}}",
+      "afternoonAnon": "Bon après-midi",
+      "evening": "Bonsoir {{name}}",
+      "eveningAnon": "Bonsoir",
+      "comeback": "Content de te revoir, {{name}}",
+      "comebackAnon": "Content de te revoir",
+      "welcome": "Bienvenue, {{name}}",
+      "welcomeAnon": "Bienvenue"
+    },
+    "sentence": {
+      "workoutActive": "Ta séance tourne toujours. On reprend où tu en étais ?",
+      "runActive": "Ta course tourne toujours.",
+      "session": "Une séance t'attend aujourd'hui.",
+      "sessionIn_one": "Ta séance dans une heure environ. Tout est prêt.",
+      "sessionIn_other": "Ta séance dans {{count}} h environ. Tout est prêt.",
+      "sessionNow": "C'est l'heure de ta séance.",
+      "sessionLate": "Ta séance t'attend toujours : il n'est pas trop tard.",
+      "mealDue": "Un repas t'attend.",
+      "mealDueKcal": "Il te reste {{kcal}} kcal aujourd'hui.",
+      "mealDueReached": "Ta cible du jour est atteinte.",
+      "weighIn": "Une pesée, et ta courbe reste lisse.",
+      "mealNext": "Tout est noté pour l'instant.",
+      "mealNextKcal": "Tout est noté pour l'instant : il te reste {{kcal}} kcal.",
+      "wellbeing": "Belle journée. Dix secondes pour ton point du soir ?",
+      "mealMissed": "Presque tout est noté : il manque un repas.",
+      "dayDone": "Journée bouclée. Repos bien mérité.",
+      "dayDoneTrained": "Journée bouclée, entraînement compris. Repos bien mérité.",
+      "idleProgram": "Pas encore de programme : trois questions suffisent pour trouver le tien.",
+      "idleMeal": "Rien de noté pour l'instant : ton premier repas prend vingt secondes.",
+      "idleRest": "Jour de repos : ton corps récupère."
+    },
+    "checkin": {
+      "title": "Comment tu te sens ce matin ?",
+      "hint": "Ton énergie, en un geste.",
+      "groupA11y": "Ton énergie ce matin"
     }
   },
   "activationPath": {
@@ -4804,15 +4836,10 @@
     "home": {
       "timeLeft_one": "Il te reste moins d'une heure pour la garder",
       "timeLeft_other": "Il te reste environ {{count}} h pour la garder",
-      "jokerLeft_one": "Un joker reste ce mois-ci — le filet, pas l'excuse",
-      "jokerLeft_other": "{{count}} jokers restent ce mois-ci",
-      "jokerNone": "Plus de joker ce mois-ci",
-      "saveStreak": "Sauver ma série",
-      "comeback": "Content de te revoir",
       "bestStreak_one": "Ta meilleure série : un jour",
       "bestStreak_other": "Ta meilleure série : {{count}} jours",
-      "gentleRestart": "Reprise en douceur",
-      "normalPlan": "Reprendre le plan normal",
+      "gentleRestart": "En douceur",
+      "normalPlan": "Mon plan normal",
       "sinceLastVisit": {
         "title": "Depuis ta dernière visite",
         "weightDown": "{{delta}} kg de moins sur la balance",
@@ -4852,7 +4879,24 @@
         "runningOnly_other": "Course : {{count}} sorties",
         "nutrition_one": "Nutrition : un jour saisi sur 7",
         "nutrition_other": "Nutrition : {{count}} jours saisis sur 7"
-      }
+      },
+      "rescue": {
+        "lead": "Rien d'actif aujourd'hui. Une seule de ces options suffit :",
+        "walk": "Marcher {{minutes}} minutes",
+        "walkSub": "{{steps}} pas, et ton objectif de pas tient la série",
+        "activity": "Noter une activité",
+        "activitySub": "Vélo, yoga, foot… tout compte",
+        "joker": "Utiliser mon joker",
+        "jokerSub": "Il gèle la journée pour ta série",
+        "jokerConfirmTitle": "Geler aujourd'hui ?",
+        "jokerConfirmBody": "Ton joker gèle la journée pour ta série. Il ne revient que le mois prochain.",
+        "jokerConfirm": "Utiliser mon joker"
+      },
+      "comebackLine_one": "Un jour de pause · rien n'est perdu",
+      "comebackLine_other": "{{count}} jours de pause · rien n'est perdu",
+      "comebackBody": "Ton programme, tes records et tes objectifs t'attendent, intacts.",
+      "gentleDone": "Semaine allégée jusqu'au {{date}}. La série repart, sans pression.",
+      "normalDone": "C'est reparti : ton plan reprend dès aujourd'hui."
     },
     "strength": {
       "session": "Séance du jour",

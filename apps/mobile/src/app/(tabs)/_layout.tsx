@@ -59,10 +59,10 @@ export default function TabsLayout() {
     wellbeing: colors.pillarWellbeing,
   };
   const tabTint = (menu: MenuKey) => (menuColorsEnabled ? menuColors[menu] : PILLAR_TINT[menu]);
-  // Les scènes muscu, course et nutrition sont sombres dans les deux thèmes : icônes de la barre d'état
-  // claires. L'accueil suit le thème. Sous un écran empilé (`focusedMenu` nul), on rend la main au thème.
-  const statusStyle =
-    focusedMenu && focusedMenu !== 'home' ? 'light' : scheme === 'dark' ? 'light' : 'dark';
+  // Toutes les scènes d'onglet sont sombres dans les deux thèmes — l'accueil aussi depuis la teinte
+  // Aurore (US ACCUEIL-07) : icônes de la barre d'état claires. Sous un écran empilé (`focusedMenu`
+  // nul), on rend la main au thème.
+  const statusStyle = focusedMenu ? 'light' : scheme === 'dark' ? 'light' : 'dark';
 
   return (
     <>

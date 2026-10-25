@@ -10,6 +10,78 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 25/10/2026 — ACCUEIL-07 : l'accueil dit vrai, et prend la teinte Aurore (`fix/accueil07-accueil-dit-vrai` → `dev`)
+
+> Premier des trois lots de la refonte « Ta journée » (cadrage du 24/10, décisions D1 à D6 de Florian
+> le 25/10). US codée en dev direct et clôturée dans ce commit (`etape: close`). Absorbe **VIE-02**
+> (retirée du BACKLOG). Roadmap **7.44** (ligne neuve, hors cadrage). Commit précédent : `d8fe320e`
+> (IDENT-01). Le brief et les sources de la toile (`design/accueil-2026-10/`) entrent dans le dépôt.
+
+### Corrigé
+- **Un seul repas noté déclarait « Ta journée est faite »**, et le déjeuner puis le dîner n'étaient
+  plus jamais réclamés (`useMealLoggedToday` ≥ 1 entrée + `hasDoneSomething`). Les repas se lisent
+  désormais un par un, chacun à son heure apprise (`resolveMealSlots`, médiane par repas sur 14 jours,
+  habitude = plus d'un jour sur deux ; défauts 8 h / 12 h 30 / 19 h 30 pour un débutant). Journée faite
+  = séance prévue faite (ou rien de prévu) **et** chaque repas du jour noté.
+- **« Créer un programme » proposé à tout le monde quand rien n'est prévu** (jour de repos avec
+  programme, compte nutrition seule) : `RestSuggestion` — programme seulement pour la musculation sans
+  programme, sinon premier repas ou « Jour de repos » + « Noter une activité ».
+- **La pesée réclamée à tous, chaque jour** : garde d'habitude (une pesée sur 30 jours, `useWeighInHabit`).
+- **VIE-02 — « Reprise en douceur » menait à la route `/real-life`, inexistante** (« Unmatched Route ») :
+  plus de navigation, la scène relit la période et dit « Semaine allégée jusqu'au … ». « Mon plan
+  normal » n'ouvre plus le planning : la scène confirme (choix mémorisé pour la journée).
+- **« Sauver ma série » ouvrait le planning**, qui ne sauve rien : trois vrais gestes
+  (`streakRescueOptions`) — marcher (si les pas sont suivis, durée à ~120 pas/min), noter une activité,
+  le joker sur aujourd'hui (confirmé, jamais au lendemain d'un autre joker).
+- **La série était annoncée « en jeu » un jour déjà couvert** (joker posé, période « vie réelle ») :
+  `resolveHomeMoment` reçoit `coveredToday`.
+- **Le titre répétait la carte mot pour mot, sans jamais le prénom** : salutation (`greetingKind` —
+  Bonjour / Bon après-midi / Bonsoir / Content de te revoir / Bienvenue, avec le prénom) + phrase du jour
+  (`daySentence`, kcal restantes ou compte à rebours, jamais le titre de la carte). `home-headline.ts`
+  supprimé.
+- **Check-in « 1 2 3 4 5 » sans libellé**, indication « humeur, énergie, stress » fausse : cinq visages
+  avec leur mot (`CheckinFaces`), indication « Ton énergie, en un geste ».
+- **`useNowAction` monté deux fois** (écran + `NowCard`) : `NowCard` reçoit la décision par props.
+
+### Modifié
+- **Teinte Aurore (D1)** : la scène de l'accueil devient sombre dans les deux thèmes (`#13203A →
+  #0A0E1C`) avec deux lueurs radiales (`AuroraGlows` : turquoise ≤ 0,38 en haut à gauche, framboise en
+  haut à droite, dosées par moment — `AURORA_DOSES`, `auroraMoment`). Bouton plein en dégradé
+  `#5EEAD4 → #F9A8D4` (`StageButton.solidGradient`, `NowCard`, `StreakRescue`). `pillarHome` =
+  `#0F766E` / `#5EEAD4`, carte « maintenant » `#141A2E` / `#0F1426`, cartes de l'accueil teintées vers
+  le turquoise (gain 1,7), `DEFAULT_MENU_COLORS.home` = `#5EEAD4` (+ pastille), barre d'état claire sur
+  l'accueil.
+- **Terracotta = couleur de marque** : identité `brand` (token `brand`, `PILLAR_KEYS`), choisie par
+  `useTheme` quand l'identité héritée est `home` sans que l'onglet Accueil soit au premier plan
+  (onboarding, Réglages, écrans transverses).
+- `NowCard` : repas dû / prochain / manqué avec leur heure (`clockLabel`) et les kcal restantes ; libellé
+  du repas personnalisé ; repli « Jour de repos ».
+- `useHomeScene` : `coveredToday`, `rescue`, `daysSinceLastActivity`, `firstDay` (plus `jokersRemaining`).
+- i18n FR + EN : `home.greet.*`, `home.sentence.*`, `home.checkin.*`, `stage.home.rescue.*`, libellés de
+  repas et de repli ; clés mortes retirées (`home.greeting*`, `home.headline.*`, `stage.home.saveStreak`,
+  `jokerLeft`, `jokerNone`, `comeback`).
+
+### Ajouté
+- `packages/shared` : `meal-slots.ts` (21 tests), `streak-rescue.ts` (10), `home-greeting.ts` (9) ;
+  `now-action.ts` réécrit (34 tests : `meal-next`, `meal-missed`, `RestSuggestion`, `weighInHabit`).
+- Repository : `useMealSlots`, `useWeighInHabit` et leurs requêtes exportées (`SELECT_MEAL_TYPE_SAMPLES`,
+  `SELECT_MEALS_LOGGED_ON`, `COUNT_WEIGH_INS_SINCE`), testées sur le harnais SQLite.
+- Composants : `CheckinFaces`, `StreakRescue`, `stage/matter/AuroraGlows` ; store `home-comeback-store`.
+- Tests : `stage.test.ts` mesure les surfaces mêlées d'Aurore, le verre et chaque arrêt du dégradé, et
+  garde le plafond turquoise ; `contrast.test.ts` couvre `brand` ; `use-theme-identity.test.tsx` (règle
+  home / brand) ; scène, carte, écran et hooks mis à jour.
+
+### Technique / Notes
+- **Aucune migration, aucune sync rule, aucun appel réseau.**
+- Horloge à l'heure (`useCurrentHour`) : un repas de 12 h 30 devient « dû » à 13 h (annoncé « prochain
+  repas » avant). Une horloge plus fine arrive avec ACCUEIL-08.
+- Le joker posé sur aujourd'hui compte dans la série comme tout jour joker (règle existante de
+  `computeStreakWithJokers`).
+- Premier rendu de l'accueil : `focusedMenu` n'est posé qu'au focus — une image en palette `brand`
+  avant l'Aurore est possible (sous le splash au lancement).
+- Non fait ici (spec §8) : légende des anneaux (ils disparaissent avec ACCUEIL-08), fil du jour, cadrans,
+  « + », lueurs qui respirent (ACCUEIL-09).
+
 ## 23/10/2026 — IDENT-01 : l'identité de pilier appartient à l'écran, pas à l'onglet (`fix/ident01-identite-pilier-ecran` → `dev`)
 
 > US IDENT-01 cadrée et validée le 23/10/2026 (D1 à D12 telles que proposées), codée en un lot et clôturée

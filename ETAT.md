@@ -1,4 +1,4 @@
-# État du projet — 23/10/2026
+# État du projet — 25/10/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 272 livré · 4 partiel · 2 à faire (sur 284)
+**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 273 livré · 4 partiel · 2 à faire (sur 285)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **4 candidats P0**
 avant de pouvoir publier.
@@ -28,9 +28,9 @@ avant de pouvoir publier.
 - LANCE-03 — Retirer le spike 3D de « Mon corps » du build de soumission
 - LANCE-02 — Retirer le spike VBT-01 du build de soumission
 
-<details><summary>P1 finitions (14) · P2 confort (12)</summary>
+<details><summary>P1 finitions (13) · P2 confort (12)</summary>
 
-**P1** — PRISME-01b — Les résumés du Labo dans la voix de Prisme · RUN-F3b — Météo de course · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect · TRAD-01 — Les aliments CIQUAL en anglais · SIGNOUT-01 — La déconnexion ne vide pas la base locale · LABO-05 — Deux constats ouverts de la revue du Labo · CONTENU-02 — Relire les contenus écrits sans coach · IDENT-02 — L'identité des écrans empilés du Bien-être et du Labo · BARRE-01 — La barre d'état suit le dernier composant monté, pas l'écran affiché · VIE-02 — La « reprise en douceur » de l'Accueil mène à une route qui n'existe pas
+**P1** — PRISME-01b — Les résumés du Labo dans la voix de Prisme · RUN-F3b — Météo de course · CARDIO-03 — Écran de départ + saisie rétroactive · CARDIO-04 — Historique en trois onglets · CARDIO-05 — Éditeur de séance à trois niveaux · CARDIO-06 — Les semaines qui progressent · CARDIO-07 — Import GPX et Health Connect · TRAD-01 — Les aliments CIQUAL en anglais · SIGNOUT-01 — La déconnexion ne vide pas la base locale · LABO-05 — Deux constats ouverts de la revue du Labo · CONTENU-02 — Relire les contenus écrits sans coach · IDENT-02 — L'identité des écrans empilés du Bien-être et du Labo · BARRE-01 — La barre d'état suit le dernier composant monté, pas l'écran affiché
 
 **P2** — CARDIO-09 — L'arrivée dit quand l'allure de référence change · PRISME-02 — La photo de repas, avec Prisme · SOCLE-01 — RevenueCat câblé inactif · VBT-01 — Vitesse de barre à la caméra · CIBLE-02 — Une séance planifiée d'un pilier éteint donne-t-elle le forfait ? · CIBLE-03 — La séance marquée faite sans séance enregistrée · CIBLE-05 — Les fenêtres jugées sur la cible d'aujourd'hui · CIBLE-06 — La cible du contexte du Labo IA · CALIB-01 — Calibrer les seuils posés sans mesure · MUSC-F14b — « Remplacer » dans l'éditeur de programme · MUSCU-UX01b — Les manques de l'historique muscu · CLAV-02 — Le champ actif remonte seul sur iOS
 
@@ -42,9 +42,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `HEAD` (modifications non commitées) |
-| Commits | 1389 · `main` a **1386** commits de retard sur `dev` |
-| Specs d'US | 197 au total — 196 clôturées, 1 en cours |
+| Branche courante | `fix/accueil07-accueil-dit-vrai` (modifications non commitées) |
+| Commits | 1390 · `main` a **1387** commits de retard sur `dev` |
+| Specs d'US | 198 au total — 197 clôturées, 1 en cours |
 | Migrations | 115/116 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -55,11 +55,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `d8fe320`  fix(identite): IDENT-01 — l'identité de pilier appartient à l'écran, pas à l'onglet
 - `0cc173e`  feat(course): CARDIO-02 — les quatre portes vers l'allure de référence, l'accueil du pilier, le test de 12 minutes
 - `9ef1824`  feat(course): CARDIO-02 socle — les portes calculent, l'allure ne recule plus au premier footing
 - `f02b9a6`  docs(course): CARDIO-02 cadrée — les quatre portes vers l'allure de référence
 - `3deb60c`  chore(workflow): dev direct — plus de spec, plan ni maquette à valider avant le code
-- `8df7a1b`  feat(ia): ACCES-IA — l'IA réservée aux testeurs : interrupteur serveur AI_ACCESS et table ai_testers tenue au back-office
 
 ---
 

@@ -8,6 +8,14 @@
  * ⚠️ L'heure vient de `useCurrentHour` et le jour de `useTodayDate` : jamais `new Date()` dans le
  * corps d'un hook, sous peine de geler la valeur dans un slot mount-only de React Compiler (voir la
  * docstring de `useTodayKey`, et le bug qu'elle documente).
+ *
+ * ── US ACCUEIL-07 ────────────────────────────────────────────────────────────────────────────────
+ * Le hook remonte aussi ce qu'il faut pour que la scène dise vrai :
+ *  - **`coveredToday`** — un joker posé sur aujourd'hui, ou un jour de période « vie réelle » : la
+ *    série n'est alors pas en jeu, « Il te reste 3 h pour la garder » serait faux ;
+ *  - **`rescue`** — les vraies sorties quand elle l'est (marcher, noter une activité, le joker),
+ *    choisies par `streakRescueOptions` ;
+ *  - **`daysSinceLastActivity`** et **`firstDay`** — pour « Content de te revoir » et « Bienvenue ».
  */
 
 import { useMemo } from 'react';
@@ -18,12 +26,14 @@ import {
   localDayKey,
   resolveHomeMoment,
   startOfWeek,
+  streakRescueOptions,
   timeLeftToday,
   type BriefFacts,
   type HomeMoment,
   type NowAction,
   type ReadinessResult,
   type ReadinessVerdict,
+  type StreakRescueOption,
 } from '@wellness/shared';
 import {
   useDaysSinceLastActivity,
@@ -39,8 +49,15 @@ import { useWorkoutHistory } from '@/data/repositories/workout-repository';
 import type { AskQuestion } from '@/components/ask/AskCard';
 import { useTodayWellbeing } from '@/data/repositories/daily-wellbeing-repository';
 import { useNotificationPrefs } from '@/data/repositories/notification-repository';
-import { useJokersRemaining } from '@/data/repositories/streak-joker-repository';
-import { useCurrentHour, useTodayDate, useTodayKey } from '@/hooks/useTodayKey';
+import { useJokerDays } from '@/data/repositories/streak-joker-repository';
+import { useDailySteps, useStepGoal } from '@/data/repositories/daily-steps-repository';
+import { useCurrentHour, useTodayDate, useTodayKey, useWindowStartKey } from '@/hooks/useTodayKey';
+
+/**
+ * Les pas sont « suivis » quand Health Connect en a écrit au moins une journée sur la semaine : sans
+ * cela, une marche ne serait pas comptée, et la proposer pour sauver la série serait mentir.
+ */
+const STEPS_TRACKED_WINDOW_DAYS = 7;
 
 export type HomeSceneFacts = {
   moment: HomeMoment;
@@ -58,7 +75,14 @@ export type HomeSceneFacts = {
    * bien que « 3 h 12 » sans faire re-rendre l'accueil soixante fois par heure.
    */
   hoursLeft: number;
-  jokersRemaining: number;
+  /** Aujourd'hui est déjà couvert pour la série : joker posé, ou jour de période « vie réelle ». */
+  coveredToday: boolean;
+  /** Les vraies sorties quand la série est en jeu, dans l'ordre d'affichage. */
+  rescue: StreakRescueOption[];
+  /** Jours depuis la dernière activité ; `null` sur un compte sans aucun historique. */
+  daysSinceLastActivity: number | null;
+  /** Aucun historique du tout : le tout premier jour (« Bienvenue »). */
+  firstDay: boolean;
   isLoading: boolean;
 };
 
@@ -96,12 +120,30 @@ export function useMorningBriefFacts(action: NowAction, verdict: ReadinessVerdic
 export function useHomeScene(): HomeSceneFacts {
   const hour = useCurrentHour();
   const today = useTodayDate();
+  const todayKey = useTodayKey();
   const { current: streak, activeToday, isLoading: streakLoading } = useStreakData();
-  const { days: daysSinceLastActivity } = useDaysSinceLastActivity();
+  const { days: daysSinceLastActivity, isLoading: daysLoading } = useDaysSinceLastActivity();
   const { entry: checkin } = useTodayWellbeing();
   const prefs = useNotificationPrefs();
   const readiness = useReadiness();
-  const { remaining: jokersRemaining } = useJokersRemaining();
+  const { days: jokerDays } = useJokerDays();
+  const { pausedDays } = useRealLifeState();
+  const stepsSince = useWindowStartKey(STEPS_TRACKED_WINDOW_DAYS);
+  const { rows: stepRows } = useDailySteps(stepsSince);
+  const { goal: stepGoal } = useStepGoal();
+
+  const coveredToday = jokerDays.includes(todayKey) || (pausedDays?.has(todayKey) ?? false);
+  const rescue = useMemo(
+    () =>
+      streakRescueOptions({
+        stepsTracked: stepRows.length > 0,
+        steps: stepRows.find((r) => r.logDate === todayKey)?.steps ?? 0,
+        stepGoal,
+        jokerDays,
+        todayKey,
+      }),
+    [stepRows, stepGoal, jokerDays, todayKey],
+  );
 
   // Minuit + l'heure courante : la date de référence de la décision et du décompte.
   const now = useMemo(() => {
@@ -116,6 +158,7 @@ export function useHomeScene(): HomeSceneFacts {
     streak,
     daysSinceLastActivity,
     checkinDoneToday: checkin !== null,
+    coveredToday,
     reminderHour: prefs.streakDanger ? prefs.reminderHour : null,
   });
 
@@ -126,7 +169,11 @@ export function useHomeScene(): HomeSceneFacts {
     readiness,
     checkinDone: checkin !== null,
     hoursLeft: timeLeftToday(now).hours,
-    jokersRemaining,
+    coveredToday,
+    rescue,
+    daysSinceLastActivity,
+    // Pendant la lecture, "aucun historique" ne veut encore rien dire : pas de « Bienvenue » éclair.
+    firstDay: !daysLoading && daysSinceLastActivity === null,
     isLoading: streakLoading,
   };
 }

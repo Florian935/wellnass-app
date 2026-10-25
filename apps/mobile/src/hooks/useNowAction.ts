@@ -16,6 +16,13 @@
  * `useMealDeadline`, `useWeighInDeadline` et `useTodayWellbeing` existaient déjà et ne servaient
  * **qu'à programmer des notifications**. L'app savait donc, à l'heure près et par apprentissage,
  * ce qu'il restait à faire aujourd'hui — sans jamais le montrer à l'ouverture.
+ *
+ * ── US ACCUEIL-07 — monté UNE fois ──────────────────────────────────────────────────────────────
+ * L'écran d'accueil l'appelle et passe la décision à `NowCard` et `HomeStage` par props. Avant, la
+ * carte rappelait le hook elle-même : l'union d'une quinzaine de requêtes montée deux fois sur
+ * l'écran le plus ouvert de l'app, malgré le commentaire de l'écran qui affirmait l'inverse.
+ * Les repas se lisent désormais **un par un** (`useMealSlots`), et la pesée n'est réclamée qu'à qui
+ * se pèse (`useWeighInHabit`).
  */
 
 import { useMemo } from 'react';
@@ -37,9 +44,9 @@ import {
 import { useTodaySession, useStreakData } from '@/data/repositories/dashboard-repository';
 import { useNotificationPrefs } from '@/data/repositories/notification-repository';
 import {
-  useMealDeadline,
-  useMealLoggedToday,
+  useMealSlots,
   useWeighInDeadline,
+  useWeighInHabit,
   useWeighInToday,
 } from '@/data/repositories/reminder-habits-repository';
 import {
@@ -88,10 +95,10 @@ export function useNowAction(): { action: NowAction; isLoading: boolean } {
   const { session: runSession } = useTodayRunSession();
 
   // ── Les saisies dues ──────────────────────────────────────────────────────
-  const mealDeadline = useMealDeadline(prefs);
-  const { done: mealDone, isLoading: mealDoneLoading } = useMealLoggedToday();
+  const { slots: mealSlots, loggedToday: mealsLogged, isLoading: mealsLoading } = useMealSlots();
   const weighInDeadline = useWeighInDeadline(prefs);
   const { done: weighInDone } = useWeighInToday();
+  const { habit: weighInHabit } = useWeighInHabit();
   const { entry: wellbeing } = useTodayWellbeing();
   const wellbeingSince = useWindowStartKey(WELLBEING_HABIT_WINDOW_DAYS);
   const { entries: wellbeingHistory } = useWellbeingEntries(wellbeingSince);
@@ -101,7 +108,12 @@ export function useNowAction(): { action: NowAction; isLoading: boolean } {
   const { runs } = useRunHistory();
   const { current: streak } = useStreakData();
 
-  const isLoading = workoutLoading || mealDoneLoading || strength.isLoading;
+  const isLoading = workoutLoading || mealsLoading || strength.isLoading;
+  const nutritionActive = activePillars.includes('nutrition');
+  const strengthActive = activePillars.includes('strength');
+  // Un programme de musculation est actif : l'occurrence du jour en est la preuve, sinon le repli
+  // de `useTodaySession` le dit. Sans ça, « Créer un programme » était proposé un jour de repos.
+  const hasStrengthProgram = strength.state !== 'none' || strength.hasActiveProgram;
 
   const trainings = useMemo<TodayTraining[]>(() => {
     const out: TodayTraining[] = [];
@@ -146,10 +158,10 @@ export function useNowAction(): { action: NowAction; isLoading: boolean } {
     () => ({
       strengthSessions: workouts.filter((w) => isSameLocalDay(w.finishedAt ?? null, todayKey)).length,
       runs: runs.filter((r) => isSameLocalDay(r.finishedAt ?? null, todayKey)).length,
-      mealLogged: mealDone,
+      mealsLogged: nutritionActive ? mealsLogged : 0,
       streak,
     }),
-    [workouts, runs, mealDone, streak, todayKey],
+    [workouts, runs, nutritionActive, mealsLogged, streak, todayKey],
   );
 
   const action = useMemo(
@@ -160,17 +172,18 @@ export function useNowAction(): { action: NowAction; isLoading: boolean } {
         activeWorkoutId: workout?.id ?? null,
         hasActiveRun: activeRun != null,
         todayTrainings: trainings,
-        // « Dû » = l'échéance (apprise ou réglée) est passée ET rien n'a été saisi. Sans la
-        // seconde condition, la carte réclamerait un repas déjà enregistré.
-        mealDue:
-          activePillars.includes('nutrition') && !mealDone && hour >= mealDeadline.hour,
-        mealDeadlineHour: mealDeadline.hour,
+        // Les repas du jour, un par un, à leur heure apprise — rien si le pilier est éteint.
+        meals: nutritionActive ? mealSlots : [],
+        nutritionActive,
         weighInDue: !weighInDone && hour >= weighInDeadline.hour,
+        weighInHabit,
         wellbeingLogged: wellbeing != null,
         // Le check-in n'est proposé qu'à qui le pratique déjà — voir
         // `WELLBEING_HABIT_WINDOW_DAYS` : il n'y a pas de réglage à interroger, seulement un usage
         // à observer.
         wellbeingEnabled: wellbeingHistory.length > 0,
+        strengthActive,
+        hasStrengthProgram,
         tally,
       }),
     [
@@ -178,13 +191,15 @@ export function useNowAction(): { action: NowAction; isLoading: boolean } {
       workout?.id,
       activeRun,
       trainings,
-      activePillars,
-      mealDone,
-      mealDeadline.hour,
+      nutritionActive,
+      mealSlots,
       weighInDone,
       weighInDeadline.hour,
+      weighInHabit,
       wellbeing,
       wellbeingHistory.length,
+      strengthActive,
+      hasStrengthProgram,
       tally,
     ],
   );

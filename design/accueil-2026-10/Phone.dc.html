@@ -1,0 +1,1381 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Accueil — ta journée</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400..700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+body{margin:0}
+@keyframes wBreathe{0%,100%{transform:scale(1);opacity:.82}50%{transform:scale(1.07);opacity:1}}
+@keyframes wRise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes wSheet{from{transform:translateY(100%)}to{transform:translateY(0)}}
+@keyframes wFade{from{opacity:0}to{opacity:1}}
+@keyframes wPulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.75)}}
+@keyframes wToast{from{opacity:0;transform:translate(-50%,10px)}to{opacity:1;transform:translate(-50%,0)}}
+@keyframes wBars{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+@media (prefers-reduced-motion: reduce){*{animation:none !important;transition:none !important}}
+</style>
+</helmet>
+<div style="width: 390px; height: {{rootH}}; position: relative; overflow: hidden; background: {{t.bg}}; color: {{t.tx}}; font-family: 'Hanken Grotesk', system-ui, sans-serif; -webkit-font-smoothing: antialiased;">
+  <div style="position: absolute; left: 0; top: 0; right: 0; bottom: {{scrollBottom}}; overflow-x: hidden; overflow-y: {{scrollY}}; scrollbar-width: none;">
+
+    <div style="position: relative; overflow: hidden; border-radius: 0 0 32px 32px; padding: 52px 20px 20px; background: {{sky.bg}};">
+      <div aria-hidden="true" style="position: absolute; width: 300px; height: 300px; border-radius: 50%; left: {{sky.gx}}; top: {{sky.gy}}; background: radial-gradient(circle, {{sky.glow}} 0%, rgba(255,255,255,0) 68%); animation: wBreathe 4800ms ease-in-out infinite; pointer-events: none; transition: left 700ms ease, top 700ms ease;"></div>
+      <div style="position: relative; display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+          <span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.2px; text-transform: uppercase; color: {{sky.muted}};">Vendredi 23 octobre</span>
+          <div style="display: flex; align-items: center; gap: 4px;">
+            <span style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 700; color: {{sky.muted}};"><span style="width: 7px; height: 7px; border-radius: 50%; background: {{sky.sync}};"></span>À jour</span>
+            <button onClick="{{onProfile}}" aria-label="Profil et réglages" style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border: none; background: none; padding: 0; cursor: pointer;">
+              <span style="width: 34px; height: 34px; border-radius: 50%; background: {{sky.glass}}; border: 1px solid {{sky.glassBorder}}; color: {{sky.ink}}; display: flex; align-items: center; justify-content: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 14px;">F</span>
+            </button>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1.1px; line-height: 1.05; color: {{sky.ink}};">{{greeting}}</h1>
+          <p style="margin: 0; font-size: 15.5px; line-height: 1.42; font-weight: 500; color: {{sky.ink}}; max-width: 340px;">{{sentence}}</p>
+          <sc-if value="{{showListen}}" hint-placeholder-val="{{false}}">
+            <button onClick="{{onListen}}" aria-label="{{listenAria}}" style="align-self: flex-start; margin-top: 2px; min-height: 44px; display: flex; align-items: center; gap: 8px; padding: 0 16px 0 12px; border-radius: 999px; border: 1px solid {{sky.glassBorder}}; background: {{sky.glass}}; color: {{sky.ink}}; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 13px; font-weight: 700;">
+              <sc-if value="{{speaking}}" hint-placeholder-val="{{false}}">
+                <span aria-hidden="true" style="display: flex; align-items: center; gap: 2px; height: 16px;">
+                  <span style="width: 3px; height: 16px; border-radius: 2px; background: {{sky.accent}}; animation: wBars 700ms ease-in-out infinite;"></span>
+                  <span style="width: 3px; height: 16px; border-radius: 2px; background: {{sky.accent}}; animation: wBars 700ms ease-in-out 180ms infinite;"></span>
+                  <span style="width: 3px; height: 16px; border-radius: 2px; background: {{sky.accent}}; animation: wBars 700ms ease-in-out 360ms infinite;"></span>
+                </span>
+              </sc-if>
+              <sc-if value="{{notSpeaking}}" hint-placeholder-val="{{true}}">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{icons.sound}}"></path></svg>
+              </sc-if>
+              {{listenLabel}}
+            </button>
+          </sc-if>
+        </div>
+
+        <sc-if value="{{showLive}}" hint-placeholder-val="{{false}}">
+          <div style="position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 24px; background: linear-gradient(135deg, #8e1b1b 0%, #4a120f 62%, #2b0d0b 100%); color: #ffffff; box-shadow: 0 18px 34px -20px rgba(43,13,11,0.9);">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="width: 9px; height: 9px; border-radius: 50%; background: #ff9a8f; animation: wPulse 1600ms ease-in-out infinite;"></span>
+              <span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: #f6c5bf;">Séance en cours</span>
+            </div>
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;">
+              <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 26px; letter-spacing: -0.8px;">Jambes</span>
+              <span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 24px;">24:12</span>
+            </div>
+            <span style="font-size: 13.5px; color: #f6c5bf;">Exercice 3 sur 6 · Presse à cuisses, série 2</span>
+            <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 4px;">
+              <span style="height: 6px; border-radius: 3px; background: #ffffff;"></span>
+              <span style="height: 6px; border-radius: 3px; background: #ffffff;"></span>
+              <span style="height: 6px; border-radius: 3px; background: #ff9a8f;"></span>
+              <span style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.22);"></span>
+              <span style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.22);"></span>
+              <span style="height: 6px; border-radius: 3px; background: rgba(255,255,255,0.22);"></span>
+            </div>
+            <button onClick="{{onResumeLive}}" style="height: 50px; border-radius: 15px; border: none; background: #ffffff; color: #8e1b1b; display: flex; align-items: center; justify-content: center; gap: 9px; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 15px; font-weight: 700;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round" aria-hidden="true"><path d="M8 5.5v13l10.5-6.5z"></path></svg>
+              Reprendre la séance
+            </button>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showDials}}" hint-placeholder-val="{{true}}">
+          <div style="display: flex; justify-content: {{dialsJustify}}; gap: 4px; padding: 14px 6px 12px; border-radius: 26px; background: {{sky.glass}}; border: 1px solid {{sky.glassBorder}}; box-shadow: 0 14px 30px -22px {{t.shadow}};">
+            <sc-for list="{{dials}}" as="d" hint-placeholder-count="3">
+              <button onClick="{{d.tap}}" aria-label="{{d.aria}}" style="flex: 0 1 112px; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; background: none; border: none; padding: 0; margin: 0; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; color: {{sky.ink}};">
+                <span style="position: relative; width: 84px; height: 84px; display: block;">
+                  <svg width="84" height="84" viewBox="0 0 84 84" aria-hidden="true" style="position: absolute; left: 0; top: 0; overflow: visible;">
+                    <circle cx="42" cy="42" r="36" fill="none" stroke="{{d.track}}" stroke-width="8"></circle>
+                    <circle cx="42" cy="42" r="36" fill="none" stroke="{{d.s0.c}}" stroke-width="8" stroke-linecap="{{d.s0.cap}}" stroke-dasharray="{{d.s0.dash}}" stroke-dashoffset="{{d.s0.off}}" transform="rotate(-90 42 42)" style="transition: stroke-dasharray 900ms cubic-bezier(.22,.61,.36,1), stroke-dashoffset 900ms cubic-bezier(.22,.61,.36,1), stroke 400ms ease;"></circle>
+                    <circle cx="42" cy="42" r="36" fill="none" stroke="{{d.s1.c}}" stroke-width="8" stroke-linecap="{{d.s1.cap}}" stroke-dasharray="{{d.s1.dash}}" stroke-dashoffset="{{d.s1.off}}" transform="rotate(-90 42 42)" style="transition: stroke-dasharray 900ms cubic-bezier(.22,.61,.36,1) 80ms, stroke 400ms ease;"></circle>
+                    <circle cx="42" cy="42" r="36" fill="none" stroke="{{d.s2.c}}" stroke-width="8" stroke-linecap="{{d.s2.cap}}" stroke-dasharray="{{d.s2.dash}}" stroke-dashoffset="{{d.s2.off}}" transform="rotate(-90 42 42)" style="transition: stroke-dasharray 900ms cubic-bezier(.22,.61,.36,1) 160ms, stroke 400ms ease;"></circle>
+                    <circle cx="42" cy="42" r="36" fill="none" stroke="{{d.s3.c}}" stroke-width="8" stroke-linecap="{{d.s3.cap}}" stroke-dasharray="{{d.s3.dash}}" stroke-dashoffset="{{d.s3.off}}" transform="rotate(-90 42 42)" style="transition: stroke-dasharray 900ms cubic-bezier(.22,.61,.36,1) 240ms, stroke 400ms ease;"></circle>
+                    <circle cx="42" cy="42" r="36" fill="none" stroke="{{d.s4.c}}" stroke-width="8" stroke-linecap="{{d.s4.cap}}" stroke-dasharray="{{d.s4.dash}}" stroke-dashoffset="{{d.s4.off}}" transform="rotate(-90 42 42)" style="transition: stroke-dasharray 900ms cubic-bezier(.22,.61,.36,1) 320ms, stroke 400ms ease;"></circle>
+                    <circle cx="42" cy="42" r="36" fill="none" stroke="{{d.s5.c}}" stroke-width="8" stroke-linecap="{{d.s5.cap}}" stroke-dasharray="{{d.s5.dash}}" stroke-dashoffset="{{d.s5.off}}" transform="rotate(-90 42 42)" style="transition: stroke-dasharray 900ms cubic-bezier(.22,.61,.36,1) 400ms, stroke 400ms ease;"></circle>
+                  </svg>
+                  <span style="position: absolute; left: 0; top: 0; width: 84px; height: 84px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                    <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: {{d.bigSize}}; letter-spacing: -0.8px; line-height: 1; color: {{sky.ink}};">{{d.big}}</span>
+                    <span style="margin-top: 3px; font-size: 9.5px; font-weight: 700; letter-spacing: .2px; color: {{sky.muted}};">{{d.unit}}</span>
+                  </span>
+                </span>
+                <span style="margin-top: 3px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 14.5px; color: {{sky.ink}};">{{d.label}}</span>
+                <span style="font-size: 11px; font-weight: 600; color: {{sky.muted}}; text-align: center; line-height: 1.25;">{{d.sub}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showOnboard}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px; border-radius: 24px; background: {{sky.glass}}; border: 1px solid {{sky.glassBorder}};">
+            <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+              <span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: {{sky.muted}};">Premiers pas · jour 1 sur 7</span>
+              <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.6px; color: {{sky.ink}};">{{onboard.count}}</span>
+            </div>
+            <div aria-hidden="true" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px;">
+              <sc-for list="{{onboard.segs}}" as="g" hint-placeholder-count="4">
+                <span style="height: 8px; border-radius: 4px; background: {{g.bg}}; transition: background 500ms ease;"></span>
+              </sc-for>
+            </div>
+            <span style="font-size: 13.5px; line-height: 1.45; color: {{sky.ink}};">{{onboard.text}}</span>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{showComeback}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border-radius: 24px; background: {{sky.glass}}; border: 1px solid {{sky.glassBorder}};">
+            <span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: {{sky.muted}};">9 jours de pause · rien n’est perdu</span>
+            <span style="font-size: 14px; line-height: 1.45; color: {{sky.ink}};">{{comeback.text}}</span>
+            <sc-if value="{{comeback.choosing}}" hint-placeholder-val="{{true}}">
+              <div style="display: flex; gap: 8px;">
+                <button onClick="{{onGentle}}" style="flex: 1.25; min-height: 52px; border-radius: 16px; border: none; background: {{t.cta}}; color: {{t.ctaTx}}; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 14px; font-weight: 700;">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{icons.leaf}}"></path></svg>
+                  En douceur
+                </button>
+                <button onClick="{{onNormal}}" style="flex: 1; min-height: 52px; border-radius: 16px; border: 1px solid {{sky.glassBorder}}; background: {{sky.glass}}; color: {{sky.ink}}; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 14px; font-weight: 700;">Mon plan normal</button>
+              </div>
+            </sc-if>
+            <sc-if value="{{comeback.gentle}}" hint-placeholder-val="{{false}}">
+              <div style="display: flex; flex-direction: column; gap: 7px;">
+                <span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: {{sky.muted}};">Cette semaine, on vise</span>
+                <sc-for list="{{comeback.rows}}" as="g" hint-placeholder-count="3">
+                  <span style="display: flex; align-items: center; gap: 8px; font-size: 13.5px; font-weight: 600; color: {{sky.ink}};">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="{{g.c}}" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+                    {{g.text}}
+                  </span>
+                </sc-for>
+              </div>
+            </sc-if>
+            <sc-if value="{{comeback.normal}}" hint-placeholder-val="{{false}}">
+              <span style="font-size: 13.5px; font-weight: 600; line-height: 1.45; color: {{sky.ink}};">Ta prochaine séance, Push A, est prévue demain à 18 h. Ta série repart de là.</span>
+            </sc-if>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 16px 16px {{bodyPadBottom}};">
+
+      <section aria-label="Ta journée" style="background: {{t.sf}}; border: 1px solid {{t.bd}}; border-radius: 24px; padding: 8px 14px 8px; box-shadow: 0 14px 30px -26px {{t.shadow}};">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 2px;">
+          <h2 style="margin: 0; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: {{t.mut}};">Ta journée</h2>
+          <button onClick="{{onPlanning}}" style="min-height: 44px; display: flex; align-items: center; gap: 4px; padding: 0 2px; border: none; background: none; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 12.5px; font-weight: 700; color: {{t.acc}};">
+            {{dayMeta}}
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+          </button>
+        </div>
+        <div style="position: relative;">
+          <div aria-hidden="true" style="position: absolute; left: 58px; top: 14px; bottom: 18px; width: 2px; border-radius: 1px; background: {{t.bd}};"></div>
+          <sc-for list="{{rows}}" as="r" hint-placeholder-count="6">
+
+            <sc-if value="{{r.isSummary}}" hint-placeholder-val="{{false}}">
+              <button onClick="{{r.onTap}}" aria-label="{{r.aria}}" style="position: relative; width: 100%; min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 6px 0; background: none; border: none; margin: 0; cursor: pointer; text-align: left; font-family: 'Hanken Grotesk', system-ui, sans-serif; color: {{t.tx}};">
+                <span style="width: 40px; flex-shrink: 0;"></span>
+                <span aria-hidden="true" style="position: relative; z-index: 1; width: 18px; height: 18px; flex-shrink: 0; border-radius: 50%; background: {{t.tx}}; display: flex; align-items: center; justify-content: center;">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="{{t.sf}}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+                </span>
+                <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
+                  <span style="font-size: 13.5px; font-weight: 700; color: {{t.tx}};">{{r.label}}</span>
+                  <span style="font-size: 12px; color: {{t.mut}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.names}}</span>
+                </span>
+                <span style="font-size: 12.5px; font-weight: 700; color: {{t.acc}};">{{r.action}}</span>
+              </button>
+            </sc-if>
+
+            <sc-if value="{{r.isRow}}" hint-placeholder-val="{{true}}">
+              <div style="position: relative; display: flex; align-items: flex-start; gap: 10px; padding: 8px 0; min-height: 44px; box-sizing: border-box;">
+                <span style="width: 40px; flex-shrink: 0; text-align: right; padding-top: 2px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: {{r.timeColor}};">{{r.time}}</span>
+                <span aria-hidden="true" style="position: relative; z-index: 1; width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; box-sizing: border-box; border-radius: 50%; background: {{r.nodeBg}}; border: {{r.nodeBorder}}; display: flex; align-items: center; justify-content: center; transition: background 300ms ease, border-color 300ms ease;">
+                  <sc-if value="{{r.showCheck}}" hint-placeholder-val="{{false}}">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="{{t.check}}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"></path></svg>
+                  </sc-if>
+                  <sc-if value="{{r.live}}" hint-placeholder-val="{{false}}">
+                    <span style="width: 8px; height: 8px; border-radius: 50%; background: {{r.liveColor}}; animation: wPulse 1600ms ease-in-out infinite;"></span>
+                  </sc-if>
+                </span>
+                <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                  <span style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                    <span style="font-size: 14px; font-weight: 700; color: {{r.titleColor}};">{{r.title}}</span>
+                    <sc-if value="{{r.hasTag}}" hint-placeholder-val="{{false}}">
+                      <span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 9px; font-weight: 700; letter-spacing: .4px; text-transform: uppercase; padding: 2px 6px; border-radius: 6px; background: {{r.tagBg}}; color: {{r.tagFg}};">{{r.tag}}</span>
+                    </sc-if>
+                  </span>
+                  <span style="font-size: 12.5px; line-height: 1.35; color: {{t.mut}};">{{r.sub}}</span>
+                </span>
+                <sc-if value="{{r.hasQuick}}" hint-placeholder-val="{{false}}">
+                  <button onClick="{{r.onQuick}}" aria-label="{{r.quickAria}}" style="width: 44px; height: 44px; margin: -8px -6px -8px 0; flex-shrink: 0; display: flex; align-items: center; justify-content: center; background: none; border: none; padding: 0; cursor: pointer; color: {{t.tx}};">
+                    <span style="width: 30px; height: 30px; border-radius: 50%; border: 1.5px solid {{t.bdStrong}}; display: flex; align-items: center; justify-content: center;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                    </span>
+                  </button>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{r.isNow}}" hint-placeholder-val="{{false}}">
+              <div style="position: relative; z-index: 1; overflow: hidden; margin: 6px 0 10px; border-radius: 22px; padding: 16px; background: {{t.panel}}; color: {{t.panelText}}; animation: wRise 460ms cubic-bezier(.22,.61,.36,1) both;">
+                <div aria-hidden="true" style="position: absolute; right: -50px; top: -60px; width: 170px; height: 170px; border-radius: 50%; background: {{now.halo}};"></div>
+                <div style="position: relative; display: flex; align-items: center; gap: 8px;">
+                  <span style="width: 8px; height: 8px; border-radius: 50%; background: {{now.accent}};"></span>
+                  <span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: {{now.accent}};">{{now.eyebrow}}</span>
+                </div>
+                <div style="position: relative; margin-top: 7px; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 23px; letter-spacing: -0.7px; line-height: 1.12; color: #ffffff;">{{now.title}}</div>
+                <sc-if value="{{now.hasMeta}}" hint-placeholder-val="{{true}}">
+                  <div style="position: relative; margin-top: 5px; font-size: 13.5px; line-height: 1.4; color: {{t.panelMuted}};">{{now.meta}}</div>
+                </sc-if>
+                <sc-if value="{{now.hasTip}}" hint-placeholder-val="{{false}}">
+                  <div style="position: relative; margin-top: 12px; display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 14px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.10);">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="{{now.accent}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0; margin-top: 2px;"><path d="{{now.tipIcon}}"></path></svg>
+                    <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0;">
+                      <span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 9.5px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: {{now.accent}};">{{now.tipTag}}</span>
+                      <span style="font-size: 13px; line-height: 1.4; color: {{t.panelText}};">{{now.tip}}</span>
+                    </div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{now.isFaces}}" hint-placeholder-val="{{false}}">
+                  <div role="group" aria-label="Ton énergie ce matin" style="position: relative; margin-top: 14px; display: flex; gap: 6px;">
+                    <sc-for list="{{now.faces}}" as="f" hint-placeholder-count="5">
+                      <button onClick="{{f.pick}}" aria-label="{{f.aria}}" style="flex: 1; min-width: 0; height: 68px; border-radius: 15px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.07); color: #f0e4d0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 0; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{f.d}}"></path></svg>
+                        <span style="font-size: 10.5px; font-weight: 700;">{{f.label}}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <sc-if value="{{now.isCta}}" hint-placeholder-val="{{true}}">
+                  <div style="position: relative; margin-top: 14px; display: flex; gap: 8px;">
+                    <button onClick="{{now.cta.act}}" style="flex: 1; height: 50px; border-radius: 15px; border: none; background: {{t.cta}}; color: {{t.ctaTx}}; display: flex; align-items: center; justify-content: center; gap: 9px; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 15px; font-weight: 700; box-shadow: 0 12px 24px -12px {{t.fabShadow}};">
+                      <svg width="17" height="17" viewBox="0 0 24 24" fill="{{now.cta.fill}}" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{now.cta.icon}}"></path></svg>
+                      {{now.cta.label}}
+                    </button>
+                    <sc-if value="{{now.hasAlt}}" hint-placeholder-val="{{false}}">
+                      <button onClick="{{now.alt.act}}" aria-label="{{now.alt.aria}}" style="width: 50px; height: 50px; flex-shrink: 0; border-radius: 15px; border: 1px solid rgba(255,255,255,0.16); background: rgba(255,255,255,0.08); color: #f0e4d0; display: flex; align-items: center; justify-content: center; cursor: pointer;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{now.alt.icon}}"></path></svg>
+                      </button>
+                    </sc-if>
+                  </div>
+                </sc-if>
+                <sc-if value="{{now.isRescue}}" hint-placeholder-val="{{false}}">
+                  <div style="position: relative; margin-top: 14px; display: flex; flex-direction: column; gap: 8px;">
+                    <sc-for list="{{now.options}}" as="o" hint-placeholder-count="3">
+                      <button onClick="{{o.act}}" style="min-height: 58px; border-radius: 15px; border: {{o.border}}; background: {{o.bg}}; color: {{o.fg}}; display: flex; align-items: center; gap: 12px; padding: 8px 14px; cursor: pointer; text-align: left; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink: 0;"><path d="{{o.icon}}"></path></svg>
+                        <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0;">
+                          <span style="font-size: 14.5px; font-weight: 700;">{{o.label}}</span>
+                          <span style="font-size: 12px; font-weight: 500; color: {{o.subFg}};">{{o.sub}}</span>
+                        </span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{r.isMore}}" hint-placeholder-val="{{false}}">
+              <button onClick="{{r.onTap}}" aria-label="{{r.aria}}" style="position: relative; width: 100%; min-height: 44px; display: flex; align-items: center; gap: 10px; padding: 6px 0; background: none; border: none; margin: 0; cursor: pointer; text-align: left; font-family: 'Hanken Grotesk', system-ui, sans-serif; color: {{t.tx}};">
+                <span style="width: 40px; flex-shrink: 0;"></span>
+                <span aria-hidden="true" style="position: relative; z-index: 1; width: 18px; height: 18px; flex-shrink: 0; box-sizing: border-box; border-radius: 50%; background: {{t.sf}}; border: 2px dotted {{t.bdStrong}};"></span>
+                <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px;">
+                  <span style="font-size: 13.5px; font-weight: 700; color: {{t.tx}};">{{r.label}}</span>
+                  <span style="font-size: 12px; color: {{t.mut}}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{r.names}}</span>
+                </span>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{t.mut}}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+              </button>
+            </sc-if>
+
+          </sc-for>
+        </div>
+      </section>
+
+      <section aria-label="Ta semaine" style="background: {{t.sf}}; border: 1px solid {{t.bd}}; border-radius: 24px; padding: 16px 14px 12px;">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+          <h2 style="margin: 0; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: {{t.mut}};">Ta semaine</h2>
+          <span style="display: flex; align-items: center; gap: 5px; padding: 5px 11px 5px 8px; border-radius: 999px; background: {{streak.bg}}; color: {{streak.fg}}; font-size: 12.5px; font-weight: 700; transition: background 300ms ease;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" aria-hidden="true"><path d="{{icons.flame}}"></path></svg>
+            {{streak.text}}
+          </span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; margin-top: 12px;">
+          <sc-for list="{{week}}" as="w" hint-placeholder-count="7">
+            <div style="display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 0 9px; border-radius: 14px; box-sizing: border-box; background: {{w.bg}}; border: {{w.border}};">
+              <span style="font-size: 11px; font-weight: 700; color: {{w.lc}};">{{w.d}}</span>
+              <span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; color: {{w.nc}};">{{w.n}}</span>
+              <span style="display: flex; flex-direction: column; gap: 3px; margin-top: 4px;">
+                <span style="display: {{w.m0.disp}}; width: 24px; height: 8px; border-radius: 4px; box-sizing: border-box; background: {{w.m0.bg}}; border: {{w.m0.bd}};"></span>
+                <span style="display: {{w.m1.disp}}; width: 24px; height: 8px; border-radius: 4px; box-sizing: border-box; background: {{w.m1.bg}}; border: {{w.m1.bd}};"></span>
+                <span style="display: {{w.m2.disp}}; width: 24px; height: 8px; border-radius: 4px; box-sizing: border-box; background: {{w.m2.bg}}; border: {{w.m2.bd}};"></span>
+              </span>
+            </div>
+          </sc-for>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 10px; padding: 0 2px;">
+          <sc-for list="{{legend}}" as="l" hint-placeholder-count="3">
+            <span style="display: flex; align-items: center; gap: 5px; font-size: 11.5px; font-weight: 600; color: {{t.mut}};"><span style="width: 12px; height: 6px; border-radius: 3px; background: {{l.c}};"></span>{{l.label}}</span>
+          </sc-for>
+          <span style="font-size: 11.5px; color: {{t.mut}};">plein = fait · pointillé = prévu</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 10px; padding-top: 6px; border-top: 1px solid {{t.bd}};">
+          <span style="font-size: 13px; font-weight: 600; line-height: 1.35; color: {{t.tx}};">{{weekSummary}}</span>
+          <button onClick="{{onReview}}" style="min-height: 44px; flex-shrink: 0; display: flex; align-items: center; gap: 4px; padding: 0 2px; border: none; background: none; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 12.5px; font-weight: 700; color: {{t.acc}};">
+            Bilan
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+          </button>
+        </div>
+      </section>
+
+      <sc-if value="{{showNews}}" hint-placeholder-val="{{true}}">
+        <section aria-label="Du nouveau" style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 4px;">
+            <h2 style="margin: 0; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: {{t.mut}};">Du nouveau</h2>
+            <button onClick="{{onInsights}}" style="min-height: 44px; display: flex; align-items: center; gap: 4px; padding: 0 2px; border: none; background: none; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 12.5px; font-weight: 700; color: {{t.acc}};">
+              Tout voir
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg>
+            </button>
+          </div>
+          <sc-for list="{{news}}" as="n" hint-placeholder-count="2">
+            <div style="position: relative; overflow: hidden; display: flex; gap: 12px; align-items: flex-start; padding: 16px; border-radius: 22px; box-sizing: border-box; background: {{n.bg}}; border: {{n.border}}; color: {{n.fg}}; animation: wRise 520ms cubic-bezier(.22,.61,.36,1) both;">
+              <span aria-hidden="true" style="width: 40px; height: 40px; flex-shrink: 0; border-radius: 13px; background: {{n.iconBg}}; display: flex; align-items: center; justify-content: center;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="{{n.iconFg}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="{{n.icon}}"></path></svg>
+              </span>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px;">
+                <span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10px; font-weight: 700; letter-spacing: .6px; text-transform: uppercase; color: {{n.tagFg}};">{{n.tag}}</span>
+                <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 700; font-size: 17px; letter-spacing: -0.3px; line-height: 1.2; color: {{n.fg}};">{{n.title}}</span>
+                <span style="font-size: 13px; line-height: 1.42; color: {{n.muted}};">{{n.body}}</span>
+                <sc-if value="{{n.hasProgress}}" hint-placeholder-val="{{false}}">
+                  <span style="display: flex; align-items: center; gap: 8px; margin-top: 7px;">
+                    <span style="flex: 1; height: 7px; border-radius: 4px; background: {{n.track}}; overflow: hidden; display: block;">
+                      <span style="display: block; height: 100%; width: {{n.pct}}; border-radius: 4px; background: {{n.progColor}}; transition: width 900ms cubic-bezier(.22,.61,.36,1);"></span>
+                    </span>
+                    <span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; color: {{n.fg}};">{{n.pctLabel}}</span>
+                  </span>
+                </sc-if>
+                <sc-if value="{{n.hasAction}}" hint-placeholder-val="{{false}}">
+                  <button onClick="{{n.act}}" style="align-self: flex-start; margin-top: 8px; min-height: 44px; display: flex; align-items: center; gap: 7px; padding: 0 16px; border-radius: 999px; border: {{n.btnBorder}}; background: {{n.btnBg}}; color: {{n.btnFg}}; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 13px; font-weight: 700;">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{n.actIcon}}"></path></svg>
+                    {{n.actionLabel}}
+                  </button>
+                </sc-if>
+              </div>
+            </div>
+          </sc-for>
+        </section>
+      </sc-if>
+
+      <sc-if value="{{showReperes}}" hint-placeholder-val="{{true}}">
+        <section aria-label="Tes repères" style="display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 0 4px;">
+            <h2 style="margin: 0; font-family: 'Space Mono', ui-monospace, monospace; font-size: 11px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; color: {{t.mut}};">Tes repères</h2>
+            <button onClick="{{onCustomize}}" style="min-height: 44px; display: flex; align-items: center; gap: 4px; padding: 0 2px; border: none; background: none; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 12.5px; font-weight: 700; color: {{t.acc}};">Personnaliser</button>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px;">
+            <sc-for list="{{reperes}}" as="x" hint-placeholder-count="4">
+              <button onClick="{{x.tap}}" aria-label="{{x.aria}}" style="min-height: 108px; box-sizing: border-box; display: flex; flex-direction: column; align-items: stretch; gap: 3px; padding: 13px 14px 12px; border-radius: 20px; background: {{t.sf}}; border: 1px solid {{t.bd}}; cursor: pointer; text-align: left; font-family: 'Hanken Grotesk', system-ui, sans-serif; color: {{t.tx}};">
+                <span style="display: flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: {{t.mut}};">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="{{x.color}}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{x.icon}}"></path></svg>
+                  {{x.label}}
+                </span>
+                <span style="display: flex; align-items: baseline; gap: 4px;">
+                  <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 24px; letter-spacing: -0.8px; color: {{t.tx}};">{{x.value}}</span>
+                  <span style="font-size: 12px; font-weight: 600; color: {{t.mut}};">{{x.unit}}</span>
+                </span>
+                <sc-if value="{{x.isSpark}}" hint-placeholder-val="{{false}}">
+                  <svg width="146" height="22" viewBox="0 0 146 22" aria-hidden="true" style="display: block; max-width: 100%;"><path d="{{x.spark}}" fill="none" stroke="{{x.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </sc-if>
+                <sc-if value="{{x.isBar}}" hint-placeholder-val="{{false}}">
+                  <span style="display: block; height: 6px; margin: 8px 0 8px; border-radius: 3px; background: {{t.idle}}; overflow: hidden;">
+                    <span style="display: block; height: 100%; width: {{x.pct}}; border-radius: 3px; background: {{x.color}}; transition: width 900ms cubic-bezier(.22,.61,.36,1);"></span>
+                  </span>
+                </sc-if>
+                <span style="font-size: 11.5px; color: {{t.mut}};">{{x.sub}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </section>
+      </sc-if>
+
+      <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 4px 18px; padding: 0 0 4px;">
+        <button onClick="{{onLighten}}" style="min-height: 44px; border: none; background: none; cursor: pointer; padding: 0 4px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 12.5px; font-weight: 700; color: {{t.mut}};">Semaine chargée ? Allège-la</button>
+        <button onClick="{{onCustomize}}" style="min-height: 44px; border: none; background: none; cursor: pointer; padding: 0 4px; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 12.5px; font-weight: 700; color: {{t.acc}};">Personnaliser l’accueil</button>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{showFab}}" hint-placeholder-val="{{true}}">
+    <button onClick="{{onFab}}" aria-label="Noter quelque chose" style="position: absolute; right: 16px; bottom: 78px; z-index: 11; width: 58px; height: 58px; border-radius: 20px; border: none; background: {{t.fab}}; color: {{t.fabTx}}; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 16px 30px -12px {{t.fabShadow}};">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+    </button>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+    <div role="status" style="position: absolute; left: 50%; bottom: 150px; z-index: 20; transform: translateX(-50%); width: max-content; max-width: 320px; padding: 11px 16px; border-radius: 16px; box-sizing: border-box; background: {{t.toastBg}}; color: {{t.toastFg}}; font-size: 13px; font-weight: 600; line-height: 1.35; text-align: center; box-shadow: 0 14px 30px -12px rgba(0,0,0,0.45); animation: wToast 260ms cubic-bezier(.22,.61,.36,1) both;">{{toast}}</div>
+  </sc-if>
+
+  <sc-if value="{{showTabs}}" hint-placeholder-val="{{true}}">
+    <nav aria-label="Navigation principale" style="position: absolute; left: 0; right: 0; bottom: 0; height: 64px; z-index: 10; display: flex; background: {{t.sf}}; border-top: 1px solid {{t.bd}};">
+      <sc-for list="{{tabs}}" as="tb" hint-placeholder-count="5">
+        <button onClick="{{tb.tap}}" aria-label="{{tb.label}}" aria-current="{{tb.current}}" style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; background: none; border: none; padding: 0; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; color: {{tb.color}};">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="{{tb.sw}}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tb.d}}"></path></svg>
+          <span style="font-size: 10.5px; font-weight: 700;">{{tb.label}}</span>
+        </button>
+      </sc-for>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{sheetOpen}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; z-index: 30;">
+      <button onClick="{{onCloseSheet}}" aria-label="Fermer" style="position: absolute; left: 0; top: 0; right: 0; bottom: 0; border: none; padding: 0; margin: 0; background: rgba(15,10,6,0.46); cursor: pointer; animation: wFade 200ms ease both;"></button>
+      <div role="dialog" aria-label="{{sheetTitle}}" style="position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 18px 26px; border-radius: 28px 28px 0 0; background: {{t.sf}}; color: {{t.tx}}; box-shadow: 0 -20px 40px -20px rgba(0,0,0,0.4); animation: wSheet 300ms cubic-bezier(.22,.61,.36,1) both;">
+        <div aria-hidden="true" style="width: 40px; height: 5px; border-radius: 3px; background: {{t.bdStrong}}; margin: 0 auto 14px;"></div>
+        <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+          <h2 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 22px; letter-spacing: -0.6px; color: {{t.tx}};">{{sheetTitle}}</h2>
+          <span style="font-size: 12.5px; font-weight: 700; color: {{sheetMetaColor}};">{{sheetMeta}}</span>
+        </div>
+
+        <sc-if value="{{isAdd}}" hint-placeholder-val="{{false}}">
+          <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-top: 16px;">
+            <sc-for list="{{addTiles}}" as="a" hint-placeholder-count="8">
+              <button onClick="{{a.act}}" style="min-height: 86px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 7px; padding: 6px 2px; border-radius: 18px; border: 1px solid {{t.bd}}; background: {{t.bg}}; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; color: {{t.tx}};">
+                <span style="width: 42px; height: 42px; border-radius: 14px; background: {{a.bg}}; display: flex; align-items: center; justify-content: center;">
+                  <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="{{a.color}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{a.icon}}"></path></svg>
+                </span>
+                <span style="font-size: 11.5px; font-weight: 700; text-align: center; line-height: 1.2;">{{a.label}}</span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+
+        <sc-if value="{{isWhy}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; flex-direction: column; gap: 4px; margin-top: 14px;">
+            <sc-for list="{{whyRows}}" as="y" hint-placeholder-count="3">
+              <div style="display: flex; align-items: flex-start; gap: 12px; padding: 12px 0; border-bottom: 1px solid {{t.bd}};">
+                <span style="width: 12px; height: 12px; flex-shrink: 0; margin-top: 4px; border-radius: 50%; background: {{y.c}};"></span>
+                <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px;">
+                  <span style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px;">
+                    <span style="font-size: 14.5px; font-weight: 700; color: {{t.tx}};">{{y.label}}</span>
+                    <span style="font-size: 13.5px; font-weight: 700; color: {{y.c}};">{{y.value}}</span>
+                  </span>
+                  <span style="font-size: 12.5px; line-height: 1.4; color: {{t.mut}};">{{y.detail}}</span>
+                </span>
+              </div>
+            </sc-for>
+            <p style="margin: 10px 0 0; font-size: 12.5px; line-height: 1.45; color: {{t.mut}};">Calculé sur ton téléphone, à partir de tes 7 derniers jours. Un seul signal négatif suffit à conseiller le repos ; aucun chiffre ne sort d’une IA.</p>
+            <button onClick="{{onCloseSheet}}" style="margin-top: 14px; height: 50px; border-radius: 15px; border: none; background: {{t.tx}}; color: {{t.sf}}; cursor: pointer; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 15px; font-weight: 700;">Compris</button>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"scenario":{"editor":"enum","options":["seance","repos","risque","nouveau","retour","nutrition","live"],"default":"seance"},"hour":{"editor":"range","min":6,"max":23.5,"step":0.25,"default":12.67},"dark":{"editor":"boolean","default":false},"teinte":{"editor":"enum","options":["lagon","framboise","aurore","actuel"],"default":"aurore"},"full":{"editor":"boolean","default":false},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  componentDidMount() {
+    this._readyT = setTimeout(() => this.setState({ ready: true }), 140);
+  }
+
+  componentWillUnmount() {
+    clearTimeout(this._readyT);
+    clearTimeout(this._toastT);
+    this.hush();
+  }
+
+  componentDidUpdate(prev) {
+    const p = this.props || {};
+    if (prev.scenario !== p.scenario || prev.hour !== p.hour || prev.dark !== p.dark) {
+      this.hush();
+      this.setState({ logged: {}, checkin: null, sheet: null, showDone: false, showAll: false, rescued: null, comeback: null, speaking: false, toast: null });
+    }
+  }
+
+  hush() {
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) { /* rien */ }
+  }
+
+  say(msg) {
+    clearTimeout(this._toastT);
+    this.setState({ toast: msg });
+    this._toastT = setTimeout(() => this.setState({ toast: null }), 2600);
+  }
+
+  mark(id, msg) {
+    const s = this.state || {};
+    const logged = Object.assign({}, s.logged || {});
+    logged[id] = true;
+    this.setState({ logged: logged, sheet: null });
+    if (msg) this.say(msg);
+  }
+
+  close(msg) {
+    this.setState({ sheet: null });
+    if (msg) this.say(msg);
+  }
+
+  speak(text) {
+    const s = this.state || {};
+    let synth = null;
+    try { synth = window.speechSynthesis || null; } catch (e) { synth = null; }
+    if (s.speaking) {
+      this.hush();
+      this.setState({ speaking: false });
+      return;
+    }
+    if (!synth || typeof window.SpeechSynthesisUtterance === 'undefined') {
+      this.say('La lecture vocale n’est pas disponible ici');
+      return;
+    }
+    try {
+      synth.cancel();
+      const u = new window.SpeechSynthesisUtterance(text);
+      u.lang = 'fr-FR';
+      u.rate = 1.03;
+      u.onend = () => this.setState({ speaking: false });
+      u.onerror = () => this.setState({ speaking: false });
+      this.setState({ speaking: true });
+      synth.speak(u);
+    } catch (e) {
+      this.setState({ speaking: false });
+    }
+  }
+
+  hhmm(h) {
+    let hh = Math.floor(h);
+    let mm = Math.round((h - hh) * 60);
+    if (mm === 60) { mm = 0; hh += 1; }
+    return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+  }
+
+  dur(x) {
+    const tot = Math.max(0, Math.round(x * 60));
+    const hh = Math.floor(tot / 60);
+    const mm = tot % 60;
+    if (hh === 0) return mm + ' min';
+    if (mm === 0) return hh + ' h';
+    return hh + ' h ' + String(mm).padStart(2, '0');
+  }
+
+  num(n) {
+    return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+  }
+
+  data(sc) {
+    const W = (d, n, s, r, f, extra) => Object.assign({ d: d, n: n, s: s, r: r, f: f }, extra || {});
+    const seanceItems = [
+      { id: 'checkin', t: 7.5, kind: 'checkin', pillar: 'wellbeing', title: 'Check-in du matin', short: 'check-in', todo: 'Ton énergie, en un geste', grace: 0.4 },
+      { id: 'weigh', t: 7.67, kind: 'weigh', pillar: 'home', title: 'Pesée', short: 'pesée', todo: 'Avant le petit-déj', grace: 0.4 },
+      { id: 'breakfast', t: 8, kind: 'meal', meal: 'breakfast', pillar: 'nutrition', title: 'Petit-déjeuner', short: 'petit-déj', todo: 'D’habitude vers 8 h', kcal: 540, prot: 32, grace: 1.25, cta: 'Ajouter mon petit-déj' },
+      { id: 'lunch', t: 12.5, kind: 'meal', meal: 'lunch', pillar: 'nutrition', title: 'Déjeuner', short: 'déjeuner', todo: 'Vise ~45 g de protéines', kcal: 780, prot: 48, grace: 1.25, cta: 'Ajouter mon déjeuner', tip: 'Jambes ce soir : un bon féculent ce midi et ~45 g de protéines.', tipTag: 'Muscu × Nutrition' },
+      { id: 'snack', t: 16.5, kind: 'meal', meal: 'snack', pillar: 'nutrition', title: 'Collation', short: 'collation', todo: 'Banane + yaourt, 1 h avant la séance', kcal: 220, prot: 12, suggested: true, win: [15.5, 17.25], grace: 0.75, cta: 'Ajouter ma collation', tip: '1 h avant les jambes, 30 g de glucides suffisent : banane + yaourt.', tipTag: 'Muscu × Nutrition' },
+      { id: 'session', t: 18, kind: 'session', pillar: 'strength', title: 'Jambes', short: 'séance', todo: 'Muscu · 6 exercices · ~55 min', grace: 1.25, tip: 'Squat : 100 kg × 5 la dernière fois. Tente 102,5 kg.', tipTag: 'Progression' },
+      { id: 'dinner', t: 20, kind: 'meal', meal: 'dinner', pillar: 'nutrition', title: 'Dîner', short: 'dîner', todo: '+250 kcal gagnés par ta séance', kcal: 910, prot: 46, grace: 1.25, cta: 'Ajouter mon dîner', tip: 'Ta séance t’a fait gagner 250 kcal : ce soir, le dîner peut être copieux.', tipTag: 'Muscu × Nutrition' },
+      { id: 'evening', t: 22, kind: 'evening', pillar: 'wellbeing', title: 'Point du soir', short: 'point du soir', todo: 'Humeur, stress : 10 secondes', grace: 0.5 },
+    ];
+    const seanceWeek = [
+      W('L', 19, 'done', null, 'done'), W('M', 20, null, 'done', 'done'), W('M', 21, null, null, 'miss'),
+      W('J', 22, 'done', null, 'done'), W('V', 23, 'today', null, 'today', { today: true }),
+      W('S', 24, null, 'plan', 'future'), W('D', 25, null, null, 'future'),
+    ];
+    const three = ['strength', 'running', 'nutrition'];
+
+    if (sc === 'repos') {
+      return {
+        pillars: three, wellbeing: true, auto: true, streak: 12, kcalTarget: 2400, protTarget: 140, load: 'positive', steps: 6240, stepsGoal: 8000,
+        sessions: [{ p: 'strength', done: true }, { p: 'running', done: true }, { p: 'strength', done: true }, { p: 'running' }],
+        week: [
+          W('L', 19, 'done', null, 'done'), W('M', 20, null, 'done', 'done'), W('M', 21, null, null, 'miss'),
+          W('J', 22, 'done', null, 'done'), W('V', 23, null, null, 'today', { today: true }),
+          W('S', 24, null, 'plan', 'future'), W('D', 25, null, null, 'future'),
+        ],
+        items: [
+          { id: 'checkin', t: 7.5, kind: 'checkin', pillar: 'wellbeing', title: 'Check-in du matin', short: 'check-in', todo: 'Ton énergie, en un geste', grace: 0.4 },
+          { id: 'breakfast', t: 8.5, kind: 'meal', meal: 'breakfast', pillar: 'nutrition', title: 'Petit-déjeuner', short: 'petit-déj', todo: 'D’habitude vers 8 h 30', kcal: 480, prot: 28, grace: 1.25, cta: 'Ajouter mon petit-déj' },
+          { id: 'lunch', t: 12.5, kind: 'meal', meal: 'lunch', pillar: 'nutrition', title: 'Déjeuner', short: 'déjeuner', todo: 'Jour de repos : protéines tenues, sans plus', kcal: 720, prot: 42, grace: 1.25, cta: 'Ajouter mon déjeuner' },
+          { id: 'walk', t: 15, kind: 'walk', pillar: 'home', title: 'Marche de 30 min', short: 'marche', todo: 'Repos actif · +3 000 pas', suggested: true, win: [13.75, 18.5], grace: 0.75 },
+          { id: 'dinner', t: 19.75, kind: 'meal', meal: 'dinner', pillar: 'nutrition', title: 'Dîner', short: 'dîner', todo: 'Des glucides pour demain matin', kcal: 760, prot: 44, grace: 1.25, cta: 'Ajouter mon dîner', tip: 'Sortie longue demain à 8 h : des glucides ce soir, c’est du carburant.', tipTag: 'Course × Nutrition' },
+          { id: 'evening', t: 22, kind: 'evening', pillar: 'wellbeing', title: 'Point du soir', short: 'point du soir', todo: 'Humeur, stress : 10 secondes', grace: 0.5 },
+        ],
+      };
+    }
+    if (sc === 'risque') {
+      return {
+        pillars: three, wellbeing: true, auto: true, streak: 12, kcalTarget: 2400, protTarget: 140, load: 'neutral', steps: 6100, stepsGoal: 8000,
+        sessions: [{ p: 'strength', done: true }, { p: 'running', done: true }, { p: 'strength', done: true }, { p: 'running' }],
+        week: [
+          W('L', 19, 'done', null, 'done'), W('M', 20, null, 'done', 'done'), W('M', 21, null, null, 'done'),
+          W('J', 22, 'done', null, 'done'), W('V', 23, null, null, 'today', { today: true }),
+          W('S', 24, null, 'plan', 'future'), W('D', 25, null, null, 'future'),
+        ],
+        items: [
+          { id: 'breakfast', t: 8, kind: 'meal', meal: 'breakfast', pillar: 'nutrition', title: 'Petit-déjeuner', short: 'petit-déj', todo: '', kcal: 510, prot: 30, grace: 1.25 },
+          { id: 'lunch', t: 12.75, kind: 'meal', meal: 'lunch', pillar: 'nutrition', title: 'Déjeuner', short: 'déjeuner', todo: '', kcal: 820, prot: 44, grace: 1.25 },
+          { id: 'dinner', t: 19.75, kind: 'meal', meal: 'dinner', pillar: 'nutrition', title: 'Dîner', short: 'dîner', todo: '', kcal: 880, prot: 50, grace: 1.25 },
+          { id: 'evening', t: 22, kind: 'evening', pillar: 'wellbeing', title: 'Point du soir', short: 'point du soir', todo: 'Humeur, stress : 10 secondes', grace: 0.5 },
+        ],
+      };
+    }
+    if (sc === 'nouveau') {
+      return {
+        pillars: three, wellbeing: true, auto: false, streak: 0, kcalTarget: 2200, protTarget: 120, load: null, steps: 0, stepsGoal: 8000,
+        sessions: [],
+        week: [
+          W('L', 19, null, null, 'future'), W('M', 20, null, null, 'future'), W('M', 21, null, null, 'future'),
+          W('J', 22, null, null, 'future'), W('V', 23, null, null, 'today', { today: true }),
+          W('S', 24, null, null, 'future'), W('D', 25, null, null, 'future'),
+        ],
+        items: [
+          { id: 'program', t: 10.25, kind: 'setup', pillar: 'strength', title: 'Choisis ton programme', short: 'programme', todo: '3 questions, 3 minutes', grace: 0 },
+          { id: 'lunch', t: 12.5, kind: 'meal', meal: 'lunch', pillar: 'nutrition', title: 'Ton premier repas', short: 'premier repas', todo: 'Scanne ou cherche : 20 secondes', kcal: 650, prot: 35, cta: 'Ajouter mon déjeuner' },
+          { id: 'evening', t: 21.5, kind: 'evening', pillar: 'wellbeing', title: 'Ton premier point du soir', short: 'point du soir', todo: 'Comment s’est passée ta journée ?' },
+        ],
+      };
+    }
+    if (sc === 'retour') {
+      return {
+        pillars: three, wellbeing: true, auto: false, streak: 0, kcalTarget: 2400, protTarget: 140, load: 'positive', steps: 2100, stepsGoal: 8000,
+        sessions: [{ p: 'strength' }, { p: 'running' }, { p: 'strength' }],
+        week: [
+          W('L', 19, null, null, 'miss', { pause: true }), W('M', 20, null, null, 'miss', { pause: true }), W('M', 21, null, null, 'miss', { pause: true }),
+          W('J', 22, null, null, 'miss', { pause: true }), W('V', 23, null, null, 'today', { today: true }),
+          W('S', 24, null, 'plan', 'future'), W('D', 25, null, null, 'future'),
+        ],
+        items: [
+          { id: 'breakfast', t: 9.5, kind: 'meal', meal: 'breakfast', pillar: 'nutrition', title: 'Petit-déjeuner', short: 'petit-déj', todo: 'Quand tu veux, sans pression', kcal: 450, prot: 26, cta: 'Ajouter mon petit-déj' },
+          { id: 'lunch', t: 12.5, kind: 'meal', meal: 'lunch', pillar: 'nutrition', title: 'Déjeuner', short: 'déjeuner', todo: 'Ta cible est revenue au maintien', kcal: 700, prot: 40, cta: 'Ajouter mon déjeuner' },
+          { id: 'dinner', t: 19.75, kind: 'meal', meal: 'dinner', pillar: 'nutrition', title: 'Dîner', short: 'dîner', todo: '', kcal: 760, prot: 44, cta: 'Ajouter mon dîner' },
+          { id: 'evening', t: 22, kind: 'evening', pillar: 'wellbeing', title: 'Point du soir', short: 'point du soir', todo: 'Comment s’est passée cette reprise ?' },
+        ],
+      };
+    }
+    if (sc === 'nutrition') {
+      return {
+        pillars: ['nutrition'], wellbeing: false, auto: true, streak: 5, kcalTarget: 2100, protTarget: 110, load: null, steps: 4200, stepsGoal: 8000,
+        sessions: [],
+        week: [
+          W('L', 19, null, null, 'done'), W('M', 20, null, null, 'done'), W('M', 21, null, null, 'logged'),
+          W('J', 22, null, null, 'done'), W('V', 23, null, null, 'today', { today: true }),
+          W('S', 24, null, null, 'future'), W('D', 25, null, null, 'future'),
+        ],
+        items: [
+          { id: 'weigh', t: 7.75, kind: 'weigh', pillar: 'home', title: 'Pesée', short: 'pesée', todo: 'Avant le petit-déj', grace: 0.4 },
+          { id: 'breakfast', t: 8, kind: 'meal', meal: 'breakfast', pillar: 'nutrition', title: 'Petit-déjeuner', short: 'petit-déj', todo: '', kcal: 420, prot: 26, grace: 1.25, cta: 'Ajouter mon petit-déj' },
+          { id: 'lunch', t: 12.75, kind: 'meal', meal: 'lunch', pillar: 'nutrition', title: 'Déjeuner', short: 'déjeuner', todo: 'Il te manque des protéines aujourd’hui', kcal: 690, prot: 40, grace: 1.25, cta: 'Ajouter mon déjeuner', tip: 'Il te manque ~45 g de protéines sur la journée : un plat riche en protéines ce midi.', tipTag: 'Nutrition' },
+          { id: 'snack', t: 16.5, kind: 'meal', meal: 'snack', pillar: 'nutrition', title: 'Collation', short: 'collation', todo: 'Yaourt + fruit', kcal: 180, prot: 8, suggested: true, win: [15.5, 17.5], grace: 0.75, cta: 'Ajouter ma collation' },
+          { id: 'walk', t: 18, kind: 'walk', pillar: 'home', title: 'Marche de 20 min', short: 'marche', todo: 'Encore 3 800 pas pour ton objectif', suggested: true, win: [17, 20.5], grace: 0.75 },
+          { id: 'dinner', t: 19.5, kind: 'meal', meal: 'dinner', pillar: 'nutrition', title: 'Dîner', short: 'dîner', todo: '', kcal: 720, prot: 42, grace: 1.25, cta: 'Ajouter mon dîner' },
+        ],
+      };
+    }
+    return {
+      pillars: three, wellbeing: true, auto: true, streak: 12, kcalTarget: 2650, protTarget: 140, load: sc === 'live' ? 'neutral' : 'positive', steps: 6240, stepsGoal: 8000,
+      sessions: [{ p: 'strength', done: true }, { p: 'running', done: true }, { p: 'strength', done: true }, { p: 'strength', today: true }, { p: 'running' }],
+      week: seanceWeek,
+      items: seanceItems,
+    };
+  }
+
+  renderVals() {
+    const s = this.state || {};
+    const P = this.props || {};
+    const SCS = ['seance', 'repos', 'risque', 'nouveau', 'retour', 'nutrition', 'live'];
+    const sc = SCS.indexOf(P.scenario) >= 0 ? P.scenario : 'seance';
+    const hr = Number(P.hour);
+    const h = isFinite(hr) && hr > 0 ? Math.min(23.9, Math.max(5, hr)) : 12.67;
+    const dark = P.dark === true || P.dark === 'true';
+    const full = P.full === true || P.full === 'true';
+    const TEINTE_KEYS = ['lagon', 'framboise', 'aurore', 'actuel'];
+    const teinte = TEINTE_KEYS.indexOf(P.teinte) >= 0 ? P.teinte : 'aurore';
+    const ready = !!s.ready;
+    const logged = s.logged || {};
+    const D = this.data(sc);
+
+    const I = {
+      plus: 'M12 5v14M5 12h14',
+      play: 'M8 5.5v13l10.5-6.5z',
+      scan: 'M4 8V5h3M17 5h3v3M20 16v3h-3M7 19H4v-3M8 9v6M11 9v6M14 9v6M17 9v6',
+      flame: 'M12 3c1 3.5 4.5 5.5 4.5 10a4.5 4.5 0 0 1-9 0c0-2.2 1-3.7 2.3-4.8.2 1.6 1 2.6 2.2 3.1C11.4 9.4 11 6.3 12 3z',
+      spark: 'M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.7 1.8 1.8.7-1.8.7L19 21l-.7-1.8-1.8-.7 1.8-.7z',
+      sound: 'M4 9v6h4l5 4V5L8 9H4zM16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12',
+      walk: 'M13.5 5.5a1.5 1.5 0 1 0 0-.01M9 21l2.5-6.5L14 17v4M8 12l2-4 3.5-.5 2 3.5 3 1M11.5 14.5l1-6',
+      scale: 'M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1zM8.5 10a3.5 3.5 0 0 1 7 0M12 10l1.6-2.2',
+      drop: 'M12 3.5s6 6.4 6 10.8a6 6 0 0 1-12 0c0-4.4 6-10.8 6-10.8z',
+      moon: 'M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z',
+      home: 'M4 11l8-7 8 7v8a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z',
+      barbell: 'M3 10v4M6.5 7.5v9M17.5 7.5v9M21 10v4M6.5 12h11',
+      run: 'M14.5 5a1.6 1.6 0 1 0 0-.01M7 20.5l3.2-5 3 2.2.8 3.3M6.5 11.5l3-3 4 .8 2 3 3 .8M10.5 9.2l-.6 5.4',
+      lab: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 3l4 7M21 12h-8M16 19.5l-4-7M8 19.5l4-7M3 12h8M8 4.5l4 7',
+      apple: 'M12 7.5c-1.6-1.4-5.2-1.2-6.4 1.8-1.3 3.2-.4 7.4 1.9 9.6 1.4 1.4 2.9 1.2 4.5.5 1.6.7 3.1.9 4.5-.5 2.3-2.2 3.2-6.4 1.9-9.6C17.2 6.3 13.6 6.1 12 7.5zM12 7.5c0-2 1-3.5 3-4.2',
+      trophy: 'M8 4h8v4.5a4 4 0 0 1-8 0zM8 6H5.5a2.5 2.5 0 0 0 2.6 3.6M16 6h2.5a2.5 2.5 0 0 1-2.6 3.6M12 12.5v3.5M8.5 20h7M9.5 16h5v4h-5z',
+      target: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM12 7.5a4.5 4.5 0 1 0 0 9 4.5 4.5 0 0 0 0-9zM12 11.2a.8.8 0 1 0 0 1.6.8.8 0 0 0 0-1.6z',
+      link: 'M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1',
+      share: 'M12 4v11M8 8l4-4 4 4M5 13v6h14v-6',
+      leaf: 'M5 19C5 10 11 5 20 4c-1 9-6 15-15 15zM5 19l7-7',
+      bolt: 'M13 3L5 14h6l-1 7 8-11h-6z',
+      shield: 'M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z',
+      face: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9 10h.01M15 10h.01M8.5 14.5q3.5 2.2 7 0',
+      eye: 'M2.5 12s3.5-6.5 9.5-6.5S21.5 12 21.5 12s-3.5 6.5-9.5 6.5S2.5 12 2.5 12zM12 9.5a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z',
+      steps: 'M8 4c1.7 0 2.5 1.8 2.5 4S9.7 12 8 12 5.5 10 5.5 8 6.3 4 8 4zM6 14h4v2a2 2 0 0 1-4 0zM16 8c1.7 0 2.5 1.8 2.5 4s-.8 4-2.5 4-2.5-2-2.5-4 .8-4 2.5-4zM14 18h4v.5a2 2 0 0 1-4 0z',
+      trend: 'M4 16l5-5 4 4 7-7M15 8h5v5',
+      calendar: 'M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1zM4 10h16M8 3v4M16 3v4',
+    };
+    const FACE_BASE = 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9 10h.01M15 10h.01';
+    const MOUTH = ['M8.5 16.5q3.5-3 7 0', 'M8.5 16q3.5-1.6 7 0', 'M8.5 15.5h7', 'M8.5 14.5q3.5 2.2 7 0', 'M8 14q4 4.2 8 0'];
+    const LV = ['épuisé', 'basse', 'moyenne', 'bonne', 'au top'];
+    const LVT = ['Épuisé', 'Basse', 'Moyenne', 'Bonne', 'Au top'];
+
+    let T = dark ? {
+      bg: '#0f0a06', sf: '#30271e', bd: '#3a2e22', bdStrong: '#6a5a48', tx: '#f4ecdd', mut: '#c9b79a',
+      acc: '#dd6e40', accTx: '#0f0a06', panel: '#241e18', panelText: '#f0e4d0', panelMuted: '#c9b79a',
+      idle: 'rgba(244,236,221,0.10)', check: '#0f0a06', shadow: 'rgba(0,0,0,0.7)', fabShadow: 'rgba(0,0,0,0.65)',
+      toastBg: '#f4ecdd', toastFg: '#1c150e', sfa: '#3a2e22',
+      p: { strength: '#ff6b5e', running: '#6fa8ef', nutrition: '#9ed16a', wellbeing: '#c2a3ff', home: '#e07a4d', lab: '#e0b155' },
+      soft: { strength: 'rgba(255,107,94,0.20)', running: 'rgba(111,168,239,0.20)', nutrition: 'rgba(158,209,106,0.20)', wellbeing: 'rgba(194,163,255,0.20)', home: 'rgba(224,122,77,0.20)', lab: 'rgba(224,177,85,0.20)' },
+    } : {
+      bg: '#f7eede', sf: '#fffaf2', bd: '#ece0cd', bdStrong: '#c9b89e', tx: '#33291f', mut: '#786a59',
+      acc: '#b14f2b', accTx: '#ffffff', panel: '#33291f', panelText: '#f0e4d0', panelMuted: '#c9b79a',
+      idle: 'rgba(51,41,31,0.08)', check: '#ffffff', shadow: 'rgba(60,40,20,0.45)', fabShadow: 'rgba(177,79,43,0.6)',
+      toastBg: '#33291f', toastFg: '#f4ecdd', sfa: '#f6e7d4',
+      p: { strength: '#a8261d', running: '#2a64ad', nutrition: '#3f6b1c', wellbeing: '#6a3fb0', home: '#b14f2b', lab: '#7a5714' },
+      soft: { strength: 'rgba(168,38,29,0.14)', running: 'rgba(42,100,173,0.14)', nutrition: 'rgba(63,107,28,0.14)', wellbeing: 'rgba(106,63,176,0.14)', home: 'rgba(177,79,43,0.14)', lab: 'rgba(122,87,20,0.14)' },
+    };
+    const PA = { strength: '#ff8f80', running: '#9cc4f5', nutrition: '#b9dd8c', wellbeing: '#d3c0ff', home: '#e9b08a', lab: '#f0cf86' };
+    const PH = { strength: 'rgba(255,107,94,0.20)', running: 'rgba(111,168,239,0.20)', nutrition: 'rgba(158,209,106,0.18)', wellbeing: 'rgba(194,163,255,0.20)', home: 'rgba(224,122,77,0.22)', lab: 'rgba(224,177,85,0.20)' };
+
+    // ── La teinte de l'accueil : une couleur qu'aucun pilier n'a prise ────────────────────────
+    // Lagon (turquoise, ~172°) et Framboise (~330°) occupent les deux trous de la roue : muscu 3°,
+    // terracotta 17°, Labo 40°, nutrition 90°, course 213°, bien-être 265°. Aurore mêle les deux.
+    // Comme les autres piliers, la scène est sombre et saturée dans les deux thèmes.
+    const TEINTES = {
+      lagon: {
+        acc: ['#0f766e', '#2dd4bf'], accTx: ['#ffffff', '#042f2c'], cta: '#2dd4bf', ctaTx: '#042f2c', fab: null, fabTx: null,
+        panel: ['#10302e', '#0c2321'], panelText: '#e6f5f2', panelMuted: '#a9d2cb',
+        soft: ['rgba(15,118,110,0.14)', 'rgba(45,212,191,0.18)'], pa: '#5eead4', ph: 'rgba(45,212,191,0.22)', ring: '#5eead4',
+        fabShadow: ['rgba(15,118,110,0.55)', 'rgba(0,0,0,0.6)'], ink: '#ffffff', muted: '#d5f7f1', accent: '#5eead4',
+        sky: { aube: ['#0c7a71', '#0a5c5b', '#083340'], jour: ['#0c7a71', '#095a55', '#062f33'], dore: ['#0b716b', '#0a4f55', '#0b2a3a'], soir: ['#0a5a5e', '#0b3a4c', '#121a35'], nuit: ['#07403f', '#05252a', '#020f12'] },
+        glow: { aube: 'rgba(254,215,170,0.38)', jour: 'rgba(153,246,228,0.42)', dore: 'rgba(253,200,120,0.40)', soir: 'rgba(249,128,182,0.32)', nuit: 'rgba(165,180,252,0.18)' },
+      },
+      framboise: {
+        acc: ['#be185d', '#ff6fb1'], accTx: ['#ffffff', '#2e0719'], cta: '#ff5fa2', ctaTx: '#2e0719', fab: null, fabTx: null,
+        panel: ['#3a1024', '#2a0b1a'], panelText: '#fbe7f0', panelMuted: '#e2b3c8',
+        soft: ['rgba(190,24,93,0.13)', 'rgba(255,111,177,0.18)'], pa: '#ff8fc4', ph: 'rgba(255,95,162,0.22)', ring: '#ff8fc4',
+        fabShadow: ['rgba(190,24,93,0.5)', 'rgba(0,0,0,0.6)'], ink: '#ffffff', muted: '#ffd6ea', accent: '#ff8fc4',
+        sky: { aube: ['#b0185f', '#6e0f3d', '#2c0719'], jour: ['#b0185f', '#6e0f3d', '#2c0719'], dore: ['#b11d55', '#6c1036', '#2c0816'], soir: ['#8a1456', '#4a0d3e', '#170822'], nuit: ['#560c35', '#2a0720', '#0e030b'] },
+        glow: { aube: 'rgba(255,214,170,0.35)', jour: 'rgba(255,170,210,0.40)', dore: 'rgba(255,200,120,0.38)', soir: 'rgba(196,160,255,0.30)', nuit: 'rgba(200,180,255,0.16)' },
+      },
+      aurore: {
+        acc: ['#0f766e', '#5eead4'], accTx: ['#ffffff', '#05201e'], cta: 'linear-gradient(100deg, #5eead4 0%, #f9a8d4 100%)', ctaTx: '#151024',
+        fab: 'linear-gradient(135deg, #2dd4bf 0%, #f472b6 100%)', fabTx: '#151024',
+        panel: ['#141a2e', '#0f1426'], panelText: '#eef1fb', panelMuted: '#b7c0dc',
+        soft: ['rgba(15,118,110,0.14)', 'rgba(94,234,212,0.18)'], pa: '#7ee8d8', ph: 'rgba(236,72,153,0.24)', ring: '#5eead4',
+        fabShadow: ['rgba(219,39,119,0.45)', 'rgba(0,0,0,0.6)'], ink: '#ffffff', muted: '#dbe3f7', accent: '#5eead4',
+        // Lueur turquoise plafonnée à 0,38 : au-delà, le texte secondaire posé dessus (en haut à gauche)
+        // passe sous 4,5:1. La lueur framboise, plus sombre une fois mêlée, monte jusqu'à 0,52.
+        blobs: { aube: [0.38, 0.20], jour: [0.36, 0.34], dore: [0.30, 0.46], soir: [0.24, 0.52], nuit: [0.14, 0.16] },
+        glow: { aube: 'rgba(254,215,170,0.22)', jour: 'rgba(153,246,228,0.22)', dore: 'rgba(253,200,120,0.22)', soir: 'rgba(249,128,182,0.22)', nuit: 'rgba(165,180,252,0.14)' },
+      },
+    };
+    const TN = TEINTES[teinte] || null;
+    if (TN) {
+      const k = dark ? 1 : 0;
+      T = Object.assign({}, T, {
+        acc: TN.acc[k], accTx: TN.accTx[k], cta: TN.cta, ctaTx: TN.ctaTx,
+        fab: TN.fab || TN.acc[k], fabTx: TN.fabTx || TN.accTx[k],
+        panel: TN.panel[k], panelText: TN.panelText, panelMuted: TN.panelMuted, fabShadow: TN.fabShadow[k],
+        p: Object.assign({}, T.p, { home: TN.acc[k] }),
+        soft: Object.assign({}, T.soft, { home: TN.soft[k] }),
+      });
+      PA.home = TN.pa;
+      PH.home = TN.ph;
+    } else {
+      T = Object.assign({}, T, { cta: T.acc, ctaTx: T.accTx, fab: T.acc, fabTx: T.accTx });
+    }
+
+    // ── Le ciel : la lumière suit l'heure ──────────────────────────────────────────────────────
+    const mo = h < 5.5 ? 'nuit' : h < 9 ? 'aube' : h < 17 ? 'jour' : h < 19.5 ? 'dore' : h < 22 ? 'soir' : 'nuit';
+    const SK = {
+      light: {
+        aube: { g1: '#ffe6cc', g2: '#f5b48a', ink: '#33291f', muted: '#56443a', glow: 'rgba(255,196,140,0.80)' },
+        jour: { g1: '#fff6e8', g2: '#efc39c', ink: '#33291f', muted: '#5e5244', glow: 'rgba(255,224,170,0.90)' },
+        dore: { g1: '#ffd8a8', g2: '#e98a5c', ink: '#2b2019', muted: '#3d2b1f', glow: 'rgba(255,170,96,0.75)' },
+        soir: { g1: '#5b3346', g2: '#22161f', ink: '#fbeee0', muted: '#e3cdbf', glow: 'rgba(255,170,150,0.30)' },
+        nuit: { g1: '#2e241b', g2: '#100b07', ink: '#f4ecdd', muted: '#c9b79a', glow: 'rgba(190,200,255,0.18)' },
+      },
+      dark: {
+        aube: { g1: '#4a3220', g2: '#110b07', ink: '#f4ecdd', muted: '#d6c3a6', glow: 'rgba(255,160,90,0.22)' },
+        jour: { g1: '#45331f', g2: '#0f0a06', ink: '#f4ecdd', muted: '#c9b79a', glow: 'rgba(255,190,120,0.18)' },
+        dore: { g1: '#5b2f1b', g2: '#120b07', ink: '#f7ecdf', muted: '#dcc3a8', glow: 'rgba(255,140,70,0.26)' },
+        soir: { g1: '#3f2235', g2: '#0f0a06', ink: '#f6eadf', muted: '#d9c4c6', glow: 'rgba(255,140,140,0.16)' },
+        nuit: { g1: '#241b13', g2: '#0f0a06', ink: '#f4ecdd', muted: '#c9b79a', glow: 'rgba(170,180,255,0.12)' },
+      },
+    };
+    const skBase = SK[dark ? 'dark' : 'light'][mo];
+    let sk = skBase;
+    let skyBg = 'linear-gradient(172deg, ' + skBase.g1 + ' 0%, ' + skBase.g2 + ' 100%)';
+    if (TN) {
+      sk = { ink: TN.ink, muted: TN.muted, glow: TN.glow[mo] };
+      if (TN.blobs) {
+        const b = TN.blobs[mo];
+        skyBg = 'radial-gradient(110% 75% at 0% 0%, rgba(45,212,191,' + b[0] + ') 0%, rgba(45,212,191,0) 60%), '
+          + 'radial-gradient(90% 70% at 100% 18%, rgba(236,72,153,' + b[1] + ') 0%, rgba(236,72,153,0) 62%), '
+          + 'linear-gradient(172deg, #13203a 0%, #0a0e1c 100%)';
+      } else {
+        const g = TN.sky[mo];
+        skyBg = 'linear-gradient(172deg, ' + g[0] + ' 0%, ' + g[1] + ' 55%, ' + g[2] + ' 100%)';
+      }
+    }
+    const skyDark = !!TN || dark || mo === 'soir' || mo === 'nuit';
+    const tt = Math.min(1, Math.max(0, (h - 6) / 17));
+    const sky = Object.assign({}, sk, {
+      bg: skyBg,
+      accent: TN ? TN.accent : T.acc,
+      glass: TN ? 'rgba(255,255,255,0.09)' : skyDark ? 'rgba(255,255,255,0.08)' : 'rgba(255,250,242,0.62)',
+      glassBorder: TN ? 'rgba(255,255,255,0.16)' : skyDark ? 'rgba(255,255,255,0.14)' : 'rgba(255,255,255,0.80)',
+      sync: skyDark ? '#9ed16a' : '#3f6b1c',
+      gx: Math.round(390 * tt - 150) + 'px',
+      gy: Math.round(130 - 170 * Math.sin(Math.PI * tt) - 150) + 'px',
+    });
+    const RC = skyDark
+      ? { strength: '#ff6b5e', running: '#6fa8ef', nutrition: '#9ed16a', home: '#e07a4d', pos: '#9ed16a', neu: '#e0b155', neg: '#6fa8ef', soft: { strength: 'rgba(255,107,94,0.34)', running: 'rgba(111,168,239,0.34)' }, idle: 'rgba(255,255,255,0.18)', track: 'rgba(255,255,255,0.14)' }
+      : { strength: '#a8261d', running: '#2a64ad', nutrition: '#3f6b1c', home: '#b14f2b', pos: '#3f6b1c', neu: '#b47f31', neg: '#2a64ad', soft: { strength: 'rgba(168,38,29,0.26)', running: 'rgba(42,100,173,0.26)' }, idle: 'rgba(51,41,31,0.15)', track: 'rgba(51,41,31,0.11)' };
+    if (TN) RC.home = TN.ring;
+
+    // ── Les faits de la journée ────────────────────────────────────────────────────────────────
+    const items = D.items.map((it) => {
+      let done = !!logged[it.id] || (D.auto && !it.suggested && it.t + (it.grace || 0.5) <= h);
+      if (it.kind === 'checkin' && s.checkin != null) done = true;
+      if (sc === 'live' && it.id === 'session') done = false;
+      return Object.assign({}, it, { done: done });
+    }).filter((it) => !(it.suggested && !it.done && h > it.win[1]));
+
+    const lv = s.checkin != null ? s.checkin : 4;
+    const meals = items.filter((it) => it.kind === 'meal' && it.done);
+    const consumed = meals.reduce((a, it) => a + it.kcal, 0);
+    const prot = meals.reduce((a, it) => a + it.prot, 0);
+    const remaining = D.kcalTarget - consumed;
+    const sessionDone = items.some((it) => it.id === 'session' && it.done);
+    const checkinDone = items.some((it) => it.kind === 'checkin' && it.done);
+    const hasCheckinItem = items.some((it) => it.kind === 'checkin');
+    const walkDone = items.some((it) => it.kind === 'walk' && it.done);
+    const rescued = s.rescued || null;
+    const todayActive = sessionDone || walkDone || rescued === 'walk' || rescued === 'activity';
+    const streakNow = D.streak + (todayActive ? 1 : 0);
+
+    const rescuing = sc === 'risque';
+    let nowIt = null;
+    if (sc !== 'live' && !rescuing) nowIt = items.find((it) => !it.done && (!it.suggested || h >= it.win[0])) || null;
+    const allDone = items.every((it) => it.done || it.suggested);
+    const dayDone = !nowIt && !rescuing && allDone && (sc === 'seance' || sc === 'repos' || sc === 'nutrition');
+
+    // ── La forme du jour (TRI-03 : un signal négatif suffit) ───────────────────────────────────
+    const sigWell = checkinDone ? (lv >= 4 ? 'positive' : lv === 3 ? 'neutral' : 'negative') : null;
+    const sigs = [D.load, D.load ? 'neutral' : null, sigWell];
+    const known = sigs.filter(Boolean);
+    const verdict = known.indexOf('negative') >= 0 ? 'rest' : known.indexOf('positive') >= 0 ? 'push' : 'ok';
+    const pending = D.wellbeing && hasCheckinItem && !checkinDone && h < 11;
+    const VERDICT_WORD = { push: 'Prêt', ok: 'Correct', rest: 'Repos' };
+    const VERDICT_TITLE = { push: 'Prêt à pousser', ok: 'Forme correcte', rest: 'Repos conseillé' };
+    const sigColor = (x) => (x === 'positive' ? RC.pos : x === 'neutral' ? RC.neu : x === 'negative' ? RC.neg : RC.idle);
+    const sigColorBody = (x) => (x === 'positive' ? T.p.nutrition : x === 'neutral' ? (dark ? '#e0b155' : '#8a6419') : x === 'negative' ? T.p.running : T.mut);
+
+    // ── Les cadrans ────────────────────────────────────────────────────────────────────────────
+    const C = 2 * Math.PI * 36;
+    const slots = (d) => {
+      const out = {};
+      for (let i = 0; i < 6; i += 1) out['s' + i] = { c: 'transparent', dash: '0 ' + C.toFixed(1), off: '0', cap: 'butt' };
+      if (d.cont) {
+        const p = Math.max(0, Math.min(1, d.cont.p));
+        out.s0 = { c: d.cont.c, dash: C.toFixed(1) + ' ' + C.toFixed(1), off: (ready ? C * (1 - p) : C).toFixed(1), cap: p > 0.02 ? 'round' : 'butt' };
+      } else {
+        const n = d.segs.length;
+        const gap = n > 1 ? 7 : 0;
+        const len = C / n - gap;
+        d.segs.forEach((g, i) => {
+          out['s' + i] = {
+            c: g.c,
+            dash: ready ? len.toFixed(1) + ' ' + (C - len).toFixed(1) : '0 ' + C.toFixed(1),
+            off: (-(i * C / n) - gap / 2).toFixed(1),
+            cap: 'butt',
+          };
+        });
+      }
+      return Object.assign({}, d, out);
+    };
+
+    const dials = [];
+    const hasTraining = D.pillars.indexOf('strength') >= 0 || D.pillars.indexOf('running') >= 0;
+    const hasNut = D.pillars.indexOf('nutrition') >= 0;
+    if (hasTraining && D.sessions.length) {
+      const ses = D.sessions.map((x) => Object.assign({}, x, { done: !!x.done || (!!x.today && sessionDone) }));
+      const bDone = ses.filter((x) => x.done).length;
+      dials.push(slots({
+        key: 'bouger', label: 'Bouger', big: bDone + '/' + ses.length, unit: 'séances', bigSize: '23px', track: 'transparent',
+        sub: sc === 'repos' ? 'repos aujourd’hui' : 'cette semaine',
+        segs: ses.map((x) => ({ c: x.done ? RC[x.p] : x.today ? RC.soft[x.p] : RC.idle })),
+        aria: 'Bouger : ' + bDone + ' séances sur ' + ses.length + ' cette semaine. Ouvrir le planning.',
+        tap: () => this.say('Ouvre ton planning de la semaine'),
+      }));
+    }
+    if (hasNut) {
+      dials.push(slots({
+        key: 'manger', label: 'Manger',
+        big: remaining >= 0 ? this.num(remaining) : '+' + this.num(-remaining),
+        unit: remaining >= 0 ? 'restantes' : 'en plus',
+        bigSize: Math.abs(remaining) >= 1000 ? '19px' : '22px', track: RC.track,
+        sub: 'prot. ' + prot + ' / ' + D.protTarget + ' g',
+        cont: { c: RC.nutrition, p: consumed / D.kcalTarget },
+        aria: 'Manger : ' + this.num(Math.max(0, remaining)) + ' kilocalories restantes, ' + prot + ' grammes de protéines sur ' + D.protTarget + '. Ouvrir la nutrition.',
+        tap: () => this.say('Ouvre ta journée Nutrition'),
+      }));
+    }
+    if (sc === 'nutrition') {
+      const steps = D.steps + (walkDone ? 3400 : 0);
+      dials.push(slots({
+        key: 'pas', label: 'Marcher', big: this.num(steps), unit: 'pas', bigSize: '19px', track: RC.track,
+        sub: 'objectif ' + this.num(D.stepsGoal),
+        cont: { c: RC.home, p: steps / D.stepsGoal },
+        aria: 'Marcher : ' + this.num(steps) + ' pas sur ' + this.num(D.stepsGoal) + '.',
+        tap: () => this.say('Tes pas viennent de Health Connect'),
+      }));
+    }
+    if (D.wellbeing && D.load) {
+      dials.push(slots({
+        key: 'recup', label: 'Récupérer',
+        big: pending ? '?' : VERDICT_WORD[verdict], unit: pending ? 'check-in' : 'forme du jour', bigSize: pending ? '26px' : '19px', track: 'transparent',
+        sub: pending ? 'un geste, plus bas' : 'pourquoi ?',
+        segs: sigs.map((x) => ({ c: sigColor(x) })),
+        aria: pending ? 'Récupérer : check-in du matin à faire.' : 'Récupérer : ' + VERDICT_TITLE[verdict] + '. Voir pourquoi.',
+        tap: pending ? () => this.say('Le check-in t’attend juste en dessous') : () => this.setState({ sheet: 'why' }),
+      }));
+    }
+
+    // ── La phrase du jour ──────────────────────────────────────────────────────────────────────
+    const nid = nowIt ? nowIt.id : null;
+    let sentence = '';
+    if (sc === 'seance') {
+      if (!nowIt) sentence = 'Journée bouclée : séance faite, ' + this.num(consumed) + ' kcal. Repos bien mérité.';
+      else if (nid === 'checkin') sentence = 'Jambes ce soir à 18 h. Comment tu te sens ce matin ?';
+      else if (nid === 'weigh' || nid === 'breakfast') sentence = lv >= 4 ? 'Feu vert pour les jambes ce soir. On commence par un bon petit-déj.' : lv === 3 ? 'Journée normale : jambes à 18 h, comme prévu.' : 'Énergie basse : on peut alléger les jambes ce soir.';
+      else if (nid === 'lunch') sentence = 'Il te reste ' + this.num(remaining) + ' kcal, et des jambes à 18 h : vise un déjeuner solide.';
+      else if (nid === 'snack') sentence = 'Jambes dans ' + this.dur(18 - h) + '. Une collation maintenant, et tu arrives plein d’énergie.';
+      else if (nid === 'session') sentence = h < 17.9 ? 'Ta séance de jambes dans ' + this.dur(18 - h) + '. Un record est à portée.' : 'C’est l’heure : jambes, six exercices, et un record à portée.';
+      else if (nid === 'dinner') sentence = 'Séance faite, record au squat ! Il te reste ' + this.num(remaining) + ' kcal pour ce soir.';
+      else sentence = 'Belle journée. Dix secondes pour ton point du soir ?';
+    } else if (sc === 'repos') {
+      if (!nowIt) sentence = 'Repos réussi. Demain 08:00 : sortie longue de 10 km.';
+      else if (nid === 'checkin') sentence = 'Jour de repos. Comment tu te sens ce matin ?';
+      else if (nid === 'walk') sentence = 'Une marche de 30 min : tes jambes restent souples, ta série tient.';
+      else if (nid === 'dinner') sentence = 'Sortie longue demain à 8 h : des glucides ce soir, c’est du carburant.';
+      else if (nid === 'evening') sentence = 'Repos réussi. Dix secondes pour ton point du soir ?';
+      else sentence = 'Jour de repos : tes jambes récupèrent. Demain, sortie longue de 10 km.';
+    } else if (sc === 'risque') {
+      sentence = rescued === 'joker' ? 'Série gelée pour aujourd’hui. Demain, on repart.' : rescued ? 'Série sauvée. Bien joué.' : 'Il te reste ' + this.dur(24 - h) + ' pour garder ta série : 1 900 pas suffisent.';
+    } else if (sc === 'nouveau') {
+      const left = ['program', 'lunch', 'evening'].filter((id) => !logged[id]).length;
+      sentence = left === 0 ? 'Premier jour bouclé. Demain, tes cadrans s’animent.' : left === 3 ? 'Trois gestes pour bien démarrer. Le premier prend trois minutes.' : 'Encore ' + left + (left > 1 ? ' gestes' : ' geste') + ' et ta première journée est bouclée.';
+    } else if (sc === 'retour') {
+      sentence = s.comeback === 'gentle' ? 'Semaine allégée jusqu’au 30 octobre. La série repart, sans pression.' : s.comeback === 'normal' ? 'C’est reparti : ton plan reprend dès aujourd’hui.' : 'Pas de retard à rattraper. On reprend à ton rythme ?';
+    } else if (sc === 'nutrition') {
+      if (!nowIt) sentence = 'Journée bouclée : ' + this.num(consumed) + ' kcal, dans ta cible.';
+      else if (nowIt.kind === 'meal') sentence = 'Il te reste ' + this.num(remaining) + ' kcal aujourd’hui : ' + nowIt.title.toLowerCase() + ' t’attend.';
+      else if (nowIt.kind === 'walk') sentence = 'Encore 3 800 pas pour ton objectif : 20 minutes de marche.';
+      else sentence = 'Une pesée avant le petit-déj, et ta courbe reste lisse.';
+    } else {
+      sentence = 'Ta séance de jambes tourne toujours. On reprend où tu en étais ?';
+    }
+
+    const greeting = sc === 'retour' ? 'Content de te revoir, Florian' : sc === 'nouveau' ? 'Bienvenue, Florian' : (h < 12 ? 'Bonjour' : h < 18 ? 'Bon après-midi' : 'Bonsoir') + ' Florian';
+    const briefText = [
+      greeting + '.',
+      sentence,
+      pending ? '' : 'Ta forme : ' + VERDICT_TITLE[verdict].toLowerCase() + '.',
+      streakNow > 0 ? 'Ta série en est à ' + streakNow + ' jours.' : '',
+    ].filter(Boolean).join(' ');
+
+    // ── L'action du moment ─────────────────────────────────────────────────────────────────────
+    const blankNow = {
+      eyebrow: '', accent: PA.home, halo: PH.home, title: '', hasMeta: false, meta: '', hasTip: false, tip: '', tipTag: '', tipIcon: I.link,
+      isFaces: false, faces: [], isCta: false, cta: { label: '', icon: I.plus, fill: 'none', act: null }, hasAlt: false, alt: { aria: '', icon: I.scan, act: null },
+      isRescue: false, options: [],
+    };
+    const NP = (o) => Object.assign({}, blankNow, o);
+    let now = null;
+    if (rescuing) {
+      if (!rescued) {
+        const glass = { bg: 'rgba(255,255,255,0.08)', fg: '#ffffff', subFg: '#c9b79a', border: '1px solid rgba(255,255,255,0.14)' };
+        now = NP({
+          eyebrow: 'Ta série · ' + D.streak + ' jours', accent: PA.home, halo: PH.home,
+          title: 'Encore ' + this.dur(24 - h) + ' pour la garder', hasMeta: true,
+          meta: 'Rien d’actif aujourd’hui. Une seule de ces options suffit :',
+          isRescue: true,
+          options: [
+            Object.assign({ label: 'Marcher 15 minutes', sub: '1 900 pas, et ton objectif de pas tient la série', icon: I.walk, bg: T.cta, fg: T.ctaTx, subFg: dark ? 'rgba(15,10,6,0.78)' : 'rgba(255,255,255,0.86)', border: 'none' }, { act: () => { this.setState({ rescued: 'walk' }); this.say('Va marcher : à 8 000 pas, ta série tient'); } }),
+            Object.assign({ label: 'Noter une activité', sub: 'Vélo, yoga, foot… tout compte', icon: I.bolt }, glass, { act: () => { this.setState({ rescued: 'activity' }); this.say('Activité notée : ta série passe à 13 jours'); } }),
+            Object.assign({ label: 'Utiliser mon joker', sub: 'Il t’en reste 1 ce mois-ci', icon: I.shield }, glass, { act: () => { this.setState({ rescued: 'joker' }); this.say('Joker utilisé : la journée est gelée'); } }),
+          ],
+        });
+      } else {
+        const RES = {
+          walk: { title: 'Série en route : 13 jours', meta: 'Tes pas se comptent seuls. À 8 000, c’est validé.' },
+          activity: { title: 'Série sauvée : 13 jours', meta: 'Activité notée. Belle réaction, à cette heure-ci.' },
+          joker: { title: 'Série gelée pour aujourd’hui', meta: 'Joker utilisé, le prochain arrive le 1er novembre. Demain, on repart.' },
+        }[rescued];
+        now = NP({ eyebrow: 'Ta série', accent: PA.nutrition, halo: PH.nutrition, title: RES.title, hasMeta: true, meta: RES.meta });
+      }
+    } else if (nowIt) {
+      const it = nowIt;
+      const delta = it.t - h;
+      const when = delta > 0.26 ?'À ' + this.hhmm(it.t) + ' · dans ' + this.dur(delta) : 'Maintenant';
+      const base = { accent: PA[it.pillar], halo: PH[it.pillar], hasTip: !!it.tip, tip: it.tip || '', tipTag: it.tipTag || '', tipIcon: it.tipTag === 'Progression' ? I.trend : I.link, hasMeta: true };
+      if (it.kind === 'checkin') {
+        now = NP(Object.assign(base, {
+          eyebrow: when + ' · check-in', title: 'Comment tu te sens ce matin ?', meta: 'Un geste suffit : ta forme du jour en dépend.', isFaces: true,
+          faces: [1, 2, 3, 4, 5].map((v) => ({
+            label: LVT[v - 1], d: FACE_BASE + MOUTH[v - 1], aria: 'Énergie ' + v + ' sur 5 : ' + LV[v - 1],
+            pick: () => {
+              this.setState({ checkin: v });
+              this.say('Check-in noté : énergie ' + LV[v - 1] + (v >= 4 ? '. Feu vert.' : v === 3 ? '. Journée normale.' : '. On lève le pied.'));
+            },
+          })),
+        }));
+      } else if (it.kind === 'weigh') {
+        now = NP(Object.assign(base, {
+          eyebrow: when + ' · pesée', title: 'Ta pesée du matin', meta: 'Avant le petit-déj, c’est la plus fiable.', isCta: true,
+          cta: { label: 'Enregistrer ma pesée', icon: I.scale, fill: 'none', act: () => this.mark(it.id, 'Pesée enregistrée · 78,4 kg') },
+        }));
+      } else if (it.kind === 'meal') {
+        now = NP(Object.assign(base, {
+          eyebrow: when + ' · ' + it.title.toLowerCase(), title: it.title,
+          meta: remaining >= 0 ? 'Il te reste ' + this.num(remaining) + ' kcal aujourd’hui' : 'Ta cible du jour est atteinte',
+          isCta: true,
+          cta: { label: it.cta || 'Ajouter', icon: I.plus, fill: 'none', act: () => this.mark(it.id, it.title + ' ajouté · ' + this.num(it.kcal) + ' kcal') },
+          hasAlt: true, alt: { aria: 'Scanner un code-barres', icon: I.scan, act: () => this.say('Scanner un code-barres') },
+        }));
+      } else if (it.kind === 'session') {
+        now = NP(Object.assign(base, {
+          eyebrow: when + ' · musculation', title: 'Jambes', meta: '6 exercices · ~55 min · PPL Hypertrophie', isCta: true,
+          cta: { label: 'Démarrer la séance', icon: I.play, fill: 'currentColor', act: () => this.mark('session', 'Séance terminée (simulée) : 58 min, record au squat !') },
+          hasAlt: true, alt: { aria: 'Aperçu de la séance', icon: I.eye, act: () => this.say('Squat · presse · fentes · leg curl · extensions · mollets') },
+        }));
+      } else if (it.kind === 'walk') {
+        now = NP(Object.assign(base, {
+          eyebrow: when + ' · repos actif', title: it.title, meta: it.todo, isCta: true,
+          cta: { label: 'C’est parti', icon: I.walk, fill: 'none', act: () => this.mark(it.id, 'Bonne marche ! Tes pas se comptent seuls') },
+        }));
+      } else if (it.kind === 'evening') {
+        now = NP(Object.assign(base, {
+          eyebrow: when + ' · bien-être', title: 'Ton point du soir', meta: 'Humeur, stress, et la nuit qui vient : 10 secondes.', isCta: true,
+          cta: { label: 'Faire mon point', icon: I.moon, fill: 'none', act: () => this.mark(it.id, 'Point du soir noté. Bonne nuit !') },
+        }));
+      } else {
+        now = NP(Object.assign(base, {
+          eyebrow: when + ' · premier pas', title: 'Choisis ton programme', meta: '3 questions, 3 minutes : on te propose celui qui te va.', isCta: true,
+          cta: { label: 'Trouver mon programme', icon: I.barbell, fill: 'none', act: () => this.mark(it.id, 'Programme choisi : PPL débutant, 3 séances par semaine') },
+        }));
+      }
+    } else if (dayDone) {
+      const title = sc === 'seance' ? 'Séance, ' + this.num(consumed) + ' kcal, 9 200 pas' : sc === 'repos' ? 'Repos actif, ' + this.num(consumed) + ' kcal' : this.num(consumed) + ' kcal, dans ta cible';
+      now = NP({
+        eyebrow: 'Ta journée est faite', accent: PA.home, halo: PH.home, title: title, hasMeta: true,
+        meta: sc === 'nutrition' ? 'Demain, on recommence, à ton rythme.' : 'Demain 08:00 · sortie longue de 10 km',
+        isCta: true, cta: { label: 'Prisme raconte ma journée', icon: I.spark, fill: 'none', act: () => this.say('Prisme raconte ta journée, si tu as activé l’IA') },
+      });
+    }
+    const nowSafe = now || blankNow;
+
+    // ── Le fil du jour ─────────────────────────────────────────────────────────────────────────
+    const blankRow = {
+      isRow: false, isNow: false, isSummary: false, isMore: false, key: '', time: '', timeColor: T.mut, title: '', titleColor: T.tx, sub: '',
+      nodeBg: T.sf, nodeBorder: 'none', showCheck: false, live: false, liveColor: T.p.strength, hasTag: false, tag: '', tagBg: 'transparent', tagFg: T.tx,
+      hasQuick: false, quickAria: '', onQuick: null, label: '', names: '', action: '', aria: '', onTap: null,
+    };
+    const R = (o) => Object.assign({}, blankRow, o);
+    const doneSub = (it) => {
+      if (it.kind === 'checkin') return 'Énergie ' + lv + '/5 · ' + LV[lv - 1];
+      if (it.kind === 'weigh') return '78,4 kg · −0,2 kg';
+      if (it.kind === 'meal') return this.num(it.kcal) + ' kcal · ' + it.prot + ' g de protéines';
+      if (it.kind === 'session') return 'Faite · 58 min · record au squat';
+      if (it.kind === 'walk') return '32 min · 3 400 pas';
+      if (it.kind === 'setup') return 'PPL débutant · 3 séances par semaine';
+      return 'Fait · humeur bonne';
+    };
+    const makeRow = (it) => {
+      const col = T.p[it.pillar];
+      const isLive = sc === 'live' && it.id === 'session';
+      let nodeBg = T.sf;
+      let nodeBorder = '2px solid ' + T.bdStrong;
+      if (it.done) { nodeBg = col; nodeBorder = '2px solid ' + col; }
+      else if (isLive) { nodeBorder = '2px solid ' + col; }
+      else if (it.suggested) { nodeBorder = '2px dashed ' + col; }
+      let sub = it.todo || 'À noter';
+      if (it.done) sub = doneSub(it);
+      if (isLive) sub = 'Exercice 3 sur 6 · 24 min';
+      return R({
+        isRow: true, key: it.id, time: this.hhmm(it.t), timeColor: it.done ? T.mut : T.tx, title: it.title, titleColor: it.done ? T.mut : T.tx, sub: sub,
+        nodeBg: nodeBg, nodeBorder: nodeBorder, showCheck: it.done, live: isLive, liveColor: col,
+        hasTag: isLive || (!!it.suggested && !it.done), tag: isLive ? 'En cours' : 'Idée', tagBg: T.soft[it.pillar], tagFg: col,
+        hasQuick: !it.done && !isLive && (it.kind === 'meal' || it.kind === 'weigh'),
+        quickAria: 'Noter : ' + it.title,
+        onQuick: () => this.mark(it.id, it.kind === 'meal' ? it.title + ' ajouté · ' + this.num(it.kcal) + ' kcal' : 'Pesée enregistrée · 78,4 kg'),
+      });
+    };
+    const rows = [];
+    const doneList = items.filter((it) => it.done);
+    const collapse = !s.showDone && doneList.length >= 2;
+    if (collapse) {
+      rows.push(R({ isSummary: true, key: 'sum', label: doneList.length + ' faits', names: doneList.map((it) => it.short).join(' · '), action: 'Voir', aria: 'Voir les ' + doneList.length + ' gestes déjà faits', onTap: () => this.setState({ showDone: true }) }));
+    } else if (doneList.length >= 2) {
+      rows.push(R({ isSummary: true, key: 'sum', label: 'Replier', names: doneList.length + ' faits', action: '', aria: 'Replier ce qui est fait', onTap: () => this.setState({ showDone: false }) }));
+    }
+    let placed = false;
+    let shown = 0;
+    const hidden = [];
+    items.forEach((it) => {
+      if (it.done) {
+        if (!collapse) rows.push(makeRow(it));
+        return;
+      }
+      if (now && !placed && (rescuing || (nowIt && it.id === nowIt.id))) {
+        rows.push(R({ isNow: true, key: 'now' }));
+        placed = true;
+        if (nowIt && it.id === nowIt.id) return;
+      }
+      if (s.showAll || shown < 3) { rows.push(makeRow(it)); shown += 1; } else hidden.push(it);
+    });
+    if (now && !placed) rows.push(R({ isNow: true, key: 'now' }));
+    if (hidden.length) {
+      rows.push(R({ isMore: true, key: 'more', label: '+' + hidden.length + ' plus tard', names: hidden.map((it) => it.short).join(' · '), aria: 'Voir la suite de la journée', onTap: () => this.setState({ showAll: true }) }));
+    }
+    const counted = items.filter((it) => !it.suggested || it.done);
+    const dayMeta = counted.filter((it) => it.done).length + ' sur ' + counted.length + ' · planning';
+
+    // ── Ta semaine ─────────────────────────────────────────────────────────────────────────────
+    const mk = (state, p) => {
+      if (D.pillars.indexOf(p) < 0) return { disp: 'none', bg: 'transparent', bd: 'none' };
+      const col = T.p[p];
+      if (state === 'done') return { disp: 'block', bg: col, bd: '1.5px solid ' + col };
+      if (state === 'plan' || state === 'today') return { disp: 'block', bg: 'transparent', bd: '1.5px dashed ' + col };
+      if (state === 'logged') return { disp: 'block', bg: T.soft[p], bd: '1.5px solid ' + T.soft[p] };
+      return { disp: 'block', bg: T.idle, bd: '1.5px solid transparent' };
+    };
+    let inTarget = 0;
+    let loggedDays = 0;
+    const week = D.week.map((w) => {
+      let s0 = w.s;
+      let s1 = w.r;
+      let s2 = w.f;
+      if (w.today) {
+        if (s0 === 'today') s0 = sessionDone ? 'done' : 'today';
+        s2 = consumed <= 0 ? 'today' : consumed >= D.kcalTarget * 0.85 ? 'done' : 'logged';
+      }
+      if (s2 === 'done') inTarget += 1;
+      if (s2 === 'done' || s2 === 'logged') loggedDays += 1;
+      const hatch = 'repeating-linear-gradient(135deg, ' + T.idle + ' 0px, ' + T.idle + ' 4px, transparent 4px, transparent 8px)';
+      return {
+        d: w.d, n: w.n,
+        bg: w.today ? T.sfa : w.pause ? hatch : 'transparent',
+        border: w.today ? '1.5px solid ' + T.acc : '1.5px solid transparent',
+        lc: w.today ? T.acc : T.mut, nc: w.today ? T.tx : T.mut,
+        m0: mk(s0, 'strength'), m1: mk(s1, 'running'), m2: mk(s2, 'nutrition'),
+      };
+    });
+    const LEG = { strength: 'Muscu', running: 'Course', nutrition: 'Nutrition' };
+    const legend = D.pillars.map((p) => ({ label: LEG[p], c: T.p[p] }));
+    const sesNow = D.sessions.map((x) => !!x.done || (!!x.today && sessionDone));
+    const bDoneW = sesNow.filter(Boolean).length;
+    let weekSummary = bDoneW + ' séances sur ' + D.sessions.length + ' · ' + inTarget + ' jours dans ta cible';
+    if (sc === 'nouveau') weekSummary = 'Ta série démarre à ta première activité.';
+    if (sc === 'retour') weekSummary = s.comeback === 'gentle' ? 'Semaine allégée : 2 séances courtes suffisent.' : 'Pause de 9 jours : rien n’est perdu.';
+    if (sc === 'nutrition') weekSummary = inTarget + ' jours dans ta cible · ' + loggedDays + ' saisis';
+
+    let streak = { text: streakNow + ' jours', bg: T.soft.home, fg: T.p.home };
+    if (sc === 'risque') {
+      if (rescued === 'joker') streak = { text: '12 jours · gelée', bg: T.soft.running, fg: T.p.running };
+      else if (rescued) streak = { text: '13 jours', bg: T.soft.nutrition, fg: T.p.nutrition };
+      else streak = { text: '12 jours · en jeu', bg: dark ? 'rgba(224,177,85,0.18)' : 'rgba(180,127,49,0.16)', fg: dark ? '#e0b155' : '#8a6419' };
+    }
+    if (sc === 'nouveau') streak = { text: 'à lancer', bg: T.idle, fg: T.mut };
+    if (sc === 'retour') streak = { text: 'meilleure : 21 jours', bg: T.idle, fg: T.mut };
+
+    // ── Du nouveau ─────────────────────────────────────────────────────────────────────────────
+    const card = (o) => Object.assign({
+      hasProgress: false, pct: '0%', pctLabel: '', progColor: T.p.home, track: T.idle, hasAction: false, actionLabel: '', actIcon: I.link, act: null,
+      btnBg: 'transparent', btnFg: T.tx, btnBorder: '1.5px solid ' + T.bdStrong, bg: T.sf, border: '1px solid ' + T.bd, fg: T.tx, muted: T.mut, tagFg: T.mut,
+      iconBg: T.idle, iconFg: T.tx, icon: I.spark,
+    }, o);
+    const pct = (v) => (ready ? v : 0) + '%';
+    const record = card({
+      tag: 'Nouveau record', title: 'Squat · 102,5 kg × 5', body: '+2,5 kg sur ton meilleur 5 RM. Ça se partage.', icon: I.trophy,
+      bg: 'linear-gradient(135deg, #8e1b1b 0%, #4a120f 70%, #2b0d0b 100%)', border: '1px solid transparent', fg: '#ffffff', muted: '#f6c5bf', tagFg: '#ffb3a8',
+      iconBg: 'rgba(255,255,255,0.12)', iconFg: '#ffd9a0', hasAction: true, actionLabel: 'Partager', actIcon: I.share,
+      btnBg: '#ffffff', btnFg: '#8e1b1b', btnBorder: '1.5px solid #ffffff', act: () => this.say('Carte de partage prête'),
+    });
+    const near = card({
+      tag: 'Record à portée', title: 'Squat : 2,5 kg de ton record', body: 'Ton meilleur 5 RM : 100 kg. Ce soir, 102,5 kg suffit pour le battre.', icon: I.trophy,
+      border: '1.5px solid ' + T.soft.strength, tagFg: T.p.strength, iconBg: T.soft.strength, iconFg: T.p.strength,
+    });
+    const goalRun = card({
+      tag: 'Objectif · encore 40 jours', title: '10 km sous 55 min', body: 'Ta projection : 55:40. Elle a gagné 18 s cette semaine.', icon: I.target,
+      tagFg: T.p.running, iconBg: T.soft.running, iconFg: T.p.running, hasProgress: true, pct: pct(78), pctLabel: '78 %', progColor: T.p.running,
+    });
+    const goalWeight = card({
+      tag: 'Objectif · avant le 15 décembre', title: '−3 kg, en douceur', body: '1,9 kg de fait. À ce rythme, c’est tenu vers le 2 décembre.', icon: I.target,
+      tagFg: T.p.home, iconBg: T.soft.home, iconFg: T.p.home, hasProgress: true, pct: pct(62), pctLabel: '62 %', progColor: T.p.home,
+    });
+    const labo = card({
+      tag: 'Labo · tes liens', title: 'Tes semaines à 4 séances font progresser ton squat', body: 'Sur 3 mois : +2,5 kg de plus en moyenne que les semaines à 2 séances.', icon: I.link,
+      border: '1.5px solid ' + T.soft.lab, tagFg: T.p.lab, iconBg: T.soft.lab, iconFg: T.p.lab, hasAction: true, actionLabel: 'Ouvrir le Labo', actIcon: I.lab,
+      act: () => this.say('Ouvre le Labo, sur ce lien'),
+    });
+    const protCard = card({
+      tag: 'Insight', title: 'Protéines : 5 jours sur 7 dans la cible', body: 'Ta meilleure semaine depuis septembre. Le petit-déj fait la différence.', icon: I.trend,
+      tagFg: T.p.nutrition, iconBg: T.soft.nutrition, iconFg: T.p.nutrition,
+    });
+    const since = card({
+      tag: 'Depuis ta dernière visite', title: 'Ton objectif 10 km t’attend', body: 'Neuf jours d’écart ont décalé ta projection. On repousse l’échéance de 9 jours ?', icon: I.calendar,
+      tagFg: T.p.home, iconBg: T.soft.home, iconFg: T.p.home, hasAction: true, actionLabel: 'Repousser au 11 décembre', actIcon: I.calendar,
+      act: () => this.say('Échéance repoussée au 11 décembre'),
+    });
+    const explain = card({
+      tag: 'Ton accueil, bientôt', title: 'Trois cadrans pour ta journée', body: 'Bouger, manger, récupérer : ils se remplissent dès ta première séance et ton premier repas.', icon: I.spark,
+      tagFg: T.p.home, iconBg: T.soft.home, iconFg: T.p.home,
+    });
+    let news = [];
+    if (sc === 'seance') news = [sessionDone ? record : near, goalRun];
+    else if (sc === 'repos') news = [goalRun, labo];
+    else if (sc === 'risque') news = [goalRun];
+    else if (sc === 'nouveau') news = [explain];
+    else if (sc === 'retour') news = [since];
+    else if (sc === 'nutrition') news = [goalWeight, protCard];
+
+    // ── Tes repères ────────────────────────────────────────────────────────────────────────────
+    const rep = (o) => Object.assign({ isSpark: false, isBar: false, spark: '', pct: '0%', unit: '' }, o);
+    const stepsV = D.steps + (walkDone ? 3400 : 0);
+    const repWeight = rep({ label: 'Poids', icon: I.scale, color: T.p.home, value: sc === 'nutrition' ? '71,2' : '78,4', unit: 'kg', sub: sc === 'nutrition' ? '−0,4 kg sur 7 jours' : '−0,6 kg sur 7 jours', isSpark: true, spark: 'M2 5 L24 7 L46 6 L68 11 L90 12 L112 15 L144 18', aria: 'Poids : ouvrir la courbe', tap: () => this.say('Ouvre ta courbe de poids') });
+    const repSteps = rep({ label: 'Pas', icon: I.steps, color: T.p.home, value: this.num(stepsV), unit: 'pas', sub: 'objectif ' + this.num(D.stepsGoal), isBar: true, pct: pct(Math.round(Math.min(100, stepsV / D.stepsGoal * 100))), aria: 'Pas du jour', tap: () => this.say('Tes pas viennent de Health Connect') });
+    const repSleep = rep({ label: 'Sommeil', icon: I.moon, color: T.p.wellbeing, value: '7 h 10', sub: 'cette nuit · Health Connect', isSpark: true, spark: 'M2 14 L24 10 L46 12 L68 7 L90 11 L112 6 L144 9', aria: 'Sommeil de la nuit', tap: () => this.say('Ouvre ton pilier Bien-être') });
+    const repWater = rep({ label: 'Eau', icon: I.drop, color: T.p.running, value: sc === 'nutrition' ? '0,9' : '1,2', unit: 'L', sub: 'sur 2 L aujourd’hui', isBar: true, pct: pct(sc === 'nutrition' ? 45 : 60), aria: 'Eau du jour', tap: () => this.say('+250 ml en un geste, depuis le +') });
+    const repFiber = rep({ label: 'Fibres', icon: I.leaf, color: T.p.nutrition, value: '14', unit: 'g', sub: 'sur 30 g aujourd’hui', isBar: true, pct: pct(47), aria: 'Fibres du jour', tap: () => this.say('Ouvre tes micronutriments') });
+    let reperes = [repWeight, repSteps, repSleep, repWater];
+    if (sc === 'nutrition') reperes = [repWeight, repSteps, repWater, repFiber];
+
+    // ── Le « + » : noter en un geste ───────────────────────────────────────────────────────────
+    const mealNow = h < 10.5 ? 'breakfast' : h < 15 ? 'lunch' : h < 18 ? 'snack' : 'dinner';
+    const MEAL_LABEL = { breakfast: 'Petit-déj', lunch: 'Déjeuner', snack: 'Collation', dinner: 'Dîner' };
+    const mealItem = items.find((it) => it.meal === mealNow && !it.done);
+    const weighItem = items.find((it) => it.kind === 'weigh' && !it.done);
+    const tiles = [
+      { label: MEAL_LABEL[mealNow], icon: I.apple, color: T.p.nutrition, bg: T.soft.nutrition, show: hasNut, act: () => (mealItem ? this.mark(mealItem.id, mealItem.title + ' ajouté · ' + this.num(mealItem.kcal) + ' kcal') : this.close(MEAL_LABEL[mealNow] + ' : ouvre la recherche d’aliments')) },
+      { label: 'Scanner', icon: I.scan, color: T.p.nutrition, bg: T.soft.nutrition, show: hasNut, act: () => this.close('Scanner un code-barres') },
+      { label: 'Pesée', icon: I.scale, color: T.p.home, bg: T.soft.home, show: true, act: () => (weighItem ? this.mark(weighItem.id, 'Pesée enregistrée · 78,4 kg') : this.close('Pesée enregistrée · 78,4 kg')) },
+      { label: 'Check-in', icon: I.face, color: T.p.wellbeing, bg: T.soft.wellbeing, show: true, act: () => this.close('Check-in : humeur, énergie, stress') },
+      { label: 'Eau', icon: I.drop, color: T.p.running, bg: T.soft.running, show: true, act: () => this.close('+250 ml · 1,45 L aujourd’hui') },
+      { label: 'Activité', icon: I.bolt, color: T.p.home, bg: T.soft.home, show: true, act: () => this.close('Activité : vélo, yoga, foot… tout compte') },
+      { label: 'Course libre', icon: I.run, color: T.p.running, bg: T.soft.running, show: D.pillars.indexOf('running') >= 0, act: () => this.close('Course libre : le GPS démarre') },
+      { label: 'Séance libre', icon: I.barbell, color: T.p.strength, bg: T.soft.strength, show: D.pillars.indexOf('strength') >= 0, act: () => this.close('Séance libre : choisis tes exercices') },
+    ].filter((x) => x.show);
+
+    const whyRows = [
+      { label: 'Charge', value: { positive: 'fraîche', neutral: 'stable', negative: 'chargée' }[D.load] || 'indisponible', detail: sc === 'risque' ? 'Quatre séances cette semaine, rien d’excessif' : 'Deux jours depuis tes dernières jambes', c: sigColorBody(D.load) },
+      { label: 'Nutrition', value: 'stable', detail: 'Trois jours sur quatre dans ta cible', c: sigColorBody('neutral') },
+      { label: 'Bien-être', value: sigWell ? { positive: 'bonne énergie', neutral: 'neutre', negative: 'fatigue' }[sigWell] : 'pas de check-in', detail: sigWell ? 'Check-in du matin · énergie ' + lv + '/5' : 'Un geste le matin, et ce signal compte', c: sigColorBody(sigWell) },
+    ];
+
+    // ── Barre d'onglets ────────────────────────────────────────────────────────────────────────
+    const TABS = [
+      { k: 'home', label: 'Accueil', d: I.home },
+      { k: 'strength', label: 'Muscu', d: I.barbell },
+      { k: 'running', label: 'Course', d: I.run },
+      { k: 'lab', label: 'Labo', d: I.lab },
+      { k: 'nutrition', label: 'Nutrition', d: I.apple },
+    ];
+    const tabs = TABS.filter((x) => x.k === 'home' || x.k === 'lab' || D.pillars.indexOf(x.k) >= 0).map((x) => ({
+      label: x.label, d: x.d, color: x.k === 'home' ? T.p.home : T.mut, sw: x.k === 'home' ? '2.3' : '1.8', current: x.k === 'home' ? 'page' : 'false',
+      tap: () => this.say(x.k === 'home' ? 'Tu es sur l’accueil' : 'Onglet ' + x.label),
+    }));
+
+    const obDone = 1 + ['program', 'lunch', 'evening'].filter((id) => logged[id]).length;
+    const obLeft = [['program', 'ton programme'], ['lunch', 'ton premier repas'], ['evening', 'ton point du soir']].filter((x) => !logged[x[0]]).map((x) => x[1]);
+    const onboard = {
+      count: obDone + '/4',
+      segs: [0, 1, 2, 3].map((i) => ({ bg: i < obDone ? RC.home : RC.idle })),
+      text: obLeft.length ? 'Ton profil est prêt. Encore ' + obLeft.length + (obLeft.length > 1 ? ' gestes : ' : ' geste : ') + obLeft.join(', ') + '.' : 'Premier jour bouclé. Demain, tes cadrans Bouger · Manger · Récupérer s’animent.',
+    };
+
+    const comeback = {
+      choosing: !s.comeback, gentle: s.comeback === 'gentle', normal: s.comeback === 'normal',
+      text: 'Ta meilleure série : 21 jours. Ton programme, tes records et ton objectif t’attendent, intacts.',
+      rows: [
+        { text: '2 séances courtes, 35 minutes chacune', c: RC.strength },
+        { text: '1 sortie, au rythme que tu veux', c: RC.running },
+        { text: 'Protéines tenues : 120 g par jour', c: RC.nutrition },
+      ],
+    };
+
+    const sheet = s.sheet || null;
+    const speaking = !!s.speaking;
+
+    return {
+      rootH: full ? '1880px' : '844px',
+      scrollBottom: full ? '0px' : '64px',
+      scrollY: full ? 'hidden' : 'auto',
+      bodyPadBottom: full ? '28px' : '96px',
+      t: T,
+      sky: sky,
+      icons: I,
+      greeting: greeting,
+      sentence: sentence,
+      showListen: h < 11 && (sc === 'seance' || sc === 'repos' || sc === 'nutrition'),
+      speaking: speaking,
+      notSpeaking: !speaking,
+      listenLabel: speaking ? 'Arrêter' : 'Écouter mon brief',
+      listenAria: speaking ? 'Arrêter la lecture du brief' : 'Écouter le brief du matin',
+      onListen: () => this.speak(briefText),
+      onProfile: () => this.say('Profil et réglages'),
+      showLive: sc === 'live',
+      onResumeLive: () => this.say('Retour à ta séance : presse à cuisses, série 2'),
+      showDials: dials.length > 0 && sc !== 'nouveau' && sc !== 'retour',
+      dials: dials,
+      dialsJustify: dials.length < 3 ? 'center' : 'space-between',
+      showOnboard: sc === 'nouveau',
+      onboard: onboard,
+      showComeback: sc === 'retour',
+      comeback: comeback,
+      onGentle: () => { this.setState({ comeback: 'gentle' }); this.say('Semaine allégée jusqu’au 30 octobre'); },
+      onNormal: () => { this.setState({ comeback: 'normal' }); this.say('C’est reparti : ton plan reprend aujourd’hui'); },
+      rows: rows,
+      now: nowSafe,
+      dayMeta: dayMeta,
+      onPlanning: () => this.say('Ouvre le planning du jour'),
+      week: week,
+      legend: legend,
+      weekSummary: weekSummary,
+      streak: streak,
+      onReview: () => this.say('Ouvre le bilan de la semaine'),
+      showNews: news.length > 0,
+      news: news,
+      onInsights: () => this.say('Ouvre l’écran Insights'),
+      showReperes: sc !== 'nouveau',
+      reperes: reperes,
+      onCustomize: () => this.say('Choisis tes repères : poids, pas, sommeil, eau, cycle…'),
+      onLighten: () => this.say('Mode vie réelle : on allège la semaine, rien n’est perdu'),
+      showFab: !full,
+      onFab: () => this.setState({ sheet: 'add' }),
+      hasToast: !!s.toast,
+      toast: s.toast || '',
+      showTabs: !full,
+      tabs: tabs,
+      sheetOpen: !!sheet,
+      isAdd: sheet === 'add',
+      isWhy: sheet === 'why',
+      sheetTitle: sheet === 'why' ? 'Forme du jour' : 'Noter',
+      sheetMeta: sheet === 'why' ? VERDICT_TITLE[verdict] : 'en un geste',
+      sheetMetaColor: sheet === 'why' ? sigColorBody(verdict === 'push' ? 'positive' : verdict === 'rest' ? 'negative' : 'neutral') : T.mut,
+      addTiles: tiles,
+      whyRows: whyRows,
+      onCloseSheet: () => this.setState({ sheet: null }),
+    };
+  }
+}
+</script>
+</body>
+</html>

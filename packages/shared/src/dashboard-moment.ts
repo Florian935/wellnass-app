@@ -25,6 +25,11 @@ export type HomeMomentInput = {
   /** Jours depuis la dernière activité ; `null` si aucun historique (compte neuf). */
   daysSinceLastActivity: number | null;
   checkinDoneToday: boolean;
+  /**
+   * Aujourd'hui est déjà couvert pour la série — joker posé, ou jour d'une période « vie réelle »
+   * (US ACCUEIL-07). Rien n'est alors en jeu le soir.
+   */
+  coveredToday?: boolean;
   /** Heure du rappel « série en danger » (0-23), si l'utilisateur l'a réglée. */
   reminderHour?: number | null;
 };
@@ -50,7 +55,8 @@ export function resolveHomeMoment(input: HomeMomentInput): HomeMoment {
   }
 
   const eveningFrom = Math.max(EVENING_FROM_HOUR, input.reminderHour ?? EVENING_FROM_HOUR);
-  if (!input.activeToday && input.streak >= 1 && hour >= eveningFrom) return 'evening-at-risk';
+  const atRisk = !input.activeToday && !input.coveredToday && input.streak >= 1;
+  if (atRisk && hour >= eveningFrom) return 'evening-at-risk';
 
   if (hour < MORNING_UNTIL_HOUR && !input.checkinDoneToday) return 'morning';
 

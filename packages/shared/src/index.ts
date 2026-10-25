@@ -51,6 +51,8 @@ export * from './widgets';
 // US ACCUEIL-01/02 — le moment de la journée, et la décision de la carte « maintenant ».
 export * from './day-moment';
 export * from './now-action';
+export * from './streak-rescue';
+export * from './meal-slots';
 export * from './exercise';
 export * from './body-explorer';
 export * from './exercise-filter';
@@ -186,6 +188,7 @@ export * from './body-training';
 export * from './strength-program-recommendation';
 // US DASH-01 (roadmap 7.29) — dashboards immersifs : tout ce qui décide ce qu'affichent les scènes.
 export * from './dashboard-moment';
+export * from './home-greeting';
 export * from './since-last-visit';
 export * from './weekly-story';
 export * from './near-record';

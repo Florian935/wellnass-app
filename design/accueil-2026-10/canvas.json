@@ -1,0 +1,323 @@
+{
+  "v": 3,
+  "createdOnFiles": {
+    "v": 1,
+    "at": "2026-10-23T18:00:00Z"
+  },
+  "title": "Accueil — ta journée",
+  "launch": {
+    "view": "canvas",
+    "page": "pc"
+  },
+  "pages": [
+    {
+      "id": "pc",
+      "name": "0 · La couleur"
+    },
+    {
+      "id": "p1",
+      "name": "1 · Le constat"
+    },
+    {
+      "id": "p2",
+      "name": "2 · La proposition"
+    },
+    {
+      "id": "p3",
+      "name": "3 · Le mouvement"
+    }
+  ],
+  "boards": {
+    "Main.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 940,
+      "h": 1160,
+      "title": "Prototype jouable — ta journée",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "Anatomie.dc.html": {
+      "x": 1020,
+      "y": 0,
+      "w": 390,
+      "h": 1880,
+      "title": "L’écran entier, 12:40",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "Matin.dc.html": {
+      "x": 0,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "title": "07:20 · le check-in",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "Phone.dc.html": {
+      "x": 470,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "title": "12:40 · le déjeuner (composant)",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "AvantSeance.dc.html": {
+      "x": 940,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "title": "17:50 · la séance approche",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "Soir.dc.html": {
+      "x": 1410,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "title": "21:40 · la journée se boucle",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "SombreSoir.dc.html": {
+      "x": 1880,
+      "y": 2240,
+      "w": 390,
+      "h": 844,
+      "title": "20:15 · thème sombre, après la séance",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "Repos.dc.html": {
+      "x": 0,
+      "y": 3444,
+      "w": 390,
+      "h": 844,
+      "title": "15:00 · jour de repos",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "Serie.dc.html": {
+      "x": 470,
+      "y": 3444,
+      "w": 390,
+      "h": 844,
+      "title": "21:15 · la série en jeu",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "PremierJour.dc.html": {
+      "x": 940,
+      "y": 3444,
+      "w": 390,
+      "h": 844,
+      "title": "Premier jour, 10:00",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "Retour.dc.html": {
+      "x": 1410,
+      "y": 3444,
+      "w": 390,
+      "h": 844,
+      "title": "Retour après 9 jours, 09:15",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "NutritionSeule.dc.html": {
+      "x": 1880,
+      "y": 3444,
+      "w": 390,
+      "h": 844,
+      "title": "Nutrition seule, 13:00",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "SeanceEnCours.dc.html": {
+      "x": 2350,
+      "y": 3444,
+      "w": 390,
+      "h": 844,
+      "title": "Séance en cours, 18:25",
+      "page": "p2",
+      "is_interactive": true
+    },
+    "Avant.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 2000,
+      "title": "Aujourd’hui — l’accueil livré, vendredi 15:00",
+      "page": "p1"
+    },
+    "Anim.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1420,
+      "h": 800,
+      "title": "Quatre gestes animés",
+      "page": "p3"
+    },
+    "Teintes.dc.html": {
+      "x": 0,
+      "y": 0,
+      "w": 1780,
+      "h": 2260,
+      "title": "La couleur de l’accueil — trois teintes libres",
+      "page": "pc"
+    }
+  },
+  "order": [
+    "Avant.dc.html",
+    "Teintes.dc.html",
+    "Main.dc.html",
+    "Anatomie.dc.html",
+    "Matin.dc.html",
+    "Phone.dc.html",
+    "AvantSeance.dc.html",
+    "Soir.dc.html",
+    "SombreSoir.dc.html",
+    "Repos.dc.html",
+    "Serie.dc.html",
+    "PremierJour.dc.html",
+    "Retour.dc.html",
+    "NutritionSeule.dc.html",
+    "SeanceEnCours.dc.html",
+    "Anim.dc.html"
+  ],
+  "notes": {
+    "t1": {
+      "x": 0,
+      "y": -300,
+      "text": "L’accueil aujourd’hui",
+      "kind": "title1",
+      "maxW": 1400,
+      "page": "p1"
+    },
+    "c1": {
+      "x": 470,
+      "y": 0,
+      "w": 440,
+      "size": "m",
+      "fill": "red",
+      "page": "p1",
+      "text": "CLARTÉ\n\n① Le titre répète la carte du dessous (« Une séance au programme » / « Séance du jour »). Sans séance, c’est mot pour mot : « Rien de prévu aujourd’hui » deux fois. Et le prénom n’apparaît nulle part.\n\n② Trois anneaux de couleur, aucune légende à l’écran (le libellé n’existe que pour TalkBack). Sans planning, ils restent vides même après trois séances.\n\n③ La série s’affiche deux fois (scène + carte Régularité), la semaine trois fois (anneaux, Régularité, « Où j’en suis cette semaine ? »)."
+    },
+    "c2": {
+      "x": 470,
+      "y": 640,
+      "w": 440,
+      "size": "m",
+      "fill": "orange",
+      "page": "p1",
+      "text": "UTILITÉ\n\n④ « Demande-moi » : trois questions dont les réponses sont déjà calculées, cachées derrière un tap. « Qu’est-ce que je mange ce soir ? » s’affiche à 8 h et répond par des kcal, pas par un repas.\n\n⑤ Les quatre gestes du quotidien arrivent pile au pli de l’écran (y ≈ 780).\n\n⑥ « Où j’en suis aujourd’hui ? » (kcal, protéines) n’arrive qu’au 2ᵉ écran."
+    },
+    "c3": {
+      "x": 470,
+      "y": 1280,
+      "w": 440,
+      "size": "m",
+      "fill": "purple",
+      "page": "p1",
+      "text": "ENVIE\n\n⑦ Cinq cartes de même poids, même beige, même rayon : rien n’attire l’œil, rien ne change d’un jour à l’autre.\n\n⑧ « Ça se complique ? Allège la semaine » s’affiche en permanence, même un jour où tout va bien.\n\n⑨ L’horizon (« La suite ») est relégué en texte gris tout en bas, derrière « Personnaliser »."
+    },
+    "t2": {
+      "x": 0,
+      "y": -300,
+      "text": "Ta journée — la proposition",
+      "kind": "title1",
+      "maxW": 1410,
+      "page": "p2"
+    },
+    "a1": {
+      "x": 1490,
+      "y": 40,
+      "w": 320,
+      "size": "s",
+      "fill": "orange",
+      "page": "p2",
+      "text": "① LE CIEL — date, prénom, la phrase du jour (lue à voix haute le matin) et trois cadrans : Bouger · Manger · Récupérer. La lumière suit l’heure."
+    },
+    "a2": {
+      "x": 1490,
+      "y": 470,
+      "w": 320,
+      "size": "s",
+      "fill": "orange",
+      "page": "p2",
+      "text": "② TA JOURNÉE — le fil horodaté des trois piliers. Ce qui est fait se replie, l’action du moment se déplie, la suite tient en trois lignes. Les piliers se parlent dans les astuces (Muscu × Nutrition)."
+    },
+    "a3": {
+      "x": 1490,
+      "y": 960,
+      "w": 320,
+      "size": "s",
+      "fill": "orange",
+      "page": "p2",
+      "text": "③ TA SEMAINE — une seule carte remplace anneaux, Régularité, « La suite » et le bilan du lundi : plein = fait, pointillé = prévu."
+    },
+    "a4": {
+      "x": 1490,
+      "y": 1240,
+      "w": 320,
+      "size": "s",
+      "fill": "orange",
+      "page": "p2",
+      "text": "④ DU NOUVEAU — deux cartes au plus : record (ou record à portée), objectif, lien du Labo. La raison de revenir."
+    },
+    "a5": {
+      "x": 1490,
+      "y": 1520,
+      "w": 320,
+      "size": "s",
+      "fill": "orange",
+      "page": "p2",
+      "text": "⑤ TES REPÈRES — l’ancienne grille, en tuiles compactes et personnalisables. Le « + » flottant note n’importe quoi en un geste."
+    },
+    "t2b": {
+      "x": 0,
+      "y": 1990,
+      "text": "Une journée de séance, heure par heure",
+      "kind": "title1",
+      "maxW": 2270,
+      "page": "p2"
+    },
+    "t2c": {
+      "x": 0,
+      "y": 3200,
+      "text": "Les autres journées",
+      "kind": "title1",
+      "maxW": 2740,
+      "page": "p2"
+    },
+    "t3": {
+      "x": 0,
+      "y": -300,
+      "text": "Le mouvement",
+      "kind": "title1",
+      "maxW": 1420,
+      "page": "p3"
+    },
+    "t0": {
+      "x": 0,
+      "y": -300,
+      "text": "Une couleur à l’accueil, comme aux autres piliers",
+      "kind": "title1",
+      "maxW": 1780,
+      "page": "pc"
+    },
+    "r0": {
+      "x": 1860,
+      "y": 0,
+      "w": 380,
+      "size": "m",
+      "fill": "blue",
+      "page": "pc",
+      "text": "RETENUE : AURORE (Florian, 25/10/2026)\n\nUne lueur turquoise (~172°) et une lueur framboise (~330°) sur une nuit bleutée : les deux trous de la roue, réunis. Aucun pilier n’a ces couleurs.\n\nPour le code : la lueur turquoise reste sous 0,38 d’opacité là où passe du texte (sinon le texte secondaire tombe sous 4,5:1). Les lueurs sont la « matière » de la scène : elles respirent, et leur dosage suit l’heure (turquoise le matin, framboise le soir).\n\nTexte et onglet : turquoise #0F766E en clair, #5EEAD4 en sombre. Bouton principal et « + » : dégradé turquoise → rose."
+    }
+  },
+  "designSystems": []
+}

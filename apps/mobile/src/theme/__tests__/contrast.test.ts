@@ -56,6 +56,11 @@ const PAIRS: {
   { theme: 'dark', fg: 'pillarLab', bg: 'surface', threshold: 4.5, usage: 'couleur du Labo (onglet actif, libellés) — LABO-01' },
   { theme: 'dark', fg: 'pillarLab', bg: 'background', threshold: 4.5, usage: 'couleur du Labo (onglet actif, libellés) — LABO-01' },
   { theme: 'dark', fg: 'pillarNutrition', bg: 'background', threshold: 4.5, usage: 'couleur de pilier (onglet actif, barres, libellés) — DASH-01' },
+  // US ACCUEIL-07 — la couleur de marque (le terracotta de l'ancien accueil), accent des écrans sans pilier.
+  { theme: 'light', fg: 'brand', bg: 'surface', threshold: 4.5, usage: 'couleur de marque (réglages, onboarding) — ACCUEIL-07' },
+  { theme: 'light', fg: 'brand', bg: 'background', threshold: 4.5, usage: 'couleur de marque (réglages, onboarding) — ACCUEIL-07' },
+  { theme: 'dark', fg: 'brand', bg: 'surface', threshold: 4.5, usage: 'couleur de marque (réglages, onboarding) — ACCUEIL-07' },
+  { theme: 'dark', fg: 'brand', bg: 'background', threshold: 4.5, usage: 'couleur de marque (réglages, onboarding) — ACCUEIL-07' },
   // `accent`/`surface` sombre (D2, 4,45) est un écart ASSUMÉ (spec §4) — volontairement absent de
   // cette table : le consigner ici comme une assertion qui doit rester rouge serait exactement le
   // bruit qu'on veut éviter. Voir le commentaire dans colors.ts.

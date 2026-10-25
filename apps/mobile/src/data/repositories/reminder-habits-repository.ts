@@ -29,12 +29,17 @@ import {
   LEARNED_HOUR_WINDOW_DAYS,
   localDayKey,
   localMidnightDaysAgo,
+  resolveMealConfig,
+  resolveMealSlots,
   resolveReminderDeadline,
   type LogSample,
+  type MealSample,
+  type MealSlot,
   type NotificationPrefs,
   type ReminderDeadline as PureReminderDeadline,
 } from '@wellness/shared';
-import { useTodayKey } from '@/hooks/useTodayKey';
+import { useTodayKey, useWindowStartKey } from '@/hooks/useTodayKey';
+import { useNutritionProfile } from './nutrition-repository';
 
 /** Échéance résolue d'un rappel, plus l'état de chargement des requêtes locales. */
 export type ReminderDeadline = PureReminderDeadline & { isLoading: boolean };
@@ -90,6 +95,35 @@ const COUNT_MEALS_TODAY = `
 const COUNT_WEIGH_IN_TODAY = `
   SELECT COUNT(*) AS n FROM body_weight_entries WHERE log_date = ? AND deleted_at IS NULL
 `;
+
+/**
+ * US ACCUEIL-07 — les saisies de la fenêtre d'apprentissage, **avec leur repas** : de quoi apprendre
+ * l'heure de chaque repas séparément (`resolveMealSlots`). Même borne et même raison de lire les
+ * lignes plutôt qu'un agrégat que `SELECT_MEAL_SAMPLES` (conversion UTC → local en JS).
+ */
+export const SELECT_MEAL_TYPE_SAMPLES = `
+  SELECT meal_type, log_date, created_at
+  FROM food_entries
+  WHERE deleted_at IS NULL AND created_at >= ?
+  ORDER BY created_at
+`;
+
+/** US ACCUEIL-07 — les repas qui portent au moins une entrée aujourd'hui. */
+export const SELECT_MEALS_LOGGED_ON = `
+  SELECT DISTINCT meal_type FROM food_entries WHERE log_date = ? AND deleted_at IS NULL
+`;
+
+/**
+ * US ACCUEIL-07 — la garde d'habitude de la pesée : au moins une pesée depuis `?` (30 jours). Le même
+ * patron que le bien-être (`WELLBEING_HABIT_WINDOW_DAYS`) : il n'existe aucun réglage « je me pèse »,
+ * on observe un usage.
+ */
+export const COUNT_WEIGH_INS_SINCE = `
+  SELECT COUNT(*) AS n FROM body_weight_entries WHERE log_date >= ? AND deleted_at IS NULL
+`;
+
+/** Fenêtre de la garde d'habitude de la pesée, en jours (même valeur que le bien-être). */
+export const WEIGH_IN_HABIT_WINDOW_DAYS = 30;
 
 /**
  * Borne basse de la fenêtre d'apprentissage, dérivée du **jour courant** : minuit local il y a
@@ -182,6 +216,67 @@ export function useMealLoggedToday(): { done: boolean; isLoading: boolean } {
 export function useWeighInToday(): { done: boolean; isLoading: boolean } {
   const todayKey = useTodayKey();
   return useDoneToday(COUNT_WEIGH_IN_TODAY, todayKey);
+}
+
+/**
+ * US ACCUEIL-07 — la personne se pèse-t-elle ? Au moins une pesée sur les 30 derniers jours.
+ *
+ * Sans cette garde, l'accueil réclamait « Pas encore pesé aujourd'hui » à tout le monde, chaque
+ * jour, dès l'échéance du rappel — y compris à qui ne s'est jamais pesé (constat 3 du 24/10/2026).
+ */
+export function useWeighInHabit(): { habit: boolean; isLoading: boolean } {
+  const since = useWindowStartKey(WEIGH_IN_HABIT_WINDOW_DAYS);
+  const { data, isLoading } = useQuery<{ n: number }>(COUNT_WEIGH_INS_SINCE, [since]);
+  return { habit: (data[0]?.n ?? 0) > 0, isLoading };
+}
+
+/**
+ * US ACCUEIL-07 — **les repas du jour**, chacun à son heure apprise, et lesquels sont déjà notés.
+ *
+ * Remplace, pour l'accueil, la seule question que l'app savait poser (« au moins une entrée
+ * aujourd'hui ? ») : un petit-déj noté éteignait le déjeuner et le dîner, et déclarait la journée
+ * faite. La règle vit dans `resolveMealSlots` (`@wellness/shared`, testée) ; ici, deux lectures
+ * locales et la configuration de repas de l'utilisateur. 100 % hors ligne.
+ */
+export function useMealSlots(): {
+  slots: MealSlot[];
+  /** Repas distincts notés aujourd'hui, configurés ou non (un repas supprimé depuis compte aussi). */
+  loggedToday: number;
+  isLoading: boolean;
+} {
+  const todayKey = useTodayKey();
+  const windowStart = windowStartUtcFrom(todayKey);
+  const { data: sampleRows, isLoading: samplesLoading } = useQuery<{
+    meal_type: string;
+    log_date: string;
+    created_at: string;
+  }>(SELECT_MEAL_TYPE_SAMPLES, [windowStart]);
+  const { data: todayRows, isLoading: todayLoading } = useQuery<{ meal_type: string }>(
+    SELECT_MEALS_LOGGED_ON,
+    [todayKey],
+  );
+  const { nutritionProfile, isLoading: profileLoading } = useNutritionProfile();
+  const meals = nutritionProfile?.meals;
+
+  const slots = useMemo(() => {
+    const samples: MealSample[] = sampleRows.map((r) => ({
+      mealKey: r.meal_type,
+      logDate: r.log_date,
+      createdAt: r.created_at,
+    }));
+    return resolveMealSlots({
+      samples,
+      todayKey,
+      meals: resolveMealConfig(meals),
+      loggedToday: new Set(todayRows.map((r) => r.meal_type)),
+    });
+  }, [sampleRows, todayRows, meals, todayKey]);
+
+  return {
+    slots,
+    loggedToday: todayRows.length,
+    isLoading: samplesLoading || todayLoading || profileLoading,
+  };
 }
 
 /**

@@ -6,27 +6,33 @@
  * absence, et **journée** (les anneaux de la semaine). La scène ne choisit rien — elle peint le
  * moment qu'on lui donne, comme `NowCard` peint la décision de `resolveNowAction`.
  *
- * La matière du pilier est l'anneau qui respire (`BreathRings`) : il vit dans le flux du contenu
- * plutôt que derrière lui, parce qu'un anneau à demi caché sous du texte ne se lit plus — et qu'un
- * anneau, ici, **porte une information** (la semaine par pilier), contrairement aux trois autres
- * matières qui ne sont que du décor (R1).
+ * ── US ACCUEIL-07 — la scène dit vrai, et prend la teinte Aurore ─────────────────────────────────
+ *  - **deux lignes en tête** : la salutation (avec le prénom, enfin) et la phrase du jour, qui ne
+ *    répète plus la carte « maintenant » (constat 6) ;
+ *  - **le check-in en visages**, chacun avec son mot (constat 9) ;
+ *  - **la série en jeu se sauve par un vrai geste** — marcher, noter une activité, le joker — au lieu
+ *    d'un bouton qui ouvrait le planning (constat 5) ;
+ *  - **la reprise en douceur ne mène plus nulle part** : elle démarre la période et le dit ici, sans
+ *    pousser la route `/real-life`, qui n'a jamais existé (VIE-02) ;
+ *  - **la matière** est faite des deux lueurs d'Aurore (`AuroraGlows`), posées sous le contenu.
  */
 
 import { Ionicons } from '@expo/vector-icons';
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { ReadinessVerdict, WellbeingLevel } from '@wellness/shared';
+import type { ReadinessVerdict, StreakRescueOption, WellbeingLevel } from '@wellness/shared';
+import { CheckinFaces } from '@/components/dashboard/CheckinFaces';
+import { StreakRescue } from '@/components/dashboard/StreakRescue';
 import { ExplainButton } from '@/components/explain/ExplainButton';
 import { AnimatedNumber, useLocaleSeparators } from '@/components/motion/AnimatedNumber';
-import { PressableScale } from '@/components/motion/PressableScale';
 import { PillarStage, useStageTheme } from '@/components/stage/PillarStage';
 import { StageButton } from '@/components/stage/StageButton';
+import { AuroraGlows } from '@/components/stage/matter/AuroraGlows';
 import { BreathRings, type Ring } from '@/components/stage/matter/BreathRings';
 import { useLoopActive } from '@/hooks/useLoopActive';
 import { fontFamily } from '@/theme/fonts';
-
-const ENERGY_LEVELS: readonly WellbeingLevel[] = [1, 2, 3, 4, 5];
+import type { AuroraMoment } from '@/theme/stage';
 
 export type HomeScene =
   /** Avant 11 h, check-in du jour absent — la question la plus utile de la journée. */
@@ -37,18 +43,28 @@ export type HomeScene =
       onCheckin: (level: WellbeingLevel) => void;
       saving: boolean;
     }
-  /** Le soir, série en cours, rien de fait aujourd'hui : ce qu'il reste, et le filet du joker. */
+  /** Le soir, série en cours, rien de fait aujourd'hui : ce qu'il reste, et les vrais gestes. */
   | {
       kind: 'evening-at-risk';
       streak: number;
       hoursLeft: number;
-      jokersRemaining: number;
-      onSave: () => void;
+      rescue: readonly StreakRescueOption[];
+      onWalk: () => void;
+      onActivity: () => void;
+      onJoker: () => void;
+      busy: boolean;
+      formatSteps: (steps: number) => string;
     }
   /** Une semaine ou plus sans rien : on accueille, on ne réclame pas. */
   | {
       kind: 'comeback';
+      /** Jours depuis la dernière activité. */
+      days: number;
       bestStreak: number;
+      /** La période « vie réelle » démarrée par « En douceur » court jusqu'à cette date (affichée). */
+      gentleUntil: string | null;
+      /** « Mon plan normal » choisi aujourd'hui. */
+      normalChosen: boolean;
       onGentle: () => void;
       onNormal: () => void;
     }
@@ -57,9 +73,13 @@ export type HomeScene =
 
 type Props = {
   scene: HomeScene;
-  /** L'accroche du jour (`headlineKey`) — elle dérive de la même décision que `NowCard`. */
+  /** La salutation — « Bonjour Florian », « Content de te revoir »… (`greetingKind`). */
   greeting: string;
+  /** La phrase du jour (`daySentence`) — elle dérive de la même décision que `NowCard`. */
+  sentence: string;
   dateLabel: string;
+  /** La lumière d'Aurore, selon l'heure (`auroraMoment`). */
+  glowMoment: AuroraMoment;
   /** Posé à droite de la date : la pastille de synchro et l'accès aux réglages. */
   trailing?: ReactNode;
   /** Ouvre « Pourquoi ? » sur le verdict de forme (§6.1) — absent quand il n'y a pas de verdict. */
@@ -71,7 +91,9 @@ type Props = {
 export function HomeStage({
   scene,
   greeting,
+  sentence,
   dateLabel,
+  glowMoment,
   trailing,
   onExplainVerdict,
   children,
@@ -82,7 +104,7 @@ export function HomeStage({
   const { groupSeparator, decimalSeparator } = useLocaleSeparators();
 
   return (
-    <PillarStage pillar="home" testID="home-stage">
+    <PillarStage pillar="home" testID="home-stage" matter={<AuroraGlows moment={glowMoment} />}>
       <View>
         <View style={styles.topRow}>
           <Text style={[styles.eyebrow, { color: stage.inkMuted }]} numberOfLines={1}>
@@ -94,10 +116,13 @@ export function HomeStage({
           style={[styles.greeting, { color: stage.ink }]}
           numberOfLines={2}
           maxFontSizeMultiplier={1.4}
-          // L'accroche EST le titre de l'écran : annoncée comme tel, pas comme un texte après la date.
+          // La salutation EST le titre de l'écran : annoncée comme tel, pas comme un texte après la date.
           accessibilityRole="header"
         >
           {greeting}
+        </Text>
+        <Text style={[styles.sentence, { color: stage.ink }]} maxFontSizeMultiplier={1.4}>
+          {sentence}
         </Text>
       </View>
 
@@ -123,28 +148,15 @@ export function HomeStage({
             </>
           ) : (
             <>
-              <Text style={[styles.line, { color: stage.ink }]}>{t('wellbeing.checkinPrompt')}</Text>
-              <View style={styles.pills} accessibilityRole="radiogroup">
-                {ENERGY_LEVELS.map((level) => (
-                  <PressableScale
-                    key={level}
-                    haptic="confirm"
-                    disabled={scene.saving}
-                    onPress={() => scene.onCheckin(level)}
-                    accessibilityRole="radio"
-                    accessibilityState={{ disabled: scene.saving }}
-                    accessibilityLabel={t('wellbeing.a11yLevel', {
-                      indicator: t('wellbeing.indicators.energy'),
-                      level,
-                      label: t(`wellbeing.levels.energy.${level}`),
-                    })}
-                    style={[styles.pill, { backgroundColor: stage.glass, borderColor: stage.glassBorder }]}
-                  >
-                    <Text style={[styles.pillLabel, { color: stage.ink }]}>{level}</Text>
-                  </PressableScale>
-                ))}
-              </View>
-              <Text style={[styles.hint, { color: stage.inkMuted }]}>{t('wellbeing.checkinHint')}</Text>
+              <Text style={[styles.line, { color: stage.ink }]}>{t('home.checkin.title')}</Text>
+              <CheckinFaces
+                onPick={scene.onCheckin}
+                disabled={scene.saving}
+                ink={stage.ink}
+                glass={stage.glass}
+                glassBorder={stage.glassBorder}
+              />
+              <Text style={[styles.hint, { color: stage.inkMuted }]}>{t('home.checkin.hint')}</Text>
             </>
           )}
         </View>
@@ -166,44 +178,55 @@ export function HomeStage({
           <Text style={[styles.line, { color: stage.ink }]}>
             {t('stage.home.timeLeft', { count: scene.hoursLeft })}
           </Text>
-          {/* Le joker est un filet, pas une excuse : on dit qu'il existe, on ne le propose pas. */}
-          <Text style={[styles.hint, { color: stage.inkMuted }]}>
-            {scene.jokersRemaining > 0
-              ? t('stage.home.jokerLeft', { count: scene.jokersRemaining })
-              : t('stage.home.jokerNone')}
-          </Text>
-          <StageButton
-            pillar="home"
-            icon="flash-outline"
-            label={t('stage.home.saveStreak')}
-            onPress={scene.onSave}
-            haptic="milestone"
+          <Text style={[styles.hint, { color: stage.inkMuted }]}>{t('stage.home.rescue.lead')}</Text>
+          <StreakRescue
+            options={scene.rescue}
+            onWalk={scene.onWalk}
+            onActivity={scene.onActivity}
+            onJoker={scene.onJoker}
+            busy={scene.busy}
+            formatSteps={scene.formatSteps}
           />
         </View>
       ) : scene.kind === 'comeback' ? (
-        <View style={styles.block}>
-          <Text style={[styles.line, { color: stage.ink }]}>{t('stage.home.comeback')}</Text>
+        <View style={[styles.block, styles.panel, { backgroundColor: stage.glass, borderColor: stage.glassBorder }]}>
+          <Text style={[styles.mono, { color: stage.ink }]}>
+            {t('stage.home.comebackLine', { count: scene.days })}
+          </Text>
+          <Text style={[styles.body, { color: stage.ink }]}>{t('stage.home.comebackBody')}</Text>
           {scene.bestStreak > 0 ? (
-            <Text style={[styles.hint, { color: stage.inkMuted }]}>
+            <Text style={[styles.body, { color: stage.ink }]}>
               {t('stage.home.bestStreak', { count: scene.bestStreak })}
             </Text>
           ) : null}
-          <View style={styles.ctaRow}>
-            <StageButton
-              pillar="home"
-              icon="leaf-outline"
-              label={t('stage.home.gentleRestart')}
-              onPress={scene.onGentle}
-              style={styles.flex}
-            />
-            <StageButton
-              pillar="home"
-              variant="glass"
-              label={t('stage.home.normalPlan')}
-              onPress={scene.onNormal}
-              style={styles.flex}
-            />
-          </View>
+          {scene.gentleUntil ? (
+            <Text style={[styles.confirm, { color: stage.ink }]} accessibilityLiveRegion="polite">
+              {t('stage.home.gentleDone', { date: scene.gentleUntil })}
+            </Text>
+          ) : scene.normalChosen ? (
+            <Text style={[styles.confirm, { color: stage.ink }]} accessibilityLiveRegion="polite">
+              {t('stage.home.normalDone')}
+            </Text>
+          ) : (
+            <View style={styles.ctaRow}>
+              <StageButton
+                pillar="home"
+                icon="leaf-outline"
+                label={t('stage.home.gentleRestart')}
+                onPress={scene.onGentle}
+                style={styles.flex}
+                testID="home-gentle-restart"
+              />
+              <StageButton
+                pillar="home"
+                variant="glass"
+                label={t('stage.home.normalPlan')}
+                onPress={scene.onNormal}
+                style={styles.flex}
+                testID="home-normal-plan"
+              />
+            </View>
+          )}
         </View>
       ) : (
         <View style={styles.dayRow}>
@@ -261,21 +284,21 @@ const styles = StyleSheet.create({
     letterSpacing: 1.2,
     textTransform: 'uppercase',
   },
-  greeting: { fontFamily: fontFamily.displayXBold, fontSize: 28, letterSpacing: -1, marginTop: 4 },
+  greeting: { fontFamily: fontFamily.displayXBold, fontSize: 30, letterSpacing: -1.1, marginTop: 8 },
+  sentence: { fontFamily: fontFamily.bodyMedium, fontSize: 15.5, lineHeight: 22, marginTop: 6 },
   block: { gap: 10, marginTop: 16 },
+  panel: { borderRadius: 24, borderWidth: 1, padding: 16 },
   line: { fontFamily: fontFamily.displayBold, fontSize: 18, letterSpacing: -0.4 },
+  mono: {
+    fontFamily: fontFamily.monoBold,
+    fontSize: 10.5,
+    letterSpacing: 0.8,
+    textTransform: 'uppercase',
+  },
+  body: { fontFamily: fontFamily.body, fontSize: 14, lineHeight: 20 },
+  confirm: { fontFamily: fontFamily.bodySemi, fontSize: 14, lineHeight: 20 },
   verdict: { fontFamily: fontFamily.bodySemi, fontSize: 14 },
   hint: { fontFamily: fontFamily.bodyMedium, fontSize: 13, lineHeight: 18 },
-  pills: { flexDirection: 'row', gap: 8 },
-  pill: {
-    flex: 1,
-    minHeight: 48,
-    borderRadius: 14,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  pillLabel: { fontFamily: fontFamily.displayBold, fontSize: 18 },
   bigRow: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
   big: { fontFamily: fontFamily.displayXBold, fontSize: 52, letterSpacing: -2, lineHeight: 56 },
   unit: { fontFamily: fontFamily.bodySemi, fontSize: 14, flexShrink: 1 },

@@ -36,7 +36,8 @@ import { useRunHistory } from '@/data/repositories/run-repository';
 import { useWorkoutHistory } from '@/data/repositories/workout-repository';
 import { useTodayWellbeing } from '@/data/repositories/daily-wellbeing-repository';
 import { useNotificationPrefs } from '@/data/repositories/notification-repository';
-import { useJokersRemaining } from '@/data/repositories/streak-joker-repository';
+import { useJokerDays } from '@/data/repositories/streak-joker-repository';
+import { useDailySteps, useStepGoal } from '@/data/repositories/daily-steps-repository';
 import { useDailyTotals } from '@/data/repositories/journal-repository';
 import { useWeekPlan } from '@/data/repositories/planned-session-repository';
 import { useSettings } from '@/data/repositories/settings-repository';
@@ -45,6 +46,7 @@ jest.mock('../useTodayKey', () => ({
   useCurrentHour: jest.fn(() => 10),
   useTodayDate: jest.fn(() => new Date(2026, 8, 16)), // mercredi 16/09/2026
   useTodayKey: jest.fn(() => '2026-09-16'),
+  useWindowStartKey: jest.fn(() => '2026-09-10'),
 }));
 jest.mock('@/data/repositories/dashboard-repository', () => ({
   useDaysSinceLastActivity: jest.fn(),
@@ -59,7 +61,11 @@ jest.mock('@/data/repositories/run-repository', () => ({ useRunHistory: jest.fn(
 jest.mock('@/data/repositories/workout-repository', () => ({ useWorkoutHistory: jest.fn() }));
 jest.mock('@/data/repositories/daily-wellbeing-repository', () => ({ useTodayWellbeing: jest.fn() }));
 jest.mock('@/data/repositories/notification-repository', () => ({ useNotificationPrefs: jest.fn() }));
-jest.mock('@/data/repositories/streak-joker-repository', () => ({ useJokersRemaining: jest.fn() }));
+jest.mock('@/data/repositories/streak-joker-repository', () => ({ useJokerDays: jest.fn() }));
+jest.mock('@/data/repositories/daily-steps-repository', () => ({
+  useDailySteps: jest.fn(),
+  useStepGoal: jest.fn(),
+}));
 jest.mock('@/data/repositories/journal-repository', () => ({ useDailyTotals: jest.fn() }));
 jest.mock('@/data/repositories/planned-session-repository', () => ({ useWeekPlan: jest.fn() }));
 jest.mock('@/data/repositories/settings-repository', () => ({ useSettings: jest.fn() }));
@@ -86,7 +92,9 @@ const m = {
   workouts: useWorkoutHistory as jest.Mock,
   checkin: useTodayWellbeing as jest.Mock,
   prefs: useNotificationPrefs as jest.Mock,
-  jokers: useJokersRemaining as jest.Mock,
+  jokers: useJokerDays as jest.Mock,
+  steps: useDailySteps as jest.Mock,
+  stepGoal: useStepGoal as jest.Mock,
   totals: useDailyTotals as jest.Mock,
   weekPlan: useWeekPlan as jest.Mock,
   settings: useSettings as jest.Mock,
@@ -118,12 +126,14 @@ function setup() {
   m.readiness.mockReturnValue(READINESS_MUET);
   m.streak.mockReturnValue({ current: 3, activeToday: false, last7: [], isLoading: false });
   m.nearRecords.mockReturnValue({ items: [] });
-  m.realLife.mockReturnValue({ inRealLifePeriod: false });
+  m.realLife.mockReturnValue({ inRealLifePeriod: false, pausedDays: new Set<string>() });
   m.runs.mockReturnValue({ runs: [] });
   m.workouts.mockReturnValue({ workouts: [] });
   m.checkin.mockReturnValue({ entry: null });
   m.prefs.mockReturnValue({ streakDanger: false, reminderHour: 20 });
-  m.jokers.mockReturnValue({ remaining: 2 });
+  m.jokers.mockReturnValue({ days: [] });
+  m.steps.mockReturnValue({ rows: [{ id: 's', logDate: '2026-09-16', steps: 6100 }] });
+  m.stepGoal.mockReturnValue({ goal: 8000 });
   m.totals.mockReturnValue({ totals: [] });
   m.weekPlan.mockReturnValue({ items: [] });
   m.settings.mockReturnValue({ settings: { activePillars: ['strength', 'running', 'nutrition'] } });
@@ -141,10 +151,52 @@ beforeEach(() => {
 describe('useHomeScene', () => {
   const sceneOf = async () => (await renderHook(() => useHomeScene())).result.current;
 
-  it('remonte la série et les jokers restants', async () => {
+  it('remonte la série', async () => {
     const scene = await sceneOf();
 
-    expect(scene).toMatchObject({ streak: 3, jokersRemaining: 2 });
+    expect(scene).toMatchObject({ streak: 3 });
+  });
+
+  it('🔴 ACCUEIL-07 — propose les vrais gestes pour sauver la série (marcher, activité, joker)', async () => {
+    expect((await sceneOf()).rescue).toEqual([
+      { kind: 'walk', stepsLeft: 1900, minutes: 20 },
+      { kind: 'activity' },
+      { kind: 'joker' },
+    ]);
+  });
+
+  it('pas de marche proposée quand les pas ne sont pas suivis (aucune journée de pas)', async () => {
+    m.steps.mockReturnValue({ rows: [] });
+    expect((await sceneOf()).rescue.map((o) => o.kind)).toEqual(['activity', 'joker']);
+  });
+
+  it('🔴 un joker posé aujourd’hui couvre la journée : la série n’est plus « en jeu » le soir', async () => {
+    m.hour.mockReturnValue(20);
+    m.jokers.mockReturnValue({ days: ['2026-09-16'] });
+
+    const scene = await sceneOf();
+    expect(scene.coveredToday).toBe(true);
+    expect(scene.moment).not.toBe('evening-at-risk');
+  });
+
+  it('🔴 un jour de période « vie réelle » non plus', async () => {
+    m.hour.mockReturnValue(20);
+    m.realLife.mockReturnValue({ inRealLifePeriod: true, pausedDays: new Set(['2026-09-16']) });
+
+    expect((await sceneOf()).moment).not.toBe('evening-at-risk');
+  });
+
+  it('sans joker ni pause, la série est bien en jeu le soir', async () => {
+    m.hour.mockReturnValue(20);
+    expect((await sceneOf()).moment).toBe('evening-at-risk');
+  });
+
+  it('premier jour = aucun historique, mais pas pendant la lecture', async () => {
+    m.daysSince.mockReturnValue({ days: null, isLoading: true });
+    expect((await sceneOf()).firstDay).toBe(false);
+
+    m.daysSince.mockReturnValue({ days: null, isLoading: false });
+    expect((await sceneOf()).firstDay).toBe(true);
   });
 
   it('tait le verdict de forme tant qu’il n’y a pas de quoi le calculer (R7)', async () => {

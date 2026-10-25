@@ -2,9 +2,9 @@
  * US DASH-01 — les couleurs des scènes (spec §3).
  *
  * Une scène n'est pas une carte : c'est une surface pleine largeur, en couleur, sous la barre d'état.
- * Ses couleurs sont donc **propres au pilier** et, pour les trois piliers, **indépendantes du thème** :
- * le bordeaux, le bleu nuit et le vert profond sont déjà sombres, un thème sombre n'a rien à y changer.
- * Seul l'accueil, qui reste en clair (« le souffle »), a une variante sombre.
+ * Ses couleurs sont donc **propres au pilier** et **indépendantes du thème** : le rouge fonte, le bleu
+ * nuit, le vert profond et, depuis ACCUEIL-07, la nuit d'Aurore sont déjà sombres — un thème sombre
+ * n'a rien à y changer. (L'accueil restait en clair jusqu'au 25/10/2026 ; voir `HOME`.)
  *
  * ── Le contrat de lisibilité ──────────────────────────────────────────────────────────────────────
  * `surfaces` liste **toutes** les teintes qu'un texte peut traverser : les arrêts du dégradé, et en
@@ -31,6 +31,16 @@ export type StageTheme = {
   /** Bouton plein principal de la scène. */
   solid: string;
   onSolid: string;
+  /**
+   * US ACCUEIL-07 — le bouton plein en dégradé (Aurore : turquoise → rose). `solid` reste la couleur
+   * de repli (et celle qu'un test mesure) ; `onSolid` est mesuré contre **chaque** arrêt.
+   */
+  solidGradient?: readonly [string, string];
+  /**
+   * Surfaces translucides (`glass`) posées sur la scène, déjà mêlées au fond : seul le texte
+   * principal (`ink`) y est posé — libellés des pastilles du check-in, chiffres des cadrans.
+   */
+  glassSurfaces?: readonly string[];
   /** Couleur de la matière (halo, comète, tiges, onde). Jamais porteuse de texte. */
   accent: string;
   /** Nutrition : dégradé du niveau et trait de la ligne d'eau. */
@@ -132,31 +142,81 @@ const NUTRITION: StageTheme = {
   wave: '#9ed16a',
 };
 
-const HOME_LIGHT: StageTheme = {
-  gradient: ['#fff6e8', '#efc39c'],
-  surfaces: ['#fff6e8', '#efc39c'],
-  ink: '#33291f',
-  // Le textMuted de la palette (#786a59) ne fait que 3,2:1 sur le bas du dégradé.
-  inkMuted: '#5e5244',
-  glass: 'rgba(255,250,242,0.72)',
-  glassBorder: 'rgba(255,255,255,0.8)',
-  solid: '#b14f2b',
-  onSolid: '#ffffff',
-  accent: 'rgba(192,86,47,0.26)',
+/**
+ * ── US ACCUEIL-07 — la teinte Aurore (décision D1 de Florian, 25/10/2026) ─────────────────────────
+ * L'accueil était la seule scène claire : crème et terracotta en clair, brun et orange en sombre —
+ * c'est-à-dire la couleur de marque de toute l'app, d'où l'effet « fade » à côté du rouge, du bleu et
+ * du vert des piliers. Aurore prend les deux trous de la roue des teintes (muscu 3°, marque 17°,
+ * Labo 40°, nutrition 90°, course 213°, bien-être 265°) : une **lueur turquoise** (~172°) en haut à
+ * gauche et une **lueur framboise** (~330°) en haut à droite, sur une nuit bleutée. Sombre dans les
+ * deux thèmes, comme les autres scènes. Le terracotta ne reste que la couleur de marque.
+ *
+ * Les lueurs sont la **matière** de la scène (`AuroraGlows`) : deux dégradés radiaux, dont le dosage
+ * suit le moment de la journée (`AURORA_DOSES`). Elles passent **sous le texte** — d'où les surfaces
+ * mêlées ci-dessous, que `__tests__/stage.test.ts` mesure encre par encre.
+ *
+ * ⚠️ **La lueur turquoise est plafonnée à 0,38** (`AURORA_TURQUOISE_CAP`). Mesuré : au-delà, le texte
+ * secondaire posé dessus (la date, en haut à gauche) passe sous 4,5:1. La framboise, plus sombre une
+ * fois mêlée, monte jusqu'à 0,52.
+ */
+export const AURORA_BASE = ['#13203a', '#0a0e1c'] as const;
+export const AURORA_TURQUOISE = [45, 212, 191] as const;
+export const AURORA_FRAMBOISE = [236, 72, 153] as const;
+export const AURORA_TURQUOISE_CAP = 0.38;
+
+/** Les cinq lumières d'une journée, du lever au coucher. */
+export const AURORA_MOMENTS = ['aube', 'jour', 'dore', 'soir', 'nuit'] as const;
+export type AuroraMoment = (typeof AURORA_MOMENTS)[number];
+
+/** Dosage `[turquoise, framboise]` de chaque lumière : turquoise le matin, framboise le soir. */
+export const AURORA_DOSES: Readonly<Record<AuroraMoment, readonly [number, number]>> = {
+  aube: [0.38, 0.2],
+  jour: [0.36, 0.34],
+  dore: [0.3, 0.46],
+  soir: [0.24, 0.52],
+  nuit: [0.14, 0.16],
 };
 
-// Le bas du dégradé est le fond sombre de la palette : c'est lui qui coule sous la page. Suit le
-// fond abaissé par MUSCU-UX06 (`#1c150e` → `#0f0a06`), sans quoi une bande plus claire apparaît.
-const HOME_DARK: StageTheme = {
-  gradient: ['#45331f', '#0f0a06'],
-  surfaces: ['#45331f', '#0f0a06'],
-  ink: '#f4ecdd',
-  inkMuted: '#c9b79a',
-  glass: 'rgba(48,39,30,0.72)',
-  glassBorder: 'rgba(244,236,221,0.12)',
-  solid: '#dd6e40',
-  onSolid: '#1c150e',
-  accent: 'rgba(221,110,64,0.28)',
+/** `rgb` posé à `alpha` sur `hex` — la couleur qu'on voit vraiment sous le texte. */
+export function blendOver(hex: string, rgb: readonly [number, number, number], alpha: number): string {
+  const n = parseInt(hex.slice(1), 16);
+  const base = [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  const out = base.map((c, i) => Math.round(c + (rgb[i]! - c) * alpha));
+  return `#${out.map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+}
+
+const maxDose = (i: 0 | 1) => Math.max(...AURORA_MOMENTS.map((m) => AURORA_DOSES[m][i]));
+const AURORA_TOP = AURORA_BASE[0];
+const WHITE = [255, 255, 255] as const;
+const AURORA_GLASS_ALPHA = 0.09;
+
+/**
+ * Les teintes que le texte peut traverser : les deux arrêts du fond, puis le haut du fond sous chaque
+ * lueur **à son dosage le plus fort**, puis la zone où les deux lueurs se croisent. Les deux disques
+ * ne se recouvrent qu'à leur périphérie (le turquoise s'éteint à ~66 % de la largeur, la framboise
+ * commence à ~56 %) : à cet endroit, chacun est au plus à la moitié de son dosage.
+ */
+const AURORA_SURFACES = [
+  AURORA_BASE[0],
+  AURORA_BASE[1],
+  blendOver(AURORA_TOP, AURORA_TURQUOISE, maxDose(0)),
+  blendOver(AURORA_TOP, AURORA_FRAMBOISE, maxDose(1)),
+  blendOver(blendOver(AURORA_TOP, AURORA_TURQUOISE, maxDose(0) / 2), AURORA_FRAMBOISE, maxDose(1) / 2),
+];
+
+const HOME: StageTheme = {
+  gradient: AURORA_BASE,
+  surfaces: AURORA_SURFACES,
+  ink: '#ffffff',
+  inkMuted: '#dbe3f7',
+  glass: `rgba(255,255,255,${AURORA_GLASS_ALPHA})`,
+  glassBorder: 'rgba(255,255,255,0.16)',
+  solid: '#5eead4',
+  onSolid: '#151024',
+  solidGradient: ['#5eead4', '#f9a8d4'],
+  // Le verre posé là où les lueurs sont les plus fortes : c'est le pire cas des pastilles.
+  glassSurfaces: AURORA_SURFACES.map((s) => blendOver(s, WHITE, AURORA_GLASS_ALPHA)),
+  accent: '#5eead4',
 };
 
 /**
@@ -194,7 +254,7 @@ const WELLBEING: StageTheme = {
   accent: '#cdb8ff',
 };
 
-export function stageTheme(key: StageKey, scheme: ColorScheme): StageTheme {
+export function stageTheme(key: StageKey, _scheme: ColorScheme): StageTheme {
   switch (key) {
     case 'strength':
       return STRENGTH;
@@ -207,6 +267,18 @@ export function stageTheme(key: StageKey, scheme: ColorScheme): StageTheme {
     case 'wellbeing':
       return WELLBEING;
     case 'home':
-      return scheme === 'dark' ? HOME_DARK : HOME_LIGHT;
+      // Sombre dans les deux thèmes depuis ACCUEIL-07, comme les autres scènes.
+      return HOME;
   }
+}
+
+/** La lumière d'Aurore pour une heure locale (décimale admise). */
+export function auroraMoment(hour: number): AuroraMoment {
+  if (!Number.isFinite(hour)) return 'jour';
+  if (hour < 5.5) return 'nuit';
+  if (hour < 9) return 'aube';
+  if (hour < 17) return 'jour';
+  if (hour < 19.5) return 'dore';
+  if (hour < 22) return 'soir';
+  return 'nuit';
 }

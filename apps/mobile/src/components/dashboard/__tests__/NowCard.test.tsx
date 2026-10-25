@@ -5,7 +5,7 @@
  * responsabilités a changé et le test s'en trouve simplifié :
  *
  *  - **la décision** (quelle action pour quels faits) est vérifiée dans `now-action.test.ts`, sur
- *    une fonction pure, sans arbre React ni base — 19 cas, dont la table de priorité elle-même ;
+ *    une fonction pure, sans arbre React ni base — dont la table de priorité elle-même ;
  *  - **le rendu** est vérifié ici : chaque `kind` produit-il le bon texte et la bonne action ?
  *
  * Deux exigences comptent plus que les autres, parce que leur violation ne casse aucun test
@@ -14,13 +14,16 @@
  *     réintroduit le trou de mise en page que la grille a mis quatre tentatives à corriger ;
  *  2. l'état « journée faite » **ne propose aucun bouton** : c'est un compte rendu, pas une
  *     injonction.
+ *
+ * US ACCUEIL-07 — la décision arrive **par props** (l'écran calcule `useNowAction` une fois) ; les
+ * repas se peignent un par un, à leur heure ; « rien de prévu » ne propose plus un programme à tout
+ * le monde.
  */
 import React from 'react';
 import { fireEvent, render, screen } from '@testing-library/react-native';
-import type { NowAction } from '@wellness/shared';
+import type { MealSlot, NowAction } from '@wellness/shared';
 
 import { NowCard } from '../NowCard';
-import { useNowAction } from '@/hooks/useNowAction';
 import { startWorkoutFromSession } from '@/data/repositories/workout-repository';
 import { useRouter } from 'expo-router';
 
@@ -29,7 +32,6 @@ import { useRouter } from 'expo-router';
 // ---------------------------------------------------------------------------
 
 jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
-jest.mock('@/hooks/useNowAction', () => ({ useNowAction: jest.fn() }));
 jest.mock('@/data/repositories/workout-repository', () => ({
   startWorkoutFromSession: jest.fn(),
 }));
@@ -40,13 +42,22 @@ jest.mock('@/hooks/useActionLock', () => ({
 }));
 jest.mock('@/components/AccentHalo', () => ({ AccentHalo: () => null }));
 
-const mockUseNowAction = useNowAction as jest.Mock;
 const mockStart = startWorkoutFromSession as jest.Mock;
 const push = jest.fn();
 (useRouter as jest.Mock).mockReturnValue({ push });
 
-function givenAction(action: NowAction, isLoading = false) {
-  mockUseNowAction.mockReturnValue({ action, isLoading });
+async function renderCard(
+  action: NowAction,
+  { isLoading = false, kcalRemaining = null }: { isLoading?: boolean; kcalRemaining?: number | null } = {},
+) {
+  return render(
+    <NowCard
+      action={action}
+      isLoading={isLoading}
+      kcalRemaining={kcalRemaining}
+      formatKcal={(n) => `${n}`}
+    />,
+  );
 }
 
 const training = {
@@ -62,6 +73,15 @@ const training = {
   sessionId: 's-1',
 };
 
+const slot = (over: Partial<MealSlot> = {}): MealSlot => ({
+  key: 'dinner',
+  label: null,
+  hour: 20,
+  learned: true,
+  logged: false,
+  ...over,
+});
+
 beforeEach(() => {
   jest.clearAllMocks();
   (useRouter as jest.Mock).mockReturnValue({ push });
@@ -75,8 +95,7 @@ describe('séance planifiée du jour', () => {
   it('affiche le nom de la séance et son HEURE, sans les secondes', async () => {
     // L'heure est stockée depuis HORAIRE-01 et n'était affichée nulle part. La maquette validée
     // l'annonçait pourtant (« SÉANCE DU JOUR · 18:30 ») depuis l'origine.
-    givenAction({ kind: 'session-today', training });
-    await render(<NowCard />);
+    await renderCard({ kind: 'session-today', training });
 
     expect(screen.getByText('Push — Pecs / Épaules')).toBeTruthy();
     expect(screen.getByText(/18:30/)).toBeTruthy();
@@ -88,27 +107,24 @@ describe('séance planifiée du jour', () => {
     // Défaut vu en recette le 10/09/2026 : la carte n'affichait que le nom du programme. Le hook
     // de collecte portait un champ `detail` pré-formaté qu'il remplissait à `null`, faute d'accès
     // à i18n — la mise en forme est désormais dans ce composant, qui a `t()`.
-    givenAction({ kind: 'session-today', training });
-    await render(<NowCard />);
+    await renderCard({ kind: 'session-today', training });
 
     expect(screen.getByText(/home\.today\.exercises.*6|6 exercices/)).toBeTruthy();
     expect(screen.getByText(/PPL/)).toBeTruthy();
   });
 
   it('n’invente aucun détail quand la séance n’en porte pas', async () => {
-    givenAction({
+    await renderCard({
       kind: 'session-today',
       training: { ...training, exerciseCount: null, programName: null },
     });
-    await render(<NowCard />);
 
     expect(screen.getByText('Push — Pecs / Épaules')).toBeTruthy();
     expect(screen.queryByText(/exercice/i)).toBeNull();
   });
 
   it('démarre la séance de musculation au tap', async () => {
-    givenAction({ kind: 'session-today', training });
-    await render(<NowCard />);
+    await renderCard({ kind: 'session-today', training });
 
     fireEvent.press(screen.getByText('Démarrer la séance'));
     expect(mockStart).toHaveBeenCalledWith('s-1', { plannedSessionId: 'ps-1' });
@@ -117,11 +133,10 @@ describe('séance planifiée du jour', () => {
   it('route vers la course, et non vers une séance de muscu, pour un entraînement running', async () => {
     // Le défaut central que cette US corrige : le widget d'avant appelait
     // `useTodaySession('strength')` avec le pilier EN DUR.
-    givenAction({
+    await renderCard({
       kind: 'session-today',
       training: { ...training, pillar: 'running', name: 'Sortie longue', plannedSessionId: 'ps-9' },
     });
-    await render(<NowCard />);
 
     fireEvent.press(screen.getByText('Démarrer la course'));
     expect(mockStart).not.toHaveBeenCalled();
@@ -132,8 +147,7 @@ describe('séance planifiée du jour', () => {
   });
 
   it('se passe de l’heure quand l’occurrence n’en porte pas', async () => {
-    givenAction({ kind: 'session-today', training: { ...training, scheduledTime: null } });
-    await render(<NowCard />);
+    await renderCard({ kind: 'session-today', training: { ...training, scheduledTime: null } });
     expect(screen.getByText('Push — Pecs / Épaules')).toBeTruthy();
   });
 });
@@ -143,8 +157,7 @@ describe('séance planifiée du jour', () => {
 // ---------------------------------------------------------------------------
 describe('activité en cours', () => {
   it('propose de reprendre une séance, sans jamais en démarrer une autre', async () => {
-    givenAction({ kind: 'workout-active', workoutId: 'w-1' });
-    await render(<NowCard />);
+    await renderCard({ kind: 'workout-active', workoutId: 'w-1' });
 
     fireEvent.press(screen.getByText('Reprendre la séance'));
     expect(push).toHaveBeenCalledWith('/workout');
@@ -153,8 +166,7 @@ describe('activité en cours', () => {
   });
 
   it('propose de reprendre une course en cours', async () => {
-    givenAction({ kind: 'run-active' });
-    await render(<NowCard />);
+    await renderCard({ kind: 'run-active' });
 
     fireEvent.press(screen.getByText('Reprendre la course'));
     expect(push).toHaveBeenCalledWith('/run/active');
@@ -162,14 +174,13 @@ describe('activité en cours', () => {
 });
 
 // ---------------------------------------------------------------------------
-// Saisies dues
+// Les repas — un par un, à leur heure (ACCUEIL-07)
 // ---------------------------------------------------------------------------
-describe('saisies dues', () => {
+describe('repas', () => {
   it('ouvre le sélecteur sur LE BON REPAS, avec la date du jour', async () => {
     // `meal: 'breakfast'` était codé en dur dans le widget nutrition : à 20 h, un appui ouvrait
     // le petit-déjeuner.
-    givenAction({ kind: 'meal-due', meal: 'dinner', deadlineHour: 20 });
-    await render(<NowCard />);
+    await renderCard({ kind: 'meal-due', meal: slot() });
 
     fireEvent.press(screen.getByText('Ajouter mon dîner'));
     expect(push).toHaveBeenCalledWith({
@@ -178,30 +189,57 @@ describe('saisies dues', () => {
     });
   });
 
-  it('annonce l’heure APPRISE quand elle est connue', async () => {
-    // C'est l'information que l'app calculait déjà pour ses notifications sans jamais la montrer.
-    givenAction({ kind: 'meal-due', meal: 'dinner', deadlineHour: 20 });
-    await render(<NowCard />);
-    expect(screen.getByText(/20/)).toBeTruthy();
+  it('nomme le repas et annonce son heure HABITUELLE', async () => {
+    await renderCard({ kind: 'meal-due', meal: slot({ hour: 20.25 }) });
+    expect(screen.getByText('Dîner')).toBeTruthy();
+    expect(screen.getByText(/d'habitude vers 20:15/i)).toBeTruthy();
   });
 
-  it('reste correcte sans heure apprise', async () => {
-    givenAction({ kind: 'meal-due', meal: 'lunch', deadlineHour: null });
-    await render(<NowCard />);
+  it('sans historique, ne prétend pas à une habitude', async () => {
+    await renderCard({ kind: 'meal-due', meal: slot({ key: 'lunch', hour: 12.5, learned: false }) });
+    expect(screen.queryByText(/d'habitude/i)).toBeNull();
+    expect(screen.getByText(/vers 12:30/i)).toBeTruthy();
     expect(screen.getByText('Ajouter mon déjeuner')).toBeTruthy();
   });
 
+  it('🔴 dit les kcal restantes, plus « Ta journée n’est pas complète » pour tout le monde', async () => {
+    await renderCard({ kind: 'meal-due', meal: slot() }, { kcalRemaining: 1450 });
+    expect(screen.getByText(/1450 kcal/)).toBeTruthy();
+  });
+
+  it('annonce le prochain repas, et permet de le noter en avance', async () => {
+    await renderCard({ kind: 'meal-next', meal: slot({ key: 'lunch', hour: 12.5 }) });
+    expect(screen.getByText(/Prochain repas · vers 12:30/i)).toBeTruthy();
+    fireEvent.press(screen.getByText('Ajouter mon déjeuner'));
+    expect(push).toHaveBeenCalledWith({
+      pathname: '/food-picker',
+      params: { date: '2026-09-09', meal: 'lunch' },
+    });
+  });
+
+  it('propose de rattraper un repas manqué', async () => {
+    await renderCard({ kind: 'meal-missed', meal: slot({ key: 'breakfast', hour: 8 }) });
+    expect(screen.getByText('Petit-déjeuner')).toBeTruthy();
+    expect(screen.getByText(/pas encore noté/i)).toBeTruthy();
+  });
+
+  it('un repas personnalisé porte SON libellé, jamais une clé technique', async () => {
+    await renderCard({ kind: 'meal-due', meal: slot({ key: 'meal-2', label: 'Brunch' }) });
+    expect(screen.getByText('Brunch')).toBeTruthy();
+    expect(screen.queryByText(/meal-2/)).toBeNull();
+  });
+});
+
+describe('autres saisies', () => {
   it('mène à la saisie de pesée', async () => {
-    givenAction({ kind: 'weigh-in-due' });
-    await render(<NowCard />);
+    await renderCard({ kind: 'weigh-in-due' });
     fireEvent.press(screen.getByText('Enregistrer ma pesée'));
     // US NUTRI-UX03 (Q8) — la pesée est dans l'onglet Poids de Stats, pas sur Régularité.
     expect(push).toHaveBeenCalledWith('/nutrition-stats?tab=weight');
   });
 
   it('mène au check-in de bien-être', async () => {
-    givenAction({ kind: 'wellbeing-due' });
-    await render(<NowCard />);
+    await renderCard({ kind: 'wellbeing-due' });
     fireEvent.press(screen.getByText('Faire mon point du soir'));
     expect(push).toHaveBeenCalledWith('/wellbeing');
   });
@@ -213,45 +251,57 @@ describe('saisies dues', () => {
 describe('journée faite', () => {
   it('rend compte SANS proposer d’action', async () => {
     // Un bouton ici transformerait un compte rendu en injonction.
-    givenAction({
+    await renderCard({
       kind: 'day-done',
-      tally: { strengthSessions: 1, runs: 0, mealLogged: true, streak: 13 },
+      tally: { strengthSessions: 1, runs: 0, mealsLogged: 3, streak: 13 },
     });
-    await render(<NowCard />);
 
     expect(screen.queryByRole('button')).toBeNull();
     expect(screen.getByText(/13/)).toBeTruthy();
   });
 
   it('n’affiche que ce qui a réellement eu lieu', async () => {
-    givenAction({
+    await renderCard({
       kind: 'day-done',
-      tally: { strengthSessions: 0, runs: 2, mealLogged: false, streak: 3 },
+      tally: { strengthSessions: 0, runs: 2, mealsLogged: 0, streak: 3 },
     });
-    await render(<NowCard />);
     // Deux courses, aucune séance de muscu : la carte ne doit pas inventer de séance.
     expect(screen.queryByText(/séance/i)).toBeNull();
   });
 });
 
-describe('repli', () => {
+describe('rien de prévu (constat 2)', () => {
   it('ne rend JAMAIS null, même sans rien à dire', async () => {
-    givenAction({ kind: 'idle', moment: 'morning' });
-    const vue = await render(<NowCard />);
+    const vue = await renderCard({ kind: 'idle', moment: 'morning', suggestion: 'activity' });
     expect(vue.toJSON()).not.toBeNull();
   });
 
-  it('propose de créer un programme quand il n’y a rien à faire', async () => {
-    givenAction({ kind: 'idle', moment: 'morning' });
-    await render(<NowCard />);
-    fireEvent.press(screen.getByText('Créer un programme'));
+  it('🔴 un jour de repos propose une activité, pas un programme', async () => {
+    await renderCard({ kind: 'idle', moment: 'afternoon', suggestion: 'activity' });
+    expect(screen.getByText('Jour de repos')).toBeTruthy();
+    expect(screen.queryByText(/programme/i)).toBeNull();
+    fireEvent.press(screen.getByText('Noter une activité'));
+    expect(push).toHaveBeenCalledWith('/activity');
+  });
+
+  it('propose de trouver un programme — à la musculation sans programme seulement', async () => {
+    await renderCard({ kind: 'idle', moment: 'morning', suggestion: 'program' });
+    fireEvent.press(screen.getByText('Trouver mon programme'));
     expect(push).toHaveBeenCalledWith('/programs');
+  });
+
+  it('nutrition seule, rien de noté : le premier repas', async () => {
+    await renderCard({ kind: 'idle', moment: 'morning', suggestion: 'meal' });
+    fireEvent.press(screen.getByText('Ajouter un repas'));
+    expect(push).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/food-picker' }));
   });
 
   it('rend quelque chose même pendant le chargement', async () => {
     // Pas de `return null` : la carte est épinglée, sa cellule ne doit pas apparaître après coup.
-    givenAction({ kind: 'idle', moment: 'morning' }, true);
-    const vue = await render(<NowCard />);
+    const vue = await renderCard(
+      { kind: 'idle', moment: 'morning', suggestion: 'activity' },
+      { isLoading: true },
+    );
     expect(vue.toJSON()).not.toBeNull();
   });
 });

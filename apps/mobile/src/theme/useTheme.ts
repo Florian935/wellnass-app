@@ -5,7 +5,7 @@ import { useSettings } from '@/data/repositories/settings-repository';
 import { useColorSchemeStore } from '@/stores/color-scheme-store';
 import { useMenuAccent } from '@/stores/menu-accent-store';
 import { type ColorScheme, type Palette } from './colors';
-import { pillarPalette } from './pillar';
+import { pillarPalette, type PillarKey } from './pillar';
 
 /**
  * Résout le schéma effectif et le publie dans le store partagé. **À appeler une seule fois**, dans
@@ -64,16 +64,27 @@ export function useColorSchemePref(): ColorScheme {
  * L'identité appartient à l'écran, pas à l'onglet (US IDENT-01) : chaque écran de pilier la déclare
  * par `useMenuFocus`, quelle que soit la porte d'entrée ; un écran transverse (Planning, Réglages…)
  * garde celle de l'écran qui l'a ouvert, et la retrouve au retour.
+ *
+ * ── US ACCUEIL-07 — l'Aurore appartient à l'accueil, le terracotta au reste ───────────────────────
+ * Depuis la teinte Aurore (D1, 25/10/2026), l'identité `home` n'est portée que par **l'onglet
+ * Accueil au premier plan** (`focusedMenu === 'home'`). Un écran qui hérite de `home` sans être
+ * l'accueil — l'onboarding, avant toute barre d'onglets, ou les Réglages et les écrans transverses
+ * ouverts depuis l'accueil — prend l'identité de marque `brand` (le terracotta), comme Florian l'a
+ * décidé : « le terracotta ne reste que la couleur de marque (réglages, onboarding) ». Les écrans de
+ * pilier ne sont pas concernés : ils déclarent le leur.
  */
 export function useTheme(): { scheme: ColorScheme; colors: Palette } {
   const scheme = useColorSchemePref();
   const menuColorsEnabled = useMenuAccent((s) => s.enabled);
-  const activeMenu = useMenuAccent((s) => s.activeMenu);
-  const menuAccent = useMenuAccent((s) => s.colors[activeMenu]);
+  const identity = useMenuAccent((s): PillarKey =>
+    s.activeMenu === 'home' && s.focusedMenu !== 'home' ? 'brand' : s.activeMenu,
+  );
+  // La préférence « Couleurs des menus » porte sur un menu : un écran de marque n'en a pas.
+  const menuAccent = useMenuAccent((s) => (identity === 'brand' ? null : s.colors[identity]));
 
-  // Mémoïsée dans le module (dix combinaisons possibles) : la référence est stable, `useMemo` ci-
-  // dessous peut donc en dépendre sans recalculer à chaque rendu.
-  const base = pillarPalette(scheme, activeMenu);
+  // Mémoïsée dans le module (quatorze combinaisons possibles) : la référence est stable, `useMemo`
+  // ci-dessous peut donc en dépendre sans recalculer à chaque rendu.
+  const base = pillarPalette(scheme, identity);
 
   const colors = useMemo(() => {
     if (!menuColorsEnabled || !menuAccent || menuAccent === base.accent) return base;

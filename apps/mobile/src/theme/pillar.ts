@@ -34,7 +34,12 @@
 import { tintPreservingLuminance } from '@wellness/shared';
 import { palettes, type ColorScheme, type Palette } from './colors';
 
-export const PILLAR_KEYS = ['home', 'strength', 'running', 'nutrition', 'lab', 'wellbeing'] as const;
+/**
+ * Les identités qu'un écran peut porter. `brand` (US ACCUEIL-07) n'est pas un menu : c'est
+ * l'identité des écrans **sans pilier** — onboarding, réglages, écrans transverses —, qui gardent le
+ * terracotta de marque depuis que l'accueil a pris la teinte Aurore. `useTheme` la choisit seul.
+ */
+export const PILLAR_KEYS = ['home', 'strength', 'running', 'nutrition', 'lab', 'wellbeing', 'brand'] as const;
 export type PillarKey = (typeof PILLAR_KEYS)[number];
 
 /**
@@ -43,7 +48,10 @@ export type PillarKey = (typeof PILLAR_KEYS)[number];
  * déjà validés ≥ 4,5:1 par DASH-01.
  */
 const TINT: Record<PillarKey, string> = {
-  home: '#b14f2b',
+  // US ACCUEIL-07 — Aurore : les cartes glissent vers le turquoise de la teinte, la scène portant la
+  // nuit et ses deux lueurs. Le terracotta d'avant est la teinte de `brand`.
+  home: '#0f766e',
+  brand: '#b14f2b',
   // US MUSCU-UX06 (23/09/2026) — « rouge fonte », retenu par Florian sur une planche de quatre
   // directions (rouge fonte, graphite + rouge, prune, acier + corail). Le bordeaux `#7c2734` était
   // « trop rose, pas adapté » : teinte 351° glissant vers la prune, accent rose 342°. `#8e1b1b` est
@@ -64,6 +72,7 @@ const TINT: Record<PillarKey, string> = {
 /** L'accent du pilier — le token déjà mesuré lisible sur `surface` et `background`. */
 const ACCENT: Record<PillarKey, keyof Palette> = {
   home: 'pillarHome',
+  brand: 'brand',
   strength: 'pillarStrength',
   running: 'pillarRunning',
   nutrition: 'pillarNutrition',
@@ -142,7 +151,12 @@ const AMOUNT: Record<ColorScheme, number> = { light: 0.22, dark: 0.3 };
  * pilier retombe sous la surface neutre sans que personne ne le voie.
  */
 const TINT_GAIN: Record<PillarKey, number> = {
-  home: 1,
+  // US ACCUEIL-07 — le turquoise d'Aurore a le symptôme de la course : un cyan pèse peu dans la
+  // luminance, et à gain 1 la carte sombre sortait **sous** le neutre (−1 de chroma). Mesuré : 1,5 → +7,
+  // 1,6 → +8, **1,7 → +9** (`#122d28`), dans la bande des autres piliers. En clair, la carte
+  // plafonne à `#e9ffff` dès 1,5 (phase 2 de `tintPreservingLuminance`).
+  home: 1.7,
+  brand: 1,
   strength: 1,
   running: 1.5,
   nutrition: 1.5,
@@ -160,6 +174,16 @@ const BACKGROUND_RATIO = 0.6;
 
 /** Les tokens de **surface** qui prennent la teinte. Tout le reste (encres, alertes) ne bouge pas. */
 const TINTED = ['background', 'surface', 'surfaceAlt', 'border', 'track', 'panel'] as const;
+
+/**
+ * US ACCUEIL-07 — la carte « maintenant » d'Aurore : une nuit plus dense que la scène, pour que la
+ * carte se détache des lueurs sans en prendre la couleur. Valeurs de la toile validée (25/10/2026).
+ * `panelAccent` est le turquoise clair, lisible sur les deux nuits (≈ 11:1).
+ */
+const HOME_PANEL: Record<ColorScheme, Pick<Palette, 'panel' | 'panelText' | 'panelMuted' | 'panelAccent'>> = {
+  light: { panel: '#141a2e', panelText: '#eef1fb', panelMuted: '#b7c0dc', panelAccent: '#5eead4' },
+  dark: { panel: '#0f1426', panelText: '#eef1fb', panelMuted: '#b7c0dc', panelAccent: '#5eead4' },
+};
 
 /**
  * `warn` / `warnBorder` / `warnText` sont **volontairement absents** de `TINTED` : un bandeau
@@ -189,6 +213,8 @@ export function pillarPalette(scheme: ColorScheme, pillar: PillarKey): Palette {
     const ratio = token === 'background' ? BACKGROUND_RATIO : 1;
     next[token] = tintPreservingLuminance(base[token], tint, amount * ratio) ?? base[token];
   }
+
+  if (pillar === 'home') Object.assign(next, HOME_PANEL[scheme]);
 
   next.accent = base[ACCENT[pillar]];
   // L'encre des boutons pleins suit l'accent : en sombre le fond de page (déjà le choix de CONF-07

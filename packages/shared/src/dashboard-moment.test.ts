@@ -44,6 +44,12 @@ describe('resolveHomeMoment (US DASH-01, §4.1)', () => {
     expect(resolveHomeMoment({ ...base, now: at(20, 15), activeToday: true })).toBe('day');
   });
 
+  it('🔴 le soir, jour déjà couvert (joker posé, période vie réelle) → day : rien n’est en jeu', () => {
+    // US ACCUEIL-07 — un jour gelé par le joker, ou traversé par une période « vie réelle », ne
+    // casse pas la série : afficher « Il te reste 3 h pour la garder » serait faux.
+    expect(resolveHomeMoment({ ...base, now: at(20), coveredToday: true })).toBe('day');
+  });
+
   it('le soir sans série en cours → day (rien à perdre, rien à rappeler)', () => {
     expect(resolveHomeMoment({ ...base, now: at(20), streak: 0 })).toBe('day');
   });

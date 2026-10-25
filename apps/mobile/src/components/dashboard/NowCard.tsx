@@ -16,20 +16,30 @@
  *
  * ⚠️ **Ne rend jamais `null`.** Une carte épinglée qui disparaît réintroduirait le trou de mise en
  * page que la grille a mis quatre tentatives à corriger. Au pire, elle affiche l'état `idle`.
+ *
+ * ── US ACCUEIL-07 ────────────────────────────────────────────────────────────────────────────────
+ *  - **la décision arrive par props** : l'écran calcule `useNowAction` une fois et la partage. La
+ *    carte rappelait le hook elle-même — une quinzaine de requêtes montées deux fois (constat 16) ;
+ *  - **un repas à la fois**, à son heure (`meal-due`, `meal-next`, `meal-missed`), avec les kcal
+ *    restantes (constat 1) ;
+ *  - **rien de prévu ≠ « Créer un programme »** : le geste suit `RestSuggestion` (constat 2) ;
+ *  - **teinte Aurore** : la carte prend la nuit dense d'Aurore (`panel` de l'accueil) et son bouton
+ *    le dégradé turquoise → rose de la scène.
  */
 
 import { useState } from 'react';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import type { NowAction } from '@wellness/shared';
+import { clockLabel, mealForHour, type MealSlot, type NowAction } from '@wellness/shared';
 
 import { AccentHalo } from '@/components/AccentHalo';
+import { useStageTheme } from '@/components/stage/PillarStage';
 import { startWorkoutFromSession } from '@/data/repositories/workout-repository';
 import { useActionLock } from '@/hooks/useActionLock';
 import { briefRouteForSession } from '@/components/workout/immersive/brief-entry';
-import { useNowAction } from '@/hooks/useNowAction';
 import { useUnits } from '@/hooks/useUnits';
 import { useTodayKey } from '@/hooks/useTodayKey';
 import { fontFamily } from '@/theme/fonts';
@@ -43,13 +53,26 @@ type Painted = {
   cta: { label: string; icon: keyof typeof Ionicons.glyphMap; onPress: () => void } | null;
 };
 
-export function NowCard() {
+/** Les quatre repas que l'app nomme elle-même ; un repas personnalisé porte son propre libellé. */
+const DEFAULT_MEALS = new Set(['breakfast', 'lunch', 'dinner', 'snack']);
+
+type Props = {
+  /** La décision, calculée UNE fois par l'écran (`useNowAction`). */
+  action: NowAction;
+  isLoading: boolean;
+  /** Kcal restantes sur la cible du jour, `null` sans cible. */
+  kcalRemaining: number | null;
+  /** Mise en forme des kcal (séparateur de milliers de la langue). */
+  formatKcal: (kcal: number) => string;
+};
+
+export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const stage = useStageTheme('home');
   const router = useRouter();
   const todayKey = useTodayKey();
   const units = useUnits();
-  const { action, isLoading } = useNowAction();
   const [starting, setStarting] = useState(false);
   // Même verrou que le hub muscu : un état React ne voit pas un second appui du même cycle de
   // rendu, et sans lui deux appuis créaient DEUX séances, dont une orpheline que rien ne rouvrait.
@@ -74,6 +97,29 @@ export function NowCard() {
       }
     });
   };
+
+  const openMeal = (meal: string) =>
+    router.push({ pathname: '/food-picker', params: { date: todayKey, meal } });
+
+  /** Le nom d'un repas : celui de l'app pour les quatre repas par défaut, sinon le libellé choisi. */
+  const mealName = (slot: MealSlot) =>
+    slot.label?.trim() ||
+    (DEFAULT_MEALS.has(slot.key) ? t(`home.now.meal.name.${slot.key}`) : t('home.now.meal.nameFallback'));
+
+  const mealCta = (slot: MealSlot): NonNullable<Painted['cta']> => ({
+    label: DEFAULT_MEALS.has(slot.key) && !slot.label?.trim()
+      ? t(`home.now.meal.cta.${slot.key}`)
+      : t('home.now.meal.ctaCustom', { label: mealName(slot) }),
+    icon: 'add',
+    onPress: () => openMeal(slot.key),
+  });
+
+  const kcalMeta = () =>
+    kcalRemaining === null
+      ? t('home.now.meal.metaNoTarget')
+      : kcalRemaining > 0
+        ? t('home.now.meal.metaKcal', { kcal: formatKcal(Math.round(kcalRemaining)) })
+        : t('home.now.meal.metaReached');
 
   const painted = paint(action);
 
@@ -162,23 +208,30 @@ export function NowCard() {
 
       case 'meal-due':
         return {
-          // L'échéance apprise devient enfin visible : elle ne servait qu'à programmer une
-          // notification (NUTR-F1), jamais à être montrée à l'ouverture de l'app.
-          eyebrow:
-            a.deadlineHour != null
-              ? t('home.now.meal.eyebrowUsually', { hour: a.deadlineHour })
-              : t('home.now.meal.eyebrow'),
-          title: t(`home.now.meal.title.${a.meal}`),
-          meta: t('home.now.meal.meta'),
-          cta: {
-            label: t(`home.now.meal.cta.${a.meal}`),
-            icon: 'add',
-            onPress: () =>
-              router.push({
-                pathname: '/food-picker',
-                params: { date: todayKey, meal: a.meal },
-              }),
-          },
+          // L'heure du repas devient visible : apprise (« d'habitude vers 12:45 ») ou par défaut.
+          eyebrow: a.meal.learned
+            ? t('home.now.meal.eyebrowDue', { time: clockLabel(a.meal.hour) })
+            : t('home.now.meal.eyebrowDueDefault', { time: clockLabel(a.meal.hour) }),
+          title: mealName(a.meal),
+          meta: kcalMeta(),
+          cta: mealCta(a.meal),
+        };
+
+      case 'meal-next':
+        return {
+          eyebrow: t('home.now.meal.eyebrowNext', { time: clockLabel(a.meal.hour) }),
+          title: mealName(a.meal),
+          meta: kcalMeta(),
+          // On peut noter un repas en avance : le bouton reste là.
+          cta: mealCta(a.meal),
+        };
+
+      case 'meal-missed':
+        return {
+          eyebrow: t('home.now.meal.eyebrowMissed'),
+          title: mealName(a.meal),
+          meta: t('home.now.meal.metaMissed'),
+          cta: mealCta(a.meal),
         };
 
       case 'weigh-in-due':
@@ -224,24 +277,42 @@ export function NowCard() {
       }
 
       case 'idle':
-      default:
-        return {
-          eyebrow: t(`home.now.idle.eyebrow.${a.kind === 'idle' ? a.moment : 'morning'}`),
-          title: t('home.now.idle.title'),
-          meta: t('home.now.idle.meta'),
-          cta: {
-            label: t('home.now.idle.cta'),
+      default: {
+        const moment = a.kind === 'idle' ? a.moment : 'morning';
+        const suggestion = a.kind === 'idle' ? a.suggestion : 'activity';
+        const ctas: Record<typeof suggestion, NonNullable<Painted['cta']>> = {
+          // Seulement à la musculation sans programme (constat 2).
+          program: {
+            label: t('home.now.idle.cta.program'),
             icon: 'barbell-outline',
             onPress: () => router.push('/programs'),
           },
+          meal: {
+            label: t('home.now.idle.cta.meal'),
+            icon: 'add',
+            onPress: () => openMeal(mealForHour(new Date().getHours())),
+          },
+          activity: {
+            label: t('home.now.idle.cta.activity'),
+            icon: 'flash-outline',
+            onPress: () => router.push('/activity'),
+          },
         };
+        return {
+          eyebrow: t(`home.now.idle.eyebrow.${moment}`),
+          title: t(`home.now.idle.title.${suggestion}`),
+          meta: t(`home.now.idle.meta.${suggestion}`),
+          cta: ctas[suggestion],
+        };
+      }
     }
   }
 
   const a11y = [painted.eyebrow, painted.title, painted.meta].filter(Boolean).join('. ');
+  const busy = starting || isLoading;
 
   return (
-    <View style={[styles.card, { backgroundColor: colors.panel }]}>
+    <View style={[styles.card, { backgroundColor: colors.panel }]} testID="now-card">
       {/* Hors grille, donc sans identité de widget : `AccentHalo` retombe sur la géométrie du
           module actif (`MENU_HALO.home`) et le rend systématiquement. C'est voulu ici — dans la
           grille, `hasHaloFor` n'en pose que sur environ un widget sur trois, et la carte épinglée
@@ -265,17 +336,25 @@ export function NowCard() {
       {painted.cta ? (
         <Pressable
           onPress={painted.cta.onPress}
-          disabled={starting || isLoading}
+          disabled={busy}
           accessibilityRole="button"
           accessibilityLabel={painted.cta.label}
-          style={[
-            styles.cta,
-            { backgroundColor: colors.accent },
-            (starting || isLoading) && styles.dimmed,
-          ]}
+          accessibilityState={{ disabled: busy }}
+          style={[styles.cta, { backgroundColor: stage.solid }, busy && styles.dimmed]}
         >
-          <Ionicons name={painted.cta.icon} size={16} color={colors.accentText} />
-          <Text style={[styles.ctaLabel, { color: colors.accentText }]} maxFontSizeMultiplier={1.3}>
+          {/* Le bouton principal d'Aurore : le dégradé turquoise → rose de la scène (mesuré par
+              `stage.test.ts` contre son encre, arrêt par arrêt). */}
+          {stage.solidGradient ? (
+            <LinearGradient
+              pointerEvents="none"
+              colors={stage.solidGradient}
+              start={{ x: 0, y: 0.5 }}
+              end={{ x: 1, y: 0.5 }}
+              style={styles.gradient}
+            />
+          ) : null}
+          <Ionicons name={painted.cta.icon} size={16} color={stage.onSolid} />
+          <Text style={[styles.ctaLabel, { color: stage.onSolid }]} maxFontSizeMultiplier={1.3}>
             {painted.cta.label}
           </Text>
         </Pressable>
@@ -308,7 +387,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 9,
+    overflow: 'hidden',
   },
+  gradient: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, borderRadius: 14 },
   ctaLabel: { fontFamily: fontFamily.bodyBold, fontSize: 15 },
   dimmed: { opacity: 0.6 },
 });

@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Prototype — ta journée</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400..700&family=Space+Mono:wght@400;700&display=swap">
+<style>
+body{margin:0}
+a{color:#b14f2b}a:hover{color:#8a3c1f}
+</style>
+</helmet>
+<div style="width: 940px; height: 1160px; box-sizing: border-box; padding: 40px; display: flex; gap: 48px; background: #efe4d2; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+  <div style="width: 402px; flex-shrink: 0; display: flex; flex-direction: column; gap: 22px;">
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: #7a4a2e;">Prototype jouable · l’accueil</span>
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 54px; letter-spacing: -2.2px; line-height: 0.95; color: #33291f;">Ta journée</h1>
+      <p style="margin: 6px 0 0; font-size: 15px; line-height: 1.5; color: #5e5244;">L’accueil suit l’heure. Déplace le curseur, change de journée, touche les cartes.</p>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: #6b5a47;">La journée</span>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+        <sc-for list="{{scenarios}}" as="sc" hint-placeholder-count="7">
+          <button onClick="{{sc.pick}}" aria-pressed="{{sc.pressed}}" style="min-height: 44px; padding: 0 14px; border-radius: 14px; border: 1px solid {{sc.border}}; background: {{sc.bg}}; color: {{sc.fg}}; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 13.5px; font-weight: 700; text-align: left; cursor: pointer; transition: background 200ms ease, color 200ms ease;">{{sc.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: #6b5a47;">La couleur de l’accueil</span>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px;">
+        <sc-for list="{{teintes}}" as="te" hint-placeholder-count="4">
+          <button onClick="{{te.pick}}" aria-pressed="{{te.pressed}}" style="min-height: 52px; display: flex; align-items: center; gap: 10px; padding: 6px 12px 6px 8px; border-radius: 14px; border: 1.5px solid {{te.border}}; background: #fffaf2; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif; text-align: left; cursor: pointer;">
+            <span aria-hidden="true" style="width: 34px; height: 34px; flex-shrink: 0; border-radius: 11px; background: {{te.swatch}}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);"></span>
+            <span style="display: flex; flex-direction: column; gap: 1px; min-width: 0;">
+              <span style="font-size: 13.5px; font-weight: 700;">{{te.label}}</span>
+              <span style="font-size: 11px; font-weight: 600; color: {{te.subColor}};">{{te.sub}}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; border-radius: 20px; background: #fffaf2; border: 1px solid #e2d3bb;">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 10px;">
+        <label for="proto-hour" style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: #6b5a47;">L’heure</label>
+        <span style="font-size: 13px; font-weight: 700; color: #7a4a2e;">{{moment}}</span>
+      </div>
+      <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 40px; letter-spacing: -1.5px; line-height: 1; color: #33291f;">{{timeLabel}}</span>
+      <input id="proto-hour" type="range" min="6" max="23.5" step="0.0833" value="{{hour}}" onChange="{{onHour}}" style="width: 100%; height: 28px; accent-color: {{accColor}}; cursor: pointer;">
+      <div style="display: flex; gap: 6px;">
+        <sc-for list="{{chips}}" as="c" hint-placeholder-count="4">
+          <button onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="flex: 1; min-height: 44px; border-radius: 12px; border: 1px solid {{c.border}}; background: {{c.bg}}; color: {{c.fg}}; font-family: 'Space Mono', ui-monospace, monospace; font-size: 12.5px; font-weight: 700; cursor: pointer;">{{c.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: #6b5a47;">Thème</span>
+      <div style="display: flex; gap: 4px; padding: 4px; border-radius: 14px; background: #e4d5bf;">
+        <sc-for list="{{themes}}" as="th" hint-placeholder-count="2">
+          <button onClick="{{th.pick}}" aria-pressed="{{th.pressed}}" style="min-height: 40px; min-width: 88px; padding: 0 14px; border-radius: 11px; border: none; background: {{th.bg}}; color: {{th.fg}}; font-family: 'Hanken Grotesk', system-ui, sans-serif; font-size: 13px; font-weight: 700; cursor: pointer;">{{th.label}}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px; margin-top: 2px;">
+      <span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 10.5px; letter-spacing: 1px; text-transform: uppercase; color: #6b5a47;">À toucher</span>
+      <sc-for list="{{tries}}" as="tr" hint-placeholder-count="4">
+        <div style="display: flex; align-items: flex-start; gap: 10px;">
+          <span style="width: 26px; height: 26px; flex-shrink: 0; border-radius: 9px; background: #33291f; color: #f4ecdd; display: flex; align-items: center; justify-content: center;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tr.icon}}"></path></svg>
+          </span>
+          <span style="font-size: 13.5px; line-height: 1.45; color: #4a3f33;"><strong style="color: #33291f;">{{tr.what}}</strong> {{tr.does}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div style="width: 410px; height: 864px; flex-shrink: 0; box-sizing: border-box; padding: 10px; border-radius: 56px; background: #1b1410; box-shadow: 0 50px 90px -40px rgba(60,40,20,0.65);">
+    <div style="width: 390px; height: 844px; border-radius: 46px; overflow: hidden; position: relative; background: #f7eede;">
+      <dc-import name="Phone" scenario="{{scenario}}" hour="{{hour}}" dark="{{dark}}" teinte="{{teinte}}" hint-size="390px,844px"></dc-import>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":940,"height":1160}}'>
+class Component extends DCLogic {
+  fmt(h) {
+    let hh = Math.floor(h);
+    let mm = Math.round((h - hh) * 60);
+    if (mm === 60) { mm = 0; hh += 1; }
+    return String(hh).padStart(2, '0') + ':' + String(mm).padStart(2, '0');
+  }
+
+  renderVals() {
+    const s = this.state || {};
+    const scenario = s.scenario || 'seance';
+    const hour = s.hour != null ? s.hour : 12.67;
+    const dark = s.dark === true;
+    const teinte = s.teinte || 'aurore';
+
+    const TE = [
+      { k: 'lagon', label: 'Lagon', sub: 'écartée', swatch: 'linear-gradient(160deg, #0c7a71 0%, #062f33 100%)', acc: '#0f766e' },
+      { k: 'framboise', label: 'Framboise', sub: 'écartée', swatch: 'linear-gradient(160deg, #b0185f 0%, #2c0719 100%)', acc: '#be185d' },
+      { k: 'aurore', label: 'Aurore', sub: 'retenue le 25/10', swatch: 'radial-gradient(90% 90% at 0% 0%, #2dd4bf 0%, rgba(45,212,191,0) 70%), radial-gradient(90% 90% at 100% 30%, #ec4899 0%, rgba(236,72,153,0) 70%), #13203a', acc: '#0f766e' },
+      { k: 'actuel', label: 'Actuelle', sub: 'pour comparer', swatch: 'linear-gradient(160deg, #fff6e8 0%, #efc39c 100%)', acc: '#b14f2b' },
+    ];
+    const cur = TE.find((x) => x.k === teinte) || TE[0];
+    const teintes = TE.map((x) => {
+      const on = x.k === teinte;
+      return {
+        label: x.label,
+        sub: x.sub,
+        swatch: x.swatch,
+        pressed: on ? 'true' : 'false',
+        border: on ? '#33291f' : '#e2d3bb',
+        subColor: x.k === 'aurore' ? '#0f766e' : '#786a59',
+        pick: () => this.setState({ teinte: x.k }),
+      };
+    });
+
+    const SC = [
+      { k: 'seance', label: 'Jour de séance', h: 12.67 },
+      { k: 'repos', label: 'Jour de repos', h: 15 },
+      { k: 'risque', label: 'La série en jeu', h: 21.25 },
+      { k: 'nouveau', label: 'Premier jour', h: 10 },
+      { k: 'retour', label: 'Retour après 9 jours', h: 9.25 },
+      { k: 'nutrition', label: 'Nutrition seule', h: 13 },
+      { k: 'live', label: 'Séance en cours', h: 18.4 },
+    ];
+    const scenarios = SC.map((x) => {
+      const on = x.k === scenario;
+      return {
+        label: x.label,
+        pressed: on ? 'true' : 'false',
+        bg: on ? '#33291f' : '#fffaf2',
+        fg: on ? '#fff6e8' : '#33291f',
+        border: on ? '#33291f' : '#e2d3bb',
+        pick: () => this.setState({ scenario: x.k, hour: x.h }),
+      };
+    });
+
+    const chips = [7.33, 12.67, 17.83, 21.67].map((v) => {
+      const on = Math.abs(v - hour) < 0.02;
+      return {
+        label: this.fmt(v),
+        pressed: on ? 'true' : 'false',
+        bg: on ? cur.acc : '#f7eede',
+        fg: on ? '#ffffff' : '#33291f',
+        border: on ? cur.acc : '#e2d3bb',
+        pick: () => this.setState({ hour: v }),
+      };
+    });
+
+    const themes = [
+      { label: 'Clair', on: !dark, val: false },
+      { label: 'Sombre', on: dark, val: true },
+    ].map((x) => ({
+      label: x.label,
+      pressed: x.on ? 'true' : 'false',
+      bg: x.on ? '#fffaf2' : 'transparent',
+      fg: '#33291f',
+      pick: () => this.setState({ dark: x.val }),
+    }));
+
+    const moment = hour < 5.5 ? 'Nuit' : hour < 9 ? 'Aube' : hour < 17 ? 'Journée' : hour < 19.5 ? 'Heure dorée' : hour < 22 ? 'Soirée' : 'Nuit';
+
+    const tries = [
+      { icon: 'M12 5v14M5 12h14', what: 'Le repas du moment.', does: 'Il se coche, l’anneau Manger monte, la suite remonte d’un cran.' },
+      { icon: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18zM9 10h.01M15 10h.01M8.5 14.5q3.5 2 7 0', what: 'Le matin, un visage.', does: 'Le check-in en un geste remplit Récupérer — et « Écouter » lit ton brief.' },
+      { icon: 'M12 3l7 3v5c0 4.5-3 8.2-7 10-4-1.8-7-5.5-7-10V6z', what: 'Récupérer.', does: 'Le pourquoi de ta forme du jour, signal par signal.' },
+      { icon: 'M13 3L5 14h6l-1 7 8-11h-6z', what: 'Le « + » flottant.', does: 'Noter n’importe quoi, sans changer d’onglet.' },
+    ];
+
+    return {
+      scenario,
+      hour,
+      dark,
+      teinte,
+      teintes,
+      accColor: cur.acc,
+      scenarios,
+      chips,
+      themes,
+      tries,
+      moment,
+      timeLabel: this.fmt(hour),
+      onHour: (e) => this.setState({ hour: Number(e.target.value) }),
+    };
+  }
+}
+</script>
+</body>
+</html>

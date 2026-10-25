@@ -11,7 +11,10 @@
  *   que le nom du programme, alors que la valeur était déjà là.
  * - **« Dû » exige les DEUX conditions** — échéance passée *et* rien de saisi. Sans la seconde, la
  *   carte réclame un repas déjà enregistré ; c'est le genre de détail qui fait perdre confiance
- *   dans tout l'écran.
+ *   dans tout l'écran. Depuis ACCUEIL-07, c'est **repas par repas** (`useMealSlots`) : un petit-déj
+ *   noté n'éteint plus le dîner.
+ * - **La pesée n'est réclamée qu'à qui se pèse** (ACCUEIL-07, `useWeighInHabit`).
+ * - **« Créer un programme » ne se propose qu'à la musculation sans programme** (ACCUEIL-07).
  * - **Ce qui a été fait aujourd'hui se compte en jour LOCAL.** Une séance terminée à 23 h 30
  *   compte pour aujourd'hui, pas pour demain.
  * - **Le check-in bien-être n'a aucun réglage** : il se propose à qui le pratique déjà, observé sur
@@ -29,11 +32,12 @@ import { useActiveRun, useRunHistory, useTodayRunSession } from '@/data/reposito
 import { useStreakData, useTodaySession } from '@/data/repositories/dashboard-repository';
 import { useNotificationPrefs } from '@/data/repositories/notification-repository';
 import {
-  useMealDeadline,
-  useMealLoggedToday,
+  useMealSlots,
   useWeighInDeadline,
+  useWeighInHabit,
   useWeighInToday,
 } from '@/data/repositories/reminder-habits-repository';
+import type { MealSlot } from '@wellness/shared';
 import {
   useTodayWellbeing,
   useWellbeingEntries,
@@ -62,9 +66,9 @@ jest.mock('@/data/repositories/notification-repository', () => ({
   useNotificationPrefs: jest.fn(() => ({})),
 }));
 jest.mock('@/data/repositories/reminder-habits-repository', () => ({
-  useMealDeadline: jest.fn(),
-  useMealLoggedToday: jest.fn(),
+  useMealSlots: jest.fn(),
   useWeighInDeadline: jest.fn(),
+  useWeighInHabit: jest.fn(),
   useWeighInToday: jest.fn(),
 }));
 jest.mock('@/data/repositories/daily-wellbeing-repository', () => ({
@@ -83,10 +87,10 @@ const m = {
   activeRun: useActiveRun as jest.Mock,
   todaySession: useTodaySession as jest.Mock,
   todayRun: useTodayRunSession as jest.Mock,
-  mealDeadline: useMealDeadline as jest.Mock,
-  mealDone: useMealLoggedToday as jest.Mock,
+  meals: useMealSlots as jest.Mock,
   weighDeadline: useWeighInDeadline as jest.Mock,
   weighDone: useWeighInToday as jest.Mock,
+  weighHabit: useWeighInHabit as jest.Mock,
   wellbeing: useTodayWellbeing as jest.Mock,
   wellbeingHistory: useWellbeingEntries as jest.Mock,
   workouts: useWorkoutHistory as jest.Mock,
@@ -95,6 +99,20 @@ const m = {
 };
 
 const TODAY = '2026-09-22';
+
+/** Les trois repas d'un habitué, `logged` = ceux déjà notés aujourd'hui. */
+function slots(logged: readonly string[]): { slots: MealSlot[]; loggedToday: number; isLoading: boolean } {
+  const all: MealSlot[] = [
+    { key: 'breakfast', label: null, hour: 8, learned: true, logged: false },
+    { key: 'lunch', label: null, hour: 12.5, learned: true, logged: false },
+    { key: 'dinner', label: null, hour: 19.5, learned: true, logged: false },
+  ];
+  return {
+    slots: all.map((s) => ({ ...s, logged: logged.includes(s.key) })),
+    loggedToday: logged.length,
+    isLoading: false,
+  };
+}
 
 /** Journée « rien à signaler » : midi, aucun entraînement prévu, tout saisi. */
 function setup() {
@@ -107,10 +125,10 @@ function setup() {
   m.activeRun.mockReturnValue({ run: null });
   m.todaySession.mockReturnValue({ state: 'rest', isLoading: false });
   m.todayRun.mockReturnValue({ session: null });
-  m.mealDeadline.mockReturnValue({ hour: 14 });
-  m.mealDone.mockReturnValue({ done: true, isLoading: false });
+  m.meals.mockReturnValue(slots(['breakfast', 'lunch', 'dinner']));
   m.weighDeadline.mockReturnValue({ hour: 10 });
   m.weighDone.mockReturnValue({ done: true });
+  m.weighHabit.mockReturnValue({ habit: true, isLoading: false });
   m.wellbeing.mockReturnValue({ entry: { logDate: TODAY } });
   m.wellbeingHistory.mockReturnValue({ entries: [] });
   m.workouts.mockReturnValue({ workouts: [] });
@@ -219,46 +237,85 @@ describe('les entraînements collectés', () => {
 // ---------------------------------------------------------------------------
 
 describe('les saisies dues', () => {
-  it('🔴 ne réclame pas un repas déjà enregistré, même l’échéance passée', async () => {
+  it('🔴 ne réclame pas un repas déjà enregistré, même son heure passée', async () => {
     m.hour.mockReturnValue(20);
-    m.mealDeadline.mockReturnValue({ hour: 14 });
-    m.mealDone.mockReturnValue({ done: true, isLoading: false });
 
     // ⚠️ Assertion sur `kind` et non sur le JSON entier : le décompte du jour porte un champ
-    // `mealLogged`, qui contient « meal » et rendrait le test vert pour la mauvaise raison.
+    // `mealsLogged`, qui contient « meal » et rendrait le test vert pour la mauvaise raison.
     expect((await actionOf()).action.kind).not.toMatch(/meal/i);
   });
 
-  it('réclame le repas quand l’échéance est passée et que rien n’est saisi', async () => {
+  it('🔴 réclame le DÎNER le soir même si le petit-déj est noté (constat 1)', async () => {
     m.hour.mockReturnValue(20);
-    m.mealDeadline.mockReturnValue({ hour: 14 });
-    m.mealDone.mockReturnValue({ done: false, isLoading: false });
+    m.meals.mockReturnValue(slots(['breakfast', 'lunch']));
 
-    expect((await actionOf()).action.kind).toMatch(/meal/i);
+    const { action } = await actionOf();
+    expect(action.kind).toBe('meal-due');
+    expect(action.kind === 'meal-due' && action.meal.key).toBe('dinner');
   });
 
-  it('ne réclame rien avant l’échéance, même sans saisie', async () => {
+  it('🔴 un petit-déj noté à 8 h ne déclare pas la journée faite', async () => {
     m.hour.mockReturnValue(9);
-    m.mealDeadline.mockReturnValue({ hour: 14 });
-    m.mealDone.mockReturnValue({ done: false, isLoading: false });
+    m.meals.mockReturnValue(slots(['breakfast']));
 
-    expect((await actionOf()).action.kind).not.toMatch(/meal/i);
+    const { action } = await actionOf();
+    expect(action.kind).not.toBe('day-done');
+    expect(action.kind).toBe('meal-next');
   });
 
   it('ne réclame aucun repas quand le pilier nutrition est désactivé', async () => {
     m.settings.mockReturnValue({ settings: { activePillars: ['strength'] } });
     m.hour.mockReturnValue(20);
-    m.mealDone.mockReturnValue({ done: false, isLoading: false });
+    m.meals.mockReturnValue(slots([]));
 
-    expect(JSON.stringify((await actionOf()).action)).not.toContain('meal');
+    expect((await actionOf()).action.kind).not.toMatch(/meal/i);
   });
 
-  it('réclame la pesée quand son échéance est passée sans saisie', async () => {
+  it('réclame la pesée quand son échéance est passée sans saisie, à qui se pèse', async () => {
     m.weighDeadline.mockReturnValue({ hour: 10 });
     m.weighDone.mockReturnValue({ done: false });
     m.hour.mockReturnValue(11);
+    m.meals.mockReturnValue(slots(['breakfast', 'lunch', 'dinner']));
 
-    expect((await actionOf()).action).toBeDefined();
+    expect((await actionOf()).action.kind).toBe('weigh-in-due');
+  });
+
+  it('🔴 ne réclame JAMAIS la pesée à qui ne se pèse pas (constat 3)', async () => {
+    m.weighDeadline.mockReturnValue({ hour: 10 });
+    m.weighDone.mockReturnValue({ done: false });
+    m.weighHabit.mockReturnValue({ habit: false, isLoading: false });
+    m.hour.mockReturnValue(11);
+
+    expect((await actionOf()).action.kind).not.toBe('weigh-in-due');
+  });
+});
+
+describe('rien de prévu (constat 2)', () => {
+  it('🔴 jour de repos avec un programme actif : jamais « Créer un programme »', async () => {
+    m.todaySession.mockReturnValue({ state: 'none', hasActiveProgram: true, isLoading: false });
+    m.workouts.mockReturnValue({ workouts: [] });
+    m.meals.mockReturnValue(slots([]));
+    m.settings.mockReturnValue({ settings: { activePillars: ['strength', 'running'] } });
+
+    const { action } = await actionOf();
+    expect(action.kind === 'idle' && action.suggestion).toBe('activity');
+  });
+
+  it('musculation sans programme : on propose d’en trouver un', async () => {
+    m.todaySession.mockReturnValue({ state: 'none', hasActiveProgram: false, isLoading: false });
+    m.settings.mockReturnValue({ settings: { activePillars: ['strength'] } });
+
+    const { action } = await actionOf();
+    expect(action.kind === 'idle' && action.suggestion).toBe('program');
+  });
+
+  it('🔴 nutrition seule : jamais de programme (décision H)', async () => {
+    m.todaySession.mockReturnValue({ state: 'none', hasActiveProgram: false, isLoading: false });
+    m.settings.mockReturnValue({ settings: { activePillars: ['nutrition'] } });
+    m.meals.mockReturnValue({ slots: [], loggedToday: 0, isLoading: false });
+
+    const { action } = await actionOf();
+    expect(action.kind === 'idle' && action.suggestion).toBe('meal');
   });
 });
 
@@ -343,7 +400,7 @@ describe('ce qui tourne', () => {
 
   it.each([
     ['séance active', () => m.activeWorkout.mockReturnValue({ workout: null, isLoading: true })],
-    ['repas du jour', () => m.mealDone.mockReturnValue({ done: false, isLoading: true })],
+    ['repas du jour', () => m.meals.mockReturnValue({ ...slots([]), isLoading: true })],
     ['séance planifiée', () => m.todaySession.mockReturnValue({ state: 'rest', isLoading: true })],
   ])('relaie le chargement de « %s »', async (_label, arrange) => {
     arrange();

@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>La couleur de l’accueil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400..700&family=Space+Mono:wght@400;700&display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div style="width: 1780px; height: 2260px; box-sizing: border-box; padding: 48px; display: flex; flex-direction: column; gap: 34px; background: #efe4d2; color: #33291f; font-family: 'Hanken Grotesk', system-ui, sans-serif;">
+
+  <div style="display: flex; align-items: flex-end; gap: 56px;">
+    <div style="width: 560px; flex-shrink: 0; display: flex; flex-direction: column; gap: 10px;">
+      <span style="font-family: 'Space Mono', ui-monospace, monospace; font-weight: 700; font-size: 11px; letter-spacing: 1.4px; text-transform: uppercase; color: #6b5a47;">La couleur de l’accueil</span>
+      <h1 style="margin: 0; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 46px; letter-spacing: -1.8px; line-height: 1; color: #33291f;">Une teinte à lui, qu’aucun pilier n’a prise</h1>
+      <p style="margin: 4px 0 0; font-size: 15px; line-height: 1.5; color: #5e5244;">Muscu rouge, course bleue, nutrition verte, Labo doré, bien-être violet : il reste deux trous sur la roue, le turquoise et le fuchsia.</p>
+    </div>
+
+    <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px;">
+      <div style="position: relative; height: 34px;">
+        <sc-for list="{{taken}}" as="p" hint-placeholder-count="6">
+          <span style="position: absolute; top: 0; left: {{p.x}}; width: 0; height: 34px;">
+            <span style="position: absolute; bottom: 4px; left: -60px; width: 120px; text-align: center; font-size: 11.5px; font-weight: 700; color: #4a3f33; white-space: nowrap;">{{p.label}}</span>
+          </span>
+        </sc-for>
+      </div>
+      <div style="position: relative; height: 28px; border-radius: 14px; background: linear-gradient(90deg, hsl(0,72%,46%) 0%, hsl(30,72%,46%) 8.33%, hsl(60,72%,42%) 16.67%, hsl(90,62%,40%) 25%, hsl(120,55%,38%) 33.33%, hsl(150,60%,36%) 41.67%, hsl(180,70%,34%) 50%, hsl(210,62%,42%) 58.33%, hsl(240,55%,50%) 66.67%, hsl(270,55%,50%) 75%, hsl(300,60%,46%) 83.33%, hsl(330,72%,46%) 91.67%, hsl(360,72%,46%) 100%); box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);">
+        <sc-for list="{{taken}}" as="p" hint-placeholder-count="6">
+          <span style="position: absolute; top: 3px; left: {{p.x}}; margin-left: -11px; width: 22px; height: 22px; box-sizing: border-box; border-radius: 50%; background: {{p.c}}; border: 3px solid #fffaf2; box-shadow: 0 2px 6px rgba(0,0,0,0.25);"></span>
+        </sc-for>
+        <sc-for list="{{free}}" as="f" hint-placeholder-count="2">
+          <span style="position: absolute; top: -9px; left: {{f.x}}; margin-left: -23px; width: 46px; height: 46px; box-sizing: border-box; border-radius: 50%; background: {{f.c}}; border: 4px solid #33291f; box-shadow: 0 6px 14px rgba(0,0,0,0.3);"></span>
+        </sc-for>
+      </div>
+      <div style="position: relative; height: 40px;">
+        <sc-for list="{{free}}" as="f" hint-placeholder-count="2">
+          <span style="position: absolute; top: 14px; left: {{f.x}}; width: 0; height: 26px;">
+            <span style="position: absolute; top: 0; left: -90px; width: 180px; text-align: center; font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-size: 16px; font-weight: 800; color: #33291f; white-space: nowrap;">{{f.label}}</span>
+          </span>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; gap: 41px;">
+    <sc-for list="{{cols}}" as="c" hint-placeholder-count="4">
+      <div style="width: 390px; flex-shrink: 0; display: flex; flex-direction: column; gap: 14px;">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="font-family: 'Bricolage Grotesque', system-ui, sans-serif; font-weight: 800; font-size: 30px; letter-spacing: -1px;">{{c.name}}</span>
+          <span style="padding: 4px 10px; border-radius: 999px; background: {{c.badgeBg}}; color: {{c.badgeFg}}; font-size: 11.5px; font-weight: 700;">{{c.badge}}</span>
+        </div>
+        <span style="font-size: 14px; line-height: 1.45; color: #4a3f33; min-height: 40px;">{{c.tagline}}</span>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px;">
+          <sc-for list="{{c.swatches}}" as="w" hint-placeholder-count="4">
+            <div style="display: flex; flex-direction: column; gap: 5px;">
+              <span style="height: 40px; border-radius: 12px; background: {{w.c}}; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);"></span>
+              <span style="font-size: 11px; font-weight: 700; color: #4a3f33;">{{w.role}}</span>
+              <span style="font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; color: #6b5a47;">{{w.hex}}</span>
+            </div>
+          </sc-for>
+        </div>
+        <span style="margin-top: 6px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: #6b5a47;">Thème clair · 12:40</span>
+        <div style="width: 390px; height: 844px; border-radius: 38px; overflow: hidden; position: relative; background: #f7eede; box-shadow: 0 30px 60px -32px rgba(60,40,20,0.6);">
+          <dc-import name="Phone" scenario="seance" hour="{{c.h1}}" dark="{{c.d1}}" teinte="{{c.k}}" hint-size="390px,844px"></dc-import>
+        </div>
+        <span style="margin-top: 6px; font-family: 'Space Mono', ui-monospace, monospace; font-size: 10.5px; font-weight: 700; letter-spacing: .8px; text-transform: uppercase; color: #6b5a47;">Thème sombre · 20:15</span>
+        <div style="width: 390px; height: 844px; border-radius: 38px; overflow: hidden; position: relative; background: #0f0a06; box-shadow: 0 30px 60px -32px rgba(60,40,20,0.6);">
+          <dc-import name="Phone" scenario="seance" hour="{{c.h2}}" dark="{{c.d2}}" teinte="{{c.k}}" hint-size="390px,844px"></dc-import>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1780,"height":2260}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const W = 1068;
+    const at = (hue) => Math.round((W * hue) / 360) + 'px';
+    const taken = [
+      { label: 'Muscu', hue: 3, c: '#a8261d' },
+      { label: 'Accueil actuel', hue: 18, c: '#b14f2b' },
+      { label: 'Labo', hue: 41, c: '#7a5714' },
+      { label: 'Nutrition', hue: 92, c: '#3f6b1c' },
+      { label: 'Course', hue: 213, c: '#2a64ad' },
+      { label: 'Bien-être', hue: 263, c: '#6a3fb0' },
+    ].map((p, i) => ({ label: i === 0 ? 'Muscu · Accueil' : i === 1 ? '' : p.label, x: at(p.hue), c: p.c }));
+    const free = [
+      { label: 'Lagon · 172°', hue: 172, c: '#0f766e' },
+      { label: 'Framboise · 330°', hue: 330, c: '#be185d' },
+    ].map((f) => ({ label: f.label, x: at(f.hue), c: f.c }));
+
+    const cols = [
+      {
+        k: 'lagon', name: 'Lagon', badge: 'Écartée', badgeBg: '#e4d5bf', badgeFg: '#4a3f33',
+        tagline: 'Turquoise profond : frais, calme, premium. La couleur du souffle et de la récupération.',
+        swatches: [
+          { role: 'Scène', hex: '#0C7A71', c: '#0c7a71' },
+          { role: 'Profondeur', hex: '#062F33', c: '#062f33' },
+          { role: 'Accent clair', hex: '#0F766E', c: '#0f766e' },
+          { role: 'Accent sombre', hex: '#2DD4BF', c: '#2dd4bf' },
+        ],
+      },
+      {
+        k: 'framboise', name: 'Framboise', badge: 'Écartée', badgeBg: '#e4d5bf', badgeFg: '#4a3f33',
+        tagline: 'Fuchsia profond : énergique, très reconnaissable. Proche du rose écarté pour la muscu.',
+        swatches: [
+          { role: 'Scène', hex: '#B0185F', c: '#b0185f' },
+          { role: 'Profondeur', hex: '#2C0719', c: '#2c0719' },
+          { role: 'Accent clair', hex: '#BE185D', c: '#be185d' },
+          { role: 'Accent sombre', hex: '#FF6FB1', c: '#ff6fb1' },
+        ],
+      },
+      {
+        k: 'aurore', name: 'Aurore', badge: 'Retenue · 25/10', badgeBg: '#13203a', badgeFg: '#7ee8d8',
+        tagline: 'Lagon et framboise mêlés sur une nuit bleutée : l’accueil en carrefour des piliers.',
+        swatches: [
+          { role: 'Lueur 1', hex: '#2DD4BF', c: '#2dd4bf' },
+          { role: 'Lueur 2', hex: '#EC4899', c: '#ec4899' },
+          { role: 'Nuit', hex: '#13203A', c: '#13203a' },
+          { role: 'Accent', hex: '#0F766E', c: '#0f766e' },
+        ],
+      },
+      {
+        k: 'actuel', name: 'Actuelle', badge: 'Pour comparer', badgeBg: '#e4d5bf', badgeFg: '#4a3f33',
+        tagline: 'Crème et terracotta : la couleur de marque, reprise partout ailleurs dans l’app.',
+        swatches: [
+          { role: 'Scène', hex: '#FFF6E8', c: '#fff6e8' },
+          { role: 'Bas de scène', hex: '#EFC39C', c: '#efc39c' },
+          { role: 'Accent clair', hex: '#B14F2B', c: '#b14f2b' },
+          { role: 'Accent sombre', hex: '#DD6E40', c: '#dd6e40' },
+        ],
+      },
+    ].map((c) => Object.assign(c, { h1: 12.67, d1: false, h2: 20.25, d2: true }));
+
+    return { taken, free, cols };
+  }
+}
+</script>
+</body>
+</html>
