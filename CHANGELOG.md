@@ -10,6 +10,81 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 26/10/2026 — ACCUEIL-08 : « Ta journée » — cadrans, fil du jour, semaine, Du nouveau, repères et « + » (`feature/accueil08-ta-journee` → `dev`)
+
+> Deuxième des trois lots de la refonte de l'accueil (décisions D2 à D5 de Florian du 25/10). US codée
+> en dev direct et clôturée dans ce commit (`etape: close`). Roadmap **7.45** (ligne neuve, hors
+> cadrage). Commit précédent : `b533e1df` (ACCUEIL-07). Amendement d'**ADR-007** du 25/10/2026.
+
+### Ajouté
+- **Le fil « Ta journée »** — brique pure `buildDayTimeline` (`packages/shared/src/day-timeline.ts`,
+  22 tests) : check-in du matin et point du soir (à qui pratique le bien-être), pesée (à qui se pèse),
+  repas à leur heure apprise, séances prévues et terminées, activités, marche suggérée (pas suivis, rien
+  de prévu, 16 h-20 h 30) ; dû / manqué / fait ; l'action du moment = l'état en cours, sinon le premier
+  geste non fait dans l'ordre des heures, sinon rattrapage, journée faite, repli. `DayNow` ajoute
+  `checkin-due` et `walk-idea` aux décisions de `resolveNowAction` (`restSuggestion` exportée).
+- `home-sections.ts` (21 tests) : `buildDayDials` (Bouger · Manger · Marcher · Récupérer selon les
+  piliers, D2), `buildWeekStrip` (marques par pilier, séances, jours dans la cible avec la marge de
+  NUTR-10), `selectHomeNews` (ordre écrit une fois, `HOME_NEWS_MAX = 2`), `isFreshRecord`.
+- `cross-tips.ts` (6 tests) : l'astuce croisée de la carte du moment — séance ou course plus tard,
+  kcal ouvertes par l'entraînement, écart de protéines ≥ 30 g. `daySentence` : phrases du check-in, de
+  la marche et de la série en jeu.
+- Composants : `HomeDials` (anneaux SVG), `HomeDayTimeline`, `WeekStrip`, `StreakOffers` (joker et
+  bascule en semaines, déménagés de la Régularité), `HomeNews` (+ cartes record battu / à portée),
+  `HomeSky` (« Écouter mon brief », bandeau de séance en cours, carte « retour », « Premiers pas »),
+  `AddSheet` (« + » flottant et feuille « Noter », D4), repères `SleepCard` et `WaterCard`.
+- Hooks : `useHomeWeek` (la semaine collectée une fois : plan, séances terminées, cibles du jour,
+  pauses ; pilier désactivé exclu), `useCurrentClock` (heure décimale au pas de 5 min, minuteur +
+  retour au premier plan), `useVisibleGoalConflict` et `useSinceLastVisit` (sortis de leurs cartes).
+- Widgets `sleep` (gardé par le pilier Bien-être, `wellbeingPillarEnabled`) et `water` (nutrition).
+
+### Modifié
+- **Écran d'accueil réécrit** (`app/(tabs)/index.tsx`) : le ciel (salutation, phrase du jour, brief à
+  écouter avant 11 h, séance en cours, cadrans / retour / premiers pas), le fil et sa carte, Ta semaine,
+  Du nouveau, **Tes repères** (D5), le pied (« Semaine chargée ? Allège-la » ou la carte de la période,
+  « Personnaliser l'accueil »), le « + ». La décision est calculée une fois (`useNowAction` rend aussi
+  `timeline`, `hour`, `mealTotals`, `checkinEnergy`) et passée par props. `EveningCard` (PRISME-01)
+  reste sous le fil après 18 h jusqu'à ACCUEIL-09.
+- `NowCard` : sur-titre « À 18:30 · dans 5 h 20 » / « Maintenant » / « Aujourd'hui » (séance sans
+  heure) ; check-in en visages dans la carte ; marche suggérée ; série en jeu (sorties d'ACCUEIL-07) ;
+  astuce croisée ; l'heure vient de l'écran (plus de `new Date()` au rendu).
+- `HomeStage` : plus de moments à elle (check-in, série, anneaux) ; porte ce que l'écran lui confie.
+- `useNowAction` : check-in (énergie) et point du soir (humeur, stress) distingués ; séances, sorties
+  et activités terminées du jour ; pas. `useHomeScene` : `steps`, `weeklyStreak`, `offers` (un appel de
+  moins à `useStreakData`, constat 16) ; `useAskQuestions` retiré.
+- `SELECT_MEALS_LOGGED_ON` totalise kcal et protéines par repas (`GROUP BY meal_type`) ; `useMealSlots`
+  rend `totals`.
+- Registre de l'accueil : `steps`, `weight`, `sleep`, `water`, `cycle` (plafond 8 inchangé) ; `streak`,
+  `nutrition-summary`, `insights`, `activation-path`, `real-life` deviennent `home-pinned` dans
+  `widget-destinations.ts` ; une disposition stockée qui les cite reste lisible.
+- **ADR-007** : amendement du 25/10/2026 (la grille devient « Tes repères », cinq zones fixes, « Du
+  nouveau » plafonnée à deux cartes).
+- i18n FR + EN : `home.dials.*`, `home.fil.*`, `home.week.*`, `home.news.*`, `home.reperes.*`,
+  `home.footer.*`, `home.add.*`, `home.sky.*`, `home.now.{when, checkin, walk, rescue, …}`,
+  `home.tips.*`, `home.sentence.{checkin, walk, rescue}`.
+
+### Supprimé
+- `AskCard` (« Demande-moi », D3), `QuickActions`, `UpNext`, `MorningBrief` + `MorningBriefCard`,
+  `WeeklyStoryCard`, `StreakCard`, `NutritionSummaryCard`, `BreathRings`, `useWeekRings` et leurs tests.
+- Clés i18n devenues mortes (balayage du code mobile et `shared`) : espace `ask`, `brief.{title,
+  listen}`, `home.checkin.hint`, libellés de la Régularité et du résumé nutrition, `home.quick.{run,
+  wellbeing}`, `home.upNext`, `stage.home.{ring, timeLeft, weeklyStory}`.
+
+### Technique / Notes
+- Tests : `HomeDials`, `HomeDayTimeline`, `WeekStrip`, `StreakOffers` (reprend les offres de
+  `StreakCard.test`), `HomeNews`, `HomeSky` (reprend le contrat de `MorningBriefCard.test`), `AddSheet`,
+  `CheckinFaces` et `StreakRescue` (repris de `HomeStage.test`), repères Sommeil / Eau, `useHomeWeek`
+  (reprend les règles de semaine de `useWeekRings`), `useNowAction` (+8), `useHomeScene` (+6),
+  `NowCard` (+8), `accueil07-habits-sql` (+1), `app-state-hooks` (`useCurrentClock`) ; écran d'accueil
+  réécrit sur des sondes. Gardes conservés et étendus : `stage.test.ts` (texte secondaire des cadrans
+  sur le verre ≥ 4,5), `no-frozen-clock.test.ts` (8 fichiers de l'accueil surveillés, `NutritionSummaryCard`
+  retiré), plafond et destinations de widgets (`widgets.test.ts`, `widget-destinations.test.ts`).
+- Piège rencontré : avec Testing Library 14, `fireEvent.press` et `unmount` sont **asynchrones** — non
+  attendus, ils laissent des `act()` qui se chevauchent et font échouer le test SUIVANT.
+- Point d'attention : « Depuis ta dernière visite » consomme son instantané même quand deux cartes plus
+  prioritaires l'écartent de « Du nouveau » (voir §7 de la spec).
+- Aucune migration, aucune sync rule, aucun appel réseau.
+
 ## 25/10/2026 — ACCUEIL-07 : l'accueil dit vrai, et prend la teinte Aurore (`fix/accueil07-accueil-dit-vrai` → `dev`)
 
 > Premier des trois lots de la refonte « Ta journée » (cadrage du 24/10, décisions D1 à D6 de Florian

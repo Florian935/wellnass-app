@@ -123,7 +123,9 @@ describe('écriture', () => {
   });
 
   it('préserve la disposition stockée de l’autre hub en mutant celui-ci', async () => {
-    const home = { widgets: [{ id: 'streak', size: 'small', col: 0, row: 0, visible: true }] };
+    // `weight` et non plus `streak` : la Régularité a quitté les repères de l'accueil (ACCUEIL-08), et
+    // la lecture écarte un identifiant inconnu — la disposition relue n'aurait plus été la même.
+    const home = { widgets: [{ id: 'weight', size: 'small', col: 0, row: 0, visible: true }] };
     setup({ dashboardLayout: JSON.stringify({ v: LAYOUT_VERSION, screens: { home } }) });
 
     const result = await layoutOf('running');

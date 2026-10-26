@@ -30,9 +30,12 @@ import { useLastVisit } from '@/stores/last-visit-store';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-export function SinceLastVisitCard() {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
+/**
+ * US ACCUEIL-08 — les écarts depuis la dernière visite, et la pose de l'instantané. Sorti de la carte
+ * pour que « Du nouveau » sache s'il y a quelque chose à dire (deux cartes au plus) : **à appeler une
+ * seule fois** par écran — c'est lui qui pose le nouvel instantané.
+ */
+export function useSinceLastVisit(): SinceLastVisitItem[] {
   const { latest } = useLatestWeight();
   const { count: recordsCount } = useRecordsCount();
   const { records } = useRunningRecords();
@@ -63,6 +66,12 @@ export function SinceLastVisitCard() {
     // Volontairement borné aux valeurs comparées : c'est leur changement qui justifie un nouvel instantané.
   }, [hydrated, latest?.weightKg, recordsCount, prediction10k]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  return items;
+}
+
+export function SinceLastVisitCard({ items }: { items: readonly SinceLastVisitItem[] }) {
+  const { t } = useTranslation();
+  const { colors } = useTheme();
   if (items.length === 0) return null;
 
   return (

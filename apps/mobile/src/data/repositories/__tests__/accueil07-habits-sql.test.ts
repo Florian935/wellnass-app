@@ -101,6 +101,17 @@ describe('SELECT_MEALS_LOGGED_ON — les repas notés aujourd’hui', () => {
     const rows = await query<{ meal_type: string }>(SELECT_MEALS_LOGGED_ON, [key(25)]);
     expect(rows.map((r) => r.meal_type)).toEqual(['lunch']);
   });
+
+  it('US ACCUEIL-08 — totalise kcal et protéines par repas, pour la ligne faite du fil', async () => {
+    seed('food_entries', [
+      { user_id: 'user-1', log_date: key(25), meal_type: 'lunch', name: 'riz', kcal: 350, protein_g: 7, created_at: localIso(25, 12) },
+      { user_id: 'user-1', log_date: key(25), meal_type: 'lunch', name: 'poulet', kcal: 250, protein_g: 31, created_at: localIso(25, 12, 5) },
+      { user_id: 'user-1', log_date: key(25), meal_type: 'lunch', name: 'supprimé', kcal: 900, protein_g: 50, created_at: localIso(25, 12, 9), deleted_at: DELETED },
+    ]);
+
+    const rows = await query<{ meal_type: string; kcal: number; protein_g: number }>(SELECT_MEALS_LOGGED_ON, [key(25)]);
+    expect(rows).toEqual([{ meal_type: 'lunch', kcal: 600, protein_g: 38 }]);
+  });
 });
 
 describe('COUNT_WEIGH_INS_SINCE — la garde d’habitude de la pesée', () => {

@@ -168,9 +168,11 @@ describe('placement', () => {
   });
 
   it('🔴 un widget « row » occupe une demi-case en hauteur, sur toute la largeur', async () => {
-    await afficher([entree({ id: 'real-life', size: 'row' })]);
+    // La géométrie ne dépend pas de l'identifiant : `real-life`, qui portait la forme `row` par défaut,
+    // a quitté la grille avec ACCUEIL-08 (le pied de l'accueil).
+    await afficher([entree({ id: 'steps', size: 'row' })]);
 
-    expect(styleDe(caseDe('real-life'))).toMatchObject({
+    expect(styleDe(caseDe('steps'))).toMatchObject({
       width: COL_W * 2 + GAP,
       height: (COL_W - GAP) / 2,
     });

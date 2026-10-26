@@ -269,7 +269,7 @@ export function resolveNowAction(input: NowActionInput): NowAction {
 }
 
 /** Le geste d'un jour sans rien de prévu — voir `RestSuggestion`. */
-function restSuggestion(input: NowActionInput): RestSuggestion {
+export function restSuggestion(input: NowActionInput): RestSuggestion {
   if (input.strengthActive && !input.hasStrengthProgram) return 'program';
   if (input.nutritionActive && input.tally.mealsLogged === 0) return 'meal';
   return 'activity';

@@ -305,3 +305,147 @@ describe('rien de prévu (constat 2)', () => {
     expect(vue.toJSON()).not.toBeNull();
   });
 });
+
+// ---------------------------------------------------------------------------
+// US ACCUEIL-08 — la carte entre dans le fil « Ta journée »
+// ---------------------------------------------------------------------------
+describe('US ACCUEIL-08 — le sur-titre dit QUAND', () => {
+  const at = (hour: number, itemHour: number | null, itemTimeKnown = true) =>
+    render(
+      <NowCard
+        action={{ kind: 'session-today', training }}
+        isLoading={false}
+        hour={hour}
+        itemHour={itemHour}
+        itemTimeKnown={itemTimeKnown}
+        kcalRemaining={null}
+        formatKcal={(n) => `${n}`}
+      />,
+    );
+
+  it('« À 18:30 · dans 5 h 20 » : l’heure du geste et le temps qui reste', async () => {
+    await at(13 + 10 / 60, 18.5);
+    expect(screen.getByText(/À 18:30 · dans 5 h 20/)).toBeTruthy();
+  });
+
+  it('« Maintenant » dès qu’il reste moins d’un quart d’heure', async () => {
+    await at(18.3, 18.5);
+    expect(screen.getByText(/^Maintenant/)).toBeTruthy();
+  });
+
+  it('🔴 une séance SANS heure ne promet aucun horaire : « Aujourd’hui »', async () => {
+    // Le fil la range à 18 h faute de mieux ; annoncer « À 18:00 » serait inventer un rendez-vous.
+    await at(9, 18, false);
+    expect(screen.getByText(/^Aujourd'hui/)).toBeTruthy();
+    expect(screen.queryByText(/18:00/)).toBeNull();
+  });
+});
+
+describe('US ACCUEIL-08 — les trois gestes que seul le fil connaît', () => {
+  it('le check-in du matin se fait DANS la carte, d’un visage', async () => {
+    const onPick = jest.fn();
+    await render(
+      <NowCard
+        action={{ kind: 'checkin-due' }}
+        isLoading={false}
+        hour={8}
+        itemHour={7.5}
+        kcalRemaining={null}
+        formatKcal={(n) => `${n}`}
+        checkin={{ onPick, saving: false }}
+      />,
+    );
+
+    expect(screen.getByText('Comment tu te sens ce matin ?')).toBeTruthy();
+    await fireEvent.press(screen.getByTestId('checkin-face-4'));
+    expect(onPick).toHaveBeenCalledWith(4);
+    // Les visages SONT le geste : pas de second bouton pour faire la même chose.
+    expect(screen.queryByText(/Faire mon point/)).toBeNull();
+  });
+
+  it('la marche suggérée dit combien de pas manquent et ouvre leur suivi', async () => {
+    await render(
+      <NowCard
+        action={{ kind: 'walk-idea', stepsLeft: 3800 }}
+        isLoading={false}
+        hour={17.5}
+        itemHour={17.5}
+        kcalRemaining={null}
+        formatKcal={(n) => `${n}`}
+      />,
+    );
+
+    expect(screen.getByText('Une marche ?')).toBeTruthy();
+    expect(screen.getByText(/3800 pas/)).toBeTruthy();
+    await fireEvent.press(screen.getByText('Voir mes pas'));
+    expect(push).toHaveBeenCalledWith('/steps');
+  });
+
+  it('🔴 la série en jeu remplace l’action par les vraies sorties — sans astuce', async () => {
+    const onWalk = jest.fn();
+    await render(
+      <NowCard
+        action={{ kind: 'wellbeing-due' }}
+        isLoading={false}
+        hour={21}
+        kcalRemaining={null}
+        formatKcal={(n) => `${n}`}
+        tip={{ key: 'home.tips.proteinGap', params: { grams: 30 }, tag: 'nutrition' }}
+        rescue={{
+          streak: 12,
+          hoursLeft: 3,
+          options: [{ kind: 'walk', stepsLeft: 1800, minutes: 15 }, { kind: 'activity' }, { kind: 'joker' }],
+          onWalk,
+          onActivity: jest.fn(),
+          onJoker: jest.fn(),
+          busy: false,
+          formatSteps: (n) => `${n}`,
+        }}
+      />,
+    );
+
+    expect(screen.getByText(/12 jours en jeu/)).toBeTruthy();
+    expect(screen.getByText('Encore 3 heures pour la garder')).toBeTruthy();
+    expect(screen.queryByText('Faire mon point du soir')).toBeNull();
+    expect(screen.queryByTestId('now-card-tip')).toBeNull();
+    await fireEvent.press(screen.getByTestId('streak-rescue-walk'));
+    expect(onWalk).toHaveBeenCalled();
+  });
+});
+
+describe('US ACCUEIL-08 — l’astuce croisée', () => {
+  it('se pose sous le geste, avec les deux piliers qui se parlent', async () => {
+    await render(
+      <NowCard
+        action={{ kind: 'meal-due', meal: slot({ key: 'lunch', hour: 12.5 }) }}
+        isLoading={false}
+        hour={12.5}
+        itemHour={12.5}
+        kcalRemaining={1200}
+        formatKcal={(n) => `${n}`}
+        tip={{ key: 'home.tips.beforeStrengthNamed', params: { name: 'Jambes' }, tag: 'strength-nutrition' }}
+      />,
+    );
+
+    expect(screen.getByTestId('now-card-tip')).toBeTruthy();
+    expect(screen.getByText('Muscu × Nutrition')).toBeTruthy();
+    expect(screen.getByText('Jambes ce soir : un bon féculent à ce repas.')).toBeTruthy();
+  });
+});
+
+describe('US ACCUEIL-08 — l’heure vient de l’écran', () => {
+  it('🔴 « Ajouter un repas » ouvre le repas de l’heure PASSÉE EN PROP (pas une horloge figée)', async () => {
+    // Avant : `new Date()` lu dans le composant. L'écran passe désormais son horloge réactive.
+    await render(
+      <NowCard
+        action={{ kind: 'idle', moment: 'morning', suggestion: 'meal' }}
+        isLoading={false}
+        hour={8}
+        kcalRemaining={null}
+        formatKcal={(n) => `${n}`}
+      />,
+    );
+    await fireEvent.press(screen.getByText('Ajouter un repas'));
+    expect(push).toHaveBeenCalledWith({ pathname: '/food-picker', params: { date: '2026-09-09', meal: 'breakfast' } });
+  });
+});

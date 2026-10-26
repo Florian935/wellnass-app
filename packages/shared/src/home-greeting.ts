@@ -18,7 +18,7 @@
 
 import { countdownToSession } from './dashboard-moment';
 import { dayMoment } from './day-moment';
-import type { NowAction } from './now-action';
+import type { DayNow } from './day-timeline';
 
 export type GreetingKind = 'morning' | 'afternoon' | 'evening' | 'comeback' | 'welcome';
 
@@ -36,12 +36,24 @@ export interface DaySentenceFacts {
   hour: number;
   /** Kcal restantes sur la cible du jour, `null` sans cible. Négatif = cible dépassée. */
   kcalRemaining: number | null;
+  /**
+   * US ACCUEIL-08 — la série est en jeu ce soir : heures restantes avant minuit. Elle prime sur tout
+   * le reste — c'est la seule chose qui compte à cette heure-là (la toile, journée « série en jeu »).
+   */
+  streakHoursLeft?: number | null;
 }
 
 /** La phrase du jour, pour une décision donnée. */
-export function daySentence(action: NowAction, facts: DaySentenceFacts): DaySentence {
+export function daySentence(action: DayNow, facts: DaySentenceFacts): DaySentence {
   const kcal = facts.kcalRemaining;
+  if (facts.streakHoursLeft != null) {
+    return { key: 'home.sentence.rescue', params: { count: facts.streakHoursLeft } };
+  }
   switch (action.kind) {
+    case 'checkin-due':
+      return { key: 'home.sentence.checkin', params: {} };
+    case 'walk-idea':
+      return { key: 'home.sentence.walk', params: { steps: action.stepsLeft } };
     case 'workout-active':
       return { key: 'home.sentence.workoutActive', params: {} };
     case 'run-active':

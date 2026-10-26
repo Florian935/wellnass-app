@@ -1194,9 +1194,6 @@
       "eyebrow": "Today's session"
     },
     "streak": {
-      "title": "Streak",
-      "suffix_one": "day in a row",
-      "suffix_other": "days in a row",
       "days": [
         "M",
         "T",
@@ -1206,12 +1203,6 @@
         "S",
         "S"
       ],
-      "empty": "Log an activity today to start your streak.",
-      "eyebrow": "Consistency",
-      "bannerActive_one": "{{count}} active day this week 💪",
-      "bannerActive_other": "{{count}} active days this week 💪",
-      "bannerIdle_one": "Get back to it: {{count}} active day this week",
-      "bannerIdle_other": "Get back to it: {{count}} active days this week",
       "jokerTitle": "Streak at risk",
       "jokerOffer_one": "You logged nothing on {{date}}. Use your joker to save your {{count}}-day streak?",
       "jokerOffer_other": "You logged nothing on {{date}}. Use your joker to save your {{count}}-day streak?",
@@ -1219,14 +1210,6 @@
       "jokerRule": "1 joker per month. It freezes a single missed day — never two in a row.",
       "jokerError": "The joker could not be used. Please try again.",
       "jokerA11y": "Use my joker to save a {{count}}-day streak",
-      "suffixWeek_one": "week in a row",
-      "suffixWeek_other": "weeks in a row",
-      "emptyWeek": "One activity this week, and the first one counts.",
-      "weekCount_one": "{{count}} activity this week",
-      "weekCount_other": "{{count}} activities this week",
-      "weekGoal": "{{done}} of {{goal}} activities this week",
-      "weekGoalMet_one": "Weekly goal reached: {{count}} activity",
-      "weekGoalMet_other": "Weekly goal reached: {{count}} activities",
       "switchTitle": "How about counting in weeks?",
       "switchBody": "{{days}} days in a row today — that's {{weeks}} weeks, read differently. Both numbers describe the same history.",
       "switchRule": "A week gives you seven chances to keep it. You can switch back to days whenever you like.",
@@ -1234,29 +1217,13 @@
       "switchKeepDay": "Keep days"
     },
     "nutrition": {
-      "title": "Nutrition",
       "caloriesGoal": "{{kcal}} / {{target}} kcal",
       "caloriesNoGoal": "{{kcal}} kcal",
       "trainingDayBadge": "+{{kcal}} kcal · training day",
       "runDayBadge": "+{{kcal}} kcal · run",
       "cta": "+ Add a meal",
-      "setGoal": "Set my goal",
-      "setGoalHint": "Set your calorie goal to track your daily meals.",
-      "compactRemaining": "{{kcal}} kcal left",
-      "compactConsumed": "{{kcal}} kcal",
-      "compactNoGoal": "No goal set",
-      "eyebrow": "Nutrition",
-      "remaining": "kcal left",
-      "consumedSub": "kcal eaten",
       "todayEyebrow": "Today",
-      "consumed": "Eaten",
-      "goal": "Goal",
-      "kcalValue": "{{kcal}} kcal",
-      "sport": "Workout",
-      "ofGoal": "/ {{target}} kcal",
-      "remainingEyebrow": "Remaining",
-      "budgetPct": "{{pct}}% of budget",
-      "bonusShort": "+{{kcal}} · session"
+      "sport": "Workout"
     },
     "weight": {
       "title": "Body weight",
@@ -1420,7 +1387,11 @@
         "eyebrowAt": "Today's session · {{time}}",
         "fallbackName": "Today's session",
         "startStrength": "Start workout",
-        "startRunning": "Start run"
+        "startRunning": "Start run",
+        "kind": {
+          "strength": "Workout",
+          "running": "Run"
+        }
       },
       "meal": {
         "cta": {
@@ -1450,12 +1421,15 @@
         "eyebrow": "Weigh-in",
         "title": "Not weighed in yet today",
         "meta": "Regular weigh-ins smooth the curve",
-        "cta": "Log my weight"
+        "cta": "Log my weight",
+        "kind": "Weigh-in"
       },
       "wellbeing": {
         "eyebrow": "Wellbeing",
         "title": "How did your day go?",
-        "cta": "Do my evening check-in"
+        "cta": "Do my evening check-in",
+        "kind": "Evening check-in",
+        "meta": "Mood and stress: ten seconds, and your day is complete."
       },
       "dayDone": {
         "eyebrow": "Today",
@@ -1488,6 +1462,30 @@
           "meal": "Add a meal",
           "activity": "Log an activity"
         }
+      },
+      "when": {
+        "now": "Now",
+        "today": "Today",
+        "at": "At {{time}} · {{in}}",
+        "inMinutes": "in {{m}} min",
+        "inHours": "in {{h}} h",
+        "inHoursMinutes": "in {{h}} h {{m}}"
+      },
+      "checkin": {
+        "eyebrow": "Morning check-in",
+        "meta": "It tunes the Recover dial and today's idea."
+      },
+      "walk": {
+        "eyebrow": "Idea",
+        "title": "Fancy a walk?",
+        "meta": "{{steps}} more steps to your goal.",
+        "cta": "See my steps"
+      },
+      "rescue": {
+        "eyebrow_one": "Your streak · {{count}} day at stake",
+        "eyebrow_other": "Your streak · {{count}} days at stake",
+        "title_one": "{{count}} hour left to keep it",
+        "title_other": "{{count}} hours left to keep it"
       }
     },
     "quick": {
@@ -1497,16 +1495,7 @@
         "dinner": "Dinner",
         "snack": "Snack"
       },
-      "run": "Run",
-      "weighIn": "Weigh-in",
-      "wellbeing": "Wellbeing"
-    },
-    "upNext": {
-      "eyebrow": "Up next",
-      "session": "{{date}} · {{name}}",
-      "planning": "See my plan",
-      "empty": "Nothing planned this week.",
-      "nothingElse": "Nothing else this week."
+      "weighIn": "Weigh-in"
     },
     "links": {
       "overline": "Your links",
@@ -1548,12 +1537,230 @@
       "dayDoneTrained": "Day wrapped up, workout included. Well-earned rest.",
       "idleProgram": "No program yet — three questions are enough to find yours.",
       "idleMeal": "Nothing logged yet — your first meal takes twenty seconds.",
-      "idleRest": "Rest day: your body is recovering."
+      "idleRest": "Rest day: your body is recovering.",
+      "checkin": "How are you feeling this morning?",
+      "walk": "{{steps}} more steps to your goal: a walk will do.",
+      "rescue_one": "Your streak is at stake: {{count}} hour left to keep it.",
+      "rescue_other": "Your streak is at stake: {{count}} hours left to keep it."
     },
     "checkin": {
       "title": "How are you feeling this morning?",
-      "hint": "Your energy, in one tap.",
       "groupA11y": "Your energy this morning"
+    },
+    "add": {
+      "fab": "Log something",
+      "title": "Log",
+      "meta": "In one tap",
+      "scan": "Scan",
+      "checkin": "Check-in",
+      "water": "A glass of water",
+      "activity": "An activity",
+      "run": "A run",
+      "workout": "A workout"
+    },
+    "dials": {
+      "move": {
+        "label": "Move",
+        "unit_one": "session",
+        "unit_other": "sessions",
+        "week": "this week",
+        "rest": "rest day",
+        "a11y": "Move: {{done}} of {{total}} sessions done this week"
+      },
+      "eat": {
+        "label": "Eat",
+        "unitLeft": "kcal left",
+        "unitOver": "kcal over",
+        "unitEaten": "kcal logged",
+        "protein": "protein {{value}}/{{target}} g",
+        "noTarget": "no target",
+        "a11y": "Eat: {{kcal}} kcal left, {{protein}} g of protein logged",
+        "a11yNoTarget": "Eat: {{kcal}} kcal logged today"
+      },
+      "walk": {
+        "label": "Walk",
+        "unit": "steps",
+        "goal": "goal {{goal}}",
+        "a11y": "Walk: {{steps}} of {{goal}} steps"
+      },
+      "recover": {
+        "label": "Recover",
+        "unit": "readiness",
+        "unitPending": "to tell",
+        "why": "load, meals, feeling",
+        "pending": "check-in to do",
+        "a11y": "Recover: {{verdict}}",
+        "a11yPending": "Recover: morning check-in to do",
+        "word": {
+          "rest": "Rest",
+          "ok": "Fine",
+          "push": "Push"
+        }
+      }
+    },
+    "fil": {
+      "title": "Your day",
+      "progress": "{{done}}/{{total}} done",
+      "live": "In progress",
+      "tagLive": "live",
+      "tagIdea": "idea",
+      "noTime": "no set time",
+      "doneGeneric": "Done",
+      "doneCount_one": "{{count}} thing already done",
+      "doneCount_other": "{{count}} things already done",
+      "showDone_one": "Show the thing already done",
+      "showDone_other": "Show the {{count}} things already done",
+      "hideDone": "Fold the things done",
+      "fold": "Fold",
+      "see": "Show",
+      "more_one": "{{count}} later",
+      "more_other": "{{count}} later",
+      "showMoreA11y": "Show the rest of the day",
+      "quick": "Log right now: {{title}}",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "checkin": {
+        "title": "Morning check-in",
+        "todo": "Your energy, in one tap",
+        "done": "Energy {{level}}/5 · {{label}}"
+      },
+      "weigh": {
+        "title": "Weigh-in",
+        "todo": "Regular weigh-ins smooth the curve"
+      },
+      "meal": {
+        "usually": "Usually around {{time}}",
+        "around": "Around {{time}}",
+        "done": "{{kcal}} kcal · {{protein}} g protein"
+      },
+      "training": {
+        "done": "Done",
+        "kind": {
+          "strength": "Strength",
+          "running": "Run"
+        },
+        "fallback": {
+          "strength": "Today's workout",
+          "running": "Today's run"
+        }
+      },
+      "activity": {
+        "title": "Activity"
+      },
+      "walk": {
+        "title": "Suggested walk",
+        "todo": "{{steps}} more steps to your goal",
+        "done": "Step goal reached"
+      },
+      "evening": {
+        "title": "Evening check-in",
+        "todo": "Mood and stress, ten seconds"
+      },
+      "missed": {
+        "meal": "Not logged",
+        "other": "Not done"
+      },
+      "short": {
+        "checkin": "check-in",
+        "weigh": "weigh-in",
+        "meal": "meal",
+        "session": "workout",
+        "run": "run",
+        "activity": "activity",
+        "walk": "walk",
+        "evening": "evening check-in"
+      }
+    },
+    "news": {
+      "title": "What's new",
+      "all": "See all",
+      "record": {
+        "tag": "New record",
+        "body": "Well done: it shows in your insights."
+      },
+      "near": {
+        "tag": "Record within reach",
+        "body": "Your next workout can beat it."
+      }
+    },
+    "reperes": {
+      "title": "Your markers",
+      "customize": "Customize",
+      "sleep": {
+        "title": "Sleep",
+        "none": "—",
+        "sub": "Last night",
+        "a11y": "Sleep last night: {{value}}"
+      },
+      "water": {
+        "title": "Water",
+        "sub": "of {{target}} L",
+        "a11y": "Water: {{value}} litres of {{target}}",
+        "hint": "Adds a glass of water"
+      }
+    },
+    "footer": {
+      "lighten": "Busy week? Lighten it",
+      "customize": "Customize home"
+    },
+    "sky": {
+      "firstSteps": "First steps · day {{day}} of {{total}}"
+    },
+    "week": {
+      "title": "Your week",
+      "review": "Your review",
+      "empty": "Your week is starting: nothing logged yet.",
+      "sessions": "{{done}} of {{total}} sessions",
+      "inTarget_one": "{{count}} day on target",
+      "inTarget_other": "{{count}} days on target",
+      "streak": {
+        "days_one": "{{count}} day",
+        "days_other": "{{count}} days",
+        "weeks_one": "{{count}} week",
+        "weeks_other": "{{count}} weeks",
+        "atRisk_one": "{{count}} day · at stake",
+        "atRisk_other": "{{count}} days · at stake",
+        "start": "Your streak starts"
+      },
+      "legend": {
+        "strength": "Strength",
+        "running": "Run",
+        "nutrition": "Meals",
+        "key": "solid = done · dashed = planned"
+      },
+      "a11y": {
+        "strength": {
+          "done": "workout done",
+          "planned": "workout planned",
+          "logged": "workout logged",
+          "idle": "no workout"
+        },
+        "running": {
+          "done": "run done",
+          "planned": "run planned",
+          "logged": "run logged",
+          "idle": "no run"
+        },
+        "nutrition": {
+          "done": "meals on target",
+          "planned": "meals planned",
+          "logged": "meals logged, off target",
+          "idle": "no meal logged"
+        }
+      }
+    },
+    "tips": {
+      "beforeStrengthNamed": "{{name}} tonight: have some good carbs at this meal.",
+      "beforeStrength": "Workout tonight: have some good carbs at this meal.",
+      "beforeRunNamed": "{{name}} today: eat light in the two hours before.",
+      "beforeRun": "Run today: eat light in the two hours before.",
+      "afterTraining": "Your training earned you {{kcal}} kcal on your target.",
+      "proteinGap": "You're about {{grams}} g of protein short today.",
+      "tag": {
+        "strength-nutrition": "Strength × Nutrition",
+        "running-nutrition": "Run × Nutrition",
+        "nutrition": "Nutrition"
+      }
     }
   },
   "activationPath": {
@@ -4772,8 +4979,6 @@
     }
   },
   "brief": {
-    "title": "Your morning brief",
-    "listen": "Listen",
     "stop": "Stop",
     "gentle": "Easy period: do what you can, the streak holds.",
     "verdict": {
@@ -4814,28 +5019,8 @@
     },
     "kcal": "Estimated calorie target: {{kcal}} kcal per day"
   },
-  "ask": {
-    "title": "Ask me",
-    "offlineMeta": "Answers computed on device",
-    "questions": {
-      "today": "Should I train today?",
-      "eat": "What should I eat tonight?",
-      "week": "Where am I this week?"
-    },
-    "answers": {
-      "todayRest": "Signals are in the red: an easier day will serve you better than a forced session.",
-      "todayOk": "Nothing stands out: your planned session holds.",
-      "todayPush": "Everything is green: it's a good day to push.",
-      "todayUnknown": "Not enough data to call it — listen to yourself.",
-      "eatRemaining": "You have {{kcal}} kcal and {{protein}} g of protein left for the day.",
-      "eatNoTarget": "No calorie target set, so it's hard to say. You can set one in your nutrition profile.",
-      "week": "{{workouts}} sessions and {{runs}} runs this week, {{days}} active days."
-    }
-  },
   "stage": {
     "home": {
-      "timeLeft_one": "Less than an hour left to keep it",
-      "timeLeft_other": "About {{count}} h left to keep it",
       "bestStreak_one": "Your best streak: one day",
       "bestStreak_other": "Your best streak: {{count}} days",
       "gentleRestart": "Take it easy",
@@ -4856,29 +5041,6 @@
         "late": "Deadline passed",
         "progressA11y": "{{percent}}% of the way",
         "empty": "No goal in progress"
-      },
-      "weeklyStory": {
-        "title": "Your week, in three cards",
-        "volume": "{{workouts}} sessions · {{runs}} runs",
-        "tonnage": "{{tonnage}} kg lifted",
-        "distance": "{{distance}} covered",
-        "records_one": "One record beaten",
-        "records_other": "{{count}} records beaten",
-        "regularity_one": "One active day",
-        "regularity_other": "{{count}} active days",
-        "nutrition": "{{days}} days on target out of {{logged}} logged",
-        "change": "{{percent}}% vs the week before",
-        "cta": "See the review"
-      },
-      "ring": {
-        "strength": "Strength {{done}} of {{target}}",
-        "strengthOnly_one": "Strength: one session",
-        "strengthOnly_other": "Strength: {{count}} sessions",
-        "running": "Running {{done}} of {{target}}",
-        "runningOnly_one": "Running: one run",
-        "runningOnly_other": "Running: {{count}} runs",
-        "nutrition_one": "Nutrition: one day logged out of 7",
-        "nutrition_other": "Nutrition: {{count}} days logged out of 7"
       },
       "rescue": {
         "lead": "Nothing active today. Any one of these is enough:",

@@ -83,7 +83,20 @@ const WATCHED = [
   // `WellbeingCard.tsx` était surveillé ici ; le composant a été **supprimé** le 08/08/2026 avec
   // les 11 autres cartes devenues mortes après INSIGHTS-02. La liste est lue par `readFileSync` :
   // y laisser un chemin inexistant aurait fait échouer ce test, pas seulement l'affaiblir.
-  'src/components/dashboard/NutritionSummaryCard.tsx',
+  // `NutritionSummaryCard.tsx` l'était aussi ; il a été **supprimé** le 25/10/2026 (ACCUEIL-08) avec
+  // le widget qu'il peignait — même raison de le retirer d'ici que pour `WellbeingCard.tsx`.
+  //
+  // US ACCUEIL-08 — l'accueil « Ta journée » vit tant que l'app est ouverte, et ses décisions suivent
+  // l'heure : la carte du moment, le fil, le « + » (le repas de l'heure), la semaine. Chacun reçoit
+  // l'heure de `useCurrentClock` ; une lecture d'horloge au rendu y serait gelée au montage.
+  'src/hooks/useNowAction.ts',
+  'src/hooks/useHomeWeek.ts',
+  'src/components/dashboard/NowCard.tsx',
+  'src/components/dashboard/AddSheet.tsx',
+  'src/components/dashboard/HomeDayTimeline.tsx',
+  'src/components/dashboard/HomeNews.tsx',
+  'src/components/dashboard/SleepCard.tsx',
+  'src/app/(tabs)/index.tsx',
   // US NORYN-02 : l'âge de la dépense et de la cible se prend désormais à `useTodayDate()` — la date
   // du jour réactive — et plus à un `new Date()` implicite. Un retour en arrière serait gelé ici.
   'src/data/repositories/energy-repository.ts',

@@ -35,7 +35,10 @@ describe('table des destinations', () => {
     // Toujours 8 après ACCUEIL-01/04 (09/09/2026), et c'est un équilibre exact, pas une
     // coïncidence : `today-session` a quitté la grille pour la zone épinglée (`home-pinned`) et
     // `weight` y est revenu. Le plafond `MAX_HOME_WIDGETS` n'a donc pas eu à bouger.
-    expect(KEPT_ON_HOME).toHaveLength(8);
+    //
+    // **5 depuis ACCUEIL-08 (25/10/2026)** : la grille devient « Tes repères ». Cinq entrées
+    // deviennent des zones fixes (`home-pinned`), deux repères entrent (`sleep`, `water`).
+    expect(KEPT_ON_HOME).toHaveLength(5);
   });
 
   it('garde `today-session` sur l’accueil, mais épinglé hors grille', () => {
@@ -46,12 +49,22 @@ describe('table des destinations', () => {
     if (dest.kind === 'home-pinned') expect(dest.zone.length).toBeGreaterThan(0);
   });
 
+  it('🔴 ACCUEIL-08 — les cinq widgets sortis de la grille sont épinglés dans une zone nommée', () => {
+    for (const id of ['nutrition-summary', 'streak', 'insights', 'activation-path', 'real-life'] as const) {
+      const dest = WIDGET_DESTINATIONS[id];
+      expect(dest.kind).toBe('home-pinned');
+      if (dest.kind === 'home-pinned') expect(dest.zone.startsWith('Accueil ›')).toBe(true);
+    }
+  });
+
   it('ne laisse aucun widget d’avant sans destination, quelle qu’elle soit', () => {
     // La règle R1 d'INSIGHTS-02 (« aucun signal ne disparaît ») ne dit pas *où* va un signal, elle
     // dit qu'il va quelque part. On compte donc ce qui a quitté la grille, sans présumer de la
-    // forme : 13 rangés ailleurs + `today-session` promu = 14, le compte d'origine.
+    // forme : 13 rangés ailleurs + `today-session` promu = 14, le compte d'origine — puis **18**
+    // depuis ACCUEIL-08, qui fait passer en zone fixe `nutrition-summary`, `streak`, `insights` et
+    // `activation-path` (`real-life` aussi, mais il est né après le snapshot).
     const moved = HOME_WIDGET_IDS_V1.filter((id) => WIDGET_DESTINATIONS[id].kind !== 'home');
-    expect(moved).toHaveLength(14);
+    expect(moved).toHaveLength(18);
     for (const id of moved) expect(WIDGET_DESTINATIONS[id]).toBeDefined();
   });
 });

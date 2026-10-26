@@ -176,3 +176,56 @@ export function useWindowStartUtc(days: number): string {
     [days, today],
   );
 }
+
+/** Pas de l'horloge fine de l'accueil, en minutes (US ACCUEIL-08). */
+export const CLOCK_STEP_MINUTES = 5;
+
+/** Heure locale décimale arrondie au pas inférieur : 12:47 → 12,75 avec un pas de 5 min. */
+function steppedHour(now: Date): number {
+  const minutes = now.getMinutes() - (now.getMinutes() % CLOCK_STEP_MINUTES);
+  return now.getHours() + minutes / 60;
+}
+
+/**
+ * US ACCUEIL-08 — **l'heure locale décimale**, au pas de 5 minutes (12,75 = 12 h 45).
+ *
+ * Le fil « Ta journée » dit « À 12:30 · dans 40 min » et fait passer un repas de « prochain » à
+ * « dû » à son heure apprise, souvent une demi-heure : `useCurrentHour` (à l'heure pile) l'aurait
+ * réclamé avec jusqu'à 59 minutes de retard. Même patron que `useCurrentHour` — un seul minuteur
+ * aligné sur le prochain pas, et un rafraîchissement au retour au premier plan — donc **un re-rendu
+ * toutes les 5 minutes au plus**, jamais à la seconde (voir la mise en garde de `useCurrentHour`).
+ */
+export function useCurrentClock(): number {
+  const [clock, setClock] = useState(() => steppedHour(new Date()));
+
+  useEffect(() => {
+    const sync = () =>
+      setClock((current) => {
+        const next = steppedHour(new Date());
+        return next === current ? current : next;
+      });
+
+    const sub = AppState.addEventListener('change', (state: AppStateStatus) => {
+      if (state === 'active') sync();
+    });
+
+    let timer: ReturnType<typeof setTimeout>;
+    const schedule = () => {
+      const now = new Date();
+      const intoStep = (now.getMinutes() % CLOCK_STEP_MINUTES) * 60_000 + now.getSeconds() * 1_000;
+      // `+1000` : même marge que `useCurrentHour`, pour ne pas se réveiller juste avant le pas.
+      timer = setTimeout(() => {
+        sync();
+        schedule();
+      }, CLOCK_STEP_MINUTES * 60_000 - intoStep + 1_000);
+    };
+    schedule();
+
+    return () => {
+      sub.remove();
+      clearTimeout(timer);
+    };
+  }, []);
+
+  return clock;
+}

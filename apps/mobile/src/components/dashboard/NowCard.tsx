@@ -1,30 +1,22 @@
 /**
- * US ACCUEIL-01 — **zone 1 de l'accueil** : la carte « maintenant ».
+ * US ACCUEIL-01 — **la carte « maintenant »** : l'action du moment, un seul sujet.
  *
- * Une carte, un sujet : la prochaine action. Elle est **épinglée hors grille** — ni masquable, ni
- * déplaçable — parce que l'accueil livré n'avait rien de garanti à l'écran : cinq à six widgets de
- * poids égal, tous personnalisables, dont aucun n'était certain d'être visible.
+ * ⚠️ **Le choix ne se fait pas ici.** `useNowAction` collecte les faits, `buildDayTimeline` (pur,
+ * testé) décide. Ce composant ne fait que peindre la décision.
  *
- * Elle remplace le widget `today-session`, qui a été retiré du registre (voir `widgets.ts` et la
- * destination `home-pinned` dans `widget-destinations.ts`) — et elle corrige au passage ses deux
- * défauts de fond : le pilier était **câblé en dur sur la musculation**, et l'heure de la séance
- * n'était jamais affichée alors qu'elle est stockée depuis HORAIRE-01.
- *
- * ⚠️ **Le choix ne se fait pas ici.** `useNowAction` collecte les faits, `resolveNowAction`
- * (pur, testé) décide. Ce composant ne fait que peindre la décision — c'est ce qui permet de
- * vérifier la table de priorité sans monter d'arbre React.
- *
- * ⚠️ **Ne rend jamais `null`.** Une carte épinglée qui disparaît réintroduirait le trou de mise en
- * page que la grille a mis quatre tentatives à corriger. Au pire, elle affiche l'état `idle`.
+ * ⚠️ **Ne rend jamais `null`.** Au pire, elle affiche le repli « rien de prévu ».
  *
  * ── US ACCUEIL-07 ────────────────────────────────────────────────────────────────────────────────
- *  - **la décision arrive par props** : l'écran calcule `useNowAction` une fois et la partage. La
- *    carte rappelait le hook elle-même — une quinzaine de requêtes montées deux fois (constat 16) ;
- *  - **un repas à la fois**, à son heure (`meal-due`, `meal-next`, `meal-missed`), avec les kcal
- *    restantes (constat 1) ;
- *  - **rien de prévu ≠ « Créer un programme »** : le geste suit `RestSuggestion` (constat 2) ;
- *  - **teinte Aurore** : la carte prend la nuit dense d'Aurore (`panel` de l'accueil) et son bouton
- *    le dégradé turquoise → rose de la scène.
+ * La décision arrive par props (calculée une fois par l'écran) ; un repas à la fois, à son heure,
+ * avec les kcal restantes ; « rien de prévu » ne propose plus un programme à tout le monde ; teinte
+ * Aurore (nuit dense du `panel` de l'accueil, bouton en dégradé turquoise → rose).
+ *
+ * ── US ACCUEIL-08 — la carte entre dans le fil « Ta journée » ────────────────────────────────────
+ * Elle se déplie à la place du geste qu'elle porte, et son sur-titre dit **quand** : « À 18:00 ·
+ * dans 5 h 20 » ou « Maintenant ». Trois gestes de plus que le fil seul connaît : le **check-in du
+ * matin** (les visages, dans la carte), la **marche suggérée**, et **la série en jeu** le soir (les
+ * vrais gestes pour la garder). Une **astuce croisée** s'y pose quand deux piliers se parlent
+ * (« Jambes ce soir : un bon féculent à ce repas »).
  */
 
 import { useState } from 'react';
@@ -33,9 +25,19 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { clockLabel, mealForHour, type MealSlot, type NowAction } from '@wellness/shared';
+import {
+  clockLabel,
+  mealForHour,
+  type CrossTip,
+  type DayNow,
+  type MealSlot,
+  type StreakRescueOption,
+  type WellbeingLevel,
+} from '@wellness/shared';
 
 import { AccentHalo } from '@/components/AccentHalo';
+import { CheckinFaces } from '@/components/dashboard/CheckinFaces';
+import { StreakRescue } from '@/components/dashboard/StreakRescue';
 import { useStageTheme } from '@/components/stage/PillarStage';
 import { startWorkoutFromSession } from '@/data/repositories/workout-repository';
 import { useActionLock } from '@/hooks/useActionLock';
@@ -56,23 +58,68 @@ type Painted = {
 /** Les quatre repas que l'app nomme elle-même ; un repas personnalisé porte son propre libellé. */
 const DEFAULT_MEALS = new Set(['breakfast', 'lunch', 'dinner', 'snack']);
 
+/** En deçà d'un quart d'heure, un geste à venir se dit « Maintenant » (la toile : 0,26 h). */
+const NOW_THRESHOLD_HOURS = 0.26;
+
+/** Le nom d'un repas, partagé avec le fil : celui de l'app, ou le libellé choisi. */
+export function useMealName(): (slot: MealSlot) => string {
+  const { t } = useTranslation();
+  return (slot) =>
+    slot.label?.trim() ||
+    (DEFAULT_MEALS.has(slot.key) ? t(`home.now.meal.name.${slot.key}`) : t('home.now.meal.nameFallback'));
+}
+
+export type RescueProps = {
+  streak: number;
+  hoursLeft: number;
+  options: readonly StreakRescueOption[];
+  onWalk: () => void;
+  onActivity: () => void;
+  onJoker: () => void;
+  busy: boolean;
+  formatSteps: (steps: number) => string;
+};
+
 type Props = {
-  /** La décision, calculée UNE fois par l'écran (`useNowAction`). */
-  action: NowAction;
+  /** La décision, calculée UNE fois par l'écran (`useNowAction` → `buildDayTimeline`). */
+  action: DayNow;
   isLoading: boolean;
+  /** Heure décimale courante, et l'heure du geste porté (`null` : compte rendu, repli). */
+  hour?: number;
+  itemHour?: number | null;
+  /** `false` pour une séance sans heure : le sur-titre ne promet pas d'horaire. */
+  itemTimeKnown?: boolean;
   /** Kcal restantes sur la cible du jour, `null` sans cible. */
   kcalRemaining: number | null;
   /** Mise en forme des kcal (séparateur de milliers de la langue). */
   formatKcal: (kcal: number) => string;
+  /** L'astuce croisée du moment (`crossTip`), ou `null`. */
+  tip?: CrossTip | null;
+  /** Le check-in du matin, depuis la carte. */
+  checkin?: { onPick: (level: WellbeingLevel) => void; saving: boolean };
+  /** La série en jeu ce soir : la carte propose les vraies sorties à la place de l'action. */
+  rescue?: RescueProps | null;
 };
 
-export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props) {
+export function NowCard({
+  action,
+  isLoading,
+  hour = 0,
+  itemHour = null,
+  itemTimeKnown = true,
+  kcalRemaining,
+  formatKcal,
+  tip = null,
+  checkin,
+  rescue = null,
+}: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const stage = useStageTheme('home');
   const router = useRouter();
   const todayKey = useTodayKey();
   const units = useUnits();
+  const mealName = useMealName();
   const [starting, setStarting] = useState(false);
   // Même verrou que le hub muscu : un état React ne voit pas un second appui du même cycle de
   // rendu, et sans lui deux appuis créaient DEUX séances, dont une orpheline que rien ne rouvrait.
@@ -101,15 +148,11 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
   const openMeal = (meal: string) =>
     router.push({ pathname: '/food-picker', params: { date: todayKey, meal } });
 
-  /** Le nom d'un repas : celui de l'app pour les quatre repas par défaut, sinon le libellé choisi. */
-  const mealName = (slot: MealSlot) =>
-    slot.label?.trim() ||
-    (DEFAULT_MEALS.has(slot.key) ? t(`home.now.meal.name.${slot.key}`) : t('home.now.meal.nameFallback'));
-
   const mealCta = (slot: MealSlot): NonNullable<Painted['cta']> => ({
-    label: DEFAULT_MEALS.has(slot.key) && !slot.label?.trim()
-      ? t(`home.now.meal.cta.${slot.key}`)
-      : t('home.now.meal.ctaCustom', { label: mealName(slot) }),
+    label:
+      DEFAULT_MEALS.has(slot.key) && !slot.label?.trim()
+        ? t(`home.now.meal.cta.${slot.key}`)
+        : t('home.now.meal.ctaCustom', { label: mealName(slot) }),
     icon: 'add',
     onPress: () => openMeal(slot.key),
   });
@@ -121,10 +164,29 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
         ? t('home.now.meal.metaKcal', { kcal: formatKcal(Math.round(kcalRemaining)) })
         : t('home.now.meal.metaReached');
 
+  /** « À 18:00 · dans 5 h 20 », « Aujourd'hui » (sans heure) ou « Maintenant ». */
+  const when = (): string | null => {
+    if (itemHour === null) return null;
+    const delta = itemHour - hour;
+    if (delta <= NOW_THRESHOLD_HOURS) return t('home.now.when.now');
+    if (!itemTimeKnown) return t('home.now.when.today');
+    const total = Math.round(delta * 60);
+    const h = Math.floor(total / 60);
+    const m = total % 60;
+    const inLabel =
+      h === 0
+        ? t('home.now.when.inMinutes', { m })
+        : m === 0
+          ? t('home.now.when.inHours', { h })
+          : t('home.now.when.inHoursMinutes', { h, m: String(m).padStart(2, '0') });
+    return t('home.now.when.at', { time: clockLabel(itemHour), in: inLabel });
+  };
+  const withWhen = (label: string) => [when(), label].filter(Boolean).join(' · ');
+
   const painted = paint(action);
 
   /** Traduit la décision en textes et en action. */
-  function paint(a: NowAction): Painted {
+  function paint(a: DayNow): Painted {
     switch (a.kind) {
       case 'workout-active':
         return {
@@ -150,18 +212,17 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
           },
         };
 
+      case 'checkin-due':
+        return {
+          eyebrow: withWhen(t('home.now.checkin.eyebrow')),
+          title: t('home.checkin.title'),
+          meta: t('home.now.checkin.meta'),
+          cta: null,
+        };
+
       case 'session-today': {
         const tr = a.training;
         const name = tr.name || t('home.now.session.fallbackName');
-        // L'heure entre dans le sur-titre quand elle existe — c'est l'information que la maquette
-        // validée portait depuis l'origine et que le widget n'a jamais affichée.
-        //
-        // ⚠️ `scheduledTime` est stocké en `HH:MM:SS` : on ne garde que les heures et minutes,
-        // sinon la carte annoncerait « 18:30:00 ».
-        const eyebrow = tr.scheduledTime
-          ? t('home.now.session.eyebrowAt', { time: tr.scheduledTime.slice(0, 5) })
-          : t('home.now.session.eyebrow');
-
         // Détail composé ICI, où l'on a `t()` et les unités — le hook de collecte n'a ni l'un ni
         // l'autre. C'est ce qui manquait : la carte n'affichait que le nom du programme.
         const meta =
@@ -183,6 +244,14 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
           ]
             .filter(Boolean)
             .join(' · ') || null;
+        // Sans heure de geste connue (carte hors fil), l'heure stockée garde sa place : elle est
+        // tronquée à HH:MM — la base stocke `HH:MM:SS`.
+        const eyebrow =
+          itemHour !== null
+            ? withWhen(t(`home.now.session.kind.${tr.pillar}`))
+            : tr.scheduledTime
+              ? t('home.now.session.eyebrowAt', { time: tr.scheduledTime.slice(0, 5) })
+              : t('home.now.session.eyebrow');
         return {
           eyebrow,
           title: name,
@@ -209,9 +278,12 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
       case 'meal-due':
         return {
           // L'heure du repas devient visible : apprise (« d'habitude vers 12:45 ») ou par défaut.
-          eyebrow: a.meal.learned
-            ? t('home.now.meal.eyebrowDue', { time: clockLabel(a.meal.hour) })
-            : t('home.now.meal.eyebrowDueDefault', { time: clockLabel(a.meal.hour) }),
+          eyebrow:
+            itemHour !== null
+              ? withWhen(mealName(a.meal).toLocaleLowerCase())
+              : a.meal.learned
+                ? t('home.now.meal.eyebrowDue', { time: clockLabel(a.meal.hour) })
+                : t('home.now.meal.eyebrowDueDefault', { time: clockLabel(a.meal.hour) }),
           title: mealName(a.meal),
           meta: kcalMeta(),
           cta: mealCta(a.meal),
@@ -219,7 +291,10 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
 
       case 'meal-next':
         return {
-          eyebrow: t('home.now.meal.eyebrowNext', { time: clockLabel(a.meal.hour) }),
+          eyebrow:
+            itemHour !== null
+              ? withWhen(mealName(a.meal).toLocaleLowerCase())
+              : t('home.now.meal.eyebrowNext', { time: clockLabel(a.meal.hour) }),
           title: mealName(a.meal),
           meta: kcalMeta(),
           // On peut noter un repas en avance : le bouton reste là.
@@ -236,7 +311,7 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
 
       case 'weigh-in-due':
         return {
-          eyebrow: t('home.now.weighIn.eyebrow'),
+          eyebrow: itemHour !== null ? withWhen(t('home.now.weighIn.kind')) : t('home.now.weighIn.eyebrow'),
           title: t('home.now.weighIn.title'),
           meta: t('home.now.weighIn.meta'),
           cta: {
@@ -248,13 +323,26 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
 
       case 'wellbeing-due':
         return {
-          eyebrow: t('home.now.wellbeing.eyebrow'),
+          eyebrow: itemHour !== null ? withWhen(t('home.now.wellbeing.kind')) : t('home.now.wellbeing.eyebrow'),
           title: t('home.now.wellbeing.title'),
-          meta: null,
+          meta: t('home.now.wellbeing.meta'),
           cta: {
             label: t('home.now.wellbeing.cta'),
-            icon: 'happy-outline',
+            icon: 'moon-outline',
             onPress: () => router.push('/wellbeing'),
+          },
+        };
+
+      case 'walk-idea':
+        return {
+          eyebrow: withWhen(t('home.now.walk.eyebrow')),
+          title: t('home.now.walk.title'),
+          meta: t('home.now.walk.meta', { steps: formatKcal(a.stepsLeft) }),
+          cta: {
+            label: t('home.now.walk.cta'),
+            icon: 'walk-outline',
+            // Les pas se comptent seuls (Health Connect) : on ouvre leur suivi.
+            onPress: () => router.push('/steps'),
           },
         };
 
@@ -281,7 +369,7 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
         const moment = a.kind === 'idle' ? a.moment : 'morning';
         const suggestion = a.kind === 'idle' ? a.suggestion : 'activity';
         const ctas: Record<typeof suggestion, NonNullable<Painted['cta']>> = {
-          // Seulement à la musculation sans programme (constat 2).
+          // Seulement à la musculation sans programme (ACCUEIL-07, constat 2).
           program: {
             label: t('home.now.idle.cta.program'),
             icon: 'barbell-outline',
@@ -290,7 +378,7 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
           meal: {
             label: t('home.now.idle.cta.meal'),
             icon: 'add',
-            onPress: () => openMeal(mealForHour(new Date().getHours())),
+            onPress: () => openMeal(mealForHour(hour)),
           },
           activity: {
             label: t('home.now.idle.cta.activity'),
@@ -308,37 +396,80 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
     }
   }
 
-  const a11y = [painted.eyebrow, painted.title, painted.meta].filter(Boolean).join('. ');
+  // La série en jeu ce soir passe avant tout : c'est la seule chose qui compte à cette heure-là.
+  const shown: Painted = rescue
+    ? {
+        eyebrow: t('home.now.rescue.eyebrow', { count: rescue.streak }),
+        title: t('home.now.rescue.title', { count: rescue.hoursLeft }),
+        meta: t('stage.home.rescue.lead'),
+        cta: null,
+      }
+    : painted;
+
+  const a11y = [shown.eyebrow, shown.title, shown.meta].filter(Boolean).join('. ');
   const busy = starting || isLoading;
 
   return (
     <View style={[styles.card, { backgroundColor: colors.panel }]} testID="now-card">
-      {/* Hors grille, donc sans identité de widget : `AccentHalo` retombe sur la géométrie du
-          module actif (`MENU_HALO.home`) et le rend systématiquement. C'est voulu ici — dans la
-          grille, `hasHaloFor` n'en pose que sur environ un widget sur trois, et la carte épinglée
-          doit, elle, être toujours marquée. */}
-      {/* Carte héros de l'accueil : la seule de la grille qui respire (MOTION-01 · A4). */}
       <AccentHalo size={150} breathe />
       <View accessible accessibilityLabel={a11y}>
         <Text style={[styles.eyebrow, { color: colors.panelAccent }]} numberOfLines={1}>
-          {painted.eyebrow}
+          {shown.eyebrow}
         </Text>
         <Text style={styles.title} numberOfLines={2} maxFontSizeMultiplier={1.4}>
-          {painted.title}
+          {shown.title}
         </Text>
-        {painted.meta ? (
+        {shown.meta ? (
           <Text style={[styles.meta, { color: colors.panelMuted }]} numberOfLines={2}>
-            {painted.meta}
+            {shown.meta}
           </Text>
         ) : null}
       </View>
 
-      {painted.cta ? (
+      {!rescue && tip ? (
+        <View style={styles.tip} testID="now-card-tip">
+          <Ionicons name="link-outline" size={16} color={colors.panelAccent} style={styles.tipIcon} />
+          <View style={styles.tipTexts}>
+            <Text style={[styles.tipTag, { color: colors.panelAccent }]} numberOfLines={1}>
+              {t(`home.tips.tag.${tip.tag}`)}
+            </Text>
+            <Text style={[styles.tipText, { color: colors.panelText }]}>
+              {t(tip.key, {
+                ...tip.params,
+                ...(typeof tip.params.kcal === 'number' ? { kcal: formatKcal(tip.params.kcal) } : {}),
+              })}
+            </Text>
+          </View>
+        </View>
+      ) : null}
+
+      {rescue ? (
+        <View style={styles.slot}>
+          <StreakRescue
+            options={rescue.options}
+            onWalk={rescue.onWalk}
+            onActivity={rescue.onActivity}
+            onJoker={rescue.onJoker}
+            busy={rescue.busy}
+            formatSteps={rescue.formatSteps}
+          />
+        </View>
+      ) : action.kind === 'checkin-due' && checkin ? (
+        <View style={styles.slot}>
+          <CheckinFaces
+            onPick={checkin.onPick}
+            disabled={checkin.saving}
+            ink={colors.panelText}
+            glass="rgba(255,255,255,0.07)"
+            glassBorder="rgba(255,255,255,0.14)"
+          />
+        </View>
+      ) : shown.cta ? (
         <Pressable
-          onPress={painted.cta.onPress}
+          onPress={shown.cta.onPress}
           disabled={busy}
           accessibilityRole="button"
-          accessibilityLabel={painted.cta.label}
+          accessibilityLabel={shown.cta.label}
           accessibilityState={{ disabled: busy }}
           style={[styles.cta, { backgroundColor: stage.solid }, busy && styles.dimmed]}
         >
@@ -353,9 +484,9 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
               style={styles.gradient}
             />
           ) : null}
-          <Ionicons name={painted.cta.icon} size={16} color={stage.onSolid} />
+          <Ionicons name={shown.cta.icon} size={16} color={stage.onSolid} />
           <Text style={[styles.ctaLabel, { color: stage.onSolid }]} maxFontSizeMultiplier={1.3}>
-            {painted.cta.label}
+            {shown.cta.label}
           </Text>
         </Pressable>
       ) : null}
@@ -364,32 +495,49 @@ export function NowCard({ action, isLoading, kcalRemaining, formatKcal }: Props)
 }
 
 const styles = StyleSheet.create({
-  card: { position: 'relative', overflow: 'hidden', borderRadius: 22, padding: 18 },
+  card: { position: 'relative', overflow: 'hidden', borderRadius: 22, padding: 16 },
   eyebrow: {
     fontFamily: fontFamily.monoBold,
-    fontSize: 10,
+    fontSize: 10.5,
     letterSpacing: 0.5,
     textTransform: 'uppercase',
   },
   title: {
     fontFamily: fontFamily.displayBold,
-    fontSize: 24,
+    fontSize: 23,
     letterSpacing: -0.6,
     color: '#fff',
-    marginTop: 6,
+    marginTop: 7,
   },
-  meta: { fontFamily: fontFamily.body, fontSize: 13, marginTop: 3 },
+  meta: { fontFamily: fontFamily.body, fontSize: 13.5, lineHeight: 19, marginTop: 5 },
+  tip: {
+    marginTop: 12,
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'flex-start',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.10)',
+  },
+  tipIcon: { marginTop: 2 },
+  tipTexts: { flex: 1, gap: 3 },
+  tipTag: { fontFamily: fontFamily.monoBold, fontSize: 9.5, letterSpacing: 0.5, textTransform: 'uppercase' },
+  tipText: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
+  slot: { marginTop: 14 },
   cta: {
     marginTop: 14,
-    height: 48,
-    borderRadius: 14,
+    height: 50,
+    borderRadius: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 9,
     overflow: 'hidden',
   },
-  gradient: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, borderRadius: 14 },
+  gradient: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, borderRadius: 15 },
   ctaLabel: { fontFamily: fontFamily.bodyBold, fontSize: 15 },
   dimmed: { opacity: 0.6 },
 });

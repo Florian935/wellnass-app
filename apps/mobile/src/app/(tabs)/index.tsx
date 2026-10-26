@@ -1,36 +1,33 @@
 /**
- * Écran d'accueil — **les cinq zones** (US ACCUEIL-01 → 05, 09/09/2026).
+ * Écran d'accueil — **« Ta journée »** (US ACCUEIL-08, 25/10/2026).
  *
  * ── Ce que cet écran était ───────────────────────────────────────────────────────────────────────
- * Un en-tête (salut figé + **nom de l'application** en 28 px + sync + « Personnaliser ») et une
- * `WidgetGrid`. Rien d'autre. Tout y était déplaçable et masquable, donc **rien n'y était garanti**
- * — alors que les deux hubs pilier, eux, ont chacun une carte d'action épinglée hors grille. L'écran
- * d'atterrissage était le seul à n'avoir aucune priorité.
+ * Douze blocs (~1 850 px, 2,4 écrans), dont la moitié redisaient la série (×2), la semaine (×3), la
+ * forme (×3) ou l'assiette (×3) — et aucun ne répondait d'un coup d'œil à « où j'en suis
+ * aujourd'hui ? » (constats du 24/10/2026, `design/accueil-2026-10/README.md`).
  *
  * ── Ce qu'il est ─────────────────────────────────────────────────────────────────────────────────
- *   0 · `HomeStage`    — la scène du moment (US DASH-01) : date, accroche, et selon l'heure un
- *                        check-in, une série en danger, un retour, ou les anneaux de la semaine ;
- *                        elle porte `NowCard` — la prochaine action, un seul sujet   (fixe)
- *   1 · `SinceLastVisitCard` · `WeeklyStoryCard` · objectif — ce qui a bougé          (fixes)
- *   2 · `QuickActions` — les quatre gestes du quotidien à un tap        (fixe)
- *   3 · `WidgetGrid`   — la grille personnalisable, densifiée           (personnalisable)
- *   4 · `UpNext`       — « la suite », trois lignes de texte            (fixe)
+ * Trois questions, dans cet ordre : où j'en suis aujourd'hui, qu'est-ce que je fais maintenant,
+ * qu'est-ce qui a bougé. De haut en bas :
+ *   0 · **le ciel** (`HomeStage`, teinte Aurore) — la salutation, la phrase du jour, « Écouter mon
+ *       brief » le matin, la séance en cours, puis les **trois cadrans** (`HomeDials`) — ou la carte
+ *       « retour », ou « Premiers pas » le tout premier jour ;
+ *   1 · **Ta journée** (`HomeDayTimeline`) — le fil horodaté, l'action du moment dépliée (`NowCard`) ;
+ *   2 · **Ta semaine** (`WeekStrip`) ;
+ *   3 · **Du nouveau** (`HomeNews`) — deux cartes au plus ;
+ *   4 · **Tes repères** — la grille personnalisable, en tuiles compactes (D5) ;
+ *   5 · le pied — « Semaine chargée ? Allège-la » (ou la carte de la période en cours) et
+ *       « Personnaliser l'accueil » ;
+ *   + · le **bouton « + »** flottant et sa feuille « Noter » (D4).
  *
- * ⚠️ **Les zones 0/1/2/4 ne sont pas des widgets** et ne consomment donc aucune place au plafond
- * de huit d'ADR-007 §2. C'est écrit dans l'ADR (amendement du 09/09/2026) parce que la distinction
- * est exactement le genre de nuance qu'une relecture rapide écrase — et le plafond ne doit pas
- * devenir une excuse pour laisser l'accueil sans hiérarchie.
+ * ⚠️ **Seule la zone 4 est faite de widgets** (plafond de huit d'ADR-007 §2, amendé le 25/10/2026) :
+ * les autres zones sont garanties à l'écran, non masquables, et ne consomment aucune place au plafond.
  *
- * ⚠️ **Le mode édition masque le chrome.** Pendant la personnalisation, seules la grille et ses
- * consignes restent : garder une carte épinglée et une barre d'actions au-dessus d'une grille
- * qu'on réorganise ferait croire qu'elles sont déplaçables aussi.
+ * ⚠️ **Le mode édition masque le chrome** : pendant la personnalisation, seules la grille et ses
+ * consignes restent.
  *
- * ── US ACCUEIL-07 — l'accueil dit vrai (25/10/2026) ──────────────────────────────────────────────
- * La décision (`useNowAction`) est calculée **ici, une fois**, et passée à la scène et à la carte —
- * la carte la recalculait elle-même. La scène porte la salutation (avec le prénom) et la phrase du
- * jour (qui ne répète plus la carte), le check-in en visages, les vrais gestes pour sauver la série,
- * et la reprise en douceur qui ne pousse plus la route `/real-life` inexistante (VIE-02). Teinte
- * Aurore : voir `theme/stage.ts`.
+ * ⚠️ **La décision est calculée une fois** (`useNowAction` → `buildDayTimeline`) et passée à la
+ * scène, au fil et à la carte du moment par props.
  */
 
 import { Ionicons } from '@expo/vector-icons';
@@ -40,15 +37,18 @@ import { Alert, Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } 
 import { useTranslation } from 'react-i18next';
 import {
   addDays,
+  buildDayDials,
+  crossTip,
   dayMoment,
   daySentence,
   explainReadiness,
   greetingKind,
   localDateFromDayKey,
   localDayKey,
-  MEAL_TYPES,
+  resolveActivePillars,
+  type DayDial,
   type HomeWidgetId,
-  type MealType,
+  type TimelineItem,
   type WellbeingLevel,
   type WidgetId,
   type WidgetSize,
@@ -56,38 +56,42 @@ import {
 import { Screen } from '@/components/Screen';
 import { SyncStatus } from '@/components/SyncStatus';
 import { DashboardWidget } from '@/components/dashboard/dashboard-widgets';
-import { HomeStage, type HomeScene } from '@/components/dashboard/HomeStage';
-import { GoalConflictBanner } from '@/components/dashboard/GoalConflictBanner';
-import { NowCard } from '@/components/dashboard/NowCard';
-import { QuickActions } from '@/components/dashboard/QuickActions';
-import { MorningBrief } from '@/components/dashboard/MorningBrief';
-import { SinceLastVisitCard } from '@/components/dashboard/SinceLastVisitCard';
+import { HomeStage } from '@/components/dashboard/HomeStage';
+import { HomeDials } from '@/components/dashboard/HomeDials';
+import { HomeDayTimeline } from '@/components/dashboard/HomeDayTimeline';
+import { NowCard, type RescueProps } from '@/components/dashboard/NowCard';
+import { WeekStrip, type StreakPill } from '@/components/dashboard/WeekStrip';
+import { HomeNews } from '@/components/dashboard/HomeNews';
+import { AddFab, AddSheet } from '@/components/dashboard/AddSheet';
+import {
+  ComebackCard,
+  FirstStepsCard,
+  ListenBriefButton,
+  LiveBanner,
+} from '@/components/dashboard/HomeSky';
 import { EveningCard } from '@/components/dashboard/EveningCard';
-import { WeeklyStoryCard } from '@/components/dashboard/WeeklyStoryCard';
-import { GoalCard } from '@/components/goals/GoalCard';
+import { RealLifeCard } from '@/components/dashboard/RealLifeCard';
+import { RealLifeSheet } from '@/components/real-life/RealLifeSheet';
 import { ExplainSheet } from '@/components/explain/ExplainSheet';
-import { UpNext } from '@/components/dashboard/UpNext';
 import { StageScrollView } from '@/components/stage/StageScrollView';
+import { useStageTheme } from '@/components/stage/PillarStage';
 import { WidgetGrid } from '@/components/widgets/WidgetGrid';
 import { ANALYTICS_EVENTS, track } from '@/lib/analytics';
-import { AskCard } from '@/components/ask/AskCard';
-import { useAskQuestions, useHomeScene } from '@/hooks/useHomeScene';
-import { useWeekRings } from '@/hooks/useWeekRings';
+import { useHomeScene, useMorningBriefFacts } from '@/hooks/useHomeScene';
+import { useHomeWeek } from '@/hooks/useHomeWeek';
 import { useMenuFocus } from '@/hooks/useMenuFocus';
 import { useNowAction } from '@/hooks/useNowAction';
 import { useProfile } from '@/data/repositories/profile-repository';
-import { useGoals } from '@/data/repositories/goal-repository';
 import { saveWellbeing } from '@/data/repositories/daily-wellbeing-repository';
-import { useNutritionSummary } from '@/data/repositories/dashboard-repository';
+import { useNutritionSummary, useProteinTarget } from '@/data/repositories/dashboard-repository';
 import { consumeJoker } from '@/data/repositories/streak-joker-repository';
 import { useActivationPath } from '@/data/repositories/activation-path-repository';
-import { useInsights } from '@/data/repositories/insights-repository';
-import { usePressingLink } from '@/data/repositories/cross-links-repository';
-import { InsightsProvider } from '@/data/repositories/insights-context';
+import { useLatestWeight } from '@/data/repositories/bodyweight-repository';
+import { useSettings } from '@/data/repositories/settings-repository';
 import { startRealLifePeriod, useRealLifeState } from '@/data/repositories/real-life-repository';
 import { useSyncRefresh } from '@/hooks/useSyncRefresh';
 import { useKcalFormat } from '@/hooks/useKcalFormat';
-import { useCurrentHour, useTodayDate } from '@/hooks/useTodayKey';
+import { useTodayDate } from '@/hooks/useTodayKey';
 import { useComebackChoice } from '@/stores/home-comeback-store';
 import { fontFamily } from '@/theme/fonts';
 import { auroraMoment } from '@/theme/stage';
@@ -95,64 +99,48 @@ import { useTheme } from '@/theme/useTheme';
 
 /** Durée d'une reprise en douceur (VIE-01) : une semaine, le temps de reprendre le rythme. */
 const GENTLE_RESTART_DAYS = 7;
+/** « Écouter mon brief » : le matin seulement (le brief est un rendez-vous, pas du remplissage). */
+const BRIEF_UNTIL_HOUR = 11;
 
 export default function HomeScreen() {
   useMenuFocus('home');
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { colors } = useTheme();
+  const stage = useStageTheme('home');
   const { profile } = useProfile();
   const firstName = profile?.firstName ?? '';
+  const { settings } = useSettings();
+  const pillars = resolveActivePillars(settings?.activePillars);
 
   const [editing, setEditing] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [addOpen, setAddOpen] = useState(false);
+  const [realLifeOpen, setRealLifeOpen] = useState(false);
+  const [savingCheckin, setSavingCheckin] = useState(false);
+  const [freezing, setFreezing] = useState(false);
+  // §6.1 — « Pourquoi ? » sur le verdict de forme : les étapes viennent de la brique, pas d'ici.
+  const [explainOpen, setExplainOpen] = useState(false);
 
-  // La décision est calculée **une seule fois ici** et partagée entre la scène, la carte et la mise
-  // en avant du repas : plusieurs appels à `useNowAction` monteraient plusieurs fois l'union d'une
-  // quinzaine de hooks sur l'écran le plus ouvert de l'app. ⚠️ Jusqu'à ACCUEIL-07, ce commentaire
-  // mentait : `NowCard` rappelait le hook elle-même. La carte reçoit désormais la décision par props.
-  const { action, isLoading: actionLoading } = useNowAction();
+  // ── La décision, une fois ───────────────────────────────────────────────────────────────────
+  const { action, timeline, hour, mealTotals, checkinEnergy, isLoading } = useNowAction();
+  const facts = useHomeScene();
+  const week = useHomeWeek();
   const formatKcal = useKcalFormat();
-  const { kcal: kcalEaten, effectiveTarget } = useNutritionSummary();
+  const { kcal: kcalEaten, effectiveTarget, macros, trainingBonus } = useNutritionSummary();
+  const proteinTarget = useProteinTarget();
   const kcalRemaining = effectiveTarget != null ? effectiveTarget - kcalEaten : null;
-
-  // ── Widgets conditionnels : ils rendent `null` hors condition, il faut donc les exclure de la
-  // grille, sinon `WidgetGrid` réserve leur cellule et laisse un **trou**. Ce défaut s'est produit
-  // quatre fois sur ce dashboard.
-  const activationPathActive = useActivationPath().show;
-  // US INSIGHTS-01 : la porte d'entrée de l'écran « Insights ». Calculée **une seule fois** ici,
-  // puis diffusée au widget via `InsightsProvider` (voir `insights-context.tsx`).
-  const insightsValue = useInsights();
-  // US ECHO-01 — le widget dit aussi « Tes liens » : un lien à régler suffit à l'afficher.
-  const pressingLink = usePressingLink();
-  const insightsActive = insightsValue.insights.length > 0 || pressingLink.link !== null;
-  const isWidgetActive = (id: WidgetId) => {
-    if (id === 'activation-path') return activationPathActive;
-    if (id === 'insights') return insightsActive;
-    return true;
-  };
-
-  // US ACCUEIL-04 — forme **effective** de `real-life` : `row` hors période (une ligne suffit),
-  // `large` pendant. La disposition enregistrée n'est pas réécrite : le widget retrouve sa bande à
-  // la fin de la période.
-  //
-  // ⚠️ **`large` et non `wide`** (correctif du 10/09/2026). Le premier jet remontait à `wide`
-  // (170 px) : constaté en recette, la carte active était **tronquée** et ses deux boutons
-  // inatteignables. Son contenu en période fait environ 230 px — échéance, jours restants,
-  // séparateur, trois lignes d'objectif de semaine, puis « Prolonger » et « Reprendre le plan
-  // normal » côte à côte. Seule `large` (352 px) le contient sans couper.
-  //
-  // Le vide résiduel est assumé : mieux vaut une carte trop grande pendant les quelques semaines
-  // d'une période qu'une carte dont on ne peut pas se servir.
+  const activation = useActivationPath();
+  const { latest } = useLatestWeight();
   const { activePeriod } = useRealLifeState();
   const normalChosenOn = useComebackChoice((s) => s.normalChosenOn);
   const chooseNormal = useComebackChoice((s) => s.chooseNormal);
-  const sizeFor = (id: WidgetId, stored: WidgetSize): WidgetSize =>
-    id === 'real-life' && activePeriod !== null && (stored === 'row' || stored === 'wide')
-      ? 'large'
-      : stored;
-
   const { refreshing, onRefresh } = useSyncRefresh();
+
+  const today = useTodayDate();
+  const todayKey = localDayKey(today);
+  const locale = i18n.language === 'en' ? 'en-GB' : 'fr-FR';
+  const dateLabel = today.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
 
   const toggleEditing = () => {
     // Analytics : uniquement à l'entrée en mode édition (pas à la sortie). Fire-and-forget.
@@ -160,53 +148,33 @@ export default function HomeScreen() {
     setEditing((v) => !v);
   };
 
-  // ── La scène du moment (US DASH-01, §4.1) ─────────────────────────────────────────────────
-  const facts = useHomeScene();
-  const rings = useWeekRings();
-  const today = useTodayDate();
-  // US PRISME-01 — l'heure par `useCurrentHour`, jamais `new Date()` dans le corps (React Compiler).
-  const hour = useCurrentHour();
-  const { active: activeGoals } = useGoals();
-  const [savingCheckin, setSavingCheckin] = useState(false);
-  const [freezing, setFreezing] = useState(false);
-  // §6.1 — « Pourquoi ? » sur le verdict de forme : les étapes viennent de la brique, pas d'ici.
-  const [explainOpen, setExplainOpen] = useState(false);
-
-  const dateLabel = today.toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', {
-    weekday: 'long',
-    day: 'numeric',
-    month: 'long',
-  });
-  // §7.3 — les trois questions du moment, réponses calculées ici : le modèle ne fait que formuler.
-  const askQuestions = useAskQuestions(facts.readiness);
-  const todayKey = localDayKey(today);
-
-  // US ACCUEIL-07 (constat 6) — deux lignes : la salutation, avec le prénom quand on le connaît,
-  // puis la phrase du jour, qui dérive de la même décision que la carte sans jamais la répéter.
-  const greetKind = greetingKind({
-    hour,
-    comeback: facts.moment === 'comeback',
-    firstDay: facts.firstDay,
-  });
+  // ── La salutation et la phrase du jour (ACCUEIL-07, constat 6) ──────────────────────────────
+  const atRisk = facts.moment === 'evening-at-risk';
+  const greetKind = greetingKind({ hour, comeback: facts.moment === 'comeback', firstDay: facts.firstDay });
   const greeting = firstName
     ? t(`home.greet.${greetKind}`, { name: firstName })
     : t(`home.greet.${greetKind}Anon`);
-  const phrase = daySentence(action, { hour, kcalRemaining });
+  const phrase = daySentence(timeline.now, {
+    hour,
+    kcalRemaining,
+    streakHoursLeft: atRisk ? facts.hoursLeft : null,
+  });
   const sentence = t(phrase.key, {
     ...phrase.params,
     ...(phrase.params.kcal !== undefined ? { kcal: formatKcal(phrase.params.kcal) } : {}),
+    ...(phrase.params.steps !== undefined ? { steps: formatKcal(phrase.params.steps) } : {}),
   });
 
+  // ── Les gestes ──────────────────────────────────────────────────────────────────────────────
   /**
-   * Le check-in du matin, depuis la scène : **une seule question**, l'énergie. Le formulaire complet
-   * (humeur, stress, poids) reste à un tap, mais réclamer trois curseurs avant le café était le plus
-   * sûr moyen de n'avoir aucun check-in du tout.
+   * Le check-in du matin, depuis la carte du moment : **une seule question**, l'énergie. Le formulaire
+   * complet reste à un tap ; réclamer trois curseurs avant le café était le plus sûr moyen de n'avoir
+   * aucun check-in du tout.
    */
   const onCheckin = (level: WellbeingLevel) => {
     setSavingCheckin(true);
-    void saveWellbeing(localDayKey(today), { energy: level })
-      // §5 — l'événement mesure un **geste**, jamais la valeur saisie : le niveau d'énergie est une
-      // donnée de santé, il ne sort pas de l'appareil.
+    void saveWellbeing(todayKey, { energy: level })
+      // §5 — l'événement mesure un **geste**, jamais la valeur saisie : donnée de santé.
       .then((written) => {
         if (written) void track(ANALYTICS_EVENTS.homeCheckinDone);
       })
@@ -214,13 +182,7 @@ export default function HomeScreen() {
       .finally(() => setSavingCheckin(false));
   };
 
-  /**
-   * Reprise en douceur (VIE-01) : une période « vie réelle » d'une semaine, et la série traverse.
-   *
-   * 🔴 VIE-02 (absorbée par ACCUEIL-07) — elle poussait ensuite `/real-life`, une route qui n'a
-   * jamais existé : l'utilisateur qui revenait tombait sur « Unmatched Route ». On reste désormais
-   * sur l'accueil, et la scène relit la période qu'on vient d'écrire pour dire jusqu'à quand.
-   */
+  /** Reprise en douceur (VIE-01) : une période « vie réelle » d'une semaine — sur place (VIE-02). */
   const onGentleRestart = () => {
     void startRealLifePeriod({
       startedOn: todayKey,
@@ -228,17 +190,10 @@ export default function HomeScreen() {
     }).catch(() => undefined);
   };
 
-  /** La date de fin d'une période, en clair (« 1 novembre »). */
   const formatDay = (dayKey: string) =>
-    localDateFromDayKey(dayKey).toLocaleDateString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', {
-      day: 'numeric',
-      month: 'long',
-    });
+    localDateFromDayKey(dayKey).toLocaleDateString(locale, { day: 'numeric', month: 'long' });
 
-  /**
-   * US ACCUEIL-07 (constat 5) — le joker sur aujourd'hui, confirmé d'abord : il n'y en a qu'un par
-   * mois. `consumeJoker` relit le quota au moment d'écrire ; un refus s'affiche, il ne se perd pas.
-   */
+  /** Le joker sur aujourd'hui, confirmé d'abord : il n'y en a qu'un par mois (ACCUEIL-07). */
   const onFreezeToday = () => {
     void track(ANALYTICS_EVENTS.streakSavedEvening);
     Alert.alert(t('stage.home.rescue.jokerConfirmTitle'), t('stage.home.rescue.jokerConfirmBody'), [
@@ -255,45 +210,128 @@ export default function HomeScreen() {
     ]);
   };
 
-  const scene: HomeScene =
-    facts.moment === 'morning'
-      ? {
-          kind: 'morning',
-          checkinDone: facts.checkinDone,
-          verdict: facts.verdict,
-          onCheckin,
-          saving: savingCheckin,
-        }
-      : facts.moment === 'evening-at-risk'
-        ? {
-            kind: 'evening-at-risk',
-            streak: facts.streak,
-            hoursLeft: facts.hoursLeft,
-            // US ACCUEIL-07 (constat 5) — de vrais gestes, plus un bouton vers le planning.
-            rescue: facts.rescue,
-            onWalk: () => {
-              void track(ANALYTICS_EVENTS.streakSavedEvening);
-              router.push('/steps');
-            },
-            onActivity: () => {
-              void track(ANALYTICS_EVENTS.streakSavedEvening);
-              router.push('/activity');
-            },
-            onJoker: onFreezeToday,
-            busy: freezing,
-            formatSteps: formatKcal,
+  const rescue: RescueProps | null = atRisk
+    ? {
+        streak: facts.streak,
+        hoursLeft: facts.hoursLeft,
+        options: facts.rescue,
+        onWalk: () => {
+          void track(ANALYTICS_EVENTS.streakSavedEvening);
+          router.push('/steps');
+        },
+        onActivity: () => {
+          void track(ANALYTICS_EVENTS.streakSavedEvening);
+          router.push('/activity');
+        },
+        onJoker: onFreezeToday,
+        busy: freezing,
+        formatSteps: formatKcal,
+      }
+    : null;
+
+  /** Le « + » d'une ligne du fil : noter tout de suite un repas ou une pesée. */
+  const onQuick = (item: TimelineItem) => {
+    if (item.kind === 'meal' && item.meal) {
+      router.push({ pathname: '/food-picker', params: { date: todayKey, meal: item.meal.key } });
+    } else if (item.kind === 'weigh') {
+      router.push('/nutrition-stats?tab=weight');
+    }
+  };
+
+  // ── Les cadrans (D2) ────────────────────────────────────────────────────────────────────────
+  const checkinItem = timeline.items.find((it) => it.kind === 'checkin');
+  const dials = buildDayDials({
+    pillars,
+    todayKey,
+    weekSessions: week.weekSessions,
+    nutrition: { consumed: kcalEaten, target: effectiveTarget, proteinG: macros.p, proteinTarget },
+    steps: facts.steps,
+    readiness: facts.readiness,
+    checkinPending: checkinItem !== undefined && !checkinItem.done && !checkinItem.missed,
+  });
+  const onDial = (key: DayDial['key']) => {
+    if (key === 'move') router.push('/planning');
+    else if (key === 'eat') router.push('/(tabs)/nutrition');
+    else if (key === 'walk') router.push('/steps');
+    else if (facts.readiness.show) setExplainOpen(true);
+  };
+
+  // ── Ce que porte le ciel ────────────────────────────────────────────────────────────────────
+  const liveItem = timeline.items.find((it) => it.live);
+  const firstStepsToday =
+    facts.firstDay && activation.show && activation.day === 1 && activation.theme !== null;
+  const sky = (
+    <>
+      {hour < BRIEF_UNTIL_HOUR && facts.moment !== 'comeback' && !facts.firstDay ? (
+        <MorningListen action={action} verdict={facts.verdict} lead={[greeting, sentence]} language={locale} />
+      ) : null}
+      {action.kind === 'workout-active' || action.kind === 'run-active' ? (
+        <LiveBanner
+          pillar={action.kind === 'workout-active' ? 'strength' : 'running'}
+          title={
+            liveItem?.training?.name ||
+            t(action.kind === 'workout-active' ? 'home.now.workoutActive.eyebrow' : 'home.now.runActive.eyebrow')
           }
-        : facts.moment === 'comeback'
-          ? {
-              kind: 'comeback',
-              days: facts.daysSinceLastActivity ?? 0,
-              bestStreak: facts.streak,
-              gentleUntil: activePeriod ? formatDay(activePeriod.endsOn) : null,
-              normalChosen: normalChosenOn === todayKey,
-              onGentle: onGentleRestart,
-              onNormal: () => chooseNormal(todayKey),
-            }
-          : { kind: 'day', rings, streak: facts.streak, verdict: facts.verdict };
+          onResume={() => router.push(action.kind === 'workout-active' ? '/workout' : '/run/active')}
+        />
+      ) : null}
+      {facts.moment === 'comeback' ? (
+        <ComebackCard
+          days={facts.daysSinceLastActivity ?? 0}
+          bestStreak={facts.streak}
+          gentleUntil={activePeriod ? formatDay(activePeriod.endsOn) : null}
+          normalChosen={normalChosenOn === todayKey}
+          onGentle={onGentleRestart}
+          onNormal={() => chooseNormal(todayKey)}
+        />
+      ) : firstStepsToday ? (
+        <FirstStepsCard
+          title={t('activationPath.day1.title')}
+          description={t('activationPath.day1.description')}
+          ctaLabel={null}
+          onCta={null}
+        />
+      ) : (
+        <HomeDials dials={dials} onPress={onDial} formatNumber={formatKcal} />
+      )}
+    </>
+  );
+
+  // ── La carte du moment, dans le fil ─────────────────────────────────────────────────────────
+  const nowItem = timeline.items.find((it) => it.id === timeline.nowItemId) ?? null;
+  const doneTraining = timeline.items.find((it) => it.kind === 'training' && it.done)?.doneTraining;
+  const tip = crossTip(timeline.now, {
+    pendingTrainings: timeline.items.flatMap((it) => (it.training && !it.done ? [it.training] : [])),
+    trainedPillar: doneTraining?.pillar ?? null,
+    trainingBonusKcal: trainingBonus,
+    proteinGapG: proteinTarget != null ? Math.max(0, proteinTarget - macros.p) : null,
+  });
+  const nowCard = (
+    <NowCard
+      action={timeline.now}
+      isLoading={isLoading}
+      hour={hour}
+      itemHour={nowItem?.hour ?? null}
+      itemTimeKnown={nowItem?.timeKnown ?? true}
+      kcalRemaining={kcalRemaining}
+      formatKcal={formatKcal}
+      tip={tip}
+      checkin={{ onPick: onCheckin, saving: savingCheckin }}
+      rescue={rescue}
+    />
+  );
+
+  // La série en pastille : en semaines si c'est l'unité choisie (SERIE-01), en jeu le soir.
+  const streakPill: StreakPill =
+    facts.weeklyStreak.unit === 'week'
+      ? facts.weeklyStreak.current > 0
+        ? { kind: 'weeks', weeks: facts.weeklyStreak.current }
+        : { kind: 'start' }
+      : facts.streak <= 0
+        ? { kind: 'start' }
+        : atRisk
+          ? { kind: 'at-risk', days: facts.streak }
+          : { kind: 'running', days: facts.streak };
 
   const renderWidget = (id: WidgetId, size: WidgetSize) => (
     <DashboardWidget id={id as HomeWidgetId} size={size} />
@@ -301,33 +339,19 @@ export default function HomeScreen() {
 
   /** La grille et ses consignes, partagées par les deux modes — c'est le même contenu. */
   const grid = (
-    <InsightsProvider value={insightsValue}>
-      <WidgetGrid
-        screen="home"
-        editing={editing}
-        renderWidget={renderWidget}
-        onDragActiveChange={setDragging}
-        isActive={isWidgetActive}
-        sizeFor={sizeFor}
-      />
-    </InsightsProvider>
+    <WidgetGrid screen="home" editing={editing} renderWidget={renderWidget} onDragActiveChange={setDragging} />
   );
 
   /**
-   * Le mode édition **n'a pas de scène** : réorganiser des widgets sous une scène qui, elle, ne se
-   * déplace pas ferait croire qu'elle est déplaçable aussi. C'est la même raison qui masquait déjà
-   * l'en-tête et la carte épinglée (US ACCUEIL-01).
+   * Le mode édition **n'a pas de scène** : réorganiser des repères sous une scène qui, elle, ne se
+   * déplace pas ferait croire qu'elle est déplaçable aussi.
    */
   if (editing) {
     return (
       <Screen edges={['top']}>
         <View style={styles.editHeader}>
           <View style={styles.editTexts}>
-            {/* US UX-04 : le mode édition annonce **comment** déplacer un widget. Le geste
-                (appui long) existait déjà mais restait invisible : personne ne le découvrait. */}
-            <Text style={[styles.editTitle, { color: colors.text }]}>
-              {t('home.customize.editHint')}
-            </Text>
+            <Text style={[styles.editTitle, { color: colors.text }]}>{t('home.customize.editHint')}</Text>
             <Text style={[styles.editHint, { color: colors.textMuted }]} maxFontSizeMultiplier={1.4}>
               {t('home.customize.dragHint')}
             </Text>
@@ -338,15 +362,10 @@ export default function HomeScreen() {
             accessibilityLabel={t('home.customize.done')}
             onPress={toggleEditing}
             hitSlop={8}
-            style={StyleSheet.flatten([
-              styles.doneBtn,
-              { backgroundColor: colors.accent, borderColor: colors.accent },
-            ])}
+            style={StyleSheet.flatten([styles.doneBtn, { backgroundColor: colors.accent, borderColor: colors.accent }])}
           >
             <Ionicons name="checkmark" size={16} color={colors.accentText} />
-            <Text style={[styles.doneLabel, { color: colors.accentText }]}>
-              {t('home.customize.done')}
-            </Text>
+            <Text style={[styles.doneLabel, { color: colors.accentText }]}>{t('home.customize.done')}</Text>
           </Pressable>
         </View>
 
@@ -363,123 +382,144 @@ export default function HomeScreen() {
   }
 
   return (
-    <StageScrollView
-      pillar="home"
-      testID="home-screen"
-      scrollEnabled={!dragging}
-      refreshControl={
-        // US ACCUEIL-05 : le geste est un réflexe et ne renvoyait rien — il n'existait pas un
-        // seul `RefreshControl` dans l'app.
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
-          tintColor={colors.accent}
-          colors={[colors.accent]}
+    <View style={styles.root}>
+      <StageScrollView
+        pillar="home"
+        testID="home-screen"
+        scrollEnabled={!dragging}
+        bodyStyle={styles.body}
+        refreshControl={
+          // US ACCUEIL-05 : le geste est un réflexe ; il force la reprise de synchro.
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={colors.accent} colors={[colors.accent]} />
+        }
+        stage={
+          <HomeStage
+            greeting={greeting}
+            sentence={sentence}
+            dateLabel={dateLabel}
+            glowMoment={auroraMoment(hour)}
+            trailing={
+              <>
+                <SyncStatus />
+                <Link href="/settings" asChild>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('settings.title')}
+                    hitSlop={10}
+                    style={styles.avatar}
+                  >
+                    <Ionicons name="person-circle-outline" size={26} color={stage.ink} />
+                  </Pressable>
+                </Link>
+              </>
+            }
+          >
+            {sky}
+          </HomeStage>
+        }
+      >
+        <HomeDayTimeline
+          timeline={timeline}
+          nowCard={nowCard}
+          nowFirst={atRisk}
+          mealTotals={mealTotals}
+          checkinEnergy={checkinEnergy}
+          weightKgToday={latest?.logDate === todayKey ? latest.weightKg : null}
+          formatKcal={formatKcal}
+          onPlanning={() => router.push('/planning')}
+          onQuick={onQuick}
         />
-      }
-      stage={
-        <HomeStage
-          scene={scene}
-          greeting={greeting}
-          sentence={sentence}
-          dateLabel={dateLabel}
-          glowMoment={auroraMoment(hour)}
-          onExplainVerdict={facts.verdict ? () => setExplainOpen(true) : undefined}
-          trailing={
-            <>
-              <SyncStatus />
-              <Link href="/settings" asChild>
-                <Pressable
-                  accessibilityRole="button"
-                  accessibilityLabel={t('settings.title')}
-                  hitSlop={10}
-                  style={styles.avatar}
-                >
-                  <Ionicons name="person-circle-outline" size={24} color={colors.text} />
-                </Pressable>
-              </Link>
-            </>
-          }
-        >
-          <NowCard
-            action={action}
-            isLoading={actionLoading}
-            kcalRemaining={kcalRemaining}
-            formatKcal={formatKcal}
-          />
-        </HomeStage>
-      }
-    >
-      {/* §6.2 — le brief du matin, lu à voix haute. Le matin seulement : une « revue du matin »
-          affichée à 19 h n'est plus un rendez-vous, c'est du remplissage. */}
-      {facts.moment === 'morning' ? (
-        <MorningBrief
-          action={action}
-          verdict={facts.verdict}
-          speechLanguage={i18n.language === 'en' ? 'en-GB' : 'fr-FR'}
+
+        {/* US PRISME-01 — les faits du soir et « Prisme raconte », dès 18 h. ACCUEIL-09 les pose au
+            bout du fil ; d'ici là, la carte reste sous lui. */}
+        {dayMoment(hour) === 'evening' ? <EveningCard /> : null}
+
+        <WeekStrip
+          strip={week.strip}
+          pillars={pillars}
+          streak={streakPill}
+          offers={{
+            dailyCurrent: facts.streak,
+            weeklyCurrent: facts.weeklyStreak.current,
+            restorableGap: facts.offers.restorableGap,
+            offerSwitch: facts.offers.offerSwitch,
+          }}
+          onReview={() => router.push('/review')}
         />
-      ) : null}
 
-      {/* US PRISME-01 — « Ta journée », dès 18 h : les faits du jour, et Prisme qui les raconte à la
-          demande. La carte se tait sur une journée sans séance ni repas. */}
-      {dayMoment(hour) === 'evening' ? <EveningCard /> : null}
+        <HomeNews strengthSessionToday={timeline.items.some((it) => it.training?.pillar === 'strength' && !it.done)} />
 
-      {/* §4.5 — ce qui a bougé depuis la dernière visite : la carte se tait si rien n'a bougé. */}
-      <SinceLastVisitCard />
+        <View style={styles.reperes} testID="home-reperes">
+          <View style={styles.sectionHeader}>
+            <Text style={[styles.sectionTitle, { color: colors.textMuted }]} accessibilityRole="header">
+              {t('home.reperes.title')}
+            </Text>
+            <Pressable onPress={toggleEditing} accessibilityRole="button" hitSlop={8} style={styles.sectionLink}>
+              <Text style={[styles.sectionLinkLabel, { color: colors.accent }]}>{t('home.reperes.customize')}</Text>
+            </Pressable>
+          </View>
+          {grid}
+        </View>
 
-      {/* §4.1 — le bilan de la semaine, les deux premiers jours seulement (BILAN-01). */}
-      <WeeklyStoryCard weekday={isoWeekday(today)} onOpen={() => router.push('/review')} />
+        {/* Le pied : la vie réelle (la carte de la période quand elle court), et personnaliser. */}
+        {activePeriod ? <RealLifeCard size="large" /> : null}
+        <View style={styles.footer}>
+          {activePeriod ? null : (
+            <Pressable onPress={() => setRealLifeOpen(true)} accessibilityRole="button" hitSlop={4} style={styles.footerLink}>
+              <Text style={[styles.footerLabel, { color: colors.textMuted }]}>{t('home.footer.lighten')}</Text>
+            </Pressable>
+          )}
+          <Pressable onPress={toggleEditing} accessibilityRole="button" hitSlop={4} style={styles.footerLink}>
+            <Text style={[styles.footerLabel, { color: colors.accent }]}>{t('home.footer.customize')}</Text>
+          </Pressable>
+        </View>
 
-      {/* §4.1 — l'objectif dont l'échéance est la plus proche (OBJ-01) ; `active` est déjà trié. */}
-      {activeGoals[0] ? (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('goals.title')}
-          onPress={() => router.push('/goals')}
-        >
-          <GoalCard goal={activeGoals[0]} />
-        </Pressable>
-      ) : null}
+        <ExplainSheet
+          visible={explainOpen}
+          title={t('home.readiness.eyebrow')}
+          explanation={explainReadiness(facts.readiness)}
+          onClose={() => setExplainOpen(false)}
+        />
+        <RealLifeSheet visible={realLifeOpen} onClose={() => setRealLifeOpen(false)} />
+        <AddSheet visible={addOpen} onClose={() => setAddOpen(false)} pillars={pillars} hour={hour} />
+      </StageScrollView>
 
-      {/* §7.3 — « Demande-moi ». Sans IA, sans réseau, sans consentement : mêmes réponses. */}
-      <AskCard questions={askQuestions} />
-
-      {/* US GUID-01 — la contradiction entre objectifs. Carte CONDITIONNELLE : elle n'apparaît que
-          s'il y a réellement une tension, et ne consomme donc aucune place au plafond de widgets
-          (ADR-007 §2 : le catalogue se surface « quand il a quelque chose à dire »). */}
-      <GoalConflictBanner />
-
-      <QuickActions
-        highlightMeal={action.kind === 'meal-due' ? asMealType(action.meal.key) : undefined}
-      />
-
-      {grid}
-
-      <UpNext onCustomize={toggleEditing} />
-
-      <ExplainSheet
-        visible={explainOpen}
-        title={t('home.readiness.eyebrow')}
-        explanation={explainReadiness(facts.readiness)}
-        onClose={() => setExplainOpen(false)}
-      />
-    </StageScrollView>
+      <AddFab onPress={() => setAddOpen(true)} />
+    </View>
   );
 }
 
-/** La pastille « repas » des actions rapides ne connaît que les quatre repas par défaut. */
-function asMealType(key: string): MealType | undefined {
-  return (MEAL_TYPES as readonly string[]).includes(key) ? (key as MealType) : undefined;
-}
-
-/** Jour de la semaine, 1 = lundi (l'ISO, pas le `getDay()` de JavaScript qui met dimanche à 0). */
-function isoWeekday(date: Date): number {
-  const day = date.getDay();
-  return day === 0 ? 7 : day;
+/**
+ * « Écouter mon brief », monté le matin seulement : c'est lui qui monte les requêtes du brief (record
+ * à portée, protéines, période « vie réelle »), inutiles le reste de la journée.
+ */
+function MorningListen({
+  action,
+  verdict,
+  lead,
+  language,
+}: {
+  action: Parameters<typeof useMorningBriefFacts>[0];
+  verdict: Parameters<typeof useMorningBriefFacts>[1];
+  lead: readonly string[];
+  language: string;
+}) {
+  const facts = useMorningBriefFacts(action, verdict);
+  return <ListenBriefButton facts={facts} lead={lead} speechLanguage={language} />;
 }
 
 const styles = StyleSheet.create({
-  avatar: { width: 34, height: 34, alignItems: 'center', justifyContent: 'center' },
+  root: { flex: 1 },
+  body: { gap: 14, paddingHorizontal: 16, paddingBottom: 96 },
+  avatar: { width: 44, height: 44, alignItems: 'center', justifyContent: 'center' },
+  reperes: { gap: 10 },
+  sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 4 },
+  sectionTitle: { fontFamily: fontFamily.monoBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase' },
+  sectionLink: { minHeight: 44, justifyContent: 'center' },
+  sectionLinkLabel: { fontFamily: fontFamily.bodyBold, fontSize: 12.5 },
+  footer: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', columnGap: 18 },
+  footerLink: { minHeight: 44, justifyContent: 'center', paddingHorizontal: 4 },
+  footerLabel: { fontFamily: fontFamily.bodyBold, fontSize: 12.5 },
   editHeader: {
     flexDirection: 'row',
     alignItems: 'center',

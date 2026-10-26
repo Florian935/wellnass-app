@@ -25,6 +25,7 @@ import {
   effectiveRegime,
   firstVisibleConflict,
   resolveActivePillars,
+  type GoalConflict,
 } from '@wellness/shared';
 import { CouncilSheet } from '@/components/dashboard/CouncilSheet';
 import { GoalConflictCard } from '@/components/dashboard/GoalConflictCard';
@@ -36,17 +37,18 @@ import { useRunnerProfile } from '@/data/repositories/running-profile-repository
 import { useSettings } from '@/data/repositories/settings-repository';
 import { useDismissedRules } from '@/stores/dismissed-rules-store';
 
-export function GoalConflictBanner() {
-  const { t } = useTranslation();
+/**
+ * US ACCUEIL-08 — la contradiction **visible** à l'instant, ou `null` : les quatre conditions de la
+ * carte, sorties en hook pour que « Du nouveau » sache si elle a quelque chose à dire avant de la
+ * monter (deux cartes au plus, `selectHomeNews`).
+ */
+export function useVisibleGoalConflict(): GoalConflict | null {
   const { settings } = useSettings();
   const { profile } = useProfile();
   const { nutritionProfile } = useNutritionProfile();
   const { runnerProfile } = useRunnerProfile();
   const dismissed = useDismissedRules((s) => s.dismissed);
   const hydrated = useDismissedRules((s) => s.hydrated);
-  const dismiss = useDismissedRules((s) => s.dismiss);
-  // US CONS-01 — le Conseil s'ouvre à la demande : c'est lui qui interroge la base, pas l'accueil.
-  const [councilOpen, setCouncilOpen] = useState(false);
 
   useEffect(() => {
     void useDismissedRules.getState().hydrate();
@@ -70,7 +72,15 @@ export function GoalConflictBanner() {
     nutritionObjective: activePillars.includes('nutrition') ? (nutritionProfile?.objective ?? null) : null,
     runnerObjective: activePillars.includes('running') ? (runnerProfile?.objective ?? null) : null,
   });
-  const conflict = firstVisibleConflict(conflicts, dismissed);
+  return firstVisibleConflict(conflicts, dismissed);
+}
+
+export function GoalConflictBanner() {
+  const { t } = useTranslation();
+  const dismiss = useDismissedRules((s) => s.dismiss);
+  // US CONS-01 — le Conseil s'ouvre à la demande : c'est lui qui interroge la base, pas l'accueil.
+  const [councilOpen, setCouncilOpen] = useState(false);
+  const conflict = useVisibleGoalConflict();
   if (!conflict) return null;
 
   // Les deux issues vivent dans `goal-conflict-resolution` (LIENS-01) : la fiche du Labo propose les

@@ -26,7 +26,9 @@
 import { renderHook } from '@testing-library/react-native';
 
 import { useNowAction } from '../useNowAction';
-import { useCurrentHour, useTodayKey, useWindowStartKey } from '../useTodayKey';
+import { useCurrentClock, useTodayKey, useWindowStartKey } from '../useTodayKey';
+import { useActivities } from '@/data/repositories/activity-repository';
+import { useDailySteps, useStepGoal } from '@/data/repositories/daily-steps-repository';
 import { useActiveWorkout, useWorkoutHistory } from '@/data/repositories/workout-repository';
 import { useActiveRun, useRunHistory, useTodayRunSession } from '@/data/repositories/run-repository';
 import { useStreakData, useTodaySession } from '@/data/repositories/dashboard-repository';
@@ -46,7 +48,8 @@ import { useSettings } from '@/data/repositories/settings-repository';
 
 jest.mock('../useTodayKey', () => ({
   useTodayKey: jest.fn(() => '2026-09-22'),
-  useCurrentHour: jest.fn(() => 12),
+  // US ACCUEIL-08 — l'heure est décimale, au pas de 5 min (`useCurrentClock`).
+  useCurrentClock: jest.fn(() => 12),
   useWindowStartKey: jest.fn(() => '2026-08-23'),
 }));
 jest.mock('@/data/repositories/workout-repository', () => ({
@@ -76,9 +79,12 @@ jest.mock('@/data/repositories/daily-wellbeing-repository', () => ({
   useWellbeingEntries: jest.fn(),
 }));
 jest.mock('@/data/repositories/settings-repository', () => ({ useSettings: jest.fn() }));
+// US ACCUEIL-08 — le fil lit aussi les activités du jour et les pas (la marche suggérée).
+jest.mock('@/data/repositories/activity-repository', () => ({ useActivities: jest.fn() }));
+jest.mock('@/data/repositories/daily-steps-repository', () => ({ useDailySteps: jest.fn(), useStepGoal: jest.fn() }));
 
 const m = {
-  hour: useCurrentHour as jest.Mock,
+  hour: useCurrentClock as jest.Mock,
   todayKey: useTodayKey as jest.Mock,
   windowStart: useWindowStartKey as jest.Mock,
   settings: useSettings as jest.Mock,
@@ -96,12 +102,20 @@ const m = {
   workouts: useWorkoutHistory as jest.Mock,
   runs: useRunHistory as jest.Mock,
   streak: useStreakData as jest.Mock,
+  activities: useActivities as jest.Mock,
+  steps: useDailySteps as jest.Mock,
+  stepGoal: useStepGoal as jest.Mock,
 };
 
 const TODAY = '2026-09-22';
 
 /** Les trois repas d'un habitué, `logged` = ceux déjà notés aujourd'hui. */
-function slots(logged: readonly string[]): { slots: MealSlot[]; loggedToday: number; isLoading: boolean } {
+function slots(logged: readonly string[]): {
+  slots: MealSlot[];
+  loggedToday: number;
+  totals: Map<string, { kcal: number; proteinG: number }>;
+  isLoading: boolean;
+} {
   const all: MealSlot[] = [
     { key: 'breakfast', label: null, hour: 8, learned: true, logged: false },
     { key: 'lunch', label: null, hour: 12.5, learned: true, logged: false },
@@ -110,6 +124,7 @@ function slots(logged: readonly string[]): { slots: MealSlot[]; loggedToday: num
   return {
     slots: all.map((s) => ({ ...s, logged: logged.includes(s.key) })),
     loggedToday: logged.length,
+    totals: new Map(logged.map((k) => [k, { kcal: 500, proteinG: 30 }])),
     isLoading: false,
   };
 }
@@ -134,6 +149,9 @@ function setup() {
   m.workouts.mockReturnValue({ workouts: [] });
   m.runs.mockReturnValue({ runs: [] });
   m.streak.mockReturnValue({ current: 3 });
+  m.activities.mockReturnValue({ activities: [] });
+  m.steps.mockReturnValue({ rows: [] });
+  m.stepGoal.mockReturnValue({ goal: 8000 });
 }
 
 const actionOf = async () => {
@@ -418,5 +436,94 @@ describe('ce qui tourne', () => {
     const { action } = await actionOf();
 
     expect(action).toBeDefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// US ACCUEIL-08 — le fil « Ta journée », collecté avec la décision
+// ---------------------------------------------------------------------------
+
+describe('US ACCUEIL-08 — le fil du jour', () => {
+  const at = (h: number, min = 0) => new Date(2026, 8, 22, h, min).toISOString();
+  const ids = (items: { id: string }[]) => items.map((it) => it.id);
+
+  it('🔴 check-in du matin et point du soir sont DEUX gestes : une ligne de bien-être ne fait pas les deux', async () => {
+    // Avant : une ligne quelconque du jour suffisait à dire le bien-être « fait ». L'énergie notée
+    // le matin aurait éteint le point du soir.
+    m.wellbeingHistory.mockReturnValue({ entries: [{ logDate: '2026-09-21' }] });
+    m.wellbeing.mockReturnValue({ entry: { logDate: TODAY, energy: 4, mood: null, stress: null } });
+    m.hour.mockReturnValue(21.5);
+
+    const { timeline, checkinEnergy, action } = await actionOf();
+    expect(timeline.items.find((it) => it.id === 'checkin')?.done).toBe(true);
+    expect(timeline.items.find((it) => it.id === 'evening')?.done).toBe(false);
+    expect(checkinEnergy).toBe(4);
+    expect(action.kind).toBe('wellbeing-due');
+  });
+
+  it('le matin, sans énergie notée, le check-in est l’action du moment', async () => {
+    m.wellbeingHistory.mockReturnValue({ entries: [{ logDate: '2026-09-21' }] });
+    m.wellbeing.mockReturnValue({ entry: null });
+    m.meals.mockReturnValue(slots([]));
+    m.hour.mockReturnValue(7.75);
+
+    expect((await actionOf()).timeline.now).toEqual({ kind: 'checkin-due' });
+  });
+
+  it('🔴 la séance terminée aujourd’hui entre au fil avec son nom et sa durée — pas celle d’hier', async () => {
+    m.workouts.mockReturnValue({
+      workouts: [
+        { finishedAt: at(7, 30), sessionName: ' Jambes ', durationSeconds: 3480 },
+        { finishedAt: new Date(2026, 8, 21, 18).toISOString(), sessionName: 'Hier', durationSeconds: 3600 },
+      ],
+    });
+
+    const done = (await actionOf()).timeline.items.filter((it) => it.kind === 'training');
+    expect(done).toHaveLength(1);
+    expect(done[0]?.doneTraining).toMatchObject({ pillar: 'strength', name: 'Jambes', durationMinutes: 58 });
+    expect(done[0]?.hour).toBeCloseTo(7.5, 5);
+  });
+
+  it('une sortie course faite garde sa distance — et disparaît si le pilier est éteint', async () => {
+    m.runs.mockReturnValue({ runs: [{ finishedAt: at(8), durationSeconds: 1800, distanceM: 5200 }] });
+    expect((await actionOf()).timeline.items.find((it) => it.kind === 'training')?.doneTraining).toMatchObject({
+      pillar: 'running',
+      distanceM: 5200,
+      durationMinutes: 30,
+    });
+
+    m.settings.mockReturnValue({ settings: { activePillars: ['strength', 'nutrition'] } });
+    expect((await actionOf()).timeline.items.some((it) => it.kind === 'training')).toBe(false);
+  });
+
+  it('les autres activités du jour (vélo, yoga…) entrent au fil, faites', async () => {
+    m.activities.mockReturnValue({
+      activities: [
+        { startedAt: at(17), activityType: 'yoga', durationSeconds: 2700 },
+        { startedAt: new Date(2026, 8, 20, 17).toISOString(), activityType: 'bike', durationSeconds: 3600 },
+      ],
+    });
+    const acts = (await actionOf()).timeline.items.filter((it) => it.kind === 'activity');
+    expect(acts).toHaveLength(1);
+    expect(acts[0]).toMatchObject({ done: true, activity: { activityType: 'yoga', durationMinutes: 45 } });
+  });
+
+  it('🔴 la marche ne se suggère qu’à qui compte ses pas', async () => {
+    m.hour.mockReturnValue(17);
+    expect(ids((await actionOf()).timeline.items)).not.toContain('walk');
+
+    m.steps.mockReturnValue({ rows: [{ logDate: TODAY, steps: 4200 }] });
+    const walk = (await actionOf()).timeline.items.find((it) => it.id === 'walk');
+    expect(walk).toMatchObject({ suggested: true, stepsLeft: 3800 });
+  });
+
+  it('rend les totaux du jour par repas, pour les lignes faites du fil', async () => {
+    m.meals.mockReturnValue(slots(['breakfast']));
+    expect((await actionOf()).mealTotals.get('breakfast')).toEqual({ kcal: 500, proteinG: 30 });
+  });
+
+  it('rend l’heure décimale qui a servi à décider', async () => {
+    m.hour.mockReturnValue(13.25);
+    expect((await actionOf()).hour).toBe(13.25);
   });
 });

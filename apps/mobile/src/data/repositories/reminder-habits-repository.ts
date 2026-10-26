@@ -108,9 +108,15 @@ export const SELECT_MEAL_TYPE_SAMPLES = `
   ORDER BY created_at
 `;
 
-/** US ACCUEIL-07 — les repas qui portent au moins une entrée aujourd'hui. */
+/**
+ * US ACCUEIL-07 — les repas qui portent au moins une entrée aujourd'hui ; ACCUEIL-08 y ajoute leurs
+ * totaux (kcal, protéines), que le fil « Ta journée » écrit sous chaque repas fait.
+ */
 export const SELECT_MEALS_LOGGED_ON = `
-  SELECT DISTINCT meal_type FROM food_entries WHERE log_date = ? AND deleted_at IS NULL
+  SELECT meal_type, SUM(kcal) AS kcal, SUM(protein_g) AS protein_g
+  FROM food_entries
+  WHERE log_date = ? AND deleted_at IS NULL
+  GROUP BY meal_type
 `;
 
 /**
@@ -242,6 +248,8 @@ export function useMealSlots(): {
   slots: MealSlot[];
   /** Repas distincts notés aujourd'hui, configurés ou non (un repas supprimé depuis compte aussi). */
   loggedToday: number;
+  /** US ACCUEIL-08 — totaux du jour par repas, pour le fil. */
+  totals: ReadonlyMap<string, { kcal: number; proteinG: number }>;
   isLoading: boolean;
 } {
   const todayKey = useTodayKey();
@@ -251,7 +259,11 @@ export function useMealSlots(): {
     log_date: string;
     created_at: string;
   }>(SELECT_MEAL_TYPE_SAMPLES, [windowStart]);
-  const { data: todayRows, isLoading: todayLoading } = useQuery<{ meal_type: string }>(
+  const { data: todayRows, isLoading: todayLoading } = useQuery<{
+    meal_type: string;
+    kcal: number | null;
+    protein_g: number | null;
+  }>(
     SELECT_MEALS_LOGGED_ON,
     [todayKey],
   );
@@ -272,9 +284,18 @@ export function useMealSlots(): {
     });
   }, [sampleRows, todayRows, meals, todayKey]);
 
+  const totals = useMemo(
+    () =>
+      new Map(
+        todayRows.map((r) => [r.meal_type, { kcal: Math.round(r.kcal ?? 0), proteinG: Math.round(r.protein_g ?? 0) }]),
+      ),
+    [todayRows],
+  );
+
   return {
     slots,
     loggedToday: todayRows.length,
+    totals,
     isLoading: samplesLoading || todayLoading || profileLoading,
   };
 }

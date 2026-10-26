@@ -87,6 +87,24 @@ On adopte l'**option C**. Principes normatifs :
   > consommé. La table des destinations gagne un type pour l'exprimer :
   > `{ kind: 'home-pinned' }`, distinct de `home` parce qu'un widget de grille est masquable et
   > qu'une zone épinglée ne l'est pas.
+
+  > 📌 **Amendement du 25/10/2026 — la grille devient « Tes repères »** (US ACCUEIL-08, décision D5
+  > de Florian, `design/accueil-2026-10/README.md`).
+  >
+  > L'accueil « Ta journée » remplace les quatre zones épinglées du 09/09 par **cinq zones** : le
+  > ciel (salutation, phrase du jour, trois cadrans), le fil « Ta journée » (qui absorbe la carte
+  > « maintenant »), « Ta semaine », « Du nouveau » et le pied — plus le bouton « + » flottant, qui
+  > remplace les actions rapides. C'est l'arbitrage explicite qu'exigeait une cinquième zone : il a
+  > été fait sur la toile et les décisions D1-D6, pas en ajoutant une carte. « Du nouveau » est
+  > elle-même **plafonnée à deux cartes** (`HOME_NEWS_MAX`), choisies dans un ordre écrit une fois
+  > (`selectHomeNews`) : le §2 s'y applique comme à la grille.
+  >
+  > La grille reste la **seule zone faite de widgets**, sous le titre « Tes repères », en tuiles
+  > compactes. **`MAX_HOME_WIDGETS` reste à 8.** Le registre de l'accueil passe à **cinq** ids
+  > (`steps`, `weight`, `sleep`, `water`, `cycle`) : ce qui redisait une zone (série, assiette,
+  > insights, parcours des premiers jours, vie réelle) a rejoint la zone qui le dit, et devient
+  > `home-pinned` dans la table des destinations. Une disposition stockée qui les cite reste lisible :
+  > la lecture écarte un id inconnu, comme depuis INSIGHTS-02.
 - **Tier 1 — Écran Stats/Progression du pilier (à la demande).** Home des analyses de fond du pilier,
   **hiérarchisé** : les 2-3 plus utiles visibles, le reste en **sections repliables** / « voir plus ».
   Dès qu'un écran dépasse **~4-5 sections**, il passe en repliable ou sous-onglets.

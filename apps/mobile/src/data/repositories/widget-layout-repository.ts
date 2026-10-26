@@ -60,6 +60,7 @@ function fullScreenFrom(storedRaw: unknown, screen: WidgetScreen): ScreenLayout 
   // stocké — sa position serait perdue à chaque déplacement d'un autre widget.
   return resolveScreenLayout(parsed?.screens[screen] ?? null, screen, [...PILLARS], {
     cycleTrackingEnabled: true,
+    wellbeingPillarEnabled: true,
   });
 }
 
@@ -113,6 +114,8 @@ export function useScreenLayout(screen: WidgetScreen): {
     // `settings` non chargé → `undefined` → widget masqué. C'est le sens sûr : sur un opt-in de
     // donnée de santé, un affichage fugace avant chargement serait une fuite visuelle.
     cycleTrackingEnabled: settings?.cycleTrackingEnabled === true,
+    // US ACCUEIL-08 — le repère « Sommeil » suit le pilier Bien-être, opt-in : même sens sûr.
+    wellbeingPillarEnabled: settings?.wellbeingPillarEnabled === true,
   });
 
   // Ref du JSON brut le plus récent : les mutateurs composent sur l'état courant sans dépendre

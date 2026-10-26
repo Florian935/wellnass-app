@@ -1194,9 +1194,6 @@
       "eyebrow": "Séance du jour"
     },
     "streak": {
-      "title": "Régularité",
-      "suffix_one": "jour d'affilée",
-      "suffix_other": "jours d'affilée",
       "days": [
         "L",
         "M",
@@ -1206,12 +1203,6 @@
         "S",
         "D"
       ],
-      "empty": "Valide une activité aujourd'hui pour lancer ta série.",
-      "eyebrow": "Régularité",
-      "bannerActive_one": "{{count}} jour actif cette semaine 💪",
-      "bannerActive_other": "{{count}} jours actifs cette semaine 💪",
-      "bannerIdle_one": "Reprends : {{count}} jour actif cette semaine",
-      "bannerIdle_other": "Reprends : {{count}} jours actifs cette semaine",
       "jokerTitle": "Série en danger",
       "jokerOffer_one": "Le {{date}} tu n'as rien enregistré. Utiliser ton joker pour sauver ta série de {{count}} jour ?",
       "jokerOffer_other": "Le {{date}} tu n'as rien enregistré. Utiliser ton joker pour sauver ta série de {{count}} jours ?",
@@ -1219,14 +1210,6 @@
       "jokerRule": "1 joker par mois. Il gèle un jour manqué isolé — pas deux d'affilée.",
       "jokerError": "Le joker n'a pas pu être utilisé. Réessaie.",
       "jokerA11y": "Utiliser mon joker pour sauver une série de {{count}} jours",
-      "suffixWeek_one": "semaine d'affilée",
-      "suffixWeek_other": "semaines d'affilée",
-      "emptyWeek": "Une activité cette semaine, et la première est validée.",
-      "weekCount_one": "{{count}} activité cette semaine",
-      "weekCount_other": "{{count}} activités cette semaine",
-      "weekGoal": "{{done}} activités sur {{goal}} cette semaine",
-      "weekGoalMet_one": "Objectif de la semaine atteint : {{count}} activité",
-      "weekGoalMet_other": "Objectif de la semaine atteint : {{count}} activités",
       "switchTitle": "Et si on comptait en semaines ?",
       "switchBody": "{{days}} jours d'affilée aujourd'hui — soit {{weeks}} semaines, relues autrement. Les deux chiffres décrivent le même historique.",
       "switchRule": "Une semaine laisse sept occasions de la tenir. Tu peux revenir aux jours quand tu veux.",
@@ -1234,29 +1217,13 @@
       "switchKeepDay": "Garder les jours"
     },
     "nutrition": {
-      "title": "Nutrition",
       "caloriesGoal": "{{kcal}} / {{target}} kcal",
       "caloriesNoGoal": "{{kcal}} kcal",
       "trainingDayBadge": "+{{kcal}} kcal · jour de séance",
       "runDayBadge": "+{{kcal}} kcal · course",
       "cta": "+ Ajouter un repas",
-      "setGoal": "Définir mon objectif",
-      "setGoalHint": "Définis ton objectif calorique pour suivre tes repas du jour.",
-      "compactRemaining": "{{kcal}} kcal restantes",
-      "compactConsumed": "{{kcal}} kcal",
-      "compactNoGoal": "Objectif non défini",
-      "eyebrow": "Nutrition",
-      "remaining": "kcal restantes",
-      "consumedSub": "kcal consommées",
       "todayEyebrow": "Aujourd'hui",
-      "consumed": "Consommé",
-      "goal": "Objectif",
-      "kcalValue": "{{kcal}} kcal",
-      "sport": "Sport",
-      "ofGoal": "/ {{target}} kcal",
-      "remainingEyebrow": "Restantes",
-      "budgetPct": "{{pct}} % du budget",
-      "bonusShort": "+{{kcal}} · séance"
+      "sport": "Sport"
     },
     "weight": {
       "title": "Poids corporel",
@@ -1420,7 +1387,11 @@
         "eyebrowAt": "Séance du jour · {{time}}",
         "fallbackName": "Séance du jour",
         "startStrength": "Démarrer la séance",
-        "startRunning": "Démarrer la course"
+        "startRunning": "Démarrer la course",
+        "kind": {
+          "strength": "Séance",
+          "running": "Course"
+        }
       },
       "meal": {
         "cta": {
@@ -1450,12 +1421,15 @@
         "eyebrow": "Pesée",
         "title": "Pas encore pesé aujourd'hui",
         "meta": "Une pesée régulière lisse la courbe",
-        "cta": "Enregistrer ma pesée"
+        "cta": "Enregistrer ma pesée",
+        "kind": "Pesée"
       },
       "wellbeing": {
         "eyebrow": "Bien-être",
         "title": "Comment s'est passée ta journée ?",
-        "cta": "Faire mon point du soir"
+        "cta": "Faire mon point du soir",
+        "kind": "Point du soir",
+        "meta": "Humeur et stress : dix secondes, et la journée est complète."
       },
       "dayDone": {
         "eyebrow": "Aujourd'hui",
@@ -1488,6 +1462,30 @@
           "meal": "Ajouter un repas",
           "activity": "Noter une activité"
         }
+      },
+      "when": {
+        "now": "Maintenant",
+        "today": "Aujourd'hui",
+        "at": "À {{time}} · {{in}}",
+        "inMinutes": "dans {{m}} min",
+        "inHours": "dans {{h}} h",
+        "inHoursMinutes": "dans {{h}} h {{m}}"
+      },
+      "checkin": {
+        "eyebrow": "Check-in du matin",
+        "meta": "Il ajuste le cadran Récupérer et l'idée du jour."
+      },
+      "walk": {
+        "eyebrow": "Idée",
+        "title": "Une marche ?",
+        "meta": "Encore {{steps}} pas pour ton objectif.",
+        "cta": "Voir mes pas"
+      },
+      "rescue": {
+        "eyebrow_one": "Ta série · {{count}} jour en jeu",
+        "eyebrow_other": "Ta série · {{count}} jours en jeu",
+        "title_one": "Encore {{count}} heure pour la garder",
+        "title_other": "Encore {{count}} heures pour la garder"
       }
     },
     "quick": {
@@ -1497,16 +1495,7 @@
         "dinner": "Dîner",
         "snack": "Collation"
       },
-      "run": "Course",
-      "weighIn": "Pesée",
-      "wellbeing": "Bien-être"
-    },
-    "upNext": {
-      "eyebrow": "La suite",
-      "session": "{{date}} · {{name}}",
-      "planning": "Voir mon planning",
-      "empty": "Rien de prévu cette semaine.",
-      "nothingElse": "Rien d’autre cette semaine."
+      "weighIn": "Pesée"
     },
     "links": {
       "overline": "Tes liens",
@@ -1548,12 +1537,230 @@
       "dayDoneTrained": "Journée bouclée, entraînement compris. Repos bien mérité.",
       "idleProgram": "Pas encore de programme : trois questions suffisent pour trouver le tien.",
       "idleMeal": "Rien de noté pour l'instant : ton premier repas prend vingt secondes.",
-      "idleRest": "Jour de repos : ton corps récupère."
+      "idleRest": "Jour de repos : ton corps récupère.",
+      "checkin": "Comment tu te sens ce matin ?",
+      "walk": "Encore {{steps}} pas pour ton objectif : une marche suffit.",
+      "rescue_one": "Ta série est en jeu : encore {{count}} heure pour la garder.",
+      "rescue_other": "Ta série est en jeu : encore {{count}} heures pour la garder."
     },
     "checkin": {
       "title": "Comment tu te sens ce matin ?",
-      "hint": "Ton énergie, en un geste.",
       "groupA11y": "Ton énergie ce matin"
+    },
+    "add": {
+      "fab": "Noter quelque chose",
+      "title": "Noter",
+      "meta": "En un geste",
+      "scan": "Scanner",
+      "checkin": "Check-in",
+      "water": "Un verre d'eau",
+      "activity": "Une activité",
+      "run": "Une course",
+      "workout": "Une séance"
+    },
+    "dials": {
+      "move": {
+        "label": "Bouger",
+        "unit_one": "séance",
+        "unit_other": "séances",
+        "week": "cette semaine",
+        "rest": "repos aujourd'hui",
+        "a11y": "Bouger : {{done}} séances faites sur {{total}} cette semaine"
+      },
+      "eat": {
+        "label": "Manger",
+        "unitLeft": "kcal restantes",
+        "unitOver": "kcal au-delà",
+        "unitEaten": "kcal notées",
+        "protein": "protéines {{value}}/{{target}} g",
+        "noTarget": "pas de cible",
+        "a11y": "Manger : il te reste {{kcal}} kcal, {{protein}} g de protéines notés",
+        "a11yNoTarget": "Manger : {{kcal}} kcal notées aujourd'hui"
+      },
+      "walk": {
+        "label": "Marcher",
+        "unit": "pas",
+        "goal": "objectif {{goal}}",
+        "a11y": "Marcher : {{steps}} pas sur {{goal}}"
+      },
+      "recover": {
+        "label": "Récupérer",
+        "unit": "forme",
+        "unitPending": "à dire",
+        "why": "charge, repas, ressenti",
+        "pending": "check-in à faire",
+        "a11y": "Récupérer : {{verdict}}",
+        "a11yPending": "Récupérer : check-in du matin à faire",
+        "word": {
+          "rest": "Repos",
+          "ok": "Correct",
+          "push": "Pousse"
+        }
+      }
+    },
+    "fil": {
+      "title": "Ta journée",
+      "progress": "{{done}}/{{total}} faits",
+      "live": "En cours",
+      "tagLive": "en cours",
+      "tagIdea": "idée",
+      "noTime": "sans heure",
+      "doneGeneric": "Fait",
+      "doneCount_one": "{{count}} geste déjà fait",
+      "doneCount_other": "{{count}} gestes déjà faits",
+      "showDone_one": "Voir le geste déjà fait",
+      "showDone_other": "Voir les {{count}} gestes déjà faits",
+      "hideDone": "Replier les gestes faits",
+      "fold": "Replier",
+      "see": "Voir",
+      "more_one": "{{count}} plus tard",
+      "more_other": "{{count}} plus tard",
+      "showMoreA11y": "Voir la suite de la journée",
+      "quick": "Noter tout de suite : {{title}}",
+      "minutes_one": "{{count}} min",
+      "minutes_other": "{{count}} min",
+      "checkin": {
+        "title": "Check-in du matin",
+        "todo": "Ton énergie, en un geste",
+        "done": "Énergie {{level}}/5 · {{label}}"
+      },
+      "weigh": {
+        "title": "Pesée",
+        "todo": "Une pesée régulière lisse la courbe"
+      },
+      "meal": {
+        "usually": "D'habitude vers {{time}}",
+        "around": "Vers {{time}}",
+        "done": "{{kcal}} kcal · {{protein}} g de protéines"
+      },
+      "training": {
+        "done": "Faite",
+        "kind": {
+          "strength": "Musculation",
+          "running": "Course"
+        },
+        "fallback": {
+          "strength": "Séance du jour",
+          "running": "Course du jour"
+        }
+      },
+      "activity": {
+        "title": "Activité"
+      },
+      "walk": {
+        "title": "Marche suggérée",
+        "todo": "Encore {{steps}} pas pour ton objectif",
+        "done": "Objectif de pas atteint"
+      },
+      "evening": {
+        "title": "Point du soir",
+        "todo": "Humeur et stress, dix secondes"
+      },
+      "missed": {
+        "meal": "Pas noté",
+        "other": "Pas fait"
+      },
+      "short": {
+        "checkin": "check-in",
+        "weigh": "pesée",
+        "meal": "repas",
+        "session": "séance",
+        "run": "course",
+        "activity": "activité",
+        "walk": "marche",
+        "evening": "point du soir"
+      }
+    },
+    "news": {
+      "title": "Du nouveau",
+      "all": "Tout voir",
+      "record": {
+        "tag": "Nouveau record",
+        "body": "Bravo : ça se voit dans tes analyses."
+      },
+      "near": {
+        "tag": "Record à portée",
+        "body": "Ta prochaine séance peut le battre."
+      }
+    },
+    "reperes": {
+      "title": "Tes repères",
+      "customize": "Personnaliser",
+      "sleep": {
+        "title": "Sommeil",
+        "none": "—",
+        "sub": "Cette nuit",
+        "a11y": "Sommeil cette nuit : {{value}}"
+      },
+      "water": {
+        "title": "Eau",
+        "sub": "sur {{target}} L",
+        "a11y": "Eau : {{value}} litres sur {{target}}",
+        "hint": "Ajoute un verre d'eau"
+      }
+    },
+    "footer": {
+      "lighten": "Semaine chargée ? Allège-la",
+      "customize": "Personnaliser l'accueil"
+    },
+    "sky": {
+      "firstSteps": "Premiers pas · jour {{day}} sur {{total}}"
+    },
+    "week": {
+      "title": "Ta semaine",
+      "review": "Ton bilan",
+      "empty": "Ta semaine commence : rien de noté pour l'instant.",
+      "sessions": "{{done}} séances sur {{total}}",
+      "inTarget_one": "{{count}} jour dans ta cible",
+      "inTarget_other": "{{count}} jours dans ta cible",
+      "streak": {
+        "days_one": "{{count}} jour",
+        "days_other": "{{count}} jours",
+        "weeks_one": "{{count}} semaine",
+        "weeks_other": "{{count}} semaines",
+        "atRisk_one": "{{count}} jour · en jeu",
+        "atRisk_other": "{{count}} jours · en jeu",
+        "start": "Ta série commence"
+      },
+      "legend": {
+        "strength": "Muscu",
+        "running": "Course",
+        "nutrition": "Repas",
+        "key": "plein = fait · pointillé = prévu"
+      },
+      "a11y": {
+        "strength": {
+          "done": "séance faite",
+          "planned": "séance prévue",
+          "logged": "séance notée",
+          "idle": "pas de séance"
+        },
+        "running": {
+          "done": "course faite",
+          "planned": "course prévue",
+          "logged": "course notée",
+          "idle": "pas de course"
+        },
+        "nutrition": {
+          "done": "repas dans ta cible",
+          "planned": "repas prévus",
+          "logged": "repas notés hors cible",
+          "idle": "pas de repas noté"
+        }
+      }
+    },
+    "tips": {
+      "beforeStrengthNamed": "{{name}} ce soir : un bon féculent à ce repas.",
+      "beforeStrength": "Séance ce soir : un bon féculent à ce repas.",
+      "beforeRunNamed": "{{name}} aujourd'hui : mange léger dans les deux heures avant.",
+      "beforeRun": "Course aujourd'hui : mange léger dans les deux heures avant.",
+      "afterTraining": "Ton entraînement t'a fait gagner {{kcal}} kcal sur ta cible.",
+      "proteinGap": "Il te manque environ {{grams}} g de protéines aujourd'hui.",
+      "tag": {
+        "strength-nutrition": "Muscu × Nutrition",
+        "running-nutrition": "Course × Nutrition",
+        "nutrition": "Nutrition"
+      }
     }
   },
   "activationPath": {
@@ -4772,8 +4979,6 @@
     }
   },
   "brief": {
-    "title": "Ton brief du matin",
-    "listen": "Écouter",
     "stop": "Arrêter",
     "gentle": "Période tranquille : fais ce que tu peux, la série tient.",
     "verdict": {
@@ -4814,28 +5019,8 @@
     },
     "kcal": "Cible calorique estimée : {{kcal}} kcal par jour"
   },
-  "ask": {
-    "title": "Demande-moi",
-    "offlineMeta": "Réponses calculées sur l'appareil",
-    "questions": {
-      "today": "Je m'entraîne aujourd'hui ?",
-      "eat": "Qu'est-ce que je mange ce soir ?",
-      "week": "Où j'en suis cette semaine ?"
-    },
-    "answers": {
-      "todayRest": "Les signaux sont au rouge : une journée plus calme te servira plus qu'une séance forcée.",
-      "todayOk": "Rien ne ressort : ta séance prévue tient.",
-      "todayPush": "Tout est au vert : c'est le bon jour pour pousser.",
-      "todayUnknown": "Pas assez de données pour trancher — écoute-toi.",
-      "eatRemaining": "Il te reste {{kcal}} kcal et {{protein}} g de protéines pour la journée.",
-      "eatNoTarget": "Aucun objectif calorique réglé : difficile de dire. Tu peux en définir un dans ton profil nutrition.",
-      "week": "{{workouts}} séances et {{runs}} sorties cette semaine, {{days}} jours actifs."
-    }
-  },
   "stage": {
     "home": {
-      "timeLeft_one": "Il te reste moins d'une heure pour la garder",
-      "timeLeft_other": "Il te reste environ {{count}} h pour la garder",
       "bestStreak_one": "Ta meilleure série : un jour",
       "bestStreak_other": "Ta meilleure série : {{count}} jours",
       "gentleRestart": "En douceur",
@@ -4856,29 +5041,6 @@
         "late": "Échéance dépassée",
         "progressA11y": "{{percent}} % du chemin",
         "empty": "Aucun objectif en cours"
-      },
-      "weeklyStory": {
-        "title": "Ta semaine, en trois cartes",
-        "volume": "{{workouts}} séances · {{runs}} sorties",
-        "tonnage": "{{tonnage}} kg soulevés",
-        "distance": "{{distance}} parcourus",
-        "records_one": "Un record battu",
-        "records_other": "{{count}} records battus",
-        "regularity_one": "Un jour actif",
-        "regularity_other": "{{count}} jours actifs",
-        "nutrition": "{{days}} jours dans la cible sur {{logged}} saisis",
-        "change": "{{percent}} % vs la semaine d'avant",
-        "cta": "Voir le bilan"
-      },
-      "ring": {
-        "strength": "Muscu {{done}} sur {{target}}",
-        "strengthOnly_one": "Muscu : une séance",
-        "strengthOnly_other": "Muscu : {{count}} séances",
-        "running": "Course {{done}} sur {{target}}",
-        "runningOnly_one": "Course : une sortie",
-        "runningOnly_other": "Course : {{count}} sorties",
-        "nutrition_one": "Nutrition : un jour saisi sur 7",
-        "nutrition_other": "Nutrition : {{count}} jours saisis sur 7"
       },
       "rescue": {
         "lead": "Rien d'actif aujourd'hui. Une seule de ces options suffit :",

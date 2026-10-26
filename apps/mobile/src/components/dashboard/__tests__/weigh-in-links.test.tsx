@@ -2,10 +2,13 @@
  * US NUTRI-UX03 (D13, décision Q8) — les portes « Me peser » de l'accueil ouvrent Stats sur l'onglet
  * **Poids**, où sont la pesée et la courbe. Avant, elles ouvraient Régularité, et il fallait trouver
  * l'onglet Poids pour saisir sa pesée. La carte du moment (`NowCard`) a son propre test.
+ *
+ * US ACCUEIL-08 — la barre d'actions rapides a cédé la place au « + » et à sa feuille « Noter » : la
+ * porte « Me peser » y a déménagé, et sa destination avec elle.
  */
 import React from 'react';
 import { act, fireEvent, render, screen } from '@testing-library/react-native';
-import { QuickActions } from '../QuickActions';
+import { AddSheet } from '../AddSheet';
 import { WeightCard } from '../WeightCard';
 import { useRouter } from 'expo-router';
 
@@ -22,6 +25,9 @@ jest.mock('@/data/repositories/bodyweight-repository', () => ({
   useLatestWeight: jest.fn(() => ({ latest: null, isLoading: false })),
   useWeightEntries: jest.fn(() => ({ entries: [], isLoading: false })),
 }));
+jest.mock('@/data/repositories/water-repository', () => ({ addWater: jest.fn(() => Promise.resolve()) }));
+jest.mock('@/hooks/useAppReducedMotion', () => ({ useAppReducedMotion: jest.fn(() => false) }));
+jest.mock('@/lib/haptics', () => ({ hapticConfirm: jest.fn(), hapticSelect: jest.fn(), hapticMilestone: jest.fn() }));
 jest.mock('@/hooks/useUnits', () => ({
   useUnits: () => ({ formatWeight: (kg: number) => `${kg} kg`, weightSymbol: 'kg' }),
 }));
@@ -57,7 +63,11 @@ jest.mock('react-i18next', () => ({
 }));
 jest.mock('@/theme/useTheme', () => ({
   useTheme: () => ({
-    colors: { text: '#000', textMuted: '#666', surface: '#fff', border: '#ddd', accent: '#b14f2b', accentText: '#fff' },
+    scheme: 'light',
+    colors: { text: '#000', textMuted: '#666', surface: '#fff', border: '#ddd', accent: '#b14f2b', accentText: '#fff',
+      // Les tuiles de la feuille « Noter » portent la couleur de leur pilier.
+      background: '#f7eede', borderStrong: '#ccc', pillarHome: '#0f766e', pillarNutrition: '#4a6c2e',
+      pillarRunning: '#2a64ad', pillarStrength: '#6b0028', pillarWellbeing: '#7c3aed' },
   }),
 }));
 
@@ -68,8 +78,8 @@ beforeEach(() => {
   (useRouter as jest.Mock).mockReturnValue({ push });
 });
 
-it('🔴 l’action rapide « Me peser » ouvre Stats sur Poids', async () => {
-  await render(<QuickActions />);
+it('🔴 la tuile « Me peser » de la feuille « Noter » ouvre Stats sur Poids', async () => {
+  await render(<AddSheet visible onClose={jest.fn()} pillars={['strength', 'running', 'nutrition']} hour={12} />);
 
   await act(async () => {
     fireEvent.press(screen.getByLabelText('home.quick.weighIn'));

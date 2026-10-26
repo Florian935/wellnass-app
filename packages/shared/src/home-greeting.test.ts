@@ -113,3 +113,21 @@ describe('clockLabel', () => {
     expect(clockLabel(30)).toBe('23:59');
   });
 });
+
+describe('daySentence — ACCUEIL-08', () => {
+  it('le check-in du matin et la marche suggérée ont leur phrase', () => {
+    expect(daySentence({ kind: 'checkin-due' }, { hour: 7, kcalRemaining: null }).key).toBe(
+      'home.sentence.checkin',
+    );
+    expect(daySentence({ kind: 'walk-idea', stepsLeft: 3800 }, { hour: 17, kcalRemaining: null })).toEqual({
+      key: 'home.sentence.walk',
+      params: { steps: 3800 },
+    });
+  });
+
+  it('🔴 la série en jeu prime sur tout le reste, le soir', () => {
+    expect(
+      daySentence({ kind: 'wellbeing-due' }, { hour: 21, kcalRemaining: 300, streakHoursLeft: 3 }),
+    ).toEqual({ key: 'home.sentence.rescue', params: { count: 3 } });
+  });
+});

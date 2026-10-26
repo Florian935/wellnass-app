@@ -43,7 +43,7 @@ jest.mock('@/lib/health-connect', () => ({
 
 import { useAppOpenedAnalytics } from '../useAppOpenedAnalytics';
 import { useHealthConnectImports } from '../useHealthConnectImports';
-import { useTodayKey } from '../useTodayKey';
+import { useCurrentClock, useTodayKey } from '../useTodayKey';
 
 const trackMock = track as jest.Mock;
 
@@ -221,6 +221,34 @@ describe('useTodayKey', () => {
     });
 
     expect(remove).toHaveBeenCalled();
+  });
+});
+
+describe('useCurrentClock — l’heure décimale de l’accueil (US ACCUEIL-08)', () => {
+  it('rend l’heure locale au pas de 5 minutes (12:47 → 12,75)', async () => {
+    jest.useFakeTimers({ doNotFake: ['nextTick', 'queueMicrotask'] });
+    jest.setSystemTime(new Date(2026, 9, 25, 12, 47, 30));
+    const { result } = await mount(() => useCurrentClock());
+    expect(result.current).toBe(12.75);
+    jest.useRealTimers();
+  });
+
+  it('avance d’elle-même au pas suivant, sans attendre un retour au premier plan', async () => {
+    jest.useFakeTimers({ doNotFake: ['nextTick', 'queueMicrotask'] });
+    jest.setSystemTime(new Date(2026, 9, 25, 12, 47, 30));
+    const { result } = await mount(() => useCurrentClock());
+    await act(async () => {
+      jest.advanceTimersByTime(3 * 60_000);
+    });
+    expect(result.current).toBeCloseTo(12 + 50 / 60, 5);
+    jest.useRealTimers();
+  });
+
+  it('garde la MÊME valeur au retour au premier plan dans le même pas', async () => {
+    const { result } = await mount(() => useCurrentClock());
+    const avant = result.current;
+    await foreground();
+    expect(result.current).toBe(avant);
   });
 });
 

@@ -84,6 +84,16 @@ describe('Aurore — les lueurs passent sous le texte (US ACCUEIL-07, D1)', () =
     expect(home.surfaces).toContain(blendOver(top, AURORA_FRAMBOISE, framboiseMax));
   });
 
+  it('US ACCUEIL-08 — le texte secondaire des cadrans, sur le verre posé hors des lueurs, reste ≥ 4,5', () => {
+    // L'encart des cadrans vient sous la salutation et la phrase du jour : là où les deux lueurs se
+    // sont éteintes (le turquoise s'arrête vers 45 % de la hauteur). On mesure le verre posé sur
+    // chaque arrêt du fond — le texte principal, lui, est mesuré sur tous les verres ci-dessus.
+    const alpha = Number(/rgba\(255,255,255,([\d.]+)\)/.exec(home.glass)![1]);
+    for (const stop of home.gradient) {
+      expect(contrastRatio(home.inkMuted, blendOver(stop, [255, 255, 255], alpha))!).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   it('la lumière suit l’heure : aube, journée, heure dorée, soirée, nuit', () => {
     expect(auroraMoment(7)).toBe('aube');
     expect(auroraMoment(12.67)).toBe('jour');

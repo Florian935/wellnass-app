@@ -66,6 +66,9 @@ export type HomeWidgetIdV1 = (typeof HOME_WIDGET_IDS_V1)[number];
 export const HOME_WIDGET_IDS_POST_V1 = [
   // US VIE-01 (roadmap 1.28) — mode « vie réelle ».
   'real-life',
+  // US ACCUEIL-08 (roadmap 7.45) — les deux repères entrés avec « Tes repères ».
+  'sleep',
+  'water',
 ] as const;
 
 /** Tout id d'accueil devant porter une destination : le snapshot figé **plus** les ajouts. */
@@ -127,18 +130,27 @@ export const WIDGET_DESTINATIONS: Record<HomeWidgetIdWithDestination, WidgetDest
   // ── Conservés sur l'accueil ───────────────────────────────────────────────
   // US ACCUEIL-01 (09/09/2026) : promu de la grille à la **zone 1 épinglée**. Il n'est plus dans
   // `HOME_WIDGET_IDS` — non pas parce qu'il a été retiré, mais parce qu'il n'est plus un widget.
-  'today-session': { kind: 'home-pinned', zone: 'Accueil › carte « maintenant » (zone 1)' },
-  'nutrition-summary': { kind: 'home' },
-  streak: { kind: 'home' },
+  // US ACCUEIL-08 (25/10/2026) : la carte « maintenant » est devenue l'action du moment, dépliée
+  // dans le fil « Ta journée ».
+  'today-session': { kind: 'home-pinned', zone: 'Accueil › Ta journée (l’action du moment)' },
+  // ── US ACCUEIL-08 (25/10/2026) — sortis de la grille pour une zone fixe ─────────────────────
+  // « Tes repères » ne garde que des repères (D5). Ces cinq-là disent mieux ce qu'ils disaient dans
+  // une zone garantie à l'écran — et ne se répètent plus (constat 8 : la semaine dite trois fois,
+  // l'assiette trois fois).
+  'nutrition-summary': { kind: 'home-pinned', zone: 'Accueil › le ciel › cadran Manger' },
+  streak: { kind: 'home-pinned', zone: 'Accueil › Ta semaine' },
+  insights: { kind: 'home-pinned', zone: 'Accueil › Du nouveau' },
+  'activation-path': { kind: 'home-pinned', zone: 'Accueil › le ciel › Premiers pas, puis Du nouveau' },
+  // US VIE-01 — n'existait pas au dégonflage : c'est une entrée **ajoutée après**, pas un survivant.
+  // Son point d'entrée n'a de sens que sur l'accueil (on cherche « allège la semaine » au moment où
+  // la vie déborde) : il y reste, en pied de page, et la carte de période y revient quand elle court.
+  'real-life': { kind: 'home-pinned', zone: 'Accueil › pied « Semaine chargée ? Allège-la »' },
   // Conservé aussi parce qu'il est le seul accès à `/steps` : le retirer créait un 4ᵉ orphelin.
   steps: { kind: 'home' },
-  insights: { kind: 'home' },
-  'activation-path': { kind: 'home' },
   cycle: { kind: 'home' },
-  // US VIE-01 — n'existait pas au dégonflage : c'est une entrée **ajoutée après**, pas un survivant.
-  // Elle reste sur l'accueil parce que son point d'entrée n'a de sens que là : on cherche « allège la
-  // semaine » au moment où la vie déborde, pas en parcourant les réglages.
-  'real-life': { kind: 'home' },
+  // US ACCUEIL-08 — les repères de la toile validée : la nuit et l'eau du jour.
+  sleep: { kind: 'home' },
+  water: { kind: 'home' },
 
   // ── Devenus des cartes d'insight (6), puis des lignes d'une fiche du Labo ─
   // US LIENS-01 (30/09/2026) : ces six alertes lisent deux piliers. Elles ont quitté l'écran

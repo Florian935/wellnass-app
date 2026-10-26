@@ -1,4 +1,4 @@
-# État du projet — 25/10/2026
+# État du projet — 26/10/2026
 
 > 🤖 **Fichier généré.** Ne pas l'éditer à la main : il est réécrit par `node scripts/etat.mjs`
 > (skill [`/etat`](.claude/commands/etat.md)) à partir du front-matter des specs, de
@@ -7,7 +7,7 @@
 
 ## 🎯 Cap
 
-**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 273 livré · 4 partiel · 2 à faire (sur 285)
+**MVP1 (= V1.0 complète)** `███████████████████░` **96 %** — 274 livré · 4 partiel · 2 à faire (sur 286)
 
 Version en cours : **V0.8 — bêta : conformité & intégrations**. Il reste **4 candidats P0**
 avant de pouvoir publier.
@@ -42,9 +42,9 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 | | |
 |---|---|
-| Branche courante | `fix/accueil07-accueil-dit-vrai` (modifications non commitées) |
-| Commits | 1390 · `main` a **1387** commits de retard sur `dev` |
-| Specs d'US | 198 au total — 197 clôturées, 1 en cours |
+| Branche courante | `feature/accueil08-ta-journee` (modifications non commitées) |
+| Commits | 1391 · `main` a **1388** commits de retard sur `dev` |
+| Specs d'US | 199 au total — 198 clôturées, 1 en cours |
 | Migrations | 115/116 poussées sur le cloud |
 | Tests | `npm run test` — **⚠️ lire le code de sortie sans pipe** (un `tail` en aval masque l'échec) |
 
@@ -55,11 +55,11 @@ Détail et points durs : [BACKLOG.md](BACKLOG.md).
 
 ## 🕒 Derniers commits
 
+- `b533e1d`  fix(accueil): ACCUEIL-07 — l'accueil dit vrai, et prend la teinte Aurore
 - `d8fe320`  fix(identite): IDENT-01 — l'identité de pilier appartient à l'écran, pas à l'onglet
 - `0cc173e`  feat(course): CARDIO-02 — les quatre portes vers l'allure de référence, l'accueil du pilier, le test de 12 minutes
 - `9ef1824`  feat(course): CARDIO-02 socle — les portes calculent, l'allure ne recule plus au premier footing
 - `f02b9a6`  docs(course): CARDIO-02 cadrée — les quatre portes vers l'allure de référence
-- `3deb60c`  chore(workflow): dev direct — plus de spec, plan ni maquette à valider avant le code
 
 ---
 

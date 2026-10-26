@@ -85,18 +85,20 @@ describe('sizeSpan / clampCol', () => {
 // Registres (inchangés)
 // ---------------------------------------------------------------------------
 describe('WIDGET_REGISTRY', () => {
-  it('accueil 8, muscu 3, course 4 ; gardes pilier', () => {
+  it('accueil 5 (« Tes repères »), course 4 ; gardes pilier', () => {
     // 7 depuis INSIGHTS-02 (05/08/2026), contre **21** la veille — 3,5x le plafond d'ADR-007 §2.
     // **8 depuis VIE-01** (le meme jour) : le cliquet a casse la CI et force l'arbitrage, voir le
     // commentaire de `MAX_HOME_WIDGETS`.
     //
-    // Toujours 8 apres ACCUEIL-01/04 (09/09/2026), par un echange exact : `today-session` quitte
-    // la grille pour la zone epinglee, `weight` y revient. Le plafond n'a donc pas eu a bouger.
-    expect(HOME_WIDGET_IDS).toHaveLength(8);
+    // **5 depuis ACCUEIL-08 (25/10/2026)** : la grille devient « Tes repères » (D5). Cinq entrées
+    // en sont sorties pour une zone fixe qui les dit mieux (nutrition → cadran Manger, régularité →
+    // Ta semaine, insights → Du nouveau, parcours → Premiers pas, vie réelle → pied de page et scène
+    // « retour ») ; deux repères y entrent (sommeil, eau). Le plafond de 8, lui, ne bouge pas.
+    expect(HOME_WIDGET_IDS).toHaveLength(5);
     // Les hubs **gagnent** ce que l accueil perd : INSIGHTS-02 y a cree les destinations de
     // `record-recent` et `training-time`, qui n en avaient aucune de valable.
     expect(RUNNING_WIDGET_IDS).toHaveLength(4);
-    expect(WIDGET_REGISTRY.home.pillars['streak']).toBe('always');
+    expect(WIDGET_REGISTRY.home.pillars['steps']).toBe('always');
     // ── Résolution de merge du 10/09/2026 ───────────────────────────────────────────────────
     // Les deux branches ont retiré un id de cette assertion, chacune le sien : ACCUEIL-01 a sorti
     // `today-session` de la grille (il est devenu la zone épinglée, cf. le test juste en dessous),
@@ -119,11 +121,33 @@ describe('WIDGET_REGISTRY', () => {
     // Le defaut que ACCUEIL-04 corrige : toutes les entrees valaient 'wide', ce qui donnait cinq a
     // six rectangles identiques empiles, sans aucune hierarchie. Ce test interdit le retour en
     // arriere : si quelqu'un remet `uniformSize`, il n'y aura plus qu'une seule forme distincte.
+    //
+    // ACCUEIL-08 : « Tes repères » sont des tuiles compactes (D5) — quatre petits carrés deux par
+    // deux, et le cycle (trois lignes) en rectangle. Deux formes distinctes, plus trois : la bande
+    // `row` n'avait qu'un client, la carte « vie réelle », qui a quitté la grille.
     const sizes = new Set(Object.values(WIDGET_REGISTRY.home.defaultSize));
-    expect(sizes.size).toBeGreaterThanOrEqual(3);
+    expect(sizes.size).toBeGreaterThanOrEqual(2);
     expect(WIDGET_REGISTRY.home.defaultSize['steps']).toBe('small');
     expect(WIDGET_REGISTRY.home.defaultSize['weight']).toBe('small');
-    expect(WIDGET_REGISTRY.home.defaultSize['real-life']).toBe('row');
+    expect(WIDGET_REGISTRY.home.defaultSize['sleep']).toBe('small');
+    expect(WIDGET_REGISTRY.home.defaultSize['water']).toBe('small');
+    expect(WIDGET_REGISTRY.home.defaultSize['cycle']).toBe('wide');
+  });
+
+  it('🔴 ACCUEIL-08 — les cinq widgets devenus des zones fixes ont quitté la grille, garde comprise', () => {
+    // Leur destination `home-pinned` est vérifiée dans `widget-destinations.test.ts`.
+    for (const id of ['nutrition-summary', 'streak', 'insights', 'activation-path', 'real-life']) {
+      expect(HOME_WIDGET_IDS as readonly string[]).not.toContain(id);
+      expect(WIDGET_REGISTRY.home.pillars[id]).toBeUndefined();
+      expect(WIDGET_REGISTRY.home.defaultSize[id]).toBeUndefined();
+    }
+  });
+
+  it('garde le sommeil par le pilier Bien-être (opt-in), l’eau par la nutrition', () => {
+    // Le sommeil vient du check-in ou de Health Connect, deux voies du pilier Bien-être — désactivé
+    // par défaut : l'absence de réglage le masque, comme le cycle (donnée de santé).
+    expect(WIDGET_REGISTRY.home.pillars['sleep']).toEqual({ setting: 'wellbeingPillarEnabled' });
+    expect(WIDGET_REGISTRY.home.pillars['water']).toEqual(['nutrition']);
   });
 
   it('ne depasse pas le plafond Tier 0 d ADR-007 §2', () => {
@@ -211,10 +235,10 @@ describe('coerceSize (migration full/compact)', () => {
 describe('defaultScreenLayout', () => {
   it('place tous les widgets du hub sans chevauchement, dans la grille', () => {
     const layout = defaultScreenLayout('home');
-    // 8 depuis VIE-01 : `defaultScreenLayout` part du registre **sans filtrer** — c'est
-    // `resolveScreenLayout` qui applique les gardes. Le widget `cycle` est donc présent ici,
-    // masqué là-bas.
-    expect(layout.widgets).toHaveLength(8);
+    // 5 depuis ACCUEIL-08 : `defaultScreenLayout` part du registre **sans filtrer** — c'est
+    // `resolveScreenLayout` qui applique les gardes. Les widgets `cycle` et `sleep` sont donc
+    // présents ici, masqués là-bas.
+    expect(layout.widgets).toHaveLength(5);
     layout.widgets.forEach((w) => {
       expect(Number.isFinite(w.col)).toBe(true);
       expect(Number.isFinite(w.row)).toBe(true);
@@ -234,15 +258,15 @@ describe('resolveScreenLayout', () => {
 
   it('stored=null → défaut du hub, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
-    // 7 depuis VIE-01 (8 déclarés moins `cycle`, masqué faute d'opt-in).
-    expect(r.widgets).toHaveLength(7);
+    // 3 depuis ACCUEIL-08 (5 déclarés moins `cycle` et `sleep`, masqués faute d'opt-in).
+    expect(r.widgets).toHaveLength(3);
     assertNoOverlap(r.widgets);
   });
 
   it('compacte le layout stocké : aucun chevauchement ni ligne vide', () => {
     const stored: ScreenLayout = {
       widgets: [
-        { id: 'streak', visible: true, size: 'small', col: 1, row: 3 },
+        { id: 'weight', visible: true, size: 'small', col: 1, row: 3 },
         { id: 'steps', visible: true, size: 'small', col: 0, row: 5 },
       ],
     };
@@ -256,16 +280,48 @@ describe('resolveScreenLayout', () => {
     // quand même, sinon il faudrait migrer `user_settings.dashboard_layout` de tout le monde.
     const stored: ScreenLayout = {
       widgets: [
-        { id: 'nutrition-summary', visible: true, size: 'wide', col: 0, row: 0 },
-        { id: 'streak', visible: true, size: 'small', col: 0, row: 1 },
+        { id: 'water', visible: true, size: 'wide', col: 0, row: 0 },
+        { id: 'weight', visible: true, size: 'small', col: 0, row: 1 },
       ],
     };
     const r = resolveScreenLayout(stored, 'home', [...all]);
     expect(r.widgets.map((w) => w.id)).toContain('steps');
-    // INSIGHTS-02 : `wellbeing` a quitté l'accueil ; `insights` est le nouveau venu que la
-    // forward-compat doit ajouter à un layout qui ne le connaît pas.
-    expect(r.widgets.map((w) => w.id)).toContain('insights');
     assertNoOverlap(r.widgets);
+  });
+
+  it('🔴 ACCUEIL-08 — un layout d’avant « Tes repères » se lit sans trou ni perte', () => {
+    // Le cas réel de tout utilisateur existant : ses huit entrées en base, dont cinq que le registre
+    // ne connaît plus. Elles sont ignorées (filtre `known.has`), ses repères gardent leur ordre, et
+    // les deux nouveaux venus (eau ; sommeil s'il a le pilier) s'ajoutent sans migration.
+    const before: ScreenLayout = {
+      widgets: [
+        { id: 'nutrition-summary' as WidgetLayoutEntry['id'], visible: true, size: 'wide', col: 0, row: 0 },
+        { id: 'streak' as WidgetLayoutEntry['id'], visible: true, size: 'wide', col: 0, row: 2 },
+        { id: 'steps', visible: true, size: 'small', col: 0, row: 4 },
+        { id: 'weight', visible: true, size: 'small', col: 1, row: 4 },
+        { id: 'insights' as WidgetLayoutEntry['id'], visible: true, size: 'wide', col: 0, row: 6 },
+        { id: 'real-life' as WidgetLayoutEntry['id'], visible: true, size: 'row', col: 0, row: 8 },
+      ],
+    };
+    const r = resolveScreenLayout(before, 'home', [...all], { wellbeingPillarEnabled: true });
+    const ids = r.widgets.map((w) => w.id);
+    expect(ids).toEqual(expect.arrayContaining(['steps', 'weight', 'water', 'sleep']));
+    expect(ids).not.toContain('streak');
+    expect(new Set(ids).size).toBe(ids.length);
+    const steps = r.widgets.find((w) => w.id === 'steps')!;
+    const weight = r.widgets.find((w) => w.id === 'weight')!;
+    // Pas et poids restaient côte à côte : ils le restent.
+    expect(steps.row).toBe(weight.row);
+    expect(new Set([steps.col, weight.col])).toEqual(new Set([0, 1]));
+    assertNoOverlap(r.widgets);
+    assertNoEmptyRow(r.widgets);
+  });
+
+  it('masque `sleep` sans le pilier Bien-être — l’absence ne vaut jamais consentement', () => {
+    expect(resolveScreenLayout(null, 'home', [...all]).widgets.map((w) => w.id)).not.toContain('sleep');
+    expect(
+      resolveScreenLayout(null, 'home', [...all], { wellbeingPillarEnabled: true }).widgets.map((w) => w.id),
+    ).toContain('sleep');
   });
 
   // -------------------------------------------------------------------------
@@ -275,8 +331,8 @@ describe('resolveScreenLayout', () => {
   it('masque `cycle` quand le drapeau est absent — l’absence ne vaut jamais consentement', () => {
     const r = resolveScreenLayout(null, 'home', [...all]);
     expect(r.widgets.map((w) => w.id)).not.toContain('cycle');
-    // Et le hub garde donc exactement ses autres widgets (hors `cycle`).
-    expect(r.widgets).toHaveLength(7);
+    // Et le hub garde donc exactement ses autres widgets (hors `cycle`, et `sleep` sans son opt-in).
+    expect(r.widgets).toHaveLength(3);
   });
 
   it('masque `cycle` quand le drapeau est explicitement faux', () => {
@@ -287,7 +343,7 @@ describe('resolveScreenLayout', () => {
   it('affiche `cycle` quand le suivi est activé, sans chevauchement', () => {
     const r = resolveScreenLayout(null, 'home', [...all], { cycleTrackingEnabled: true });
     expect(r.widgets.map((w) => w.id)).toContain('cycle');
-    expect(r.widgets).toHaveLength(8);
+    expect(r.widgets).toHaveLength(4);
     assertNoOverlap(r.widgets);
   });
 
@@ -301,7 +357,7 @@ describe('resolveScreenLayout', () => {
     // mentionne encore ; il ne doit plus être rendu, et sans laisser de trou.
     const stored: ScreenLayout = {
       widgets: [
-        { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
+        { id: 'weight', visible: true, size: 'small', col: 0, row: 0 },
         { id: 'cycle', visible: true, size: 'wide', col: 0, row: 1 },
       ],
     };
@@ -332,7 +388,7 @@ describe('resolveScreenLayout', () => {
     expect(ids).not.toContain('load-streak-alert');
     // Rien n'a été perdu au passage : on retrouve
     // exactement les widgets autorisés du registre, ni un de plus (doublon) ni un de moins.
-    expect(ids).toContain('insights');
+    expect(ids).toContain('weight');
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids).toHaveLength(
       resolveScreenLayout(null, 'home', [...all]).widgets.length,
@@ -342,28 +398,27 @@ describe('resolveScreenLayout', () => {
   });
 
   it('garde les transverses visibles pour un utilisateur « nutrition seule »', () => {
-    // `streak`, `steps`, `weight` et `insights` sont transverses : jamais filtrés par
-    // `active_pillars`. (`wellbeing` l'était aussi jusqu'à INSIGHTS-02, qui l'a déplacé vers
-    // Réglages › Suivi ; `weight` est revenu en transverse avec ACCUEIL-04.)
+    // `steps` et `weight` sont transverses : jamais filtrés par `active_pillars`. (`streak` et
+    // `insights` l'étaient aussi, jusqu'à ce qu'ACCUEIL-08 les sorte de la grille pour Ta semaine et
+    // Du nouveau.)
     const r = resolveScreenLayout(null, 'home', ['nutrition']);
     const ids = r.widgets.map((w) => w.id);
 
-    expect(ids).toContain('streak');
     expect(ids).toContain('steps');
     expect(ids).toContain('weight');
-    expect(ids).toContain('insights');
+    expect(ids).toContain('water');
   });
 
   it('masque bien un widget garde par un pilier inactif (« muscu seule »)', () => {
-    // Contrôle négatif du filtrage par pilier. Il portait sur `today-session` (garde `['strength']`)
-    // jusqu'à ce qu'ACCUEIL-01 le promeuve en zone épinglée : `nutrition-summary` est désormais le
-    // seul widget d'accueil garde par un pilier, c'est donc lui qui porte la démonstration.
+    // Contrôle négatif du filtrage par pilier. Il portait sur `today-session`, puis sur
+    // `nutrition-summary` (sorti par ACCUEIL-08) : `water` est désormais le seul repère gardé par un
+    // pilier, c'est donc lui qui porte la démonstration.
     const r = resolveScreenLayout(null, 'home', ['strength']);
     const ids = r.widgets.map((w) => w.id);
 
-    expect(ids).not.toContain('nutrition-summary');
+    expect(ids).not.toContain('water');
     // Les transverses, eux, restent — c'est ce qui distingue un filtre d'un vidage.
-    expect(ids).toContain('streak');
+    expect(ids).toContain('steps');
     expect(ids).toContain('weight');
     assertNoOverlap(r.widgets);
     assertNoEmptyRow(r.widgets);
@@ -371,24 +426,24 @@ describe('resolveScreenLayout', () => {
 
   it('borne une colonne invalide (wide en col 1 → col 0)', () => {
     const stored: ScreenLayout = {
-      widgets: [{ id: 'nutrition-summary', visible: true, size: 'wide', col: 1, row: 0 }],
+      widgets: [{ id: 'water', visible: true, size: 'wide', col: 1, row: 0 }],
     };
     const r = resolveScreenLayout(stored, 'home', [...all]);
-    expect(r.widgets.find((w) => w.id === 'nutrition-summary')!.col).toBe(0);
+    expect(r.widgets.find((w) => w.id === 'water')!.col).toBe(0);
   });
 
   it('ancien format (order + full/compact, sans col/row) → migration first-fit, sans chevauchement', () => {
     const stored = {
       widgets: [
-        { id: 'streak', visible: true, order: 0, size: 'compact' },
-        { id: 'nutrition-summary', visible: true, order: 1, size: 'full' },
+        { id: 'weight', visible: true, order: 0, size: 'compact' },
+        { id: 'water', visible: true, order: 1, size: 'full' },
         { id: 'steps', visible: true, order: 2, size: 'compact' },
       ],
     } as unknown as ScreenLayout;
     const r = resolveScreenLayout(stored, 'home', [...all]);
     // tailles migrées
-    expect(r.widgets.find((w) => w.id === 'streak')!.size).toBe('small');
-    expect(r.widgets.find((w) => w.id === 'nutrition-summary')!.size).toBe('wide');
+    expect(r.widgets.find((w) => w.id === 'weight')!.size).toBe('small');
+    expect(r.widgets.find((w) => w.id === 'water')!.size).toBe('wide');
     r.widgets.forEach((w) => expect(Number.isFinite(w.col)).toBe(true));
     assertNoOverlap(r.widgets);
   });
@@ -396,14 +451,14 @@ describe('resolveScreenLayout', () => {
   it('filtre par pilier ; course masquée si running inactif', () => {
     expect(resolveScreenLayout(null, 'running', ['strength']).widgets).toHaveLength(0);
     const home = resolveScreenLayout(null, 'home', ['strength']).widgets.map((w) => w.id);
-    expect(home).toContain('streak');
+    expect(home).toContain('steps');
     expect(home).not.toContain('running-week');
   });
 
   it('IDs inconnus ignorés', () => {
     const stored = {
       widgets: [
-        { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
+        { id: 'weight', visible: true, size: 'small', col: 0, row: 0 },
         { id: 'fantome', visible: true, size: 'small', col: 1, row: 0 },
       ],
     } as unknown as ScreenLayout;
@@ -419,33 +474,33 @@ describe('moveWidgetToCell', () => {
   it('déplace vers la case cible (bornée) et ne laisse aucun chevauchement', () => {
     const base: ScreenLayout = {
       widgets: [
-        { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
+        { id: 'weight', visible: true, size: 'small', col: 0, row: 0 },
         { id: 'steps', visible: true, size: 'small', col: 1, row: 0 },
         // Ligne 2, et non 1 : les deux `small` ci-dessus occupent les demi-lignes 0 et 1. Placer
         // le `wide` en ligne 1 ferait partir la fixture d'un chevauchement, et le résultat
         // n'illustrerait plus le déplacement mais la résolution de cette collision initiale.
-        { id: 'nutrition-summary', visible: true, size: 'wide', col: 0, row: 2 },
+        { id: 'water', visible: true, size: 'wide', col: 0, row: 2 },
       ],
     };
-    // Déplace steps sous streak → collision avec nutrition-summary (wide) → poussée.
+    // Déplace steps sous weight → collision avec water (wide) → poussée.
     // ⚠️ « Sous un small » vaut la ligne **2** depuis ACCUEIL-04 : les hauteurs comptent en
     // demi-cases, et un small en occupe deux (0 et 1).
     const r = moveWidgetToCell(base, 'steps', 0, 2);
     const steps = r.widgets.find((w) => w.id === 'steps')!;
     expect({ col: steps.col, row: steps.row }).toEqual({ col: 0, row: 2 });
     assertNoOverlap(r.widgets);
-    // nutrition-summary (wide, h=2) a été poussé sous steps.
-    expect(r.widgets.find((w) => w.id === 'nutrition-summary')!.row).toBeGreaterThanOrEqual(4);
+    // water (wide, h=2) a été poussé sous steps.
+    expect(r.widgets.find((w) => w.id === 'water')!.row).toBeGreaterThanOrEqual(4);
   });
 
   it('deux petits carrés empilés dans la même colonne', () => {
     const base: ScreenLayout = {
       widgets: [
-        { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
+        { id: 'weight', visible: true, size: 'small', col: 0, row: 0 },
         { id: 'steps', visible: true, size: 'small', col: 1, row: 0 },
       ],
     };
-    const r = moveWidgetToCell(base, 'steps', 0, 2); // col 0, sous streak (small = 2 demi-cases)
+    const r = moveWidgetToCell(base, 'steps', 0, 2); // col 0, sous weight (small = 2 demi-cases)
     const steps = r.widgets.find((w) => w.id === 'steps')!;
     expect({ col: steps.col, row: steps.row }).toEqual({ col: 0, row: 2 });
     assertNoOverlap(r.widgets); // colonne droite laissée vide (trou autorisé)
@@ -454,22 +509,22 @@ describe('moveWidgetToCell', () => {
   it('compaction : une ligne vide au-dessus est supprimée (remontée)', () => {
     const base: ScreenLayout = {
       widgets: [
-        // `streak` (wide) occupe les demi-lignes 0 et 1 ; `steps` démarre en 4, donc les
+        // `weight` (wide) occupe les demi-lignes 0 et 1 ; `steps` démarre en 4, donc les
         // demi-lignes 2 et 3 sont vides — c'est le trou que la compaction doit résorber.
-        { id: 'streak', visible: true, size: 'wide', col: 0, row: 0 },
+        { id: 'weight', visible: true, size: 'wide', col: 0, row: 0 },
         { id: 'steps', visible: true, size: 'wide', col: 0, row: 4 },
       ],
     };
     const r = moveWidgetToCell(base, 'steps', 0, 4); // re-place → compaction
-    expect(r.widgets.find((w) => w.id === 'steps')!.row).toBe(2); // remontée contre `streak`
+    expect(r.widgets.find((w) => w.id === 'steps')!.row).toBe(2); // remontée contre `weight`
     assertNoEmptyRow(r.widgets);
   });
 
   it('borne la colonne d’un wide (col 1 demandé → 0)', () => {
     const base: ScreenLayout = {
-      widgets: [{ id: 'nutrition-summary', visible: true, size: 'wide', col: 0, row: 0 }],
+      widgets: [{ id: 'water', visible: true, size: 'wide', col: 0, row: 0 }],
     };
-    expect(moveWidgetToCell(base, 'nutrition-summary', 1, 0).widgets[0]!.col).toBe(0);
+    expect(moveWidgetToCell(base, 'water', 1, 0).widgets[0]!.col).toBe(0);
   });
 
   it('id inconnu → inchangé', () => {
@@ -496,9 +551,9 @@ describe('migration implicite de l’ancienne résolution', () => {
     // lignes 0, 1, 2, 3 — des lignes qui, dans la nouvelle unité, se chevaucheraient deux à deux.
     const v1: ScreenLayout = {
       widgets: [
-        { id: 'nutrition-summary', visible: true, size: 'wide', col: 0, row: 0 },
-        { id: 'streak', visible: true, size: 'wide', col: 0, row: 1 },
-        { id: 'insights', visible: true, size: 'wide', col: 0, row: 2 },
+        { id: 'water', visible: true, size: 'wide', col: 0, row: 0 },
+        { id: 'weight', visible: true, size: 'wide', col: 0, row: 1 },
+        { id: 'steps', visible: true, size: 'wide', col: 0, row: 2 },
         { id: 'cycle', visible: true, size: 'wide', col: 0, row: 3 },
       ],
     };
@@ -506,9 +561,9 @@ describe('migration implicite de l’ancienne résolution', () => {
 
     // L'ordre relatif est ce que l'utilisateur avait choisi : il doit survivre à la migration.
     const ordered = [...r.widgets].sort((a, b) => a.row - b.row).map((w) => w.id);
-    expect(ordered.indexOf('nutrition-summary')).toBeLessThan(ordered.indexOf('streak'));
-    expect(ordered.indexOf('streak')).toBeLessThan(ordered.indexOf('insights'));
-    expect(ordered.indexOf('cycle')).toBeGreaterThan(ordered.indexOf('insights'));
+    expect(ordered.indexOf('water')).toBeLessThan(ordered.indexOf('weight'));
+    expect(ordered.indexOf('weight')).toBeLessThan(ordered.indexOf('steps'));
+    expect(ordered.indexOf('cycle')).toBeGreaterThan(ordered.indexOf('steps'));
 
     // Et les invariants de grille tiennent, ce qui est tout l'enjeu : des lignes non migrées
     // produiraient des widgets superposés.
@@ -521,9 +576,9 @@ describe('migration implicite de l’ancienne résolution', () => {
     // nouvelle unité, un empilement de `wide` occupe 0, 2, 4, 6 — jamais 0, 1, 2, 3.
     const v1: ScreenLayout = {
       widgets: [
-        { id: 'nutrition-summary', visible: true, size: 'wide', col: 0, row: 0 },
-        { id: 'streak', visible: true, size: 'wide', col: 0, row: 1 },
-        { id: 'insights', visible: true, size: 'wide', col: 0, row: 2 },
+        { id: 'water', visible: true, size: 'wide', col: 0, row: 0 },
+        { id: 'weight', visible: true, size: 'wide', col: 0, row: 1 },
+        { id: 'steps', visible: true, size: 'wide', col: 0, row: 2 },
       ],
     };
     const r = resolveScreenLayout(v1, 'home', ['nutrition']);
@@ -538,7 +593,7 @@ describe('migration implicite de l’ancienne résolution', () => {
     // voisins, pas se retrouver l'un sous l'autre.
     const v1: ScreenLayout = {
       widgets: [
-        { id: 'streak', visible: true, size: 'wide', col: 0, row: 0 },
+        { id: 'water', visible: true, size: 'wide', col: 0, row: 0 },
         { id: 'steps', visible: true, size: 'small', col: 0, row: 1 },
         { id: 'weight', visible: true, size: 'small', col: 1, row: 1 },
       ],
@@ -567,9 +622,10 @@ describe('migration implicite de l’ancienne résolution', () => {
       screens: {
         home: {
           widgets: [
-            { id: 'streak', visible: true, size: 'wide', col: 0, row: 0 },
+            { id: 'water', visible: true, size: 'wide', col: 0, row: 0 },
             { id: 'steps', visible: true, size: 'wide', col: 0, row: 1 },
             { id: 'weight', visible: true, size: 'large', col: 0, row: 2 },
+            // Sorti du registre par ACCUEIL-08 : ignoré à la lecture, il ne laisse rien derrière.
             { id: 'real-life', visible: true, size: 'wide', col: 0, row: 4 },
           ],
         },
@@ -580,9 +636,9 @@ describe('migration implicite de l’ancienne résolution', () => {
 
     expect(byId.get('steps')!.size).toBe('small');
     expect(byId.get('weight')!.size).toBe('small');
-    expect(byId.get('real-life')!.size).toBe('row');
+    expect(byId.has('real-life' as WidgetLayoutEntry['id'])).toBe(false);
     // Les widgets hors de la table ne bougent pas : on corrige un défaut, on ne réécrit pas l'écran.
-    expect(byId.get('streak')!.size).toBe('wide');
+    expect(byId.get('water')!.size).toBe('wide');
   });
 
   it('🔴 marque la version, pour ne PAS rejouer la réattribution à chaque lecture', () => {
@@ -633,7 +689,7 @@ describe('gridRowCount', () => {
   it('hauteur = ligne max occupée', () => {
     expect(
       gridRowCount([
-        { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
+        { id: 'weight', visible: true, size: 'small', col: 0, row: 0 },
         { id: 'steps', visible: true, size: 'large', col: 0, row: 2 },
       ]),
     ).toBe(6); // large (h=4) démarrant en demi-ligne 2 → 6
@@ -652,22 +708,22 @@ describe('gridRowCount', () => {
 describe('compactLayout', () => {
   it('remonte les widgets pour ne laisser aucune ligne vide', () => {
     const out = compactLayout([
-      { id: 'streak', visible: true, size: 'small', col: 0, row: 0 },
+      { id: 'weight', visible: true, size: 'small', col: 0, row: 0 },
       { id: 'steps', visible: true, size: 'small', col: 0, row: 5 },
     ]);
-    // `steps` remonte contre `streak`, qui occupe les demi-lignes 0 et 1 : donc la ligne 2.
+    // `steps` remonte contre `weight`, qui occupe les demi-lignes 0 et 1 : donc la ligne 2.
     expect(out.map((w) => [w.id, w.row])).toEqual([
-      ['streak', 0],
+      ['weight', 0],
       ['steps', 2],
     ]);
   });
 
   it('conserve les colonnes — la compaction est verticale, pas un réagencement', () => {
     const out = compactLayout([
-      { id: 'streak', visible: true, size: 'small', col: 1, row: 3 },
+      { id: 'weight', visible: true, size: 'small', col: 1, row: 3 },
       { id: 'steps', visible: true, size: 'small', col: 0, row: 7 },
     ]);
-    expect(out.find((w) => w.id === 'streak')!.col).toBe(1);
+    expect(out.find((w) => w.id === 'weight')!.col).toBe(1);
     expect(out.find((w) => w.id === 'steps')!.col).toBe(0);
     // Deux colonnes distinctes → les deux peuvent tenir sur la première ligne.
     expect(out.every((w) => w.row === 0)).toBe(true);
@@ -675,7 +731,7 @@ describe('compactLayout', () => {
 
   it('ne modifie pas le tableau reçu (copie défensive)', () => {
     const input: WidgetLayoutEntry[] = [
-      { id: 'streak', visible: true, size: 'small', col: 0, row: 4 },
+      { id: 'weight', visible: true, size: 'small', col: 0, row: 4 },
     ];
     const out = compactLayout(input);
     expect(input[0]!.row).toBe(4);
@@ -690,8 +746,8 @@ describe('compactLayout', () => {
   it('résout un chevauchement en descendant le widget chevauché', () => {
     // Deux `wide` (pleine largeur) déclarés sur la même ligne : le second doit descendre.
     const out = compactLayout([
-      { id: 'nutrition-summary', visible: true, size: 'wide', col: 0, row: 0 },
-      { id: 'streak', visible: true, size: 'wide', col: 0, row: 0 },
+      { id: 'water', visible: true, size: 'wide', col: 0, row: 0 },
+      { id: 'weight', visible: true, size: 'wide', col: 0, row: 0 },
     ]);
     expect(out.map((w) => w.row).sort()).toEqual([0, 2]);
   });
@@ -704,23 +760,23 @@ describe('moveWidgetToCell — priorité du widget déplacé à ligne égale', (
   it('donne la ligne la plus haute au widget déplacé, même s’il est en fin de liste', () => {
     const base: ScreenLayout = {
       widgets: [
-        { id: 'nutrition-summary', visible: true, size: 'wide', col: 0, row: 0 },
-        // `streak` est APRÈS dans le tableau : c'est lui qu'on déplace sur la même ligne.
-        { id: 'streak', visible: true, size: 'wide', col: 0, row: 2 },
+        { id: 'water', visible: true, size: 'wide', col: 0, row: 0 },
+        // `weight` est APRÈS dans le tableau : c'est lui qu'on déplace sur la même ligne.
+        { id: 'weight', visible: true, size: 'wide', col: 0, row: 2 },
       ],
     };
-    const r = moveWidgetToCell(base, 'streak', 0, 0);
+    const r = moveWidgetToCell(base, 'weight', 0, 0);
 
     // Le widget déplacé gagne le slot du haut ; l'autre est repoussé dessous — soit la demi-ligne
     // 2, puisqu'un `wide` occupe deux demi-lignes.
-    expect(r.widgets.find((w) => w.id === 'streak')!.row).toBe(0);
-    expect(r.widgets.find((w) => w.id === 'nutrition-summary')!.row).toBe(2);
+    expect(r.widgets.find((w) => w.id === 'weight')!.row).toBe(0);
+    expect(r.widgets.find((w) => w.id === 'water')!.row).toBe(2);
     assertNoOverlap(r.widgets);
   });
 
   it('id inconnu → disposition inchangée', () => {
     const base: ScreenLayout = {
-      widgets: [{ id: 'streak', visible: true, size: 'small', col: 0, row: 3 }],
+      widgets: [{ id: 'weight', visible: true, size: 'small', col: 0, row: 3 }],
     };
     const r = moveWidgetToCell(base, 'steps', 0, 0);
     expect(r.widgets).toEqual(base.widgets);
@@ -740,7 +796,7 @@ describe('parseMultiScreenLayout', () => {
   it('nouveau format { screens } avec col/row', () => {
     const parsed = parseMultiScreenLayout({
       screens: {
-        home: { widgets: [{ id: 'streak', visible: true, size: 'small', col: 1, row: 2 }] },
+        home: { widgets: [{ id: 'weight', visible: true, size: 'small', col: 1, row: 2 }] },
       },
     });
     const w = parsed!.screens.home!.widgets[0]!;
@@ -750,14 +806,14 @@ describe('parseMultiScreenLayout', () => {
   it('ancien format { widgets } (order/full) → screens.home, résolu en grille', () => {
     const parsed = parseMultiScreenLayout({
       widgets: [
-        { id: 'nutrition-summary', visible: true, order: 0, size: 'full' },
-        { id: 'streak', visible: true, order: 1, size: 'compact' },
+        { id: 'water', visible: true, order: 0, size: 'full' },
+        { id: 'weight', visible: true, order: 1, size: 'compact' },
       ],
     });
     expect(parsed!.screens.home).toBeDefined();
     // Résolution en aval migre positions + tailles.
     const r = resolveScreenLayout(parsed!.screens.home, 'home', ['strength', 'running', 'nutrition']);
-    expect(r.widgets.find((w) => w.id === 'nutrition-summary')!.size).toBe('wide');
+    expect(r.widgets.find((w) => w.id === 'water')!.size).toBe('wide');
     assertNoOverlap(r.widgets);
   });
 });

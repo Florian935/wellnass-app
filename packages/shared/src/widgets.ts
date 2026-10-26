@@ -73,8 +73,13 @@ export const HOME_WIDGET_IDS = [
   // déclare (`{ kind: 'home-pinned' }`) et un test le vérifie — il n'a donc pas disparu, il a été
   // promu. La place ainsi libérée accueille le retour de `weight` : le registre **reste à 8**, et
   // `MAX_HOME_WIDGETS` n'a pas eu à bouger.
-  'nutrition-summary',
-  'streak',
+  // ── US ACCUEIL-08 (25/10/2026) — la grille devient « Tes repères » (D5) ─────────────────────────
+  // Cinq entrées quittent la grille pour une **zone fixe** de l'accueil qui les dit mieux, chacune
+  // avec sa destination `home-pinned` (`widget-destinations.ts`, vérifiée par test) :
+  // `nutrition-summary` → le cadran Manger, `streak` → Ta semaine, `insights` → Du nouveau,
+  // `activation-path` → Premiers pas (le ciel) et Du nouveau, `real-life` → le pied de page et la
+  // scène « retour ». Deux repères y entrent, ceux de la toile validée : le sommeil et l'eau. Le
+  // registre passe de 8 à 5 ; le plafond (8) ne bouge pas.
   // Conservé bien qu'il ne soit pas au cœur des 3 piliers : c'est du live du jour, **et** son
   // widget est le seul point d'entrée de `/steps` — le retirer créait un écran orphelin.
   'steps',
@@ -84,14 +89,10 @@ export const HOME_WIDGET_IDS = [
   // était un écart à la spec, pas une décision. En `small`, il partage sa ligne avec les pas et ne
   // coûte donc aucune hauteur d'écran supplémentaire.
   'weight',
-  // Conditionnel : rendu `null` quand le moteur ne retient aucune carte (US INSIGHTS-01).
-  'insights',
-  // Conditionnel et temporaire : 7 jours après l'onboarding (US ACTIV-01).
-  'activation-path',
-  // Conditionnel : la carte de période « vie réelle », **plus** son point d'entrée hors période
-  // (US VIE-01). Un seul id pour les deux états — deux widgets auraient regonflé le registre que
-  // INSIGHTS-02 vient de dégonfler, alors qu'ils ne s'affichent jamais ensemble.
-  'real-life',
+  // US ACCUEIL-08 — la nuit (check-in ou Health Connect) : gardée par le pilier Bien-être, opt-in.
+  'sleep',
+  // US ACCUEIL-08 — l'eau du jour (NUTRI-UX01) : un geste d'un tap, gardé par la nutrition.
+  'water',
   // Gardé par un réglage, invisible par défaut : opt-in strict sur une donnée de santé (CYCLE-01).
   'cycle',
 ] as const;
@@ -165,7 +166,7 @@ export type WidgetId = HomeWidgetId | RunningWidgetId;
  * ce n'est pas un mécanisme de feature-flags générique, seulement le moyen d'exprimer « ce widget
  * dépend d'un opt-in ».
  */
-export const WIDGET_SETTING_KEYS = ['cycleTrackingEnabled'] as const;
+export const WIDGET_SETTING_KEYS = ['cycleTrackingEnabled', 'wellbeingPillarEnabled'] as const;
 export type WidgetSettingKey = (typeof WIDGET_SETTING_KEYS)[number];
 export type WidgetSettingFlags = Partial<Record<WidgetSettingKey, boolean>>;
 
@@ -204,8 +205,6 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
   home: {
     ids: HOME_WIDGET_IDS,
     pillars: {
-      'nutrition-summary': ['nutrition'],
-      streak: 'always',
       // US ACCUEIL-04 : transverse, comme `steps` et pour la même raison — le poids corporel
       // n'appartient à aucun des trois piliers, et quelqu'un qui ne suit que la musculation a
       // autant de raisons de le suivre que quelqu'un qui ne suit que l'alimentation.
@@ -217,16 +216,11 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
       // n'appartient à aucun des trois piliers, mais c'est une donnée de santé sensible, en opt-in
       // strict et désactivée par défaut : elle ne peut donc pas être universelle non plus.
       cycle: { setting: 'cycleTrackingEnabled' },
-      // US ACTIV-01 : transverse — le parcours cible n'importe quel utilisateur les 7 premiers
-      // jours, quels que soient ses piliers actifs.
-      'activation-path': 'always',
-      // US INSIGHTS-01 : transverse — le moteur agrège des signaux des trois piliers et applique
-      // lui-même le gating candidat par candidat (spec R5). Une garde par pilier ici masquerait la
-      // porte d'entrée à un mono-pilier qui a pourtant des insights.
-      insights: 'always',
-      // US VIE-01 : transverse — la vie prend le dessus quels que soient les piliers activés, et
-      // l'objectif de semaine minimal n'affiche de toute façon que les piliers actifs (règle R3).
-      'real-life': 'always',
+      // US ACCUEIL-08 : la nuit vient du check-in ou de Health Connect, deux voies du pilier
+      // Bien-être — désactivé par défaut. Même sens sûr que le cycle : l'absence masque.
+      sleep: { setting: 'wellbeingPillarEnabled' },
+      // US ACCUEIL-08 : l'eau appartient au pilier nutrition (NUTRI-UX01).
+      water: ['nutrition'],
     },
     /**
      * ── Fin de `uniformSize` sur l'accueil (US ACCUEIL-04) ──────────────────────────────────────
@@ -239,29 +233,14 @@ export const WIDGET_REGISTRY: Record<WidgetScreen, ScreenRegistry> = {
      * le bon rendu **par accident** pour la moitié d'entre elles.
      */
     defaultSize: {
-      // Anneau calorique + les trois macros du jour : c'est la carte la plus dense de l'accueil.
-      'nutrition-summary': 'wide',
-      // Sept pastilles de semaine + le bandeau de récapitulatif : une ligne de grille pleine.
-      streak: 'wide',
+      // US ACCUEIL-08 — « Tes repères » sont des tuiles compactes, deux par deux (D5) : une valeur,
+      // une courbe ou une barre, une ligne de contexte.
       // Un anneau et un total suffisent. En `small`, les pas partagent leur ligne avec le poids —
       // 182 px de hauteur d'écran rendus par rapport à deux `wide` empilés.
       steps: 'small',
       weight: 'small',
-      // Un titre d'insight sur deux lignes, plus le compte des suivants.
-      insights: 'wide',
-      // Jour N/7, titre, description et action : le parcours d'activation a besoin de la place.
-      'activation-path': 'wide',
-      // Hors période, cette carte n'affiche **qu'une ligne** — c'est le cas qui a motivé `row`,
-      // et c'est l'état de loin le plus fréquent (une période « vie réelle » dure quelques
-      // semaines par an).
-      //
-      // ⚠️ **En période, elle ne tient pas dans une bande** : la carte active porte l'échéance, les
-      // jours restants, l'objectif de semaine minimal et deux boutons. La forme stockée reste
-      // `row`, mais l'accueil en calcule une **forme effective** au rendu (`sizeFor` de
-      // `WidgetGrid`) qui la remonte à `wide` tant que la période court. Le layout de
-      // l'utilisateur n'est pas réécrit pour autant : c'est un besoin d'affichage, pas une
-      // préférence — et il redevient `row` de lui-même à la fin de la période.
-      'real-life': 'row',
+      sleep: 'small',
+      water: 'small',
       // Jour du cycle, phase, prédiction : trois lignes.
       cycle: 'wide',
     },
