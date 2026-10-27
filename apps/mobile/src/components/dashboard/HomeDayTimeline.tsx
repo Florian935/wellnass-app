@@ -10,15 +10,33 @@
  *  - un repas ou une pesée à venir porte un « + » : le noter tout de suite, sans passer par la carte.
  *
  * Le composant ne décide rien : il range ce qu'on lui donne et peint chaque ligne.
+ *
+ * ── US ACCUEIL-09 — le mouvement ─────────────────────────────────────────────────────────────────
+ *  - **la ligne cochée** : le rond d'un geste qui vient d'être fait (ou le rond du résumé quand le
+ *    compte des gestes faits monte) se gonfle puis se pose — jamais à l'arrivée sur l'écran, seulement
+ *    quand le geste vient d'avoir lieu ;
+ *  - **la carte du moment entre** : elle monte de 10 px en 460 ms quand l'action du moment change ;
+ *  - **Prisme du soir** se pose au bout du fil (`ending`).
+ * Animations réduites : rien ne bouge, tout est à sa place finale.
  */
 
 import { Ionicons } from '@expo/vector-icons';
-import { useState, type ReactNode } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useState, type ReactNode } from 'react';
+import { Pressable, StyleSheet, Text, View, type StyleProp, type ViewStyle } from 'react-native';
+import Animated, {
+  FadeInDown,
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 import { useTranslation } from 'react-i18next';
 import { clockLabel, type DayTimeline, type TimelineItem } from '@wellness/shared';
 import { useMealName } from '@/components/dashboard/NowCard';
+import { useAppReducedMotion } from '@/hooks/useAppReducedMotion';
 import { useUnits } from '@/hooks/useUnits';
+import { EASING, SPRING } from '@/theme/motion';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 import { withAlpha } from '@/theme/color-utils';
@@ -27,6 +45,28 @@ import { withAlpha } from '@/theme/color-utils';
 const UPCOMING_SHOWN = 3;
 /** On replie ce qui est fait dès deux gestes : une seule ligne ne gagnerait rien à se replier. */
 const COLLAPSE_FROM = 2;
+
+/** US ACCUEIL-09 — l'entrée de la carte du moment (planche « Le mouvement »). */
+export const NOW_CARD_ENTER_MS = 460;
+export const NOW_CARD_RISE_PX = 10;
+
+/**
+ * Le rond d'une ligne, qui se gonfle quand `count` MONTE (un geste vient d'être fait). La valeur
+ * d'avant vit dans une valeur partagée : rien ne se rejoue au montage, ni quand le compte baisse.
+ */
+function PulseNode({ count, style, children }: { count: number; style: StyleProp<ViewStyle>; children?: ReactNode }) {
+  const reduced = useAppReducedMotion();
+  const last = useSharedValue(count);
+  const scale = useSharedValue(1);
+  useEffect(() => {
+    if (count > last.value && !reduced) {
+      scale.value = withSequence(withTiming(1.35, { duration: 140, easing: EASING.fill }), withSpring(1, SPRING.pop));
+    }
+    last.value = count;
+  }, [count, last, reduced, scale]);
+  const animated = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
+  return <Animated.View style={[style, animated]}>{children}</Animated.View>;
+}
 
 type Props = {
   timeline: DayTimeline;
@@ -41,6 +81,8 @@ type Props = {
   onPlanning: () => void;
   /** Noter tout de suite un repas ou une pesée (le « + » d'une ligne). */
   onQuick: (item: TimelineItem) => void;
+  /** US ACCUEIL-09 — ce qui se pose au bout du fil (Prisme du soir). */
+  ending?: ReactNode;
 };
 
 export function HomeDayTimeline({
@@ -53,6 +95,7 @@ export function HomeDayTimeline({
   formatKcal,
   onPlanning,
   onQuick,
+  ending = null,
 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -60,6 +103,7 @@ export function HomeDayTimeline({
   const mealName = useMealName();
   const [showDone, setShowDone] = useState(false);
   const [showAll, setShowAll] = useState(false);
+  const reduced = useAppReducedMotion();
 
   /** La couleur d'un pilier, lisible sur la carte. */
   const pillarColor = (item: TimelineItem): string => {
@@ -197,9 +241,9 @@ export function HomeDayTimeline({
         style={styles.summary}
       >
         <View style={styles.timeCol} />
-        <View style={[styles.node, { backgroundColor: colors.text }]}>
+        <PulseNode count={doneItems.length} style={[styles.node, { backgroundColor: colors.text }]}>
           <Ionicons name="checkmark" size={11} color={colors.surface} />
-        </View>
+        </PulseNode>
         <View style={styles.texts}>
           <Text style={[styles.title, { color: colors.text }]}>
             {collapse ? t('home.fil.doneCount', { count: doneItems.length }) : t('home.fil.fold')}
@@ -221,7 +265,8 @@ export function HomeDayTimeline({
         <Text style={[styles.time, { color: item.done ? colors.textMuted : colors.text }]}>
           {item.timeKnown ? clockLabel(item.hour) : '—'}
         </Text>
-        <View
+        <PulseNode
+          count={item.done ? 1 : 0}
           style={[
             styles.node,
             item.done
@@ -236,7 +281,7 @@ export function HomeDayTimeline({
         >
           {item.done ? <Ionicons name="checkmark" size={11} color={colors.accentText} /> : null}
           {item.live ? <View style={[styles.liveDot, { backgroundColor: color }]} /> : null}
-        </View>
+        </PulseNode>
         <View style={styles.texts}>
           <View style={styles.titleRow}>
             <Text style={[styles.title, { color: item.done ? colors.textMuted : colors.text }]}>
@@ -271,10 +316,23 @@ export function HomeDayTimeline({
   let placed = false;
   let shown = 0;
   const hidden: TimelineItem[] = [];
+  // La clé suit l'action du moment : quand elle change, la carte entre à nouveau (ACCUEIL-09).
+  const nowKey = `now:${timeline.nowItemId ?? timeline.now.kind}`;
   const nowNode = (
-    <View key="now" style={styles.now} testID="fil-now">
+    <Animated.View
+      key={nowKey}
+      style={styles.now}
+      testID="fil-now"
+      entering={
+        reduced
+          ? undefined
+          : FadeInDown.duration(NOW_CARD_ENTER_MS)
+              .easing(EASING.fill)
+              .withInitialValues({ transform: [{ translateY: NOW_CARD_RISE_PX }] })
+      }
+    >
       {nowCard}
-    </View>
+    </Animated.View>
   );
 
   for (const item of timeline.items) {
@@ -339,12 +397,14 @@ export function HomeDayTimeline({
         <View style={[styles.line, { backgroundColor: colors.border }]} pointerEvents="none" />
         {rows}
       </View>
+      {ending ? <View style={[styles.ending, { borderTopColor: colors.border }]}>{ending}</View> : null}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
   card: { borderRadius: 24, borderWidth: 1, paddingTop: 8, paddingBottom: 8, paddingHorizontal: 14 },
+  ending: { borderTopWidth: 1, marginTop: 6, paddingTop: 12, paddingBottom: 6 },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 10 },
   heading: { fontFamily: fontFamily.monoBold, fontSize: 11, letterSpacing: 1, textTransform: 'uppercase' },
   link: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 4 },

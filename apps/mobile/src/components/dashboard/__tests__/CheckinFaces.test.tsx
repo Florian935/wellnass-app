@@ -45,3 +45,25 @@ it('🔴 pendant l’enregistrement, les pastilles ne répondent plus', async ()
   await fireEvent.press(screen.getAllByRole('radio')[0]!);
   expect(onPick).not.toHaveBeenCalled();
 });
+
+describe('US ACCUEIL-09 — le visage choisi s’allume', () => {
+  it('🔴 le choix se voit ET s’annonce : le visage choisi est coché, allumé, les autres s’effacent', async () => {
+    await afficher();
+    expect(screen.queryByTestId('checkin-face-lit-4')).toBeNull();
+
+    await fireEvent.press(screen.getByTestId('checkin-face-4'));
+
+    expect(screen.getByTestId('checkin-face-lit-4')).toBeTruthy();
+    expect(screen.getByTestId('checkin-face-4').props.accessibilityState).toMatchObject({ checked: true });
+    expect(screen.getByTestId('checkin-face-2').props.accessibilityState).toMatchObject({ checked: false });
+    expect(screen.getByTestId('checkin-face-2')).toHaveStyle({ opacity: 0.55 });
+  });
+
+  it('un autre choix déplace la lumière', async () => {
+    await afficher();
+    await fireEvent.press(screen.getByTestId('checkin-face-4'));
+    await fireEvent.press(screen.getByTestId('checkin-face-2'));
+    expect(screen.getByTestId('checkin-face-lit-2')).toBeTruthy();
+    expect(screen.queryByTestId('checkin-face-lit-4')).toBeNull();
+  });
+});

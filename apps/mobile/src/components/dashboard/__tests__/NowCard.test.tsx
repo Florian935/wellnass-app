@@ -449,3 +449,37 @@ describe('US ACCUEIL-08 — l’heure vient de l’écran', () => {
     expect(push).toHaveBeenCalledWith({ pathname: '/food-picker', params: { date: '2026-09-09', meal: 'breakfast' } });
   });
 });
+
+describe('US ACCUEIL-09 — l’astuce de la carte de la séance', () => {
+  it('« Squat : à 2,5 kg de ton record », dans l’unité de l’utilisateur', async () => {
+    await render(
+      <NowCard
+        action={{ kind: 'session-today', training }}
+        isLoading={false}
+        hour={9}
+        itemHour={18.5}
+        kcalRemaining={null}
+        formatKcal={(n) => `${n}`}
+        tip={{ key: 'home.tips.nearRecordKg', params: { exercise: 'Squat', gap: 2.5 }, tag: 'strength-record' }}
+      />,
+    );
+    expect(screen.getByText('Muscu · record')).toBeTruthy();
+    expect(screen.getByText(/^Squat : à 2,5\s?kg de ton record/)).toBeTruthy();
+    // L'astuce n'enlève pas le geste : la séance se démarre toujours de la carte.
+    expect(screen.getByText('Démarrer la séance')).toBeTruthy();
+  });
+
+  it('forme au rouge : la carte le dit avant la séance', async () => {
+    await render(
+      <NowCard
+        action={{ kind: 'session-today', training }}
+        isLoading={false}
+        kcalRemaining={null}
+        formatKcal={(n) => `${n}`}
+        tip={{ key: 'home.tips.sessionRest', params: {}, tag: 'readiness-strength' }}
+      />,
+    );
+    expect(screen.getByText('Forme × Muscu')).toBeTruthy();
+    expect(screen.getByText(/repos conseillé/)).toBeTruthy();
+  });
+});

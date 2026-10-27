@@ -11,6 +11,12 @@
  *    pas à faire une journée.
  *
  * Zone 1 de l'accueil, fixe, hors plafond de widgets (ADR-007, amendement du 09/09/2026).
+ *
+ * ── US ACCUEIL-09 — « Prisme du soir », au bout du fil ──────────────────────────────────────────
+ * Variante `fil` : posée à la fin de « Ta journée », sans cadre. Le fil dit déjà la journée geste par
+ * geste ; ce bloc n'existe donc que si **Prisme peut la raconter** (visible, pas d'humeur basse).
+ * Les faits restent écrits, en petit, sous « Ce que Prisme lira » : ce qui part chez le fournisseur
+ * se voit toujours avant (R4).
  */
 
 import { StyleSheet, Text, View } from 'react-native';
@@ -23,7 +29,7 @@ import { usePrismeVisibility } from '@/hooks/usePrismeVisibility';
 import { fontFamily } from '@/theme/fonts';
 import { useTheme } from '@/theme/useTheme';
 
-export function EveningCard() {
+export function EveningCard({ variant = 'card' }: { variant?: 'card' | 'fil' }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const { facts, todayKey, lowMood, isLoading } = useEveningFacts();
@@ -32,6 +38,34 @@ export function EveningCard() {
   if (isLoading || !hasEveningFacts(facts)) return null;
 
   const dossier = buildEveningDossier(facts, (key, params) => t(key, params));
+  const canTell = visible && !lowMood;
+
+  if (variant === 'fil') {
+    if (!canTell) return null;
+    return (
+      <View testID="evening-fil" style={styles.fil}>
+        <Text style={[styles.title, { color: colors.text }]} accessibilityRole="header">
+          {t('prisme.evening.filTitle')}
+        </Text>
+        <PrismeTell
+          dossier={dossier}
+          usage="evening"
+          storeKey={`evening:${todayKey}`}
+          fingerprint={eveningFingerprint(facts)}
+          testID="evening-prisme"
+        />
+        <Text style={[styles.reads, { color: colors.textMuted }]}>{t('prisme.evening.reads')}</Text>
+        {dossier.facts.map((fact, index) => (
+          <Text
+            key={`${index}-${fact.label}`}
+            style={[styles.readsLine, { color: colors.textMuted }]}
+          >
+            {`${fact.label} · ${fact.detail}`}
+          </Text>
+        ))}
+      </View>
+    );
+  }
 
   return (
     <View testID="evening-card" style={[styles.card, { borderColor: colors.border, backgroundColor: colors.surface }]}>
@@ -45,7 +79,7 @@ export function EveningCard() {
           <Text style={[styles.detail, { color: colors.textMuted }]}>{fact.detail}</Text>
         </View>
       ))}
-      {visible && !lowMood ? (
+      {canTell ? (
         <PrismeTell
           dossier={dossier}
           usage="evening"
@@ -64,4 +98,7 @@ const styles = StyleSheet.create({
   fact: { gap: 2 },
   label: { fontFamily: fontFamily.bodyBold, fontSize: 13.5 },
   detail: { fontFamily: fontFamily.body, fontSize: 13, lineHeight: 18 },
+  fil: { gap: 8 },
+  reads: { fontFamily: fontFamily.monoBold, fontSize: 10.5, letterSpacing: 0.6, textTransform: 'uppercase', marginTop: 4 },
+  readsLine: { fontFamily: fontFamily.body, fontSize: 12, lineHeight: 16 },
 });

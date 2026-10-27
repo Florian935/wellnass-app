@@ -1676,7 +1676,9 @@
       "all": "See all",
       "record": {
         "tag": "New record",
-        "body": "Well done: it shows in your insights."
+        "body": "Well done: it shows in your insights.",
+        "share": "Share",
+        "shareA11y": "Share the record card: {{title}}"
       },
       "near": {
         "tag": "Record within reach",
@@ -1759,8 +1761,21 @@
       "tag": {
         "strength-nutrition": "Strength × Nutrition",
         "running-nutrition": "Run × Nutrition",
-        "nutrition": "Nutrition"
-      }
+        "nutrition": "Nutrition",
+        "readiness-strength": "Readiness × Strength",
+        "readiness-running": "Readiness × Run",
+        "strength-record": "Strength · record"
+      },
+      "sessionRest": "Today's readiness: rest advised. Keep to your working weights, no record attempt today.",
+      "runRest": "Today's readiness: rest advised. An easy run, no stopwatch.",
+      "sessionPush": "Every signal is green: a good day to push.",
+      "nearRecordKg": "{{exercise}}: {{gap}} off your record. Maybe today's the day.",
+      "nearRecordReps_one": "{{exercise}}: {{count}} rep off your record. Maybe today's the day.",
+      "nearRecordReps_other": "{{exercise}}: {{count}} reps off your record. Maybe today's the day.",
+      "proteinPerMeal": "Aim for ~{{grams}} g of protein at this meal."
+    },
+    "toast": {
+      "water": "One more glass of water, logged."
     }
   },
   "activationPath": {
@@ -3900,6 +3915,9 @@
       "full": "Full",
       "transparent": "Transparent",
       "transparentHint": "To place over your own photo, in a story."
+    },
+    "record": {
+      "title": "New record"
     }
   },
   "suggestion": {
@@ -7026,7 +7044,9 @@
     "sources": "Where it comes from",
     "devSimulate": "Simulate an invented number (development)",
     "evening": {
-      "title": "Your day"
+      "title": "Your day",
+      "filTitle": "Prisme tonight",
+      "reads": "What Prisme will read"
     },
     "week": {
       "title": "Prisme tells your week"

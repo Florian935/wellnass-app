@@ -282,3 +282,52 @@ export function auroraMoment(hour: number): AuroraMoment {
   if (hour < 22) return 'soir';
   return 'nuit';
 }
+
+/**
+ * US ACCUEIL-09 — **le cœur de chaque lumière**, en heure locale : c'est là que le dosage vaut
+ * exactement celui de `AURORA_DOSES`. Entre deux cœurs, l'aurore glisse de l'un à l'autre.
+ * La nuit est centrée sur 1 h 45 (milieu de 22 h → 5 h 30), d'où le passage par minuit.
+ */
+export const AURORA_ANCHORS: readonly (readonly [number, AuroraMoment])[] = [
+  [1.75, 'nuit'],
+  [7.25, 'aube'],
+  [13, 'jour'],
+  [18.25, 'dore'],
+  [20.75, 'soir'],
+];
+
+/**
+ * US ACCUEIL-09 — **le dosage `[turquoise, framboise]` à l'heure près**, interpolé entre les cœurs
+ * des lumières (« l'aurore suit l'heure »). Une interpolation ne sort jamais de l'enveloppe de la
+ * table : la lueur turquoise reste sous `AURORA_TURQUOISE_CAP` et chaque surface mêlée mesurée par
+ * `stage.test.ts` reste la pire qu'on puisse voir. Arrondi au millième.
+ */
+export function auroraDose(hour: number): readonly [number, number] {
+  if (!Number.isFinite(hour)) return AURORA_DOSES.jour;
+  const h = ((hour % 24) + 24) % 24;
+  const n = AURORA_ANCHORS.length;
+  for (let i = 0; i < n; i += 1) {
+    const [from, fromMoment] = AURORA_ANCHORS[i]!;
+    const [nextRaw, toMoment] = AURORA_ANCHORS[(i + 1) % n]!;
+    const last = i === n - 1;
+    const to = last ? nextRaw + 24 : nextRaw;
+    // Le dernier segment (soirée → nuit) passe minuit : 0 h 30 se lit 24 h 30.
+    const x = last && h < from ? h + 24 : h;
+    if (x >= from && x < to) {
+      const t = (x - from) / (to - from);
+      const a = AURORA_DOSES[fromMoment];
+      const b = AURORA_DOSES[toMoment];
+      const mix = (k: 0 | 1) => Math.round((a[k] + (b[k] - a[k]) * t) * 1000) / 1000;
+      return [mix(0), mix(1)];
+    }
+  }
+  return AURORA_DOSES.jour;
+}
+
+/**
+ * US ACCUEIL-09 — **la respiration des lueurs** (le seul élément vivant de l'accueil au repos, R2 de
+ * DASH-01). L'opacité ne fait que DESCENDRE sous le dosage (de 1 à `minOpacity`) : le pic reste celui
+ * qu'on mesure. L'échelle grandit depuis le coin de chaque lueur ; les deux lueurs respirent en
+ * opposition de phase.
+ */
+export const AURORA_BREATH = { period: 4800, minOpacity: 0.85, scale: 1.07 } as const;

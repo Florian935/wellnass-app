@@ -169,7 +169,7 @@ export type ShareCardVariant = 'full' | 'transparent';
  * comprendre pourquoi. `full` garde le nom d'origine — le fichier de PARTAGE-01 ne change pas.
  */
 export function shareCardFileName(
-  kind: 'run' | 'workout',
+  kind: 'run' | 'workout' | 'record',
   startedAtMs: number,
   variant: ShareCardVariant = 'full',
 ): string {
@@ -177,5 +177,7 @@ export function shareCardFileName(
   const pad = (n: number): string => String(n).padStart(2, '0');
   const stamp = `${d.getFullYear()}${pad(d.getMonth() + 1)}${pad(d.getDate())}-${pad(d.getHours())}${pad(d.getMinutes())}`;
   const suffix = variant === 'transparent' ? '-transparent' : '';
-  return `${kind === 'run' ? 'course' : 'seance'}-${stamp}${suffix}.png`;
+  // US ACCUEIL-09 — la carte record de l'accueil (« Du nouveau ») a son propre nom de fichier.
+  const base = kind === 'run' ? 'course' : kind === 'record' ? 'record' : 'seance';
+  return `${base}-${stamp}${suffix}.png`;
 }

@@ -3,8 +3,11 @@
  *
  * L'ordre et le plafond vivent dans `selectHomeNews` (`home-sections.test.ts`). Ici, ce que le
  * composant ajoute : QUAND chaque source compte comme « du nouveau » (le parcours à partir du jour
- * 2, le record le jour même et le lendemain, le record à portée un jour de séance seulement), et que
- * chaque carte garde son composant d'origine.
+ * 2, le record le jour même et le lendemain, le record à portée de la séance du jour), et que chaque
+ * carte garde son composant d'origine.
+ *
+ * US ACCUEIL-09 — le record battu se partage (l'aperçu de PARTAGE-01, variante `record`) ; le record à
+ * portée arrive par props, choisi par l'écran parmi les exercices de la séance (`sessionNearRecord`).
  */
 import '@/i18n';
 import { fireEvent, render, screen } from '@testing-library/react-native';
@@ -17,7 +20,6 @@ import { useMostRecentRecord } from '@/data/repositories/dashboard-repository';
 import { useGoals } from '@/data/repositories/goal-repository';
 import { useInsights } from '@/data/repositories/insights-repository';
 import { usePressingLink } from '@/data/repositories/cross-links-repository';
-import { useNearRecords } from '@/data/repositories/records-repository';
 
 jest.mock('expo-router', () => ({ useRouter: jest.fn() }));
 jest.mock('@/hooks/useTodayKey', () => ({ useTodayKey: () => '2026-10-25' }));
@@ -52,7 +54,14 @@ jest.mock('@/data/repositories/insights-context', () => ({
   InsightsProvider: ({ children }: { children: React.ReactNode }) => children,
 }));
 jest.mock('@/data/repositories/cross-links-repository', () => ({ usePressingLink: jest.fn() }));
-jest.mock('@/data/repositories/records-repository', () => ({ useNearRecords: jest.fn() }));
+// L'aperçu de partage (PARTAGE-01) a son propre test : la sonde dit ce qu'il recevrait.
+jest.mock('@/components/share/ShareCardSheet', () => {
+  const { Text } = require('react-native');
+  return {
+    ShareCardSheet: ({ visible, data }: { visible: boolean; data: { kind: string; label: string; value: string } }) =>
+      visible ? <Text>{`sonde-partage:${data.kind}:${data.label}:${data.value}`}</Text> : null,
+  };
+});
 
 const push = jest.fn();
 
@@ -66,7 +75,6 @@ function quiet() {
   (useGoals as jest.Mock).mockReturnValue({ active: [] });
   (useInsights as jest.Mock).mockReturnValue({ insights: [] });
   (usePressingLink as jest.Mock).mockReturnValue({ link: null });
-  (useNearRecords as jest.Mock).mockReturnValue({ items: [] });
 }
 
 const squat = {
@@ -85,7 +93,7 @@ beforeEach(() => {
 const cards = () => screen.queryAllByText(/^CARTE /).map((n) => String(n.props.children).replace('CARTE ', ''));
 
 it('rien de neuf : la section entière se tait', async () => {
-  const vue = await render(<HomeNews strengthSessionToday={false} />);
+  const vue = await render(<HomeNews nearRecord={null} />);
   expect(vue.toJSON()).toBeNull();
 });
 
@@ -93,14 +101,14 @@ it('🔴 deux cartes AU PLUS, dans l’ordre écrit une fois', async () => {
   (useVisibleGoalConflict as jest.Mock).mockReturnValue({ kind: 'deficit-volume' });
   (useSinceLastVisit as jest.Mock).mockReturnValue([{ kind: 'run' }]);
   (useGoals as jest.Mock).mockReturnValue({ active: [{ id: 'g1' }] });
-  await render(<HomeNews strengthSessionToday={false} />);
+  await render(<HomeNews nearRecord={null} />);
   expect(cards()).toEqual(['conflit', 'depuis']);
 });
 
 describe('le record', () => {
   it('battu aujourd’hui : la carte record, qui mène aux progrès', async () => {
     (useMostRecentRecord as jest.Mock).mockReturnValue({ record: squat });
-    await render(<HomeNews strengthSessionToday={false} />);
+    await render(<HomeNews nearRecord={null} />);
     expect(screen.getByText('Nouveau record')).toBeTruthy();
     expect(screen.getByText('Squat · 100 kg')).toBeTruthy();
     await fireEvent.press(screen.getByTestId('news-record'));
@@ -109,38 +117,63 @@ describe('le record', () => {
 
   it('🔴 battu il y a trois jours : plus du nouveau', async () => {
     (useMostRecentRecord as jest.Mock).mockReturnValue({ record: { ...squat, achievedAt: '2026-10-22T17:40:00.000Z' } });
-    const vue = await render(<HomeNews strengthSessionToday={false} />);
+    const vue = await render(<HomeNews nearRecord={null} />);
     expect(vue.toJSON()).toBeNull();
   });
 
-  it('🔴 à portée : seulement un jour de séance de musculation', async () => {
-    (useNearRecords as jest.Mock).mockReturnValue({
-      items: [{ exerciseId: 'e1', exerciseName: 'Squat', gapKind: 'kg', gap: 2.5, ratio: 0.97 }],
-    });
-    const sansSeance = await render(<HomeNews strengthSessionToday={false} />);
+  it('🔴 à portée : seulement quand l’écran en a trouvé un dans la séance du jour', async () => {
+    const sansSeance = await render(<HomeNews nearRecord={null} />);
     expect(sansSeance.toJSON()).toBeNull();
     await sansSeance.unmount();
 
-    await render(<HomeNews strengthSessionToday />);
+    await render(
+      <HomeNews nearRecord={{ exerciseId: 'e1', exerciseName: 'Squat', gapKind: 'kg', gap: 2.5, ratio: 0.97 }} />,
+    );
     expect(screen.getByText('Record à portée')).toBeTruthy();
     expect(screen.getByTestId('news-near-record')).toBeTruthy();
+  });
+
+  it('un record déjà battu n’est plus « à portée »', async () => {
+    const vue = await render(
+      <HomeNews nearRecord={{ exerciseId: 'e1', exerciseName: 'Squat', gapKind: 'beaten', gap: 0, ratio: 1 }} />,
+    );
+    expect(vue.toJSON()).toBeNull();
+  });
+
+  it('🔴 US ACCUEIL-09 — « Partager » ouvre l’aperçu de la carte record : quoi, combien', async () => {
+    (useMostRecentRecord as jest.Mock).mockReturnValue({ record: squat });
+    await render(<HomeNews nearRecord={null} />);
+    expect(screen.queryByText(/^sonde-partage/)).toBeNull();
+    await fireEvent.press(screen.getByTestId('news-record-share'));
+    expect(screen.getByText('sonde-partage:record:Squat:100 kg')).toBeTruthy();
+    // Partager n'est pas ouvrir les progrès : les deux gestes sont distincts.
+    expect(push).not.toHaveBeenCalled();
+  });
+
+  it('un record de course se partage avec sa distance et son temps', async () => {
+    (useMostRecentRecord as jest.Mock).mockReturnValue({
+      record: { pillar: 'running', distanceKey: '10k', bestTimeSeconds: 2712, achievedAt: '2026-10-25T08:00:00.000Z' },
+    });
+    await render(<HomeNews nearRecord={null} />);
+    await fireEvent.press(screen.getByTestId('news-record-share'));
+    expect(screen.getByText(/^sonde-partage:record:.+:45:12$/)).toBeTruthy();
   });
 });
 
 it('🔴 le parcours des premiers jours : à partir du jour 2 (le jour 1 est dans le ciel)', async () => {
   (useActivationPath as jest.Mock).mockReturnValue({ show: true, day: 1 });
-  const jour1 = await render(<HomeNews strengthSessionToday={false} />);
+  const jour1 = await render(<HomeNews nearRecord={null} />);
   expect(jour1.toJSON()).toBeNull();
   await jour1.unmount();
 
   (useActivationPath as jest.Mock).mockReturnValue({ show: true, day: 2 });
-  await render(<HomeNews strengthSessionToday={false} />);
+  await render(<HomeNews nearRecord={null} />);
   expect(cards()).toEqual(['parcours']);
 });
 
 it('le lien du Labo et l’objectif le plus proche, quand rien d’autre ne presse', async () => {
   (useInsights as jest.Mock).mockReturnValue({ insights: [{ id: 'i1' }] });
   (useGoals as jest.Mock).mockReturnValue({ active: [{ id: 'g1' }] });
-  await render(<HomeNews strengthSessionToday={false} />);
+  await render(<HomeNews nearRecord={null} />);
   expect(cards()).toEqual(['labo', 'objectif']);
 });

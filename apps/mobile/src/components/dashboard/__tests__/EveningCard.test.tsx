@@ -98,3 +98,30 @@ describe('EveningCard', () => {
     expect(screen.toJSON()).toBeNull();
   });
 });
+
+describe('US ACCUEIL-09 — Prisme du soir, au bout du fil', () => {
+  it('pose Prisme et « ce que Prisme lira », sans cadre de carte', async () => {
+    await render(<EveningCard variant="fil" />);
+
+    expect(screen.getByTestId('evening-fil')).toBeTruthy();
+    expect(screen.queryByTestId('evening-card')).toBeNull();
+    expect(screen.getByText('prisme.evening.filTitle')).toBeTruthy();
+    expect(mockTell).toHaveBeenCalled();
+    // R4 : ce qui partirait chez le fournisseur reste lisible, ici en petit.
+    expect(screen.getByText('prisme.evening.reads')).toBeTruthy();
+    expect(screen.getByText(/^prisme\.dossier\.session\.strength · /)).toBeTruthy();
+  });
+
+  it('🔴 Prisme invisible : RIEN au bout du fil — le fil dit déjà la journée', async () => {
+    mockVisible = false;
+    const vue = await render(<EveningCard variant="fil" />);
+    expect(vue.toJSON()).toBeNull();
+    expect(mockTell).not.toHaveBeenCalled();
+  });
+
+  it('🔴 humeur basse en cours : rien non plus (R12)', async () => {
+    mockLowMood = true;
+    const vue = await render(<EveningCard variant="fil" />);
+    expect(vue.toJSON()).toBeNull();
+  });
+});

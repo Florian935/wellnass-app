@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { nearRecords, type NearRecordInput } from './near-record';
+import { nearRecords, sessionNearRecord, type NearRecordInput } from './near-record';
 
 const input = (over: Partial<NearRecordInput> & Pick<NearRecordInput, 'exerciseId'>): NearRecordInput => ({
   recent: { weightKg: 82.5, reps: 3 },
@@ -57,5 +57,31 @@ describe('nearRecords (US DASH-01, record à portée — MUSC-09)', () => {
       nearRecords([input({ exerciseId: 'x', recent: { weightKg: 57.3, reps: 8 }, record: { weightKg: 60.1, reps: 8 } })])[0]
         ?.gap,
     ).toBe(2.75);
+  });
+});
+
+describe('sessionNearRecord (US ACCUEIL-09 — le record à portée DE la séance du jour)', () => {
+  const near = (exerciseId: string, gapKind: 'kg' | 'reps' | 'beaten' = 'kg', gap = 2.5) => ({
+    exerciseId,
+    gapKind,
+    gap,
+    ratio: 0.97,
+  });
+
+  it('🔴 ne retient qu’un exercice de la séance : pas de « record au squat » un jour de pecs', () => {
+    expect(sessionNearRecord([near('squat'), near('bench')], ['bench', 'dips'])).toEqual(near('bench'));
+    expect(sessionNearRecord([near('squat')], ['bench'])).toBeNull();
+  });
+
+  it('garde l’ordre de `nearRecords` (le plus à portée d’abord)', () => {
+    expect(sessionNearRecord([near('dips', 'reps', 1), near('bench')], ['bench', 'dips'])?.exerciseId).toBe('dips');
+  });
+
+  it('un record déjà battu n’est plus « à portée »', () => {
+    expect(sessionNearRecord([near('bench', 'beaten', 0)], ['bench'])).toBeNull();
+  });
+
+  it('séance libre ou plan inconnu : rien', () => {
+    expect(sessionNearRecord([near('bench')], [])).toBeNull();
   });
 });

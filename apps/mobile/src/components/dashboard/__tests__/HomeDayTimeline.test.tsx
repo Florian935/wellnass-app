@@ -190,3 +190,27 @@ describe('les gestes', () => {
     expect(onPlanning).toHaveBeenCalled();
   });
 });
+
+describe('US ACCUEIL-09 — le bout du fil', () => {
+  it('Prisme du soir se pose APRÈS le dernier geste, dans le fil', async () => {
+    await render(
+      <HomeDayTimeline
+        timeline={timeline()}
+        nowCard={<Text>CARTE DU MOMENT</Text>}
+        mealTotals={new Map()}
+        checkinEnergy={null}
+        weightKgToday={null}
+        formatKcal={(n) => `${n}`}
+        onPlanning={onPlanning}
+        onQuick={onQuick}
+        ending={<Text>PRISME DU SOIR</Text>}
+      />,
+    );
+    expect(screen.getByText('PRISME DU SOIR')).toBeTruthy();
+  });
+
+  it('sans rien au bout, pas de séparateur vide', async () => {
+    const vue = await show();
+    expect(JSON.stringify(vue.toJSON())).not.toContain('PRISME');
+  });
+});

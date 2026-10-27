@@ -183,3 +183,36 @@ describe('variante transparente (US PARTAGE-02)', () => {
     expect(styles.every((s) => typeof s.textShadowColor === 'string')).toBe(true);
   });
 });
+
+// ---------------------------------------------------------------------------
+// US ACCUEIL-09 — la carte record, partagée depuis « Du nouveau »
+// ---------------------------------------------------------------------------
+
+describe('carte record (US ACCUEIL-09)', () => {
+  const recordData: ShareCardData = {
+    kind: 'record',
+    startedAtMs: new Date(2026, 9, 25, 19, 40).getTime(),
+    label: 'Squat',
+    value: '102,5 kg',
+  };
+
+  it('dit quoi et combien, sous le titre « Nouveau record »', async () => {
+    const { getByText } = await render(<ShareCard data={recordData} size={320} />);
+    expect(getByText('SHARE.RECORD.TITLE')).toBeTruthy();
+    expect(getByText('Squat')).toBeTruthy();
+    expect(getByText('102,5 kg')).toBeTruthy();
+  });
+
+  it('🔴 n’emprunte aucune statistique de séance ou de course', async () => {
+    const { queryByText } = await render(<ShareCard data={recordData} size={320} />);
+    for (const label of ['SHARE.WORKOUT.VOLUME', 'SHARE.RUN.DISTANCE', 'SHARE.WORKOUT.SETS']) {
+      expect(queryByText(label)).toBeNull();
+    }
+  });
+
+  it('porte ses halos en transparent, comme les autres cartes (R6)', async () => {
+    const textes = await stylesDeTexte('transparent', recordData);
+    expect(textes.length).toBeGreaterThan(0);
+    for (const style of textes) expect(style.textShadowColor).toBeDefined();
+  });
+});

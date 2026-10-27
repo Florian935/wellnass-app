@@ -48,7 +48,7 @@ function waitForNextFrame(): Promise<void> {
  */
 export async function shareCardImage(
   ref: React.RefObject<View | null>,
-  kind: 'run' | 'workout',
+  kind: 'run' | 'workout' | 'record',
   startedAtMs: number,
   t: TFunction,
   variant: ShareCardVariant = 'full',

@@ -8,13 +8,23 @@
  *
  * Le composant ne sait rien de l'écriture : il rend le niveau choisi. Il est posé sur une surface
  * sombre (la scène Aurore aujourd'hui, la carte du moment dans ACCUEIL-08) et en reçoit les encres.
+ *
+ * ── US ACCUEIL-09 — le visage choisi s'allume ────────────────────────────────────────────────────
+ * Au toucher, le visage choisi se remplit de turquoise (le bouton principal d'Aurore) dans un léger
+ * rebond, les autres s'effacent, et le choix est annoncé (`checked`) : on voit ce qu'on a dit pendant
+ * l'enregistrement, avant que la carte passe au geste suivant. Retour tactile au toucher
+ * (`PressableScale`). Animations réduites : l'état allumé, sans rebond.
  */
 
+import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, { ZoomIn } from 'react-native-reanimated';
 import Svg, { Path } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import type { WellbeingLevel } from '@wellness/shared';
 import { PressableScale } from '@/components/motion/PressableScale';
+import { useAppReducedMotion } from '@/hooks/useAppReducedMotion';
+import { SPRING } from '@/theme/motion';
 import { fontFamily } from '@/theme/fonts';
 
 const LEVELS: readonly WellbeingLevel[] = [1, 2, 3, 4, 5];
@@ -37,10 +47,16 @@ type Props = {
   /** Fond et contour de chaque pastille. */
   glass: string;
   glassBorder: string;
+  /** Le visage choisi, allumé : fond et encre (le bouton principal d'Aurore par défaut). */
+  lit?: { fill: string; ink: string };
 };
 
-export function CheckinFaces({ onPick, disabled = false, ink, glass, glassBorder }: Props) {
+const AURORA_LIT = { fill: '#5eead4', ink: '#151024' };
+
+export function CheckinFaces({ onPick, disabled = false, ink, glass, glassBorder, lit = AURORA_LIT }: Props) {
   const { t } = useTranslation();
+  const reduced = useAppReducedMotion();
+  const [picked, setPicked] = useState<WellbeingLevel | null>(null);
   return (
     <View
       style={styles.row}
@@ -49,34 +65,52 @@ export function CheckinFaces({ onPick, disabled = false, ink, glass, glassBorder
     >
       {LEVELS.map((level) => {
         const label = t(`wellbeing.levels.energy.${level}`);
+        const on = picked === level;
+        const faded = picked !== null && !on;
+        const faceInk = on ? lit.ink : ink;
         return (
           <PressableScale
             key={level}
             testID={`checkin-face-${level}`}
             haptic="confirm"
             disabled={disabled}
-            onPress={() => onPick(level)}
+            onPress={() => {
+              setPicked(level);
+              onPick(level);
+            }}
             accessibilityRole="radio"
-            accessibilityState={{ disabled, checked: false }}
+            accessibilityState={{ disabled, checked: on }}
             accessibilityLabel={t('wellbeing.a11yLevel', {
               indicator: t('wellbeing.indicators.energy'),
               level,
               label,
             })}
-            style={[styles.face, { backgroundColor: glass, borderColor: glassBorder }]}
+            style={[
+              styles.face,
+              { backgroundColor: glass, borderColor: on ? lit.fill : glassBorder },
+              faded && styles.faded,
+            ]}
           >
+            {on ? (
+              <Animated.View
+                pointerEvents="none"
+                testID={`checkin-face-lit-${level}`}
+                style={[styles.lit, { backgroundColor: lit.fill }]}
+                entering={reduced ? undefined : ZoomIn.springify().damping(SPRING.pop.damping).stiffness(SPRING.pop.stiffness)}
+              />
+            ) : null}
             <Svg width={24} height={24} viewBox="0 0 24 24">
               <Path
                 d={`${FACE}${MOUTHS[level]}`}
                 fill="none"
-                stroke={ink}
+                stroke={faceInk}
                 strokeWidth={1.8}
                 strokeLinecap="round"
                 strokeLinejoin="round"
               />
             </Svg>
             <Text
-              style={[styles.label, { color: ink }]}
+              style={[styles.label, { color: faceInk }]}
               numberOfLines={1}
               adjustsFontSizeToFit
               maxFontSizeMultiplier={1.3}
@@ -104,4 +138,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 2,
   },
   label: { fontFamily: fontFamily.bodyBold, fontSize: 10.5 },
+  lit: { position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, borderRadius: 14 },
+  faded: { opacity: 0.55 },
 });

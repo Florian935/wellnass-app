@@ -10,6 +10,59 @@ Catégories : **Ajouté** · **Modifié** · **Corrigé** · **Supprimé** · **
 
 <!-- Nouvelles entrées ajoutées ICI (ordre anté-chronologique, la plus récente en haut) -->
 
+## 27/10/2026 — ACCUEIL-09 : le mouvement — lueurs vivantes, six animations, astuces enrichies, record partageable, Prisme au bout du fil (`feature/accueil09-le-mouvement` → `dev`)
+
+> Troisième et dernier lot de la refonte de l'accueil (D1-D6 du 25/10). US codée en dev direct et
+> clôturée dans ce commit (`etape: close`). Roadmap **7.46** (ligne neuve, hors cadrage). Commit
+> précédent : `d32fb1c3` (ACCUEIL-08).
+
+### Ajouté
+- **Les lueurs suivent l'heure et respirent** : `auroraDose(hour)` (`theme/stage.ts`) interpole le
+  dosage entre les cœurs des cinq lumières (`AURORA_ANCHORS`, minuit compris) sans jamais sortir de
+  l'enveloppe mesurée ; `AuroraGlows` dose chaque lueur par l'opacité d'une vue (glissement 1,2 s),
+  souffle de 4,8 s (`AURORA_BREATH` : échelle 1,07 depuis le coin, opacité 85-100 %, opposition de
+  phase), coupé hors focus via `useLoopActive('home')` dans `HomeStage`.
+- **Six animations** (R1-R4 de DASH-01) : cadrans qui s'ouvrent à l'arrivée (`HomeDials`, 900 ms,
+  décalage 80 ms / 120 ms, légendes qui montent) puis suivent leurs valeurs (420 ms) ; rond d'une ligne
+  cochée ou du résumé qui se gonfle quand un geste vient d'être fait (`PulseNode`) ; carte du moment
+  qui entre (10 px, 460 ms, à chaque changement d'action) ; visage choisi qui s'allume (`CheckinFaces`)
+  et phrase du jour qui se réécrit en fondu ; tuiles de la feuille « Noter » en cascade ; toast du verre
+  d'eau (`HomeToast`, 2,6 s, annoncé).
+- **Astuces enrichies** (`crossTip`, 9 tests de plus) : carte de la séance — forme du jour « repos
+  conseillé » d'abord, puis record à portée de la séance (kg ou répétitions), puis « tous les signaux
+  au vert » ; course un jour de repos conseillé ; protéines réparties sur les repas qui restent.
+  `sessionNearRecord` (`near-record.ts`, 4 tests) : le record à portée d'un exercice **de la séance du
+  jour**, partagé par l'astuce et « Du nouveau ».
+- **Carte record partageable** : variante `record` de `ShareCard` (médaille, exercice ou distance,
+  valeur), bouton « Partager » sur le record battu de « Du nouveau » (`ShareCardSheet` de PARTAGE-01) ;
+  `shareCardFileName('record', …)`.
+- **Prisme du soir au bout du fil** : `EveningCard variant="fil"` posée en `ending` de
+  `HomeDayTimeline` dès 18 h, seulement si Prisme peut raconter (visible, pas d'humeur basse), avec
+  « Ce que Prisme lira » (R4).
+
+### Modifié
+- `NowCard` : le halo ne respire plus (R2 : les lueurs sont le seul élément vivant au repos) ; l'écart
+  d'un record se dit dans l'unité de l'utilisateur.
+- `HomeNews` reçoit le record à portée par props (`nearRecord`) au lieu de lire `useNearRecords` ;
+  `index.tsx` lit le plan de la séance (`useSessionBrief`) et les records à portée une fois.
+- `HomeStage` : `glowHour` remplace `glowMoment`.
+- i18n FR + EN : `home.tips.{sessionRest, runRest, sessionPush, nearRecordKg, nearRecordReps,
+  proteinPerMeal}`, `home.tips.tag.*` (3), `home.toast.water`, `home.news.record.{share, shareA11y}`,
+  `share.record.title`, `prisme.evening.{filTitle, reads}`.
+
+### Technique / Notes
+- Tests : `stage.test.ts` (+5 : dosage exact aux cœurs, enveloppe à toute heure au pas de 5 min, aucun
+  saut, respiration qui ne fait que baisser), `AuroraGlows.test.tsx`, `HomeToast.test.tsx`,
+  **`home-motion-rules.test.ts`** (garde de source R2 : aucune boucle sur l'accueil hors lueurs),
+  `CheckinFaces` (+2), `NowCard` (+2), `HomeDayTimeline` (+2), `HomeNews` (+3, partage), `ShareCard`
+  (+3, variante record et ses halos), `EveningCard` (+3, variante fil), écran d'accueil (+2 : record
+  de la séance, toast, Prisme au bout du fil).
+- Le mouvement passe par `strokeDashoffset` / opacité / échelle (thread UI) : `strokeDasharray` n'est
+  pas animable proprement via `animatedProps` de react-native-svg, d'où des segments positionnés par
+  rotation. Sous Jest, le mock de Reanimated rend l'état final : les tests vérifient les règles et les
+  valeurs d'arrivée ; le rendu animé reste à voir sur appareil.
+- Aucune migration, aucune sync rule, aucun appel réseau.
+
 ## 26/10/2026 — ACCUEIL-08 : « Ta journée » — cadrans, fil du jour, semaine, Du nouveau, repères et « + » (`feature/accueil08-ta-journee` → `dev`)
 
 > Deuxième des trois lots de la refonte de l'accueil (décisions D2 à D5 de Florian du 25/10). US codée

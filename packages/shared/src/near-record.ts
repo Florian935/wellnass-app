@@ -68,3 +68,18 @@ export function nearRecords(
 
   return found.sort((a, b) => b.ratio - a.ratio).slice(0, limit);
 }
+
+/**
+ * US ACCUEIL-09 — **le record à portée de la séance du jour** : le premier de `nearRecords` (déjà
+ * trié, le plus à portée d'abord) dont l'exercice est au programme, hors records déjà battus.
+ * L'accueil l'annonce sur la carte de la séance et dans « Du nouveau » : un record au squat promis
+ * un jour de pecs serait une fausse promesse.
+ */
+export function sessionNearRecord<T extends NearRecord>(
+  candidates: readonly T[],
+  sessionExerciseIds: readonly string[],
+): T | null {
+  if (sessionExerciseIds.length === 0) return null;
+  const inSession = new Set(sessionExerciseIds);
+  return candidates.find((c) => c.gapKind !== 'beaten' && inSession.has(c.exerciseId)) ?? null;
+}

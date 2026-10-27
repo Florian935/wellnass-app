@@ -5,12 +5,17 @@
  *
  * Chaque carte garde son composant d'origine quand il existe (conflit, parcours, depuis ta dernière
  * visite, lien du Labo, objectif) : leurs règles et leurs actions ne sont pas réécrites ici. Seuls le
- * record battu et le record à portée ont une carte neuve (`NewsCard`) — la carte record partageable
- * arrive avec ACCUEIL-09.
+ * record battu et le record à portée ont une carte neuve.
+ *
+ * US ACCUEIL-09 — **le record battu se partage** : « Partager » ouvre l'aperçu de PARTAGE-01
+ * (`ShareCardSheet`, variante `record`) — ce qu'on voit est exactement l'image qui part. Le record à
+ * portée est désormais celui **de la séance du jour** (`sessionNearRecord`), choisi par l'écran, qui
+ * le pose aussi en astuce sur la carte de la séance : une seule lecture, deux usages.
  */
 
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
@@ -34,7 +39,9 @@ import { useGoals } from '@/data/repositories/goal-repository';
 import { useInsights } from '@/data/repositories/insights-repository';
 import { InsightsProvider } from '@/data/repositories/insights-context';
 import { usePressingLink } from '@/data/repositories/cross-links-repository';
-import { useNearRecords, type NearRecordItem } from '@/data/repositories/records-repository';
+import type { NearRecordItem } from '@/data/repositories/records-repository';
+import type { ShareCardData } from '@/components/share/ShareCard';
+import { ShareCardSheet } from '@/components/share/ShareCardSheet';
 import { useTodayKey } from '@/hooks/useTodayKey';
 import { useUnits } from '@/hooks/useUnits';
 import { fontFamily } from '@/theme/fonts';
@@ -42,11 +49,14 @@ import { useTheme } from '@/theme/useTheme';
 import { withAlpha } from '@/theme/color-utils';
 
 type Props = {
-  /** Une séance de musculation est encore à faire aujourd'hui : le record à portée a un sens. */
-  strengthSessionToday: boolean;
+  /**
+   * Le record à portée de la séance de musculation du jour (`sessionNearRecord`), ou `null` : sans
+   * séance à faire, ou sans exercice de la séance près de son record, il n'y a rien à annoncer.
+   */
+  nearRecord: NearRecordItem | null;
 };
 
-export function HomeNews({ strengthSessionToday }: Props) {
+export function HomeNews({ nearRecord }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const router = useRouter();
@@ -57,12 +67,11 @@ export function HomeNews({ strengthSessionToday }: Props) {
   const activation = useActivationPath();
   const { record } = useMostRecentRecord();
   const sinceItems = useSinceLastVisit();
-  const { items: nearItems } = useNearRecords(1);
   const insightsValue = useInsights();
   const { link } = usePressingLink();
   const { active: activeGoals } = useGoals();
 
-  const near = nearItems[0];
+  const near = nearRecord;
   const recordDay = record ? localDayKey(new Date(record.achievedAt)) : null;
   const kinds = selectHomeNews({
     conflict: conflict !== null,
@@ -70,7 +79,7 @@ export function HomeNews({ strengthSessionToday }: Props) {
     activation: activation.show && (activation.day ?? 0) >= 2,
     record: isFreshRecord(recordDay, todayKey),
     'since-last-visit': sinceItems.length > 0,
-    'near-record': strengthSessionToday && near !== undefined && near.gapKind !== 'beaten',
+    'near-record': near !== null && near.gapKind !== 'beaten',
     lab: insightsValue.insights.length > 0 || link !== null,
     goal: activeGoals.length > 0,
   });
@@ -129,39 +138,61 @@ export function HomeNews({ strengthSessionToday }: Props) {
 /** Le record battu, fêté le jour même et le lendemain. */
 function RecordNews({ record }: { record: MostRecentRecord }) {
   const { t, i18n } = useTranslation();
+  const [sharing, setSharing] = useState(false);
   const router = useRouter();
   const units = useUnits();
   const strength = record.pillar === 'strength';
-  const title = strength
-    ? `${record.exerciseName} · ${
-        record.type === 'best_volume'
-          ? `${new Intl.NumberFormat(i18n.language).format(Math.round(record.value))} kg`
-          : units.formatWeight(record.value)
-      }`
-    : `${t(RECORD_DISTANCE_I18N_KEY[record.distanceKey])} · ${formatPaceMMSS(record.bestTimeSeconds, '—')}`;
+  const label = strength ? record.exerciseName : t(RECORD_DISTANCE_I18N_KEY[record.distanceKey]);
+  const value = strength
+    ? record.type === 'best_volume'
+      ? `${new Intl.NumberFormat(i18n.language).format(Math.round(record.value))} kg`
+      : units.formatWeight(record.value)
+    : formatPaceMMSS(record.bestTimeSeconds, '—');
+  const title = `${label} · ${value}`;
+  // US ACCUEIL-09 — la carte partageable : quoi, combien, quand. Rien d'autre ne sort de l'app.
+  const share: ShareCardData = { kind: 'record', startedAtMs: new Date(record.achievedAt).getTime(), label, value };
+  const tint = strength ? '#ffb3a8' : '#d6e6fa';
   return (
-    <Pressable
-      onPress={() => router.push(strength ? '/progress' : '/running-stats')}
-      accessibilityRole="button"
-      accessibilityLabel={`${t('home.news.record.tag')}. ${title}`}
-      testID="news-record"
+    <LinearGradient
+      colors={strength ? ['#8e1b1b', '#4a120f', '#2b0d0b'] : ['#2a64ad', '#1d4586', '#0f2547']}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.recordCard}
     >
-      <LinearGradient
-        colors={strength ? ['#8e1b1b', '#4a120f', '#2b0d0b'] : ['#2a64ad', '#1d4586', '#0f2547']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+      <Pressable
+        onPress={() => router.push(strength ? '/progress' : '/running-stats')}
+        accessibilityRole="button"
+        accessibilityLabel={`${t('home.news.record.tag')}. ${title}`}
+        testID="news-record"
         style={styles.card}
       >
         <View style={[styles.icon, { backgroundColor: 'rgba(255,255,255,0.12)' }]}>
           <Ionicons name="trophy-outline" size={20} color="#ffd9a0" />
         </View>
         <View style={styles.texts}>
-          <Text style={[styles.tag, { color: strength ? '#ffb3a8' : '#d6e6fa' }]}>{t('home.news.record.tag')}</Text>
+          <Text style={[styles.tag, { color: tint }]}>{t('home.news.record.tag')}</Text>
           <Text style={[styles.title, { color: '#ffffff' }]}>{title}</Text>
           <Text style={[styles.body, { color: strength ? '#f6c5bf' : '#d6e6fa' }]}>{t('home.news.record.body')}</Text>
         </View>
-      </LinearGradient>
-    </Pressable>
+      </Pressable>
+      <Pressable
+        onPress={() => setSharing(true)}
+        accessibilityRole="button"
+        accessibilityLabel={t('home.news.record.shareA11y', { title })}
+        testID="news-record-share"
+        hitSlop={6}
+        style={styles.shareBtn}
+      >
+        <Ionicons name="share-outline" size={15} color="#ffffff" />
+        <Text style={styles.shareLabel}>{t('home.news.record.share')}</Text>
+      </Pressable>
+      <ShareCardSheet
+        visible={sharing}
+        onClose={() => setSharing(false)}
+        data={share}
+        accessibilityLabel={t('home.news.record.shareA11y', { title })}
+      />
+    </LinearGradient>
   );
 }
 
@@ -204,6 +235,19 @@ const styles = StyleSheet.create({
   link: { minHeight: 44, flexDirection: 'row', alignItems: 'center', gap: 4 },
   linkLabel: { fontFamily: fontFamily.bodyBold, fontSize: 12.5 },
   card: { flexDirection: 'row', gap: 12, alignItems: 'flex-start', padding: 16, borderRadius: 22, overflow: 'hidden' },
+  recordCard: { borderRadius: 22, overflow: 'hidden', paddingBottom: 12 },
+  shareBtn: {
+    alignSelf: 'flex-end',
+    marginRight: 14,
+    minHeight: 44,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    paddingHorizontal: 14,
+    borderRadius: 999,
+    backgroundColor: 'rgba(255,255,255,0.14)',
+  },
+  shareLabel: { fontFamily: fontFamily.bodyBold, fontSize: 13, color: '#ffffff' },
   icon: { width: 40, height: 40, borderRadius: 13, alignItems: 'center', justifyContent: 'center' },
   texts: { flex: 1, minWidth: 0, gap: 3 },
   tag: { fontFamily: fontFamily.monoBold, fontSize: 10, letterSpacing: 0.6, textTransform: 'uppercase' },

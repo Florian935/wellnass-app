@@ -12,15 +12,26 @@
  *    que le check-in n'est pas fait.
  *
  * Les couleurs sont celles de la scène sombre (identiques en clair et en sombre, comme la scène).
- * Le mouvement (remplissage à l'arrivée) vient avec ACCUEIL-09.
+ * Le mouvement (ACCUEIL-09) : les anneaux se remplissent à l'arrivée et suivent chaque geste.
  */
 
+import { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, {
+  FadeInDown,
+  useAnimatedProps,
+  useSharedValue,
+  withDelay,
+  withTiming,
+  type SharedValue,
+} from 'react-native-reanimated';
 import Svg, { Circle } from 'react-native-svg';
 import { useTranslation } from 'react-i18next';
 import type { DayDial, DialTone } from '@wellness/shared';
 import { PressableScale } from '@/components/motion/PressableScale';
 import { useStageTheme } from '@/components/stage/PillarStage';
+import { useAppReducedMotion } from '@/hooks/useAppReducedMotion';
+import { DURATION, EASING } from '@/theme/motion';
 import { fontFamily } from '@/theme/fonts';
 
 const SIZE = 84;
@@ -50,49 +61,135 @@ type Props = {
   formatNumber: (n: number) => string;
 };
 
+/**
+ * US ACCUEIL-09 — **les cadrans s'ouvrent** à l'arrivée, une seule fois par montage : chaque segment
+ * (ou l'arc continu) se remplit en 900 ms, décalé de 80 ms du précédent, et d'un cadran au suivant.
+ * Ensuite, l'anneau **suit** : un repas noté fait monter Manger depuis sa valeur d'avant (420 ms),
+ * jamais depuis zéro (R5 de MOTION-01). Animations réduites : la valeur finale, d'emblée.
+ *
+ * Tout passe par `strokeDashoffset` (un nombre, animable sur le thread UI) ; la position d'un
+ * segment est une rotation fixe. Aucune information n'est portée par le mouvement (R1).
+ */
+export const DIAL_FILL_MS = 900;
+export const DIAL_STAGGER_MS = 80;
+/** D'un cadran au suivant : l'œil lit de gauche à droite. */
+export const DIAL_STEP_MS = 120;
+/** Les légendes suivent leur anneau. */
+const LEGEND_DELAY_MS = 200;
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const CENTER = SIZE / 2;
+
+/** Une valeur dans [0, 1] qui se remplit à l'arrivée, puis suit ses changements. */
+function useFill(target: number, delay: number): SharedValue<number> {
+  const reduced = useAppReducedMotion();
+  const value = useSharedValue(reduced ? target : 0);
+  const arrived = useSharedValue(0);
+  useEffect(() => {
+    const first = arrived.value === 0;
+    arrived.value = 1;
+    if (reduced) {
+      value.value = target;
+      return;
+    }
+    value.value = first
+      ? withDelay(delay, withTiming(target, { duration: DIAL_FILL_MS, easing: EASING.fill }))
+      : withTiming(target, { duration: DURATION.data, easing: EASING.fill });
+  }, [arrived, delay, reduced, target, value]);
+  return value;
+}
+
+/** Un segment : la piste éteinte, et par-dessus la couleur qui se déroule depuis son début. */
+function Segment({ tone, index, count, delay }: { tone: DialTone; index: number; count: number; delay: number }) {
+  const gap = count > 1 ? SEGMENT_GAP : 0;
+  const len = CIRCUMFERENCE / count - gap;
+  const angle = -90 + (index * 360) / count + ((gap / 2) * 360) / CIRCUMFERENCE;
+  const fill = useFill(1, delay);
+  const lit = useAnimatedProps(() => ({ strokeDashoffset: len * (1 - fill.value) }));
+  const rotate = `rotate(${angle} ${CENTER} ${CENTER})`;
+  return (
+    <>
+      <Circle
+        cx={CENTER}
+        cy={CENTER}
+        r={RADIUS}
+        fill="none"
+        stroke={DIAL_TONES.idle}
+        strokeWidth={STROKE}
+        strokeDasharray={`${len} ${CIRCUMFERENCE}`}
+        transform={rotate}
+      />
+      {tone === 'idle' ? null : (
+        <AnimatedCircle
+          cx={CENTER}
+          cy={CENTER}
+          r={RADIUS}
+          fill="none"
+          stroke={DIAL_TONES[tone]}
+          strokeWidth={STROKE}
+          strokeDasharray={`${len} ${CIRCUMFERENCE}`}
+          animatedProps={lit}
+          transform={rotate}
+        />
+      )}
+    </>
+  );
+}
+
+/** L'arc continu de Manger et Marcher. */
+function Arc({ progress, color, delay }: { progress: number; color: string; delay: number }) {
+  const p = Math.min(1, Math.max(0, progress));
+  const fill = useFill(p, delay);
+  const arc = useAnimatedProps(() => ({
+    strokeDashoffset: CIRCUMFERENCE * (1 - fill.value),
+    // Un bout arrondi d'un arc vide dessinerait un point : on ne montre l'arc qu'une fois lancé.
+    strokeOpacity: fill.value > 0.005 ? 1 : 0,
+  }));
+  return (
+    <AnimatedCircle
+      cx={CENTER}
+      cy={CENTER}
+      r={RADIUS}
+      fill="none"
+      stroke={color}
+      strokeWidth={STROKE}
+      strokeLinecap={p > 0.02 ? 'round' : 'butt'}
+      strokeDasharray={`${CIRCUMFERENCE} ${CIRCUMFERENCE}`}
+      animatedProps={arc}
+      transform={`rotate(-90 ${CENTER} ${CENTER})`}
+    />
+  );
+}
+
 /** Un anneau : en segments (Bouger, Récupérer) ou continu (Manger, Marcher). */
-function Ring({ segments, progress, color }: { segments?: readonly DialTone[]; progress?: number; color?: string }) {
+function Ring({
+  segments,
+  progress,
+  color,
+  delay,
+}: {
+  segments?: readonly DialTone[];
+  progress?: number;
+  color?: string;
+  /** Départ du remplissage à l'arrivée (rang du cadran). */
+  delay: number;
+}) {
   if (segments) {
     const n = Math.max(1, segments.length);
-    const gap = n > 1 ? SEGMENT_GAP : 0;
-    const len = CIRCUMFERENCE / n - gap;
     return (
       <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
         {segments.map((tone, i) => (
-          <Circle
-            key={`${tone}-${i}`}
-            cx={SIZE / 2}
-            cy={SIZE / 2}
-            r={RADIUS}
-            fill="none"
-            stroke={DIAL_TONES[tone]}
-            strokeWidth={STROKE}
-            strokeDasharray={`${len} ${CIRCUMFERENCE - len}`}
-            strokeDashoffset={-(i * CIRCUMFERENCE) / n - gap / 2}
-            transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
-          />
+          // La teinte dans la clé : une séance faite remonte son segment, qui se déroule à nouveau
+          // dans sa couleur — l'anneau « suit » le geste.
+          <Segment key={`${i}-${tone}`} tone={tone} index={i} count={n} delay={delay + i * DIAL_STAGGER_MS} />
         ))}
       </Svg>
     );
   }
-  const p = Math.min(1, Math.max(0, progress ?? 0));
   return (
     <Svg width={SIZE} height={SIZE} viewBox={`0 0 ${SIZE} ${SIZE}`}>
-      <Circle cx={SIZE / 2} cy={SIZE / 2} r={RADIUS} fill="none" stroke={TRACK} strokeWidth={STROKE} />
-      {p > 0 ? (
-        <Circle
-          cx={SIZE / 2}
-          cy={SIZE / 2}
-          r={RADIUS}
-          fill="none"
-          stroke={color}
-          strokeWidth={STROKE}
-          strokeLinecap={p > 0.02 ? 'round' : 'butt'}
-          strokeDasharray={`${CIRCUMFERENCE} ${CIRCUMFERENCE}`}
-          strokeDashoffset={CIRCUMFERENCE * (1 - p)}
-          transform={`rotate(-90 ${SIZE / 2} ${SIZE / 2})`}
-        />
-      ) : null}
+      <Circle cx={CENTER} cy={CENTER} r={RADIUS} fill="none" stroke={TRACK} strokeWidth={STROKE} />
+      <Arc progress={progress ?? 0} color={color ?? EAT} delay={delay} />
     </Svg>
   );
 }
@@ -100,6 +197,7 @@ function Ring({ segments, progress, color }: { segments?: readonly DialTone[]; p
 export function HomeDials({ dials, onPress, formatNumber }: Props) {
   const { t } = useTranslation();
   const stage = useStageTheme('home');
+  const reduced = useAppReducedMotion();
 
   if (dials.length === 0) return null;
 
@@ -112,7 +210,8 @@ export function HomeDials({ dials, onPress, formatNumber }: Props) {
         dials.length < 3 ? styles.centered : styles.spread,
       ]}
     >
-      {dials.map((dial) => {
+      {dials.map((dial, dialIndex) => {
+        const delay = dialIndex * DIAL_STEP_MS;
         let big = '';
         let unit = '';
         let label = '';
@@ -126,7 +225,7 @@ export function HomeDials({ dials, onPress, formatNumber }: Props) {
             label = t('home.dials.move.label');
             sub = dial.restToday ? t('home.dials.move.rest') : t('home.dials.move.week');
             a11y = t('home.dials.move.a11y', { done: dial.done, total: dial.total });
-            ring = <Ring segments={dial.segments} />;
+            ring = <Ring segments={dial.segments} delay={delay} />;
             break;
           case 'eat':
             if (dial.remaining === null) {
@@ -148,7 +247,7 @@ export function HomeDials({ dials, onPress, formatNumber }: Props) {
               dial.remaining !== null
                 ? t('home.dials.eat.a11y', { kcal: formatNumber(Math.max(0, dial.remaining)), protein: dial.proteinG })
                 : t('home.dials.eat.a11yNoTarget', { kcal: formatNumber(dial.consumed) });
-            ring = <Ring progress={dial.progress} color={EAT} />;
+            ring = <Ring progress={dial.progress} color={EAT} delay={delay} />;
             break;
           case 'walk':
             big = formatNumber(dial.steps);
@@ -156,7 +255,7 @@ export function HomeDials({ dials, onPress, formatNumber }: Props) {
             label = t('home.dials.walk.label');
             sub = t('home.dials.walk.goal', { goal: formatNumber(dial.goal) });
             a11y = t('home.dials.walk.a11y', { steps: formatNumber(dial.steps), goal: formatNumber(dial.goal) });
-            ring = <Ring progress={dial.progress} color={WALK} />;
+            ring = <Ring progress={dial.progress} color={WALK} delay={delay} />;
             break;
           case 'recover':
           default:
@@ -167,7 +266,7 @@ export function HomeDials({ dials, onPress, formatNumber }: Props) {
             a11y = dial.pending
               ? t('home.dials.recover.a11yPending')
               : t('home.dials.recover.a11y', { verdict: t(`home.readiness.verdict.${dial.verdict ?? 'ok'}.title`) });
-            ring = <Ring segments={dial.segments} />;
+            ring = <Ring segments={dial.segments} delay={delay} />;
             break;
         }
         const long = big.length >= 5;
@@ -197,12 +296,24 @@ export function HomeDials({ dials, onPress, formatNumber }: Props) {
                 </Text>
               </View>
             </View>
-            <Text style={[styles.label, { color: stage.ink }]} numberOfLines={1}>
-              {label}
-            </Text>
-            <Text style={[styles.sub, { color: stage.inkMuted }]} numberOfLines={2}>
-              {sub}
-            </Text>
+            {/* Les légendes montent de 6 px à l'arrivée, après leur anneau (un seul montage). */}
+            <Animated.View
+              style={styles.legend}
+              entering={
+                reduced
+                  ? undefined
+                  : FadeInDown.duration(DURATION.base)
+                      .delay(LEGEND_DELAY_MS + dialIndex * DIAL_STEP_MS)
+                      .withInitialValues({ transform: [{ translateY: 6 }] })
+              }
+            >
+              <Text style={[styles.label, { color: stage.ink }]} numberOfLines={1}>
+                {label}
+              </Text>
+              <Text style={[styles.sub, { color: stage.inkMuted }]} numberOfLines={2}>
+                {sub}
+              </Text>
+            </Animated.View>
           </PressableScale>
         );
       })}
@@ -237,6 +348,7 @@ const styles = StyleSheet.create({
   big: { fontFamily: fontFamily.displayXBold, fontSize: 22, letterSpacing: -0.8 },
   bigLong: { fontSize: 19 },
   unit: { fontFamily: fontFamily.bodyBold, fontSize: 9.5, marginTop: 2 },
+  legend: { alignItems: 'center', gap: 3 },
   label: { fontFamily: fontFamily.displayBold, fontSize: 14.5, marginTop: 3 },
   sub: { fontFamily: fontFamily.bodySemi, fontSize: 11, textAlign: 'center', lineHeight: 14 },
 });

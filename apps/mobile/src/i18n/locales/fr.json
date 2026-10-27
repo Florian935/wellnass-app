@@ -1676,7 +1676,9 @@
       "all": "Tout voir",
       "record": {
         "tag": "Nouveau record",
-        "body": "Bravo : ça se voit dans tes analyses."
+        "body": "Bravo : ça se voit dans tes analyses.",
+        "share": "Partager",
+        "shareA11y": "Partager la carte du record : {{title}}"
       },
       "near": {
         "tag": "Record à portée",
@@ -1759,8 +1761,21 @@
       "tag": {
         "strength-nutrition": "Muscu × Nutrition",
         "running-nutrition": "Course × Nutrition",
-        "nutrition": "Nutrition"
-      }
+        "nutrition": "Nutrition",
+        "readiness-strength": "Forme × Muscu",
+        "readiness-running": "Forme × Course",
+        "strength-record": "Muscu · record"
+      },
+      "sessionRest": "Forme du jour : repos conseillé. Garde tes charges de travail, pas de record aujourd'hui.",
+      "runRest": "Forme du jour : repos conseillé. Une sortie facile, sans chrono.",
+      "sessionPush": "Tous les signaux sont au vert : c'est le bon jour pour pousser.",
+      "nearRecordKg": "{{exercise}} : à {{gap}} de ton record. C'est peut-être le jour.",
+      "nearRecordReps_one": "{{exercise}} : à {{count}} répétition de ton record. C'est peut-être le jour.",
+      "nearRecordReps_other": "{{exercise}} : à {{count}} répétitions de ton record. C'est peut-être le jour.",
+      "proteinPerMeal": "Vise ~{{grams}} g de protéines à ce repas."
+    },
+    "toast": {
+      "water": "Un verre d'eau de plus, c'est noté."
     }
   },
   "activationPath": {
@@ -3900,6 +3915,9 @@
       "full": "Pleine",
       "transparent": "Transparente",
       "transparentHint": "À coller par-dessus ta photo, dans une story."
+    },
+    "record": {
+      "title": "Nouveau record"
     }
   },
   "suggestion": {
@@ -7026,7 +7044,9 @@
     "sources": "D’où ça vient",
     "devSimulate": "Simuler un chiffre inventé (développement)",
     "evening": {
-      "title": "Ta journée"
+      "title": "Ta journée",
+      "filTitle": "Prisme du soir",
+      "reads": "Ce que Prisme lira"
     },
     "week": {
       "title": "Prisme raconte ta semaine"

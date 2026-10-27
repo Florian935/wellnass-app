@@ -20,6 +20,9 @@ import {
   AURORA_TURQUOISE_CAP,
   STAGE_KEYS,
   auroraMoment,
+  auroraDose,
+  AURORA_ANCHORS,
+  AURORA_BREATH,
   blendOver,
   stageTheme,
 } from '../stage';
@@ -106,5 +109,52 @@ describe('Aurore — les lueurs passent sous le texte (US ACCUEIL-07, D1)', () =
   it('turquoise le matin, framboise le soir', () => {
     expect(AURORA_DOSES.aube[0]).toBeGreaterThan(AURORA_DOSES.aube[1]);
     expect(AURORA_DOSES.soir[1]).toBeGreaterThan(AURORA_DOSES.soir[0]);
+  });
+
+  describe('US ACCUEIL-09 — l’aurore suit l’heure en continu', () => {
+    /** Toutes les heures de la journée, au pas de l'horloge de l'accueil (5 min). */
+    const STEPS = Array.from({ length: 24 * 12 }, (_, i) => i / 12);
+
+    it('au cœur de chaque lumière, le dosage est EXACTEMENT celui de la table', () => {
+      for (const [hour, moment] of AURORA_ANCHORS) {
+        expect(auroraDose(hour)).toEqual(AURORA_DOSES[moment]);
+      }
+      // Les ancres sont bien au cœur de leur lumière : la table et les ancres disent la même chose.
+      for (const [hour, moment] of AURORA_ANCHORS) expect(auroraMoment(hour)).toBe(moment);
+    });
+
+    it('🔴 à toute heure, la lueur turquoise reste ≤ 0,38 et la framboise ≤ son plus fort dosage', () => {
+      // Le contraste n'est mesuré qu'aux dosages de la table : un dosage interpolé ne doit JAMAIS
+      // en sortir — c'est ce qui rend la mesure de `surfaces` valable à toute heure.
+      const framboiseMax = Math.max(...AURORA_MOMENTS.map((m) => AURORA_DOSES[m][1]));
+      for (const hour of STEPS) {
+        const [turquoise, framboise] = auroraDose(hour);
+        expect(turquoise).toBeLessThanOrEqual(AURORA_TURQUOISE_CAP);
+        expect(framboise).toBeLessThanOrEqual(framboiseMax);
+        expect(turquoise).toBeGreaterThanOrEqual(0);
+        expect(framboise).toBeGreaterThanOrEqual(0);
+      }
+    });
+
+    it('🔴 aucun saut : d’un pas de 5 min au suivant, la lumière bouge à peine (minuit compris)', () => {
+      const all = [...STEPS, 24];
+      for (let i = 1; i < all.length; i += 1) {
+        const a = auroraDose(all[i - 1]!);
+        const b = auroraDose(all[i]!);
+        expect(Math.abs(a[0] - b[0])).toBeLessThanOrEqual(0.02);
+        expect(Math.abs(a[1] - b[1])).toBeLessThanOrEqual(0.02);
+      }
+    });
+
+    it('la respiration ne fait que BAISSER la lueur : jamais au-dessus du dosage mesuré', () => {
+      expect(AURORA_BREATH.minOpacity).toBeGreaterThan(0);
+      expect(AURORA_BREATH.minOpacity).toBeLessThan(1);
+      // Le pic de la respiration est le dosage lui-même (opacité 1 × dosage).
+      expect(AURORA_BREATH.period).toBe(4800);
+    });
+
+    it('une heure illisible donne la lumière du jour', () => {
+      expect(auroraDose(Number.NaN)).toEqual(AURORA_DOSES.jour);
+    });
   });
 });

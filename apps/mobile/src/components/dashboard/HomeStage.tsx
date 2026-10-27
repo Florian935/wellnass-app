@@ -11,14 +11,21 @@
  * série sont dans l'action du moment, au fil « Ta journée » ; la semaine a sa carte. Elle porte ce
  * que l'écran lui confie en `children` — « Écouter mon brief », la séance en cours, puis les trois
  * cadrans, la carte « retour » ou « Premiers pas » (voir `HomeSky`, `HomeDials`).
+ *
+ * ── US ACCUEIL-09 — le mouvement ─────────────────────────────────────────────────────────────────
+ * Les lueurs suivent l'heure et respirent (`AuroraGlows`, souffle coupé hors focus — R4) ; la phrase
+ * du jour se réécrit en fondu.
  */
 
 import type { ReactNode } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+import Animated, { FadeIn } from 'react-native-reanimated';
 import { PillarStage, useStageTheme } from '@/components/stage/PillarStage';
 import { AuroraGlows } from '@/components/stage/matter/AuroraGlows';
+import { useAppReducedMotion } from '@/hooks/useAppReducedMotion';
+import { useLoopActive } from '@/hooks/useLoopActive';
+import { DURATION } from '@/theme/motion';
 import { fontFamily } from '@/theme/fonts';
-import type { AuroraMoment } from '@/theme/stage';
 
 type Props = {
   /** La salutation — « Bonjour Florian », « Content de te revoir »… (`greetingKind`). */
@@ -26,19 +33,22 @@ type Props = {
   /** La phrase du jour (`daySentence`) — elle dérive de la même décision que la carte du moment. */
   sentence: string;
   dateLabel: string;
-  /** La lumière d'Aurore, selon l'heure (`auroraMoment`). */
-  glowMoment: AuroraMoment;
+  /** L'heure décimale de l'écran : les lueurs se dosent sur elle (`auroraDose`, ACCUEIL-09). */
+  glowHour: number;
   /** Posé à droite de la date : la pastille de synchro et l'accès aux réglages. */
   trailing?: ReactNode;
   /** Ce que porte le ciel sous la phrase du jour. */
   children?: ReactNode;
 };
 
-export function HomeStage({ greeting, sentence, dateLabel, glowMoment, trailing, children }: Props) {
+export function HomeStage({ greeting, sentence, dateLabel, glowHour, trailing, children }: Props) {
   const stage = useStageTheme('home');
+  // R4 de DASH-01 : le souffle des lueurs ne tourne que sur l'accueil au premier plan.
+  const breathing = useLoopActive('home');
+  const reduced = useAppReducedMotion();
 
   return (
-    <PillarStage pillar="home" testID="home-stage" matter={<AuroraGlows moment={glowMoment} />}>
+    <PillarStage pillar="home" testID="home-stage" matter={<AuroraGlows hour={glowHour} active={breathing} />}>
       <View>
         <View style={styles.topRow}>
           <Text style={[styles.eyebrow, { color: stage.inkMuted }]} numberOfLines={1}>
@@ -55,9 +65,17 @@ export function HomeStage({ greeting, sentence, dateLabel, glowMoment, trailing,
         >
           {greeting}
         </Text>
-        <Text style={[styles.sentence, { color: stage.ink }]} maxFontSizeMultiplier={1.4}>
+        {/* US ACCUEIL-09 — la phrase du jour se réécrit en fondu quand la décision change (un visage
+            choisi, un repas noté) : la clé est la phrase elle-même, l'entrée ne rejoue qu'à un vrai
+            changement de texte. */}
+        <Animated.Text
+          key={sentence}
+          entering={reduced ? undefined : FadeIn.duration(DURATION.base)}
+          style={[styles.sentence, { color: stage.ink }]}
+          maxFontSizeMultiplier={1.4}
+        >
           {sentence}
-        </Text>
+        </Animated.Text>
       </View>
       {children}
     </PillarStage>

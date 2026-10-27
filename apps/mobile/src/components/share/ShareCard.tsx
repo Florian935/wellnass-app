@@ -16,6 +16,7 @@
  * partie sur un réseau public ne se rattrape pas. Uniquement de l'activité.
  */
 
+import { Ionicons } from '@expo/vector-icons';
 import { createContext, forwardRef, useContext } from 'react';
 import { StyleSheet, Text, View, type TextProps } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -93,6 +94,18 @@ export type ShareCardData =
        * carte partagée sort de l'app ; ce qui s'y trouve doit pouvoir être vu par n'importe qui.
        */
       heat?: SessionHeat;
+    }
+  | {
+      /**
+       * US ACCUEIL-09 — **le record battu**, partagé depuis « Du nouveau ». Une seule chose à dire :
+       * quoi, combien. `startedAtMs` = l'instant du record (date de la carte, nom du fichier).
+       */
+      kind: 'record';
+      startedAtMs: number;
+      /** L'exercice ou la distance (« Squat », « 10 km »). */
+      label: string;
+      /** La valeur **déjà formatée** dans les unités de l'utilisateur (« 102,5 kg », « 45:12 »). */
+      value: string;
     };
 
 type Props = {
@@ -192,14 +205,16 @@ export const ShareCard = forwardRef<View, Props>(function ShareCard({ data, size
       <View style={styles.body}>
         {data.kind === 'run' ? (
           <RunBody points={data.points} size={size} />
+        ) : data.kind === 'record' ? (
+          <RecordBody label={data.label} value={data.value} size={size} />
         ) : (
           <WorkoutBody records={data.records} heat={data.heat} size={size} />
         )}
       </View>
 
-      {/* Les chiffres : c'est le contenu, jamais une décoration. */}
+      {/* Les chiffres : c'est le contenu, jamais une décoration. Le record les porte dans son corps. */}
       <View style={styles.stats}>
-        {data.kind === 'run' ? (
+        {data.kind === 'record' ? null : data.kind === 'run' ? (
           <>
             <Stat value={data.stats.distance} label={t('share.run.distance')} size={size} big />
             <Stat value={data.stats.duration} label={t('share.run.duration')} size={size} />
@@ -355,6 +370,49 @@ function WorkoutBody({
   );
 }
 
+/** US ACCUEIL-09 — le record, en grand : ce qui a été battu, et de combien il se mesure. */
+function RecordBody({ label, value, size }: { label: string; value: string; size: number }) {
+  const variant = useContext(VariantContext);
+  const s = (ratio: number): number => Math.round(size * ratio);
+  return (
+    <View style={styles.recordBody}>
+      <View
+        style={[
+          styles.recordMedal,
+          { width: s(0.2), height: s(0.2), borderRadius: s(0.1), borderColor: RECORDS_BORDER, backgroundColor: RECORDS_BG },
+        ]}
+      >
+        {/* L'icône est un glyphe : en transparent, elle porte le même halo que les textes (R6). */}
+        <Ionicons
+          name="trophy"
+          size={s(0.1)}
+          color={CARD_ACCENT}
+          style={
+            variant === 'transparent'
+              ? { textShadowColor: HALO_COLOR, textShadowOffset: { width: 0, height: 1 }, textShadowRadius: Math.max(4, s(0.02)) }
+              : undefined
+          }
+        />
+      </View>
+      <CardText
+        style={[styles.recordLabel, { color: CARD_MUTED, fontSize: s(0.046) }]}
+        numberOfLines={1}
+        maxFontSizeMultiplier={1}
+      >
+        {label}
+      </CardText>
+      <CardText
+        style={[styles.recordValue, { color: CARD_TEXT, fontSize: s(0.13) }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        maxFontSizeMultiplier={1}
+      >
+        {value}
+      </CardText>
+    </View>
+  );
+}
+
 function Stat({
   value,
   label,
@@ -389,6 +447,10 @@ function Stat({
 
 const styles = StyleSheet.create({
   workoutBody: { alignItems: 'center', gap: 14 },
+  recordBody: { alignItems: 'center', gap: 6 },
+  recordMedal: { alignItems: 'center', justifyContent: 'center', borderWidth: 1, marginBottom: 8 },
+  recordLabel: { fontFamily: fontFamily.bodySemi, letterSpacing: 0.6 },
+  recordValue: { fontFamily: fontFamily.displayXBold, letterSpacing: -1 },
   card: { justifyContent: 'space-between', overflow: 'hidden' },
   header: { gap: 2 },
   title: { fontFamily: fontFamily.displayBold, letterSpacing: 1.5 },

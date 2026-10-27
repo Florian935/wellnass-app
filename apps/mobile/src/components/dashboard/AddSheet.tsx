@@ -6,6 +6,9 @@
  * un scan, la pesée, le check-in, un verre d'eau, une activité, une course libre, une séance libre —
  * filtrés par piliers actifs (décision H). Chaque tuile mène à l'écran qui sait déjà le faire ; seul
  * le verre d'eau s'écrit sur place, c'est le geste d'un tap du pilier.
+ *
+ * US ACCUEIL-09 — la feuille monte, ses tuiles arrivent en cascade (`StaggerIn`, au montage de la
+ * feuille seulement), et le verre d'eau noté se confirme par le toast de l'écran (`onWaterAdded`).
  */
 
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +18,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_GLASS_ML, mealForHour, type Pillar } from '@wellness/shared';
 import { PressableScale } from '@/components/motion/PressableScale';
+import { StaggerIn } from '@/components/motion/StaggerIn';
 import { useStageTheme } from '@/components/stage/PillarStage';
 import { addWater } from '@/data/repositories/water-repository';
 import { useTodayKey } from '@/hooks/useTodayKey';
@@ -89,8 +93,7 @@ export function AddSheet({ visible, onClose, pillars, hour, onWaterAdded }: Prop
         label: t(`home.quick.meal.${meal}`),
         icon: 'restaurant-outline',
         color: colors.pillarNutrition,
-        onPress: () =>
-          go({ pathname: '/food-picker', params: { date: todayKey, meal } }),
+        onPress: () => go({ pathname: '/food-picker', params: { date: todayKey, meal } }),
       },
       {
         key: 'scan',
@@ -179,23 +182,27 @@ export function AddSheet({ visible, onClose, pillars, hour, onWaterAdded }: Prop
           <Text style={[styles.meta, { color: colors.textMuted }]}>{t('home.add.meta')}</Text>
         </View>
         <View style={styles.grid}>
-          {tiles.map((tile) => (
-            <PressableScale
-              key={tile.key}
-              haptic="confirm"
-              onPress={tile.onPress}
-              accessibilityRole="button"
-              accessibilityLabel={tile.label}
-              testID={`home-add-${tile.key}`}
-              style={[styles.tile, { backgroundColor: colors.background, borderColor: colors.border }]}
-            >
-              <View style={[styles.tileIcon, { backgroundColor: withAlpha(tile.color, 0.14) }]}>
-                <Ionicons name={tile.icon} size={21} color={tile.color} />
-              </View>
-              <Text style={[styles.tileLabel, { color: colors.text }]} numberOfLines={2}>
-                {tile.label}
-              </Text>
-            </PressableScale>
+          {tiles.map((tile, index) => (
+            <StaggerIn key={tile.key} index={index} style={styles.tileSlot}>
+              <PressableScale
+                haptic="confirm"
+                onPress={tile.onPress}
+                accessibilityRole="button"
+                accessibilityLabel={tile.label}
+                testID={`home-add-${tile.key}`}
+                style={[
+                  styles.tile,
+                  { backgroundColor: colors.background, borderColor: colors.border },
+                ]}
+              >
+                <View style={[styles.tileIcon, { backgroundColor: withAlpha(tile.color, 0.14) }]}>
+                  <Ionicons name={tile.icon} size={21} color={tile.color} />
+                </View>
+                <Text style={[styles.tileLabel, { color: colors.text }]} numberOfLines={2}>
+                  {tile.label}
+                </Text>
+              </PressableScale>
+            </StaggerIn>
           ))}
         </View>
       </View>
@@ -227,13 +234,17 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 28,
   },
   grip: { width: 40, height: 5, borderRadius: 3, alignSelf: 'center', marginBottom: 14 },
-  header: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 10 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'baseline',
+    justifyContent: 'space-between',
+    gap: 10,
+  },
   title: { fontFamily: fontFamily.displayXBold, fontSize: 22, letterSpacing: -0.6 },
   meta: { fontFamily: fontFamily.bodyBold, fontSize: 12.5 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 16 },
+  tileSlot: { width: '23%', flexGrow: 1 },
   tile: {
-    width: '23%',
-    flexGrow: 1,
     minHeight: 86,
     alignItems: 'center',
     justifyContent: 'center',
@@ -243,6 +254,17 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     borderWidth: 1,
   },
-  tileIcon: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-  tileLabel: { fontFamily: fontFamily.bodyBold, fontSize: 11.5, textAlign: 'center', lineHeight: 14 },
+  tileIcon: {
+    width: 42,
+    height: 42,
+    borderRadius: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  tileLabel: {
+    fontFamily: fontFamily.bodyBold,
+    fontSize: 11.5,
+    textAlign: 'center',
+    lineHeight: 14,
+  },
 });

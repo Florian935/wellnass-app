@@ -41,6 +41,7 @@ import {
   crossTip,
   dayMoment,
   daySentence,
+  sessionNearRecord,
   explainReadiness,
   greetingKind,
   localDateFromDayKey,
@@ -62,6 +63,7 @@ import { HomeDayTimeline } from '@/components/dashboard/HomeDayTimeline';
 import { NowCard, type RescueProps } from '@/components/dashboard/NowCard';
 import { WeekStrip, type StreakPill } from '@/components/dashboard/WeekStrip';
 import { HomeNews } from '@/components/dashboard/HomeNews';
+import { HomeToast } from '@/components/dashboard/HomeToast';
 import { AddFab, AddSheet } from '@/components/dashboard/AddSheet';
 import {
   ComebackCard,
@@ -84,6 +86,8 @@ import { useNowAction } from '@/hooks/useNowAction';
 import { useProfile } from '@/data/repositories/profile-repository';
 import { saveWellbeing } from '@/data/repositories/daily-wellbeing-repository';
 import { useNutritionSummary, useProteinTarget } from '@/data/repositories/dashboard-repository';
+import { useSessionBrief } from '@/data/repositories/immersive-repository';
+import { useNearRecords } from '@/data/repositories/records-repository';
 import { consumeJoker } from '@/data/repositories/streak-joker-repository';
 import { useActivationPath } from '@/data/repositories/activation-path-repository';
 import { useLatestWeight } from '@/data/repositories/bodyweight-repository';
@@ -94,13 +98,14 @@ import { useKcalFormat } from '@/hooks/useKcalFormat';
 import { useTodayDate } from '@/hooks/useTodayKey';
 import { useComebackChoice } from '@/stores/home-comeback-store';
 import { fontFamily } from '@/theme/fonts';
-import { auroraMoment } from '@/theme/stage';
 import { useTheme } from '@/theme/useTheme';
 
 /** Durée d'une reprise en douceur (VIE-01) : une semaine, le temps de reprendre le rythme. */
 const GENTLE_RESTART_DAYS = 7;
 /** « Écouter mon brief » : le matin seulement (le brief est un rendez-vous, pas du remplissage). */
 const BRIEF_UNTIL_HOUR = 11;
+/** Records à portée examinés pour trouver celui d'un exercice de la séance du jour. */
+const NEAR_RECORD_SCAN = 12;
 
 export default function HomeScreen() {
   useMenuFocus('home');
@@ -121,6 +126,10 @@ export default function HomeScreen() {
   const [freezing, setFreezing] = useState(false);
   // §6.1 — « Pourquoi ? » sur le verdict de forme : les étapes viennent de la brique, pas d'ici.
   const [explainOpen, setExplainOpen] = useState(false);
+  // US ACCUEIL-09 — la confirmation d'un geste noté sur place (le verre d'eau du « + »).
+  const [toast, setToast] = useState<string | null>(null);
+  // Pas de `useCallback` : React Compiler mémoïse déjà la fonction, et le toast en dépend pour son minuteur.
+  const hideToast = () => setToast(null);
 
   // ── La décision, une fois ───────────────────────────────────────────────────────────────────
   const { action, timeline, hour, mealTotals, checkinEnergy, isLoading } = useNowAction();
@@ -297,6 +306,16 @@ export default function HomeScreen() {
     </>
   );
 
+  // ── Le record à portée DE la séance du jour (ACCUEIL-09) ────────────────────────────────────
+  // Une lecture, deux usages : l'astuce de la carte de la séance et la carte de « Du nouveau ».
+  const pendingStrength = timeline.items.find((it) => it.training?.pillar === 'strength' && !it.done)?.training;
+  const sessionBrief = useSessionBrief(pendingStrength?.sessionId ?? '', i18n.language === 'en' ? 'en' : 'fr');
+  const { items: nearItems } = useNearRecords(NEAR_RECORD_SCAN);
+  const sessionRecord = sessionNearRecord(
+    nearItems,
+    sessionBrief.exercises.map((e) => e.exerciseId),
+  );
+
   // ── La carte du moment, dans le fil ─────────────────────────────────────────────────────────
   const nowItem = timeline.items.find((it) => it.id === timeline.nowItemId) ?? null;
   const doneTraining = timeline.items.find((it) => it.kind === 'training' && it.done)?.doneTraining;
@@ -305,6 +324,10 @@ export default function HomeScreen() {
     trainedPillar: doneTraining?.pillar ?? null,
     trainingBonusKcal: trainingBonus,
     proteinGapG: proteinTarget != null ? Math.max(0, proteinTarget - macros.p) : null,
+    // US ACCUEIL-09 — les astuces enrichies : protéines par repas, forme du jour, record à portée.
+    mealsLeft: timeline.items.filter((it) => it.kind === 'meal' && !it.done && !it.missed).length,
+    readinessVerdict: facts.verdict,
+    nearRecord: sessionRecord,
   });
   const nowCard = (
     <NowCard
@@ -397,7 +420,7 @@ export default function HomeScreen() {
             greeting={greeting}
             sentence={sentence}
             dateLabel={dateLabel}
-            glowMoment={auroraMoment(hour)}
+            glowHour={hour}
             trailing={
               <>
                 <SyncStatus />
@@ -428,11 +451,9 @@ export default function HomeScreen() {
           formatKcal={formatKcal}
           onPlanning={() => router.push('/planning')}
           onQuick={onQuick}
+          // US ACCUEIL-09 — Prisme du soir au bout du fil, dès 18 h (PRISME-01).
+          ending={dayMoment(hour) === 'evening' ? <EveningCard variant="fil" /> : null}
         />
-
-        {/* US PRISME-01 — les faits du soir et « Prisme raconte », dès 18 h. ACCUEIL-09 les pose au
-            bout du fil ; d'ici là, la carte reste sous lui. */}
-        {dayMoment(hour) === 'evening' ? <EveningCard /> : null}
 
         <WeekStrip
           strip={week.strip}
@@ -447,7 +468,7 @@ export default function HomeScreen() {
           onReview={() => router.push('/review')}
         />
 
-        <HomeNews strengthSessionToday={timeline.items.some((it) => it.training?.pillar === 'strength' && !it.done)} />
+        <HomeNews nearRecord={sessionRecord} />
 
         <View style={styles.reperes} testID="home-reperes">
           <View style={styles.sectionHeader}>
@@ -481,10 +502,17 @@ export default function HomeScreen() {
           onClose={() => setExplainOpen(false)}
         />
         <RealLifeSheet visible={realLifeOpen} onClose={() => setRealLifeOpen(false)} />
-        <AddSheet visible={addOpen} onClose={() => setAddOpen(false)} pillars={pillars} hour={hour} />
+        <AddSheet
+          visible={addOpen}
+          onClose={() => setAddOpen(false)}
+          pillars={pillars}
+          hour={hour}
+          onWaterAdded={() => setToast(t('home.toast.water'))}
+        />
       </StageScrollView>
 
       <AddFab onPress={() => setAddOpen(true)} />
+      <HomeToast message={toast} onHide={hideToast} />
     </View>
   );
 }

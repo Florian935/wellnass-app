@@ -25,7 +25,7 @@ const afficher = (children?: React.ReactNode, trailing?: React.ReactNode) =>
       greeting="Bonjour Florian"
       sentence="Il te reste 1 450 kcal aujourd'hui."
       dateLabel="lundi 14 septembre"
-      glowMoment="jour"
+      glowHour={12}
       trailing={trailing}
     >
       {children}

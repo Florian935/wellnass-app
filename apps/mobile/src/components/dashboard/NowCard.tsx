@@ -17,6 +17,12 @@
  * matin** (les visages, dans la carte), la **marche suggérée**, et **la série en jeu** le soir (les
  * vrais gestes pour la garder). Une **astuce croisée** s'y pose quand deux piliers se parlent
  * (« Jambes ce soir : un bon féculent à ce repas »).
+ *
+ * ── US ACCUEIL-09 ────────────────────────────────────────────────────────────────────────────────
+ * La carte ne respire plus : les lueurs du ciel sont le seul élément vivant de l'accueil au repos (R2
+ * de DASH-01). Elle entre en montant quand l'action change (`HomeDayTimeline`). L'astuce s'enrichit
+ * sur la carte de la séance (forme du jour, record à portée — « Squat : à 2,5 kg de ton record ») et
+ * se dit par repas pour les protéines.
  */
 
 import { useState } from 'react';
@@ -411,7 +417,7 @@ export function NowCard({
 
   return (
     <View style={[styles.card, { backgroundColor: colors.panel }]} testID="now-card">
-      <AccentHalo size={150} breathe />
+      <AccentHalo size={150} />
       <View accessible accessibilityLabel={a11y}>
         <Text style={[styles.eyebrow, { color: colors.panelAccent }]} numberOfLines={1}>
           {shown.eyebrow}
@@ -437,6 +443,8 @@ export function NowCard({
               {t(tip.key, {
                 ...tip.params,
                 ...(typeof tip.params.kcal === 'number' ? { kcal: formatKcal(tip.params.kcal) } : {}),
+                // L'écart d'un record se dit dans l'unité de l'utilisateur (kg ou lb).
+                ...(typeof tip.params.gap === 'number' ? { gap: units.formatWeight(tip.params.gap) } : {}),
               })}
             </Text>
           </View>

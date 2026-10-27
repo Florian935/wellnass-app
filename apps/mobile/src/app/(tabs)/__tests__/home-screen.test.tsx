@@ -15,6 +15,10 @@
  * moment, « Ta semaine », « Du nouveau », « Tes repères », le pied, et le « + ». Disparus :
  * « Demande-moi » (D3), la barre d'actions rapides (D4), « La suite », le bilan du lundi, la carte du
  * brief — le test le vérifie.
+ *
+ * ── US ACCUEIL-09 ────────────────────────────────────────────────────────────────────────────────
+ * Le record à portée DE la séance du jour (une lecture, deux usages : l'astuce de la carte et « Du
+ * nouveau »), le toast du verre d'eau, et Prisme du soir posé au bout du fil.
  */
 import React from 'react';
 import { Alert } from 'react-native';
@@ -28,6 +32,8 @@ import { useSettings } from '@/data/repositories/settings-repository';
 import { useActivationPath } from '@/data/repositories/activation-path-repository';
 import { startRealLifePeriod, useRealLifeState } from '@/data/repositories/real-life-repository';
 import { consumeJoker } from '@/data/repositories/streak-joker-repository';
+import { useSessionBrief } from '@/data/repositories/immersive-repository';
+import { useNearRecords } from '@/data/repositories/records-repository';
 import { useComebackChoice } from '@/stores/home-comeback-store';
 
 // ---------------------------------------------------------------------------
@@ -82,6 +88,8 @@ jest.mock('@/data/repositories/dashboard-repository', () => ({
 jest.mock('@/data/repositories/bodyweight-repository', () => ({
   useLatestWeight: () => ({ latest: null, isLoading: false }),
 }));
+jest.mock('@/data/repositories/immersive-repository', () => ({ useSessionBrief: jest.fn() }));
+jest.mock('@/data/repositories/records-repository', () => ({ useNearRecords: jest.fn() }));
 jest.mock('@/data/repositories/streak-joker-repository', () => ({
   consumeJoker: jest.fn(() => Promise.resolve(true)),
 }));
@@ -104,12 +112,15 @@ jest.mock('@/components/dashboard/NowCard', () => {
     NowCard: ({
       action,
       rescue,
+      tip,
     }: {
       action: { kind: string };
       rescue: null | { onWalk: () => void; onActivity: () => void; onJoker: () => void };
+      tip: null | { key: string };
     }) => (
       <View>
         <Text>sonde-now:{action.kind}</Text>
+        <Text>sonde-astuce:{tip ? tip.key : 'aucune'}</Text>
         {rescue ? (
           <>
             <Pressable testID="sonde-rescue-walk" onPress={rescue.onWalk} />
@@ -124,10 +135,19 @@ jest.mock('@/components/dashboard/NowCard', () => {
 jest.mock('@/components/dashboard/HomeDayTimeline', () => {
   const { View, Text } = require('react-native');
   return {
-    HomeDayTimeline: ({ nowCard, nowFirst }: { nowCard: React.ReactNode; nowFirst: boolean }) => (
+    HomeDayTimeline: ({
+      nowCard,
+      nowFirst,
+      ending,
+    }: {
+      nowCard: React.ReactNode;
+      nowFirst: boolean;
+      ending: React.ReactNode;
+    }) => (
       <View testID="sonde-fil">
         <Text>sonde-fil:{nowFirst ? 'carte-en-tete' : 'carte-a-sa-place'}</Text>
         {nowCard}
+        <View testID="sonde-bout-du-fil">{ending}</View>
       </View>
     ),
   };
@@ -156,8 +176,8 @@ jest.mock('@/components/dashboard/WeekStrip', () => {
 jest.mock('@/components/dashboard/HomeNews', () => {
   const { Text } = require('react-native');
   return {
-    HomeNews: ({ strengthSessionToday }: { strengthSessionToday: boolean }) => (
-      <Text>sonde-nouveau:{strengthSessionToday ? 'jour-de-seance' : 'sans-seance'}</Text>
+    HomeNews: ({ nearRecord }: { nearRecord: null | { exerciseName: string } }) => (
+      <Text>sonde-nouveau:{nearRecord ? nearRecord.exerciseName : 'aucun-record'}</Text>
     ),
   };
 });
@@ -167,13 +187,18 @@ jest.mock('@/components/dashboard/AddSheet', () => {
     AddFab: ({ onPress }: { onPress: () => void }) => (
       <Pressable accessibilityRole="button" accessibilityLabel="sonde-plus" onPress={onPress} />
     ),
-    AddSheet: ({ visible, hour }: { visible: boolean; hour: number }) =>
-      visible ? <Text>sonde-feuille-noter:{hour}</Text> : null,
+    AddSheet: ({ visible, hour, onWaterAdded }: { visible: boolean; hour: number; onWaterAdded: () => void }) =>
+      visible ? (
+        <>
+          <Text>sonde-feuille-noter:{hour}</Text>
+          <Pressable accessibilityLabel="sonde-eau" onPress={onWaterAdded} />
+        </>
+      ) : null,
   };
 });
 jest.mock('@/components/dashboard/EveningCard', () => {
   const { Text } = require('react-native');
-  return { EveningCard: () => <Text>sonde-soir</Text> };
+  return { EveningCard: ({ variant }: { variant?: string }) => <Text>sonde-soir:{variant ?? 'carte'}</Text> };
 });
 jest.mock('@/components/dashboard/RealLifeCard', () => {
   const { Text } = require('react-native');
@@ -295,6 +320,8 @@ beforeEach(() => {
   mockSettings.mockReturnValue({ settings: { activePillars: ['strength', 'running', 'nutrition'] } });
   mockActivation.mockReturnValue({ show: false, day: null, theme: null });
   useComebackChoice.setState({ normalChosenOn: null });
+  (useSessionBrief as jest.Mock).mockReturnValue({ name: null, exercises: [] });
+  (useNearRecords as jest.Mock).mockReturnValue({ items: [] });
 });
 
 const press = async (el: Parameters<typeof fireEvent.press>[0]) => {
@@ -346,13 +373,14 @@ describe('les zones de « Ta journée »', () => {
     expect(screen.queryByTestId('home-listen-brief')).toBeNull();
   });
 
-  it('les faits du soir (PRISME-01) restent sous le fil, dès 18 h', async () => {
+  it('🔴 US ACCUEIL-09 — Prisme du soir au BOUT du fil, dès 18 h (et plus de carte à part)', async () => {
     await render(<HomeScreen />);
-    expect(screen.queryByText('sonde-soir')).toBeNull();
+    expect(screen.queryByText(/^sonde-soir/)).toBeNull();
 
     mockUseNowAction.mockReturnValue(decision(IDLE, 19));
     await render(<HomeScreen />);
-    expect(screen.getByText('sonde-soir')).toBeTruthy();
+    expect(screen.getByText('sonde-soir:fil')).toBeTruthy();
+    expect(screen.getAllByText(/^sonde-soir/)).toHaveLength(1);
   });
 });
 
@@ -578,7 +606,7 @@ describe('mode édition', () => {
 // Passage d'information entre zones
 // ---------------------------------------------------------------------------
 describe('cohérence entre zones', () => {
-  it('« Du nouveau » sait si une séance de musculation reste à faire (record à portée)', async () => {
+  it('🔴 US ACCUEIL-09 — le record à portée est celui d’un exercice DE LA SÉANCE, pour la carte et « Du nouveau »', async () => {
     const training = {
       pillar: 'strength' as const,
       name: 'Jambes',
@@ -609,7 +637,36 @@ describe('cohérence entre zones', () => {
         nowItemId: 'training:ps-1',
       }),
     );
+    (useSessionBrief as jest.Mock).mockReturnValue({
+      name: 'Jambes',
+      exercises: [{ exerciseId: 'squat' }, { exerciseId: 'fentes' }],
+    });
+    (useNearRecords as jest.Mock).mockReturnValue({
+      items: [
+        // Le plus à portée n'est pas au programme du jour : il est écarté.
+        { exerciseId: 'bench', exerciseName: 'Développé couché', gapKind: 'kg', gap: 1, ratio: 0.99 },
+        { exerciseId: 'squat', exerciseName: 'Squat', gapKind: 'kg', gap: 2.5, ratio: 0.97 },
+      ],
+    });
     await render(<HomeScreen />);
-    expect(screen.getByText('sonde-nouveau:jour-de-seance')).toBeTruthy();
+    expect(useSessionBrief).toHaveBeenCalledWith('s-1', 'fr');
+    expect(screen.getByText('sonde-nouveau:Squat')).toBeTruthy();
+    expect(screen.getByText('sonde-astuce:home.tips.nearRecordKg')).toBeTruthy();
+  });
+
+  it('sans séance de musculation à faire, aucun record à portée', async () => {
+    (useNearRecords as jest.Mock).mockReturnValue({
+      items: [{ exerciseId: 'squat', exerciseName: 'Squat', gapKind: 'kg', gap: 2.5, ratio: 0.97 }],
+    });
+    await render(<HomeScreen />);
+    expect(useSessionBrief).toHaveBeenCalledWith('', 'fr');
+    expect(screen.getByText('sonde-nouveau:aucun-record')).toBeTruthy();
+  });
+
+  it('🔴 US ACCUEIL-09 — le verre d’eau noté depuis le « + » se confirme par le toast', async () => {
+    await render(<HomeScreen />);
+    await press(screen.getByLabelText('sonde-plus'));
+    await press(screen.getByLabelText('sonde-eau'));
+    expect(screen.getByText('home.toast.water')).toBeTruthy();
   });
 });

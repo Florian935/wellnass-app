@@ -193,6 +193,12 @@ describe('nom de fichier', () => {
     expect(shareCardFileName('run', ms)).toBe(shareCardFileName('run', ms, 'full'));
   });
 
+  it('US ACCUEIL-09 — la carte record partageable porte son propre nom', () => {
+    const ms = new Date(2026, 9, 25, 19, 40).getTime();
+    expect(shareCardFileName('record', ms)).toBe('record-20261025-1940.png');
+    expect(shareCardFileName('record', ms, 'transparent')).toBe('record-20261025-1940-transparent.png');
+  });
+
   it('ne contient ni espace ni accent (compatibilité OS)', () => {
     const name = shareCardFileName('workout', new Date(2026, 0, 1, 9, 0).getTime());
     expect(name).toMatch(/^[a-z0-9-]+\.png$/);
